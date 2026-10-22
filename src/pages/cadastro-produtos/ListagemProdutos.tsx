@@ -1,7 +1,8 @@
 /**
  * SYNQRA ERP — LISTAGEM MESTRE DE PRODUTOS
- * @DATA_REVISAO_APROVACAO: 2026-10-18
- * @STATUS_APROVACAO: LISTAGEM-PRODUTOS-PREMIUM-UI-OK
+ * @DATA_REVISAO_APROVACAO: 2026-10-21
+ * @REVISAO: REV-PRODUTO-UI-009 — padrão claro PCP, filtros compactos e alinhamento responsivo
+ * @STATUS_APROVACAO: REVISÃO VISUAL AUTORIZADA EM 2026-10-21
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Box, Building2, Filter, HelpCircle, Layers, Printer, RefreshCw, Search, Tag } from 'lucide-react'
@@ -9,7 +10,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 
 type P = { id: string; codigo: string; nome: string; categoria: string | null; unidade: string; cliente: string | null; ativo: boolean }
-const input = 'h-8 w-full min-w-0 rounded border border-slate-300 bg-white px-2.5 text-xs font-semibold text-slate-800 outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-100 disabled:bg-slate-50'
+const input = 'h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] font-semibold text-slate-800 outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-100 disabled:bg-slate-50'
 const label = 'grid min-w-0 gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-500'
 const th = 'h-8 border-b border-slate-700 bg-[#123B50] px-2.5 text-left text-[9px] font-black uppercase tracking-wider text-white'
 const td = 'h-8 border-b border-slate-100 px-2.5 py-1 align-middle text-[10px] text-slate-700'
@@ -52,15 +53,15 @@ export default function ListagemProdutos({ onOpenFicha }: { onOpenFicha: (id?: s
   const hasFilters = Boolean(q || categoria || unidade || cliente)
   const clear = () => { setQ(''); setCategoria(''); setUnidade(''); setCliente('') }
 
-  return <section className="product-list-print space-y-3 bg-transparent p-1 text-[11px] text-slate-800">
+  return <section className="product-list-print mx-auto w-full max-w-[1500px] space-y-3 bg-transparent p-2 text-[11px] text-slate-800">
     <header className="no-print flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-2">
       <div><p className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-sky-700"><Box size={12}/> Cadastro mestre · Produtos</p><h2 className="text-sm font-black uppercase text-slate-900">Listagem Geral de Itens</h2><p className="text-[10px] text-slate-500">Dados da empresa autenticada; sem registros demonstrativos.</p></div>
-      <div className="flex gap-2"><Link to="/ajuda/listagem-produtos" className="inline-flex h-8 items-center gap-1 rounded border border-slate-300 bg-white px-3 text-[10px] font-bold uppercase"><HelpCircle size={12}/> POP / Ajuda</Link><button type="button" onClick={() => void load()} disabled={busy} className="inline-flex h-8 items-center gap-1 rounded border border-slate-300 bg-white px-3 text-[10px] font-bold uppercase disabled:opacity-50"><RefreshCw size={12} className={busy ? 'animate-spin' : ''}/> Atualizar</button></div>
+      <div className="flex gap-2"><Link to="/ajuda/listagem-produtos" className="inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-slate-300 bg-white px-3 text-[10px] font-bold uppercase"><HelpCircle size={12}/> POP / Ajuda</Link><button type="button" onClick={() => void load()} disabled={busy} className="inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-slate-300 bg-white px-3 text-[10px] font-bold uppercase disabled:opacity-50"><RefreshCw size={12} className={busy ? 'animate-spin' : ''}/> Atualizar</button></div>
     </header>
     {error && <div role="alert" className="rounded border border-rose-200 bg-rose-50 p-2.5 text-[10px] font-bold text-rose-800">Falha ao carregar produtos: {error}</div>}
     <section className="no-print grid grid-cols-1 items-end gap-3 rounded border border-slate-200 bg-white p-3 shadow-sm sm:grid-cols-2 xl:grid-cols-12">
       <div className="flex items-center gap-1 border-b border-slate-100 pb-1 text-[9px] font-black uppercase tracking-wider text-slate-500 xl:col-span-12"><Filter size={11} className="text-sky-700"/> Filtros de especificação</div>
-      <label className={label + ' xl:col-span-4'}>SKU / Descrição<span className="flex h-8 min-w-0 items-center gap-2 rounded border border-slate-300 px-2 focus-within:border-sky-600"><Search size={13} className="shrink-0 text-slate-400"/><input maxLength={50} value={q} onChange={e => setQ(e.target.value)} placeholder="Pesquisar código ou nome" className="h-full min-w-0 flex-1 border-0 bg-transparent text-xs outline-none"/></span></label>
+      <label className={label + ' xl:col-span-4'}>SKU / Descrição<span className="flex h-[30px] min-w-0 items-center gap-2 rounded-[2px] border border-slate-300 px-2 focus-within:border-sky-600"><Search size={13} className="shrink-0 text-slate-400"/><input maxLength={50} value={q} onChange={e => setQ(e.target.value)} placeholder="Pesquisar código ou nome" className="h-full min-w-0 flex-1 border-0 bg-transparent text-[11px] text-slate-800 outline-none"/></span></label>
       <label className={label + ' xl:col-span-3'}><span className="flex items-center gap-1"><Layers size={10}/> Categoria / Família</span><select className={input} value={categoria} onChange={e => setCategoria(e.target.value)}><option value="">Todas as famílias</option>{categorias.map(x => <option key={x} value={x}>{x}</option>)}</select></label>
       <label className={label + ' xl:col-span-2'}><span className="flex items-center gap-1"><Tag size={10}/> Unidade base</span><select className={input} value={unidade} onChange={e => setUnidade(e.target.value)}><option value="">Todas</option>{unidades.map(x => <option key={x} value={x}>{x}</option>)}</select></label>
       <label className={label + ' xl:col-span-3'}><span className="flex items-center gap-1"><Building2 size={10}/> Mercado / Cliente</span><select className={input} value={cliente} onChange={e => setCliente(e.target.value)}><option value="">Todos os mercados</option>{clientes.map(x => <option key={x} value={x}>{x}</option>)}</select></label>
