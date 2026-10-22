@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, X } from 'lucide-react'
+import { Search, UserRound, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import ERPHeader from '../components/layout/ERPHeader'
 import { SYNQRA_MODULES } from '../assets/synqra/icons'
@@ -143,6 +143,13 @@ export default function TabletDashboard() {
           className="inline-flex h-6 items-center gap-1 rounded-[2px] border border-[#2d8db8] bg-[#123b50] px-2 text-white hover:bg-[#1c5570]"
         >
           🏭 PCP OPERADOR
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate('/area-funcionario')}
+          className="inline-flex h-6 items-center gap-1 rounded-[2px] border border-[#2d8db8] bg-[#2d8db8] px-2 text-white hover:bg-[#24789d]"
+        >
+          <UserRound size={12} aria-hidden="true" /> ÁREA DO FUNCIONÁRIO
         </button>
         <button
           type="button"
