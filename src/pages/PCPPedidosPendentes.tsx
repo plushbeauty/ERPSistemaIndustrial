@@ -61,11 +61,9 @@ export default function PCPPedidosPendentes() {
       const orderMap = new Map(orders.map(o => [o.id,o]))
       const activeOps = productionOrders.filter(o => activeStatus(o.status))
       const reservedByItem = new Map<string,number>()
-      const reservedByProduct = new Map<string,number>()
       reservations.forEach(reservation => {
         const qty = Math.max(0,Number(reservation.quantidade || 0))
         reservedByItem.set(reservation.pedido_item_id,(reservedByItem.get(reservation.pedido_item_id) ?? 0) + qty)
-        reservedByProduct.set(reservation.produto_id,(reservedByProduct.get(reservation.produto_id) ?? 0) + qty)
       })
       const itemLinkedQty = new Map<string,number>()
       const orderProductLinkedQty = new Map<string,number>()
