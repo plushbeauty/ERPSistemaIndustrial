@@ -59,11 +59,11 @@ export default function PCPPedidosPendentes() {
       const orderMap = new Map(orders.map(o => [o.id,o]))
       const activeOps = productionOrders.filter(o => activeStatus(o.status))
       const itemLinkedQty = new Map<string,number>()
-      const orderLinkedQty = new Map<string,number>()
+      const orderProductLinkedQty = new Map<string,number>()
       activeOps.forEach(op => {
         const qty = Number(op.quantidade_planejada ?? op.quantidade ?? 0)
         if (op.pedido_item_id) itemLinkedQty.set(op.pedido_item_id,(itemLinkedQty.get(op.pedido_item_id) ?? 0) + qty)
-        if (op.pedido_venda_id && !op.pedido_item_id) orderLinkedQty.set(op.pedido_venda_id,(orderLinkedQty.get(op.pedido_venda_id) ?? 0) + qty)
+        if (op.pedido_venda_id && op.produto_id && !op.pedido_item_id) { const key = op.pedido_venda_id + '|' + op.produto_id; orderProductLinkedQty.set(key,(orderProductLinkedQty.get(key) ?? 0) + qty) }
       })
       const nextRows: Row[] = []
       items.forEach(item => {
@@ -73,7 +73,7 @@ export default function PCPPedidosPendentes() {
         if (!product) return
         const requested = Number(item.quantidade || 0)
         const stock = Math.max(0,Number(product.estoque_atual || 0))
-        const linked = itemLinkedQty.get(item.id) ?? orderLinkedQty.get(order.id) ?? 0
+        const linked = itemLinkedQty.get(item.id) ?? orderProductLinkedQty.get(order.id + '|' + product.id) ?? 0
         const shortage = Math.max(0,requested - stock - linked)
         nextRows.push({
           itemId:item.id,pedidoId:order.id,pedidoCodigo:String(order.numero),clienteNome:clientMap.get(order.cliente_id || '') || 'Cliente não identificado',
