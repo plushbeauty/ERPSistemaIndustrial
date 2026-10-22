@@ -172,3 +172,11 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Código:** `cdacb3a3e30d105b561e31f3dda5979ea1276c2a`.
 - **Relatório:** `ROUTE-AUDIT-2026-10-16.md`, commit `2f3d2c636191fa49d9ad96677c5af51a1ba0de77`.
 - **Estado:** CORRIGIDO AGUARDANDO VALIDAÇÃO; sem evidência ainda de testes locais, teste autenticado/RLS ou deployment READY. UI-040 e QA-040 seguem abertos.
+
+
+## Evidência incremental — agenda de máquinas não mantém estado de tenant anterior (2026-10-22)
+
+- **Rota:** `/pcp/agenda-maquinas`; componente `src/pages/PCPAgendaMaquinas.tsx`.
+- **Correção:** reset de máquinas, moldes, OPs, fichas/ciclos, programações, seleção e calendário/rascunho ao iniciar a recarga; revisão registrada como `REV-PCP-AGENDA-005`.
+- **Commits:** código `da328fec2a70803f961c9c12857d9b9046964513`; cabeçalho `faa69d41616addc62cc9c8b1ccd19515152d6ed9`; relatório `a313c0c715cb713874654a71d958809e5307c2e8`.
+- **Estado:** CORRIGIDO AGUARDANDO VALIDAÇÃO. Type-check, lint, rotas, lock de UI, sessão/RLS e deployment não foram comprovados; UI-040/QA-040 seguem abertos.
