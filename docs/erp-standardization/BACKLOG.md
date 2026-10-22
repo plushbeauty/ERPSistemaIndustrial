@@ -128,3 +128,12 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Área do Funcionário / CPP:** criado `src/pages/PCPAreaFuncionario.tsx` e rota `/area-funcionario`; o atalho com ícone foi adicionado à faixa de estações rápidas de `TabletDashboard.tsx`. A programação é consultada em `erp_pcp_programacoes`, filtrada pelos operadores frente/atrás atribuídos; o CPP usa produto, OP, máquina, receita aprovada e estrutura de materiais reais. Início e término geram/atualizam `erp_apontamentos_processo`, incluindo quantidade boa, refugo, motivo de parada e observações para consulta no PCP.
 - **Autenticação do funcionário:** esta primeira versão exige sessão autenticada e associa a conta ao cadastro RH pelo e-mail. Não usa CPF ou matrícula como senha. Acesso por crachá + PIN ainda exige provisionamento e validação de credenciais no servidor; não foi simulado no navegador.
 - **Validação:** commits de código criados no GitHub. Type-check, testes de execução com sessão/RLS, aplicação da migration e estado READY no Vercel ainda precisam ser confirmados; não declarar a entrega como homologada até essas verificações.
+
+
+## Evidência incremental — CPP não deve informar sucesso sem linha atualizada (2026-10-22)
+
+- **Área:** PCP / Área do Funcionário, rota `/area-funcionario`.
+- **Arquivo:** `src/pages/PCPAreaFuncionario.tsx`.
+- **Correção:** a finalização do apontamento exige retorno do registro atualizado (`.select('id').maybeSingle()`); resposta sem linha gera erro visível, em vez de exibir falso sucesso.
+- **Commit:** `7df01c6cc2191796a2d8501ff72138737dd289bb`.
+- **Status:** corrigido aguardando type-check, lint, teste com sessão/RLS e validação de deployment. **Não fecha** UI-040 nem QA-040.
