@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { ShieldCheck,
   Activity, BarChart3, Boxes, CalendarDays, ClipboardList, Factory, ShoppingCart,
-  FileSliders, Gauge, ListOrdered, PackageSearch, RefreshCw, Wrench, X,
+  FileSliders, FlaskConical, Gauge, ListOrdered, PackageSearch, RefreshCw, Wrench, X,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -31,6 +31,7 @@ const modules: readonly ModuleItem[] = [
   { number: 'P03', label: 'ORDENS / MRP', description: 'Ordens, vínculo com pedidos e necessidades de materiais.', route: '/pcp/ordens', icon: Boxes },
   { number: 'P04', label: 'DEMANDA', description: 'Demanda comercial que alimenta o planejamento.', route: '/pcp/demanda', icon: PackageSearch },
   { number: 'P16', label: 'PEDIDOS PENDENTES', description: 'Carteira comercial, saldo de estoque e geração de OP vinculada ao pedido.', route: '/pcp/pedidos-pendentes', icon: ShoppingCart },
+  { number: 'P17', label: 'VALIDADOR DE FLUXO', description: 'Simulação de saldo livre, reserva e encaminhamento para OP; não grava dados reais.', route: '/pcp/valida-fluxo', icon: FlaskConical },
   { number: 'P05', label: 'AGENDA DE MÁQUINAS', description: 'Programação semanal por máquina e molde.', route: '/pcp/agenda-maquinas', icon: CalendarDays },
   { number: 'P06', label: 'CAPACIDADE / GANTT', description: 'Carga de trabalho e recursos produtivos.', route: '/pcp/capacidade', icon: BarChart3 },
   { number: 'P07', label: 'SEQUENCIAMENTO', description: 'Fila e sequência de produção.', route: '/pcp/sequenciamento', icon: ListOrdered },
