@@ -120,3 +120,14 @@ O título e as mensagens agora identificam a função como **registro de parecer
 - **Commit:** [11b05e404ce0377303c657b5eedea3a93e22cf62](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/11b05e404ce0377303c657b5eedea3a93e22cf62).
 - **Validação feita nesta rodada:** confirmação estática antes do commit de que a importação e a renderização condicional existiam; confirmação do texto submetido de que ambas foram removidas.
 - **Validação pendente:** type-check, lint, `verify-routes`, `verify:approved-ui-lock`, auditorias e build não foram executados nesta sessão; teste visual no navegador não realizado. Estado: **CORRIGIDO AGUARDANDO VALIDAÇÃO**.
+
+
+## Continuação — confirmação da finalização do apontamento CPP (2026-10-22)
+
+- **Rota:** `/area-funcionario`.
+- **Arquivo:** `src/pages/PCPAreaFuncionario.tsx`.
+- **Achado:** a finalização fazia `UPDATE` filtrado por empresa, apontamento e funcionário, mas não solicitava uma linha de retorno. Como o Supabase pode retornar sucesso sem erro e sem linha atualizada (por exemplo, por RLS/filtro que não corresponde), a interface poderia mostrar sucesso sem evidência de gravação.
+- **Correção:** a atualização agora usa `.select('id').maybeSingle()` e interrompe o fluxo com mensagem explícita se nenhuma linha for retornada. A mensagem de sucesso só é mostrada após confirmar a linha atualizada. Os filtros por `empresa_id`, ID do apontamento e `operador_id` foram preservados.
+- **Commit de código:** `7df01c6cc2191796a2d8501ff72138737dd289bb`.
+- **Validação estática:** confirmado no conteúdo enviado ao GitHub que a resposta da atualização é verificada antes da mensagem de sucesso. Não foram executados type-check, lint, testes autenticados nem verificação remota de RLS/schema nesta rodada.
+- **Estado:** **CORRIGIDO AGUARDANDO VALIDAÇÃO**. A integração ponta a ponta ainda depende de schema/RLS remoto e teste com funcionário autenticado.
