@@ -141,3 +141,14 @@ O título e as mensagens agora identificam a função como **registro de parecer
 - **Commit de código:** `536d5e5701d9253085d74a0ace7a8ead02cf5588`.
 - **Revisão estática:** o diff limita-se a adicionar o filtro de registro aberto e mantém os filtros de empresa, ID e operador. Não foram executados testes de corrida, type-check, lint, teste autenticado nem validação remota de RLS nesta rodada.
 - **Estado:** **CORRIGIDO AGUARDANDO VALIDAÇÃO**. UI-040 e QA-040 continuam abertos.
+
+
+## Continuação — limpar estado anterior ao recarregar o Portal do Operador (2026-10-22)
+
+- **Rotas:** `/area-funcionario` e `/pcp/portal-operador`.
+- **Arquivo:** `src/pages/PCPAreaFuncionario.tsx`.
+- **Achado:** a função de recarga mantinha na tela os dados já carregados enquanto validava novamente sessão, empresa e funcionário. Se a sessão mudasse ou a recarga falhasse, dados antigos podiam continuar visíveis no estado React.
+- **Correção:** no início de `load()`, limpar funcionário, tenant, usuário, programações, OPs, produtos, máquinas, receitas, materiais, apontamentos, seleção e mensagem anterior antes de buscar os dados novamente. Não altera o schema, as permissões nem a política de acesso; evita exibir estado de uma sessão anterior durante a revalidação.
+- **Commit:** [dc6559d033125a9371cbd76b14982d41faee6356](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/dc6559d033125a9371cbd76b14982d41faee6356).
+- **Revisão estática:** o diff foi revisado e está restrito ao reset de estado no início da recarga. Não foram executados type-check, lint, testes autenticados, validação remota de RLS nem teste visual.
+- **Estado:** **CORRIGIDO AGUARDANDO VALIDAÇÃO**. UI-040/QA-040 continuam abertos até os checks e teste ponta a ponta.
