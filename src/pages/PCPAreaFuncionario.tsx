@@ -190,7 +190,7 @@ export default function PCPAreaFuncionario() {
         quantidade_refugada: scrap,
         motivo_parada: stopReason.trim() || null,
         observacoes: observations.trim() || null
-      }).eq('empresa_id', companyId).eq('id', activeEntry.id).eq('operador_id', employee.id).select('id').maybeSingle()
+      }).eq('empresa_id', companyId).eq('id', activeEntry.id).eq('operador_id', employee.id).is('fim_em', null).select('id').maybeSingle()
       if (response.error) throw response.error
       if (!response.data) throw new Error('Nenhum apontamento foi atualizado. Confirme se o registro ainda está aberto e pertence ao seu usuário.')
       setMessage('Apontamento gravado e enviado ao PCP para conferência.')
