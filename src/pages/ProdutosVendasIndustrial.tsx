@@ -5,7 +5,7 @@
  * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
  * ID da Revisão: REV-059
  * Data da revisão autorizada: 2026-10-22
- * Revisão: REV-PRODUTO-UI-011 — consolidação em duas abas de alta densidade
+ * Revisão: REV-PRODUTO-UI-012 — correção do estado inicial da aba tipada
  * Status: consolidação visual preservando CRUD, segurança por empresa, estoque derivado, engenharia e fiscal.
  * Alterações: Ficha Técnica Mestre reúne dados gerais, estoque, produção, qualidade e documentos; fiscal permanece isolado.
  * Dados demonstrativos/fallbacks não são adicionados; falhas de consulta permanecem explícitas.
@@ -88,7 +88,7 @@ export default function ProdutosVendasIndustrial(){
   const [selectedId,setSelectedId]=useState<string|null>(null)
   const [form,setForm]=useState<FormData>(empty())
   const [editing,setEditing]=useState(false)
-  const [tab,setTab]=useState<Tab>('gerais')
+  const [tab,setTab]=useState<Tab>('tecnica')
   const [query,setQuery]=useState(''),[groupFilter,setGroupFilter]=useState('TODAS')
   const [busy,setBusy]=useState(false)
   const [message,setMessage]=useState('')
