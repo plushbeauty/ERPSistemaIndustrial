@@ -88,7 +88,7 @@ const css = `
 .w11-btn.ativo::after{content:"";position:absolute;bottom:1px;width:18px;height:3px;border-radius:1px;background:#48b7c7}
 
  
-.w11-start{.w11-start{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);width:min(600px,94vw);z-index:51;border-radius:4px;
+.w11-start{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);width:min(600px,94vw);z-index:51;border-radius:4px;
   background:rgba(242,242,242,.92);backdrop-filter:blur(30px) saturate(1.6);border:1px solid rgba(0,0,0,.1);box-shadow:0 16px 48px rgba(0,0,0,.25);
   font-family:"Segoe UI",system-ui,sans-serif;color:#1f1f1f;animation:w11up .2s ease-out;overflow:hidden}
 @keyframes w11up{from{opacity:0;transform:translate(-50%,20px)}to{opacity:1;transform:translate(-50%,0)}}
