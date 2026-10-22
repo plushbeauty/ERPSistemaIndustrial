@@ -1,6 +1,7 @@
 /**
- * @DATA_REVISAO_APROVACAO: 2026-10-18
- * @STATUS_APROVACAO: FICHA-TECNICA-SKU-PREMIUM-OK
+ * @DATA_REVISAO_APROVACAO: 2026-10-21
+ * @REVISAO: REV-PRODUTO-UI-009 — controles compactos no padrão claro PCP
+ * @STATUS_APROVACAO: REVISÃO VISUAL AUTORIZADA EM 2026-10-21
  * ESCOPO: Ficha técnica do cadastro mestre; persistência real no Supabase e isolamento por empresa.
  */
 import { useEffect, useState } from 'react'
@@ -11,9 +12,9 @@ import { supabase } from '../../lib/supabaseClient'
 type C = { id: string; prefixo: string; digitos_produto: number }
 type P = { id: string; codigo: string; nome: string; categoria: string | null; unidade: string; cliente: string | null; molde_codigo: string | null; cavidades: number | null; resina_tipo: string | null; cor_resina: string | null; temp_bico_padrao: number | null; tempo_ciclo_padrao: number | null }
 
-const baseInput = 'h-8 w-full min-w-0 rounded border border-slate-300 bg-white px-2.5 text-xs font-semibold text-slate-800 outline-none transition-colors placeholder:text-slate-400 focus:border-sky-600 focus:ring-1 focus:ring-sky-100 disabled:cursor-not-allowed disabled:bg-slate-50'
+const baseInput = 'h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] font-semibold text-slate-800 outline-none transition-colors placeholder:text-slate-400 focus:border-sky-600 focus:ring-1 focus:ring-sky-100 disabled:cursor-not-allowed disabled:bg-slate-50'
 const labelClass = 'grid min-w-0 gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-500'
-const readOnlyInput = 'flex h-8 min-w-0 items-center justify-between gap-2 rounded border border-slate-200 bg-slate-50 px-2.5 font-mono text-xs font-black text-slate-500 shadow-inner'
+const readOnlyInput = 'flex h-[30px] min-w-0 items-center justify-between gap-2 rounded-[2px] border border-slate-200 bg-slate-50 px-2 font-mono text-[11px] font-black text-slate-600 shadow-inner'
 
 export default function FormFichaTecnica({ productId, onSaved }: { productId?: string; onSaved: () => void }) {
   const [cfg, setCfg] = useState<C[]>([])
@@ -141,7 +142,7 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
       {error && <div role="alert" className="flex items-start gap-1.5 rounded border border-rose-200 bg-rose-50 p-2 text-[10px] font-bold text-rose-800"><AlertTriangle size={13} className="mt-0.5 shrink-0" /> <span>{error}</span></div>}
       {ok && <div role="status" className="flex items-start gap-1.5 rounded border border-emerald-200 bg-emerald-50 p-2 text-[10px] font-bold text-emerald-800"><CheckCircle2 size={13} className="mt-0.5 shrink-0" /> <span>{ok}</span></div>}
 
-      <div className="grid grid-cols-1 items-end gap-x-3 gap-y-3 rounded border border-slate-200 bg-white p-3 shadow-sm md:grid-cols-12">
+      <div className="grid grid-cols-1 items-end gap-x-3 gap-y-2.5 rounded-[2px] border border-slate-200 bg-white p-3 shadow-sm md:grid-cols-12">
         <div className="grid min-w-0 gap-1 md:col-span-4">
           <label className={labelClass}><span className="flex items-center gap-1"><Tag size={10} /> SKU Gerado · Chave Mestre</span></label>
           <div className={readOnlyInput} aria-label="SKU somente leitura"><span className="truncate">{p?.codigo || preview}</span><span className="shrink-0 text-[8px] tracking-wide text-slate-400">TRAVADO</span></div>
@@ -202,7 +203,7 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
 
       <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 pt-3">
         <p className="text-[9px] text-slate-500">{loading ? 'Carregando dados da empresa…' : p ? 'Edição de cadastro existente' : 'Novo cadastro · SKU gerado pela rotina do banco'}</p>
-        <button type="button" onClick={() => void save()} disabled={busy || loading} className="inline-flex h-8 items-center gap-1.5 rounded bg-teal-700 px-4 text-[10px] font-black uppercase tracking-wide text-white shadow-sm transition-colors hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-50">
+        <button type="button" onClick={() => void save()} disabled={busy || loading} className="inline-flex h-[30px] items-center gap-1.5 rounded-[2px] bg-[#2D8DB8] px-4 text-[10px] font-black uppercase tracking-wide text-white shadow-sm transition-colors hover:bg-[#246f91] disabled:cursor-not-allowed disabled:opacity-50">
           <Save size={12} /> {busy ? 'SALVANDO…' : p ? 'SALVAR ALTERAÇÕES' : 'GERAR SKU E SALVAR'}
         </button>
       </footer>
