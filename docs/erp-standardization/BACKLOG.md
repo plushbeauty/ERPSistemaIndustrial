@@ -163,3 +163,12 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Commit de código:** `dc6559d033125a9371cbd76b14982d41faee6356`.
 - **Relatório:** `ROUTE-AUDIT-2026-10-16.md`, commit `89e14f6a4a3773d7495ed57e61d472d04463a6e9`.
 - **Estado:** correção estática revisada, aguardando type-check, lint, testes autenticados/RLS e verificação do deployment. UI-040 e QA-040 permanecem pendentes.
+
+
+## Evidência incremental — revalidação de dados da capacidade PCP (2026-10-22)
+
+- **Rota/componente:** `/pcp/capacidade` → `PCPCapacidade`.
+- **Mudança:** ao iniciar recarga, a tela limpa a empresa e os arrays de máquinas/OPs anteriores antes de validar novamente a empresa da sessão. Mantém RPC de contexto, filtros por `empresa_id` e confirmação da linha atualizada ao salvar.
+- **Código:** `cdacb3a3e30d105b561e31f3dda5979ea1276c2a`.
+- **Relatório:** `ROUTE-AUDIT-2026-10-16.md`, commit `2f3d2c636191fa49d9ad96677c5af51a1ba0de77`.
+- **Estado:** CORRIGIDO AGUARDANDO VALIDAÇÃO; sem evidência ainda de testes locais, teste autenticado/RLS ou deployment READY. UI-040 e QA-040 seguem abertos.
