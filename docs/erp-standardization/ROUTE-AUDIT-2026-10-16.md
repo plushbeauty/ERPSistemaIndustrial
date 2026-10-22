@@ -163,3 +163,15 @@ O título e as mensagens agora identificam a função como **registro de parecer
 - **Diff revisado:** somente três resets de estado e comentário junto ao início de `load()`.
 - **Commit:** [cdacb3a3e30d105b561e31f3dda5979ea1276c2a](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/cdacb3a3e30d105b561e31f3dda5979ea1276c2a).
 - **Estado:** CORRIGIDO AGUARDANDO VALIDAÇÃO. Não foram executados type-check/lint local, teste de sessão/RLS nem validação visual. UI-040/QA-040 permanecem abertos.
+
+
+## Continuação — agenda de máquinas limpa estado antes de revalidar tenant (2026-10-22)
+
+- **Rota:** `/pcp/agenda-maquinas` (componente confirmado em `src/AppEntryV2.tsx`).
+- **Arquivo:** `src/pages/PCPAgendaMaquinas.tsx`, revisão `REV-PCP-AGENDA-005`.
+- **Achado estático:** `load()` iniciava a consulta de empresa e agenda mantendo máquinas, OPs, moldes, programações, seleção e calendário anteriores. Se a empresa mudasse ou o calendário da nova empresa não tivesse registro, dados/horários anteriores poderiam continuar na tela.
+- **Correção:** limpar as coleções e seleção no início da recarga; redefinir calendário e rascunho para defaults antes da consulta; limpar também a mensagem anterior. Consultas, RPC de empresa, filtros `empresa_id`, regras de programação e layout foram preservados.
+- **Commits de código:** [da328fec2a70803f961c9c12857d9b9046964513](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/da328fec2a70803f961c9c12857d9b9046964513) e [faa69d41616addc62cc9c8b1ccd19515152d6ed9](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/faa69d41616addc62cc9c8b1ccd19515152d6ed9) (registro da revisão no cabeçalho).
+- **Diff revisado:** reset de estado no início de `load()` e cabeçalho de revisão; nenhuma alteração em telas congeladas.
+- **Validação:** revisão estática do código/diff; type-check, lint, verify-routes, verify:approved-ui-lock, teste autenticado/RLS, navegador e build não foram executados nesta sessão. CI/Vercel está bloqueado pelo limite de builds reportado.
+- **Estado:** CORRIGIDO AGUARDANDO VALIDAÇÃO. UI-040 e QA-040 permanecem abertos.
