@@ -45,6 +45,10 @@ export default function PCPCapacidade() {
     setLoading(true)
     setError('')
     setNotice('')
+    // Evita exibir capacidade da empresa/sessão anterior durante a revalidação.
+    setEmpresaId('')
+    setMachines([])
+    setOps([])
     try {
       const { data: empresaData, error: empresaError } = await supabase.rpc('erp_current_empresa_id')
       if (empresaError) throw empresaError
