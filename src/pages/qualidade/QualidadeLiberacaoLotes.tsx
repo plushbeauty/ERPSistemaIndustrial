@@ -3,7 +3,7 @@
  * @DESENVOLVEDOR: FernandoSch
  * @NOME_SISTEMA: MOLDPLÁS ERP INDUSTRIAL
  * @STATUS_APROVACAO: LIBERACAO-LOTES-INTEGRADO-REVISAO
- * @ESCOPO: liberação e rastreabilidade de lotes com isolamento por empresa via Supabase/RLS.
+ * @ESCOPO: registro documental de parecer SGQ; não efetua liberação transacional do estoque.
  */
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { AlertTriangle, CheckCircle2, ClipboardCheck, Plus, Printer, RefreshCw, Search, ShieldAlert, ShieldCheck, X } from 'lucide-react'
@@ -67,7 +67,7 @@ export default function QualidadeLiberacaoLotes() {
       setProducts((productResult.data ?? []) as Product[])
       setRows((lotResult.data ?? []) as LotRow[])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Não foi possível carregar o catálogo de liberação.')
+      setError(err instanceof Error ? err.message : 'Não foi possível carregar os registros de parecer SGQ.')
     } finally {
       setLoading(false)
     }
@@ -137,12 +137,12 @@ export default function QualidadeLiberacaoLotes() {
         : await supabase.from('erp_qualidade_liberacao_lotes').insert({ ...payload }).select('id').single()
       if (result.error) throw result.error
       if (!result.data?.id) throw new Error('Nenhuma linha foi confirmada pelo banco. Verifique a permissão RLS antes de repetir.')
-      setMessage(selected ? 'Registro de liberação atualizado no banco.' : 'Registro de liberação gravado no banco.')
+      setMessage(selected ? 'Parecer SGQ atualizado no banco. O estoque não foi alterado por esta tela.' : 'Parecer SGQ gravado no banco. O estoque não foi alterado por esta tela.')
       setSelected(null)
       setForm(blankForm())
       await load()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Falha ao gravar a liberação do lote.')
+      setError(err instanceof Error ? err.message : 'Falha ao gravar o parecer SGQ do lote.')
     } finally {
       setBusy(false)
     }
@@ -157,12 +157,12 @@ export default function QualidadeLiberacaoLotes() {
         <header className="flex flex-wrap items-center justify-between gap-3 border border-[#2E4A62] bg-[#0D2638] p-3">
           <div className="flex min-w-0 items-center gap-2.5">
             <span className="grid h-9 w-9 shrink-0 place-items-center border border-[#2D8DB8] bg-[#123B50] text-[#48B7C7]"><ClipboardCheck size={20} /></span>
-            <div><p className="text-[9px] font-black uppercase tracking-[.18em] text-[#48B7C7]">MOLDPLÁS ERP · SGQ</p><h1 className="text-sm font-black uppercase tracking-wide">Liberação de lotes e parecer SGQ</h1><p className="mt-0.5 text-[10px] text-slate-400">Registro de decisão de qualidade e rastreabilidade por empresa</p></div>
+            <div><p className="text-[9px] font-black uppercase tracking-[.18em] text-[#48B7C7]">MOLDPLÁS ERP · SGQ</p><h1 className="text-sm font-black uppercase tracking-wide">Registro de parecer SGQ</h1><p className="mt-0.5 text-[10px] text-slate-400">Registro documental por empresa; não altera o status operacional do lote no estoque</p></div>
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
             <button type="button" onClick={() => window.print()} className="inline-flex h-8 items-center gap-1.5 border border-[#2E4A62] px-2.5 text-[10px] font-bold hover:bg-[#123B50]"><Printer size={13} /> Imprimir</button>
             <button type="button" onClick={() => void load()} disabled={loading || busy} className="inline-flex h-8 items-center gap-1.5 border border-[#2E4A62] px-2.5 text-[10px] font-bold hover:bg-[#123B50] disabled:opacity-50"><RefreshCw size={13} /> Atualizar</button>
-            <button type="button" onClick={startNew} className="inline-flex h-8 items-center gap-1.5 border border-[#48B7C7] bg-[#2D8DB8] px-2.5 text-[10px] font-black text-white hover:bg-[#24799F]"><Plus size={13} /> Novo laudo</button>
+            <button type="button" onClick={startNew} className="inline-flex h-8 items-center gap-1.5 border border-[#48B7C7] bg-[#2D8DB8] px-2.5 text-[10px] font-black text-white hover:bg-[#24799F]"><Plus size={13} /> Novo parecer</button>
           </div>
         </header>
 
@@ -174,13 +174,14 @@ export default function QualidadeLiberacaoLotes() {
           ]).map(item => { const Icon = item.icon; return <div key={item.label} className="flex items-center gap-2.5 border border-[#2E4A62] bg-[#0D2638] px-3 py-2"><Icon size={18} className={item.color} /><div><p className="text-[9px] font-black uppercase tracking-wider text-slate-400">{item.label}</p><p className="text-lg font-black tabular-nums">{item.value}</p></div></div> })}
         </section>
 
+        <div role="note" className="flex items-start gap-2 border border-amber-700 bg-amber-950/50 p-2.5 text-[10px] font-semibold text-amber-100"><AlertTriangle size={14} className="mt-0.5 shrink-0" /><span><strong>Limite funcional:</strong> este formulário grava um parecer na tabela documental <code>erp_qualidade_liberacao_lotes</code>. Ele não executa liberação/bloqueio transacional na tabela de estoque nem substitui a operação autorizada de quarentena.</span></div>
         {error && <div role="alert" className="flex items-start gap-2 border border-red-800 bg-red-950/70 p-2.5 text-[11px] text-red-100"><AlertTriangle size={15} className="mt-0.5 shrink-0" />{error}</div>}
         {message && <div role="status" className="flex items-start gap-2 border border-emerald-800 bg-emerald-950/70 p-2.5 text-[11px] text-emerald-100"><CheckCircle2 size={15} className="mt-0.5 shrink-0" />{message}</div>}
 
         <div className={`grid grid-cols-1 items-start gap-3 ${panelOpen ? 'xl:grid-cols-[minmax(0,1.25fr)_minmax(350px,.75fr)]' : 'grid-cols-1'}`}>
           <section className="min-w-0 overflow-hidden border border-[#2E4A62] bg-[#0D2638]">
             <header className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2E4A62] bg-[#0E1E2F] p-2">
-              <div><h2 className="text-[10px] font-black uppercase tracking-widest text-[#48B7C7]">Registros de liberação</h2><p className="mt-0.5 text-[9px] text-slate-400">{filteredRows.length} registro(s) · empresa da sessão</p></div>
+              <div><h2 className="text-[10px] font-black uppercase tracking-widest text-[#48B7C7]" >Registros de parecer SGQ</h2><p className="mt-0.5 text-[9px] text-slate-400">{filteredRows.length} registro(s) · empresa da sessão</p></div>
               <label className="flex h-8 w-full max-w-[300px] items-center gap-2 border border-[#2E4A62] bg-[#071522] px-2"><Search size={13} className="shrink-0 text-[#48B7C7]" /><input value={query} onChange={event => setQuery(event.target.value)} className="h-full min-w-0 flex-1 bg-transparent text-[10px] outline-none placeholder:text-slate-500" placeholder="Pesquisar lote, produto ou parecer..." aria-label="Pesquisar liberações" /></label>
             </header>
             <div className="overflow-x-auto">
@@ -194,7 +195,7 @@ export default function QualidadeLiberacaoLotes() {
                       <td className="px-2 font-mono font-black text-[#48B7C7]">{row.codigo_lote}</td><td className="max-w-[260px] truncate px-2 text-[#F4FBFD]">{product ? product.codigo + ' · ' + product.nome : row.produto_id}</td><td className="px-2 text-right font-mono tabular-nums">{row.quantidade.toLocaleString('pt-BR')} UN</td><td className="px-2 text-center"><span className={`inline-flex border px-1.5 py-0.5 text-[8px] font-black uppercase ${row.status_sgq === 'APROVADO' ? 'border-emerald-800 bg-emerald-950 text-emerald-300' : row.status_sgq === 'REPROVADO' ? 'border-red-800 bg-red-950 text-red-300' : 'border-amber-800 bg-amber-950 text-amber-300'}`}>{row.status_sgq}</span></td>
                     </tr>
                   })}
-                  {!loading && filteredRows.length === 0 && <tr><td colSpan={4} className="p-6 text-center text-[10px] text-slate-400">{query ? 'Nenhum lote corresponde à pesquisa.' : 'Nenhum registro de liberação cadastrado para a empresa atual.'}</td></tr>}
+                  {!loading && filteredRows.length === 0 && <tr><td colSpan={4} className="p-6 text-center text-[10px] text-slate-400">{query ? 'Nenhum lote corresponde à pesquisa.' : 'Nenhum parecer SGQ cadastrado para a empresa atual.'}</td></tr>}
                   {loading && <tr><td colSpan={4} className="p-6 text-center text-[10px] text-slate-400">Carregando registros do banco…</td></tr>}
                 </tbody>
               </table>
@@ -208,7 +209,7 @@ export default function QualidadeLiberacaoLotes() {
                 <label className="min-w-0"><span className={labelClass}>Código do lote *</span><input required maxLength={50} value={form.codigo} disabled={Boolean(selected)} onChange={event => setForm(current => ({ ...current, codigo: event.target.value }))} placeholder="Ex.: LT-2026-001" className={inputClass} /></label>
                 <label className="min-w-0"><span className={labelClass}>Volume físico (un.) *</span><input required type="number" min="1" step="1" value={form.quantidade} onChange={event => setForm(current => ({ ...current, quantidade: event.target.value }))} className={inputClass + ' text-right tabular-nums'} /></label>
                 <label className="min-w-0 sm:col-span-2"><span className={labelClass}>Produto / SKU pai *</span><select required value={form.produtoId} onChange={event => setForm(current => ({ ...current, produtoId: event.target.value }))} className={inputClass}><option value="">Selecione um produto ativo…</option>{products.map(product => <option key={product.id} value={product.id}>{product.codigo} — {product.nome}</option>)}</select></label>
-                <label className="min-w-0 sm:col-span-2"><span className={labelClass}>Parecer do inspetor *</span><select value={form.status} onChange={event => setForm(current => ({ ...current, status: event.target.value as LotStatus }))} className={inputClass}><option value="QUARENTENA">QUARENTENA TÉCNICA</option><option value="APROVADO">APROVADO / LIBERADO</option><option value="REPROVADO">REPROVADO / REFUGO</option></select></label>
+                <label className="min-w-0 sm:col-span-2"><span className={labelClass}>Parecer do inspetor *</span><select value={form.status} onChange={event => setForm(current => ({ ...current, status: event.target.value as LotStatus }))} className={inputClass}><option value="QUARENTENA">QUARENTENA TÉCNICA</option><option value="APROVADO">APROVADO (parecer documental)</option><option value="REPROVADO">REPROVADO (parecer documental)</option></select></label>
                 <label className="min-w-0 sm:col-span-2"><span className={labelClass}>Responsável pela decisão *</span><input required maxLength={100} value={form.responsavel} onChange={event => setForm(current => ({ ...current, responsavel: event.target.value }))} placeholder="Nome ou registro interno do inspetor" className={inputClass} /></label>
                 <label className="min-w-0 sm:col-span-2"><span className={labelClass}>Laudo / observações de rastreabilidade</span><textarea maxLength={4000} value={form.observacoes} onChange={event => setForm(current => ({ ...current, observacoes: event.target.value }))} placeholder="Desvios, certificados, evidências e justificativa da decisão…" className="h-20 w-full resize-y rounded-none border border-[#2E4A62] bg-[#0E1E2F] p-2 text-[11px] font-semibold text-[#F4FBFD] outline-none focus:border-[#48B7C7]" /></label>
               </div>
