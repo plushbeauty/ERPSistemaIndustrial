@@ -4,10 +4,11 @@
  * Data/Hora: 24/09/2026 - 13:00 BRT
  * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
  * ID da Revisão: REV-059
- * Data da revisão autorizada: 2026-10-21
- * Revisão: REV-PRODUTO-UI-010 — grid responsivo de 12 colunas, largura máxima e alinhamento PCP
- * Status da tela: revisão visual autorizada pelo usuário em 2026-10-21; regras de dados e CRUD preservados.
- * Alterações: Remoção de cast Event→FormEvent artificial no salvamento de produtos; ação agora chama save() diretamente.
+ * Data da revisão autorizada: 2026-10-22
+ * Revisão: REV-PRODUTO-UI-011 — consolidação em duas abas de alta densidade
+ * Status: consolidação visual preservando CRUD, segurança por empresa, estoque derivado, engenharia e fiscal.
+ * Alterações: Ficha Técnica Mestre reúne dados gerais, estoque, produção, qualidade e documentos; fiscal permanece isolado.
+ * Dados demonstrativos/fallbacks não são adicionados; falhas de consulta permanecem explícitas.
  * Status do Build Local: Não executado — validação será feita pelo gate remoto.
  * =========================================================================
  */
@@ -45,12 +46,12 @@ type Movement={id:string;tipo:string;quantidade:number;origem:string|null;docume
 type Defect={id:string;ordem_producao_id:string;defeito:string;quantidade:number;observacao:string|null;created_at:string}
 type Audit={id:string;action:string;module:string;old_data:Record<string,unknown>|null;new_data:Record<string,unknown>|null;created_at:string}
 type Attachment={id:string;nome_arquivo:string;storage_path:string;mime_type:string|null;tamanho_bytes:number|null;created_at:string}
-type Tab='gerais'|'fiscal'|'estoque'|'producao'|'qualidade'
+type Tab='tecnica'|'fiscal'
 type FormData=Omit<Product,'id'|'empresa_id'>
 
 const tabItems:Array<[Tab,string,typeof Boxes]>=[
-  ['gerais','DADOS GERAIS',Boxes],['fiscal','FISCAL',FileText],['estoque','ESTOQUE',Boxes],
-  ['producao','PRODUÇÃO',Factory],['qualidade','QUALIDADE + DOCUMENTOS',ShieldCheck]
+  ['tecnica','FICHA TÉCNICA MESTRE',Boxes],
+  ['fiscal','INTELIGÊNCIA FISCAL',FileText]
 ]
 const empty=():FormData=>({
   codigo:'',nome:'',descricao:null,descricao_resumida:null,codigo_barras:null,grupo:null,subgrupo:null,marca:null,categoria:'Produto acabado',unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',
@@ -67,7 +68,7 @@ const empty=():FormData=>({
 const money=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0)
 const n=(v:unknown)=>Number(v??0)||0
 const fmt=(v:unknown)=>n(v).toLocaleString('pt-BR',{maximumFractionDigits:3})
-const panel:CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:2}
+const panel:CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:2,boxShadow:'0 2px 7px rgba(18,59,80,.07),0 1px 2px rgba(16,24,40,.04)'}
 const input:CSSProperties={width:'100%',height:30,border:'1px solid #c4ced9',borderRadius:2,padding:'0 8px',fontSize:11,background:'#fff',boxSizing:'border-box',minWidth:0}
 const label:CSSProperties={display:'grid',gap:3,minWidth:0,fontSize:9,lineHeight:'11px',fontWeight:500,color:'#344054',textTransform:'uppercase',overflowWrap:'anywhere'}
 const btn=(kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,height:30,padding:'0 10px',borderRadius:2,border:'1px solid '+(kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#B8CDD5'),background:kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#F4FBFD',color:kind==='primary'||kind==='danger'?'#fff':'#123B50',fontSize:11,fontWeight:600,textTransform:'uppercase',cursor:'pointer',whiteSpace:'nowrap'})
@@ -131,8 +132,8 @@ export default function ProdutosVendasIndustrial(){
     return products.filter(p=>(!q||(p.codigo+' '+p.nome+' '+(p.codigo_barras||'')+' '+(p.grupo||'')+' '+(p.subgrupo||'')+' '+(p.marca||'')+' '+(p.categoria||'')).toLowerCase().includes(q))&&(groupFilter==='TODAS'||String(p.grupo||'')===groupFilter))
   },[products,query,groupFilter])
 
-  const selectProduct=(p:Product)=>{setSelectedId(p.id);setForm({...empty(),...p});setEditing(false);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
-  const newProduct=()=>{setSelectedId(null);setForm(empty());setEditing(true);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
+  const selectProduct=(p:Product)=>{setSelectedId(p.id);setForm({...empty(),...p});setEditing(false);setTab('tecnica');setMessage('');setError('');setDetailsLoaded(false)}
+  const newProduct=()=>{setSelectedId(null);setForm(empty());setEditing(true);setTab('tecnica');setMessage('');setError('');setDetailsLoaded(false)}
   const update=(key:keyof FormData,value:unknown)=>setForm(prev=>({...prev,[key]:value}))
   const addGroup=async()=>{
     const name=String(form.grupo||'').trim()
@@ -383,9 +384,9 @@ export default function ProdutosVendasIndustrial(){
       @media print{body *{visibility:hidden!important}.product-master-screen,.product-master-screen *{visibility:visible!important}.product-master-screen{position:absolute!important;inset:0!important;width:100%!important;max-width:none!important;background:#fff!important}.product-master-screen .product-workspace{display:block!important;margin:0!important}.product-master-screen .product-list-panel,.product-master-screen header button,.product-master-screen input[type=file],.product-master-screen .product-screen-footer button{display:none!important}.product-master-screen .product-editor-panel{border:0!important}.product-master-screen .product-form-section{break-inside:avoid}.product-master-screen .product-tabs{display:none!important}}
       .product-master-screen button:focus-visible{outline:2px solid #2D8DB8;outline-offset:1px}
       .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{max-width:100%;box-sizing:border-box}
-      .product-master-screen .product-form-section{margin:0 0 12px;padding:0 0 10px;border-bottom:1px solid #dbe4ea}
-      .product-master-screen .product-form-section:last-child{border-bottom:0;margin-bottom:0}
-      .product-master-screen .product-form-section-title{margin:0 0 8px;padding:6px 8px;background:#eaf4f8;border-left:3px solid #2D8DB8;color:#123B50;font-size:10px;line-height:14px;font-weight:700;letter-spacing:.04em}
+      .product-master-screen .product-form-section{margin:0 0 8px;padding:8px;background:#fff;border:1px solid #d5dde7;border-radius:2px;box-shadow:0 2px 6px rgba(18,59,80,.055),0 1px 2px rgba(16,24,40,.035);min-width:0}
+      .product-master-screen .product-form-section:last-child{margin-bottom:0}
+      .product-master-screen .product-form-section-title{margin:-1px 0 8px;padding:6px 8px;background:linear-gradient(180deg,#f0f8fb 0%,#e7f2f7 100%);border-left:3px solid #2D8DB8;color:#123B50;font-size:10px;line-height:14px;font-weight:700;letter-spacing:.04em}
       /* Grid de 12 colunas: campos curtos ocupam 3, campos longos podem ocupar 6 ou 12. */
       .product-master-screen .product-editor-panel form{width:100%;max-width:1280px;margin-inline:auto;min-width:0}
       .product-master-screen .product-form-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px 12px;align-items:start;justify-items:stretch}
@@ -465,7 +466,7 @@ export default function ProdutosVendasIndustrial(){
         {tabItems.map(([id,title,Icon])=><button key={id} type="button" role="tab" aria-selected={tab===id} onClick={()=>{setTab(id);if(selectedId)void loadDetails()}} style={{display:'inline-flex',alignItems:'center',gap:6,padding:'7px 10px',border:0,borderBottom:tab===id?'3px solid #2D8DB8':'3px solid transparent',background:tab===id?'#fff':'transparent',color:tab===id?'#123B50':'#475467',fontWeight:700,fontSize:10,cursor:'pointer',whiteSpace:'nowrap'}}><Icon size={14}/>{title}</button>)}
       </div>
 
-      {tab==='gerais'&&<form onSubmit={save} style={{padding:8}}>
+      {tab==='tecnica'&&<form onSubmit={save} style={{padding:8}}>
         <section className="product-form-section" aria-label="Identificação do produto">
           <h3 className="product-form-section-title">IDENTIFICAÇÃO DO PRODUTO</h3>
           <div className="product-form-grid product-general-row">
@@ -576,7 +577,7 @@ export default function ProdutosVendasIndustrial(){
         <div role="note" style={{marginTop:7,padding:'7px 8px',border:'1px solid #d5dde7',borderLeft:'3px solid #E6A34A',background:'#fffaf0',fontSize:9,color:'#52606d',lineHeight:1.45}}>ATENÇÃO FISCAL: esta tela não consulta nem sugere códigos automaticamente. NCM, CEST, CST/CSOSN e CFOP precisam ser confirmados nas fontes oficiais e conforme o produto, regime tributário e operação. A validação atual verifica somente o formato dos códigos preenchidos; não confirma vigência, enquadramento nem imposto devido. As alíquotas são informativas e não substituem o motor fiscal.</div>
       </section>}
 
-            {tab==='estoque'&&<section style={{padding:10}}>
+            {tab==='tecnica'&&<section style={{padding:10}}>
         <div className="product-responsive-grid" style={{gridTemplateColumns:'82px 82px 120px 1fr'}}>
           <label style={label}>ESTOQUE ATUAL <span style={{fontSize:8,color:'#667085'}}>calculado</span><input value={fmt(form.estoque_atual)+' '+form.unidade} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
           <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>PONTO DE REPOSIÇÃO <HelpTip text={helpFor('Ponto de reposição')}/></span><input type="number" value={String(form.ponto_reposicao??0)} disabled={!editing} onChange={e=>update('ponto_reposicao',n(e.target.value))} title="Quantidade que dispara a necessidade de reposição; não é estoque atual." style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
@@ -590,7 +591,7 @@ export default function ProdutosVendasIndustrial(){
         <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse'}}><thead><tr>{['Data','Tipo','Quantidade','Origem','Documento','Observação'].map(h=><th key={h} style={{textAlign:'left',padding:8,borderBottom:'1px solid #d9e1ea',fontSize:10}}>{h}</th>)}</tr></thead><tbody>{movements.map(m=><tr key={m.id}><td style={{padding:8,fontSize:11}}>{new Date(m.created_at).toLocaleString('pt-BR')}</td><td style={{padding:8,fontSize:11}}>{m.tipo}</td><td style={{padding:8,fontSize:11,fontWeight:900}}>{fmt(m.quantidade)}</td><td style={{padding:8,fontSize:11}}>{m.origem||'—'}</td><td style={{padding:8,fontSize:11}}>{m.documento||'—'}</td><td style={{padding:8,fontSize:11}}>{m.observacao||'—'}</td></tr>)}{!movements.length&&emptyRow('Nenhuma movimentação registrada para este produto.',6)}</tbody></table></div>
       </section>}
 
-      {tab==='producao'&&<section style={{padding:10}}>
+      {tab==='tecnica'&&<section style={{padding:10}}>
         <div className="product-responsive-grid" style={{gridTemplateColumns:'82px 82px 82px 82px 120px 120px max-content'}}>
           {field('PRAZO COMPRA (dias)','prazo_compra_dias','number')}{field('PRAZO PRODUÇÃO (dias)','prazo_producao_dias','number')}{field('Custo fabricação (valor gravado) [?]','custo_fabricacao','number',1,true)}{field('TOLERÂNCIA (%)','tolerancia_percentual','number')}
           <label style={label}>FICHA ATIVA<input value={productionFicha?('REV. '+(productionFicha.revisao||productionFicha.versao)):'Não cadastrada'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
@@ -609,7 +610,7 @@ export default function ProdutosVendasIndustrial(){
         <div style={{marginTop:7,fontSize:9,color:'#667085'}}>Máquina, setup, ciclo e capacidade vêm da ficha técnica/roteiro real; a ficha completa alimenta o PCP e a Ordem de Produção.</div>
       </section>}
 
-      {tab==='qualidade'&&<section style={{padding:10}}>
+      {tab==='tecnica'&&<section style={{padding:10}}>
         <div className="product-responsive-grid" style={{gridTemplateColumns:'120px 120px 1fr'}}>{select('INSPEÇÃO OBRIGATÓRIA','inspecao_qualidade_obrigatoria',[['true','Sim'],['false','Não']])}{field('NÍVEL DE QUALIDADE','nivel_qualidade')}<div style={{fontSize:9,color:'#667085',paddingBottom:6}}>Desenhos aprovados, critérios de inspeção e documentos controlados ficam vinculados ao produto.</div></div>
         <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>DEFEITOS REGISTRADOS</h2>
         <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr>{['Data','OP','Defeito','Quantidade','Observação'].map(h=><th key={h} style={{textAlign:'left',padding:5,borderBottom:'1px solid #d9e1ea',fontSize:9,fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{defects.map(d=><tr key={d.id}><td style={{padding:5}}>{new Date(d.created_at).toLocaleString('pt-BR')}</td><td style={{padding:5}}>{d.ordem_producao_id}</td><td style={{padding:5}}>{d.defeito}</td><td style={{padding:5}}>{fmt(d.quantidade)}</td><td style={{padding:5}}>{d.observacao||'—'}</td></tr>)}{!defects.length&&emptyRow('Nenhum defeito registrado para este produto.',5)}</tbody></table></div>
