@@ -1,5 +1,5 @@
 /**
- * REV-2026-10-21 — REV-FICHA-003: padrão claro PCP, campos de temperatura editáveis fora do desenho, card compacto do molde e formulário organizado.
+ * REV-2026-10-21 — REV-FICHA-004: campos editáveis sobre a imagem do equipamento; card de perfil removido e foto do molde mantida ao lado.
  * Preserva dados reais, isolamento por empresa, persistência Supabase e impressão A4.
  */
 import { useEffect, useMemo, useState } from 'react'
@@ -240,21 +240,20 @@ function ProcessEquipmentDiagram({ category, params, onParamChange, productId }:
       <g stroke="#48B7C7" strokeWidth="1.5" strokeDasharray="4 4"><path d="M150 83V55"/><path d="M230 83V55"/><path d="M310 83V55"/><path d="M390 83V55"/></g>
      </g>}
     </svg>
-   </div>
-   <div className="min-w-0">
-    <div className="mb-2 rounded-[2px] border border-slate-200 bg-[#F4FBFD] p-3">
-     <p className="text-[10px] font-black uppercase tracking-wide text-[#123B50]">{press?'Parâmetros editáveis da prensa':'Perfil térmico editável da injetora'}</p>
-     <p className="mt-1 text-xs leading-5 text-slate-600">Digite os valores nos campos abaixo. Eles ficam visíveis, com texto escuro, e são sincronizados com a ficha ao gravar.</p>
-     <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+    <div className="absolute inset-x-2 bottom-2 z-10 rounded-[2px] border border-white/20 bg-[#071522]/95 p-2 shadow-lg">
+     <div className="mb-2 flex items-center justify-between gap-2"><p className="text-[9px] font-black uppercase tracking-wide text-white">{press?'Parâmetros da prensa':'Temperaturas editáveis · injetora'}</p><span className="text-[9px] font-semibold text-[#48B7C7]">EDITAR NA IMAGEM</span></div>
+     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
       {fields.map(field=><label key={field.key} className="min-w-0">
-       <span className="mb-1 block text-[9px] font-black uppercase tracking-wide text-slate-600">{field.label} ({field.unit})</span>
-       <input type="number" step="0.1" inputMode="decimal" aria-label={field.label} className="h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-xs font-semibold text-[#123B50] outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20" value={params[field.key]??''} onChange={e=>onParamChange(field.key,e.target.value)} placeholder={field.unit==='°C'?'Temperatura °C':field.unit}/>
+       <span className="mb-1 block truncate text-[9px] font-bold text-[#D9E7ED]" title={field.label}>{field.label} ({field.unit})</span>
+       <input type="number" step="0.1" inputMode="decimal" aria-label={field.label} className="h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-xs font-bold text-[#123B50] outline-none focus:border-[#48B7C7] focus:ring-1 focus:ring-[#48B7C7]/30" value={params[field.key]??''} onChange={e=>onParamChange(field.key,e.target.value)} placeholder={field.unit==='°C'?'°C':field.unit}/>
       </label>)}
      </div>
     </div>
+   </div>
+   <div className="min-w-0">
     <div className="rounded-[2px] border border-slate-200 bg-white p-3">
      <h4 className="mb-1 flex items-center gap-2 text-[11px] font-black uppercase tracking-wide text-[#123B50]"><Factory size={14}/> Card do molde</h4>
-     <p className="mb-2 text-xs text-slate-600">Foto do molde e consulta visual para preparar o setup. Os parâmetros são editados nos campos acima, não dentro da imagem.</p>
+     <p className="mb-2 text-xs text-slate-600">Imagem do molde para conferência visual durante o setup. As temperaturas e os parâmetros são editados diretamente sobre a imagem do equipamento.</p>
      <PCPMoldPhotoPanel productId={productId}/>
     </div>
 </div>
