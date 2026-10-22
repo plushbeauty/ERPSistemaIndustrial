@@ -1,4 +1,6 @@
 /**
+ * REV-2026-10-22 — REV-FICHA-007: layout de alta densidade com 3 painéis de parâmetros e fotos lado a lado.
+ * CSS escopado com prioridade para neutralizar conflitos do tema global; persistência e dados reais preservados.
  * REV-2026-10-22 — REV-FICHA-006: anexos fotográficos independentes para molde e máquina, vinculados aos cadastros reais.
  * Preserva dados reais, isolamento por empresa, persistência Supabase e impressão A4.
  * Revisão visual restrita a esta tela; sem dados fictícios ou alteração do contrato de banco.
@@ -254,13 +256,6 @@ function ProcessEquipmentDiagram({ category, params, onParamChange, productId }:
      </div>
     </div>
    </div>
-   <div className="min-w-0">
-    <div className="rounded-[2px] border border-slate-200 bg-white p-3">
-     <h4 className="mb-1 flex items-center gap-2 text-[11px] font-black uppercase tracking-wide text-[#123B50]"><Factory size={14}/> Card do molde</h4>
-     <p className="mb-2 text-xs text-slate-600">Imagem do molde para conferência visual durante o setup. As temperaturas e os parâmetros são editados diretamente sobre a imagem do equipamento.</p>
-     <PCPMoldPhotoPanel productId={productId}/>
-    </div>
-</div>
   </div>
  </section>
 }
@@ -416,22 +411,25 @@ export default function PCPFichasProcesso() {
      <label className="xl:col-span-2"><span className={labelClass}>Assinatura técnica do engenheiro</span><input className={inputClass} value={signature} onChange={e=>setSignature(e.target.value)} placeholder="Nome completo / registro profissional"/></label>
      <label><span className={labelClass}>Estado da ficha</span><select className={inputClass} value={status} onChange={e=>setStatus(e.target.value)}><option>RASCUNHO</option><option>EM_ANALISE</option><option>APROVADA</option><option>LIBERADA</option><option>OBSOLETA</option></select></label>
     </div>
-    <div className="grid grid-cols-1 items-start gap-3 xl:grid-cols-[minmax(0,1fr)_280px]">
-     <ProcessEquipmentDiagram category={category} params={params} productId={productId} onParamChange={(key,value)=>setParams(current=>({...current,[key]:value}))}/>
-     <div className="min-w-0 space-y-2"><PCPMoldPhotoPanel productId={productId}/><PCPMachinePhotoPanel machineId={machineId}/></div>
+    <div className="pcp-equipment-top grid min-w-0 grid-cols-1 items-stretch gap-3 xl:grid-cols-12">
+     <div className="min-w-0 xl:col-span-7"><ProcessEquipmentDiagram category={category} params={params} productId={productId} onParamChange={(key,value)=>setParams(current=>({...current,[key]:value}))}/></div>
+     <div className="pcp-photo-pair grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 xl:col-span-5">
+      <PCPMoldPhotoPanel productId={productId}/>
+      <PCPMachinePhotoPanel machineId={machineId}/>
+     </div>
     </div>
-    <div className="mt-3 grid grid-cols-1 gap-2 xl:grid-cols-2">
+    <div className="pcp-parameter-cards mt-3 grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-3">
      {parameterCards.map(group=><article key={group.title} className="rounded-[2px] border border-[#2E4A62] bg-[#0E1E2F] p-2.5">
       <h3 className="mb-2 border-b border-[#2E4A62] pb-2 text-[10px] font-black uppercase tracking-wide text-[#48B7C7]">{group.title}</h3>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <div className="pcp-parameter-fields flex min-w-0 flex-col gap-2">
        {group.fields.map(field=><label key={field.key} className={'min-w-0 '+(field.multiline?'sm:col-span-2':'')}>
         <span className={labelClass}>{field.label} {field.required&&<span className="text-[#D65B61]">*</span>}</span>
         <span className="flex min-w-0 items-start">
          {field.type==='select'
-          ? <select className={inputClass+' max-w-[200px] rounded-r-none'} value={params[field.key]??''} onChange={event=>updateParam(field.key,event.target.value)}><option value="">Selecione</option>{(field.options??[]).map(option=><option key={option} value={option}>{option}</option>)}</select>
+          ? <select className={inputClass+' w-full min-w-0 max-w-none rounded-r-none'} style={{width:'100%',maxWidth:'none',flex:'1 1 auto'}} value={params[field.key]??''} onChange={event=>updateParam(field.key,event.target.value)}><option value="">Selecione</option>{(field.options??[]).map(option=><option key={option} value={option}>{option}</option>)}</select>
           : field.multiline
-           ? <textarea className={inputClass+' min-h-[76px] max-w-[200px] resize-y rounded-r-none py-2'} value={params[field.key]??''} onChange={event=>updateParam(field.key,event.target.value)} placeholder="Registrar instruções aprovadas"/>
-           : <input className={inputClass+' max-w-[200px] rounded-r-none'} style={field.type==='number'?{width:104,maxWidth:104,flex:'0 1 104px'}:{width:'100%',maxWidth:200}} type={field.type==='number'?'number':'text'} step={field.step} value={params[field.key]??''} onChange={event=>updateParam(field.key,event.target.value)} placeholder={field.unit==='—'?'Informar':field.unit}/>}
+           ? <textarea className={inputClass+' min-h-[76px] w-full min-w-0 max-w-none resize-y rounded-r-none py-2'} style={{width:'100%',maxWidth:'none',flex:'1 1 auto'}} value={params[field.key]??''} onChange={event=>updateParam(field.key,event.target.value)} placeholder="Registrar instruções aprovadas"/>
+           : <input className={inputClass+' w-full min-w-0 max-w-none rounded-r-none'} style={{width:'100%',maxWidth:'none',flex:'1 1 auto'}} type={field.type==='number'?'number':'text'} step={field.step} value={params[field.key]??''} onChange={event=>updateParam(field.key,event.target.value)} placeholder={field.unit==='—'?'Informar':field.unit}/>}
          <span className="flex min-h-[30px] min-w-[46px] shrink-0 items-center justify-center rounded-r-md border border-l-0 border-[#294456] bg-[#123B50] px-1.5 text-[10px] text-white">{field.unit}</span>
         </span>
        </label>)}
@@ -454,6 +452,15 @@ export default function PCPFichasProcesso() {
    </section>
    <footer className="mt-3 flex items-center gap-2 border-t border-[#2E4A62] pt-3 text-[10px] text-[#A8BBC8] print:hidden"><CalendarRange size={14}/>{singleResourceProcess?'O PCP estima a duração a partir da ficha liberada, capacidade, ciclo e setup; datas continuam sujeitas ao calendário de recursos.':'Para programar este roteiro multiposto, cadastre as operações e recursos correspondentes no roteiro do PCP; ele não será aplicado como ciclo de uma única máquina.'}</footer>
   </div>
- <style>{'@media screen{.pcp-process-page{background:#F8FAFC!important;color:#123B50!important}.pcp-process-page [class*="bg-[#071522]"],.pcp-process-page [class*="bg-[#0D2638]"],.pcp-process-page [class*="bg-[#0E1E2F]"]{background:#FFFFFF!important}.pcp-process-page [class*="bg-[#123B50]"]{background:#EAF4F8!important}.pcp-process-page [class*="border-[#2E4A62]"],.pcp-process-page [class*="border-[#294456]"]{border-color:#CBD5E1!important}.pcp-process-page .text-white{color:#123B50!important}.pcp-process-page [class*="text-[#F4FBFD]"]{color:#123B50!important}.pcp-process-page [class*="text-[#A8BBC8]"]{color:#475569!important}.pcp-process-page input:not([type="file"]),.pcp-process-page select,.pcp-process-page textarea{background:#FFFFFF!important;color:#123B50!important;border-color:#CBD5E1!important;caret-color:#123B50!important}.pcp-process-page input::placeholder,.pcp-process-page textarea::placeholder{color:#64748B!important}.pcp-process-diagram .text-white{color:#FFFFFF!important}.pcp-process-diagram [class*="bg-[#071522]"]{background:#071522!important}.pcp-process-diagram [class*="bg-[#0D2638]"]{background:#0D2638!important}.pcp-process-diagram [class*="bg-[#123B50]"]{background:#123B50!important}}@page{size:A4 portrait;margin:10mm}@media print{html,body,#root{background:#fff!important;color:#111!important;margin:0!important;padding:0!important}.pcp-process-page{background:#fff!important;color:#111!important;padding:0!important}.pcp-process-page .print\\:hidden{display:none!important}.pcp-ficha-print-sheet{width:100%!important;max-width:none!important;background:#fff!important;color:#111!important;border:0!important;padding:0!important;margin:0!important;box-shadow:none!important;overflow:visible!important}.pcp-ficha-print-sheet,.pcp-ficha-print-sheet article,.pcp-ficha-print-sheet div,.pcp-ficha-print-sheet section{background:#fff!important;color:#111!important;border-color:#777!important;box-shadow:none!important}.pcp-ficha-print-sheet input,.pcp-ficha-print-sheet select,.pcp-ficha-print-sheet textarea{color:#111!important;background:#fff!important;border:1px solid #777!important;box-shadow:none!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}.pcp-ficha-print-sheet label,.pcp-ficha-print-sheet article{break-inside:avoid}.pcp-ficha-print-sheet button{display:none!important}.pcp-ficha-print-sheet span,.pcp-ficha-print-sheet dt,.pcp-ficha-print-sheet p,.pcp-ficha-print-sheet h1,.pcp-ficha-print-sheet h2,.pcp-ficha-print-sheet h3{color:#111!important}.pcp-ficha-print-sheet img{max-width:100%!important;max-height:65mm!important;object-fit:contain!important}}'}</style>
+ <style>{'@media screen{.pcp-process-page{background:#F8FAFC!important;color:#123B50!important}.pcp-process-page [class*="bg-[#071522]"],.pcp-process-page [class*="bg-[#0D2638]"],.pcp-process-page [class*="bg-[#0E1E2F]"]{background:#FFFFFF!important}.pcp-process-page [class*="bg-[#123B50]"]{background:#EAF4F8!important}.pcp-process-page [class*="border-[#2E4A62]"],.pcp-process-page [class*="border-[#294456]"]{border-color:#CBD5E1!important}.pcp-process-page .text-white{color:#123B50!important}.pcp-process-page [class*="text-[#F4FBFD]"]{color:#123B50!important}.pcp-process-page [class*="text-[#A8BBC8]"]{color:#475569!important}.pcp-process-page input:not([type="file"]),.pcp-process-page select,.pcp-process-page textarea{background:#FFFFFF!important;color:#123B50!important;border-color:#CBD5E1!important;caret-color:#123B50!important}.pcp-process-page input::placeholder,.pcp-process-page textarea::placeholder{color:#64748B!important}.pcp-process-diagram .text-white{color:#FFFFFF!important}.pcp-process-diagram [class*="bg-[#071522]"]{background:#071522!important}.pcp-process-diagram [class*="bg-[#0D2638]"]{background:#0D2638!important}.pcp-process-diagram [class*="bg-[#123B50]"]{background:#123B50!important}}@page{size:A4 portrait;margin:10mm}@media print{html,body,#root{background:#fff!important;color:#111!important;margin:0!important;padding:0!important}.pcp-process-page{background:#fff!important;color:#111!important;padding:0!important}.pcp-process-page .print\\:hidden{display:none!important}.pcp-ficha-print-sheet{width:100%!important;max-width:none!important;background:#fff!important;color:#111!important;border:0!important;padding:0!important;margin:0!important;box-shadow:none!important;overflow:visible!important}.pcp-ficha-print-sheet,.pcp-ficha-print-sheet article,.pcp-ficha-print-sheet div,.pcp-ficha-print-sheet section{background:#fff!important;color:#111!important;border-color:#777!important;box-shadow:none!important}.pcp-ficha-print-sheet input,.pcp-ficha-print-sheet select,.pcp-ficha-print-sheet textarea{color:#111!important;background:#fff!important;border:1px solid #777!important;box-shadow:none!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}.pcp-ficha-print-sheet label,.pcp-ficha-print-sheet article{break-inside:avoid}.pcp-ficha-print-sheet button{display:none!important}.pcp-ficha-print-sheet span,.pcp-ficha-print-sheet dt,.pcp-ficha-print-sheet p,.pcp-ficha-print-sheet h1,.pcp-ficha-print-sheet h2,.pcp-ficha-print-sheet h3{color:#111!important}.pcp-ficha-print-sheet img{max-width:100%!important;max-height:65mm!important;object-fit:contain!important}
+      .pcp-process-page .pcp-equipment-top{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important}
+      .pcp-process-page .pcp-photo-pair{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
+      .pcp-process-page .pcp-parameter-cards{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+      .pcp-process-page .pcp-parameter-fields{display:flex!important;flex-direction:column!important;gap:8px!important}
+      .pcp-process-page .pcp-parameter-fields input,.pcp-process-page .pcp-parameter-fields select,.pcp-process-page .pcp-parameter-fields textarea{width:100%!important;max-width:none!important;min-width:0!important;box-sizing:border-box!important}
+      .pcp-process-page .pcp-parameter-cards article{min-width:0!important;box-shadow:0 4px 20px rgba(0,0,0,.04)!important;border-radius:2px!important}
+      @media(min-width:1024px){.pcp-process-page .pcp-equipment-top{grid-template-columns:minmax(0,7fr) minmax(0,5fr)!important}.pcp-process-page .pcp-photo-pair{grid-template-columns:repeat(2,minmax(0,1fr))!important}.pcp-process-page .pcp-parameter-cards{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+      @media(max-width:1023px){.pcp-process-page .pcp-parameter-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+      @media(max-width:639px){.pcp-process-page .pcp-parameter-cards,.pcp-process-page .pcp-photo-pair{grid-template-columns:minmax(0,1fr)!important}}}'}</style>
   </main>
 }
