@@ -1,6 +1,6 @@
 /**
  * SYSNQRA ERP · Área do Funcionário / CPP
- * Revisão: PCP-AREA-FUNCIONARIO-2026-10-22-R1
+ * Revisão: PCP-AREA-FUNCIONARIO-2026-10-22-R2
  * Acesso autenticado; programação filtrada pelo funcionário associado ao e-mail da sessão.
  * Registros enviados ao ERP: erp_apontamentos_processo. Sem dados de demonstração.
  */
@@ -222,7 +222,7 @@ export default function PCPAreaFuncionario() {
   return <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900 md:p-5">
     <div className="mx-auto max-w-[1200px] space-y-3">
       <header className="flex flex-wrap items-center justify-between gap-3 border border-[#C8E3EE] bg-white p-3 shadow-[0_3px_12px_rgba(18,59,80,.07)]">
-        <div className="flex items-center gap-3"><span className="grid h-11 w-11 place-items-center bg-[#123B50] text-white"><Factory size={22}/></span><div><p className="text-[9px] font-black uppercase tracking-[.15em] text-[#2D8DB8]">SYSNQRA · CHÃO DE FÁBRICA</p><h1 className="text-lg font-black text-[#123B50]">Área do Funcionário</h1><p className="text-[10px] text-slate-500">Programação semanal e Cartão de Processo Produtivo (CPP)</p></div></div>
+        <div className="flex items-center gap-3"><span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-[3px] border border-[#C8E3EE] bg-[#123B50]"><img src="/icons/pcp-portal-operador.svg" alt="Portal do Operador — Chão de Fábrica" className="h-full w-full object-cover" /></span><div><p className="text-[9px] font-black uppercase tracking-[.15em] text-[#2D8DB8]">SYSNQRA · CHÃO DE FÁBRICA</p><h1 className="text-lg font-black text-[#123B50]">Área do Funcionário</h1><p className="text-[10px] text-slate-500">Programação semanal e Cartão de Processo Produtivo (CPP)</p></div></div>
         <button type="button" onClick={()=>void load()} disabled={loading} className={smallButton+' border-slate-300 bg-white text-slate-700'}><RefreshCw size={14} className={loading?'animate-spin':''}/> Atualizar</button>
       </header>
       {(error || message) && <p role={error?'alert':'status'} className={'border p-3 text-xs font-bold '+(error?'border-rose-200 bg-rose-50 text-rose-800':'border-emerald-200 bg-emerald-50 text-emerald-800')}>{error||message}</p>}
