@@ -5,8 +5,9 @@ type AccordionContextValue = {
   openItems: string[]
   toggle: (value: string) => void
 }
+type AccordionItemContextValue = { value: string; triggerId: string; contentId: string }
 const AccordionContext = React.createContext<AccordionContextValue | null>(null)
-const AccordionItemValueContext = React.createContext<string | null>(null)
+const AccordionItemValueContext = React.createContext<AccordionItemContextValue | null>(null)
 
 type AccordionProps = React.HTMLAttributes<HTMLDivElement> & {
   type?: 'single' | 'multiple'
@@ -59,11 +60,13 @@ function AccordionItem({
   ...props
 }: React.HTMLAttributes<HTMLDivElement> & { value: string }) {
   const context = React.useContext(AccordionContext)
+  const itemId = React.useId()
   if (!context) throw new Error('AccordionItem precisa estar dentro de Accordion')
   const open = context.openItems.includes(value)
+  const itemContext = { value, triggerId: `${itemId}-trigger`, contentId: `${itemId}-content` }
 
   return (
-    <AccordionItemValueContext.Provider value={value}>
+    <AccordionItemValueContext.Provider value={itemContext}>
       <div
         data-slot="accordion-item"
         data-state={open ? 'open' : 'closed'}
@@ -83,12 +86,15 @@ function AccordionTrigger({
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   const context = React.useContext(AccordionContext)
-  const value = React.useContext(AccordionItemValueContext)
+  const item = React.useContext(AccordionItemValueContext)
+  const value = item?.value
   const open = Boolean(value && context?.openItems.includes(value))
 
   return (
     <button
       type="button"
+      id={item?.triggerId}
+      aria-controls={item?.contentId}
       aria-expanded={open}
       className={['flex w-full items-center justify-between gap-3 py-3 text-left text-sm font-bold text-slate-700 transition-colors hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500', className].filter(Boolean).join(' ')}
       onClick={(event) => {
@@ -109,12 +115,13 @@ function AccordionContent({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   const context = React.useContext(AccordionContext)
-  const value = React.useContext(AccordionItemValueContext)
+  const item = React.useContext(AccordionItemValueContext)
+  const value = item?.value
   const open = Boolean(value && context?.openItems.includes(value))
   if (!open) return null
 
   return (
-    <div data-slot="accordion-content" className={['pb-4 pt-0 text-sm text-slate-600', className].filter(Boolean).join(' ')} {...props}>
+    <div id={item?.contentId} aria-labelledby={item?.triggerId} data-slot="accordion-content" className={['pb-4 pt-0 text-sm text-slate-600', className].filter(Boolean).join(' ')} {...props}>
       {children}
     </div>
   )
