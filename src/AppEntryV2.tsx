@@ -102,6 +102,7 @@ const PCPValidaFluxo = lazyPage(() => import('./pages/PCPValidaFluxo'), 'default
 const EngenhariaBOM = lazyPage(() => import('./pages/EngenhariaBOM'), 'default')
 const QualidadeRefugos = lazyPage(() => import('./pages/QualidadeRefugos'), 'default')
 const QualidadeGraficosRefugo = lazyPage(() => import('./pages/QualidadeGraficosRefugo'), 'default')
+const AlmoxarifadoInventario = lazyPage(() => import('./pages/AlmoxarifadoInventario'), 'default')
 const PCPExecucaoIndustrial = lazyPage(() => import('./pages/PCPExecucaoIndustrial'), 'default')
 const PCPCapacidade = lazyPage(() => import('./pages/PCPCapacidade'), 'default')
 const PCPAgendaMaquinas = lazyPage(() => import('./pages/PCPAgendaMaquinas'), 'default')
@@ -609,6 +610,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/estoque/etiquetas" element={<EstoqueEtiquetas />} />
       <Route path="/estoque/recebimento-lotes" element={<EstoqueRecebimentoLotes />} />
       <Route path="/estoque/validade" element={<InventarioValidade />} />
+      <Route path="/almoxarifado/inventario-mestre" element={<AlmoxarifadoInventario />} />
       <Route path="/ajuda/estoque-recebimento" element={<HelpEstoqueRecebimento />} />
       <Route path="/estoque/curva-abc" element={<EstoqueCurvaABC />} />
       <Route path="/inventario" element={<Navigate to="/inventario/balanco" replace />} />
