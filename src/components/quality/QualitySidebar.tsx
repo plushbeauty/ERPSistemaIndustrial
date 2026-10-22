@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Activity, BookOpenCheck, ClipboardCheck, ClipboardList, FileCheck2, FileText,
+  Activity, BarChart3, BookOpenCheck, ClipboardCheck, ClipboardList, FileCheck2, FileText,
   Gauge, GitBranch, ListChecks, Microscope, SearchCheck, ShieldAlert, ShieldCheck,
   Tablet, Target, Wrench, Workflow, X,
 } from 'lucide-react'
@@ -30,6 +30,7 @@ const modules = [
   { label: 'Metrologia e calibração', route: '/qualidade/calibracao', icon: Wrench },
   { label: 'Instruções de trabalho', route: '/qualidade/editor-it', icon: ClipboardCheck },
   { label: 'Relatórios do SGQ', route: '/qualidade/relatorios-documentos', icon: FileText },
+  { label: 'Análise de refugos e perdas', route: '/qualidade/graficos-refugo', icon: BarChart3 },
 ] as const
 
 export default function QualitySidebar({ active }: { active: string }) {
