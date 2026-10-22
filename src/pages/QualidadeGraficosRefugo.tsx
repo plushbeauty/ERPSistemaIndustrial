@@ -14,6 +14,13 @@ type OP = { id: string; numero_op: number | string; produto_id: string | null }
 type Product = { id: string; codigo: string; nome: string; custo_medio: number | null }
 type Defect = { id: string; codigo_defeito: string; descricao: string; classificacao: string }
 
+function BarList({ title, subtitle, empty, children }: { title: string; subtitle: string; empty: boolean; children: ReactNode }) {
+  return <section className="min-w-0 border border-[#2E4A62] bg-[#0E1E2F] p-3">
+    <div className="mb-3 border-b border-[#2E4A62] pb-2"><h2 className="text-xs font-black uppercase text-[#F4FBFD]">{title}</h2><p className="mt-1 text-[9px] text-[#A8BBC8]">{subtitle}</p></div>
+    {empty ? <p className="py-8 text-center text-[10px] text-slate-400">Sem registros para o período selecionado.</p> : <div className="space-y-3">{children}</div>}
+  </section>
+}
+
 const field = 'h-[30px] w-full min-w-0 rounded-[2px] border border-[#3b5e7c] bg-[#091522] px-2.5 text-xs font-mono font-bold text-[#F4FBFD] outline-none focus:border-[#48B7C7]'
 const label = 'mb-1 block text-[9px] font-black uppercase tracking-wider text-[#A8BBC8]'
 const dateISO = (date: Date) => {
@@ -118,13 +125,6 @@ export default function QualidadeGraficosRefugo() {
       validRange
     }
   }, [records, startDate, endDate, orderMap, productMap, defectMap])
-
-  const BarList = ({ title, subtitle, empty, children }: { title: string; subtitle: string; empty: boolean; children: ReactNode }) => (
-    <section className="min-w-0 border border-[#2E4A62] bg-[#0E1E2F] p-3">
-      <div className="mb-3 border-b border-[#2E4A62] pb-2"><h2 className="text-xs font-black uppercase text-[#F4FBFD]">{title}</h2><p className="mt-1 text-[9px] text-[#A8BBC8]">{subtitle}</p></div>
-      {empty ? <p className="py-8 text-center text-[10px] text-slate-400">Sem registros para o período selecionado.</p> : <div className="space-y-3">{children}</div>}
-    </section>
-  )
 
   return <main className="min-h-screen bg-[#0A111A] p-3 font-mono text-[#F4FBFD] antialiased md:p-5">
     <div className="mx-auto max-w-[1700px] space-y-4">
