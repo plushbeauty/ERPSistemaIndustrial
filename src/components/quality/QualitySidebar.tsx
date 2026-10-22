@@ -23,6 +23,7 @@ const modules = [
   { label: 'Controle de desenhos técnicos', route: '/qualidade/controle-desenhos', icon: FileCheck2 },
   { label: 'Procedimentos e PDFs', route: '/qualidade/procedimentos', icon: BookOpenCheck },
   { label: 'Lista mestra de documentos', route: '/qualidade/lista-mestre', icon: Archive },
+  { label: 'Auditorias internas da planta', route: '/qualidade/auditorias-planta', icon: ClipboardCheck },
   { label: 'Auditoria 5S', route: '/qualidade/auditoria-5s', icon: SearchCheck },
   { label: 'CEP / cartas de controle', route: '/qualidade/cep', icon: Activity },
   { label: 'Metrologia e calibração', route: '/qualidade/calibracao', icon: Wrench },
