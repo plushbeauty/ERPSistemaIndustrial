@@ -146,13 +146,6 @@ export default function TabletDashboard() {
         </button>
         <button
           type="button"
-          onClick={() => navigate('/qualidade/tablet')}
-          className="inline-flex h-6 items-center gap-1 rounded-[2px] border border-[#3a9d78] bg-[#2e8363] px-2 text-white hover:bg-[#23684e]"
-        >
-          🛡️ QUALIDADE SGQ
-        </button>
-        <button
-          type="button"
           onClick={() => navigate('/vendas/tablet')}
           className="inline-flex h-6 items-center gap-1 rounded-[2px] border border-[#cbd5e1] bg-white px-2 text-[#123b50] hover:bg-[#f1f5f9]"
         >
