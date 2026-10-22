@@ -145,3 +145,12 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Mudança:** a finalização agora exige `fim_em IS NULL`, além de empresa, ID do apontamento e operador; mantém verificação de linha retornada antes da mensagem de sucesso.
 - **Commit de código:** `536d5e5701d9253085d74a0ace7a8ead02cf5588`.
 - **Estado:** corrigido aguardando type-check, lint, teste autenticado/RLS e deployment. Não fecha UI-040/QA-040.
+
+## Portal do Operador — integração segura (2026-10-22)
+
+- [x] Criada a rota direta `/pcp/portal-operador`, reutilizando a Área do Funcionário conectada aos registros reais do PCP.
+- [x] Atalho da central de estações direcionado à rota do Portal do Operador e mantém ícone de usuário.
+- [ ] Não usar o protótipo com credenciais fixas (`123` / `30267`) nem OPs fictícias. A tela integrada usa sessão autenticada e dados reais; não aceitar CPF/matrícula isoladamente como autenticação.
+- [ ] Para acesso por crachá sem login tradicional, implementar e testar fluxo servidor-side de matrícula + PIN (armazenamento seguro do hash, limitação de tentativas, bloqueio/expiração e auditoria), com autorização restrita às próprias programações e apontamentos. Não liberar gravação por chave pública/anon sem validação.
+- [ ] Validar no Vercel o build com as rotas novas e executar teste de ponta a ponta no Supabase: programação atribuída → receita aprovada → início → quantidades/refugo/parada → consulta pelo PCP.
+- [ ] O protótipo colado pelo usuário não deve ser considerado produção homologada: suas ordens em memória e o login fixo não escrevem no PCP real.
