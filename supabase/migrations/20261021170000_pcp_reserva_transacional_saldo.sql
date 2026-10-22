@@ -16,6 +16,8 @@ declare
   v_reserva_id uuid;
   v_reserva_atual numeric := 0;
   v_total_reservado numeric := 0;
+  v_op_qty numeric := 0;
+  v_need numeric := 0;
   v_disponivel numeric := 0;
   v_delta numeric := 0;
   v_nova_reserva numeric := 0;
@@ -47,9 +49,17 @@ begin
   from public.erp_estoque_reservas r
   where r.empresa_id = v_empresa and r.produto_id = v_item.produto_id and r.status = 'ATIVA';
 
-  -- Só reserva saldo ainda livre; chamadas repetidas não duplicam a quantidade.
+  select coalesce(sum(greatest(coalesce(op.quantidade_planejada, op.quantidade, 0), 0)), 0)
+    into v_op_qty
+  from public.erp_ordens_producao op
+  where op.empresa_id = v_empresa
+    and op.pedido_item_id = v_item.id
+    and lower(coalesce(op.status, '')) not in ('concluido','concluída','concluida','cancelado','cancelada','rejeitado','rejeitada','finalizado','finalizada');
+
+  -- Reserva só a necessidade não coberta por reserva ou OP e não duplica chamadas.
+  v_need := greatest(coalesce(v_item.quantidade, 0) - v_reserva_atual - v_op_qty, 0);
   v_disponivel := greatest(v_produto.estoque - greatest(v_total_reservado - v_reserva_atual, 0) - v_reserva_atual, 0);
-  v_delta := least(greatest(coalesce(v_item.quantidade, 0) - v_reserva_atual, 0), v_disponivel);
+  v_delta := least(v_need, v_disponivel);
   v_nova_reserva := v_reserva_atual + v_delta;
 
   if v_delta > 0 then
@@ -87,7 +97,7 @@ begin
     'quantidade_pedida', v_item.quantidade,
     'quantidade_reservada', v_nova_reserva,
     'quantidade_reservada_agora', v_delta,
-    'quantidade_faltante', greatest(coalesce(v_item.quantidade, 0) - v_nova_reserva, 0),
+    'quantidade_faltante', greatest(coalesce(v_item.quantidade, 0) - v_nova_reserva - v_op_qty, 0),
     'status', case when v_nova_reserva >= coalesce(v_item.quantidade, 0) then 'reservado' else 'reserva_parcial' end
   );
 end;
