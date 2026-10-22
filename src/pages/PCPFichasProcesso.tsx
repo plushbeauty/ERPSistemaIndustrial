@@ -1,5 +1,5 @@
 /**
- * REV-2026-10-22 — REV-FICHA-005: layout compacto claro e painel fotográfico disponível também para injetados/prensados.
+ * REV-2026-10-22 — REV-FICHA-006: anexos fotográficos independentes para molde e máquina, vinculados aos cadastros reais.
  * Preserva dados reais, isolamento por empresa, persistência Supabase e impressão A4.
  * Revisão visual restrita a esta tela; sem dados fictícios ou alteração do contrato de banco.
  * REV-2026-10-21 — REV-FICHA-004: campos editáveis sobre a imagem do equipamento; card de perfil removido e foto do molde mantida ao lado.
@@ -8,6 +8,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CalendarRange, CheckCircle2, ExternalLink, Factory, FileSliders, Printer, RefreshCw, Save, Search } from 'lucide-react'
 import PCPMoldPhotoPanel from '../components/PCPMoldPhotoPanel'
+import PCPMachinePhotoPanel from '../components/PCPMachinePhotoPanel'
 import { useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 
@@ -417,7 +418,7 @@ export default function PCPFichasProcesso() {
     </div>
     <div className="grid grid-cols-1 items-start gap-3 xl:grid-cols-[minmax(0,1fr)_280px]">
      <ProcessEquipmentDiagram category={category} params={params} productId={productId} onParamChange={(key,value)=>setParams(current=>({...current,[key]:value}))}/>
-     {(category==='INJETADOS'||category==='PRENSADOS')&&<div className="min-w-0 rounded-[2px] border border-slate-200 bg-white p-2 shadow-sm"><PCPMoldPhotoPanel productId={productId}/></div>}
+     <div className="min-w-0 space-y-2"><PCPMoldPhotoPanel productId={productId}/><PCPMachinePhotoPanel machineId={machineId}/></div>
     </div>
     <div className="mt-3 grid grid-cols-1 gap-2 xl:grid-cols-2">
      {parameterCards.map(group=><article key={group.title} className="rounded-[2px] border border-[#2E4A62] bg-[#0E1E2F] p-2.5">
@@ -451,7 +452,6 @@ export default function PCPFichasProcesso() {
     <label className="mt-4 block"><span className={labelClass}>Instruções de setup / processo / segurança</span><textarea className="min-h-[100px] w-full rounded-md border border-[#294456] bg-[#071522] p-3 text-sm text-[#F4FBFD] outline-none focus:border-[#48B7C7]" value={instructions} onChange={e=>setInstructions(e.target.value)} placeholder="Sequência operacional, parâmetros de controle, inspeção inicial, reação a desvio, EPI e cuidados ambientais…"/></label>
     <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[#2E4A62] pt-3"><span className="text-[10px] font-bold uppercase tracking-wide text-[#A8BBC8]">Dados por empresa · revisão técnica · sem valores fictícios</span><button className="erp-premium-button print:hidden" type="button" onClick={()=>void save()} disabled={busy}><Save size={14}/>{busy?'Salvando…':isEditing?'Atualizar ficha':'Gravar ficha'}</button></div>
    </section>
-   {category!=='MONTAGEM_EMBALAGEM'&&category!=='INJETADOS'&&category!=='PRENSADOS'&&<div className="print:hidden"><PCPMoldPhotoPanel productId={productId} /></div>}
    <footer className="mt-3 flex items-center gap-2 border-t border-[#2E4A62] pt-3 text-[10px] text-[#A8BBC8] print:hidden"><CalendarRange size={14}/>{singleResourceProcess?'O PCP estima a duração a partir da ficha liberada, capacidade, ciclo e setup; datas continuam sujeitas ao calendário de recursos.':'Para programar este roteiro multiposto, cadastre as operações e recursos correspondentes no roteiro do PCP; ele não será aplicado como ciclo de uma única máquina.'}</footer>
   </div>
  <style>{'@media screen{.pcp-process-page{background:#F8FAFC!important;color:#123B50!important}.pcp-process-page [class*="bg-[#071522]"],.pcp-process-page [class*="bg-[#0D2638]"],.pcp-process-page [class*="bg-[#0E1E2F]"]{background:#FFFFFF!important}.pcp-process-page [class*="bg-[#123B50]"]{background:#EAF4F8!important}.pcp-process-page [class*="border-[#2E4A62]"],.pcp-process-page [class*="border-[#294456]"]{border-color:#CBD5E1!important}.pcp-process-page .text-white{color:#123B50!important}.pcp-process-page [class*="text-[#F4FBFD]"]{color:#123B50!important}.pcp-process-page [class*="text-[#A8BBC8]"]{color:#475569!important}.pcp-process-page input:not([type="file"]),.pcp-process-page select,.pcp-process-page textarea{background:#FFFFFF!important;color:#123B50!important;border-color:#CBD5E1!important;caret-color:#123B50!important}.pcp-process-page input::placeholder,.pcp-process-page textarea::placeholder{color:#64748B!important}.pcp-process-diagram .text-white{color:#FFFFFF!important}.pcp-process-diagram [class*="bg-[#071522]"]{background:#071522!important}.pcp-process-diagram [class*="bg-[#0D2638]"]{background:#0D2638!important}.pcp-process-diagram [class*="bg-[#123B50]"]{background:#123B50!important}}@page{size:A4 portrait;margin:10mm}@media print{html,body,#root{background:#fff!important;color:#111!important;margin:0!important;padding:0!important}.pcp-process-page{background:#fff!important;color:#111!important;padding:0!important}.pcp-process-page .print\\:hidden{display:none!important}.pcp-ficha-print-sheet{width:100%!important;max-width:none!important;background:#fff!important;color:#111!important;border:0!important;padding:0!important;margin:0!important;box-shadow:none!important;overflow:visible!important}.pcp-ficha-print-sheet,.pcp-ficha-print-sheet article,.pcp-ficha-print-sheet div,.pcp-ficha-print-sheet section{background:#fff!important;color:#111!important;border-color:#777!important;box-shadow:none!important}.pcp-ficha-print-sheet input,.pcp-ficha-print-sheet select,.pcp-ficha-print-sheet textarea{color:#111!important;background:#fff!important;border:1px solid #777!important;box-shadow:none!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}.pcp-ficha-print-sheet label,.pcp-ficha-print-sheet article{break-inside:avoid}.pcp-ficha-print-sheet button{display:none!important}.pcp-ficha-print-sheet span,.pcp-ficha-print-sheet dt,.pcp-ficha-print-sheet p,.pcp-ficha-print-sheet h1,.pcp-ficha-print-sheet h2,.pcp-ficha-print-sheet h3{color:#111!important}.pcp-ficha-print-sheet img{max-width:100%!important;max-height:65mm!important;object-fit:contain!important}}'}</style>
