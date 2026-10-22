@@ -38,7 +38,7 @@ export default function PCPPedidosPendentes() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
-  const [stockFilter, setStockFilter] = useState<'TODOS' | 'FALTA' | 'DISPONIVEL'>('TODOS')
+  const [stockFilter, setStockFilter] = useState<'TODOS' | 'FALTA'>('TODOS')
   const [pcpFilter, setPcpFilter] = useState<'TODOS' | 'AGUARDANDO' | 'EM_OP'>('TODOS')
 
   const load = useCallback(async () => {
@@ -95,7 +95,7 @@ export default function PCPPedidosPendentes() {
   const filtered = useMemo(() => rows.filter(r => {
     const q = search.trim().toLowerCase()
     const matchesSearch = !q || [r.pedidoCodigo,r.clienteNome,r.codigo,r.produto].join(' ').toLowerCase().includes(q)
-    const matchesStock = stockFilter === 'TODOS' || (stockFilter === 'FALTA' ? r.estoque < r.solicitada : r.estoque >= r.solicitada)
+    const matchesStock = stockFilter === 'TODOS' || r.estoque < r.solicitada
     const matchesPcp = pcpFilter === 'TODOS' || (pcpFilter === 'EM_OP' ? r.emOP > 0 : r.emOP === 0)
     return matchesSearch && matchesStock && matchesPcp
   }),[rows,search,stockFilter,pcpFilter])
@@ -123,7 +123,7 @@ export default function PCPPedidosPendentes() {
         <div className="mb-3 flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-[#48B7C7]"><Filter size={14}/> Pesquisa e filtros de fluxo</div>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-12">
           <label className="relative block xl:col-span-6"><span className="mb-1 block text-[9px] font-black uppercase text-[#A8BBC8]">Pedido, cliente, código ou descrição</span><Search size={13} className="absolute left-2.5 top-[27px] text-slate-400"/><input value={search} onChange={e=>setSearch(e.target.value)} className={inputClass+' pl-8'} placeholder="Pesquisar carteira..."/></label>
-          <label className="block xl:col-span-3"><span className="mb-1 block text-[9px] font-black uppercase text-[#A8BBC8]">Atendimento de estoque</span><select value={stockFilter} onChange={e=>setStockFilter(e.target.value as typeof stockFilter)} className={inputClass}><option value="TODOS">Todos</option><option value="FALTA">Falta fabricar</option><option value="DISPONIVEL">Estoque cobre o pedido</option></select></label>
+          <label className="block xl:col-span-3"><span className="mb-1 block text-[9px] font-black uppercase text-[#A8BBC8]">Atendimento de estoque</span><select value={stockFilter} onChange={e=>setStockFilter(e.target.value as typeof stockFilter)} className={inputClass}><option value="TODOS">Todos</option><option value="FALTA">Falta fabricar</option></select></label>
           <label className="block xl:col-span-3"><span className="mb-1 block text-[9px] font-black uppercase text-[#A8BBC8]">Situação no PCP</span><select value={pcpFilter} onChange={e=>setPcpFilter(e.target.value as typeof pcpFilter)} className={inputClass}><option value="TODOS">Todos</option><option value="AGUARDANDO">Aguardando OP</option><option value="EM_OP">Já possui OP vinculada</option></select></label>
         </div>
       </section>
