@@ -1,9 +1,7 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Activity, BarChart3, BookOpenCheck, ClipboardCheck, ClipboardList, FileCheck2, FileText,
-  Gauge, GitBranch, ListChecks, Microscope, SearchCheck, ShieldAlert, ShieldCheck,
-  Tablet, Target, Wrench, Workflow, X,
+  Activity, Archive, BarChart3, BookOpenCheck, ClipboardCheck, ClipboardList, FileCheck2, FileText,
+  Gauge, GitBranch, ListChecks, Microscope, SearchCheck, ShieldAlert, ShieldCheck, Target, Wrench, Workflow,
 } from 'lucide-react'
 import '../../styles/quality-workspace-standard.css'
 
@@ -24,7 +22,7 @@ const modules = [
   { label: 'Documentos controlados / GED', route: '/qualidade/ged-documentos', icon: FileText },
   { label: 'Controle de desenhos técnicos', route: '/qualidade/controle-desenhos', icon: FileCheck2 },
   { label: 'Procedimentos e PDFs', route: '/qualidade/procedimentos', icon: BookOpenCheck },
-  { label: 'Lista mestre', route: '/qualidade/lista-mestre', icon: FileText },
+  { label: 'Lista mestra de documentos', route: '/qualidade/lista-mestre', icon: Archive },
   { label: 'Auditoria 5S', route: '/qualidade/auditoria-5s', icon: SearchCheck },
   { label: 'CEP / cartas de controle', route: '/qualidade/cep', icon: Activity },
   { label: 'Metrologia e calibração', route: '/qualidade/calibracao', icon: Wrench },
@@ -34,67 +32,35 @@ const modules = [
 ] as const
 
 export default function QualitySidebar({ active }: { active: string }) {
-  const [open, setOpen] = useState(false)
   const navigate = useNavigate()
-
   if (active !== '/qualidade') return null
 
   return (
-    <>
-      <nav aria-label="Menu da qualidade" className="mb-2 flex h-[30px] min-h-[30px] w-full items-center justify-between gap-2 border border-[#2D8DB8] bg-[#2D8DB8] px-2 text-white">
-        <span className="truncate text-[10px] font-semibold uppercase tracking-wide">QUALIDADE · SGQ</span>
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="inline-flex h-[24px] shrink-0 items-center gap-1 border border-white/70 bg-white px-2 text-[10px] font-semibold text-[#17445A] hover:bg-[#E5F3F8]"
-          aria-haspopup="dialog"
-          aria-expanded={open}
-        >
-          <Tablet size={13} /> Central Tablet SGQ
-        </button>
-      </nav>
-      {open && (
-        <div
-          className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-950/55 p-3"
-          role="presentation"
-          onMouseDown={(event) => { if (event.target === event.currentTarget) setOpen(false) }}
-        >
-          <section
-            role="dialog"
-            aria-modal="true"
-            aria-label="Central Tablet SGQ"
-            className="max-h-[calc(100vh-24px)] w-full max-w-[900px] overflow-y-auto border border-slate-300 bg-white p-3 text-[#123B50] shadow-2xl"
-          >
-            <header className="mb-3 flex min-h-[30px] items-center justify-between gap-3 border-b border-slate-200 pb-2">
-              <div className="min-w-0">
-                <h2 className="text-[12px] font-bold uppercase tracking-wide">Central Tablet SGQ</h2>
-                <p className="mt-0.5 text-[10px] text-slate-500">Acesso aos processos da qualidade industrial</p>
-              </div>
-              <button type="button" onClick={() => setOpen(false)} className="grid h-[30px] w-[30px] shrink-0 place-items-center border border-slate-300 bg-white hover:border-[#2D8DB8]" aria-label="Fechar menu do tablet">
-                <X size={15} />
-              </button>
-            </header>
-            <div className="grid grid-cols-4 gap-2 max-[650px]:grid-cols-2" aria-label="Módulos da qualidade">
-              {modules.map(({ label, route, icon: Icon }) => (
-                <button
-                  key={route}
-                  type="button"
-                  onClick={() => { setOpen(false); navigate(route) }}
-                  aria-current={active === route ? 'page' : undefined}
-                  className={`flex h-[54px] min-w-0 items-center gap-2 border px-2 text-left transition-colors hover:border-[#2D8DB8] hover:bg-[#F0F8FB] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2D8DB8] ${active === route ? 'border-[#2D8DB8] bg-[#E5F3F8]' : 'border-slate-200 bg-white'}`}
-                  title={label}
-                >
-                  <span className="grid h-[28px] w-[28px] shrink-0 place-items-center border border-[#C8E3EE] bg-[#EAF6FA] text-[#2D8DB8]">
-                    <Icon size={15} strokeWidth={1.8} />
-                  </span>
-                  <span className="truncate whitespace-nowrap text-[10px] font-semibold">{label}</span>
-                </button>
-              ))}
-            </div>
-            <footer className="mt-3 border-t border-slate-200 pt-2 text-[9px] text-slate-500">ERP Industrial · Dados e permissões protegidos pelo sistema</footer>
-          </section>
+    <section aria-label="Menu principal da qualidade" className="mb-3 border border-[#B9D6E2] bg-white">
+      <header className="flex min-h-[38px] flex-wrap items-center justify-between gap-2 border-b border-[#C8E3EE] bg-[#2D8DB8] px-3 py-1.5 text-white">
+        <div>
+          <h2 className="text-[10px] font-extrabold uppercase tracking-[.13em]">QUALIDADE · SISTEMA DE GESTÃO DA QUALIDADE</h2>
+          <p className="mt-0.5 text-[9px] text-white/85">Acesso direto aos módulos do SGQ · {modules.length} opções</p>
         </div>
-      )}
-    </>
+        <span className="border border-white/50 bg-white/10 px-2 py-1 text-[9px] font-bold">MENU PRINCIPAL</span>
+      </header>
+      <nav aria-label="Módulos da qualidade" className="grid grid-cols-2 gap-1.5 p-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+        {modules.map(({ label, route, icon: Icon }) => (
+          <button
+            key={route}
+            type="button"
+            onClick={() => navigate(route)}
+            aria-current={active === route ? 'page' : undefined}
+            className={'group flex min-h-[48px] min-w-0 items-center gap-2 border px-2 py-1.5 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2D8DB8] ' + (active === route ? 'border-[#2D8DB8] bg-[#E5F3F8]' : 'border-slate-200 bg-white hover:border-[#2D8DB8] hover:bg-[#F4FBFD]')}
+            title={label}
+          >
+            <span className="grid h-[30px] w-[30px] shrink-0 place-items-center border border-[#C8E3EE] bg-[#EAF6FA] text-[#2D8DB8] group-hover:border-[#8CC5E0]">
+              <Icon size={16} strokeWidth={1.8} />
+            </span>
+            <span className="min-w-0 text-[10px] font-semibold leading-[1.25] text-[#123B50]">{label}</span>
+          </button>
+        ))}
+      </nav>
+    </section>
   )
 }
