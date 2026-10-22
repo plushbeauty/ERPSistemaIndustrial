@@ -100,6 +100,7 @@ const PCPOrdens = lazyPage(() => import('./pages/PCPOrdens'), 'default')
 const PCPPedidosPendentes = lazyPage(() => import('./pages/PCPPedidosPendentes'), 'default')
 const PCPValidaFluxo = lazyPage(() => import('./pages/PCPValidaFluxo'), 'default')
 const EngenhariaBOM = lazyPage(() => import('./pages/EngenhariaBOM'), 'default')
+const QualidadeRefugos = lazyPage(() => import('./pages/QualidadeRefugos'), 'default')
 const PCPExecucaoIndustrial = lazyPage(() => import('./pages/PCPExecucaoIndustrial'), 'default')
 const PCPCapacidade = lazyPage(() => import('./pages/PCPCapacidade'), 'default')
 const PCPAgendaMaquinas = lazyPage(() => import('./pages/PCPAgendaMaquinas'), 'default')
@@ -625,7 +626,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/moldes-injecao" element={<QualityPlanGate>{<MoldesFerramentaria />}</QualityPlanGate>} />
       <Route path="/ficha-engenharia" element={<QualityPlanGate>{<FichaEngenharia />}</QualityPlanGate>} />
       <Route path="/mrp" element={<QualityPlanGate>{<MRPIndustrial />}</QualityPlanGate>} />
-      <Route path="/qualidade/refugos" element={<QualityPlanGate><CentraisIndustriais module="refugos" /></QualityPlanGate>} />
+      <Route path="/qualidade/refugos" element={<QualityPlanGate><QualidadeRefugos /></QualityPlanGate>} />
       <Route path="/central-custos-industrial" element={<QualityPlanGate>{<CentralCustosIndustrial />}</QualityPlanGate>} />
       <Route path="/expedicao/roteirizacao" element={<ExpedicaoRoteirizacao />} />
       <Route path="/expedicao/portaria" element={<ExpedicaoPortaria />} />
