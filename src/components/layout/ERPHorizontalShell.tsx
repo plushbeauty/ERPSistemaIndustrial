@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Warehouse, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -48,6 +48,9 @@ const menus: MenuItem[] = [
     { label: 'Ajustes', route: '/estoque/ajustes' },
     { label: 'Separação', route: '/estoque/separacao' },
     { label: 'Recebimento de lotes', route: '/estoque/recebimento-lotes' },
+  ] },
+  { label: 'Almoxarifado', route: '/almoxarifado/inventario-mestre', icon: Warehouse, children: [
+    { label: 'Inventário mestre / FIFO e lotes', route: '/almoxarifado/inventario-mestre' },
   ] },
   { label: 'Engenharia', route: '/engenharia', icon: Database, children: [
     { label: 'Central de Engenharia', route: '/engenharia' },
@@ -179,6 +182,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     : pathname.startsWith('/vendas') ? 'Vendas'
     : pathname.startsWith('/compras') ? 'Compras'
     : pathname.startsWith('/qualidade') || pathname.startsWith('/sgq') ? 'Qualidade'
+    : pathname.startsWith('/almoxarifado') ? 'Almoxarifado'
     : pathname.startsWith('/estoque') || pathname.startsWith('/inventario') ? 'Estoque'
     : pathname.startsWith('/financeiro') ? 'Financeiro'
     : pathname.startsWith('/fiscal') ? 'Fiscal'
@@ -219,6 +223,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     ? (pathname === '/vendas' ? { title: 'Dashboard Comercial', subtitle: 'Indicadores reais do módulo de vendas' } : { title: 'Módulo Vendas', subtitle: 'Pedidos, clientes e acompanhamento comercial' })
     : pathname.startsWith('/compras') ? { title: 'Gestão de Compras', subtitle: 'Solicitações, cotações, pedidos e recebimentos' }
     : pathname.startsWith('/qualidade') || pathname.startsWith('/sgq') ? { title: 'Painel de Gestão da Qualidade', subtitle: 'Indicadores calculados a partir dos registros da empresa autenticada.' }
+    : pathname.startsWith('/almoxarifado') ? { title: 'Almoxarifado', subtitle: 'Inventário mestre, FIFO e rastreabilidade de lotes' }
     : pathname.startsWith('/estoque') || pathname.startsWith('/inventario') ? { title: 'Gestão de Estoque', subtitle: 'Saldos, movimentações e rastreabilidade de materiais' }
     : pathname.startsWith('/fiscal') || pathname.includes('nota-fiscal') ? { title: 'Gestão Fiscal', subtitle: 'Documentos fiscais e controles do módulo fiscal' }
     : pathname.startsWith('/pcp') ? { title: 'Planejamento e Controle da Produção', subtitle: 'Ordens, capacidade e acompanhamento da produção' }
