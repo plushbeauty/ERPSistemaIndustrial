@@ -1,9 +1,9 @@
 /**
  * SYNQRA ERP — CORREÇÃO DE SESSÃO E ROTAS MESTRE
- * REVISÃO: 0.2 | DATA: 16/10/2026
+ * REVISÃO: 0.3 | DATA: 22/10/2026
  * ID: #AUDIT-ERP-20261016-16
  * ESCOPO: roteador React/Vite e apontamento de módulos para componentes reais.
- * ALTERAÇÃO: rotas de clientes/fornecedores confirmadas em componentes próprios; /producao direcionada ao PCPIndustrial.
+ * ALTERAÇÃO: rotas de clientes/fornecedores confirmadas; /producao direcionada ao PCPIndustrial; removida legenda redundante do topo da agenda de máquinas.
  * VALIDAÇÃO: rotas conferidas estaticamente; compilação e navegação autenticada ainda pendentes.
  */
 
@@ -53,7 +53,6 @@ function lazyPage<P extends object>(
     return { default: component as ComponentType<P> }
   })
 }
-import ERPStatusLegend from './components/layout/ERPStatusLegend'
 import PCPPageHelp from './components/industrial/PCPPageHelp'
 import './styles/industrial-login.css'
 import './styles/forms-premium.css'
@@ -740,7 +739,6 @@ function AppIndustrialAuthenticated() {
           <ERPHorizontalShell>
             {protectedRoutes}
             <PCPPageHelp />
-            {location.pathname.startsWith('/pcp/agenda-maquinas') && <ERPStatusLegend />}
           </ERPHorizontalShell>
         </div>
       </Suspense>
