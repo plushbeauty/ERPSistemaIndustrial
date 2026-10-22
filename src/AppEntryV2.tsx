@@ -105,7 +105,7 @@ const PCPFichasProcesso = lazyPage(() => import('./pages/PCPFichasProcesso'), 'd
 const PCPFichaProcessoTeste = lazyPage(() => import('./pages/PCPFichaProcessoTeste'), 'default')
 const QualidadeFichasProcesso = lazyPage(() => import('./pages/qualidade/FichasProcesso'), 'default')
 const HelpPCPFichas = lazyPage(() => import('./pages/HelpPCPFichas'), 'default')
-const PCPParadas = lazyPage(() => import('./pages/PCPParadas'), 'PCPParadas')
+const PCPParadas = lazyPage(() => import('./pages/PCPParadasMaquina'), 'default')
 const PCPSequenciamento = lazyPage(() => import('./pages/PCPSequenciamento'), 'PCPSequenciamento')
 const PCPPlanejamentoIndustrial = lazyPage(() => import('./pages/PCPPlanejamentoIndustrial'), 'PCPPlanejamentoIndustrial')
 const MRPIndustrial = lazyPage(() => import('./pages/MRPIndustrial'), 'MRPIndustrial')
@@ -555,7 +555,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/ordens" element={<QualityPlanGate>{<PCPOrdens />}</QualityPlanGate>} />
       <Route path="/pcp/demanda" element={<QualityPlanGate><SynqraLayoutProvider><PCPIndustrial /></SynqraLayoutProvider></QualityPlanGate>} />
       <Route path="/pcp/materiais" element={<QualityPlanGate><SynqraLayoutProvider><PCPIndustrial /></SynqraLayoutProvider></QualityPlanGate>} />
-      <Route path="/pcp/paradas" element={<QualityPlanGate>{<PCPParadas />}</QualityPlanGate>} />
+      <Route path="/pcp/paradas" element={<QualityPlanGate><PCPParadas /></QualityPlanGate>} />
       <Route path="/pcp/sequenciamento" element={<QualityPlanGate>{<PCPSequenciamento />}</QualityPlanGate>} />
       <Route path="/pcp/planejamento" element={<QualityPlanGate>{<PCPPlanejamentoIndustrial />}</QualityPlanGate>} />
       <Route path="/pcp/capacidade" element={<QualityPlanGate><PCPCapacidade /></QualityPlanGate>} />
