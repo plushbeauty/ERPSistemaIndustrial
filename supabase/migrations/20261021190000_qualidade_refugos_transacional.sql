@@ -29,6 +29,22 @@ create table if not exists public.erp_qualidade_refugos (
   created_at timestamptz not null default now()
 );
 
+insert into public.erp_qualidade_defeitos_motivos
+  (empresa_id, codigo_defeito, descricao, classificacao)
+select e.id, d.codigo, d.descricao, d.classificacao
+from public.erp_empresas e
+cross join (values
+  ('DEF-001','Rebarba','MENOR'),
+  ('DEF-002','Bolha / porosidade','MAIOR'),
+  ('DEF-003','Trinca / fissura','CRÍTICO'),
+  ('DEF-004','Quebra de molde / ferramenta','CRÍTICO'),
+  ('DEF-005','Dimensão fora de tolerância','MAIOR'),
+  ('DEF-006','Falha de inserto metálico','MAIOR'),
+  ('DEF-007','Mancha / contaminação','MENOR'),
+  ('DEF-008','Deformação / empenamento','MAIOR')
+) as d(codigo, descricao, classificacao)
+on conflict (empresa_id, codigo_defeito) do nothing;
+
 create index if not exists erp_qualidade_refugos_empresa_data_idx
   on public.erp_qualidade_refugos (empresa_id, created_at desc);
 create index if not exists erp_qualidade_refugos_empresa_op_idx
@@ -72,7 +88,7 @@ declare
 begin
   if auth.uid() is null then raise exception 'Sessão autenticada obrigatória.'; end if;
   if v_empresa is null then raise exception 'Empresa da sessão não identificada.'; end if;
-  if p_quantidade_refugada is null or p_quantidade_refugada <= 0 then raise exception 'Quantidade refug ada deve ser positiva.'; end if;
+  if p_quantidade_refugada is null or p_quantidade_refugada <= 0 then raise exception 'Quantidade refugada deve ser positiva.'; end if;
   if nullif(trim(p_operador),'') is null then raise exception 'Operador é obrigatório.'; end if;
   if p_disposicao_material not in ('RETRABALHO','SUCATAMENTO','SEGREGADO') then raise exception 'Disposição inválida.'; end if;
   if p_peso_refugo_kg is not null and p_peso_refugo_kg < 0 then raise exception 'Peso não pode ser negativo.'; end if;
