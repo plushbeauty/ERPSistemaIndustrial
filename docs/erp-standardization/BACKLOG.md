@@ -180,3 +180,11 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Correção:** reset de máquinas, moldes, OPs, fichas/ciclos, programações, seleção e calendário/rascunho ao iniciar a recarga; revisão registrada como `REV-PCP-AGENDA-005`.
 - **Commits:** código `da328fec2a70803f961c9c12857d9b9046964513`; cabeçalho `faa69d41616addc62cc9c8b1ccd19515152d6ed9`; relatório `a313c0c715cb713874654a71d958809e5307c2e8`.
 - **Estado:** CORRIGIDO AGUARDANDO VALIDAÇÃO. Type-check, lint, rotas, lock de UI, sessão/RLS e deployment não foram comprovados; UI-040/QA-040 seguem abertos.
+
+## Evidência incremental — início da programação exige confirmação da linha (2026-10-22)
+
+- **Rota:** `/pcp/agenda-maquinas`; arquivo `src/pages/PCPAgendaMaquinas.tsx`.
+- **Correção:** ação de início agora verifica a linha atualizada e o status retornado antes de exibir sucesso; mantém filtro `empresa_id` e exibe erro se nenhuma linha for confirmada.
+- **Código:** [9322205ec24ee5f9228f146b0bc0f7bbbe345cca](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/9322205ec24ee5f9228f146b0bc0f7bbbe345cca).
+- **Relatório:** [ROUTE-AUDIT-2026-10-16.md](./ROUTE-AUDIT-2026-10-16.md), commit `d0970d2d752eb8cbcee70d9cf907e89bace25694`.
+- **Estado:** CORRIGIDO AGUARDANDO VALIDAÇÃO; sem evidência de testes locais, sessão/RLS ou deployment vinculado ao commit. UI-040 e QA-040 continuam pendentes.
