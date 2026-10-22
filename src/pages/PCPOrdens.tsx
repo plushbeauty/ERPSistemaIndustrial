@@ -294,14 +294,14 @@ export default function PCPOrdens() {
     setNewProdutoId(''); setNewMachineId(''); setNewQty(''); setNewRate(''); setNewDoubleOp(false)
     setNewPriority('ALTA'); setNewDueDate(''); setNewNotes('')
   }
-  function programDemand(item: DemandItem) {
+  const programDemand = useCallback((item: DemandItem) => {
     setError(''); setMessage(''); setNewOpType('PEDIDO'); setNewPedidoId(item.pedidoId)
     setNewPedidoItemId(item.itemId); setNewProdutoId(item.produtoId)
     setNewQty(String(item.sugestaoProducao)); setNewMachineId(''); setNewRate(''); setNewDoubleOp(false)
     setNewPriority('ALTA'); setNewDueDate('')
     setNewNotes('Programação originada do pedido PV-' + item.pedidoCodigo + '. Saldo calculado pela demanda, estoque físico e OPs vinculadas.')
     setShowNewOpModal(true)
-  }
+  }, [])
 
   useEffect(() => {
     if (loading || handledPrefill) return
@@ -333,7 +333,7 @@ export default function PCPOrdens() {
       sugestaoProducao: requestedQty, unidade: product.unidade || 'un'
     })
     setHandledPrefill(true)
-  }, [loading, handledPrefill, orderItems, pedidoMap, productMap, ops])
+  }, [loading, handledPrefill, orderItems, pedidoMap, productMap, ops, programDemand])
 
   async function createNewOp() {
     const quantity = Number(newQty)
