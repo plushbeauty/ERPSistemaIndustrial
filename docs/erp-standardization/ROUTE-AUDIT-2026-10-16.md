@@ -175,3 +175,13 @@ O título e as mensagens agora identificam a função como **registro de parecer
 - **Diff revisado:** reset de estado no início de `load()` e cabeçalho de revisão; nenhuma alteração em telas congeladas.
 - **Validação:** revisão estática do código/diff; type-check, lint, verify-routes, verify:approved-ui-lock, teste autenticado/RLS, navegador e build não foram executados nesta sessão. CI/Vercel está bloqueado pelo limite de builds reportado.
 - **Estado:** CORRIGIDO AGUARDANDO VALIDAÇÃO. UI-040 e QA-040 permanecem abertos.
+
+## Continuação — agenda PCP confirma a atualização antes de informar início (2026-10-22)
+
+- **Rota:** `/pcp/agenda-maquinas`; componente `src/pages/PCPAgendaMaquinas.tsx`, revisão `REV-PCP-AGENDA-006`.
+- **Achado estático:** a ação “Apontar início” atualizava por `id` e `empresa_id`, mas tratava ausência de erro REST como confirmação suficiente. Uma atualização que afetasse zero linhas (por registro inexistente ou política de acesso) poderia mostrar sucesso falso.
+- **Correção:** a atualização agora solicita `id,status` com `.select(...).maybeSingle()` e só mostra sucesso se uma linha retornada confirmar `status === 'em_execucao'`; caso contrário, apresenta erro explícito. O filtro por empresa foi mantido.
+- **Diff revisado:** alteração isolada na ação `startSlot` e incremento do cabeçalho de revisão; não altera telas congeladas nem esquema/RPC.
+- **Commit de código:** [9322205ec24ee5f9228f146b0bc0f7bbbe345cca](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/9322205ec24ee5f9228f146b0bc0f7bbbe345cca).
+- **Validação:** revisão estática do trecho e confirmação do commit no GitHub. Não foi possível executar type-check, lint, verificações de rotas/imports, lock de UI, teste autenticado/RLS ou build neste ambiente. O status Vercel dos commits PCP consultados informa falha por limite de builds; deployment deste commit não confirmado.
+- **Estado:** CORRIGIDO AGUARDANDO VALIDAÇÃO. UI-040 e QA-040 permanecem abertos.
