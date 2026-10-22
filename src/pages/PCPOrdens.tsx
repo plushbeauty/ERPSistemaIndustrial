@@ -12,7 +12,7 @@ import {
   AlertTriangle, ArrowRight, BarChart3, CalendarClock, CheckCircle2,
   ChevronRight, CirclePause, ClipboardList, Factory, FileText, Filter,
   Gauge, Layers3, ListFilter, Package, PackageCheck, Play, Plus, Printer,
-  RefreshCw, Search, Settings2, ShieldCheck, ShoppingCart, X, Zap
+  RefreshCw, Save, Search, Settings2, ShieldCheck, ShoppingCart, X, Zap
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
