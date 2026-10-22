@@ -190,7 +190,7 @@ export default function PCPAreaFuncionario() {
         quantidade_refugada: scrap,
         motivo_parada: stopReason.trim() || null,
         observacoes: observations.trim() || null
-      }).eq('empresa_id', companyId).eq('id', activeEntry.id)
+      }).eq('empresa_id', companyId).eq('id', activeEntry.id).eq('operador_id', employee.id)
       if (response.error) throw response.error
       setMessage('Apontamento enviado ao PCP para conferência.')
       setGoodQty('')
