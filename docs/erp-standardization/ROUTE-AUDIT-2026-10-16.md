@@ -152,3 +152,14 @@ O título e as mensagens agora identificam a função como **registro de parecer
 - **Commit:** [dc6559d033125a9371cbd76b14982d41faee6356](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/dc6559d033125a9371cbd76b14982d41faee6356).
 - **Revisão estática:** o diff foi revisado e está restrito ao reset de estado no início da recarga. Não foram executados type-check, lint, testes autenticados, validação remota de RLS nem teste visual.
 - **Estado:** **CORRIGIDO AGUARDANDO VALIDAÇÃO**. UI-040/QA-040 continuam abertos até os checks e teste ponta a ponta.
+
+
+## Continuação — capacidade do PCP não conserva dados durante revalidação (2026-10-22)
+
+- **Rota:** `/pcp/capacidade` (componente confirmado em `src/AppEntryV2.tsx`, `PCPCapacidade`).
+- **Arquivo alterado:** `src/pages/PCPCapacidade.tsx`.
+- **Achado estático:** `load()` iniciava nova consulta, mas mantinha na memória a empresa e as máquinas/OPs carregadas anteriormente até a resposta seguinte. Em troca de sessão/empresa ou falha da RPC, a interface poderia conservar dados anteriores enquanto revalidava.
+- **Correção:** limpar `empresaId`, máquinas e OPs no início da recarga; as consultas continuam exigindo `erp_current_empresa_id` e filtrando `empresa_id`, e a gravação continua verificando a linha atualizada.
+- **Diff revisado:** somente três resets de estado e comentário junto ao início de `load()`.
+- **Commit:** [cdacb3a3e30d105b561e31f3dda5979ea1276c2a](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/cdacb3a3e30d105b561e31f3dda5979ea1276c2a).
+- **Estado:** CORRIGIDO AGUARDANDO VALIDAÇÃO. Não foram executados type-check/lint local, teste de sessão/RLS nem validação visual. UI-040/QA-040 permanecem abertos.
