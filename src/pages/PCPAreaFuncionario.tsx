@@ -15,7 +15,7 @@ type Product = { id: string; codigo: string; nome: string; unidade: string | nul
 type Machine = { id: string; codigo: string; nome: string; status?: string }
 type Recipe = { id: string; processo_id: string; produto_id: string | null; maquina_id: string | null; ferramenta_id: string | null; versao: number; status: string; parametros: Record<string, unknown>; ciclo_seg: number | null; setup_min: number | null; observacoes: string | null }
 type ProcessEntry = { id: string; ordem_producao_id: string; operador_id: string | null; inicio_em: string; fim_em: string | null; quantidade_boa: number; quantidade_refugada: number; motivo_parada: string | null; observacoes: string | null }
-type Material = { id: string; sku_insumo: string; qtd: number; unidade: string }
+type Material = { id: string; produto_pai_id: string; sku_insumo: string; qtd: number; unidade: string }
 const input = 'h-[36px] w-full min-w-0 rounded-[3px] border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20'
 const smallButton = 'inline-flex min-h-[36px] items-center justify-center gap-2 rounded-[3px] border px-3 text-xs font-black disabled:cursor-not-allowed disabled:opacity-50'
 const localDate = (date: Date) => {
