@@ -109,3 +109,14 @@ O título e as mensagens agora identificam a função como **registro de parecer
 ### Estado
 
 **CORRIGIDO AGUARDANDO VALIDAÇÃO** — commit `952850269faa69bdbf906a31b4689ffcc3cc5186`. Foram inspecionados o componente e a migration versionada; não houve execução local de TypeScript/build, teste autenticado ou confirmação de schema/RLS remoto. O fluxo de liberação transacional continua **PENDENTE** até confirmar schema e autorização real. Não remover do backlog.
+
+
+## Continuação — remoção da legenda redundante da agenda PCP (2026-10-22)
+
+- **Rota verificada no roteador:** `/pcp/agenda-maquinas` usa o shell horizontal global.
+- **Achado:** `src/AppEntryV2.tsx` importava `ERPStatusLegend` e o renderizava no shell apenas quando a rota iniciava com `/pcp/agenda-maquinas`.
+- **Alteração isolada:** removido o import e o elemento condicional. Não foram alterados `PCPAgendaMaquinas.tsx`, `PCPCapacidade.tsx`, nem arquivos congelados.
+- **Revisão registrada no roteador:** 0.3 — 22/10/2026.
+- **Commit:** [11b05e404ce0377303c657b5eedea3a93e22cf62](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/11b05e404ce0377303c657b5eedea3a93e22cf62).
+- **Validação feita nesta rodada:** confirmação estática antes do commit de que a importação e a renderização condicional existiam; confirmação do texto submetido de que ambas foram removidas.
+- **Validação pendente:** type-check, lint, `verify-routes`, `verify:approved-ui-lock`, auditorias e build não foram executados nesta sessão; teste visual no navegador não realizado. Estado: **CORRIGIDO AGUARDANDO VALIDAÇÃO**.
