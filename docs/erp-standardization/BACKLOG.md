@@ -20,6 +20,7 @@
 - [ ] UI-040 — PCP/Manufatura: ordens, execução, capacidade, agenda, apontamentos e fichas.
 - [ ] UI-050 — Estoque/Almoxarifado: cadastro, saldo, movimentos, lotes e localização.
 - [ ] UI-060 — Qualidade/SGQ: inspeções, RNC/CAPA, quarentena, documentos e tablet.
+  - [ ] SGQ-REL-001 — Implementar liberação/bloqueio transacional real de lote, com autorização, trilha de auditoria e integração com as tabelas operacionais. `QualidadeLiberacaoLotes.tsx` atualmente grava apenas um parecer documental; não considerar isso como liberação de estoque. Depende de confirmar schema remoto e contrato de permissões.
 - [ ] UI-070 — Fiscal/NF-e: campos e grids sem alterar cálculo, emissão ou contratos fiscais.
 - [ ] UI-080 — Financeiro/Controladoria.
 - [ ] UI-090 — Engenharia/BOM e Manutenção.
@@ -88,3 +89,12 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Commit:** `aee81b9803446bac24819cf83e951ed3dd38d49c`.
 - **Limites da evidência:** alteração confirmada no GitHub; type-check, lint, build, fluxo autenticado/RLS, comportamento visual em navegador e publicação Vercel ainda não foram confirmados. O modelo atual não expõe todos os campos do documento DSG-GQ-001 (ex.: elaborador/revisor/aprovador, vigência e próxima revisão como campos persistidos do cabeçalho); não declarar equivalência integral ao formulário Word até mapear schema/RPC e aprovações.
 - **Backlog:** UI-001, UI-002, UI-060 e QA-040 permanecem abertos.
+
+
+## Continuação — parecer SGQ versus liberação operacional de lote (2026-10-22)
+
+- **Achado confirmado no código e na migration versionada:** `src/pages/qualidade/QualidadeLiberacaoLotes.tsx` grava `codigo_lote`, `produto_id`, `quantidade` e `status_sgq` em `public.erp_qualidade_liberacao_lotes`. A migration `supabase/migrations/20261019150000_erp_qualidade_liberacao_lotes.sql` cria uma tabela documental com `codigo_lote` textual, sem FK para o lote operacional e sem RPC de liberação.
+- **Correção segura aplicada:** a tela passa a se chamar “Registro de parecer SGQ”, mostra aviso explícito de que não altera o status operacional do lote, e as mensagens de gravação não afirmam que o estoque foi liberado.
+- **Pendente crítico:** construir o fluxo transacional exige confirmar schema real de estoque, autorização RBAC e trilha de auditoria; não alterar status operacional diretamente no cliente nem criar RPC baseada em colunas presumidas.
+- **Commit de correção da tela:** `952850269faa69bdbf906a31b4689ffcc3cc5186`.
+- **Validação:** conteúdo versionado e migration inspecionados estaticamente. Type-check, testes interativos e implantação do novo commit ainda precisam ser confirmados.
