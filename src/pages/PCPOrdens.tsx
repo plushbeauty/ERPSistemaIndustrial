@@ -86,6 +86,7 @@ export default function PCPOrdens() {
   const [notes, setNotes] = useState('')
   const [producedInput, setProducedInput] = useState('')
   const [showNewOpModal, setShowNewOpModal] = useState(false)
+  const [handledPrefill, setHandledPrefill] = useState(false)
   const [newOpType, setNewOpType] = useState<'PEDIDO' | 'ESTOQUE'>('PEDIDO')
   const [newPedidoId, setNewPedidoId] = useState('')
   const [newPedidoItemId, setNewPedidoItemId] = useState('')
@@ -301,6 +302,38 @@ export default function PCPOrdens() {
     setNewNotes('Programação originada do pedido PV-' + item.pedidoCodigo + '. Saldo calculado pela demanda, estoque físico e OPs vinculadas.')
     setShowNewOpModal(true)
   }
+
+  useEffect(() => {
+    if (loading || handledPrefill) return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('origem') !== 'carteira-pcp') return
+    const pedidoId = params.get('pedidoId') || ''
+    const itemId = params.get('itemId') || ''
+    const produtoId = params.get('produtoId') || ''
+    const requestedQty = Number(params.get('quantidade') || 0)
+    if (!pedidoId || !itemId || !produtoId || !Number.isFinite(requestedQty) || requestedQty <= 0) {
+      setError('Não foi possível abrir a programação: os dados do pedido/item estão incompletos.')
+      setHandledPrefill(true)
+      return
+    }
+    const sourceItem = orderItems.find(item => item.id === itemId && item.pedido_id === pedidoId && item.produto_id === produtoId)
+    const order = pedidoMap.get(pedidoId)
+    const product = productMap.get(produtoId)
+    if (!sourceItem || !order || !product) {
+      setError('Pedido, item ou produto não foi localizado na empresa autenticada. Atualize a carteira e tente novamente.')
+      setHandledPrefill(true)
+      return
+    }
+    const linked = ops.filter(op => op.pedido_item_id === itemId && normalizeStatus(op.status) !== 'CONCLUIDO' && normalizeStatus(op.status) !== 'CANCELADA')
+      .reduce((sum, op) => sum + Number(op.quantidade_planejada || op.quantidade || 0), 0)
+    programDemand({
+      pedidoId, pedidoCodigo: order.codigo, clienteNome: order.nome, itemId, produtoId,
+      produtoCodigo: product.codigo, produtoNome: product.nome, qtdPedido: Number(sourceItem.quantidade || 0),
+      estoqueAtual: Number(product.estoque_atual || 0), qtdJaEmOrdem: linked,
+      sugestaoProducao: requestedQty, unidade: product.unidade || 'un'
+    })
+    setHandledPrefill(true)
+  }, [loading, handledPrefill, orderItems, pedidoMap, productMap, ops])
 
   async function createNewOp() {
     const quantity = Number(newQty)
