@@ -1,10 +1,11 @@
 /**
  * ERPSis — QUALIDADE / GED DOCUMENTAL
- * Data: 2026-10-16 | Revisão: REV-063
+ * Data: 2026-10-22 | Revisão: SGQ-DOC-2026-10-22-R1
+ * Escopo: cabeçalho normativo com logotipo, título/código bloqueados em revisão e separação das rotas de nova emissão e atualização.
  * Escopo: responsividade da árvore, formulário e trilha de auditoria; persistência e controle de revisão preservados.
  */
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 import { CircleHelp, ExternalLink, FilePlus2, FileText, History, Paperclip, RefreshCw, Save, Search, ShieldCheck, Upload, X } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { fetchAllPages } from '../../lib/supabasePagination'
@@ -36,6 +37,7 @@ function dateTime(value: string) {
 
 export default function GEDDocumentos() {
   const { id: routeRevisionId } = useParams<{ id: string }>()
+  const location = useLocation()
   const [companyId, setCompanyId] = useState('')
   const [revisions, setRevisions] = useState<Revision[]>([])
   const [selectedId, setSelectedId] = useState('')
@@ -80,6 +82,19 @@ export default function GEDDocumentos() {
   }, [selectedId])
 
   useEffect(() => { void load() }, [load])
+
+  // A rota dedicada de emissão sempre inicia um documento novo, sem reaproveitar a seleção anterior.
+  useEffect(() => {
+    if (!location.pathname.endsWith('/nova')) return
+    setSelectedId('')
+    setCodigo('')
+    setTitulo('')
+    setDepartamento('QUALIDADE')
+    setConteudo('')
+    setMotivo('')
+    setNotice('')
+    setError('')
+  }, [location.pathname])
 
   useEffect(() => {
     if (!routeRevisionId || loading || !revisions.length) return
@@ -384,12 +399,33 @@ export default function GEDDocumentos() {
                   <button type="button" disabled={busy || !attachmentFile} onClick={() => void attachSelectedFile()} className="inline-flex h-[30px] items-center gap-1 rounded-[2px] bg-[#2D8DB8] px-3 text-[9px] font-semibold text-white disabled:opacity-50"><Upload size={12}/>{busy ? 'ENVIANDO…' : 'ANEXAR ORIGINAL'}</button>
                 </div>}
               </section>}
-              <div className="grid gap-x-3 gap-y-3 sm:grid-cols-[150px_minmax(0,1fr)]">
-                <label><span className={label}>CÓDIGO DO DOCUMENTO *</span><input className={field} value={codigo} onChange={e => setCodigo(e.target.value)} required maxLength={50} placeholder="POP-QUAL-001"/></label>
-                <label><span className={label}>TÍTULO DO PROCEDIMENTO *</span><input className={field} value={titulo} onChange={e => setTitulo(e.target.value)} required maxLength={255} placeholder="Inspeção de recebimento"/></label>
-                <label><span className={label}>DEPARTAMENTO</span><input className={field} value={departamento} onChange={e => setDepartamento(e.target.value)} maxLength={100} placeholder="QUALIDADE"/></label>
-                <div className="flex items-end pb-1 text-[9px] text-neutral-400">Identificação e controle de revisão conforme SGQ.</div>
-              </div>
+              <section aria-label="Cabeçalho normativo do documento" className="mb-4 overflow-hidden rounded-[2px] border border-[#AFC8D5] bg-white shadow-[0_3px_0_rgba(18,59,80,0.08)]">
+                <div className="grid grid-cols-1 sm:grid-cols-[150px_minmax(0,1fr)]">
+                  <div className="flex min-h-[104px] flex-col items-center justify-center gap-2 border-b border-[#D7E4EA] bg-[#F4FBFD] p-3 sm:border-b-0 sm:border-r">
+                    <img src="/logo/logo.png" alt="Logotipo da empresa" className="max-h-[54px] max-w-[126px] object-contain" />
+                    <span className="text-center text-[8px] font-bold uppercase tracking-[.12em] text-[#123B50]">Sistema de Gestão da Qualidade</span>
+                  </div>
+                  <div className="min-w-0">
+                    <div className="border-b border-[#D7E4EA] px-3 py-2">
+                      <p className="text-[8px] font-bold uppercase tracking-[.14em] text-[#2D8DB8]">{selected ? 'DOCUMENTO CONTROLADO · CABEÇALHO BLOQUEADO' : 'EMISSÃO DE NOVO DOCUMENTO'}</p>
+                      <label className="mt-1 block">
+                        <span className={label}>NOME DO DOCUMENTO / PROCEDIMENTO *</span>
+                        <input className="h-[32px] w-full border-b border-slate-300 bg-transparent text-[13px] font-extrabold uppercase text-[#123B50] outline-none focus:border-[#2D8DB8] disabled:border-transparent disabled:text-slate-600" value={titulo} onChange={e => setTitulo(e.target.value)} required maxLength={255} placeholder="Digite o nome oficial do documento" disabled={Boolean(selected)} />
+                      </label>
+                    </div>
+                    <div className="grid grid-cols-2 gap-0 sm:grid-cols-4">
+                      <label className="border-b border-r border-[#D7E4EA] p-2 sm:border-b-0"><span className={label}>CÓDIGO *</span><input className={field + ' font-mono font-bold'} value={codigo} onChange={e => setCodigo(e.target.value.toUpperCase())} required maxLength={50} placeholder="DSG-GQ-001" disabled={Boolean(selected)} /></label>
+                      <div className="border-b border-[#D7E4EA] p-2 sm:border-b-0 sm:border-r"><span className={label}>REVISÃO</span><p className="pt-2 text-[12px] font-black text-[#123B50]">Rev. {String(selected?.revisao ?? ((history[0]?.revisao ?? 0) + (codigo.trim() ? 1 : 0))).padStart(2, '0')}</p></div>
+                      <div className="border-r border-[#D7E4EA] p-2"><span className={label}>DATA DE EMISSÃO</span><p className="pt-2 text-[11px] font-semibold text-slate-700">{selected ? new Date(selected.criado_em).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR')}</p></div>
+                      <div className="p-2"><span className={label}>STATUS</span><p className="pt-2 text-[10px] font-extrabold text-amber-700">{selected?.status?.replaceAll('_', ' ') ?? 'RASCUNHO / NOVA EMISSÃO'}</p></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 border-t border-[#D7E4EA] bg-[#F8FBFC] sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+                  <label className="border-b border-[#D7E4EA] p-2 sm:border-b-0 sm:border-r"><span className={label}>DEPARTAMENTO / SETOR</span><input className={field} value={departamento} onChange={e => setDepartamento(e.target.value.toUpperCase())} maxLength={100} placeholder="QUALIDADE" disabled={Boolean(selected)} /></label>
+                  <div className="flex items-center px-3 py-2 text-[9px] leading-4 text-slate-500">O cabeçalho fica bloqueado durante a atualização. Ao salvar, o Supabase registra a nova revisão e atualiza automaticamente a identificação do documento.</div>
+                </div>
+              </section>
 
               <div className="mt-6 flex items-center justify-between border-b border-neutral-100 pb-2">
                 <div><h2 className="text-[11px] font-semibold text-neutral-800">Conteúdo do procedimento</h2><p className="mt-0.5 text-[9px] text-neutral-400">Estruture objetivo, responsabilidades, método e critérios de aceitação.</p></div>
