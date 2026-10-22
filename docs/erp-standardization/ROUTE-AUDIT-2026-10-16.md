@@ -90,3 +90,22 @@ O status de commit retornado pelo GitHub para os commits de correção mais rece
 - não há confirmação de build Vercel aprovado para elas;
 - não há confirmação de que foram publicadas em produção;
 - type-check, lint, auditorias e inspeção visual seguem pendentes.
+
+
+## Continuação — revisão do fluxo de parecer/liberação de lote (2026-10-22)
+
+**Rota:** `/qualidade/liberacao-lote`  
+**Componente:** `src/pages/qualidade/QualidadeLiberacaoLotes.tsx`  
+**Revisão:** SGQ-REL-001
+
+### Achado reproduzível
+
+O formulário grava pareceres em `erp_qualidade_liberacao_lotes`, tabela documental com `codigo_lote` textual, `produto_id`, quantidade e `status_sgq`. A migration versionada `supabase/migrations/20261019150000_erp_qualidade_liberacao_lotes.sql` não vincula o registro ao UUID do lote operacional e não implementa uma RPC que altere o status do estoque de forma transacional. Logo, selecionar “APROVADO” não comprova nem executa a liberação operacional do lote.
+
+### Correção aplicada
+
+O título e as mensagens agora identificam a função como **registro de parecer SGQ**; a tela informa explicitamente que não altera o status operacional do estoque. Isso evita apresentar o registro documental como se fosse uma liberação física/transacional.
+
+### Estado
+
+**CORRIGIDO AGUARDANDO VALIDAÇÃO** — commit `952850269faa69bdbf906a31b4689ffcc3cc5186`. Foram inspecionados o componente e a migration versionada; não houve execução local de TypeScript/build, teste autenticado ou confirmação de schema/RLS remoto. O fluxo de liberação transacional continua **PENDENTE** até confirmar schema e autorização real. Não remover do backlog.
