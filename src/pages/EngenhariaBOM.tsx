@@ -19,6 +19,7 @@ const btn = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2
 const money = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 4, maximumFractionDigits: 4 })
 
 export default function EngenhariaBOM() {
+  const [searchParams] = useSearchParams()
   const [products, setProducts] = useState<Product[]>([])
   const [tools, setTools] = useState<Tool[]>([])
   const [headers, setHeaders] = useState<Header[]>([])
