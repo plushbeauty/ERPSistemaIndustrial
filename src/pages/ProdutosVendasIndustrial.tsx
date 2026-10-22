@@ -4,9 +4,9 @@
  * Data/Hora: 24/09/2026 - 13:00 BRT
  * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
  * ID da Revisão: REV-059
- * Data da revisão autorizada: 2026-10-20
- * Revisão: APROV-008 — ajuste autorizado do cadastro mestre
- * Status da tela: APROVADO-IMUTAVEL (não alterar sem autorização explícita do usuário).
+ * Data da revisão autorizada: 2026-10-21
+ * Revisão: REV-PRODUTO-UI-009 — reorganização autorizada do cadastro mestre no padrão PCP claro e compacto
+ * Status da tela: revisão visual autorizada pelo usuário em 2026-10-21; regras de dados e CRUD preservados.
  * Alterações: Remoção de cast Event→FormEvent artificial no salvamento de produtos; ação agora chama save() diretamente.
  * Status do Build Local: Não executado — validação será feita pelo gate remoto.
  * =========================================================================
@@ -68,7 +68,7 @@ const money=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency
 const n=(v:unknown)=>Number(v??0)||0
 const fmt=(v:unknown)=>n(v).toLocaleString('pt-BR',{maximumFractionDigits:3})
 const panel:CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:2}
-const input:CSSProperties={width:'100%',height:36,border:'1px solid #c4ced9',borderRadius:2,padding:'0 8px',fontSize:11,background:'#fff',boxSizing:'border-box'}
+const input:CSSProperties={width:'100%',height:30,border:'1px solid #c4ced9',borderRadius:2,padding:'0 8px',fontSize:11,background:'#fff',boxSizing:'border-box',minWidth:0}
 const label:CSSProperties={display:'grid',gap:3,minWidth:0,fontSize:9,lineHeight:'11px',fontWeight:500,color:'#344054',textTransform:'uppercase',overflowWrap:'anywhere'}
 const btn=(kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,height:30,padding:'0 10px',borderRadius:2,border:'1px solid '+(kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#B8CDD5'),background:kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#F4FBFD',color:kind==='primary'||kind==='danger'?'#fff':'#123B50',fontSize:11,fontWeight:600,textTransform:'uppercase',cursor:'pointer',whiteSpace:'nowrap'})
 const emptyRow=(text:string,col=7)=><tr><td colSpan={col} style={{padding:22,textAlign:'center',color:'#667085'}}>{text}</td></tr>
@@ -366,16 +366,17 @@ export default function ProdutosVendasIndustrial(){
     <style>{`
       .product-master-screen label{min-width:0}
       /* Travas físicas de largura para os campos do cadastro mestre. */
-      .product-master-screen input.edit-2,.product-master-screen select.edit-2{display:inline-block!important;width:4ch!important;max-width:4ch!important;box-sizing:border-box}
-      .product-master-screen input.edit-3,.product-master-screen select.edit-3{display:inline-block!important;width:5ch!important;max-width:5ch!important;box-sizing:border-box;text-align:center}
-      .product-master-screen input.edit-4,.product-master-screen select.edit-4{display:inline-block!important;width:6ch!important;max-width:6ch!important;box-sizing:border-box;text-align:right}
-      .product-master-screen input.edit-8,.product-master-screen select.edit-8{display:inline-block!important;width:10ch!important;max-width:10ch!important;box-sizing:border-box}
-      .product-master-screen input.edit-10,.product-master-screen select.edit-10{display:inline-block!important;width:12ch!important;max-width:12ch!important;box-sizing:border-box}
-      .product-master-screen input.edit-12,.product-master-screen select.edit-12{display:inline-block!important;width:14ch!important;max-width:14ch!important;box-sizing:border-box;text-align:right}
-      .product-master-screen input.edit-14,.product-master-screen select.edit-14{display:inline-block!important;width:16ch!important;max-width:16ch!important;box-sizing:border-box;text-align:right}
-      .product-master-screen input.edit-20,.product-master-screen select.edit-20{display:inline-block!important;width:22ch!important;max-width:22ch!important;box-sizing:border-box}
-      .product-master-screen input.edit-60,.product-master-screen textarea.edit-60{display:inline-block!important;width:100%!important;max-width:320px!important;box-sizing:border-box}
-      .product-master-screen input.edit-120,.product-master-screen textarea.edit-120{display:inline-block!important;width:100%!important;max-width:450px!important;box-sizing:border-box}
+      /* Tamanhos semânticos: os edits respeitam o tamanho do dado, sem estourar a coluna do formulário. */
+      .product-master-screen input.edit-2,.product-master-screen select.edit-2{display:block!important;width:100%!important;max-width:4ch!important;min-width:0!important;box-sizing:border-box;text-align:center}
+      .product-master-screen input.edit-3,.product-master-screen select.edit-3{display:block!important;width:100%!important;max-width:5ch!important;min-width:0!important;box-sizing:border-box;text-align:center}
+      .product-master-screen input.edit-4,.product-master-screen select.edit-4{display:block!important;width:100%!important;max-width:6ch!important;min-width:0!important;box-sizing:border-box;text-align:right}
+      .product-master-screen input.edit-8,.product-master-screen select.edit-8{display:block!important;width:100%!important;max-width:10ch!important;min-width:0!important;box-sizing:border-box}
+      .product-master-screen input.edit-10,.product-master-screen select.edit-10{display:block!important;width:100%!important;max-width:12ch!important;min-width:0!important;box-sizing:border-box}
+      .product-master-screen input.edit-12,.product-master-screen select.edit-12{display:block!important;width:100%!important;max-width:14ch!important;min-width:0!important;box-sizing:border-box;text-align:right}
+      .product-master-screen input.edit-14,.product-master-screen select.edit-14{display:block!important;width:100%!important;max-width:16ch!important;min-width:0!important;box-sizing:border-box;text-align:right}
+      .product-master-screen input.edit-20,.product-master-screen select.edit-20{display:block!important;width:100%!important;max-width:20ch!important;min-width:0!important;box-sizing:border-box}
+      .product-master-screen input.edit-60,.product-master-screen textarea.edit-60{display:block!important;width:100%!important;max-width:320px!important;min-width:0!important;box-sizing:border-box}
+      .product-master-screen input.edit-120,.product-master-screen textarea.edit-120{display:block!important;width:100%!important;max-width:450px!important;min-width:0!important;box-sizing:border-box}
       .product-master-screen input[type="number"]{text-align:right}
       .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{box-sizing:border-box}
       .product-master-screen button:disabled{opacity:.48;cursor:not-allowed}
@@ -385,19 +386,19 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen .product-form-section{margin:0 0 12px;padding:0 0 10px;border-bottom:1px solid #dbe4ea}
       .product-master-screen .product-form-section:last-child{border-bottom:0;margin-bottom:0}
       .product-master-screen .product-form-section-title{margin:0 0 8px;padding:6px 8px;background:#eaf4f8;border-left:3px solid #2D8DB8;color:#123B50;font-size:10px;line-height:14px;font-weight:700;letter-spacing:.04em}
-      .product-master-screen .product-form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;align-items:start}
+      .product-master-screen .product-form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 12px;align-items:start;justify-items:stretch}
       .product-master-screen .product-form-grid>*{min-width:0}
       .product-master-screen .product-form-grid label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(12px,auto) 30px;align-content:start;gap:2px;min-width:0}
-      .product-master-screen .product-form-grid label>input,.product-master-screen .product-form-grid label>select,.product-master-screen .product-form-grid label>textarea{min-width:0;width:100%;height:30px;box-sizing:border-box}
+      .product-master-screen .product-form-grid label>input,.product-master-screen .product-form-grid label>select,.product-master-screen .product-form-grid label>textarea{min-width:0;width:100%;height:30px;box-sizing:border-box;max-width:100%}
       .product-master-screen .product-form-grid label>span{display:flex;align-items:center;max-width:100%;min-height:12px;line-height:11px;white-space:normal;overflow-wrap:anywhere;word-break:normal}
       .product-master-screen .product-cost-stack{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;min-width:0}
       .product-master-screen .product-cost-stack label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(12px,auto) 30px;gap:2px;align-content:start;min-width:0}
       .product-master-screen .product-status-field{display:flex;align-items:center;align-self:end;gap:8px;min-height:30px;flex-wrap:wrap;border:1px solid #d5dde7;padding:5px 6px;background:#f8fbfd;box-sizing:border-box;min-width:0}
       .product-master-screen .product-status-field>span{font-size:9px;font-weight:600;color:#344054;text-transform:uppercase}
       .product-master-screen .product-status-field label{display:flex;align-items:center;gap:4px;white-space:normal;font-size:9px;min-width:0}
-      .product-master-screen .product-workspace{display:grid;grid-template-columns:minmax(320px,.78fr) minmax(0,1.72fr);grid-template-areas:"list editor";gap:10px;margin:10px;align-items:start}
+      .product-master-screen .product-workspace{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"editor" "list";gap:10px;margin:10px auto;max-width:1500px;padding:0 8px;align-items:start}
       .product-master-screen .product-editor-panel{grid-area:editor;margin:0!important;min-width:0}
-      .product-master-screen .product-list-panel{grid-area:list;margin:0!important;min-width:0;position:sticky;top:8px}
+      .product-master-screen .product-list-panel{grid-area:list;margin:0!important;min-width:0;position:static}
       .product-master-screen .product-list-panel table{min-width:0!important;table-layout:fixed}
       .product-master-screen .product-list-panel th,.product-master-screen .product-list-panel td{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .product-master-screen .product-list-panel tbody tr:hover{background:#edf7fb!important}
@@ -406,9 +407,9 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen .product-responsive-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;align-items:start}
       .product-master-screen .product-responsive-grid>*{min-width:0}
       .product-master-screen .product-responsive-grid label{align-content:start;grid-template-rows:minmax(12px,auto) 30px;gap:2px}
-      .product-master-screen .product-responsive-grid label>input,.product-master-screen .product-responsive-grid label>select{width:100%;min-width:0}      @media(max-width:1250px){.product-master-screen .product-workspace{grid-template-columns:minmax(280px,.72fr) minmax(0,1.5fr);gap:8px;margin:8px}}
-      @media(max-width:1050px){.product-master-screen .product-workspace{grid-template-columns:minmax(0,1fr);grid-template-areas:"list" "editor"}.product-master-screen .product-list-panel{position:static}}
-      @media(min-width:1051px){.product-master-screen .product-list-panel>div:last-child{max-height:calc(100vh - 245px);overflow:auto}}
+      .product-master-screen .product-responsive-grid label>input,.product-master-screen .product-responsive-grid label>select{width:100%;min-width:0}      @media(max-width:1250px){.product-master-screen .product-workspace{grid-template-columns:minmax(0,1fr);gap:8px;margin:8px auto;padding:0 6px}}
+      @media(max-width:1050px){.product-master-screen .product-workspace{grid-template-columns:minmax(0,1fr);grid-template-areas:"editor" "list"}.product-master-screen .product-list-panel{position:static}}
+      @media(min-width:1051px){.product-master-screen .product-list-panel>div:last-child{max-height:360px;overflow:auto}}
       @media(max-width:1150px){.product-master-screen .product-form-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.product-master-screen .product-responsive-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
       .product-master-screen .product-unit-row{grid-column:span 3;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;align-items:center;min-width:0}.product-master-screen .product-unit-row label{display:grid;grid-template-columns:82px minmax(0,1fr);grid-template-rows:30px;align-items:center;gap:5px}.product-master-screen .product-unit-row label>span{min-height:0;line-height:11px}.product-master-screen .product-unit-row label>select{width:100%;min-width:0}.product-master-screen .product-photo-card{cursor:pointer;transition:border-color .12s,background .12s}.product-master-screen .product-photo-card:hover{border-color:#2D8DB8!important;background:#edf7fb!important}.product-master-screen .product-combo-wrap{display:grid;grid-template-columns:minmax(0,1fr) 30px;gap:4px;align-items:end;min-width:0}
       .product-master-screen .product-plus-button{height:30px;width:30px;border:1px solid #2D8DB8;background:#eaf4f8;color:#123B50;display:inline-flex;align-items:center;justify-content:center;border-radius:2px;cursor:pointer}
