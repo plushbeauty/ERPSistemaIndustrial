@@ -162,7 +162,7 @@ export default function AlmoxarifadoInventario() {
     <main className="min-h-screen bg-[#F4F8FB] p-3 font-sans text-slate-800 antialiased md:p-5">
       <div className="mx-auto max-w-[1700px] space-y-4">
         <header className="flex flex-wrap items-center gap-3 border border-slate-200 border-l-4 border-l-[#E6A34A] bg-white p-4 shadow-[0_4px_18px_rgba(18,59,80,0.08)]">
-          <span className="flex h-11 w-11 items-center justify-center rounded-[2px] border border-[#E6A34A]/30 border-slate-200 bg-[#F4FBFD] text-[#123B50]"><Archive size={22} /></span>
+          <span className="flex h-11 w-11 items-center justify-center rounded-[2px] border border-slate-200 bg-[#F4FBFD] text-[#123B50]"><Archive size={22} /></span>
           <div>
             <div className="text-[9px] font-black uppercase tracking-[0.18em] text-[#2D8DB8]">SYSNQRA · LOGÍSTICA / SGQ</div>
             <h1 className="text-lg font-black leading-6 md:text-xl">Almoxarifado Mestre · Rastreabilidade FIFO</h1>
@@ -215,7 +215,7 @@ export default function AlmoxarifadoInventario() {
             </table>
           </div>
           {loading && <p className="mt-3 text-[10px] text-slate-500">Carregando dados reais do Supabase…</p>}
-          <div className="mt-3 flex items-start gap-2 border-l-2 border-[#E6A34A] bg-[#251f16] p-2 text-[10px] text-amber-700"><AlertTriangle size={14} className="mt-0.5 shrink-0" /><p>Regra de segurança: a tela apenas informa elegibilidade. O bloqueio definitivo de lote vencido e o consumo FIFO precisam ser impostos também pela RPC de saída/PCP no banco, para evitar consumo concorrente ou chamada direta à API.</p></div>
+          <div className="mt-3 flex items-start gap-2 border-l-2 border-[#E6A34A] bg-amber-50 p-2 text-[10px] text-amber-900"><AlertTriangle size={14} className="mt-0.5 shrink-0" /><p>Regra de segurança: a tela apenas informa elegibilidade. O bloqueio definitivo de lote vencido e o consumo FIFO precisam ser impostos também pela RPC de saída/PCP no banco, para evitar consumo concorrente ou chamada direta à API.</p></div>
         </section>
         <footer className="text-[9px] text-slate-400">SYSNQRA · IT-ALM-FIFO-009 · Tenant: {companyId ? companyId.slice(0, 8) + '…' : 'não carregado'} · Atualização {today}</footer>
       </div>
