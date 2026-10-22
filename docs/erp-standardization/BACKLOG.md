@@ -137,3 +137,11 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Correção:** a finalização do apontamento exige retorno do registro atualizado (`.select('id').maybeSingle()`); resposta sem linha gera erro visível, em vez de exibir falso sucesso.
 - **Commit:** `7df01c6cc2191796a2d8501ff72138737dd289bb`.
 - **Status:** corrigido aguardando type-check, lint, teste com sessão/RLS e validação de deployment. **Não fecha** UI-040 nem QA-040.
+
+
+## Evidência incremental — proteger finalização repetida no CPP (2026-10-22)
+
+- **Arquivo:** `src/pages/PCPAreaFuncionario.tsx`.
+- **Mudança:** a finalização agora exige `fim_em IS NULL`, além de empresa, ID do apontamento e operador; mantém verificação de linha retornada antes da mensagem de sucesso.
+- **Commit de código:** `536d5e5701d9253085d74a0ace7a8ead02cf5588`.
+- **Estado:** corrigido aguardando type-check, lint, teste autenticado/RLS e deployment. Não fecha UI-040/QA-040.
