@@ -1,5 +1,5 @@
 /**
- * REVISÃO: 2026-10-22 · REV-PCP-AGENDA-005
+ * REVISÃO: 2026-10-22 · REV-PCP-AGENDA-006
  * Alteração: consultas paginadas e limpeza de dados/seleção/calendário anteriores antes de revalidar a empresa da sessão.
  * Preservado: RPCs, filtros por empresa_id, regras operacionais e layout aprovado.
  */
@@ -115,7 +115,7 @@ export default function PCPAgendaMaquinas(){
  }
  async function startSlot(slot:Slot){
   setBusy(true);setError('');setNotice('')
-  try{const r=await supabase.from('pcp_agenda_maquinas').update({status:'em_execucao'}).eq('id',slot.id).eq('empresa_id',company);if(r.error)throw r.error;setNotice('Programação marcada em execução.');await load()}catch(e){setError(messageOf(e))}finally{setBusy(false)}
+  try{const r=await supabase.from('pcp_agenda_maquinas').update({status:'em_execucao'}).eq('id',slot.id).eq('empresa_id',company).select('id,status').maybeSingle();if(r.error)throw r.error;if(!r.data||r.data.status!=='em_execucao')throw new Error('A programação não foi atualizada: registro inexistente ou sem permissão para esta empresa.');setNotice('Programação marcada em execução.');await load()}catch(e){setError(messageOf(e))}finally{setBusy(false)}
  }
  async function moveSlot(slot:Slot,direction:number){
   const row=cellSlots(slot.maquina_id,new Date(slot.data_hora_inicio));const index=row.findIndex(x=>x.id===slot.id);const other=row[index+direction]
