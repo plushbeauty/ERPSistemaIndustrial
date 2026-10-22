@@ -98,3 +98,13 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Pendente crítico:** construir o fluxo transacional exige confirmar schema real de estoque, autorização RBAC e trilha de auditoria; não alterar status operacional diretamente no cliente nem criar RPC baseada em colunas presumidas.
 - **Commit de correção da tela:** `952850269faa69bdbf906a31b4689ffcc3cc5186`.
 - **Validação:** conteúdo versionado e migration inspecionados estaticamente. Type-check, testes interativos e implantação do novo commit ainda precisam ser confirmados.
+
+## Evidência incremental — Menu principal do SGQ sem estação tablet (2026-10-22)
+
+- **Arquivos alterados:** `src/components/quality/QualitySidebar.tsx`, `src/pages/QualidadeDashboardSGQ.tsx`, `src/pages/TabletDashboard.tsx`, `src/AppEntryV2.tsx`.
+- **Mudança:** os 23 atalhos existentes da Qualidade passam a aparecer diretamente como grade de ícones no painel principal `/qualidade`; o GED e a Lista Mestra estão no menu. Removida a estação rápida “QUALIDADE SGQ” do dashboard do tablet operacional e a rota antiga `/qualidade/tablet` agora redireciona para `/qualidade`.
+- **Proteção de escopo:** `QualidadeCentralTablet.tsx` foi mantido intacto; não alterei `TabletMenuModal.tsx`, `QualidadeCentralTablet.tsx`, `PCPTabletOperador.tsx`, `NovoPedido.tsx` nem a página inicial pública.
+- **Commits:** `c5e436df21a51ace259169fae9e4309cb6c62066` (grade do menu); `225740160afab8ac202ac99397fc4a6b96d1c96e` (integração no painel SGQ); `26f6c50294656c89448eda95a6387a74d850611e` (remoção da estação rápida); `4bbdeff35d4734ae2120ae4f42a7d61a6c7d9652` (redirect da rota tablet).
+- **Validação ainda pendente:** type-check, lint, auditorias, build, navegação autenticada e deployment Vercel precisam ser consultados antes de declarar a alteração publicada.
+- **GED/ISO:** esta mudança resolve a navegação solicitada; não declara concluídos os novos campos de validade, elaboração/aprovação, referências vinculadas e alertas de obsolescência, que ainda exigem mapear e validar o contrato persistente do banco/RPC.
+
