@@ -3,7 +3,7 @@
 **Repositório:** `plushbeauty/ERPSistemaIndustrial`  
 **Módulo:** Planejamento e Controle da Produção (PCP) e Manufatura  
 **Data da Auditoria Inicial:** 17/10/2026  
-**Última Atualização:** 17/10/2026  
+**Última Atualização:** 21/10/2026  
 **Responsável:** Lovable Industrial Engineering Core  
 **Branch de Trabalho:** `main`
 
@@ -85,15 +85,16 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 
 ---
 
-### [PCP-005] Quebra do Padrão Visual Compacto Industrial na Tela de Paradas de Máquina
+### [PCP-005] Modernização do Apontamento de Paradas de Máquina
 - **Prioridade:** `P1`
-- **Categoria:** Padrão Visual Industrial
-- **Tela / Componente:** Apontamento de Paradas e Setup (`src/pages/PCPParadas.tsx:84-150`)
+- **Categoria:** Padrão Visual Industrial / Rastreabilidade
+- **Tela / Componente:** `src/pages/PCPParadasMaquina.tsx`
 - **Rota Confirmada:** `/pcp/paradas`
-- **Descrição Objetiva:** A tela utiliza fundo escuro não padronizado (`bg-slate-900`), botões verticais excessivamente grandes (`min-h-16`), cantos arredondados desproporcionais (`rounded-xl`) e tipografia fora da escala técnica do ERP.
-- **Impacto:** Inconsistência visual extrema em relação ao restante do ERP industrial (que utiliza base clara `#F4FBFD`, molduras discretas `#123B50` / `#2D8DB8` e controles densos de 30px).
-- **Correção Prevista:** Refatorar o layout para a paleta oficial (`#F4FBFD`, `#123B50`, `#2D8DB8`), inputs de altura 30px (`h-8`), botões com `rounded-[2px]` e tabela densa de paradas ativas e encerradas.
-- **Evidência de Validação:** Padrão de referência aprovado em `src/pages/NovoPedido.tsx` e regras de `scripts/verify-approved-ui-lock.mjs`.
+- **Descrição Objetiva:** A nova tela substitui a interface anterior na rota oficial e reúne registro de parada, cronômetro, filtros por status/máquina, histórico persistido e relatório de impressão A4.
+- **Segurança e integridade:** Usa a tabela existente `erp_producao_paradas`, resolve `empresa_id` por `erp_current_empresa_id`, filtra consultas pelo tenant e preserva as políticas RLS/RBAC existentes. Não introduz a tabela nova sugerida no rascunho porque o banco já possui contrato de paradas ativo.
+- **Padrão visual:** Base clara `#F4FBFD`, controles de 30px, labels de 9px, cantos `rounded-[2px]`, grid CSS de 12 colunas e responsividade em tablets/monitores.
+- **Nota de integridade:** O painel não inventa um percentual de OEE; exibe duração derivada dos horários persistidos. O cálculo oficial de OEE requer tempo planejado e dados reais de produção.
+- **Evidência de validação:** Código e rota gravados em commits `81159b9` e `37a4c18`; build de produção ainda pendente no momento desta atualização.
 - **Status:** `CORRIGIDO`
 
 ---
