@@ -5,7 +5,7 @@
  * Registros enviados ao ERP: erp_apontamentos_processo. Sem dados de demonstração.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, ArrowLeft, CalendarDays, CheckCircle2, Clock3, Factory, FileText, Package, Play, RefreshCw, Save, ShieldCheck, Square, UserRound } from 'lucide-react'
+import { AlertTriangle, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Clock3, Factory, FileText, Package, Play, RefreshCw, ShieldCheck, Square, UserRound } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type Employee = { id: string; matricula: string; nome: string; email: string | null; status: string }
@@ -37,6 +37,7 @@ export default function PCPAreaFuncionario() {
   const [entries, setEntries] = useState<ProcessEntry[]>([])
   const [selectedProgramId, setSelectedProgramId] = useState('')
   const [selectedDay, setSelectedDay] = useState(localDate(new Date()))
+  const [weekOffset, setWeekOffset] = useState(0)
   const [goodQty, setGoodQty] = useState('')
   const [scrapQty, setScrapQty] = useState('')
   const [stopReason, setStopReason] = useState('')
@@ -116,13 +117,19 @@ export default function PCPAreaFuncionario() {
     const today = new Date()
     const monday = new Date(today)
     const weekday = (today.getDay() + 6) % 7
-    monday.setDate(today.getDate() - weekday)
+    monday.setDate(today.getDate() - weekday + weekOffset * 7)
     return Array.from({ length: 7 }, (_, index) => {
       const day = new Date(monday)
       day.setDate(monday.getDate() + index)
       return localDate(day)
     })
-  }, [])
+  }, [weekOffset])
+  function changeWeek(delta: number) {
+    const firstDay = new Date(days[0] + 'T12:00:00')
+    firstDay.setDate(firstDay.getDate() + delta * 7)
+    setWeekOffset(value => value + delta)
+    setSelectedDay(localDate(firstDay))
+  }
   const dayPrograms = programs.filter(item => localDate(new Date(item.inicio_planejado)) === selectedDay)
   const selectedEntries = entries.filter(item => program?.ordem_producao_id === item.ordem_producao_id)
   const activeEntry = openEntry && openEntry.operador_id === employee?.id ? openEntry : null
@@ -212,8 +219,13 @@ export default function PCPAreaFuncionario() {
       </section>
       <section className="border border-slate-200 bg-white p-3 shadow-[0_2px_8px_rgba(18,59,80,.04)]">
         <div className="mb-3 flex items-center gap-2"><CalendarDays size={16} className="text-[#2D8DB8]"/><div><h2 className="text-xs font-black uppercase text-[#123B50]">Minha semana</h2><p className="text-[10px] text-slate-500">Toque em uma data para ver os produtos programados para você.</p></div></div>
-        <div className="grid grid-cols-7 gap-1">
-          {days.map(day=>{const count=programs.filter(item=>localDate(new Date(item.inicio_planejado))===day).length;const isSelected=selectedDay===day;return <button type="button" key={day} onClick={()=>setSelectedDay(day)} className={'min-w-0 border px-1 py-2 text-center '+(isSelected?'border-[#123B50] bg-[#123B50] text-white':'border-slate-200 bg-white text-slate-700 hover:border-[#2D8DB8]')}><span className="block text-[9px] font-bold uppercase">{new Date(day+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short'})}</span><span className="my-1 block text-sm font-black">{day.slice(8,10)}</span><span className={'mx-auto block h-1.5 w-1.5 rounded-full '+(count?'bg-emerald-500':'bg-slate-200')}/><span className="mt-1 block text-[8px]">{count?count+' tarefa(s)':'Livre'}</span></button>})}
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <button type="button" onClick={()=>changeWeek(-1)} aria-label="Semana anterior" className="grid h-8 w-8 shrink-0 place-items-center border border-slate-300 bg-white text-[#123B50]"><ChevronLeft size={16}/></button>
+          <p className="text-[9px] font-bold text-slate-500">{new Date(days[0]+'T12:00:00').toLocaleDateString('pt-BR')} — {new Date(days[6]+'T12:00:00').toLocaleDateString('pt-BR')}</p>
+          <button type="button" onClick={()=>changeWeek(1)} aria-label="Próxima semana" className="grid h-8 w-8 shrink-0 place-items-center border border-slate-300 bg-white text-[#123B50]"><ChevronRight size={16}/></button>
+        </div>
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {days.map(day=>{const count=programs.filter(item=>localDate(new Date(item.inicio_planejado))===day).length;const isSelected=selectedDay===day;return <button type="button" key={day} onClick={()=>setSelectedDay(day)} className={'min-w-[76px] shrink-0 border px-2 py-2 text-center '+(isSelected?'border-[#123B50] bg-[#123B50] text-white':'border-slate-200 bg-white text-slate-700 hover:border-[#2D8DB8]')}><span className="block text-[9px] font-bold uppercase">{new Date(day+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short'})}</span><span className="my-1 block text-sm font-black">{day.slice(8,10)}</span><span className={'mx-auto block h-1.5 w-1.5 rounded-full '+(count?'bg-emerald-500':'bg-slate-200')}/><span className="mt-1 block text-[8px]">{count?count+' tarefa(s)':'Livre'}</span></button>})}
         </div>
       </section>
       <section className="grid gap-3 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
