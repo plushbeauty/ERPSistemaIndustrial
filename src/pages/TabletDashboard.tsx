@@ -146,7 +146,7 @@ export default function TabletDashboard() {
         </button>
         <button
           type="button"
-          onClick={() => navigate('/area-funcionario')}
+          onClick={() => navigate('/pcp/portal-operador')}
           className="inline-flex h-6 items-center gap-1 rounded-[2px] border border-[#2d8db8] bg-[#2d8db8] px-2 text-white hover:bg-[#24789d]"
         >
           <UserRound size={12} aria-hidden="true" /> ÁREA DO FUNCIONÁRIO
