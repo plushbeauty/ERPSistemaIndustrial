@@ -1,5 +1,5 @@
 /**
- * REV-2026-10-21 — REV-FICHA-002: padrão claro do ERP, campos editáveis legíveis e painel de foto do molde.
+ * REV-2026-10-21 — REV-FICHA-003: padrão claro PCP, campos de temperatura editáveis fora do desenho, card compacto do molde e formulário organizado.
  * Preserva dados reais, isolamento por empresa, persistência Supabase e impressão A4.
  */
 import { useEffect, useMemo, useState } from 'react'
@@ -198,8 +198,6 @@ function ProcessEquipmentDiagram({ category, params, onParamChange, productId }:
  onParamChange: (key: string, value: string) => void
  productId?: string
 }) {
- const fieldClass = 'h-7 w-[74px] rounded border border-[#48B7C7]/70 bg-[#071522]/95 px-1 text-center text-[11px] font-bold text-[#F4FBFD] shadow-md outline-none focus:border-[#E6A34A] focus:ring-1 focus:ring-[#E6A34A]'
- const tagClass = 'absolute z-10 flex flex-col items-center gap-0.5 rounded border border-[#48B7C7]/40 bg-[#071522]/95 p-1 text-[9px] font-bold uppercase tracking-wide text-white shadow-lg'
  if (category !== 'INJETADOS' && category !== 'PRENSADOS') return null
  const press = category === 'PRENSADOS'
  const fields = press
@@ -242,24 +240,21 @@ function ProcessEquipmentDiagram({ category, params, onParamChange, productId }:
       <g stroke="#48B7C7" strokeWidth="1.5" strokeDasharray="4 4"><path d="M150 83V55"/><path d="M230 83V55"/><path d="M310 83V55"/><path d="M390 83V55"/></g>
      </g>}
     </svg>
-    {press ? <div>
-     <label className={tagClass} style={{left:'35%',top:'34%'}}>Platô superior<input aria-label="Temperatura do platô superior sobre o diagrama" className={fieldClass} inputMode="decimal" value={params.temp_plato_superior_c??''} onChange={e=>onParamChange('temp_plato_superior_c',e.target.value)} placeholder="°C"/></label>
-     <label className={tagClass} style={{left:'43%',top:'49%'}}>Temperatura do molde<input aria-label="Temperatura do molde sobre o diagrama" className={fieldClass} inputMode="decimal" value={params.temperatura_molde_c??''} onChange={e=>onParamChange('temperatura_molde_c',e.target.value)} placeholder="°C"/></label>
-     <label className={tagClass} style={{left:'35%',top:'64%'}}>Platô inferior<input aria-label="Temperatura do platô inferior sobre o diagrama" className={fieldClass} inputMode="decimal" value={params.temp_plato_inferior_c??''} onChange={e=>onParamChange('temp_plato_inferior_c',e.target.value)} placeholder="°C"/></label>
-     <label className={tagClass} style={{left:'76%',top:'48%'}}>Pressão<input aria-label="Pressão de prensagem sobre o diagrama" className={fieldClass} inputMode="decimal" value={params.pressao_prensagem_bar??''} onChange={e=>onParamChange('pressao_prensagem_bar',e.target.value)} placeholder="bar"/></label>
-    </div> : <div>
-     {fields.map((field,index)=><label key={field.key} className={tagClass} style={{left:(14+index*10.5)+'%',top:'25%'}}>Zona {index+1}<input aria-label={'Temperatura zona '+(index+1)+' sobre o canhão'} className={fieldClass} inputMode="decimal" value={params[field.key]??''} onChange={e=>onParamChange(field.key,e.target.value)} placeholder="°C"/></label>)}
-    </div>}
    </div>
    <div className="min-w-0">
     <div className="mb-2 rounded-[2px] border border-slate-200 bg-[#F4FBFD] p-3">
-     <p className="text-[10px] font-black uppercase tracking-wide text-[#123B50]">{press?'Temperaturas e pressão da prensa':'Temperaturas do canhão'}</p>
-     <p className="mt-1 text-xs leading-5 text-slate-600">Preencha cada valor diretamente nos campos posicionados sobre o desenho. Os valores são sincronizados com a ficha.</p>
+     <p className="text-[10px] font-black uppercase tracking-wide text-[#123B50]">{press?'Parâmetros editáveis da prensa':'Perfil térmico editável da injetora'}</p>
+     <p className="mt-1 text-xs leading-5 text-slate-600">Digite os valores nos campos abaixo. Eles ficam visíveis, com texto escuro, e são sincronizados com a ficha ao gravar.</p>
+     <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+      {fields.map(field=><label key={field.key} className="min-w-0">
+       <span className="mb-1 block text-[9px] font-black uppercase tracking-wide text-slate-600">{field.label} ({field.unit})</span>
+       <input type="number" step="0.1" inputMode="decimal" aria-label={field.label} className="h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-xs font-semibold text-[#123B50] outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20" value={params[field.key]??''} onChange={e=>onParamChange(field.key,e.target.value)} placeholder={field.unit==='°C'?'Temperatura °C':field.unit}/>
+      </label>)}
+     </div>
     </div>
     <div className="rounded-[2px] border border-slate-200 bg-white p-3">
-     <h4 className="mb-1 text-[11px] font-black uppercase tracking-wide text-[#123B50]">Imagem do Molde</h4>
-     <p className="mb-2 text-xs text-slate-600">Anexar a foto do molde para consulta durante o setup.</p>
-     {press&&<label className="mb-3 block"><span className="mb-1 block text-[9px] font-black uppercase tracking-wide text-slate-600">Tempo de cura (s)</span><input aria-label="Tempo de cura em segundos" className="h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-xs font-semibold text-[#123B50]" inputMode="decimal" value={params.tempo_cura_seg??''} onChange={e=>onParamChange('tempo_cura_seg',e.target.value)} placeholder="Informar segundos"/></label>}
+     <h4 className="mb-1 flex items-center gap-2 text-[11px] font-black uppercase tracking-wide text-[#123B50]"><Factory size={14}/> Card do molde</h4>
+     <p className="mb-2 text-xs text-slate-600">Foto do molde e consulta visual para preparar o setup. Os parâmetros são editados nos campos acima, não dentro da imagem.</p>
      <PCPMoldPhotoPanel productId={productId}/>
     </div>
 </div>
@@ -398,7 +393,7 @@ export default function PCPFichasProcesso() {
     <span className="flex h-10 w-10 items-center justify-center rounded-[2px] border border-[#48B7C7]/50 bg-[#123B50] text-[#48B7C7]"><Factory size={20}/></span>
     <div className="min-w-[240px]"><p className="text-[9px] font-black uppercase tracking-[.18em] text-[#48B7C7]">SYSNQRA SISTEMAS INDUSTRIAIS · SGQ / IT-PCP-001</p><h1 className="text-base font-black leading-5 md:text-lg">{category==='INJETADOS'?'Ficha técnica de processo — Injetados':category==='PRENSADOS'?'Ficha hidráulica de processo — Prensados':`Ficha de processo — ${categories.find(item=>item.value===category)?.label??category}`}</h1><p className="text-xs text-white">Parâmetros homologados, preparação, capacidade e rastreabilidade de revisão.</p></div>
     <div className="ml-auto grid min-w-[260px] flex-1 grid-cols-3 gap-2 md:max-w-[430px]">{[{label:'Documento',value:code||'Novo documento'},{label:'Revisão',value:version.padStart(2,'0')},{label:'Status',value:status}].map(item=><div key={item.label} className="rounded-lg border border-[#294456] bg-[#071522] px-3 py-2"><span className="block text-[10px] text-white">{item.label}</span><strong className={`mt-0.5 block truncate text-sm ${item.label==='Status'&&['APROVADA','LIBERADA'].includes(status)?'text-[#3A9D78]':'text-[#F4FBFD]'}`}>{item.value}</strong></div>)}</div>
-    <div className="flex w-full flex-wrap justify-end gap-2 print:hidden">{productId&&<a href={`/ficha-engenharia?produto=${encodeURIComponent(productId)}`} className="inline-flex h-[30px] items-center gap-1.5 rounded-[2px] border border-[#2D8DB8] bg-[#123B50] px-3 text-[10px] font-black uppercase tracking-wider text-[#48B7C7] transition-colors hover:bg-[#2D8DB8] hover:text-white"><ExternalLink size={13}/> Ficha de Engenharia</a>}<button className="erp-premium-button erp-premium-button-secondary" type="button" onClick={()=>{if(!rows.some(row=>row.codigo_ficha===code)){setError('Abra uma ficha existente na lista para editar.');return}setNotice('Ficha pronta para edição. Altere os campos e clique em Atualizar ficha.')}}><FileSliders size={14}/> Editar ficha</button><button className="erp-premium-button erp-premium-button-secondary" type="button" onClick={()=>window.print()}><Printer size={14}/> Imprimir ficha</button><button className="erp-premium-button erp-premium-button-secondary" type="button" onClick={()=>void load()} disabled={busy}><RefreshCw size={14}/> Recarregar lista</button><button className="erp-premium-button" type="button" onClick={()=>{setCode('');setProductId('');setToolId('');setMachineId('');setVersion('1');setApprovedAt('');setSignature('');setStatus('RASCUNHO');setParams(blankParameters(category));setInstructions('');setSearchParams({tipo:category});setNotice('Nova ficha pronta para preencher. Preencha os campos e grave a ficha.');setError('')}}>Nova ficha</button></div>
+    <div className="flex w-full flex-wrap justify-end gap-2 print:hidden">{productId&&<a href={`/ficha-engenharia?produto=${encodeURIComponent(productId)}`} className="inline-flex h-[30px] items-center gap-1.5 rounded-[2px] border border-[#2D8DB8] bg-[#123B50] px-3 text-[10px] font-black uppercase tracking-wider text-[#48B7C7] transition-colors hover:bg-[#2D8DB8] hover:text-white"><ExternalLink size={13}/> Ficha de Engenharia</a>}<button className="erp-premium-button erp-premium-button-secondary" type="button" onClick={()=>{if(!rows.some(row=>row.codigo_ficha===code)){setError('Abra uma ficha existente na lista para editar.');return}setNotice('Ficha pronta para edição. Altere os campos e clique em Atualizar ficha.')}}><FileSliders size={14}/> Editar ficha</button><button className="erp-premium-button erp-premium-button-secondary" type="button" onClick={()=>window.print()}><Printer size={14}/> Imprimir ficha</button><button className="erp-premium-button erp-premium-button-secondary" type="button" onClick={()=>void load()} disabled={busy}><RefreshCw size={14}/> Recarregar lista</button><button className="erp-premium-button" type="button" onClick={()=>{setCode('');setProductId('');setToolId('');setMachineId('');setVersion('1');setApprovedAt('');setSignature('');setStatus('RASCUNHO');setParams(blankParameters(category));setInstructions('');setSearchParams({tipo:category});setNotice('Nova ficha pronta para preencher. Preencha os campos agrupados e grave a ficha.');setError('')}}>Nova ficha</button></div>
    </header>
    {error && <div role="alert" className="mb-3 rounded-lg border border-[#D65B61]/50 bg-[#D65B61]/10 p-3 text-sm text-[#F4B8BB]">{error}</div>}
    {notice && <div role="status" className="mb-3 flex items-center gap-2 rounded-lg border border-[#3A9D78]/40 bg-[#3A9D78]/10 p-3 text-sm text-[#8ED0B4]"><CheckCircle2 size={16}/>{notice}</div>}
