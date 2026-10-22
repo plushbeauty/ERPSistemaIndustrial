@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#16445b"/><stop offset="1" stop-color="#071d31"/></linearGradient>
+    <linearGradient id="teal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#65d4d7"/><stop offset="1" stop-color="#168aa6"/></linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="30" fill="url(#bg)"/>
+  <path d="M20 118 75 77v22l40-30v32l35-24v59H20z" fill="#e8f5f8" opacity=".95"/>
+  <path d="M28 119h113v43H28z" fill="#d7eaf0"/>
+  <path d="M39 130h16v20H39zm28 0h16v20H67zm28 0h16v20H95z" fill="#123b50"/>
+  <path d="M150 76h66v85h-66z" fill="#2d8db8" stroke="#b8edf0" stroke-width="4"/>
+  <path d="M163 90h40v5h-40zm0 12h40v5h-40z" fill="#eafcff"/>
+  <circle cx="184" cy="133" r="15" fill="url(#teal)" stroke="#eafcff" stroke-width="3"/>
+  <path d="M184 121v24m-12-12h24" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+  <path d="M81 83c0-21 14-37 33-37s33 16 33 37v9H81z" fill="#f0c36b" stroke="#fff3cf" stroke-width="4"/>
+  <path d="M73 87h82v12H73z" fill="#e4a843" stroke="#fff3cf" stroke-width="3"/>
+  <path d="M88 99h52v32c0 17-12 29-26 29s-26-12-26-29z" fill="#f0c36b" stroke="#fff3cf" stroke-width="4"/>
+  <path d="M96 113h36v19H96z" fill="#123b50"/>
+  <path d="M101 117h26v11h-26z" fill="#66d1d7"/>
+  <path d="M79 151 62 172v20h91v-20l-17-21-19 13h-20z" fill="#f3f8fa" stroke="#b8edf0" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M99 164h23l10 28H89z" fill="url(#teal)"/>
+  <rect x="83" y="171" width="55" height="35" rx="5" fill="#0b263a" stroke="#b8edf0" stroke-width="4"/>
+  <rect x="89" y="177" width="43" height="23" rx="2" fill="#63d2d5"/>
+  <path d="M96 193v-7l7 3 7-8 7 5 7-7" fill="none" stroke="#123b50" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="12" y="211" width="232" height="34" rx="8" fill="#061827" stroke="#2d8db8" stroke-width="2"/>
+  <text x="128" y="225" fill="#fff" font-family="Arial,sans-serif" font-size="10" font-weight="800" text-anchor="middle" letter-spacing="1">PORTAL DO OPERADOR</text>
+  <text x="128" y="238" fill="#68d4d8" font-family="Arial,sans-serif" font-size="9" font-weight="800" text-anchor="middle" letter-spacing="1.4">CHÃO DE FÁBRICA</text>
+</svg>
