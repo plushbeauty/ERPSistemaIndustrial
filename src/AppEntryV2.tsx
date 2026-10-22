@@ -579,6 +579,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/dashboard-oee" element={<QualityPlanGate>{<PCPDashboardOEE />}</QualityPlanGate>} />
       <Route path="/pcp/tablet-operador" element={<QualityPlanGate>{<PCPTabletOperador />}</QualityPlanGate>} />
       <Route path="/area-funcionario" element={<PCPAreaFuncionario />} />
+      <Route path="/pcp/portal-operador" element={<PCPAreaFuncionario />} />
       <Route path="/pcp/tablet" element={<Navigate to="/pcp/tablet-operador" replace />} />
       <Route path="/pcp/auditoria" element={<QualityPlanGate>{<PCPAuditoria />}</QualityPlanGate>} />
       <Route path="/qualidade/industrial" element={<QualityPlanGate><QualidadeIndustrial /></QualityPlanGate>} />
