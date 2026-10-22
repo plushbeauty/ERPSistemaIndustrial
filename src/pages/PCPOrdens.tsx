@@ -116,7 +116,7 @@ export default function PCPOrdens() {
         fetchAllPages<Machine>((from, to) => supabase.from('erp_maquinas').select('id,codigo,nome,status', { count: 'exact' }).eq('empresa_id', companyId).eq('ativo', true).order('codigo').range(from, to)),
         fetchAllPages<OP>((from, to) => supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,pedido_venda_id,pedido_item_id,quantidade,quantidade_planejada,quantidade_produzida,status,prioridade,maquina_id,velocidade_nominal_hora,operacao_dupla,tempo_estimado_horas,data_prevista,observacoes,created_at', { count: 'exact' }).eq('empresa_id', companyId).order('created_at', { ascending: false }).range(from, to)),
         fetchAllPages<{ id: string; numero: number | string; cliente_id: string | null; status: string }>((from, to) => supabase.from('erp_pedidos_venda').select('id,numero,cliente_id,status', { count: 'exact' }).eq('empresa_id', companyId).order('numero', { ascending: false }).range(from, to)),
-        fetchAllPages<OrderItem>((from, to) => supabase.from('erp_pedidos_venda_itens').select('id,pedido_id,produto_id,quantidade,descricao', { count: 'exact' }).eq('empresa_id', companyId).range(from, to)),
+        fetchAllPages<OrderItem>((from, to) => supabase.from('erp_pedidos_venda_itens').select('id,pedido_id,produto_id,quantidade', { count: 'exact' }).eq('empresa_id', companyId).range(from, to)),
         fetchAllPages<{ id: string; nome: string }>((from, to) => supabase.from('erp_clientes').select('id,nome', { count: 'exact' }).eq('empresa_id', companyId).eq('ativo', true).order('nome').range(from, to))
       ])
       const customerMap = new Map(clients.map(c => [c.id, c.nome]))
