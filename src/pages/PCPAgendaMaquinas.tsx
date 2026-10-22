@@ -43,7 +43,12 @@ export default function PCPAgendaMaquinas(){
  const [notice,setNotice]=useState('')
  const [form,setForm]=useState({ordem_producao_id:'',molde_id:'',quantidade_programada:'1',lote_producao:'',data_hora_inicio:'',data_hora_fim:'',status:'planejada'})
  const load=useCallback(async()=>{
-  setBusy(true);setError('')
+  setBusy(true);setError('');setNotice('')
+  // Não preserve agenda, recursos ou calendário da empresa/sessão anterior durante a revalidação.
+  setCompany('');setMachines([]);setMolds([]);setOrders([]);setProcessCycles([]);setSlots([]);setSelected(null)
+  const defaultCalendar:Calendar={dias_trabalho:['seg','ter','qua','qui','sex'],horario_inicio_jornada:'06:00:00',horario_fim_jornada:'22:00:00'}
+  const defaultCalendarDraft:Calendar={dias_trabalho:['seg','ter','qua','qui','sex'],horario_inicio_jornada:'06:00',horario_fim_jornada:'22:00'}
+  setCalendar(defaultCalendar);setCalendarDraft(defaultCalendarDraft)
   try{
    const tenant=await supabase.rpc('erp_current_empresa_id')
    if(tenant.error||typeof tenant.data!=='string'||!tenant.data)throw tenant.error??new Error('Empresa da sessão não identificada.')
