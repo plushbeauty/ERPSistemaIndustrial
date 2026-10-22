@@ -131,3 +131,13 @@ O título e as mensagens agora identificam a função como **registro de parecer
 - **Commit de código:** `7df01c6cc2191796a2d8501ff72138737dd289bb`.
 - **Validação estática:** confirmado no conteúdo enviado ao GitHub que a resposta da atualização é verificada antes da mensagem de sucesso. Não foram executados type-check, lint, testes autenticados nem verificação remota de RLS/schema nesta rodada.
 - **Estado:** **CORRIGIDO AGUARDANDO VALIDAÇÃO**. A integração ponta a ponta ainda depende de schema/RLS remoto e teste com funcionário autenticado.
+
+
+## Continuação — impedir regravação de apontamento já encerrado (2026-10-22)
+
+- **Rota:** `/area-funcionario`; arquivo `src/pages/PCPAreaFuncionario.tsx`.
+- **Achado:** a atualização de finalização filtrava por empresa, ID e operador, mas não exigia que `fim_em` ainda fosse nulo. Uma segunda tentativa poderia tentar atualizar um apontamento já encerrado se a interface mantivesse estado antigo.
+- **Correção:** acrescentado filtro `.is('fim_em', null)` à atualização. O fluxo só confirma sucesso se o banco retornar a linha atualizada; uma repetição após encerramento não deve sobrescrever o apontamento concluído.
+- **Commit de código:** `536d5e5701d9253085d74a0ace7a8ead02cf5588`.
+- **Revisão estática:** o diff limita-se a adicionar o filtro de registro aberto e mantém os filtros de empresa, ID e operador. Não foram executados testes de corrida, type-check, lint, teste autenticado nem validação remota de RLS nesta rodada.
+- **Estado:** **CORRIGIDO AGUARDANDO VALIDAÇÃO**. UI-040 e QA-040 continuam abertos.
