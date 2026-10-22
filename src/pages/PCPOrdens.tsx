@@ -9,7 +9,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  AlertTriangle, ArrowRight, BarChart3, Boxes, CalendarClock, CheckCircle2,
+  AlertTriangle, ArrowRight, BarChart3, CalendarClock, CheckCircle2,
   ChevronRight, CirclePause, ClipboardList, Factory, FileText, Filter,
   Gauge, Layers3, ListFilter, Package, PackageCheck, Play, Plus, Printer,
   RefreshCw, Search, Settings2, ShieldCheck, ShoppingCart, X, Zap
