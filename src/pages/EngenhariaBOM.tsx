@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Coins, GitBranch, Layers, Plus, RefreshCw, Save, Trash2, Wrench, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import { useSearchParams } from 'react-router-dom'
 
 type Product = { id: string; codigo: string; nome: string; custo_medio: number | null }
 type Tool = { id: string; codigo: string; nome: string }
@@ -22,7 +23,7 @@ export default function EngenhariaBOM() {
   const [tools, setTools] = useState<Tool[]>([])
   const [headers, setHeaders] = useState<Header[]>([])
   const [companyId, setCompanyId] = useState('')
-  const [parentId, setParentId] = useState('')
+  const [parentId, setParentId] = useState(() => searchParams.get('produto') ?? '')
   const [toolId, setToolId] = useState('')
   const [version, setVersion] = useState('1')
   const [notes, setNotes] = useState('')
