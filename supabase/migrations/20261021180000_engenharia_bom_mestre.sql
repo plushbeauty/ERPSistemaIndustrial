@@ -171,13 +171,13 @@ begin
 
   insert into public.erp_ficha_itens
     (empresa_id, ficha_id, componente_id, quantidade, perda_percentual, tipo_item, sequencia)
-  select v_empresa, v_ficha_id, (e->>'componente_id')::uuid,
-         (e->>'quantidade_gasto')::numeric,
-         coalesce((e->>'perda_pct')::numeric,0),
+  select v_empresa, v_ficha_id, (e.value->>'componente_id')::uuid,
+         (e.value->>'quantidade_gasto')::numeric,
+         coalesce((e.value->>'perda_pct')::numeric,0),
          case when coalesce(p.fabricado,false) then 'FABRICADO' else 'COMPRADO' end,
          row_number() over (order by e.ordinality)::integer * 10
-  from jsonb_array_elements(p_componentes_json) with ordinality e
-  join public.erp_produtos p on p.id = (e->>'componente_id')::uuid and p.empresa_id = v_empresa;
+  from jsonb_array_elements(p_componentes_json) with ordinality as e(value, ordinality)
+  join public.erp_produtos p on p.id = (e.value->>'componente_id')::uuid and p.empresa_id = v_empresa;
 
   return jsonb_build_object('id',v_bom_id,'ficha_mrp_id',v_ficha_id,'produto_pai_id',p_produto_pai_id,'versao',p_versao,'status','RASCUNHO','componentes',jsonb_array_length(p_componentes_json));
 end;
