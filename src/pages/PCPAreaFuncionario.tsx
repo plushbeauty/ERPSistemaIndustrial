@@ -52,6 +52,19 @@ export default function PCPAreaFuncionario() {
   const load = useCallback(async () => {
     setLoading(true)
     setError('')
+    setMessage('')
+    // Não mantenha dados do funcionário/tenant anterior visíveis se a sessão mudar ou o refresh falhar.
+    setEmployee(null)
+    setCompanyId('')
+    setUserId('')
+    setPrograms([])
+    setOrders([])
+    setProducts([])
+    setMachines([])
+    setRecipes([])
+    setMaterials([])
+    setEntries([])
+    setSelectedProgramId('')
     try {
       const [{ data: authData, error: authError }, tenant] = await Promise.all([
         supabase.auth.getUser(),
