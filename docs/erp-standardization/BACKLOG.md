@@ -1,7 +1,7 @@
 # Backlog vivo — padronização de telas do ERP Industrial
 
-- Data: 2026-10-16
-- Revisão: UI-BACKLOG-R1
+- Data: 2026-10-22
+- Revisão: UI-BACKLOG-R2
 - Este arquivo contém somente trabalho pendente. Retirar item apenas quando houver evidência e registrar em COMPLETED.md.
 
 ## P0 — Fundação e medição
@@ -67,3 +67,13 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - Contagens estáticas: 248 declarações Route, 247 padrões únicos, 156 imports dinâmicos, 11 rotas para workspace genérico. Não são contagens de módulos funcionais.
 - Referências externas consultadas: SAP S/4HANA Cloud (10 áreas principais na página de áreas), ERPNext (21 nomes em modules.txt) e TOTVS Protheus Backoffice (18 tópicos/subitens explicitados na página pública). As taxonomias não são diretamente equivalentes.
 - Status: inventário/matriz documentados; execução funcional, build, type-check e publicação ainda pendentes. Nenhuma rota/módulo marcado concluído.
+
+
+## Evidência incremental — 2026-10-22
+
+- **Correção isolada:** `src/pages/CalibracaoIndustrial.tsx`, rota `/qualidade/calibracao`. A auditoria do formulário identificou duas instâncias do campo “Tipo de instrumento” ligadas à mesma propriedade `equipamento`, criando controle duplicado e confuso. Removida a segunda instância; mantido o campo original e preservados os fluxos de Supabase/RPC, validações e persistência.
+- **Registro no código:** revisão `SGQ-METROLOGIA-2026-10-22-R1`.
+- **Commit:** `8d870e5adfabb84d47bf8980fb84d16b65f13c2a`.
+- **Validação estática feita nesta rodada:** arquivo relido após o commit; uma ocorrência do campo “Tipo de instrumento” permanece no formulário. Isso comprova a remoção da duplicação no código, não comprova type-check, build, teste interativo ou schema/RLS em execução.
+- **CI/Vercel:** no momento do registro, o status Vercel deste commit estava `pending` e o deployment associado `BUILDING`; não marcar como publicado/validado até o estado final ser consultado.
+- **Pendências mantidas abertas:** `UI-001`, `UI-002`, `UI-060` e `QA-040` continuam abertos. A auditoria estática integral `npm run audit:ui-standardization` não foi executada neste ambiente sem checkout local/rede para clonar o repositório. Não remover itens do backlog por causa desta correção parcial.
