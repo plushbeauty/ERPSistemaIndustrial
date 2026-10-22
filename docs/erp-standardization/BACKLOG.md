@@ -77,3 +77,14 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Validação estática feita nesta rodada:** arquivo relido após o commit; uma ocorrência do campo “Tipo de instrumento” permanece no formulário. Isso comprova a remoção da duplicação no código, não comprova type-check, build, teste interativo ou schema/RLS em execução.
 - **CI/Vercel:** no momento do registro, o status Vercel deste commit estava `pending` e o deployment associado `BUILDING`; não marcar como publicado/validado até o estado final ser consultado.
 - **Pendências mantidas abertas:** `UI-001`, `UI-002`, `UI-060` e `QA-040` continuam abertos. A auditoria estática integral `npm run audit:ui-standardization` não foi executada neste ambiente sem checkout local/rede para clonar o repositório. Não remover itens do backlog por causa desta correção parcial.
+
+
+## Evidência incremental — 2026-10-22 — Cabeçalho normativo do GED/SGQ
+
+- **Arquivo alterado:** `src/pages/qualidade/GEDDocumentos.tsx`.
+- **Revisão no código:** `SGQ-DOC-2026-10-22-R1`.
+- **Mudança:** adicionado card superior normativo com logotipo `/logo/logo.png`, nome oficial do procedimento, código, revisão, data de emissão e status; no documento já selecionado, código/título/departamento ficam bloqueados para concentrar a alteração no conteúdo inferior e no motivo da revisão. A rota de nova emissão limpa a seleção ao abrir.
+- **Persistência:** mantida a chamada existente ao RPC `erp_salvar_revisao_documento`; não foi criado fallback nem dado fictício.
+- **Commit:** `aee81b9803446bac24819cf83e951ed3dd38d49c`.
+- **Limites da evidência:** alteração confirmada no GitHub; type-check, lint, build, fluxo autenticado/RLS, comportamento visual em navegador e publicação Vercel ainda não foram confirmados. O modelo atual não expõe todos os campos do documento DSG-GQ-001 (ex.: elaborador/revisor/aprovador, vigência e próxima revisão como campos persistidos do cabeçalho); não declarar equivalência integral ao formulário Word até mapear schema/RPC e aprovações.
+- **Backlog:** UI-001, UI-002, UI-060 e QA-040 permanecem abertos.
