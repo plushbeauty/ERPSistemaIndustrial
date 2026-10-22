@@ -147,7 +147,8 @@ export default function PCPCapacidade() {
   const totalCapacity = capacityRows.reduce((sum, row) => sum + (row.capacidadeSemanal ?? 0), 0)
   const bottlenecks = capacityRows.filter(row => (row.ocupacao ?? 0) >= 85).length
   const overloads = capacityRows.filter(row => (row.ocupacao ?? 0) > 100).length
-  const globalOccupancy = totalCapacity > 0 ? Math.round(totalLoad / totalCapacity * 100) : null
+  const comparableLoad = capacityRows.reduce((sum, row) => sum + row.cargaHoras, 0)
+  const globalOccupancy = totalCapacity > 0 ? Math.round(comparableLoad / totalCapacity * 100) : null
   const pendingCapacity = rows.filter(row => row.capacidadeSemanal === null).length
 
   const exportAudit = () => {
