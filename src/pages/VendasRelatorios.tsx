@@ -91,7 +91,7 @@ export default function VendasRelatorios() {
                 <input value={query} onChange={event => setQuery(event.target.value)} className="h-[30px] w-full rounded-[2px] border border-slate-300 pl-9 pr-3 text-xs font-normal outline-none focus:border-[#2D8DB8]" placeholder="Ex.: 000123 ou PO-456" />
               </span>
             </label>
-            <label className="grid gap-1 text-[11px] font-medium">
+            <label className="grid min-w-0 gap-[2px] text-[9px] font-semibold uppercase tracking-wider text-slate-500 md:col-span-4">
               Status
               <select value={status} onChange={event => setStatus(event.target.value)} className="h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-xs font-normal">
                 {statuses.map(value => <option key={value}>{value}</option>)}
