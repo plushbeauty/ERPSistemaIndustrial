@@ -149,3 +149,35 @@ Arquivos efetivamente alterados nesta branch:
 A revisão das mudanças é estática. Os identificadores de RPC, chamadas `.from()`, filtros por `empresa_id`, cálculos, estados e handlers relevantes permanecem presentes nos arquivos; isso não substitui testes executados. Não foi possível fazer checkout local: a tentativa de `git clone` falhou por DNS/rede indisponível. Portanto, ainda não há resultado local de type-check/lint/build nem teste visual autenticado.
 
 **Status da tranche:** código versionado na branch; aguardando PR/CI, revisão final do diff, validação de telas e deployment. Não declarar o módulo Vendas concluído.
+
+## Cobertura restante e candidatos legados
+
+- `VendasDashboardGraficos.tsx`: filtros usam o conjunto de classes `sales-button` e a folha compartilhada de workspaces; a área de gráfico de 420 px é conteúdo visual, não controle. Não foi necessário alterar a altura do gráfico.
+- `VendasTablet.tsx`: usa CSS específico de tablet e busca de 32 px. Mantido como exceção de interação/touch; requer conferência visual autenticada em tablet antes de declarar concluído.
+- `VendasPedidoStatus.tsx`: rota de detalhe; o banner de 50 px é conteúdo de status, não campo de formulário. Ações usam classes comerciais compartilhadas; manter sem redução indiscriminada.
+- `VendasStatusPedidos.tsx`, `VendasCarteira.tsx` e `VendasConfiguracoes.tsx`: arquivos existentes, mas sem rota ativa direta correspondente identificada no roteador atual (status/carteira redirecionam para `VendasCentral`; configurações aponta para `ConfiguracoesADMPage`). Não remover nem reativar esses arquivos sem autorização e confirmação de referências históricas.
+- `VendasPedidosMestre.tsx` e `PedidosVendas.tsx` são reexports das páginas congeladas; não são telas independentes.
+
+## Resultado CI e Vercel — head `399dab7a73f6ff733ddb76e800c062a7a1e69545`
+
+Workflow [ERP Industrial CI #40039194459](https://github.com/plushbeauty/ERPSistemaIndustrial/actions/runs/40039194459):
+- **PASSOU:** instalação determinística, lockfile, configuração Vercel, política de CI, contrato Auth Master, nomenclatura pública, ambiente Supabase, guard Supabase, integridade de deploy, TypeScript, ESLint, auditoria global, auditoria brutal, auditoria de interações, lazy imports, build de produção, verificação de artefatos e rotas.
+- **FALHOU:** contrato de regressão do Tablet de Qualidade: exige a rota direta `/qualidade/tablet` declarada e protegida por `QualityPlanGate`. O mesmo bloqueio já existia no PR #212 e está fora do escopo autorizado de Vendas; não foi alterado aqui.
+- **PENDENTE/IGNORADO pelo fail-fast:** verificações posteriores de shell global, assets de logo, hash lock de UI aprovada, contrato visual de login/produtos e política de segurança. Os arquivos congelados não aparecem no diff, mas o script do lock não foi executado nesta execução.
+- **PENDENTE:** `npm run audit:ui-standardization`. O workflow que executa este script está configurado para push em `main` ou execução manual; o checkout local não foi possível por indisponibilidade de DNS/rede. Não declarar o relatório JSON gerado pelo script como executado.
+
+Vercel:
+- Status reportado no commit mais recente: falha por limite de builds (`build-rate-limit`).
+- Consulta de deployments por SHA `399dab7a73f6ff733ddb76e800c062a7a1e69545`: **nenhum deployment correspondente encontrado**.
+- Há um preview antigo `erp-sistema-industrial-hrm1fbpt7-plushbeauty.vercel.app` em estado READY, mas corresponde ao SHA `2d227a3ed29f1a1b413f74d8f9c8f3978cb2b829`, anterior às correções posteriores; não serve como prova de preview do head atual.
+- Portanto, nenhuma alteração desta branch foi validada visualmente no preview atual e nada foi publicado em produção.
+
+## Status final desta rodada
+
+- Código da primeira tranche: versionado na branch e PR #215; compilação e auditorias anteriores ao contrato de Qualidade passaram.
+- CI geral: **FALHOU** por um contrato preexistente de Qualidade fora do escopo.
+- Auditoria visual estática gerada pelo script: **PENDENTE**.
+- Inspeção visual autenticada e teste real Supabase/RLS: **NÃO VERIFICADO**.
+- Preview para o SHA atual: **NÃO DISPONÍVEL** por bloqueio de Vercel.
+- Produção: **NÃO PUBLICADO**.
+- Módulo Vendas completo: **PENDENTE** até fechar os testes visuais e revisar as exceções/rotas não ativas.
