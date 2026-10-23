@@ -34,7 +34,7 @@ const btnClass = 'inline-flex h-[30px] items-center justify-center gap-1.5 round
 const activeStatus = (status: string) => {
   const normalized = String(status || '')
     .normalize('NFD')
-    .replace(/[\\u0300-\\u036f]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .trim()
     .toLowerCase()
   // Esta carteira lista apenas pedidos abertos. Evita incluir pedidos já faturados,
