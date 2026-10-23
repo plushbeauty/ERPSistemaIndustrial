@@ -19,9 +19,11 @@ const WHY_QUESTIONS = [
   'Qual falha sistêmica permitiu a recorrência?'
 ] as const
 const origins = [
-  { value: 'Fornecedor', label: 'Fornecedor' },
-  { value: 'Processo Interno', label: 'Processo interno' },
-  { value: 'Cliente', label: 'Cliente' }
+  { value: 'rpnc_interno', label: 'RPNC Interno' },
+  { value: 'auditoria_interna', label: 'Auditoria Interna' },
+  { value: 'auditoria_externa', label: 'Auditoria Externa' },
+  { value: 'rpnc_cliente', label: 'RPNC Cliente' },
+  { value: 'rpnc_processo', label: 'RPNC Processo' }
 ] as const
 const dispositions = [
   { value: 'SUCATEAR', label: 'Sucatear' },
@@ -45,7 +47,7 @@ export default function SalaRNC() {
   const [records, setRecords] = useState<Rnc[]>([])
   const [selectedRnc, setSelectedRnc] = useState('')
   const [lotId, setLotId] = useState('')
-  const [origin, setOrigin] = useState<(typeof origins)[number]['value']>('Processo Interno')
+  const [origin, setOrigin] = useState<(typeof origins)[number]['value']>('rpnc_interno')
   const [description, setDescription] = useState('')
   const [requirementViolated, setRequirementViolated] = useState('')
   const [objectiveEvidence, setObjectiveEvidence] = useState('')
@@ -127,7 +129,7 @@ export default function SalaRNC() {
         p_lote_id: lotId,
         p_setor_id: sectorId,
         p_descricao: description.trim(),
-        p_origem: origin.toLowerCase(),
+        p_origem: origin,
         p_quantidade: quantity,
         p_disposition: disposition,
         p_whys_text: whyText || null,
@@ -198,15 +200,15 @@ export default function SalaRNC() {
       <main className="rnc-print-document min-h-[calc(100vh-48px)] bg-[#F4FBFD] pb-12 text-slate-800 print:min-h-0 print:bg-white print:p-0">
         <div className="rnc-print-header hidden grid-cols-3 border border-slate-400 bg-white text-center text-slate-900">
           <div className="flex min-h-[48px] items-center justify-center border-r border-slate-400 p-2 text-[10px] font-bold uppercase">SYSNQRA ERP &amp; SGQ INDUSTRIAL</div>
-          <div className="flex flex-col justify-center border-r border-slate-400 p-2"><strong className="text-[10px] uppercase">Registro de Não Conformidade</strong><span className="text-[8px]">Sistema de Gestão da Qualidade · CAPA</span></div>
+          <div className="flex flex-col justify-center border-r border-slate-400 p-2"><strong className="text-[10px] uppercase">TRATAMENTO DE ANOMALIA / RPNC</strong><span className="text-[8px]">SYSNQRA ERP &amp; SGQ INDUSTRIAL · CAPA / 5W2H</span></div>
           <div className="flex flex-col justify-center p-2 text-left text-[8px]"><span>CÓDIGO: {selectedRecord?.numero_rpnc || 'GERADO AO SALVAR'}</span><span>EMISSÃO: {new Date().toLocaleString('pt-BR')}</span></div>
         </div>
         <header className="rnc-screen-header flex min-h-[64px] flex-wrap items-center gap-3 border-b border-slate-200 bg-white px-3 py-2 print:hidden">
           <span className="grid size-9 place-items-center rounded-[2px] bg-[#123B50] text-white"><ClipboardList size={18}/></span>
           <div className="min-w-0">
-            <p className="text-[9px] font-bold uppercase tracking-[.18em] text-[#2D8DB8]">SGQ · SALA DE NÃO CONFORMIDADES</p>
-            <h1 className="text-base font-semibold text-[#123B50]">Sala de RNC / RPNC</h1>
-            <p className="text-[10px] text-slate-500">Triagem, disposição física, análise dos 5 Porquês e ações mitigatórias 5W2H.</p>
+            <p className="text-[9px] font-bold uppercase tracking-[.18em] text-[#2D8DB8]">SYSNQRA · SGQ · RPNC MULTIORIGEM</p>
+            <h1 className="text-base font-semibold text-[#123B50]">Gestão Integrada de RPNC</h1>
+            <p className="text-[10px] text-slate-500">Cinco origens, rastreabilidade, investigação de causa raiz, contenção e plano CAPA / 5W2H.</p>
           </div>
           <div className="ml-auto flex items-center gap-2">
             <button type="button" className={secondaryButton} onClick={() => window.print()} disabled={loading} title="Imprimir formulário em A4"><Printer size={12}/> Imprimir A4</button><button type="button" className={secondaryButton} onClick={() => void load()} disabled={loading || busy}><RefreshCw size={12}/> Atualizar</button>
