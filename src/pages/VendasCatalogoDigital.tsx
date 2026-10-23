@@ -480,7 +480,7 @@ export default function VendasCatalogoDigital() {
                 <button
                   type="button"
                   onClick={() => setDetalhe(null)}
-                  className="h-7 w-7 border border-slate-300"
+                  className="h-[30px] w-[30px] rounded-[2px] border border-slate-300"
                 >
                   <X size={13} className="mx-auto" />
                 </button>
@@ -558,7 +558,7 @@ export default function VendasCatalogoDigital() {
                 <button
                   type="button"
                   onClick={() => setCartOpen(false)}
-                  className="h-7 w-7 border border-slate-300"
+                  className="h-[30px] w-[30px] rounded-[2px] border border-slate-300"
                 >
                   <X size={13} className="mx-auto" />
                 </button>
