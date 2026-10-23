@@ -185,3 +185,23 @@ O título e as mensagens agora identificam a função como **registro de parecer
 - **Commit de código:** [9322205ec24ee5f9228f146b0bc0f7bbbe345cca](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/9322205ec24ee5f9228f146b0bc0f7bbbe345cca).
 - **Validação:** revisão estática do trecho e confirmação do commit no GitHub. Não foi possível executar type-check, lint, verificações de rotas/imports, lock de UI, teste autenticado/RLS ou build neste ambiente. O status Vercel dos commits PCP consultados informa falha por limite de builds; deployment deste commit não confirmado.
 - **Estado:** CORRIGIDO AGUARDANDO VALIDAÇÃO. UI-040 e QA-040 permanecem abertos.
+
+## Continuação — confirmação do calendário e inventário estático atualizado (2026-10-23)
+
+### PCP / jornada da agenda
+- **Rota/arquivo:** `/pcp/agenda-maquinas` — `src/pages/PCPAgendaMaquinas.tsx`, revisão `REV-PCP-AGENDA-007`.
+- **Achado estático:** o `upsert` de `erp_pcp_calendario_trabalho` verificava apenas `error` e informava sucesso sem confirmar uma linha retornada.
+- **Correção:** o `upsert` agora seleciona `empresa_id` e só confirma sucesso se a linha retornada corresponder à empresa da sessão. Mantidos `onConflict: 'empresa_id'`, filtros e layout; nenhuma migração ou mudança de schema.
+- **Commit:** [ec542753c386ce50e951b45fdbba95905a78f128](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/ec542753c386ce50e951b45fdbba95905a78f128).
+- **Validação desta mudança:** alteração estática revisada e commit confirmado; testes locais e teste autenticado/Supabase ainda não executados.
+
+### UI-002 / roteador e imports
+- **Fonte:** `src/AppEntryV2.tsx` e árvore recursiva do repositório `main` consultadas em 2026-10-23.
+- **Contagem estática atual:** 274 declarações de rota com `path`, 181 imports dinâmicos; 187 caminhos de import relativo únicos verificados contra a árvore versionada.
+- **Resultado parcial:** nenhum import relativo do roteador ficou sem arquivo candidato na árvore e os 14 arquivos listados no contrato visual também existem na árvore. Isso não prova que todas as rotas carreguem ou que todos os componentes estejam corretamente associados; wrappers, aliases, rotas órfãs e renderização precisam de análise adicional.
+- **Método/limitação:** consulta de arquivos e regex executadas no ambiente de ferramentas; `npm run audit:ui-standardization` não foi executado, e não houve navegador/teste visual.
+- **Estado:** inventário parcial; UI-001/UI-002 permanecem abertos.
+
+### CI/deployment observado antes desta nova alteração
+- Deployment do commit anterior `9322205ec24ee5f9228f146b0bc0f7bbbe345cca` consultado como `READY` e status Vercel `success`.
+- O novo commit `ec542753c386ce50e951b45fdbba95905a78f128` ainda requer consulta de deployment própria; o estado anterior não valida esta mudança.
