@@ -74,7 +74,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Não foi possível configurar a conta de execu
 
 # O serviço lê o token de um arquivo protegido, não de um script versionado.
 & icacls.exe $installRoot /inheritance:r /grant:r 'SYSTEM:(OI)(CI)F' 'BUILTIN\Administrators:(OI)(CI)F' "$($serviceAccount):(OI)(CI)RX" | Out-Null
-& icacls.exe $dataRoot /inheritance:r /grant:r 'SYSTEM:(OI)(CI)F' 'BUILTIN\\Administrators:(OI)(CI)F' "$($serviceAccount):(OI)(CI)M" | Out-Null
+& icacls.exe $dataRoot /inheritance:r /grant:r 'SYSTEM:(OI)(CI)F' 'BUILTIN\Administrators:(OI)(CI)F' "$($serviceAccount):(OI)(CI)M" | Out-Null
 if ($LASTEXITCODE -ne 0) { throw 'Não foi possível proteger a configuração persistente do agente.' }
 & icacls.exe $storageRoot /grant:r "$($serviceAccount):(OI)(CI)M" | Out-Null
 if ($LASTEXITCODE -ne 0) { throw 'Não foi possível aplicar as permissões mínimas ao armazenamento.' }
