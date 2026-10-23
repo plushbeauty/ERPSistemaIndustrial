@@ -6,7 +6,7 @@
  */
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Activity, Building2, Code2, DatabaseBackup, FileClock, KeyRound, Network, ShieldCheck, Settings2, UsersRound, AlertTriangle, CheckCircle2, HardDrive, FolderTree, Server, RefreshCw, Wifi, Save } from 'lucide-react'
+import { Activity, Building2, Code2, DatabaseBackup, FileClock, KeyRound, Network, ShieldCheck, Settings2, UsersRound, AlertTriangle, CheckCircle2, HardDrive, FolderTree, Server, Wifi, Save } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 
 const destinations = [
