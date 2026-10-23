@@ -196,3 +196,13 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 | :--- | :--- | :--- | :--- | :--- |
 | **PCP-004** | 17/10/2026 | `src/AppEntryV2.tsx` | Rotas `/pcp/demanda`, `/pcp/materiais` e `/vendas/pcp` encapsuladas com `SynqraLayoutProvider`, eliminando a sidebar vertical duplicada. | `node scripts/verify-global-horizontal-shell.mjs` aprovado. |
 | **PCP-012** | 17/10/2026 | `src/pages/PCPIndustrial.tsx` | Ajustada frase de reposição de estoque para a fórmula homologada pelo validador. | `npm run audit:brutal` aprovado com 0 falhas. |
+
+### [PCP-013] Painel PCP — desalinhamento vertical dos cards de acesso e indicadores
+- **Data:** 23/10/2026
+- **Rota:** `/pcp`
+- **Arquivo:** `src/pages/PCPIndustrial.tsx` — revisão `REV-PCP-UI-003`
+- **Achado:** cards de rotinas tinham apenas altura mínima, sem linhas de grid iguais nem altura reservada para descrições; títulos/descrições com quebras diferentes podiam empurrar os links de ação e gerar alturas visualmente inconsistentes. Os três KPIs também não fixavam a descrição na base.
+- **Correção no código:** `auto-rows-fr` + `items-stretch` no grid; cards com `h-full` e altura mínima de 136px; reserva de 32px para a descrição; KPIs em linhas iguais com texto auxiliar alinhado ao rodapé. Nenhuma consulta, RPC, permissão, dado ou tela congelada foi alterada.
+- **Verificação estática:** confirmações de substituição no conteúdo antes do commit: revisão, grid, altura, descrição e os três KPIs presentes. Isso não equivale a type-check/build nem inspeção visual no navegador.
+- **Estado:** CORRIGIDO AGUARDANDO VALIDAÇÃO VISUAL/CI/DEPLOYMENT.
+- **Commit de código:** [bbfc20f382751e6cf7043239b0424cc2d5e76f64](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/bbfc20f382751e6cf7043239b0424cc2d5e76f64).
