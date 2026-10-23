@@ -366,18 +366,8 @@ export default function ProdutosVendasIndustrial(){
   return <><main className="product-master-screen" style={{maxWidth:1600,margin:'0 auto',color:'#172033',fontFamily:'Arial,sans-serif',background:'#fff'}}>
     <style>{`
       .product-master-screen label{min-width:0}
-      /* Travas físicas de largura para os campos do cadastro mestre. */
-      /* Tamanhos semânticos: os edits respeitam o tamanho do dado, sem estourar a coluna do formulário. */
-      .product-master-screen input.edit-2,.product-master-screen select.edit-2{display:block!important;width:100%!important;max-width:4ch!important;min-width:0!important;box-sizing:border-box;text-align:center}
-      .product-master-screen input.edit-3,.product-master-screen select.edit-3{display:block!important;width:100%!important;max-width:5ch!important;min-width:0!important;box-sizing:border-box;text-align:center}
-      .product-master-screen input.edit-4,.product-master-screen select.edit-4{display:block!important;width:100%!important;max-width:6ch!important;min-width:0!important;box-sizing:border-box;text-align:right}
-      .product-master-screen input.edit-8,.product-master-screen select.edit-8{display:block!important;width:100%!important;max-width:10ch!important;min-width:0!important;box-sizing:border-box}
-      .product-master-screen input.edit-10,.product-master-screen select.edit-10{display:block!important;width:100%!important;max-width:12ch!important;min-width:0!important;box-sizing:border-box}
-      .product-master-screen input.edit-12,.product-master-screen select.edit-12{display:block!important;width:100%!important;max-width:14ch!important;min-width:0!important;box-sizing:border-box;text-align:right}
-      .product-master-screen input.edit-14,.product-master-screen select.edit-14{display:block!important;width:100%!important;max-width:16ch!important;min-width:0!important;box-sizing:border-box;text-align:right}
-      .product-master-screen input.edit-20,.product-master-screen select.edit-20{display:block!important;width:100%!important;max-width:20ch!important;min-width:0!important;box-sizing:border-box}
-      .product-master-screen input.edit-60,.product-master-screen textarea.edit-60{display:block!important;width:100%!important;max-width:320px!important;min-width:0!important;box-sizing:border-box}
-      .product-master-screen input.edit-120,.product-master-screen textarea.edit-120{display:block!important;width:100%!important;max-width:450px!important;min-width:0!important;box-sizing:border-box}
+      /* Revisão visual autorizada: os campos ocupam a coluna disponível e mantêm alinhamento por grid. */
+      .product-master-screen input[class^="edit-"],.product-master-screen input[class*=" edit-"],.product-master-screen textarea[class^="edit-"],.product-master-screen textarea[class*=" edit-"],.product-master-screen select[class^="edit-"],.product-master-screen select[class*=" edit-"]{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box}
       .product-master-screen input[type="number"]{text-align:right}
       .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{box-sizing:border-box}
       .product-master-screen button:disabled{opacity:.48;cursor:not-allowed}
