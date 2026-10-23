@@ -68,7 +68,7 @@ const menus: MenuItem[] = [
     { label: 'Caixa', route: '/financeiro/caixa' },
   ] },
   { label: 'Fiscal', route: '/fiscal', icon: FileText },
-  { label: 'Manufatura / PCP', route: '/pcp', icon: Factory, children: [
+  { label: 'Manufatura / PCP', route: '/pcp/ordens', icon: Factory, children: [
     { label: 'Ordens de produção', route: '/pcp/ordens' },
     { label: 'Ordens industriais', route: '/pcp/ordens-industriais' },
     { label: 'Chão de Fábrica · Portal do Funcionário', route: '/pcp/portal-operador' },
