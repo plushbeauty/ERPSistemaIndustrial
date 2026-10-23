@@ -26,7 +26,7 @@ function readSession(companyId: string): FileManagerSession | null {
   }
 }
 
-async function canReadIndustrialFiles(companyId: string): Promise<boolean> {
+async function canReadIndustrialFiles(companyId: string, permissionModule: 'vendas' | 'pcp'): Promise<boolean> {
   const auth = await supabase.auth.getUser()
   if (auth.error || !auth.data.user) return false
 
@@ -43,7 +43,7 @@ async function canReadIndustrialFiles(companyId: string): Promise<boolean> {
     .maybeSingle()
   if (profile.error || !profile.data?.id) return false
 
-  const permission = await supabase.rpc('erp_has_permission', { p_modulo: 'vendas', p_acao: 'ver' })
+  const permission = await supabase.rpc('erp_has_permission', { p_modulo: permissionModule, p_acao: 'ver' })
   return !permission.error && permission.data === true
 }
 
@@ -60,10 +60,11 @@ export async function loadIndustrialFallbackImage(
   companyId: string,
   folder: 'produtos' | 'fichas-processo' | 'desenhos-tecnicos' | 'fotos' | 'imagens',
   filename: string,
+  permissionModule: 'vendas' | 'pcp' = 'vendas',
 ): Promise<string | null> {
   const session = readSession(companyId)
   if (!session || !filename.trim()) return null
-  if (!(await canReadIndustrialFiles(companyId))) return null
+  if (!(await canReadIndustrialFiles(companyId, permissionModule))) return null
 
   const baseName = safeFilename(filename)
   if (!baseName) return null
