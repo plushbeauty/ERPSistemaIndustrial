@@ -21,7 +21,7 @@ const destinations = [
   { to: '/configuracoes-adm/integracoes', label: 'Integrações', detail: 'Serviços conectados', icon: Network },
 ]
 
-const DEFAULT_FOLDERS = ['pcp', 'fichas-processo', 'moldes', 'qualidade', 'engenharia', 'compras', 'produtos', 'clientes', 'fornecedores', 'documentos-gerais']
+const DEFAULT_FOLDERS = ['fotos', 'imagens', 'desenhos-tecnicos', 'documentos', 'pcp', 'fichas-processo', 'moldes', 'qualidade', 'engenharia', 'compras', 'produtos', 'clientes', 'fornecedores', 'documentos-gerais']
 
 type InstallTarget = 'pc' | 'rede'
 
