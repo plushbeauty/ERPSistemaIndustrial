@@ -24,7 +24,6 @@ const menus: MenuItem[] = [
   ] },
   { label: 'Vendas', route: '/vendas', icon: ShoppingCart, children: [
     { label: 'Dashboard comercial', route: '/vendas', icon: BarChart3 },
-    { label: 'Status do pedido', route: '/vendas/status', icon: ClipboardCheck },
     { label: 'Novo pedido', route: '/vendas/novo-pedido', icon: ShoppingCart },
     { label: 'Pedidos pendentes', route: '/vendas/pedidos-pendentes', icon: ClipboardList },
     { label: 'PDV / venda rápida', route: '/vendas/pdv', icon: ShoppingCart },
