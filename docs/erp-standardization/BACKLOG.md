@@ -223,3 +223,14 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Commits:** correção visual `f5620ff4e22c6feb991a0708ca606339b1ca0a5a`; atualização do lock `61c1aa0d08f351c78f77b961c141bf0a142055d9`.
 - **Estado:** CORRIGIDO AGUARDANDO VALIDAÇÃO. Ainda não foram executados type-check, lint, verify:approved-ui-lock, auditoria de UI, teste autenticado/RLS, impressão nem inspeção visual no navegador nesta rodada. Não declarar a ficha validada até obter essas evidências.
 - **Próxima ação:** validar o lock e os gates do commit atual; depois continuar a auditoria de PCP/Manufatura e tablet de Qualidade, mantendo as demais telas aprovadas congeladas.
+
+## Evidência incremental — carteira de pedidos pendentes PCP (2026-10-23)
+
+- **Arquivo:** `src/pages/PCPPedidosPendentes.tsx`, rota a confirmar no roteador antes de teste funcional.
+- **Revisão:** `IT-PCP-PEDIDOS-005`.
+- **Correção aplicada:** a carteira agora exclui pedidos encerrados, faturados, emitidos, entregues e expedidos da listagem pendente; a normalização de status ignora acentos e descrições que contenham esses estados.
+- **Motivo:** a função anterior comparava apenas alguns valores exatos e podia deixar pedidos faturados/entregues na carteira por variações como `FATURADO`, `NF-e emitida` ou `Entregue parcialmente`.
+- **Commit:** `b13ac6e19ad2f263deacd9e245cd83e32edb122c`.
+- **Limites:** esta alteração não valida o contrato real de status no banco, nem confirma type-check, lint, build, RLS, impressão ou deployment. O fluxo de criação de OP deve continuar passando pela tela PCPOrdens até confirmar o contrato da RPC; não presumir sucesso de atualizações sem verificar erro/linha retornada.
+- **Status:** CORRIGIDO AGUARDANDO VALIDAÇÃO. UI-040 e QA-040 permanecem abertos.
+
