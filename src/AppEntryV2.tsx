@@ -188,7 +188,7 @@ const PCPDashboardOEE = lazyPage(() => import('./pages/PCPDashboardOEE'), 'PCPDa
 const QualidadeDashboardSGQ = lazyPage(() => import('./pages/QualidadeDashboardSGQ'), 'default')
 const QualidadeAuditoriasPlanta = lazyPage(() => import('./pages/QualidadeAuditoriasPlanta'), 'default')
 const QualidadeRNC = lazyPage(() => import('./pages/QualidadeRNC'), 'QualidadeRNC')
-const SalaRNC = lazyPage(() => import('./pages/qualidade/sala-rnc'), 'SalaRNC')
+const QualidadeRPNCCompleta = lazyPage(() => import('./pages/qualidade/QualidadeRPNCCompleta'), 'default')
 const ControleProcessoInjetora = lazyPage(() => import('./pages/pcp/ControleProcessoInjetora'), 'ControleProcessoInjetora')
 const EstoqueCurvaABC = lazyPage(() => import('./pages/EstoqueCurvaABC'), 'EstoqueCurvaABC')
 const FinanceiroGraficoDesvios = lazyPage(() => import('./pages/FinanceiroGraficoDesvios'), 'FinanceiroGraficoDesvios')
@@ -537,8 +537,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/especificacoes" element={<QualityPlanGate><QualidadeEspecificacoesTecnicas /></QualityPlanGate>} />
       <Route path="/qualidade/fmea" element={<QualityPlanGate><QualidadeFMEA /></QualityPlanGate>} />
       <Route path="/qualidade/rnc-capa" element={<Navigate to="/qualidade/rnc" replace />} />
-      <Route path="/qualidade/ishikawa" element={<QualityPlanGate><SalaRNC /></QualityPlanGate>} />
-      <Route path="/qualidade/capa" element={<QualityPlanGate><SalaRNC /></QualityPlanGate>} />
+      <Route path="/qualidade/ishikawa" element={<Navigate to="/qualidade/rpnc" replace />} />
+      <Route path="/qualidade/capa" element={<Navigate to="/qualidade/rpnc" replace />} />
       <Route path="/qualidade/cep" element={<QualityPlanGate><QualidadeCEP /></QualityPlanGate>} />
       <Route path="/qualidade/ged-documentos" element={<QualityPlanGate><GEDDocumentos /></QualityPlanGate>} />
       <Route path="/qualidade/controle-desenhos" element={<QualityPlanGate><ControleDesenhos /></QualityPlanGate>} />
@@ -587,8 +587,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/auditorias-planta" element={<QualityPlanGate><QualidadeAuditoriasPlanta /></QualityPlanGate>} />
       <Route path="/qualidade/instrumentos" element={<QualityPlanGate><QualidadeInstrumentosCadastro /></QualityPlanGate>} />
       <Route path="/qualidade/liberacao-lote" element={<QualityPlanGate><QualidadeLiberacaoLotes /></QualityPlanGate>} />
-      <Route path="/qualidade/dashboard-rnc" element={<QualityPlanGate><SalaRNC /></QualityPlanGate>} />
-      <Route path="/qualidade/rpnc" element={<QualityPlanGate><SalaRNC /></QualityPlanGate>} />
+      <Route path="/qualidade/dashboard-rnc" element={<Navigate to="/qualidade/rpnc" replace />} />
+      <Route path="/qualidade/rpnc" element={<QualityPlanGate><QualidadeRPNCCompleta /></QualityPlanGate>} />
       <Route path="/qualidade/pfmea" element={<QualityPlanGate><QualidadePFMEA /></QualityPlanGate>} />
       <Route path="/qualidade/documentos" element={<QualityPlanGate><DocumentosQualidadeControle /></QualityPlanGate>} />
       <Route path="/qualidade/inspecao-processo" element={<QualityPlanGate><QualidadeInspecaoProcesso /></QualityPlanGate>} />
@@ -718,8 +718,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/manutencao/indicadores" element={<QualityPlanGate><ManutencaoIndicadores /></QualityPlanGate>} />
       <Route path="/manutencao/ordens" element={<QualityPlanGate>{<ManutencaoOrdens />}</QualityPlanGate>} />
       <Route path="/fiscal/carteira" element={<QualityPlanGate>{<FiscalCarteiraNFe />}</QualityPlanGate>} />
-      <Route path="/qualidade/rnc" element={<QualityPlanGate><SalaRNC /></QualityPlanGate>} />
-      <Route path="/qualidade/sala-rnc" element={<QualityPlanGate><SalaRNC /></QualityPlanGate>} />
+      <Route path="/qualidade/rnc" element={<Navigate to="/qualidade/rpnc" replace />} />
+      <Route path="/qualidade/sala-rnc" element={<Navigate to="/qualidade/rpnc" replace />} />
       <Route path="/pcp/controle-injetora" element={<ControleProcessoInjetora />} />
       <Route path="/qualidade/controle-injetora" element={<Navigate to="/pcp/controle-injetora" replace />} />
       <Route path="/estoque/recebimento" element={<EstoqueRecebimentoLotes />} />
