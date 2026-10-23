@@ -242,7 +242,7 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - Relatório versionado: [SALES-UI-AUDIT-2026-10-23-R2.md](./SALES-UI-AUDIT-2026-10-23-R2.md).
 - Base auditada: `main` SHA `8d5699c7355943b67fcfd828195ceaf40b55fda5`.
 - Escopo da leitura: rotas comerciais, aliases/reexports, telas principais, componentes UI existentes, tokens de formulário, contrato de telas aprovadas, scripts e auditorias anteriores.
-- Primeira tranche de correções visuais em páginas editáveis: `VendasAnaliseCustos.tsx`, `VendasPDV.tsx`, `VendasCatalogoDigital.tsx`, `TabelaPrecos.tsx`, `VendasRelatorios.tsx`, `VendasMetas.tsx`, `VendasClientes.tsx` e `VendasCatalogoDigitalGestao.tsx` e `DashboardComercial.tsx`.
+- Primeira tranche de correções visuais em páginas editáveis: `VendasAnaliseCustos.tsx`, `VendasPDV.tsx`, `VendasCatalogoDigital.tsx`, `TabelaPrecos.tsx`, `VendasRelatorios.tsx`, `VendasMetas.tsx`, `VendasClientes.tsx` e `VendasCatalogoDigitalGestao.tsx`, `DashboardComercial.tsx`, `VendasDashboardGraficos.tsx` e `VendasPedidoStatus.tsx`.
 - Preservação declarada por revisão de diff: chamadas Supabase/RPC, filtros por empresa, cálculos, handlers, filtros de tela, seleção do catálogo e impressão permanecem presentes. Ainda depende de CI/type-check/lint/build e teste funcional para confirmação final.
 - Nenhuma tela congelada, shell global, autenticação, permissões ou schema de banco foi alterado intencionalmente.
 - PR #210 já propõe `src/components/ui/industrial-base.tsx` e não foi integrado; não criar cópia concorrente nesta tranche.
@@ -261,3 +261,6 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - `verify:approved-ui-lock`: **NÃO VERIFICADO** no workflow atual, pois foi ignorado após a falha anterior. O diff desta branch não contém arquivos congelados e os hashes das três telas congeladas de Vendas e do shell foram confirmados idênticos à base.
 - `audit:ui-standardization`: **PENDENTE**, não executado; o workflow correspondente só roda em push para `main` ou execução manual, e não houve checkout local por indisponibilidade de DNS/rede.
 - **UI-010 e UI-001 permanecem ABERTOS**. Não marcar Vendas como concluído e não promover para Compras até completar a validação visual/funcional da tranche atual.
+
+
+- Segunda tranche visual acrescentada: `VendasDashboardGraficos.tsx`, `VendasPedidoStatus.tsx` e compactação local da tabela de `VendasMetas.tsx`. CI no SHA `5df0967290f2123843d23c9147ce4711200636b9` passou TypeScript, ESLint, auditorias global/brutal/interações, lazy imports, build e rotas; segue falhando no contrato preexistente do Tablet de Qualidade. Vercel continua bloqueado por `build-rate-limit`.
