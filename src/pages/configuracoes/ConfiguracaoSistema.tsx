@@ -37,7 +37,7 @@ function FileManagerInstaller({ companyId }: { companyId: string | null }) {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
 
-  const requestHeaders = (): HeadersInit => ({
+  const requestHeaders = (): Record<string, string> => ({
     Authorization: 'Bearer ' + token.trim(),
     'Content-Type': 'application/json',
     'X-SYSNQRA-Company-ID': companyId || '',
