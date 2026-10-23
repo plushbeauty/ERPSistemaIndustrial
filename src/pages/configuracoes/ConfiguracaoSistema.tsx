@@ -25,7 +25,7 @@ const DEFAULT_FOLDERS = ['pcp', 'fichas-processo', 'moldes', 'qualidade', 'engen
 
 type InstallTarget = 'pc' | 'rede'
 
-function FileManagerInstaller() {
+function FileManagerInstaller({ companyId }: { companyId: string | null }) {
   const [target, setTarget] = useState<InstallTarget>('pc')
   const [agentUrl, setAgentUrl] = useState('http://127.0.0.1:8970')
   const [token, setToken] = useState('')
@@ -40,13 +40,15 @@ function FileManagerInstaller() {
   const requestHeaders = (): HeadersInit => ({
     Authorization: 'Bearer ' + token.trim(),
     'Content-Type': 'application/json',
+    'X-SYSNQRA-Company-ID': companyId || '',
   })
 
   async function testConnection() {
     setBusy(true); setError(''); setMessage(''); setHealth('')
     try {
+      if (!companyId) throw new Error('Selecione uma empresa válida na sessão do ERP antes de configurar o agente.')
       if (!token.trim()) throw new Error('Informe o token de acesso configurado no agente local.')
-      const response = await fetch(agentUrl.replace(/\/+$/, '') + '/health', { headers: { Authorization: 'Bearer ' + token.trim() } })
+      const response = await fetch(agentUrl.replace(/\/+$/, '') + '/health', { headers: { Authorization: 'Bearer ' + token.trim(), 'X-SYSNQRA-Company-ID': companyId || '' } })
       const data: unknown = await response.json()
       if (!response.ok) throw new Error('O agente respondeu HTTP ' + response.status + '. Confira endereço e token.')
       const status = data as { status?: string; service?: string; version?: string; hostname?: string }
@@ -61,12 +63,14 @@ function FileManagerInstaller() {
   async function configureStorage() {
     setBusy(true); setError(''); setMessage('')
     try {
+      if (!companyId) throw new Error('Selecione uma empresa válida na sessão do ERP antes de configurar o agente.')
       if (!token.trim()) throw new Error('Informe o token do agente.')
       if (!primaryPath.trim()) throw new Error('Informe a pasta principal de armazenamento.')
       const response = await fetch(agentUrl.replace(/\/+$/, '') + '/validate-paths', {
         method: 'POST',
         headers: requestHeaders(),
         body: JSON.stringify({
+          companyId,
           primaryPath: primaryPath.trim(),
           networkPath: target === 'rede' ? networkPath.trim() : '',
           folders: DEFAULT_FOLDERS,
@@ -81,7 +85,8 @@ function FileManagerInstaller() {
       const data = result as { primaryOk?: boolean; networkOk?: boolean; createdFolders?: string[] }
       if (!data.primaryOk) throw new Error('O agente não conseguiu criar ou acessar a pasta principal. Confira o caminho e as permissões da conta do serviço.')
       if (target === 'rede' && !data.networkOk) throw new Error('A pasta de rede não foi acessada. Confira o caminho UNC e as permissões da conta que executa o serviço.')
-      setMessage('Diretórios validados. Pastas criadas nesta operação: ' + (data.createdFolders?.length ?? 0) + '.')
+      sessionStorage.setItem('sysnqra-file-manager-v1', JSON.stringify({ companyId, agentUrl: agentUrl.replace(/\\/+$/, ''), token: token.trim() }))
+      setMessage('Diretórios validados para esta empresa. Pastas criadas nesta operação: ' + (data.createdFolders?.length ?? 0) + '. A conexão fica disponível nesta aba até o encerramento da sessão.')
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível configurar o armazenamento.')
     } finally { setBusy(false) }
@@ -165,7 +170,7 @@ export default function ConfiguracaoSistema() {
       <span className="min-w-0 flex-1"><strong className="block text-[10px] font-extrabold text-[#123B50]">Instalar Sistema · File Manager Industrial</strong><small className="mt-1 block text-[9px] text-slate-500">Configurar armazenamento no PC do cliente ou em servidor de rede, testar conexão e criar pastas.</small></span>
       <span className="text-[9px] font-extrabold text-[#176487]">{showInstaller ? 'FECHAR' : 'CONFIGURAR'}</span>
     </button>
-    {showInstaller && <FileManagerInstaller />}
+    {showInstaller && <FileManagerInstaller companyId={identity?.company ?? null} />}
 
     <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">{destinations.map(item => {const Icon = item.icon; return <Link key={item.to} to={item.to} className="flex min-h-[58px] items-center gap-2 border border-[#CFE1E7] bg-white p-2 no-underline hover:border-[#2D8DB8] hover:bg-[#F4FBFD]"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-[2px] bg-[#E2F3F7] text-[#176487]"><Icon size={14}/></span><span className="min-w-0 flex-1"><strong className="block text-[10px] font-extrabold text-[#123B50]">{item.label}</strong><small className="mt-0.5 block text-[9px] text-slate-500">{item.detail}</small></span></Link>})}</div>
     <div className="flex items-start gap-2 border border-[#E8D6AD] bg-[#FFFDF5] p-2 text-[9px] text-[#7A581C]"><AlertTriangle size={13} className="mt-0.5 shrink-0"/>Preferências globais editáveis não são simuladas: antes de criar campos de gravação, é necessário confirmar a tabela e as policies RLS oficiais para parâmetros do sistema.</div>
