@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Copy, Filter, LayoutGrid, List, Minus, Plus, Search, Send, ShoppingBag, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import VendasLayout from './VendasLayout'
+import IndustrialFileImage from '../components/IndustrialFileImage'
 import { useNavigate } from 'react-router-dom'
 
 type EmpresaCatalogo = { razao_social:string; nome_fantasia:string|null; cnpj:string; telefone:string|null; email:string|null; site:string|null }
@@ -189,9 +190,7 @@ export default function VendasCatalogoDigital() {
     return (
       <div key={produto.id} className="flex gap-2 border-b border-slate-100 py-2.5">
         <div className="h-12 w-12 shrink-0 bg-slate-50">
-          {produto.foto_url && (
-            <img src={produto.foto_url} alt="" className="h-full w-full object-contain" />
-          )}
+          <IndustrialFileImage src={produto.foto_url} companyId={empresaId} filename={produto.codigo} alt={produto.nome} className="h-full w-full object-contain" />
         </div>
         <div className="min-w-0 flex-1">
           <strong className="block truncate text-[10px] font-medium text-[#123B50]">
@@ -345,18 +344,14 @@ export default function VendasCatalogoDigital() {
                       className="block w-full text-left"
                     >
                       <div className={visualizacao === 'grade' ? 'relative flex h-32 items-center justify-center overflow-hidden bg-slate-50' : 'relative flex h-24 shrink-0 items-center justify-center overflow-hidden bg-slate-50 md:w-32'}>
-                        {produto.foto_url ? (
-                          <img
-                            src={produto.foto_url}
-                            alt={produto.nome}
-                            className="h-full w-full object-contain p-3 transition-transform duration-200 group-hover:scale-[1.03]"
-                          />
-                        ) : (
-                          <div className="text-center text-[9px] text-slate-400">
-                            <ShoppingBag size={28} className="mx-auto mb-1 opacity-40" />
-                            Sem imagem
-                          </div>
-                        )}
+                        <IndustrialFileImage
+                          src={produto.foto_url}
+                          companyId={empresaId}
+                          filename={produto.codigo}
+                          alt={produto.nome}
+                          className="h-full w-full object-contain p-3 transition-transform duration-200 group-hover:scale-[1.03]"
+                          showPlaceholder
+                        />
                          {produto.grupo && (
                            <span className="absolute left-2 top-2 bg-white/90 px-1.5 py-1 text-[8px] text-slate-600 shadow-sm">
                              {produto.grupo}
@@ -481,11 +476,16 @@ export default function VendasCatalogoDigital() {
                 </button>
               </header>
               <div className="p-4">
-                {detalhe.foto_url && (
-                  <div className="mb-4 flex h-52 items-center justify-center bg-slate-50">
-                    <img src={detalhe.foto_url} alt={detalhe.nome} className="h-full w-full object-contain p-4" />
-                  </div>
-                )}
+                <div className="mb-4 flex h-52 items-center justify-center bg-slate-50">
+                  <IndustrialFileImage
+                    src={detalhe.foto_url}
+                    companyId={empresaId}
+                    filename={detalhe.codigo}
+                    alt={detalhe.nome}
+                    className="h-full w-full object-contain p-4"
+                    showPlaceholder
+                  />
+                </div>
                 <h2 className="text-lg font-medium leading-6 text-[#123B50]">{detalhe.nome}</h2>
                 <p className="mt-1 text-[9px] text-slate-400">
                   {detalhe.referencia_interna || detalhe.codigo_barras || 'Produto industrial'}

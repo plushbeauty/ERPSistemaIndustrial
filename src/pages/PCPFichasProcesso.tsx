@@ -29,6 +29,7 @@ import {
   X,
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import IndustrialFileImage from '../components/IndustrialFileImage'
 import EntityCodeLookup from '../components/industrial/EntityCodeLookup'
 import '../styles/synqra-premium.css'
 
@@ -271,6 +272,7 @@ export function FichasProcesso() {
   const [tools, setTools] = useState<Tool[]>([])
   const [machines, setMachines] = useState<Machine[]>([])
   const [rows, setRows] = useState<FormState[]>([])
+  const [companyId, setCompanyId] = useState('')
   const [query, setQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('TODAS')
   const [busy, setBusy] = useState(false)
@@ -289,6 +291,7 @@ export function FichasProcesso() {
         throw company.error || new Error('Empresa ERP não identificada.')
       }
       const empresaId = String(company.data)
+       setCompanyId(empresaId)
 
       const [p, c, t, m, f] = await Promise.all([
         supabase
@@ -1576,14 +1579,18 @@ export function FichasProcesso() {
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                       
                       {/* Foto Principal da Ficha (se houver) */}
-                      {form.imagem_url && (
+                      {(form.imagem_url || selectedProduct?.codigo || form.codigo_ficha) && (
                         <div className="rounded-[2px] border border-slate-200 bg-white overflow-hidden shadow-xs group relative">
                           <div className="h-44 bg-slate-100 flex items-center justify-center p-2">
-                            <img
-                              src={form.imagem_url}
-                              alt="Foto Principal"
+                            <IndustrialFileImage
+                              src={form.imagem_url || null}
+                              companyId={companyId}
+                              folder="desenhos-tecnicos"
+                              permissionModule="pcp"
+                              filename={selectedProduct?.codigo || form.codigo_ficha}
+                              alt="Foto principal ou desenho técnico da peça"
                               className="max-h-full max-w-full object-contain cursor-pointer"
-                              onClick={() => setSelectedPhotoZoom(form.imagem_url)}
+                              showPlaceholder
                             />
                           </div>
                           <div className="p-2 border-t border-slate-100 flex items-center justify-between bg-slate-50">
