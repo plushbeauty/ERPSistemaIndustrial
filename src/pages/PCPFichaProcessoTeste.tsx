@@ -54,7 +54,9 @@ export default function PCPFichaProcessoTeste() {
           const temperatureFields = [['Bico','temp_bico_c'],['Zona 1','zona1_c'],['Zona 2','zona2_c'],['Zona 3','zona3_c'],['Zona 4','zona4_c'],['Molde fixo','temp_molde_fixo_c'],['Molde móvel','temp_molde_movel_c'],['Molde','temperatura_molde_c'],['Platô superior','temp_plato_superior_c'],['Platô inferior','temp_plato_inferior_c']] as const
           const temperatures = temperatureFields.flatMap(([label,key]) => { const value = numeric(p,key); return value === null ? [] : [{label,value}] })
           const cycleFields = [['Injeção','tempo_injecao_seg'],['Recalque','tempo_recalque_seg'],['Resfriamento','tempo_resfriamento_seg'],['Ciclo total','tempo_ciclo_seg']] as const
-          const cycle = cycleFields.flatMap(([label,key]) => { const value = numeric(p,key); return value === null ? [] : [{label,value}] })
+          const cycleParts = cycleFields.slice(0, 3).flatMap(([label,key]) => { const value = numeric(p,key); return value === null ? [] : [{label,value}] })
+          const totalCycle = numeric(p, 'tempo_ciclo_seg')
+          const cycle = cycleParts.length ? cycleParts : totalCycle === null ? [] : [{ label: 'Ciclo total', value: totalCycle }]
           const defs: {group:string;label:string;key:string;unit:string}[] = [
             {group:'Injeção e recalque',label:'Velocidade de injeção',key:'velocidade_injecao_mm_s',unit:'mm/s'},
             {group:'Injeção e recalque',label:'Pressão de injeção',key:'pressao_injecao_bar',unit:'bar'},
