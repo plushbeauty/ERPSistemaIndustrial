@@ -175,7 +175,7 @@ export default function VendasPedidoStatus() {
               </div>
             </section>
 
-            <section className="mt-5 rounded-lg border bg-white p-5">
+            <section className="mt-2 rounded-[2px] border border-slate-300 bg-white p-2">
               <h2 className="font-medium text-[#123B50]">Condições comerciais</h2>
               <div className="mt-2 grid gap-2 text-xs md:grid-cols-5">
                 <Info label="Subtotal" value={money(Number(order.subtotal || 0))} />
@@ -200,7 +200,7 @@ export default function VendasPedidoStatus() {
 }
 
 function Info({ label, value }: { label: string; value: string }) {
-  return <div><div className="text-xs text-slate-500">{label}</div><div className="mt-1 text-sm font-medium">{value}</div></div>
+  return <div><div className="text-[9px] font-semibold uppercase tracking-wider text-slate-500">{label}</div><div className="mt-0.5 text-xs font-medium text-slate-800">{value}</div></div>
 }
 
 function StatusBlock({ title, rows, empty }: { title: string; rows: string[]; empty: string }) {
