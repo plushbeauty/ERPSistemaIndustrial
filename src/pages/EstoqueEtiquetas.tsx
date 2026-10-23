@@ -23,10 +23,49 @@ const safe = (value: unknown) => String(value ?? '').replace(/[\^~]/g, ' ').repl
 const fmtWeight = (value: number | string) => { const n = Number(value); return Number.isFinite(n) ? n.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) : '0,000' }
 const dateBR = (value: string) => value ? value.split('-').reverse().join('/') : '—'
 
+async function convertLogoToZpl(source: string): Promise<string> {
+  const image = new Image()
+  image.crossOrigin = 'anonymous'
+  await new Promise<void>((resolve, reject) => { image.onload = () => resolve(); image.onerror = () => reject(new Error('Logo indisponível para conversão ZPL.')); image.src = source })
+  const width = 200
+  const height = 60
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  const context = canvas.getContext('2d', { willReadFrequently: true })
+  if (!context) throw new Error('Canvas indisponível para conversão do logotipo.')
+  context.fillStyle = '#ffffff'
+  context.fillRect(0, 0, width, height)
+  const scale = Math.min(width / image.width, height / image.height)
+  const drawWidth = Math.max(1, Math.round(image.width * scale))
+  const drawHeight = Math.max(1, Math.round(image.height * scale))
+  context.drawImage(image, Math.round((width - drawWidth) / 2), Math.round((height - drawHeight) / 2), drawWidth, drawHeight)
+  const pixels = context.getImageData(0, 0, width, height).data
+  const rowBytes = Math.ceil(width / 8)
+  let hex = ''
+  for (let y = 0; y < height; y += 1) {
+    for (let byte = 0; byte < rowBytes; byte += 1) {
+      let value = 0
+      for (let bit = 0; bit < 8; bit += 1) {
+        const x = byte * 8 + bit
+        if (x >= width) continue
+        const offset = (y * width + x) * 4
+        const alpha = pixels[offset + 3]
+        const luminance = (pixels[offset] * 299 + pixels[offset + 1] * 587 + pixels[offset + 2] * 114) / 1000
+        if (alpha > 40 && luminance < 165) value |= 1 << (7 - bit)
+      }
+      hex += value.toString(16).padStart(2, '0').toUpperCase()
+    }
+  }
+  const total = rowBytes * height
+  return '^GFA,' + total + ',' + total + ',' + rowBytes + ',' + hex
+}
+
 export default function EstoqueEtiquetas() {
   const [products, setProducts] = useState<Product[]>([])
   const [productId, setProductId] = useState('')
   const [company, setCompany] = useState<Company | null>(null)
+  const [logoZpl, setLogoZpl] = useState('')
   const [model, setModel] = useState<Model>('CAIXA')
   const [quantity, setQuantity] = useState(1)
   const [lot, setLot] = useState('')
@@ -68,6 +107,14 @@ export default function EstoqueEtiquetas() {
     return () => { cancelled = true }
   }, [])
 
+  useEffect(() => {
+    const source = company?.logo_impressao_url || company?.logo_url
+    if (!source) { setLogoZpl(''); return }
+    let cancelled = false
+    void convertLogoToZpl(source).then(value => { if (!cancelled) setLogoZpl(value) }).catch(() => { if (!cancelled) setLogoZpl('') })
+    return () => { cancelled = true }
+  }, [company?.logo_impressao_url, company?.logo_url])
+
   const product = products.find(item => item.id === productId)
 
   const brand = company?.nome_fantasia || company?.razao_social || ''
@@ -85,14 +132,15 @@ export default function EstoqueEtiquetas() {
     const width = Math.round(cfg.width * 8)
     const height = Math.round(cfg.height * 8)
     const companyLine = safe((company.cnpj ? 'CNPJ ' + company.cnpj : 'CNPJ NÃO CADASTRADO') + ' ' + address)
-    const lines = [
-      '^XA', '^CI28', '^PW' + width, '^LL' + height, '^LH0,0',
-      '^FO20,16^A0N,24,24^FD' + safe(brand || 'EMPRESA NÃO CONFIGURADA') + '^FS',
+    const lines = ['^XA', '^CI28', '^PW' + width, '^LL' + height, '^LH0,0']
+    if (logoZpl) lines.push('^FO20,16' + logoZpl + '^FS')
+    lines.push(
+      '^FO' + (logoZpl ? '240' : '20') + ',16^A0N,24,24^FD' + safe(brand || 'EMPRESA NÃO CONFIGURADA') + '^FS',
       '^FO20,44^A0N,16,16^FD' + companyLine.slice(0, 110) + '^FS',
       '^FO20,66^GB' + (width - 40) + ',2,2^FS',
       '^FO20,76^A0N,20,20^FDCOD: ' + safe(product.codigo) + '^FS',
       '^FO20,100^A0N,18,18^FD' + safe(productDescription).slice(0, 48) + '^FS',
-    ]
+    )
     if (model === 'CAIXA' || model === 'SACO') {
       lines.push(
         '^FO20,128^A0N,18,18^FDLOTE: ' + safe(lot || '—') + '^FS',
@@ -112,7 +160,7 @@ export default function EstoqueEtiquetas() {
       '^XZ',
     )
     return Array.from({ length: quantity }, () => lines.join('\n')).join('\n')
-  }, [product, company, model, brand, address, lot, boxNumber, pieces, netWeight, grossWeight, stackLimit, releasedBy, order, invoice, issueDate, expiry, quantity, qrPayload])
+  }, [product, company, model, brand, address, lot, boxNumber, pieces, netWeight, grossWeight, stackLimit, releasedBy, order, invoice, issueDate, expiry, quantity, qrPayload, logoZpl])
 
   const copy = async () => {
     if (!zpl) return
