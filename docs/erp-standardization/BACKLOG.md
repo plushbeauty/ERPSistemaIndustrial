@@ -234,3 +234,4 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Limites:** esta alteração não valida o contrato real de status no banco, nem confirma type-check, lint, build, RLS, impressão ou deployment. O fluxo de criação de OP deve continuar passando pela tela PCPOrdens até confirmar o contrato da RPC; não presumir sucesso de atualizações sem verificar erro/linha retornada.
 - **Status:** CORRIGIDO AGUARDANDO VALIDAÇÃO. UI-040 e QA-040 permanecem abertos.
 
+- **Ajuste de implementação da normalização:** corrigida a expressão regular Unicode após revisão do conteúdo versionado; commit `1a5d04191e41206af501b51a72e8b9ca2e0f0d85`. A verificação continua pendente de CI/build e teste funcional.
