@@ -169,7 +169,7 @@ export default function VendasPDV() {
       <div className="grid min-w-0 grid-cols-1 items-start gap-2 2xl:grid-cols-[minmax(0,1fr)_380px]">
         <section className="flex min-h-[min(720px,calc(100vh-155px))] min-w-0 flex-col overflow-hidden border border-slate-200 bg-white">
           <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-white p-2">
-            <div className="relative min-w-[220px] flex-1">
+            <div className="relative w-full min-w-[180px] max-w-[260px] flex-none">
               <Barcode size={16} className="pointer-events-none absolute left-2.5 top-2 text-slate-500" aria-hidden="true" />
               <input
                 autoFocus
@@ -220,14 +220,14 @@ export default function VendasPDV() {
                       onClick={() => add(product)}
                       disabled={unavailable || loading || saving}
                       aria-label={`Adicionar ${product.nome}, ${money(Number(product.preco_venda))}, estoque ${product.estoque_atual}`}
-                      className="group flex min-h-[148px] min-w-0 flex-col justify-between border border-slate-200 bg-white p-3.5 text-left transition-colors hover:border-[#2D8DB8] hover:bg-sky-50/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2D8DB8] disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                      className="group flex min-h-[90px] min-w-0 flex-col justify-between border border-slate-200 bg-white p-2 text-left transition-colors hover:border-[#2D8DB8] hover:bg-sky-50/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2D8DB8] disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                     >
                       <div className="flex min-w-0 items-start justify-between gap-2">
                         <span className="min-w-0 truncate text-[9px] font-medium tracking-wide text-slate-500" title={product.codigo}>{product.codigo}</span>
                         {inCart > 0 && <span className="flex h-5 min-w-5 shrink-0 items-center justify-center bg-[#e6f4f8] px-1 text-[10px] font-semibold text-[#17445A]">{inCart}</span>}
                       </div>
-                      <span className="mt-3 line-clamp-3 min-h-[45px] break-words text-[12px] font-medium leading-[17px] text-[#123B50]" title={product.nome}>{product.nome}</span>
-                      <div className="mt-4 flex min-w-0 items-end justify-between gap-2 border-t border-slate-100 pt-3">
+                      <span className="mt-1 line-clamp-2 min-h-[30px] break-words text-[11px] font-medium leading-[15px] text-[#123B50]" title={product.nome}>{product.nome}</span>
+                      <div className="mt-1 flex min-w-0 items-end justify-between gap-2 border-t border-slate-100 pt-1">
                         <span className={unavailable ? 'text-[9px] text-rose-600' : 'text-[9px] text-slate-500'}>{unavailable ? 'Sem estoque' : `Saldo ${product.estoque_atual} ${product.unidade || ''}`}</span>
                         <strong className="shrink-0 text-[11px] font-semibold text-[#17445A]">{money(Number(product.preco_venda))}</strong>
                       </div>
