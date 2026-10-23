@@ -99,9 +99,9 @@ function normalizeStatus(value: string | undefined): 'PENDENTE' | 'EM_PROCESSO' 
   return 'PENDENTE'
 }
 
-// Revisão IT-PCP-ORDENS-006 — 23/10/2026
-// Escopo: estabilização das dependências da sincronização da OP e do recálculo MRP.
-// Mantém layout, rotas, consultas multiempresa e ações existentes.
+// Revisão IT-PCP-ORDENS-007 — 23/10/2026
+// Escopo: reforço do isolamento por empresa nas gravações de parâmetros, status e apontamento.
+// Mantém layout, rotas, consultas multiempresa, MRP e ações existentes.
 export default function PCPOrdens() {
   const [products, setProducts] = useState<Product[]>([])
   const [machines, setMachines] = useState<Machine[]>([])
@@ -372,6 +372,8 @@ export default function PCPOrdens() {
     setError('')
     setMessage('')
     try {
+      const companyRes = await supabase.rpc('erp_current_empresa_id')
+      if (companyRes.error || !companyRes.data) throw companyRes.error ?? new Error('Empresa da sessão não identificada.')
       const u = await supabase
         .from('erp_ordens_producao')
         .update({
@@ -383,8 +385,12 @@ export default function PCPOrdens() {
           data_prevista: dueDate || null,
           observacoes: notes || null
         })
+        .eq('empresa_id', String(companyRes.data))
         .eq('id', selectedOpId)
+        .select('id')
+        .maybeSingle()
       if (u.error) throw u.error
+      if (!u.data) throw new Error('A OP não foi localizada na empresa da sessão; nenhuma alteração foi confirmada.')
 
       setMessage('Parâmetros técnicos e operacionais gravados com sucesso.')
       await loadData()
@@ -401,11 +407,17 @@ export default function PCPOrdens() {
     setError('')
     setMessage('')
     try {
+      const companyRes = await supabase.rpc('erp_current_empresa_id')
+      if (companyRes.error || !companyRes.data) throw companyRes.error ?? new Error('Empresa da sessão não identificada.')
       const u = await supabase
         .from('erp_ordens_producao')
         .update({ status: newStatus })
+        .eq('empresa_id', String(companyRes.data))
         .eq('id', opId)
+        .select('id')
+        .maybeSingle()
       if (u.error) throw u.error
+      if (!u.data) throw new Error('A OP não foi localizada na empresa da sessão; o status não foi alterado.')
 
       setMessage(`Status da OP atualizado para: ${newStatus.toUpperCase()}`)
       await loadData()
@@ -428,11 +440,17 @@ export default function PCPOrdens() {
     setError('')
     setMessage('')
     try {
+      const companyRes = await supabase.rpc('erp_current_empresa_id')
+      if (companyRes.error || !companyRes.data) throw companyRes.error ?? new Error('Empresa da sessão não identificada.')
       const u = await supabase
         .from('erp_ordens_producao')
         .update({ quantidade_produzida: prod })
+        .eq('empresa_id', String(companyRes.data))
         .eq('id', selectedOpId)
+        .select('id')
+        .maybeSingle()
       if (u.error) throw u.error
+      if (!u.data) throw new Error('A OP não foi localizada na empresa da sessão; o apontamento não foi gravado.')
 
       setMessage('Apontamento de quantidade produzida atualizado.')
       await loadData()
