@@ -10,8 +10,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Activity, AlertOctagon, BookOpenCheck, ClipboardCheck, ClipboardList,
-  FileCheck2, FileText, Gauge, GitBranch, ListChecks, Microscope, Radio, RefreshCw,
-  SearchCheck, Shield, ShieldAlert, ShieldCheck, Target, Wrench, Workflow,
+  FileCheck2, FileText, Gauge, GitBranch, Microscope, Radio, RefreshCw,
+  SearchCheck, ShieldAlert, ShieldCheck, Target, Wrench,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
