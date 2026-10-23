@@ -196,3 +196,10 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Limite:** não foram confirmados aliases/orfandade de todos os componentes, renderização real, nem executado `npm run audit:ui-standardization`. UI-001, UI-002 e QA-040 continuam pendentes; não retirar do backlog.
 - **Relatório:** commit [edb40a2241dc516f6d2300018d66588a0828b1ff](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/edb40a2241dc516f6d2300018d66588a0828b1ff).
 - **Deployment da nova correção:** aguarda consulta por SHA; o READY do commit anterior não conta como evidência desta mudança.
+
+
+### PCP / UI — alinhamento do painel `/pcp` (23/10/2026)
+- [x] Corrigir estrutura de grid e alinhamento de cards/KPIs em `src/pages/PCPIndustrial.tsx` (`REV-PCP-UI-003`).
+- [ ] Validar visualmente em desktop e tablet após deployment READY; confirmar ausência de overflow e altura consistente por linha.
+- [ ] Executar type-check, lint, auditorias UI/rotas/lazy imports e build no ambiente de CI; não considerar concluído antes das saídas reais.
+- **Código:** [bbfc20f382751e6cf7043239b0424cc2d5e76f64](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/bbfc20f382751e6cf7043239b0424cc2d5e76f64).
