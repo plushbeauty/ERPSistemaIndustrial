@@ -231,11 +231,11 @@ export default function VendasCatalogoDigital() {
     >
       <main className="text-[11px]">
         <section className="overflow-hidden border border-slate-200 bg-white">
-          <div className="bg-gradient-to-r from-[#123B50] to-[#2D8DB8] px-4 py-5 text-white">
+          <div className="bg-gradient-to-r from-[#123B50] to-[#2D8DB8] px-3 py-3 text-white">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <span className="text-[9px] font-medium uppercase tracking-[.18em] text-cyan-100">CATÁLOGO DIGITAL • SGQERP</span>
-                <h1 className="mt-1 text-xl font-medium">Produtos e soluções industriais</h1>
+                <h1 className="mt-1 text-sm font-semibold">Produtos e soluções industriais</h1>
                 <p className="mt-1 max-w-xl text-[10px] text-cyan-50">Consulte peças e materiais do cadastro industrial, organizados por grupo e subgrupo.</p>
                 {empresa&&<div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[8px] text-cyan-50/90"><span>{empresa.nome_fantasia || empresa.razao_social}</span><span>CNPJ {empresa.cnpj}</span>{empresa.telefone&&<span>{empresa.telefone}</span>}{empresa.email&&<span>{empresa.email}</span>}</div>}
               </div>
