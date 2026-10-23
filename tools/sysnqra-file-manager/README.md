@@ -44,7 +44,7 @@ O agente cria a estrutura solicitada em armazenamento local e, se configurada, n
 - `documentos` e `documentos-gerais`
 - `produtos`, `fichas-processo`, `moldes`, `pcp`, `qualidade`, `engenharia`, `compras`, `clientes` e `fornecedores`
 
-O catálogo de Vendas tenta carregar a foto cadastrada em `erp_produtos.foto_url`; se estiver vazia ou falhar, procura arquivos de imagem com o código do produto em `produtos/`. A ficha do PCP procura desenho técnico pelo código do produto em `desenhos-tecnicos/`. Os cadastros e consultas continuam usando registros reais do Supabase.
+O catálogo de Vendas tenta carregar a foto cadastrada em `erp_produtos.foto_url`; se estiver vazia ou falhar, o agente procura o código do produto em `produtos/`, `imagens/` e `fotos/`. A ficha do PCP procura o código do produto em `desenhos-tecnicos/`, `fichas-processo/` e `imagens/`. Os cadastros e consultas continuam usando registros reais do Supabase.
 
 ## Testes locais do agente
 
@@ -65,6 +65,8 @@ npm test
 
 - `GET /health` — estado do agente; requer Bearer token.
 - `POST /validate-paths` — valida e configura caminhos e cria pastas; vincula a instância ao tenant informado na primeira configuração.
+- `GET /resolve-image?name=ABC123&kind=product` — busca a imagem do produto nas pastas alternativas por código.
+- `GET /resolve-image?name=ABC123&kind=drawing` — busca a imagem/desenho técnico nas pastas alternativas por código.
 - `GET /file?path=produtos/ABC123.jpg` — lê um arquivo da raiz local e tenta a raiz de rede como fallback.
 - `POST /upload?folder=fotos&filename=arquivo.jpg` — grava arquivo na pasta principal.
 - `GET /list?folder=desenhos-tecnicos` — lista uma pasta do armazenamento local.
