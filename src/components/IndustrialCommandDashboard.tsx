@@ -322,7 +322,7 @@ export default function IndustrialCommandDashboard({ onNavigate }: Props) {
         <div className={`${card} md:col-span-4 p-3 flex flex-col`}>
           <div className="flex items-center justify-between mb-3"><span className={heading}>Ordens de produção</span><Package size={15} className="text-[#2D8DB8]" /></div>
           <div className="text-2xl font-extrabold text-[#123B50] font-mono">{ops.length}</div><p className="text-[11px] text-slate-500 mt-1">Ordens retornadas pelo banco para a empresa</p>
-          <button onClick={() => onNavigate('/pcp/programacao')} className="mt-auto pt-3 text-left text-[11px] font-semibold text-[#2D8DB8] hover:underline">Consultar OPs →</button>
+          <button onClick={() => onNavigate('/pcp/ordens')} className="mt-auto pt-3 text-left text-[11px] font-semibold text-[#2D8DB8] hover:underline">Consultar OPs →</button>
         </div>
         <div className={`${card} md:col-span-4 p-3 flex flex-col`}>
           <div className="flex items-center justify-between mb-3"><span className={heading}>Acessos rápidos</span><span className="text-[10px] text-slate-400 font-mono">ERP</span></div>
