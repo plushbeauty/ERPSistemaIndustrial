@@ -1,3 +1,8 @@
+/**
+ * SYSNQRA ERP INDUSTRIAL — Padronização visual incremental de Vendas
+ * Revisão: REV-VENDAS-UI-009 | Data: 2026-10-23
+ * Escopo: linhas de tabelas e pesquisa; CRUD, lookups, vínculos e escopo por empresa preservados.
+ */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Building2, Check, MapPin, Pencil, Plus, RefreshCw, Search, Trash2, Truck, UserRound } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -561,7 +566,7 @@ export default function VendasClientes() {
                   <label className="grid gap-0.5 text-[9px] font-semibold uppercase text-slate-500">Canal<input value={canal} onChange={event => setCanal(event.target.value)} className={baseInput}/></label>
                   <button type="button" onClick={() => void addMapping()} className="erp-standard-button self-end">VINCULAR</button>
                 </div>
-                <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-[10px]"><thead className="bg-slate-100"><tr className="h-7 text-left"><th className="px-2">Código ERP</th><th className="px-2">Código Cliente</th><th className="px-2">Dimensões</th><th className="px-2">Canal</th><th className="px-2">Molde</th><th/></tr></thead><tbody>{mappings.filter(item => item.cliente_id === selected).map(item => <tr key={item.id} className="h-7 border-t border-slate-200"><td className="px-2 font-mono">{products.find(product => product.id === item.produto_id)?.codigo ?? '—'}</td><td className="px-2">{item.codigo_cliente}</td><td className="px-2">{item.dimensoes ?? '—'}</td><td className="px-2">{item.canal ?? '—'}</td><td className="px-2">{item.molde ?? '—'}</td><td className="px-2 text-right"><button type="button" onClick={() => void deleteMapping(item.id)} title="Excluir De/Para" className="text-rose-700"><Trash2 size={12}/></button></td></tr>)}</tbody></table></div>
+                <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-[10px]"><thead className="bg-slate-100"><tr className="h-8 text-left"><th className="px-2">Código ERP</th><th className="px-2">Código Cliente</th><th className="px-2">Dimensões</th><th className="px-2">Canal</th><th className="px-2">Molde</th><th/></tr></thead><tbody>{mappings.filter(item => item.cliente_id === selected).map(item => <tr key={item.id} className="h-8 border-t border-slate-200"><td className="px-2 font-mono">{products.find(product => product.id === item.produto_id)?.codigo ?? '—'}</td><td className="px-2">{item.codigo_cliente}</td><td className="px-2">{item.dimensoes ?? '—'}</td><td className="px-2">{item.canal ?? '—'}</td><td className="px-2">{item.molde ?? '—'}</td><td className="px-2 text-right"><button type="button" onClick={() => void deleteMapping(item.id)} title="Excluir De/Para" className="text-rose-700"><Trash2 size={12}/></button></td></tr>)}</tbody></table></div>
               </div>}
 
               {tab === 'transportadora' && selected && <div className="space-y-2">
@@ -582,7 +587,7 @@ export default function VendasClientes() {
                   <label className="grid gap-0.5 text-[9px] font-semibold uppercase text-slate-500">UF<input maxLength={2} value={transportadoraForm.uf} onChange={event => setTransportadoraForm({...transportadoraForm, uf: event.target.value.toUpperCase()})} className={shortInput}/></label>
                   <button type="button" onClick={() => void saveTransportadora()} className="erp-standard-button self-end"><Truck size={12}/> CADASTRAR + VINCULAR</button>
                 </div>
-                <div className="overflow-x-auto"><table className="w-full min-w-[600px] text-[10px]"><thead className="bg-slate-100"><tr className="h-7 text-left"><th className="px-2">Código</th><th className="px-2">Transportadora</th><th className="px-2">CNPJ</th><th className="px-2">Cidade/UF</th><th/></tr></thead><tbody>{clientTransportLinks.filter(link => link.cliente_id === selected).map(link => { const item=transportadoras.find(row => row.id === link.transportadora_id); return item ? <tr key={link.id} className="h-7 border-t border-slate-200"><td className="px-2">{item.codigo}</td><td className="px-2">{item.razao_social}</td><td className="px-2">{item.cnpj ?? '—'}</td><td className="px-2">{[item.cidade,item.uf].filter(Boolean).join(' / ') || '—'}</td><td className="px-2 text-right"><button type="button" onClick={() => void unlinkTransportadora(link.id)} title="Desvincular transportadora" className="text-rose-700"><Trash2 size={12}/></button></td></tr> : null })}</tbody></table></div>
+                <div className="overflow-x-auto"><table className="w-full min-w-[600px] text-[10px]"><thead className="bg-slate-100"><tr className="h-8 text-left"><th className="px-2">Código</th><th className="px-2">Transportadora</th><th className="px-2">CNPJ</th><th className="px-2">Cidade/UF</th><th/></tr></thead><tbody>{clientTransportLinks.filter(link => link.cliente_id === selected).map(link => { const item=transportadoras.find(row => row.id === link.transportadora_id); return item ? <tr key={link.id} className="h-8 border-t border-slate-200"><td className="px-2">{item.codigo}</td><td className="px-2">{item.razao_social}</td><td className="px-2">{item.cnpj ?? '—'}</td><td className="px-2">{[item.cidade,item.uf].filter(Boolean).join(' / ') || '—'}</td><td className="px-2 text-right"><button type="button" onClick={() => void unlinkTransportadora(link.id)} title="Desvincular transportadora" className="text-rose-700"><Trash2 size={12}/></button></td></tr> : null })}</tbody></table></div>
               </div>}
             </div>
             <footer className="border-t border-slate-200 bg-slate-50 px-2 py-1.5 text-[9px] text-slate-500">SALVAMENTO PELO BOTÃO SUPERIOR • O FORMULÁRIO PERMANECE FIXO NA TELA.</footer>
@@ -591,7 +596,7 @@ export default function VendasClientes() {
           <section className="border border-slate-200 bg-white">
             <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-2 py-1">
               <Search size={13} className="text-sky-700"/>
-              <input value={query} onChange={event => setQuery(event.target.value)} placeholder="Pesquisar por código, razão social, CNPJ ou e-mail" className="h-[28px] min-w-0 flex-1 border-0 bg-transparent px-1 text-[10px] outline-none"/>
+              <input value={query} onChange={event => setQuery(event.target.value)} placeholder="Pesquisar por código, razão social, CNPJ ou e-mail" className="h-[30px] min-w-0 flex-1 border-0 bg-transparent px-1 text-xs outline-none"/>
               <HelpTip text="Digite parte do código, razão social, CNPJ ou e-mail. A grade abaixo filtra os clientes já cadastrados na empresa atual." />
             </div>
             <div className="overflow-x-auto">
