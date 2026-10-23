@@ -3,7 +3,9 @@
  * SYSNQRA SISTEMAS INDUSTRIAIS — PCP & GESTÃO COMERCIAL
  * Módulo: Carteira de Pedidos Pendentes e Atendimento de Estoque
  * Arquivo: src/pages/PCPPedidosPendentes.tsx
- * Revisão: IT-PCP-PEDIDOS-004 | 2026-10-21
+ * Revisão: IT-PCP-PEDIDOS-005 | 2026-10-23
+ * Auditoria: carteira deve excluir pedidos encerrados/faturados; não criar OP diretamente nesta tela.
+ * Validação pendente: type-check, lint, testes de fluxo Supabase/RLS e deployment.
  * Dados reais: Supabase autenticado, tenant atual e paginação integral.
  * Não utiliza view presumida, registros simulados ou criação direta de OP.
  * A criação é confirmada na tela PCPOrdens, com pedido/item/produto pré-selecionados.
@@ -29,7 +31,26 @@ type Row = {
 }
 const inputClass = 'h-[30px] w-full min-w-0 rounded-[2px] border border-[#2E4A62] bg-[#0E1E2F] px-2.5 text-[11px] font-semibold text-white outline-none placeholder:text-slate-500 focus:border-[#48B7C7]'
 const btnClass = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] border px-3 text-[10px] font-black uppercase tracking-wide disabled:cursor-not-allowed disabled:opacity-50'
-const activeStatus = (status: string) => !['concluido','concluída','concluida','cancelado','cancelada','rejeitado','rejeitada','finalizado','finalizada'].includes(String(status || '').trim().toLowerCase())
+const activeStatus = (status: string) => {
+  const normalized = String(status || '')
+    .normalize('NFD')
+    .replace(/[\\u0300-\\u036f]/g, '')
+    .trim()
+    .toLowerCase()
+  // Esta carteira lista apenas pedidos abertos. Evita incluir pedidos já faturados,
+  // entregues ou encerrados por variações de acento/descrição de status.
+  return ![
+    'concluido',
+    'cancelado',
+    'rejeitado',
+    'finalizado',
+    'faturado',
+    'emitido',
+    'entregue',
+    'expedido',
+    'encerrado',
+  ].some(closed => normalized.includes(closed))
+}
 const dateBR = (value?: string | null) => value ? new Date(value + (value.length === 10 ? 'T12:00:00' : '')).toLocaleDateString('pt-BR') : '—'
 const fmt = (n: number) => Number(n || 0).toLocaleString('pt-BR', { maximumFractionDigits: 3 })
 
