@@ -29,6 +29,8 @@ jobs:
 
       - name: Instalação determinística
         run: npm ci --legacy-peer-deps --no-audit --no-fund
+      - name: Testes do agente File Manager
+        run: node --test tools/sysnqra-file-manager/sysnqra-agent.test.cjs
 
       - name: Lockfile
         run: npm run verify:lockfile
