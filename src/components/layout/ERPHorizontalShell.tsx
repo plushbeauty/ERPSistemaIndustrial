@@ -72,6 +72,7 @@ const menus: MenuItem[] = [
     { label: 'Central PCP', route: '/pcp' },
     { label: 'Ordens de produção', route: '/pcp/ordens' },
     { label: 'Ordens industriais', route: '/pcp/ordens-industriais' },
+    { label: 'Chão de Fábrica · Portal do Funcionário', route: '/pcp/portal-operador' },
     { label: 'Apontamentos', route: '/pcp/apontamentos' },
     { label: 'Demanda', route: '/pcp/demanda' },
     { label: 'Capacidade / Gantt', route: '/pcp/capacidade' },
