@@ -97,7 +97,7 @@ export default function VendasDashboardGraficos() {
                 <option value="ano">Ano</option>
               </select>
             </label>
-            <label className="sales-button sales-button--secondary">
+            <label className="sales-button sales-button--secondary !h-[30px] !min-h-[30px] !rounded-[2px] text-xs">
               Período
               <input className="h-[30px] min-h-[30px] rounded-[2px] border border-slate-300 bg-white px-2 text-xs" type="month" value={month} onChange={(event) => setMonth(event.target.value)} aria-label="Período do faturamento" />
             </label>
