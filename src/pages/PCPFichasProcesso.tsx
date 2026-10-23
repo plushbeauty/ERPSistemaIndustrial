@@ -67,6 +67,7 @@ const injection: Param[] = [
  {key:'peso_canal_g',label:'Peso de canal / refugo',unit:'g',type:'number',step:'0.001'},
 ]
 const press: Param[] = [
+ {key:'cavidades_ativas',label:'Cavidades ativas do molde',unit:'un',type:'number',step:'1',required:true},
  {key:'tonelagem_prensa',label:'Tonelagem requerida',unit:'ton',type:'number',step:'0.1',required:true},
  {key:'pressao_prensagem_bar',label:'Pressão de prensagem',unit:'bar',type:'number',step:'0.1'},
  {key:'temperatura_molde_c',label:'Temperatura do molde',unit:'°C',type:'number',step:'0.1'},
@@ -78,6 +79,8 @@ const press: Param[] = [
  {key:'peso_total_carga_g',label:'Peso total da carga',unit:'g',type:'number',step:'0.001'},
  {key:'dimensional_molde_mm',label:'Dimensional do molde (C × L × A)',unit:'mm',type:'text'},
  {key:'peso_molde_kg',label:'Peso do molde',unit:'kg',type:'number',step:'0.1'},
+ {key:'tipo_refrigeracao',label:'Tipo de refrigeração do molde',unit:'—',type:'text'},
+ {key:'vazao_refrigeracao_l_min',label:'Vazão de refrigeração',unit:'L/min',type:'number',step:'0.1'},
  {key:'tempo_pre_aquecimento_seg',label:'Pré-aquecimento da matéria-prima',unit:'s',type:'number',step:'0.1'},
  {key:'temp_plato_superior_c',label:'Temperatura do platô superior',unit:'°C',type:'number',step:'0.1'},
  {key:'temp_plato_inferior_c',label:'Temperatura do platô inferior',unit:'°C',type:'number',step:'0.1'},
@@ -183,7 +186,7 @@ const processParamGroups: Partial<Record<Category,{title:string;keys:string[]}[]
   {title:'Matéria-prima e preparação',keys:['material_polimero','temperatura_secagem_c','tempo_secagem_h','peso_peca_g','peso_canal_g']},
   {title:'Perfil térmico da injetora',keys:['zona1_c','zona2_c','zona3_c','zona4_c']},
   {title:'Injeção, recalque e plasticização',keys:['forca_fechamento_ton','pressao_injecao_bar','velocidade_injecao_mm_s','tempo_injecao_seg','pressao_recalque_bar','tempo_recalque_seg','pressao_contrapressao_bar','rpm_rosca','posicao_dosagem_mm','posicao_comutacao_mm']},
-  {title:'Molde, ciclo e refrigeração',keys:['cavidades_ativas','tempo_ciclo_seg','tempo_resfriamento_seg','temperatura_molde_c','altura_molde_mm','tipo_fixacao','tipo_refrigeracao','vazao_refrigeracao_l_min','tempo_setup_min','tempo_limpeza_min','torque_aperto_nm','velocidade_dosagem_curso','seguranca_ppe']},
+  {title:'Molde, ciclo e refrigeração',keys:['cavidades_ativas','tempo_ciclo_seg','tempo_resfriamento_seg','altura_molde_mm','tipo_fixacao','tipo_refrigeracao','vazao_refrigeracao_l_min','tempo_setup_min','tempo_limpeza_min','torque_aperto_nm','velocidade_dosagem_curso','seguranca_ppe']},
  ],
  PRENSADOS:[
   {title:'1. Dados do molde e setup',keys:['cavidades_ativas','dimensional_molde_mm','peso_molde_kg','tempo_setup_min','altura_molde_mm','tipo_fixacao','seguranca_ppe']},
