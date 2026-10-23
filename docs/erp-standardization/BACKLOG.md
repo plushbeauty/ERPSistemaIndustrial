@@ -235,3 +235,17 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Status:** CORRIGIDO AGUARDANDO VALIDAÇÃO. UI-040 e QA-040 permanecem abertos.
 
 - **Ajuste de implementação da normalização:** corrigida a expressão regular Unicode após revisão do conteúdo versionado; commit `1a5d04191e41206af501b51a72e8b9ca2e0f0d85`. A verificação continua pendente de CI/build e teste funcional.
+
+
+## Auditoria integral de Vendas — REV-VENDAS-UI-002 (2026-10-23)
+
+- Relatório versionado: [SALES-UI-AUDIT-2026-10-23-R2.md](./SALES-UI-AUDIT-2026-10-23-R2.md).
+- Base auditada: `main` SHA `8d5699c7355943b67fcfd828195ceaf40b55fda5`.
+- Escopo da leitura: rotas comerciais, aliases/reexports, telas principais, componentes UI existentes, tokens de formulário, contrato de telas aprovadas, scripts e auditorias anteriores.
+- Primeira tranche de correções visuais em páginas editáveis: `VendasAnaliseCustos.tsx`, `VendasPDV.tsx`, `VendasCatalogoDigital.tsx`, `TabelaPrecos.tsx` e `VendasRelatorios.tsx`.
+- Preservação declarada por revisão de diff: chamadas Supabase/RPC, filtros por empresa, cálculos, handlers, filtros de tela, seleção do catálogo e impressão permanecem presentes. Ainda depende de CI/type-check/lint/build e teste funcional para confirmação final.
+- Nenhuma tela congelada, shell global, autenticação, permissões ou schema de banco foi alterado intencionalmente.
+- PR #210 já propõe `src/components/ui/industrial-base.tsx` e não foi integrado; não criar cópia concorrente nesta tranche.
+- **UI-010 permanece ABERTO** até cobrir todas as telas comerciais editáveis, verificar o preview autenticado e concluir os gates aplicáveis.
+- **UI-001 permanece ABERTO**: não foi possível executar `npm run audit:ui-standardization` em checkout local nesta sessão; a tentativa de clonar o repositório foi bloqueada por indisponibilidade de DNS/rede no ambiente de execução.
+- **Deploy:** PENDENTE; o status de Vercel de main estava com limite de builds e o deployment associado ao PR #212 estava cancelado.
