@@ -50,7 +50,7 @@ export default function IndustrialFileImage({
   async function tryFallback() {
     if (triedFallback || !companyId || !filename) return
     setTriedFallback(true)
-    const objectUrl = await loadIndustrialFallbackImage(companyId, folder, filename)
+    const objectUrl = await loadIndustrialFallbackImage(companyId, folder, filename, permissionModule)
     if (objectUrl) setFallbackUrl(objectUrl)
   }
 
