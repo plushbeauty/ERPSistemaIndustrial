@@ -7,8 +7,6 @@ type FileManagerSession = {
 }
 
 const SESSION_KEY = 'sysnqra-file-manager-v1'
-const IMAGE_EXTENSIONS = ['webp', 'png', 'jpg', 'jpeg', 'avif'] as const
-
 function readSession(companyId: string): FileManagerSession | null {
   if (typeof window === 'undefined') return null
   try {
@@ -68,31 +66,28 @@ export async function loadIndustrialFallbackImage(
 
   const baseName = safeFilename(filename)
   if (!baseName) return null
-  const candidates = IMAGE_EXTENSIONS.map(extension => baseName.toLowerCase().endsWith('.' + extension)
-    ? baseName
-    : baseName + '.' + extension)
 
-  for (const candidate of [...new Set(candidates)]) {
-    try {
-      const url = new URL(session.agentUrl + '/file')
-      url.searchParams.set('path', folder + '/' + candidate)
-      const response = await fetch(url.toString(), {
-        method: 'GET',
-        headers: {
-          Authorization: 'Bearer ' + session.token,
-          'X-SYSNQRA-Company-ID': companyId,
-        },
-        cache: 'no-store',
-      })
-      if (!response.ok) continue
-      const contentType = response.headers.get('content-type') || ''
-      if (!contentType.startsWith('image/')) continue
-      const blob = await response.blob()
-      if (!blob.size) continue
-      return URL.createObjectURL(blob)
-    } catch {
-      // Falha do agente é tratada como ausência de fallback; a tela mantém o cadastro real.
-    }
+  try {
+    const url = new URL(session.agentUrl + '/resolve-image')
+    url.searchParams.set('name', baseName)
+    url.searchParams.set('kind', folder === 'desenhos-tecnicos' || folder === 'fichas-processo' ? 'drawing' : 'product')
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        Authorization: 'Bearer ' + session.token,
+        'X-SYSNQRA-Company-ID': companyId,
+      },
+      cache: 'no-store',
+    })
+    if (!response.ok) return null
+    const contentType = response.headers.get('content-type') || ''
+    if (!contentType.startsWith('image/')) return null
+    const blob = await response.blob()
+    if (!blob.size) return null
+    return URL.createObjectURL(blob)
+  } catch {
+    // Falha do agente é tratada como ausência de fallback; o cadastro real permanece disponível.
+    return null
   }
   return null
 }
