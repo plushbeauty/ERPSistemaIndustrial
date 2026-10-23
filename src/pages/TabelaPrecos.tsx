@@ -127,7 +127,7 @@ export default function TabelaPrecos() {
                 onChange={event => setPercentual(event.target.value)}
               />
             </label>
-            <label className="grid min-w-0 gap-1 sm:col-span-1 xl:col-span-3">
+            <label className="grid min-w-0 gap-[2px] text-[9px] font-semibold uppercase tracking-wider text-slate-500 sm:col-span-1 xl:col-span-3">
               Grupo produto
               <input
                 className="h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-xs"
@@ -135,7 +135,7 @@ export default function TabelaPrecos() {
                 onChange={event => setGrupo(event.target.value)}
               />
             </label>
-            <label className="grid min-w-0 gap-1 sm:col-span-1 xl:col-span-2">
+            <label className="grid min-w-0 gap-[2px] text-[9px] font-semibold uppercase tracking-wider text-slate-500 sm:col-span-1 xl:col-span-2">
               Perfil cliente
               <input
                 className="h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-xs"
@@ -158,7 +158,7 @@ export default function TabelaPrecos() {
         <section className="overflow-hidden border border-slate-300 bg-white">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] border-collapse text-left text-xs">
-              <thead>
+              <thead className="bg-slate-100 text-[9px] font-semibold uppercase tracking-wider text-slate-600">
                 <tr>
                   <th className="px-2 py-1">SKU</th>
                   <th className="px-2 py-1">Produto</th>
@@ -204,7 +204,7 @@ export default function TabelaPrecos() {
                 aria-label="Próxima página"
                 disabled={pagina >= paginas}
                 onClick={() => setPagina(atual => Math.min(paginas, atual + 1))}
-                className="inline-flex h-9 items-center gap-1 border border-slate-300 px-3 text-xs disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-slate-300 bg-white px-3 text-xs hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Próxima <ChevronRight size={15} />
               </button>
