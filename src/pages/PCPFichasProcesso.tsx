@@ -341,7 +341,11 @@ export function FichasProcesso() {
           const path = storageObjectPath(value)
           if (!path) return value
           const signed = await supabase.storage.from('erp-fichas-processo').createSignedUrl(path, 60 * 60 * 24 * 30)
-          return signed.error ? value : signed.data.signedUrl
+          if (signed.error) {
+            console.error(`[PCP Fichas] Não foi possível gerar URL assinada para a imagem: ${path}`, signed.error.message)
+            return ''
+          }
+          return signed.data.signedUrl
         }
         const [mainImage, photos] = await Promise.all([
           row.imagem_url ? refreshUrl(row.imagem_url) : Promise.resolve(''),
