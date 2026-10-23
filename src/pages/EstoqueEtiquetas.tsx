@@ -1,9 +1,127 @@
-import { useState } from 'react'
-import { Search,Printer } from 'lucide-react'
-import IndustrialPageShell,{SectionCard,Field,Table,ToolbarButton} from '../components/industrial/IndustrialPageShell'
+/**
+ * REVISÃO 2026-10-23 — Etiquetas do Estoque.
+ * Integração da geração ZPL por produto ativo, com consulta limitada à empresa da sessão.
+ * Copiar/baixar gera arquivo; não afirma acionamento direto da impressora.
+ */
+import { useEffect, useMemo, useState } from 'react'
+import { AlertTriangle, Barcode, CheckCircle2, Copy, Download, Package, Printer } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-type Item={id:string;codigo:string;descricao:string;quantidade:number}
-export default function EstoqueEtiquetas(){const[ref,setRef]=useState(''),[items,setItems]=useState<Item[]>([]),[selected,setSelected]=useState<Record<string,boolean>>({}),[qty,setQty]=useState<Record<string,number>>({}),[msg,setMsg]=useState('')
-async function fetchData(){if(!ref.trim()){setMsg('Informe Pedido ou NF-e.');return}const{data,error}=await supabase.from('erp_pedidos_venda_itens').select('id,produto_id,quantidade').limit(500);if(error){setItems([]);setMsg('Não foi possível consultar itens.');return}const rows=(data??[]).filter(x=>String(x.id).includes(ref.trim())||String(x.produto_id??'').includes(ref.trim()));const p=await supabase.from('erp_produtos').select('id,codigo,descricao').in('id',rows.map(x=>x.produto_id));const mapped=rows.map(x=>{const pr=(p.data??[]).find(z=>z.id===x.produto_id);return{id:x.id,codigo:pr?.codigo??'',descricao:pr?.descricao??'',quantidade:Number(x.quantidade??0)}});setItems(mapped);setQty(Object.fromEntries(mapped.map(x=>[x.id,x.quantidade])));setSelected(Object.fromEntries(mapped.map(x=>[x.id,true])));setMsg(mapped.length?'Itens localizados.':'Nenhum item localizado.')}
-function print(){if(!items.some(x=>selected[x.id])){setMsg('Selecione ao menos um item.');return}window.print()}
-return <IndustrialPageShell module="Estoque / Expedição / Etiquetas" title="Impressão de Etiquetas Mestre" actions={[{label:'PUXAR DADOS',type:'primary',icon:<Search size={18}/>,onClick:()=>void fetchData()},{label:'DISPARAR IMPRESSÃO',type:'success',icon:<Printer size={18}/>,onClick:print}]}><SectionCard title="1. Referência de Pedido / NF-e"><Field label="Nº Nota Fiscal ou Nº Pedido" required><input value={ref} onChange={e=>setRef(e.target.value)} placeholder="Digite o número exato"/></Field></SectionCard><SectionCard title="2. Produtos vinculados localizados"><Table><thead><tr><th>Imprimir</th><th>Cód. Item</th><th>Descrição</th><th>Qtd. Total</th><th>Qtd. Imprimir</th></tr></thead><tbody>{items.length?items.map(x=><tr key={x.id}><td><input className="h-6 w-6" type="checkbox" checked={!!selected[x.id]} onChange={e=>setSelected(v=>({...v,[x.id]:e.target.checked}))}/></td><td>{x.codigo}</td><td>{x.descricao}</td><td>{x.quantidade}</td><td><input className="min-h-[42px] w-32 rounded-md border border-slate-400 px-3 text-base font-semibold text-slate-900" type="number" min="0" max={x.quantidade} value={qty[x.id]??0} onChange={e=>setQty(v=>({...v,[x.id]:Number(e.target.value)}))}/></td></tr>):<tr><td colSpan={5}>Nenhum produto carregado.</td></tr>}</tbody></Table>{msg&&<p className="mt-4 font-semibold text-slate-900">{msg}</p>}</SectionCard><SectionCard title="3. Parâmetros da impressora térmica"><div className="ips-grid-2"><Field label="Modelo de etiqueta"><select><option>Zebra — Barcode</option></select></Field><Field label="Destino"><input readOnly value="Impressora térmica operacional"/></Field></div><div className="ips-bottom-actions"><ToolbarButton tone="success" onClick={print}><Printer size={18}/> DISPARAR IMPRESSÃO</ToolbarButton></div></SectionCard></IndustrialPageShell>}
+
+type P = { id: string; codigo: string; nome: string }
+const input = 'h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] font-semibold text-slate-800 outline-none transition focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-50'
+const label = 'grid min-w-0 gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-500'
+
+export default function EstoqueEtiquetas() {
+  const [products, setProducts] = useState<P[]>([])
+  const [id, setId] = useState('')
+  const [quantity, setQuantity] = useState(1)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      setLoading(true)
+      setError('')
+      try {
+        const auth = await supabase.auth.getUser()
+        if (auth.error) throw auth.error
+        if (!auth.data.user) throw new Error('Sessão corporativa não autenticada.')
+        const profile = await supabase
+          .from('erp_usuarios')
+          .select('empresa_id')
+          .eq('auth_user_id', auth.data.user.id)
+          .eq('ativo', true)
+          .is('deleted_at', null)
+          .maybeSingle()
+        if (profile.error) throw profile.error
+        if (!profile.data?.empresa_id) throw new Error('Empresa da sessão não identificada.')
+        const result = await supabase
+          .from('erp_produtos')
+          .select('id,codigo,nome')
+          .eq('empresa_id', profile.data.empresa_id)
+          .eq('ativo', true)
+          .order('codigo')
+        if (result.error) throw result.error
+        if (!cancelled) setProducts((result.data ?? []) as P[])
+      } catch (cause) {
+        if (!cancelled) setError(cause instanceof Error ? cause.message : 'Falha ao carregar produtos ativos.')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [])
+
+  const product = products.find(item => item.id === id)
+  const zpl = useMemo(() => product ? Array.from({ length: quantity }, () => [
+    '^XA', '^CI28', '^FO30,30^A0N,30,30^FDSYSNQRA ERP INDUSTRIAL^FS',
+    '^FO30,70^A0N,28,28^FDSKU: ' + product.codigo + '^FS',
+    '^FO30,115^BY2,3,55^BCN,55,Y,N,N^FD' + product.codigo + '^FS', '^XZ',
+  ].join('\n')).join('\n') : '', [product, quantity])
+
+  const copy = async () => {
+    if (!zpl) return
+    setMessage('')
+    setError('')
+    try {
+      await navigator.clipboard.writeText(zpl)
+      setMessage('ZPL copiado. Nenhuma impressora foi acionada.')
+    } catch {
+      setError('Não foi possível copiar automaticamente. Baixe o arquivo ZPL.')
+    }
+  }
+
+  const download = () => {
+    if (!zpl) return
+    const url = URL.createObjectURL(new Blob([zpl], { type: 'text/plain;charset=utf-8' }))
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = 'etiqueta-' + (product?.codigo || 'produto') + '.zpl'
+    anchor.click()
+    URL.revokeObjectURL(url)
+    setMessage('Arquivo ZPL baixado para envio à ponte de impressão.')
+    setError('')
+  }
+
+  return (
+    <section className="mx-auto w-full max-w-[1500px] space-y-3 p-2 text-[11px] text-slate-800" aria-busy={loading}>
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-2">
+        <div>
+          <p className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-sky-700"><Barcode size={12} /> Identificação · Etiquetas industriais</p>
+          <h2 className="text-sm font-black uppercase text-slate-900">Código de barras</h2>
+          <p className="text-[10px] text-slate-500">Geração de arquivo ZPL para impressão; a impressora não é acionada por esta tela.</p>
+        </div>
+        <span className="inline-flex h-7 items-center gap-1.5 rounded-[2px] border border-slate-200 bg-white px-2.5 text-[9px] font-bold uppercase text-slate-600"><Printer size={12} /> Saída ZPL</span>
+      </header>
+
+      {error && <div role="alert" className="flex items-start gap-1.5 rounded-[2px] border border-rose-200 bg-rose-50 p-2 text-[10px] font-bold text-rose-800"><AlertTriangle size={13} className="mt-0.5 shrink-0" />{error}</div>}
+      {message && <div role="status" className="flex items-start gap-1.5 rounded-[2px] border border-emerald-200 bg-emerald-50 p-2 text-[10px] font-bold text-emerald-800"><CheckCircle2 size={13} className="mt-0.5 shrink-0" />{message}</div>}
+
+      <div className="grid grid-cols-1 gap-3 rounded-[2px] border border-slate-200 bg-white p-3 shadow-sm md:grid-cols-12">
+        <label className={label + ' md:col-span-8'}><span className="flex items-center gap-1"><Package size={10} /> Produto ativo</span>
+          <select className={input} value={id} onChange={event => { setId(event.target.value); setMessage(''); setError('') }} disabled={loading || !!error}>
+            <option value="">{loading ? 'Carregando catálogo…' : 'Selecione um produto'}</option>
+            {products.map(item => <option key={item.id} value={item.id}>{item.codigo} · {item.nome}</option>)}
+          </select>
+        </label>
+        <label className={label + ' md:col-span-2'}>Quantidade de etiquetas
+          <input className={input + ' text-center font-mono'} type="number" min={1} max={100} step={1} value={quantity} onChange={event => setQuantity(Math.max(1, Math.min(100, Math.floor(Number(event.target.value) || 1))))} />
+        </label>
+        <div className="flex flex-wrap items-end gap-1.5 md:col-span-2">
+          <button type="button" disabled={!zpl} onClick={() => void copy()} className="inline-flex h-[30px] flex-1 items-center justify-center gap-1 rounded-[2px] bg-[#2D8DB8] px-2 text-[9px] font-black uppercase text-white transition-colors hover:bg-[#246f91] disabled:cursor-not-allowed disabled:opacity-50"><Copy size={12} /> Copiar</button>
+          <button type="button" disabled={!zpl} onClick={download} className="inline-flex h-[30px] flex-1 items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2 text-[9px] font-black uppercase text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"><Download size={12} /> Baixar</button>
+        </div>
+      </div>
+
+      <section className="overflow-hidden rounded-[2px] border border-slate-200 bg-white shadow-sm">
+        <header className="flex h-8 items-center justify-between border-b border-slate-200 bg-slate-50 px-3">
+          <h3 className="text-[9px] font-black uppercase tracking-wider text-slate-700">Pré-visualização do comando</h3>
+          <span className="font-mono text-[9px] text-slate-500">{product ? `${product.codigo} · ${quantity} un.` : 'Aguardando seleção'}</span>
+        </header>
+        <pre className="max-h-[360px] min-h-[120px] overflow-auto bg-[#10222d] p-3 font-mono text-[10px] leading-5 text-cyan-100" aria-label="Conteúdo ZPL gerado">{zpl || (loading ? 'Carregando catálogo…' : 'Selecione um produto para visualizar o ZPL.')}</pre>
+      </section>
+    </section>
+  )
+}
