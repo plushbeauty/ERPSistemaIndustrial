@@ -70,7 +70,7 @@ function sendCors(req, res) {
   }
   const headers = {
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-SYSNQRA-Company-ID',
     'Access-Control-Max-Age': '600',
     'Vary': 'Origin',
   }
