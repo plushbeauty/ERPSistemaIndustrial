@@ -36,7 +36,7 @@ const MIME_TYPES = {
   '.json': 'application/json', '.txt': 'text/plain; charset=utf-8', '.csv': 'text/csv; charset=utf-8',
   '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  '.step': 'application/step', '.stp': 'application/step', '.dwg': 'image/vnd.dwg',
+  '.step': 'application/step', '.stp': 'application/step', '.dwg': 'image/vnd.dwg', '.avif': 'image/avif',
 }
 let config = {
   primaryPath: path.resolve(String(args.primary || process.env.SYSNQRA_PRIMARY_PATH || 'C:\\SYSNQRA\\Arquivos')),
@@ -234,6 +234,28 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, { success: true, primaryOk, networkOk: Boolean(networkOk && networkPath), createdFolders, configured: true }, cors)
     } catch (err) {
       return sendJson(res, err.statusCode || 400, { error: err.message || 'Falha ao validar diretórios.' }, cors)
+    }
+  }
+
+  if (route === '/resolve-image' && req.method === 'GET') {
+    const name = parsed.searchParams.get('name')
+    const kind = parsed.searchParams.get('kind') || 'product'
+    if (!name) return sendJson(res, 400, { error: 'Parâmetro name obrigatório.' }, cors)
+    if (!['product', 'drawing'].includes(kind)) return sendJson(res, 400, { error: 'Tipo de busca inválido.' }, cors)
+    try {
+      safeSlug(name)
+      const folders = kind === 'drawing' ? ['desenhos-tecnicos', 'fichas-processo', 'imagens'] : ['produtos', 'imagens', 'fotos']
+      const extensions = /\.(webp|png|jpe?g|avif)$/i.test(name) ? [''] : ['.webp', '.png', '.jpg', '.jpeg', '.avif']
+      for (const folder of folders) {
+        for (const extension of extensions) {
+          const relative = path.posix.join(folder, name + extension)
+          const found = readFileRoots(relative)
+          if (found) return streamFile(req, res, found.candidate, found.label, cors)
+        }
+      }
+      return sendJson(res, 404, { error: 'Imagem não encontrada nas pastas alternativas autorizadas.' }, cors)
+    } catch (err) {
+      return sendJson(res, 400, { error: err.message || 'Nome de arquivo inválido.' }, cors)
     }
   }
 
