@@ -125,7 +125,6 @@ const cutting: Param[] = [
  {key:'altura_regua_vinco_mm',label:'Altura da régua de vinco',unit:'mm',type:'number',step:'0.01'},
  {key:'pressao_vinco',label:'Pressão / ajuste de vinco',unit:'—',type:'text'},
  {key:'registro_alimentacao_mm',label:'Registro de alimentação',unit:'mm',type:'number',step:'0.01'},
- {key:'tempo_ciclo_seg',label:'Tempo de ciclo por golpe / folha',unit:'s',type:'number',step:'0.01',required:true},
  {key:'cavidades_ativas',label:'Peças por golpe / folha',unit:'un',type:'number',step:'1'},
  {key:'criterio_primeira_peca',label:'Critério de aprovação da primeira peça',unit:'—',type:'text',multiline:true},
  {key:'segregacao_refugo',label:'Segregação de retalhos e refugo',unit:'—',type:'text'},
@@ -178,7 +177,7 @@ const packaging: Param[] = [
  {key:'emb_criterio_liberacao',label:'Critérios de conferência e liberação',unit:'—',type:'text',multiline:true},
 ]
 const setupCommon = common.filter(p => ['tempo_ciclo_seg','altura_molde_mm','tipo_fixacao','tempo_setup_min','tempo_limpeza_min','seguranca_ppe'].includes(p.key))
-export const paramsFor = (category: Category) => category === 'INJETADOS' ? [...common, ...injection] : category === 'PRENSADOS' ? [...setupCommon, ...press] : category === 'ESTAMPARIA' || category === 'MECANICA' ? [...setupCommon.filter(p => p.key !== 'altura_molde_mm' && p.key !== 'tipo_fixacao'), ...stamping] : category === 'TRATAMENTO_SUPERFICIAL' || category === 'PINTURA_QUIMICA' ? surface : category === 'CORTE_VINCO' ? cutting : category === 'ACABAMENTO' ? finishing : packaging
+export const paramsFor = (category: Category) => category === 'INJETADOS' ? [...common, ...injection] : category === 'PRENSADOS' ? [...setupCommon, ...press] : category === 'ESTAMPARIA' || category === 'MECANICA' ? [...setupCommon.filter(p => p.key !== 'altura_molde_mm' && p.key !== 'tipo_fixacao'), ...stamping] : category === 'TRATAMENTO_SUPERFICIAL' || category === 'PINTURA_QUIMICA' ? surface : category === 'CORTE_VINCO' ? [...setupCommon, ...cutting] : category === 'ACABAMENTO' ? finishing : packaging
 const processParamGroups: Partial<Record<Category,{title:string;keys:string[]}[]>> = {
  INJETADOS:[
   {title:'Matéria-prima e preparação',keys:['material_polimero','temperatura_secagem_c','tempo_secagem_h','peso_peca_g','peso_canal_g']},
@@ -194,9 +193,9 @@ const processParamGroups: Partial<Record<Category,{title:string;keys:string[]}[]
   {title:'5. Ciclo de desgaseificação (respiro)',keys:['numero_respiros','tempo_primeiro_respiro_seg','tempo_alivio_prensa_aberta_seg','tempo_ciclo_seg','tempo_limpeza_min']},
  ],
  ESTAMPARIA:[
-  {title:'1. Identificação da chapa e do estampo',keys:['material_chapa','espessura_chapa_mm','tipo_estampo','tipo_alimentacao_chapa','folga_matriz_mm','altura_molde_mm','tipo_fixacao']},
+  {title:'1. Identificação da chapa e do estampo',keys:['material_chapa','espessura_chapa_mm','tipo_estampo','tipo_alimentacao_chapa','folga_matriz_mm']},
   {title:'2. Parâmetros da prensa e alimentação',keys:['forca_prensa_ton','curso_prensa_mm','passo_alimentacao_mm','lubrificante','tempo_ciclo_seg','cavidades_ativas']},
-  {title:'3. Qualidade da peça e segurança',keys:['controle_rebarba','criterio_primeira_peca','torque_aperto_nm','tempo_setup_min','tempo_limpeza_min','seguranca_ppe']},
+  {title:'3. Qualidade da peça e segurança',keys:['controle_rebarba','criterio_primeira_peca','tempo_setup_min','tempo_limpeza_min','seguranca_ppe']},
  ],
  CORTE_VINCO:[
   {title:'1. Material e ferramental',keys:['material_base','espessura_material_mm','ferramenta_corte','tipo_prensa_corte_vinco','tipo_vinco','altura_regua_corte_mm','altura_regua_vinco_mm']},
