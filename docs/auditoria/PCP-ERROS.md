@@ -206,3 +206,13 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - **Verificação estática:** confirmações de substituição no conteúdo antes do commit: revisão, grid, altura, descrição e os três KPIs presentes. Isso não equivale a type-check/build nem inspeção visual no navegador.
 - **Estado:** CORRIGIDO AGUARDANDO VALIDAÇÃO VISUAL/CI/DEPLOYMENT.
 - **Commit de código:** [bbfc20f382751e6cf7043239b0424cc2d5e76f64](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/bbfc20f382751e6cf7043239b0424cc2d5e76f64).
+
+
+### [PCP-014] Erro HTTP 400 na consulta de máquinas — esquema de capacidade
+- **Data:** 23/10/2026
+- **Evidência recebida:** chamada REST a `erp_maquinas?select=id,codigo,nome,status,horas_capacidade_dia,dias_trabalho_semana&empresa_id=...&ativo=eq.true` responde HTTP 400.
+- **Diagnóstico:** o código consulta duas colunas introduzidas pela migração `20261022103000_pcp_capacidade_maquinas.sql`. Sem o corpo JSON da resposta REST e sem acesso ao projeto Supabase conectado, não é possível afirmar se a migração está ausente ou se o cache PostgREST está desatualizado.
+- **Correção no código:** `PCPCapacidade.tsx` passou a exibir o detalhe real do erro e instrução específica se detectar coluna/schema cache ausente; revisão `PCP-CAPACIDADE-003`. [Commit](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/d7231a8ed5e11aebe2a23e0e4cd91cc878eaaf67).
+- **Migração corretiva:** criada `supabase/migrations/20261023120000_pcp_capacidade_schema_sync.sql`, idempotente, garante colunas e restrições e envia `NOTIFY pgrst, 'reload schema'`. [Commit](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/9bde7b1bfb6046c676598da4042a181ba666c44e).
+- **Bloqueio de validação:** a ferramenta de conexão Supabase não retornou projetos acessíveis; a migração foi gravada no GitHub, mas **não foi aplicada ao banco remoto**. Não declarar resolvido até aplicar a migração no projeto `zsklkydlawgvwgnvxwwx.supabase.co`, recarregar a tela e confirmar a resposta HTTP.
+- **Estado:** CÓDIGO/MIGRAÇÃO COMMITADOS; BANCO REMOTO E TESTE FUNCIONAL PENDENTES.
