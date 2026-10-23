@@ -93,7 +93,7 @@ export default function VendasRelatorios() {
             </label>
             <label className="grid gap-1 text-[11px] font-medium">
               Status
-              <select value={status} onChange={event => setStatus(event.target.value)} className="h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-xs font-normal md:col-span-4">
+              <select value={status} onChange={event => setStatus(event.target.value)} className="h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-xs font-normal">
                 {statuses.map(value => <option key={value}>{value}</option>)}
               </select>
             </label>
@@ -109,7 +109,6 @@ export default function VendasRelatorios() {
               <p className="text-[11px] font-semibold text-slate-500">{filtered.length} pedido(s) • total filtrado {money(total)}</p>
             </div>
             <button type="button" onClick={() => window.print()} className="print-hidden inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-medium hover:bg-slate-50"><Printer size={13}/> IMPRIMIR RELATÓRIO</button>
-            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] text-[11px]">
