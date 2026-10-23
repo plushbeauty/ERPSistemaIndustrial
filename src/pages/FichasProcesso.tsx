@@ -1735,19 +1735,16 @@ export function FichasProcesso() {
                       <button
                         type="button"
                         onClick={() => {
-                          const next = [
-                            ...form.inspecoes,
-                            {
-                              id: crypto.randomUUID(),
-                              caracteristica: 'Nova característica crítica',
-                              instrumento: 'Paquímetro / Visual',
-                              frequencia: 'A cada 1 hora',
-                              criterio: 'Sem rebarbas / Dentro do dimensional',
-                              tolerancia: '± 0.05 mm',
-                              status_aprovacao: 'CONFORME'
-                            }
-                          ]
-                          update('inspecoes', next)
+                          const novoItem: InspectionItem = {
+                            id: crypto.randomUUID(),
+                            caracteristica: 'Nova característica crítica',
+                            instrumento: 'Paquímetro / Visual',
+                            frequencia: 'A cada 1 hora',
+                            criterio: 'Sem rebarbas / Dentro do dimensional',
+                            tolerancia: '± 0.05 mm',
+                            status_aprovacao: 'CONFORME'
+                          }
+                          update('inspecoes', [...form.inspecoes, novoItem])
                         }}
                         className="h-6 px-2 text-[9px] font-bold uppercase rounded border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 flex items-center gap-1"
                       >
