@@ -13,7 +13,7 @@ const modules = [
   { label: 'Liberação de lotes', route: '/qualidade/liberacao-lote', icon: ShieldCheck },
   { label: 'Quarentena de lotes', route: '/qualidade/quarentena', icon: ShieldAlert },
   { label: 'Genealogia de lotes', route: '/qualidade/genealogia-lote', icon: GitBranch },
-  { label: 'RPNC multiorigem · investigação · CAPA · 8D', route: '/qualidade/rpnc', icon: ClipboardList },
+  { label: 'RPNC completo · formulário único por abas', route: '/qualidade/rpnc', icon: ClipboardList },
   { label: 'Metodologia 8D', route: '/qualidade/metodologia-8d', icon: Target },
   { label: 'FMEA / PFMEA', route: '/qualidade/pfmea', icon: Activity },
   { label: 'Documentos controlados / GED', route: '/qualidade/ged-documentos', icon: FileText },
