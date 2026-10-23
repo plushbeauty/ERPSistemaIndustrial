@@ -1,5 +1,6 @@
 /**
- * REVISÃO PCP TABLET LAUNCHER — 2026-10-20 · REV-PCP-TS-002
+ * REVISÃO PCP — 2026-10-23 · REV-PCP-UI-003
+ * Ajuste: equalizar a altura das rotinas do painel e alinhar os KPIs sem alterar fluxos operacionais.
  * Correção: garantir o delimitador de abertura do comentário de revisão para que TypeScript
  * não interprete o cabeçalho como código. O build observado em f2fa7f1 usou conteúdo inválido;
  * esta versão mantém o cabeçalho sintaticamente correto e preserva o comportamento operacional.
@@ -282,7 +283,7 @@ const tabs:[Tab,string,string][]=[['visao','Visão geral','Gauge'],['novaop','Cr
     <div><p className="text-[11px] font-bold uppercase tracking-[.18em] text-cyan-200">Centro de comando industrial</p><h2 className="mt-1 text-[16px] font-black">Planejamento e Controle da Produção</h2><p className="mt-1 text-xs text-slate-200">Acesse as rotinas do PCP sem menus laterais duplicados. Cada tela consulta os dados reais da empresa autenticada.</p></div>
     <button type="button" onClick={()=>selectTab('novaop')} className="inline-flex h-[32px] items-center gap-2 border border-cyan-200 bg-[#1D5FD1] px-3 text-xs font-black text-white hover:bg-[#24799e]">＋ CRIAR NOVA OP</button>
    </div>
-   <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
+   <div className="grid grid-cols-2 auto-rows-fr items-stretch gap-2 sm:grid-cols-3 xl:grid-cols-4">
     {[
      {title:'Ordens de produção',desc:'Consultar OPs, prazos, quantidades e situação.',path:'/pcp/ordens',icon:'Factory',tone:'border-sky-200 bg-sky-50 text-sky-800'},
      {title:'Demanda / pedidos',desc:'Acompanhar pedidos comerciais que geram produção.',tab:'pedidos' as Tab,icon:'ClipboardList',tone:'border-cyan-200 bg-cyan-50 text-cyan-900'},
@@ -302,17 +303,17 @@ const tabs:[Tab,string,string][]=[['visao','Visão geral','Gauge'],['novaop','Cr
      {title:'Tablet do operador',desc:'Interface operacional para o chão de fábrica.',path:'/pcp/tablet-operador',icon:'Tablet',tone:'border-slate-300 bg-slate-100 text-slate-800'},
      {title:'Auditoria do PCP',desc:'Achados, criticidade, correções e evidências.',path:'/pcp/auditoria',icon:'ShieldCheck',tone:'border-orange-200 bg-orange-50 text-orange-900'},
      {title:'Qualidade / defeitos',desc:'Consultar defeitos registrados durante a produção.',tab:'qualidade' as Tab,icon:'ShieldCheck',tone:'border-rose-200 bg-rose-50 text-rose-900'}
-    ].map((item)=> <button key={item.title} type="button" onClick={()=>{if('tab' in item&&item.tab)selectTab(item.tab);else if('path' in item&&item.path)window.location.href=item.path}} className="group flex min-h-[112px] flex-col items-start border border-slate-200 bg-white p-3 text-left shadow-sm transition hover:-translate-y-px hover:border-[#1D5FD1] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-sky-500">
+    ].map((item)=> <button key={item.title} type="button" onClick={()=>{if('tab' in item&&item.tab)selectTab(item.tab);else if('path' in item&&item.path)window.location.href=item.path}} className="group flex h-full min-h-[136px] flex-col items-start border border-slate-200 bg-white p-3 text-left shadow-sm transition hover:-translate-y-px hover:border-[#1D5FD1] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-sky-500">
       <span className={`mb-2 flex h-8 w-8 items-center justify-center border ${item.tone}`}><InlineIcon name={item.icon} size={17}/></span>
       <strong className="text-[11px] font-black leading-4 text-slate-800">{item.title}</strong>
-      <span className="mt-1 text-[11px] leading-4 text-slate-500">{item.desc}</span>
+      <span className="mt-1 min-h-[32px] text-[11px] leading-4 text-slate-500">{item.desc}</span>
       <span className="mt-auto pt-2 text-[11px] font-black uppercase tracking-wide text-[#1D5FD1]">Abrir rotina →</span>
     </button>)}
    </div>
-   <div className="grid gap-2 md:grid-cols-3">
-    <article className="border border-slate-200 bg-white p-3"><p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Ordens em aberto</p><strong className="mt-1 block text-[22px] font-black tabular-nums text-[#0B2545]">{openOps}</strong><p className="text-[11px] text-slate-500">Calculado das OPs retornadas pelo Supabase.</p></article>
-    <article className="border border-slate-200 bg-white p-3"><p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Produção boa apontada</p><strong className="mt-1 block text-[22px] font-black tabular-nums text-emerald-700">{totalGood.toLocaleString('pt-BR')}</strong><p className="text-[11px] text-slate-500">Soma dos apontamentos de produção carregados.</p></article>
-    <article className="border border-slate-200 bg-white p-3"><p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Refugo registrado</p><strong className="mt-1 block text-[22px] font-black tabular-nums text-rose-700">{totalScrap.toLocaleString('pt-BR')}</strong><p className="text-[11px] text-slate-500">Soma de quantidades de refugo registradas.</p></article>
+   <div className="grid auto-rows-fr items-stretch gap-2 md:grid-cols-3">
+    <article className="flex h-full flex-col border border-slate-200 bg-white p-3"><p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Ordens em aberto</p><strong className="mt-1 block text-[22px] font-black tabular-nums text-[#0B2545]">{openOps}</strong><p className="mt-auto pt-2 text-[11px] text-slate-500">Calculado das OPs retornadas pelo Supabase.</p></article>
+    <article className="flex h-full flex-col border border-slate-200 bg-white p-3"><p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Produção boa apontada</p><strong className="mt-1 block text-[22px] font-black tabular-nums text-emerald-700">{totalGood.toLocaleString('pt-BR')}</strong><p className="mt-auto pt-2 text-[11px] text-slate-500">Soma dos apontamentos de produção carregados.</p></article>
+    <article className="flex h-full flex-col border border-slate-200 bg-white p-3"><p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Refugo registrado</p><strong className="mt-1 block text-[22px] font-black tabular-nums text-rose-700">{totalScrap.toLocaleString('pt-BR')}</strong><p className="mt-auto pt-2 text-[11px] text-slate-500">Soma de quantidades de refugo registradas.</p></article>
    </div>
   </section>}
 
