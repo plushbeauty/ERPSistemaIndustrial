@@ -61,8 +61,8 @@ export default function VendasMetas(){
      </div>
      <div style={{display:'flex',alignItems:'center',gap:7,flexWrap:'wrap'}}>
       <label className="flex items-center gap-2 text-[9px] font-semibold uppercase tracking-wider text-slate-500">Competência<input type='month' value={mes} onChange={e=>setMes(e.target.value)} className="h-[30px] rounded-[2px] border border-slate-300 bg-white px-2 text-xs normal-case tracking-normal text-slate-800"/></label>
-      <button type='button' className='sales-button sales-button--secondary' onClick={()=>{setValor('0');setPedidos('0');setMsg('Nova meta pronta para preenchimento.')}}><Plus size={13}/>Nova meta</button>
-      <button type='button' className='sales-button sales-button--primary' onClick={()=>void save()}><Save size={13}/>Gravar</button>
+      <button type='button' className='sales-button sales-button--secondary !h-[30px] !min-h-[30px] !rounded-[2px] text-xs' onClick={()=>{setValor('0');setPedidos('0');setMsg('Nova meta pronta para preenchimento.')}}><Plus size={13}/>Nova meta</button>
+      <button type='button' className='sales-button sales-button--primary !h-[30px] !min-h-[30px] !rounded-[2px] text-xs' onClick={()=>void save()}><Save size={13}/>Gravar</button>
      </div>
     </div>
     <div className="grid grid-cols-1 gap-2 px-2 pb-2 md:grid-cols-12">
@@ -72,7 +72,8 @@ export default function VendasMetas(){
     </div>
     {msg&&<div style={{margin:'0 14px 12px',padding:'8px 10px',border:'1px solid #cce1e6',background:'#f1f8fa',color:'#315c69',fontSize:10}}>{msg}</div>}
     <div className='sales-table-scroll'>
-     <table className='sales-orders-table'>
+     <style>{`.sales-metas-table thead th{height:32px!important;padding:0 8px!important;background:#F1F5F9!important;color:#64748B!important;font-size:9px!important;font-weight:600!important}.sales-metas-table tbody td{height:32px!important;padding:4px 8px!important;font-size:11px!important}`}</style>
+     <table className='sales-orders-table sales-metas-table'>
       <thead><tr><th>Vendedor</th><th>Meta de faturamento</th><th>Realizado</th><th>Atingimento</th></tr></thead>
       <tbody>
        {func.map(f=><tr key={f.id}><td className='sales-client-name'>{f.nome}</td><td>{brl(Number(valor)||0)}</td><td>{brl(realizado)}</td><td><div style={{display:'flex',alignItems:'center',gap:8}}><div style={{height:6,flex:1,background:'#e5edef'}}><div style={{height:'100%',width:String(Math.min(pct,100))+'%',background:'#2D8DB8'}}/></div><strong style={{fontSize:10}}>{pct.toFixed(0)}%</strong></div></td></tr>)}
