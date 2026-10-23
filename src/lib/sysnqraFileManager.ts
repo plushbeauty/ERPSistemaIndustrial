@@ -89,5 +89,4 @@ export async function loadIndustrialFallbackImage(
     // Falha do agente é tratada como ausência de fallback; o cadastro real permanece disponível.
     return null
   }
-  return null
 }
