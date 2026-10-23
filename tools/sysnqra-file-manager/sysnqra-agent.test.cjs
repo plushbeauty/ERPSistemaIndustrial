@@ -76,6 +76,15 @@ test('agente autentica, vincula empresa, cria pastas e bloqueia traversal', asyn
   const traversal = await fetch(base + '/file?path=..%2F..%2Fetc%2Fpasswd', { headers })
   assert.ok([400, 404].includes(traversal.status), 'tentativa de traversal deve ser bloqueada sem revelar arquivo')
 
+  const imageUpload = await fetch(base + '/upload?folder=imagens&filename=TESTSKU.png', {
+    method: 'POST', headers, body: Buffer.from('fake-png-payload'),
+  })
+  assert.equal(imageUpload.status, 201)
+  const resolvedImage = await fetch(base + '/resolve-image?name=TESTSKU&kind=product', { headers })
+  assert.equal(resolvedImage.status, 200)
+  assert.equal(resolvedImage.headers.get('content-type'), 'image/png')
+  assert.equal(await resolvedImage.text(), 'fake-png-payload')
+
   const upload = await fetch(base + '/upload?folder=fotos&filename=teste.txt', {
     method: 'POST', headers, body: Buffer.from('SYSNQRA test file'),
   })
