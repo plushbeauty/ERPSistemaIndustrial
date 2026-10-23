@@ -256,6 +256,7 @@ export default function PCPOrdens() {
 
   // Campos primitivos evitam reexecutar a sincronização quando a lista recebe
   // novos objetos com os mesmos valores operacionais.
+  const hasSelectedOp = Boolean(selectedOp)
   const selectedMachineId = selectedOp?.maquina_id || ''
   const selectedPlannedQty = selectedOp?.quantidade_planejada || selectedOp?.quantidade || 0
   const selectedRate = selectedOp?.velocidade_nominal_hora || 0
@@ -269,7 +270,7 @@ export default function PCPOrdens() {
 
   // Sincroniza apenas quando a OP selecionada ou seus valores mudam.
   useEffect(() => {
-    if (!selectedOpId || !selectedOp) return
+    if (!selectedOpId || !hasSelectedOp) return
     setMachineId(selectedMachineId)
     setQty(String(selectedPlannedQty || ''))
     setRate(String(selectedRate || ''))
@@ -280,7 +281,7 @@ export default function PCPOrdens() {
     setProducedInput(String(selectedProducedQty))
   }, [
     selectedOpId,
-    selectedOp,
+    hasSelectedOp,
     selectedMachineId,
     selectedPlannedQty,
     selectedRate,
