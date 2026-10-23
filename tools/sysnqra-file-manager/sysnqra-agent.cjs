@@ -60,7 +60,7 @@ function authOk(req) {
 function isAllowedOrigin(origin) {
   if (corsOrigins.has(origin)) return true
   // Permite previews do projeto oficial, sem liberar origens arbitrárias do vercel.app.
-  return /^https:\\/\\/erp-sistema-industrial-[a-z0-9-]+-plushbeauty\\.vercel\\.app$/i.test(origin)
+  return /^https:\/\/erp-sistema-industrial-[a-z0-9-]+-plushbeauty\.vercel\.app$/i.test(origin)
 }
 function sendCors(req, res) {
   const origin = req.headers.origin
