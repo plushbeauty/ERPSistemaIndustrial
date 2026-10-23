@@ -8,7 +8,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import {
-  Activity, AlertTriangle, ArrowUpRight, CheckCircle2, Clock, Factory,
+  Activity, AlertTriangle, CheckCircle2, Clock, Factory,
   FileText, Maximize2, Minus, Package, Plus, RefreshCw, Search,
   ShieldCheck, Wrench, X
 } from 'lucide-react'
