@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import {
   Activity, Archive, BarChart3, BookOpenCheck, ClipboardCheck, ClipboardList, FileCheck2, FileText,
-  Gauge, GitBranch, ListChecks, Microscope, SearchCheck, ShieldAlert, ShieldCheck, Target, Wrench, Workflow,
+  Gauge, GitBranch, Microscope, SearchCheck, ShieldAlert, ShieldCheck, Target, Wrench,
 } from 'lucide-react'
 import '../../styles/quality-workspace-standard.css'
 
