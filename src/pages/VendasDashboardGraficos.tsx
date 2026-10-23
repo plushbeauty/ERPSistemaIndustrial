@@ -90,18 +90,18 @@ export default function VendasDashboardGraficos() {
             <p>Valores calculados a partir de documentos fiscais autorizados no período selecionado.</p>
           </div>
           <div className="sales-heading-actions">
-            <label className="sales-button sales-button--secondary">
+            <label className="sales-button sales-button--secondary !h-[30px] !min-h-[30px] !rounded-[2px] text-xs">
               Visão
-              <select value={period} onChange={(event) => setPeriod(event.target.value as 'mes'|'ano')} aria-label="Visão do faturamento">
+              <select className="h-[30px] min-h-[30px] rounded-[2px] border border-slate-300 bg-white px-2 text-xs" value={period} onChange={(event) => setPeriod(event.target.value as 'mes'|'ano')} aria-label="Visão do faturamento">
                 <option value="mes">Mês</option>
                 <option value="ano">Ano</option>
               </select>
             </label>
             <label className="sales-button sales-button--secondary">
               Período
-              <input type="month" value={month} onChange={(event) => setMonth(event.target.value)} aria-label="Período do faturamento" />
+              <input className="h-[30px] min-h-[30px] rounded-[2px] border border-slate-300 bg-white px-2 text-xs" type="month" value={month} onChange={(event) => setMonth(event.target.value)} aria-label="Período do faturamento" />
             </label>
-            <button type="button" onClick={() => window.print()} className="sales-button sales-button--primary no-print">
+            <button type="button" onClick={() => window.print()} className="sales-button sales-button--primary no-print !h-[30px] !min-h-[30px] !rounded-[2px] text-xs">
               Imprimir gráficos
             </button>          </div>
         </section>
@@ -109,14 +109,14 @@ export default function VendasDashboardGraficos() {
         {error && <div role="alert" className="sales-alert">{error}</div>}
         {loading && <div role="status" className="sales-loading-row">Carregando documentos fiscais…</div>}
 
-        <section className="sales-orders-card p-4" aria-label="Resumo do faturamento">
+        <section className="sales-orders-card rounded-[2px] p-2" aria-label="Resumo do faturamento">
           <span className="sales-eyebrow">Faturamento fiscal do {period === 'mes' ? 'mês' : 'ano'}</span>
           <strong className="mt-1 block text-2xl font-bold text-slate-900">{brl(total)}</strong>
           <small className="text-xs text-slate-500">{rows.length} cliente(s) com documentos autorizados</small>
         </section>
 
         <section className="sales-orders-card">
-          <div className="sales-page-heading px-4 pt-4">
+          <div className="sales-page-heading px-2 pt-2">
             <div>
               <span className="sales-eyebrow">RANKING</span>
               <h2 className="text-base font-bold text-slate-900">Faturamento por cliente</h2>
