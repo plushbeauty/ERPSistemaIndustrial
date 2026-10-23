@@ -69,7 +69,6 @@ const menus: MenuItem[] = [
   ] },
   { label: 'Fiscal', route: '/fiscal', icon: FileText },
   { label: 'Manufatura / PCP', route: '/pcp', icon: Factory, children: [
-    { label: 'Central PCP', route: '/pcp' },
     { label: 'Ordens de produção', route: '/pcp/ordens' },
     { label: 'Ordens industriais', route: '/pcp/ordens-industriais' },
     { label: 'Chão de Fábrica · Portal do Funcionário', route: '/pcp/portal-operador' },
