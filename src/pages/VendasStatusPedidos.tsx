@@ -24,12 +24,21 @@ export default function VendasStatusPedidos(){
  const empresa=async()=>{const e=await supabase.rpc('erp_current_empresa_id');if(e.error||!e.data)throw e.error??new Error('Empresa não identificada.');return String(e.data)}
  const stateFor=(row:Row,stage:Stage)=>{
   const s=norm(row.status)
-  if(row.data_entrega_prometida&&new Date(row.data_entrega_prometida+'T00:00:00')<today()&&!s.includes('fatur'))return {label:'ATRASADO',tone:'red' as const,blocked:false}
-  if(stage==='comercial')return s.includes('rascun')||s.includes('aberto')?{label:'DIGITAÇÃO',tone:'yellow' as const,blocked:false}:{label:'CONCLUÍDO',tone:'green' as const,blocked:false}
-  if(stage==='engenharia')return s.includes('engen')||s.includes('projeto')?{label:'ANÁLISE DE PROJETO',tone:'yellow' as const,blocked:false}:{label:'LIBERADO',tone:'green' as const,blocked:false}
-  if(stage==='pcp'||stage==='almoxarifado')return s.includes('mater')||s.includes('almox')?{label:'FALTA MATÉRIA-PRIMA',tone:'red' as const,blocked:false}:{label:'RESERVADO',tone:'green' as const,blocked:false}
-  if(stage==='producao')return s.includes('produc')||s.includes('fabric')?{label:s.includes('final')?'EM ESTOQUE':'EM FABRICAÇÃO',tone:s.includes('final')?'green' as const:'yellow' as const,blocked:false}:{label:'AGUARDANDO',tone:'gray' as const,blocked:false}
-  return s.includes('fatur')?{label:'FATURADO',tone:'green' as const,blocked:false}:{label:'AGUARDANDO',tone:'gray' as const,blocked:false}
+  const overdue=!!row.data_entrega_prometida&&new Date(row.data_entrega_prometida+'T00:00:00')<today()&&!s.includes('fatur')
+  if(overdue)return {label:'ATRASADO',tone:'red' as const,blocked:false}
+  // O pedido de venda não comprova, sozinho, que as etapas operacionais foram executadas.
+  // Só exibe conclusão quando o status do pedido contém evidência explícita; nos demais casos,
+  // evita afirmar reserva, liberação ou conclusão sem consultar o registro operacional correspondente.
+  if(stage==='comercial'){
+   if(s.includes('rascun')||s.includes('aberto'))return {label:'DIGITAÇÃO',tone:'yellow' as const,blocked:false}
+   if(s.includes('cancel'))return {label:'CANCELADO',tone:'red' as const,blocked:false}
+   return {label:'PEDIDO REGISTRADO',tone:'green' as const,blocked:false}
+  }
+  if(stage==='engenharia')return s.includes('engen')||s.includes('projeto')?{label:'ANÁLISE DE PROJETO',tone:'yellow' as const,blocked:false}:{label:'AGUARDANDO CONFIRMAÇÃO',tone:'gray' as const,blocked:false}
+  if(stage==='pcp')return s.includes('pcp')?{label:'EM PLANEJAMENTO',tone:'yellow' as const,blocked:false}:{label:'AGUARDANDO CONFIRMAÇÃO',tone:'gray' as const,blocked:false}
+  if(stage==='almoxarifado')return s.includes('mater')||s.includes('almox')?{label:'PENDÊNCIA DE MATERIAL',tone:'red' as const,blocked:false}:{label:'AGUARDANDO CONFIRMAÇÃO',tone:'gray' as const,blocked:false}
+  if(stage==='producao')return s.includes('produc')||s.includes('fabric')?{label:s.includes('final')?'PRODUÇÃO FINALIZADA':'EM FABRICAÇÃO',tone:s.includes('final')?'green' as const:'yellow' as const,blocked:false}:{label:'AGUARDANDO CONFIRMAÇÃO',tone:'gray' as const,blocked:false}
+  return s.includes('fatur')?{label:'FATURADO',tone:'green' as const,blocked:false}:{label:'AGUARDANDO CONFIRMAÇÃO',tone:'gray' as const,blocked:false}
  }
  const blockerIndex=(row:Row)=>{const s=norm(row.status);if(s.includes('fatur'))return -1;if(s.includes('produc'))return 3;if(s.includes('almox')||s.includes('mater'))return 2;if(s.includes('pcp'))return 2;if(s.includes('engen')||s.includes('projeto'))return 1;if(s.includes('rascun')||s.includes('aberto'))return 0;return 0}
  const cell=(row:Row,stage:Stage)=>{const blocked=stageOrder.indexOf(stage)>blockerIndex(row);if(blocked)return <Lock size={10} style={{opacity:.3}}/>;const s=stateFor(row,stage);return <span className={`inline-flex rounded-none px-1.5 py-0.5 text-[8px] font-medium ${s.tone==='red'?'bg-red-100 text-red-700':s.tone==='yellow'?'bg-amber-100 text-amber-700':s.tone==='green'?'bg-emerald-100 text-emerald-700':'bg-slate-100 text-slate-500'}`}>{s.label}</span>}
