@@ -24,9 +24,9 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 
 ## 2. PAINEL DE RESUMO E STATUS
 
-- **Total de Problemas Identificados:** 12
-- **Pendentes de Correção:** 0
-- **Corrigidos:** 12
+- **Total de Problemas Identificados:** 14
+- **Pendentes de Correção / Validação:** 2
+- **Corrigidos com evidência registrada:** 12
 - **Bloqueados:** 0
 
 ---
@@ -204,7 +204,7 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - **Achado:** cards de rotinas tinham apenas altura mínima, sem linhas de grid iguais nem altura reservada para descrições; títulos/descrições com quebras diferentes podiam empurrar os links de ação e gerar alturas visualmente inconsistentes. Os três KPIs também não fixavam a descrição na base.
 - **Correção no código:** `auto-rows-fr` + `items-stretch` no grid; cards com `h-full` e altura mínima de 136px; reserva de 32px para a descrição; KPIs em linhas iguais com texto auxiliar alinhado ao rodapé. Nenhuma consulta, RPC, permissão, dado ou tela congelada foi alterada.
 - **Verificação estática:** confirmações de substituição no conteúdo antes do commit: revisão, grid, altura, descrição e os três KPIs presentes. Isso não equivale a type-check/build nem inspeção visual no navegador.
-- **Estado:** CORRIGIDO AGUARDANDO VALIDAÇÃO VISUAL/CI/DEPLOYMENT.
+- **Estado:** PENDENTE DE VALIDAÇÃO VISUAL/CI/DEPLOYMENT. O ajuste de código foi commitado, mas não deve ser contado como concluído antes da validação.
 - **Commit de código:** [bbfc20f382751e6cf7043239b0424cc2d5e76f64](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/bbfc20f382751e6cf7043239b0424cc2d5e76f64).
 
 
