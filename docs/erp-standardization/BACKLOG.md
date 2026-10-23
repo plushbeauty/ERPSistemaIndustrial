@@ -242,7 +242,7 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - Relatório versionado: [SALES-UI-AUDIT-2026-10-23-R2.md](./SALES-UI-AUDIT-2026-10-23-R2.md).
 - Base auditada: `main` SHA `8d5699c7355943b67fcfd828195ceaf40b55fda5`.
 - Escopo da leitura: rotas comerciais, aliases/reexports, telas principais, componentes UI existentes, tokens de formulário, contrato de telas aprovadas, scripts e auditorias anteriores.
-- Primeira tranche de correções visuais em páginas editáveis: `VendasAnaliseCustos.tsx`, `VendasPDV.tsx`, `VendasCatalogoDigital.tsx`, `TabelaPrecos.tsx`, `VendasRelatorios.tsx`, `VendasMetas.tsx`, `VendasClientes.tsx` e `VendasCatalogoDigitalGestao.tsx`.
+- Primeira tranche de correções visuais em páginas editáveis: `VendasAnaliseCustos.tsx`, `VendasPDV.tsx`, `VendasCatalogoDigital.tsx`, `TabelaPrecos.tsx`, `VendasRelatorios.tsx`, `VendasMetas.tsx`, `VendasClientes.tsx` e `VendasCatalogoDigitalGestao.tsx` e `DashboardComercial.tsx`.
 - Preservação declarada por revisão de diff: chamadas Supabase/RPC, filtros por empresa, cálculos, handlers, filtros de tela, seleção do catálogo e impressão permanecem presentes. Ainda depende de CI/type-check/lint/build e teste funcional para confirmação final.
 - Nenhuma tela congelada, shell global, autenticação, permissões ou schema de banco foi alterado intencionalmente.
 - PR #210 já propõe `src/components/ui/industrial-base.tsx` e não foi integrado; não criar cópia concorrente nesta tranche.
