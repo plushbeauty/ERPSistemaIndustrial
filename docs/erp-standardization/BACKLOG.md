@@ -203,3 +203,11 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - [ ] Validar visualmente em desktop e tablet após deployment READY; confirmar ausência de overflow e altura consistente por linha.
 - [ ] Executar type-check, lint, auditorias UI/rotas/lazy imports e build no ambiente de CI; não considerar concluído antes das saídas reais.
 - **Código:** [bbfc20f382751e6cf7043239b0424cc2d5e76f64](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/bbfc20f382751e6cf7043239b0424cc2d5e76f64).
+
+
+### PCP — HTTP 400 em `erp_maquinas` na tela Capacidade (23/10/2026)
+- [x] Adicionar diagnóstico legível para erros de colunas/cache em `src/pages/PCPCapacidade.tsx`.
+- [x] Criar migração idempotente de sincronização de colunas e cache PostgREST: `supabase/migrations/20261023120000_pcp_capacidade_schema_sync.sql`.
+- [ ] Aplicar a migração no projeto Supabase remoto e confirmar que a chamada REST retorna 200.
+- [ ] Validar a tela autenticada com RLS, carregar máquinas e testar salvamento de capacidade; não preencher dados operacionais fictícios.
+- **Código:** [d7231a8](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/d7231a8ed5e11aebe2a23e0e4cd91cc878eaaf67). **Migração:** [9bde7b1](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/9bde7b1bfb6046c676598da4042a181ba666c44e).
