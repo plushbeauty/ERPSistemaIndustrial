@@ -1586,6 +1586,7 @@ export function FichasProcesso() {
                               src={form.imagem_url || null}
                               companyId={companyId}
                               folder="desenhos-tecnicos"
+                              permissionModule="pcp"
                               filename={selectedProduct?.codigo || form.codigo_ficha}
                               alt="Foto principal ou desenho técnico da peça"
                               className="max-h-full max-w-full object-contain cursor-pointer"
