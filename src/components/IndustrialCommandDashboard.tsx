@@ -1,57 +1,71 @@
 /**
- * APROVADO — tela principal restaurada do arquivo enviado em 2026-10-18.
- * Não alterar o layout, indicadores ou navegação sem autorização expressa.
+ * SYSNQRA ERP — Centro de Comando Industrial
+ * Revisão: 2026-10-23
+ * Base visual autorizada pelo usuário (código Lovable recebido em 2026-10-23).
+ * Correções: removidos dados demonstrativos; consultas sem empresa não são executadas;
+ * indicadores derivados somente de registros retornados pelo Supabase/RLS.
+ * BLOQUEIO DE APROVAÇÃO: não alterar este arquivo sem autorização expressa do usuário.
  */
 import { useEffect, useMemo, useState } from 'react'
 import {
-  Activity, CheckCircle, AlertTriangle, BarChart3
+  Activity, AlertTriangle, ArrowUpRight, CheckCircle2, Clock, Factory,
+  FileText, Maximize2, Minus, Package, Plus, RefreshCw, Search,
+  ShieldCheck, Wrench, X
 } from 'lucide-react'
 import {
-  Bar, BarChart, CartesianGrid, Legend, Line, LineChart,
-  ResponsiveContainer, Tooltip, XAxis, YAxis
+  Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis
 } from 'recharts'
 import { supabase } from '../lib/supabaseClient'
 
 type Props = { onNavigate: (route: string) => void }
-type Machine = { id: string; codigo: string; nome: string; status: string }
+type Machine = { id: string; codigo: string; nome: string; status: string; tipo?: string | null }
 type OP = { id: string; numero_op: string | number; produto_id: string | null; maquina_id: string | null; status: string; quantidade_planejada: number | null; quantidade: number | null; created_at: string | null; criado_em?: string | null }
-type Product = { id: string; codigo: string | null; nome: string | null }
-type Pointing = { id: string; ordem_producao_id: string | null; maquina_id: string | null; quantidade_planejada: number | null; quantidade_boa: number | null; quantidade_refugada: number | null; created_at: string | null; criado_em?: string | null }
+type Pointing = { id: string; ordem_producao_id: string | null; maquina_id: string | null; quantidade_planejada: number | null; quantidade_boa: number | null; quantidade_refugada: number | null; created_at: string | null }
 type Program = { id: string; ordem_producao_id: string | null; maquina_id: string | null; inicio_planejado: string; fim_planejado: string; quantidade_planejada: number | null; quantidade_produzida: number | null; quantidade_refugada: number | null; status: string }
-type Stop = { maquina_id: string | null; inicio: string | null; fim: string | null; status: string | null }
-type QueueRow = { op: string; workstation: string; product: string; lastPointing: string; status: string }
-type Daily = { day: string; previsto: number; realizado: number }
-type MachineShift = { maquina: string; eficiencia: number }
-type Equipment = { id: string; codigo: string; descricao: string; status: string; proxima_calibracao: string | null; certificado_validade: string | null }
+type RPNC = { id: string; status: string | null }
+type MachineView = Machine & { visualStatus: 'running' | 'maintenance' | 'stoppage'; opAtual?: string }
 
-const n = (v: unknown) => Number.isFinite(Number(v)) ? Number(v) : 0
-const fmt = (v: number) => new Intl.NumberFormat('pt-BR').format(Math.round(v))
-const dateKey = (d: Date) => d.toISOString().slice(0, 10)
-
-function statusText(value: string) {
-  const s = value.toLowerCase()
-  if (s.includes('concl')) return 'Concluída'
-  if (s.includes('cancel')) return 'Cancelada'
-  if (s.includes('paus')) return 'Pausada'
-  if (s.includes('exec') || s.includes('produ')) return 'Em produção'
-  if (s.includes('liber')) return 'Liberada'
-  if (s.includes('planej')) return 'Planejada'
+const number = (value: unknown) => {
+  const result = Number(value)
+  return Number.isFinite(result) ? result : 0
+}
+const fmt = (value: number) => new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 }).format(value)
+const localDateKey = (date: Date) => {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+const statusKind = (value: string): MachineView['visualStatus'] => {
+  const status = value.toLowerCase()
+  if (status.includes('manu') || status.includes('preventiva') || status.includes('setup')) return 'maintenance'
+  if (status.includes('par') || status.includes('interrup') || status.includes('defeito') || status.includes('inativ')) return 'stoppage'
+  return 'running'
+}
+const statusLabel = (value: string) => {
+  const status = value.toLowerCase()
+  if (status.includes('conc') || status.includes('final')) return 'Concluída'
+  if (status.includes('exec') || status.includes('prod') || status.includes('inic')) return 'Em execução'
+  if (status.includes('cancel')) return 'Cancelada'
+  if (status.includes('manu') || status.includes('prevent')) return 'Manutenção'
+  if (status.includes('par') || status.includes('interrup') || status.includes('defeito')) return 'Parada'
   return value || 'Sem status'
 }
+const isDone = (status: string) => /conc|finaliz|encerrad/i.test(status)
+const isRunning = (status: string) => /exec|produ|inici|andamento/i.test(status)
 
-export default function DashboardPrincipal({ onNavigate }: Props) {
+export default function IndustrialCommandDashboard({ onNavigate }: Props) {
   const [machines, setMachines] = useState<Machine[]>([])
   const [ops, setOps] = useState<OP[]>([])
-  const [products, setProducts] = useState<Product[]>([])
   const [pointings, setPointings] = useState<Pointing[]>([])
   const [programs, setPrograms] = useState<Program[]>([])
-  const [stops, setStops] = useState<Stop[]>([])
-  const [equipment, setEquipment] = useState<Equipment[]>([])
-  const [rpnc, setRpnc] = useState(0)
-  const [rpncClosed, setRpncClosed] = useState(0)
+  const [rpncs, setRpncs] = useState<RPNC[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState('')
   const [clock, setClock] = useState(new Date())
+  const [zoom, setZoom] = useState(100)
+  const [selectedMachine, setSelectedMachine] = useState<MachineView | null>(null)
 
   useEffect(() => {
     const timer = window.setInterval(() => setClock(new Date()), 1000)
@@ -60,311 +74,278 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
 
   useEffect(() => {
     let alive = true
-    async function load() {
+    const load = async () => {
       setLoading(true)
       setError('')
       try {
-        const { data: auth, error: authError } = await supabase.auth.getUser()
+        const { data: authData, error: authError } = await supabase.auth.getUser()
         if (authError) throw authError
-        if (!auth.user) throw new Error('Sessão não encontrada.')
+        if (!authData.user) throw new Error('Sessão não autenticada. Entre novamente no ERP.')
 
-        const { data: p, error: profileError } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from('erp_usuarios')
-          .select('nome,empresa_id,nivel_admin,is_master,perfil,auth_user_id')
-          .eq('auth_user_id', auth.user.id)
+          .select('empresa_id,is_master,nivel_admin,perfil')
+          .eq('auth_user_id', authData.user.id)
           .eq('ativo', true)
-          .is('deleted_at', null)
           .maybeSingle()
         if (profileError) throw profileError
-        if (!p) throw new Error('Perfil ERP não encontrado.')
 
-        const master = p.is_master === true &&
-          Number(p.nivel_admin ?? 0) === 100 &&
-          String(p.perfil ?? '').toUpperCase() === 'MASTER' &&
-          p.empresa_id === null
-        if (!master && !p.empresa_id) throw new Error('Empresa do usuário não identificada.')
+        const isMaster = profile?.is_master === true &&
+          Number(profile?.nivel_admin ?? 0) === 100 &&
+          String(profile?.perfil ?? '').toUpperCase() === 'MASTER' &&
+          profile?.empresa_id === null
 
-        const empresaId = p.empresa_id as string | null
-        const machineQ = supabase.from('erp_maquinas').select('id,codigo,nome,status').eq('ativo', true).order('codigo')
-        const opQ = supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status,quantidade_planejada,quantidade,created_at,criado_em').order('created_at', { ascending: false }).limit(500)
-        const prodQ = supabase.from('erp_produtos').select('id,codigo,nome').limit(3000)
-        const pointingQ = supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,quantidade_planejada,quantidade_boa,quantidade_refugada,created_at').order('created_at', { ascending: false }).limit(5000)
-        const programQ = supabase.from('erp_pcp_programacoes').select('id,ordem_producao_id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,quantidade_produzida,quantidade_refugada,status').neq('status', 'cancelada').limit(3000)
-        const stopQ = supabase.from('erp_producao_paradas').select('maquina_id,inicio,fim,status').limit(5000)
-        const rpncQ = supabase.from('erp_rpnc').select('id,status').limit(5000)
-        const equipmentQ = supabase.from('erp_equipamentos_medicao').select('id,codigo,descricao,status,proxima_calibracao,certificado_validade').limit(3000)
-
-        if (!master && empresaId) {
-          machineQ.eq('empresa_id', empresaId)
-          opQ.eq('empresa_id', empresaId)
-          prodQ.eq('empresa_id', empresaId)
-          pointingQ.eq('empresa_id', empresaId)
-          programQ.eq('empresa_id', empresaId)
-          stopQ.eq('empresa_id', empresaId)
-          rpncQ.eq('empresa_id', empresaId)
-          equipmentQ.eq('empresa_id', empresaId)
+        // Master sem empresa selecionada não pode consultar dados de todas as empresas.
+        if (isMaster || !profile?.empresa_id) {
+          if (alive) {
+            setMachines([])
+            setOps([])
+            setPointings([])
+            setPrograms([])
+            setRpncs([])
+            setError(isMaster
+              ? 'Selecione uma empresa no contexto administrativo para visualizar indicadores operacionais.'
+              : 'O perfil ativo não possui empresa vinculada. Verifique o cadastro e as permissões.')
+          }
+          return
         }
 
-        const [m, o, pr, pt, pg, st, rn, eq] = await Promise.all([machineQ, opQ, prodQ, pointingQ, programQ, stopQ, rpncQ, equipmentQ])
-        for (const result of [m, o, pr, pt, pg, st, rn, eq]) if (result.error) throw result.error
-
+        const empresaId = profile.empresa_id
+        const [machineRes, opRes, pointingRes, programRes, rpncRes] = await Promise.all([
+          supabase.from('erp_maquinas').select('id,codigo,nome,status,tipo').eq('empresa_id', empresaId).eq('ativo', true).order('codigo').limit(500),
+          supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status,quantidade_planejada,quantidade,created_at').eq('empresa_id', empresaId).order('created_at', { ascending: false }).limit(500),
+          supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,quantidade_planejada,quantidade_boa,quantidade_refugada,created_at').eq('empresa_id', empresaId).order('created_at', { ascending: false }).limit(1000),
+          supabase.from('erp_pcp_programacoes').select('id,ordem_producao_id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,quantidade_produzida,quantidade_refugada,status').eq('empresa_id', empresaId).neq('status', 'cancelada').limit(1000),
+          supabase.from('erp_rpnc').select('id,status').eq('empresa_id', empresaId).limit(1000)
+        ])
+        const firstError = [machineRes, opRes, pointingRes, programRes, rpncRes].find(result => result.error)?.error
+        if (firstError) throw firstError
         if (!alive) return
-        setMachines((m.data ?? []) as Machine[])
-        setOps((o.data ?? []) as OP[])
-        setProducts((pr.data ?? []) as Product[])
-        setPointings((pt.data ?? []) as Pointing[])
-        setPrograms((pg.data ?? []) as Program[])
-        setStops((st.data ?? []) as Stop[])
-        const closedRncStates = new Set(['encerrada', 'fechada', 'concluida', 'concluido', 'fechado', 'cancelada', 'cancelado'])
-        const rncRows = (rn.data ?? []) as Array<{ status?: unknown }>
-        const closedRncCount = rncRows.filter(row => closedRncStates.has(String(row.status ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())).length
-        setRpnc(Math.max(0, rncRows.length - closedRncCount))
-        setRpncClosed(closedRncCount)
-        setEquipment((eq.data ?? []) as Equipment[])
-      } catch (e) {
-        if (alive) setError(e instanceof Error ? e.message : 'Não foi possível carregar o dashboard.')
+        setMachines((machineRes.data ?? []) as Machine[])
+        setOps((opRes.data ?? []) as OP[])
+        setPointings((pointingRes.data ?? []) as Pointing[])
+        setPrograms((programRes.data ?? []) as Program[])
+        setRpncs((rpncRes.data ?? []) as RPNC[])
+      } catch (cause) {
+        console.error('[IndustrialCommandDashboard] Falha ao carregar dados reais:', cause)
+        if (alive) setError(cause instanceof Error ? cause.message : 'Não foi possível carregar os dados do ERP.')
       } finally {
-        if (alive) setLoading(false)
+        if (alive) {
+          setLoading(false)
+          setRefreshing(false)
+        }
       }
     }
     void load()
     return () => { alive = false }
   }, [])
 
-  const today = dateKey(clock)
-  const activeOps = ops.filter(o => !['concluida', 'concluído', 'cancelada', 'cancelado'].includes(String(o.status).toLowerCase()))
-  const todayPointings = pointings.filter(p => String(p.criado_em ?? p.created_at ?? '').slice(0, 10) === today)
-  const producedToday = todayPointings.reduce((s, p) => s + n(p.quantidade_boa) + n(p.quantidade_refugada), 0)
-  const totalPlanned = pointings.reduce((s, p) => s + n(p.quantidade_planejada), 0)
-  const totalGood = pointings.reduce((s, p) => s + n(p.quantidade_boa), 0)
-  const totalBad = pointings.reduce((s, p) => s + n(p.quantidade_refugada), 0)
-  const performance = totalPlanned > 0 ? Math.min(100, (totalGood / totalPlanned) * 100) : null
-  const quality = totalGood + totalBad > 0 ? (totalGood / (totalGood + totalBad)) * 100 : null
+  const today = localDateKey(clock)
+  const todayPointings = useMemo(
+    () => pointings.filter(item => localDateKey(new Date(item.created_at ?? '')) === today && item.created_at),
+    [pointings, today]
+  )
+  const producedToday = useMemo(
+    () => todayPointings.reduce((total, item) => total + number(item.quantidade_boa), 0),
+    [todayPointings]
+  )
+  const plannedToday = useMemo(
+    () => programs.filter(item => item.inicio_planejado && localDateKey(new Date(item.inicio_planejado)) === today)
+      .reduce((total, item) => total + number(item.quantidade_planejada), 0),
+    [programs, today]
+  )
+  const productionPercent = plannedToday > 0 ? Math.min(100, Math.round(producedToday / plannedToday * 100)) : 0
+  const opCounts = useMemo(() => ({
+    waiting: ops.filter(item => !isDone(item.status) && !isRunning(item.status) && !/cancel/i.test(item.status)).length,
+    running: ops.filter(item => isRunning(item.status) && !isDone(item.status)).length,
+    doneToday: ops.filter(item => isDone(item.status) && localDateKey(new Date(item.created_at ?? '')) === today && item.created_at).length
+  }), [ops, today])
+  const qualityData = useMemo(() => {
+    const good = todayPointings.reduce((total, item) => total + number(item.quantidade_boa), 0)
+    const scrap = todayPointings.reduce((total, item) => total + number(item.quantidade_refugada), 0)
+    const total = good + scrap
+    return [
+      { name: 'Boas', quantidade: good },
+      { name: 'Refugadas', quantidade: scrap }
+    ].filter(item => item.quantidade > 0).map(item => ({
+      ...item,
+      taxa: total > 0 ? Math.round(item.quantidade / total * 1000) / 10 : 0
+    }))
+  }, [todayPointings])
+  const qualityScrapRate = useMemo(() => {
+    const good = todayPointings.reduce((total, item) => total + number(item.quantidade_boa), 0)
+    const scrap = todayPointings.reduce((total, item) => total + number(item.quantidade_refugada), 0)
+    return good + scrap > 0 ? scrap / (good + scrap) * 100 : 0
+  }, [todayPointings])
+  const factoryMachines = useMemo<MachineView[]>(() => machines.map(machine => ({
+    ...machine,
+    visualStatus: statusKind(machine.status),
+    opAtual: ops.find(op => op.maquina_id === machine.id && isRunning(op.status))?.numero_op.toString()
+  })), [machines, ops])
+  const activeRpncs = rpncs.filter(item => !/conc|encerr|fechad|cancel/i.test(item.status ?? ''))
+  const programActive = programs.filter(item => !/conc|final|cancel/i.test(item.status)).length
+  const refresh = () => {
+    setRefreshing(true)
+    setError('Para atualizar os dados, recarregue a página.')
+    window.location.reload()
+  }
 
-  const plannedHours = programs.reduce((s, p) => s + Math.max(0, (new Date(p.fim_planejado).getTime() - new Date(p.inicio_planejado).getTime()) / 3600000), 0)
-  const stopHours = stops.reduce((s, p) => {
-    if (!p.inicio || !p.fim) return s
-    return s + Math.max(0, (new Date(p.fim).getTime() - new Date(p.inicio).getTime()) / 3600000)
-  }, 0)
-  const availability = plannedHours > 0 ? Math.max(0, Math.min(100, ((plannedHours - Math.min(stopHours, plannedHours)) / plannedHours) * 100)) : null
-  const oee = performance !== null && quality !== null && availability !== null
-    ? (performance * quality * availability) / 10000
-    : null
-
-  const machineShift = useMemo<MachineShift[]>(() => machines.map(machine => {
-    const rows = pointings.filter(p => p.maquina_id === machine.id)
-    const plan = rows.reduce((s, p) => s + n(p.quantidade_planejada), 0)
-    const good = rows.reduce((s, p) => s + n(p.quantidade_boa), 0)
-    return { maquina: machine.codigo, eficiencia: plan > 0 ? Math.min(100, (good / plan) * 100) : 0 }
-  }).filter(x => x.eficiencia > 0), [machines, pointings])
-
-  const weekly = useMemo<Daily[]>(() => {
-    const days: Daily[] = []
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(clock)
-      d.setHours(0, 0, 0, 0)
-      d.setDate(d.getDate() - i)
-      const key = dateKey(d)
-      const previsto = programs.filter(p => String(p.inicio_planejado).slice(0, 10) === key).reduce((s, p) => s + n(p.quantidade_planejada), 0)
-      const realizado = pointings.filter(p => String(p.criado_em ?? p.created_at ?? '').slice(0, 10) === key).reduce((s, p) => s + n(p.quantidade_boa) + n(p.quantidade_refugada), 0)
-      days.push({ day: d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''), previsto, realizado })
-    }
-    return days
-  }, [clock, programs, pointings])
-
-  const overduePieces = useMemo(() => programs.reduce((sum, p) => {
-    const due = new Date(p.fim_planejado).getTime()
-    const produced = n(p.quantidade_produzida)
-    const planned = n(p.quantidade_planejada)
-    return due < clock.getTime() && produced < planned ? sum + Math.max(0, planned - produced) : sum
-  }, 0), [programs, clock])
-
-  const onTimePieces = useMemo(() => programs.reduce((sum, p) => {
-    const due = new Date(p.fim_planejado).getTime()
-    const produced = n(p.quantidade_produzida)
-    const planned = n(p.quantidade_planejada)
-    return due >= clock.getTime() && produced < planned ? sum + Math.max(0, planned - produced) : sum
-  }, 0), [programs, clock])
-
-  const equipmentValidity = useMemo(() => {
-    const invalidStates = new Set(['vencido', 'bloqueado', 'inativo', 'reprovado', 'fora de uso'])
-    let valid = 0
-    let expired = 0
-    let withoutValidity = 0
-    for (const item of equipment) {
-      const dates = [item.proxima_calibracao, item.certificado_validade].filter((date): date is string => Boolean(date))
-      const status = String(item.status ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
-      if (invalidStates.has(status) || dates.some(date => date.slice(0, 10) < today)) expired++
-      else if (dates.length > 0 && dates.every(date => date.slice(0, 10) >= today)) valid++
-      else withoutValidity++
-    }
-    return { valid, expired, withoutValidity }
-  }, [equipment, today])
-  const expiredEquipment = equipmentValidity.expired
-  const validEquipment = equipmentValidity.valid
-
-  const stopSummary = useMemo(() => {
-    const grouped = new Map<string, number>()
-    stops.forEach(s => {
-      if (!s.inicio || !s.fim) return
-      const day = String(s.inicio).slice(0, 10)
-      const hours = Math.max(0, (new Date(s.fim).getTime() - new Date(s.inicio).getTime()) / 3600000)
-      grouped.set(day, (grouped.get(day) ?? 0) + hours)
-    })
-    return Array.from(grouped.entries()).sort((a,b) => a[0].localeCompare(b[0])).slice(-7).map(([day, horas]) => ({ day: new Date(day + 'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short'}).replace('.',''), horas: Number(horas.toFixed(1)) }))
-  }, [stops])
-
-  const opStatus = useMemo(() => {
-    const map = new Map<string, number>()
-    ops.forEach(o => { const s = statusText(o.status); map.set(s, (map.get(s) ?? 0) + 1) })
-    return Array.from(map.entries()).map(([status, quantidade]) => ({ status, quantidade }))
-  }, [ops])
-
-  const queue = useMemo<QueueRow[]>(() => {
-    const productMap = new Map(products.map(p => [p.id, p]))
-    const machineMap = new Map(machines.map(m => [m.id, m]))
-    return activeOps.slice(0, 12).map(op => {
-      const rows = pointings.filter(p => p.ordem_producao_id === op.id).sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')))
-      const last = rows[0]
-      const machine = machineMap.get(op.maquina_id ?? '')
-      const product = productMap.get(op.produto_id ?? '')
-      return {
-        op: `OP-${op.numero_op}`,
-        workstation: machine ? `${machine.codigo} · ${machine.nome}` : 'Posto não definido',
-        product: product ? `${product.codigo ?? ''} · ${product.nome ?? ''}`.replace(/^ · | · $/g, '') : 'Produto não informado',
-        lastPointing: last?.created_at ? new Date(last.created_at).toLocaleString('pt-BR') : 'Sem apontamento',
-        status: statusText(op.status)
-      }
-    })
-  }, [activeOps, pointings, products, machines])
-
-  const cards = [
-    { label: 'OPs EM ANDAMENTO', value: fmt(activeOps.length), icon: Activity },
-    { label: 'PRODUÇÃO DO DIA', value: fmt(producedToday), suffix: 'un', icon: CheckCircle },
-    { label: 'RNC ABERTAS / FECHADAS', value: `${fmt(rpnc)} / ${fmt(rpncClosed)}`, icon: AlertTriangle },
-    { label: 'EFICIÊNCIA (OEE)', value: oee === null ? '—' : `${oee.toFixed(1).replace('.', ',')}%`, icon: BarChart3 }
-  ]
-
-  const attentionCards = [
-    { label: 'PEÇAS EM ATRASO', value: fmt(overduePieces), suffix: 'un', tone: 'danger', icon: AlertTriangle },
-    { label: 'PEÇAS NO PRAZO', value: fmt(onTimePieces), suffix: 'un', tone: 'success', icon: CheckCircle },
-    { label: 'EQUIPAMENTOS VÁLIDOS', value: fmt(validEquipment), suffix: 'un', tone: 'success', icon: CheckCircle },
-    { label: 'EQUIPAMENTOS VENCIDOS / BLOQUEADOS', value: fmt(expiredEquipment), suffix: 'un', tone: 'danger', icon: AlertTriangle }
-  ]
+  const card = 'bg-white border border-slate-200 rounded-[2px] shadow-sm'
+  const heading = 'text-xs font-bold text-[#123B50] uppercase tracking-wide'
+  const smallButton = 'h-[28px] px-2 border border-slate-300 rounded-[2px] text-[10px] font-semibold text-slate-700 hover:bg-slate-50 inline-flex items-center gap-1'
 
   return (
-    <div className="dp-shell min-h-screen bg-slate-50 text-slate-900 font-sans">
-      <style>{`
-        .dp-shell{min-height:100%;background:#f8fafc}
-        .dp-main{width:100%;max-width:1700px;margin:0 auto;padding:18px 24px 34px}
-        .dp-context{padding:11px 0 13px;border-bottom:1px solid #dbe3ea}.dp-context>div{display:flex;align-items:center;justify-content:space-between;gap:12px}.dp-context strong{color:#123B50;font-size:10px;font-weight:950;letter-spacing:.08em}.dp-context p{margin:0;color:#475569;font-size:10px;font-weight:950;letter-spacing:.12em}
-        .dp-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}
-        .dp-kpi{position:relative;display:flex;align-items:center;gap:13px;padding:12px 14px;min-height:76px;background:linear-gradient(135deg,#17445A,#0B3042);border:1px solid #082838;border-radius:14px;box-shadow:0 10px 24px rgba(8,40,56,.28);overflow:hidden}
-        .dp-kpi::after{content:"";position:absolute;right:-26px;bottom:-38px;width:104px;height:104px;border-radius:50%;background:rgba(72,183,199,.32);pointer-events:none}
-        .dp-kpi-icon{position:relative;z-index:1;display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:linear-gradient(145deg,#2D8DB8 0%,#17445A 58%,#0B3042 100%);color:#fff!important;flex:none;border:1px solid rgba(255,255,255,.42);box-shadow:0 11px 0 rgba(5,28,39,.55),0 17px 24px rgba(5,28,39,.34),inset 0 2px 2px rgba(255,255,255,.55),inset 0 -7px 10px rgba(0,0,0,.25);transform:perspective(180px) rotateX(4deg);text-shadow:0 2px 2px rgba(0,0,0,.38)}
-        .dp-kpi small,.dp-kpi strong,.dp-kpi em,.dp-kpi-label{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 1px 2px rgba(0,0,0,.55)}.dp-kpi small{display:block!important;font-size:13px;font-weight:950;letter-spacing:.04em;line-height:1.2}.dp-kpi strong{display:block!important;font-size:29px;font-weight:950;line-height:1.08;margin-top:5px}.dp-kpi em{font-style:normal!important;font-size:12px;font-weight:900}
-        .dp-kpi:nth-child(2){background:linear-gradient(135deg,#0F6748,#063C2A);border-color:#052E21}.dp-kpi:nth-child(2)::after{background:rgba(72,183,199,.18)}.dp-kpi:nth-child(2) .dp-kpi-icon{color:#fff!important;background:linear-gradient(145deg,#31B982 0%,#0F6748 58%,#063C2A 100%)}
-        .dp-kpi:nth-child(3){background:linear-gradient(135deg,#A94F00,#6E2F00);border-color:#542300}.dp-kpi:nth-child(3)::after{background:rgba(255,255,255,.14)}.dp-kpi:nth-child(3) .dp-kpi-icon{color:#fff!important;background:linear-gradient(145deg,#E58A36 0%,#A94F00 58%,#6E2F00 100%)}
-        .dp-kpi:nth-child(4){background:linear-gradient(135deg,#247E91,#145564);border-color:#0F4652}.dp-kpi:nth-child(4)::after{background:rgba(18,59,80,.20)}.dp-kpi:nth-child(4) .dp-kpi-icon{color:#fff!important;background:linear-gradient(145deg,#48B7C7 0%,#247E91 58%,#145564 100%)}
-        .dp-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
-        .dp-panel{background:#fff;border:1px solid #d7e5ea;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(18,59,80,.07)}
-        .dp-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 17px;border-bottom:1px solid #edf4f6;background:linear-gradient(180deg,#fff,#fbfeff)}.dp-head span{color:#2D8DB8;font-size:10px;font-weight:950;letter-spacing:.1em}.dp-head h2{margin:3px 0 0;color:#123B50;font-size:16px;font-weight:950}
-        .dp-chart{height:250px;padding:12px 12px 10px}.dp-chart-compact{height:220px}.dp-empty{height:220px;display:grid;place-items:center;padding:20px;text-align:center;color:#64748b;font-size:12px;font-weight:700}.dp-empty-compact{height:220px}
-        .dp-attention-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:12px 0}.dp-attention{position:relative;min-width:0;min-height:72px;padding:12px 14px;display:flex;align-items:center;gap:12px;border-radius:14px;overflow:hidden;box-shadow:0 8px 20px rgba(18,59,80,.10);border:1px solid}.dp-attention::after{content:"";position:absolute;right:-22px;bottom:-28px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.16)}.dp-attention-icon{display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:13px;background:linear-gradient(145deg,rgba(255,255,255,.30),rgba(255,255,255,.08));color:#fff!important;border:1px solid rgba(255,255,255,.48);box-shadow:0 8px 0 rgba(0,0,0,.20),0 12px 18px rgba(0,0,0,.18),inset 0 2px 2px rgba(255,255,255,.48),inset 0 -5px 8px rgba(0,0,0,.18);transform:perspective(160px) rotateX(5deg);text-shadow:0 2px 2px rgba(0,0,0,.38)}.dp-attention small,.dp-attention strong,.dp-attention em{color:#fff!important;-webkit-text-fill-color:#fff!important}.dp-attention small{display:block!important;font-size:11px;font-weight:950;letter-spacing:.04em;line-height:1.2}.dp-attention strong{display:inline-block!important;font-size:24px;font-weight:950;line-height:1.05;margin-top:7px}.dp-attention em{font-size:10px;font-weight:850;font-style:normal;margin-left:6px}.dp-attention-danger{background:linear-gradient(135deg,#B83A45,#74212A);border-color:#642029}.dp-attention-success{background:linear-gradient(135deg,#16805C,#0A4D38);border-color:#083F2E}.dp-attention-warning{background:linear-gradient(135deg,#B96A09,#7A4300);border-color:#613400}.dp-status-panel{margin-top:12px}
+    <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-800">
+      <header className={`${card} mb-3 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3`}>
+        <div className="flex items-center gap-3">
+          <div className="w-2.5 h-7 bg-[#123B50] rounded-[1px]" />
+          <div>
+            <h1 className="text-sm md:text-base font-extrabold text-[#123B50] tracking-wider uppercase">Uma fábrica inteira. Um único controle</h1>
+            <p className="text-[10px] text-slate-500 font-medium">SYSNQRA ERP Industrial • Centro de Comando Operacional</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-slate-600">
+          <div className="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 border border-slate-200 rounded-[2px]">
+            <Clock size={13} className="text-[#2D8DB8]" />
+            {clock.toLocaleDateString('pt-BR')} • {clock.toLocaleTimeString('pt-BR')}
+          </div>
+          <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase">
+            <span className={`w-2 h-2 rounded-full ${error ? 'bg-rose-500' : loading ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
+            {error ? 'Atenção' : loading ? 'Sincronizando' : 'Dados sincronizados'}
+          </span>
+          <button className={smallButton} onClick={refresh} disabled={refreshing} title="Atualizar dados">
+            <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} /> Atualizar
+          </button>
+        </div>
+      </header>
 
-        .dp-kpi-icon svg,.dp-attention-icon svg{color:#fff!important;stroke:#fff!important;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}.dp-table-wrap{overflow:auto}.dp-table{width:100%;border-collapse:collapse;font-size:12px}.dp-table th{background:#f8fafc;color:#475569;text-align:left;font-size:10px;font-weight:950;padding:10px 12px;border-bottom:1px solid #e2e8f0}.dp-table td{padding:11px 12px;border-bottom:1px solid #edf2f7;color:#334155;font-weight:650;white-space:nowrap}.dp-table tr:last-child td{border-bottom:0}.dp-status{display:inline-flex;padding:4px 8px;border-radius:999px;background:#ecfdf5;color:#065f46;font-size:10px;font-weight:900}.dp-error{margin:0 0 12px;padding:10px 12px;border:1px solid #fecaca;background:#fef2f2;color:#991b1b;border-radius:7px;font-size:12px;font-weight:700}
-                @media(max-width:1050px){.dp-kpis,.dp-attention-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dp-grid{grid-template-columns:1fr}.dp-main{padding:16px}}
-        @media(max-width:650px){.dp-kpis,.dp-attention-grid{grid-template-columns:1fr}.dp-main{padding:12px}}
-                .dp-shell{--dp-navy:#071522;--dp-petrol:#0d2638;--dp-blue:#2d8db8;--dp-cyan:#48b7c7;--dp-ink:#123b50;--dp-muted:#627985;--dp-line:#d8e4ea;background:radial-gradient(ellipse at 90% 0,rgba(72,183,199,.08),transparent 30rem),#f3f7fa;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
-                .dp-main{max-width:1600px;padding:clamp(16px,2.5vw,32px)}
-                .dp-kpi{min-height:102px;padding:17px;background:linear-gradient(145deg,#fff,#f7fbfd)!important;border:1px solid var(--dp-line)!important;border-radius:18px!important;box-shadow:0 10px 28px rgba(18,59,80,.07)!important;transition:transform .16s ease,box-shadow .16s ease}
-                .dp-kpi:hover{transform:translateY(-2px);box-shadow:0 16px 34px rgba(18,59,80,.11)!important}
-                .dp-kpi::after{width:120px;height:120px;right:-48px;bottom:-55px;background:rgba(72,183,199,.10)!important}
-                .dp-kpi-icon{width:46px;height:46px;border:1px solid #c6e7ed!important;border-radius:13px!important;background:#eaf7fa!important;color:var(--dp-blue)!important;box-shadow:none!important;transform:none!important;text-shadow:none!important}
-                .dp-kpi-icon svg{color:var(--dp-blue)!important;stroke:currentColor!important;filter:none!important}
-                .dp-kpi small,.dp-kpi strong,.dp-kpi em,.dp-kpi-label{color:var(--dp-ink)!important;-webkit-text-fill-color:var(--dp-ink)!important;text-shadow:none!important}
-                .dp-kpi small{font-size:11px!important;font-weight:800!important;letter-spacing:.07em!important}
-                .dp-kpi strong{font-size:clamp(22px,2vw,29px)!important;font-weight:850!important;line-height:1.15!important}
-                .dp-kpi em{font-size:12px!important}
-                .dp-kpi:nth-child(2),.dp-kpi:nth-child(3),.dp-kpi:nth-child(4){background:linear-gradient(145deg,#fff,#f7fbfd)!important;border-color:var(--dp-line)!important}
-                .dp-kpi:nth-child(2)::after,.dp-kpi:nth-child(3)::after,.dp-kpi:nth-child(4)::after{background:rgba(72,183,199,.10)!important}
-                .dp-kpi:nth-child(2) .dp-kpi-icon,.dp-kpi:nth-child(3) .dp-kpi-icon,.dp-kpi:nth-child(4) .dp-kpi-icon{background:#eaf7fa!important;color:var(--dp-blue)!important}
-                .dp-grid{gap:16px}
-                .dp-panel{border:1px solid var(--dp-line)!important;border-radius:18px!important;box-shadow:0 10px 30px rgba(18,59,80,.06)!important}
-                .dp-head{min-height:68px;padding:16px 19px;background:linear-gradient(180deg,#fff,#f9fcfd)!important}
-                .dp-head span{font-size:10px!important;letter-spacing:.12em!important;color:#39758c!important}
-                .dp-head h2{font-size:17px!important;line-height:1.3;color:var(--dp-ink)!important}
-                .dp-chart,.dp-chart-compact{height:250px;padding:16px 16px 12px}
-                .dp-chart-note{margin:0;padding:0 18px 14px;color:var(--dp-muted);font-size:12px;line-height:1.5}
-                .dp-attention{min-height:88px;padding:15px 16px;background:#fff!important;border:1px solid var(--dp-line)!important;border-left:4px solid var(--dp-cyan)!important;border-radius:16px!important;box-shadow:0 8px 22px rgba(18,59,80,.06)!important}
-                .dp-attention::after{display:none}
-                .dp-attention-icon{width:42px;height:42px;border:1px solid #c6e7ed!important;border-radius:13px!important;background:#eaf7fa!important;color:var(--dp-blue)!important;box-shadow:none!important;transform:none!important;text-shadow:none!important}
-                .dp-attention-icon svg{color:var(--dp-blue)!important;stroke:currentColor!important;filter:none!important}
-                .dp-attention small,.dp-attention strong,.dp-attention em{color:var(--dp-ink)!important;-webkit-text-fill-color:var(--dp-ink)!important}
-                .dp-attention small{font-size:10px!important;letter-spacing:.06em!important;line-height:1.4!important}
-                .dp-attention strong{font-size:24px!important;line-height:1.15!important}
-                .dp-attention-danger{border-left-color:#d65b61!important}.dp-attention-danger .dp-attention-icon{border-color:#f0d3d5!important;background:#fff4f4!important;color:#b6424a!important}.dp-attention-danger .dp-attention-icon svg{color:#b6424a!important}
-                .dp-attention-success{border-left-color:#3a9d78!important}.dp-attention-success .dp-attention-icon{border-color:#cce8dc!important;background:#f0faf5!important;color:#287954!important}.dp-attention-success .dp-attention-icon svg{color:#287954!important}
-                .dp-attention-warning{border-left-color:#e6a34a!important}.dp-attention-warning .dp-attention-icon{border-color:#f2dfc2!important;background:#fff9ee!important;color:#a86a16!important}.dp-attention-warning .dp-attention-icon svg{color:#a86a16!important}
-                .dp-status{border-radius:8px!important}
-                @media(max-width:650px){.dp-main{padding:14px}.dp-kpi{min-height:88px}.dp-head{padding:14px}.dp-chart,.dp-chart-compact{height:230px;padding:12px 8px 8px}}
-                @media(prefers-reduced-motion:reduce){.dp-shell *{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}}
-      `}</style>
+      {error && <div role="alert" className="mb-3 border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900 rounded-[2px]">{error}</div>}
 
-      <main className="dp-main">
-        {error && <div className="dp-error">{error}</div>}
+      <section className="grid grid-cols-1 md:grid-cols-12 gap-3 mb-3">
+        <div className={`${card} md:col-span-4 p-3.5 flex flex-col justify-between`}>
+          <div className="flex items-center justify-between mb-2">
+            <span className={heading}>Produção de hoje</span>
+            <span className="text-[10px] bg-sky-50 text-[#2D8DB8] font-bold px-1.5 py-0.5 border border-sky-200 rounded-[2px]">Apontamentos reais</span>
+          </div>
+          <div className="flex items-center gap-4 my-2">
+            <div className="relative w-20 h-20 flex-shrink-0 flex items-center justify-center">
+              <svg className="-rotate-90 w-full h-full" viewBox="0 0 36 36" aria-label={`${productionPercent}% do planejado`}>
+                <path stroke="#e2e8f0" strokeWidth="3.6" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                <path stroke="#2D8DB8" strokeDasharray={`${productionPercent}, 100`} strokeWidth="3.6" strokeLinecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              </svg>
+              <span className="absolute text-sm font-extrabold text-[#123B50]">{plannedToday > 0 ? `${productionPercent}%` : '—'}</span>
+            </div>
+            <div>
+              <div className="text-2xl font-extrabold text-slate-900 font-mono">{fmt(producedToday)}</div>
+              <p className="text-[11px] text-slate-500 mt-0.5">{plannedToday > 0 ? `Planejado: ${fmt(plannedToday)} un.` : 'Sem planejamento para hoje'}</p>
+            </div>
+          </div>
+          <div className="w-full bg-slate-100 h-1.5 rounded-[1px] overflow-hidden"><div className="bg-gradient-to-r from-[#2D8DB8] to-[#48B7C7] h-full" style={{ width: `${productionPercent}%` }} /></div>
+        </div>
 
-        
+        <div className={`${card} md:col-span-4 p-3.5 flex flex-col`}>
+          <div className="flex items-center justify-between mb-2"><span className={heading}>Qualidade • SGQ</span><span className="text-[10px] text-slate-500">Apontamentos de hoje</span></div>
+          <div className="h-24 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={qualityData} margin={{ top: 4, right: 4, left: -22, bottom: 0 }}>
+                <CartesianGrid stroke="#f1f5f9" vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 9, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 9, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                <Tooltip formatter={(value: number) => [fmt(value), 'Quantidade']} contentStyle={{ fontSize: 11, borderRadius: 2 }} />
+                <Bar dataKey="quantidade" fill="#48B7C7" radius={[2, 2, 0, 0]} maxBarSize={28} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <p className="mt-auto border-t border-slate-100 pt-2 text-[11px] text-slate-600">
+            Refugo: <strong className={qualityScrapRate > 2 ? 'text-rose-700' : 'text-emerald-700'}>{qualityData.length ? `${qualityScrapRate.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%` : 'Sem dados'}</strong>
+          </p>
+        </div>
 
-        <section className="dp-kpis">
-          {cards.map(({ label, value, suffix, icon: Icon }) => (
-            <article key={label} className="dp-kpi">
-              <span className="dp-kpi-icon"><Icon size={19}/></span>
-              <div><small className="dp-kpi-label">{label}</small><strong>{loading ? '…' : value} {suffix && <em>{suffix}</em>}</strong></div>
-            </article>
-          ))}
-        </section>
+        <div className={`${card} md:col-span-4 p-3.5`}>
+          <div className="flex items-center justify-between mb-2"><span className={heading}>Ordens de produção • PCP</span><button onClick={() => onNavigate('/pcp/programacao')} className="text-[10px] text-[#2D8DB8] font-semibold hover:underline">Ver programação →</button></div>
+          <div className="space-y-2">
+            {[
+              { label: 'Em espera', value: opCounts.waiting, style: 'bg-amber-100 text-amber-800' },
+              { label: 'Em execução', value: opCounts.running, style: 'bg-emerald-100 text-emerald-800' },
+              { label: 'Concluídas hoje', value: opCounts.doneToday, style: 'bg-sky-100 text-[#123B50]' }
+            ].map(item => <div key={item.label} className="flex items-center justify-between bg-slate-50 px-2.5 py-1.5 border border-slate-200/80 rounded-[2px]"><span className="text-xs text-slate-700">{item.label}</span><span className={`text-xs font-mono font-bold px-2 py-0.5 rounded-[2px] ${item.style}`}>{item.value}</span></div>)}
+          </div>
+          <p className="text-[10px] text-slate-500 mt-2">{ops.length} OP(s) carregada(s) • {programActive} programação(ões) ativa(s)</p>
+        </div>
+      </section>
 
-        <section className="dp-attention-grid">{attentionCards.map(card => { const Icon = card.icon; return <article key={card.label} className={`dp-attention dp-attention-${card.tone}`}><span className="dp-attention-icon"><Icon size={18}/></span><div><small>{card.label}</small><strong>{loading ? '…' : card.value}</strong><em>{card.suffix}</em></div></article> })}
-        </section>
+      <section className="grid grid-cols-1 md:grid-cols-12 gap-3 mb-3">
+        <div className={`${card} md:col-span-8 flex flex-col`}>
+          <div className="bg-slate-100/90 px-3.5 py-2 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2"><Factory size={15} className="text-[#123B50]" /><h2 className={heading}>Planta industrial • máquinas cadastradas</h2></div>
+            <div className="flex items-center gap-1 bg-white border border-slate-300 rounded-[2px] px-1 py-0.5">
+              <button onClick={() => setZoom(value => Math.max(70, value - 10))} className="p-1 hover:bg-slate-100 rounded-[2px]" title="Diminuir zoom"><Minus size={12} /></button>
+              <span className="text-[10px] font-mono font-bold px-1.5 min-w-[38px] text-center">{zoom}%</span>
+              <button onClick={() => setZoom(value => Math.min(150, value + 10))} className="p-1 hover:bg-slate-100 rounded-[2px]" title="Aumentar zoom"><Plus size={12} /></button>
+              <button onClick={() => setZoom(100)} className="p-1 ml-1 border-l border-slate-200 hover:bg-slate-100" title="Ajustar à tela"><Maximize2 size={12} /></button>
+            </div>
+          </div>
+          <div className="relative h-[320px] bg-gradient-to-br from-[#f8fafc] via-[#e2e8f0]/40 to-[#f1f5f9] overflow-auto">
+            <div className="absolute inset-0 opacity-40 pointer-events-none" style={{ backgroundImage: 'linear-gradient(#cbd5e1 1px, transparent 1px), linear-gradient(90deg, #cbd5e1 1px, transparent 1px)', backgroundSize: '30px 30px', transform: `scale(${zoom / 100})`, transformOrigin: 'center', transition: 'transform .2s ease-out' }} />
+            {factoryMachines.length ? <div className="relative min-w-[520px] h-full p-4" style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'center', transition: 'transform .2s ease-out' }}>
+              {factoryMachines.map((machine, index) => {
+                const left = 8 + (index % 4) * 27
+                const top = 22 + Math.floor(index / 4) * 48
+                const color = machine.visualStatus === 'running' ? 'bg-emerald-500 border-emerald-600' : machine.visualStatus === 'maintenance' ? 'bg-amber-500 border-amber-600' : 'bg-rose-500 border-rose-600'
+                return <button key={machine.id} onClick={() => setSelectedMachine(machine)} className="absolute -translate-x-1/2 -translate-y-1/2 text-left" style={{ left: `${left}%`, top: `${top}%` }} aria-label={`Detalhes da máquina ${machine.codigo}`}>
+                  <span className={`px-2 py-0.5 border rounded-[2px] text-[10px] font-mono font-bold text-white shadow-md inline-flex items-center gap-1.5 ${color}`}>{machine.codigo || 'S/C'}<span className="w-1.5 h-1.5 rounded-full bg-white" /></span>
+                  <span className="w-20 min-h-10 mt-1 bg-gradient-to-b from-slate-200 to-slate-400/80 rounded-[3px] border border-slate-400 shadow-md flex flex-col items-center justify-center text-[9px] text-slate-700 text-center px-1">{machine.nome}<span className="font-mono text-[8px]">{machine.opAtual ? `OP ${machine.opAtual}` : statusLabel(machine.status)}</span></span>
+                </button>
+              })}
+            </div> : <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-slate-500 p-4"><Factory size={28} className="mb-2 text-slate-400" /><p className="text-xs font-semibold">{loading ? 'Carregando máquinas…' : 'Nenhuma máquina ativa encontrada'}</p><p className="text-[10px] mt-1">A planta exibe apenas equipamentos cadastrados para a empresa autenticada.</p></div>}
+            <div className="absolute bottom-2 right-2 bg-white/95 border border-slate-300 rounded-[2px] p-2 text-[10px] font-medium space-y-1">
+              <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-[2px] bg-emerald-500" />Operação</div>
+              <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-[2px] bg-amber-500" />Manutenção/setup</div>
+              <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-[2px] bg-rose-500" />Parada/defeito</div>
+            </div>
+          </div>
+          <div className="px-3.5 py-2 bg-slate-50 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600"><span>{machines.length} máquina(s) ativa(s) cadastrada(s)</span><button onClick={() => onNavigate('/pcp/agenda-maquinas')} className="text-[#2D8DB8] font-semibold hover:underline">Agenda de máquinas →</button></div>
+        </div>
 
-        <section className="dp-grid dp-chart-grid">
-          <article className="dp-panel">
-            <div className="dp-head"><span>PCP · MÁQUINAS</span><h2>Eficiência por máquina</h2></div>
-            {machineShift.length ? <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={machineShift} barCategoryGap="26%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="maquina" axisLine={false} tickLine={false}/><YAxis domain={[0,100]} unit="%" axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="eficiencia" name="Eficiência" fill="#2D8DB8" radius={[7,7,2,2]} maxBarSize={36}/></BarChart></ResponsiveContainer></div> : <div className="dp-empty dp-empty-compact">Sem dados reais de eficiência.</div>}
-          </article>
-          <article className="dp-panel">
-            <div className="dp-head"><span>PCP · ENTREGA</span><h2>Peças no prazo × em atraso</h2></div>
-            <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{categoria:'No prazo',quantidade:onTimePieces},{categoria:'Em atraso',quantidade:overduePieces}]} barCategoryGap="38%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="categoria" axisLine={false} tickLine={false}/><YAxis axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="quantidade" name="Peças" fill="#3A9D78" radius={[8,8,3,3]} maxBarSize={48}/></BarChart></ResponsiveContainer></div>
-          </article>
-          <article className="dp-panel">
-            <div className="dp-head"><span>PRODUÇÃO · SEMANA</span><h2>Previsto × realizado</h2></div>
-            {weekly.some(x => x.previsto || x.realizado) ? <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><LineChart data={weekly}><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="day" axisLine={false} tickLine={false}/><YAxis axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Legend verticalAlign="top" height={24}/><Line type="monotone" dataKey="previsto" name="Previsto" stroke="#94a3b8" strokeWidth={2} strokeDasharray="6 5" dot={false}/><Line type="monotone" dataKey="realizado" name="Realizado" stroke="#2D8DB8" strokeWidth={3} dot={{r:3,strokeWidth:2,fill:"#fff"}}/></LineChart></ResponsiveContainer></div> : <div className="dp-empty dp-empty-compact">Sem dados reais nos últimos 7 dias.</div>}
-          </article>
-          <article className="dp-panel">
-            <div className="dp-head"><span>PARADAS · CHÃO DE FÁBRICA</span><h2>Horas de parada por dia</h2></div>
-            {stopSummary.length ? <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={stopSummary} barCategoryGap="30%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="day" axisLine={false} tickLine={false}/><YAxis unit="h" axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="horas" name="Parada" fill="#D65B61" radius={[7,7,2,2]} maxBarSize={34}/></BarChart></ResponsiveContainer></div> : <div className="dp-empty dp-empty-compact">Sem paradas registradas.</div>}
-          </article>
-        </section>
+        <div className={`${card} md:col-span-4 flex flex-col`}>
+          <div className="bg-slate-100/90 px-3.5 py-2 border-b border-slate-200 flex items-center justify-between"><div className="flex items-center gap-2"><AlertTriangle size={15} className="text-[#D65B61]" /><h2 className={heading}>Pendências e alertas SGQ</h2></div><span className="text-[10px] font-bold px-1.5 py-0.5 rounded-[2px] bg-rose-100 text-rose-800">{activeRpncs.length} ativa(s)</span></div>
+          <div className="p-3 flex-1 space-y-2">
+            {activeRpncs.slice(0, 5).map((item, index) => <div key={item.id} className="p-2.5 bg-amber-50/70 border-l-4 border-amber-500 border-y border-r border-amber-200/60 rounded-[2px]"><div className="flex items-center justify-between gap-2"><span className="text-xs font-bold text-amber-900">RPNC pendente #{index + 1}</span><span className="text-[9px] font-semibold text-amber-700">{statusLabel(item.status ?? '')}</span></div><p className="text-[10px] text-amber-800 mt-1">Registro real de não conformidade requer acompanhamento.</p></div>)}
+            {!activeRpncs.length && <div className="h-full min-h-32 flex flex-col items-center justify-center text-center text-slate-500"><CheckCircle2 size={25} className="text-emerald-600 mb-2" /><p className="text-xs font-semibold">{loading ? 'Consultando registros…' : 'Nenhuma RPNC aberta encontrada'}</p><p className="text-[10px] mt-1">Resultado da consulta à empresa autenticada.</p></div>}
+          </div>
+          <div className="p-3 border-t border-slate-100 flex gap-2"><button onClick={() => onNavigate('/rpnc')} className={smallButton}><ShieldCheck size={12} /> Abrir RPNC</button><button onClick={() => onNavigate('/manutencao')} className={smallButton}><Wrench size={12} /> Manutenção</button></div>
+        </div>
+      </section>
 
-        <section className="dp-grid dp-chart-grid" aria-label="Indicadores de qualidade e metrologia">
-          <article className="dp-panel">
-            <div className="dp-head"><span>SGQ · NÃO CONFORMIDADES</span><h2>Abertas × fechadas</h2></div>
-            <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{categoria:'Abertas',quantidade:rpnc},{categoria:'Fechadas',quantidade:rpncClosed}]} barCategoryGap="38%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="categoria" axisLine={false} tickLine={false}/><YAxis allowDecimals={false} axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="quantidade" name="Não conformidades" fill="#D65B61" radius={[7,7,2,2]} maxBarSize={48}/></BarChart></ResponsiveContainer></div>
-          </article>
-          <article className="dp-panel">
-            <div className="dp-head"><span>SGQ · METROLOGIA</span><h2>Equipamentos válidos × vencidos</h2></div>
-            <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{categoria:'Válidos',quantidade:validEquipment},{categoria:'Vencidos / bloqueados',quantidade:expiredEquipment}]} barCategoryGap="38%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="categoria" axisLine={false} tickLine={false}/><YAxis allowDecimals={false} axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="quantidade" name="Equipamentos" fill="#3A9D78" radius={[7,7,2,2]} maxBarSize={48}/></BarChart></ResponsiveContainer></div>
-            {equipmentValidity.withoutValidity > 0 && <p className="dp-chart-note">{fmt(equipmentValidity.withoutValidity)} equipamento(s) sem data de validade cadastrada; não contabilizados como válidos.</p>}
-          </article>
-        </section>
+      <section className="grid grid-cols-1 md:grid-cols-12 gap-3">
+        <div className={`${card} md:col-span-4 p-3 flex flex-col`}>
+          <div className="flex items-center justify-between mb-3"><span className={heading}>Programação PCP</span><Activity size={15} className="text-[#2D8DB8]" /></div>
+          <div className="text-2xl font-extrabold text-[#123B50] font-mono">{programActive}</div><p className="text-[11px] text-slate-500 mt-1">Programações não canceladas ou concluídas</p>
+          <button onClick={() => onNavigate('/pcp/programacao')} className="mt-auto pt-3 text-left text-[11px] font-semibold text-[#2D8DB8] hover:underline">Abrir programação →</button>
+        </div>
+        <div className={`${card} md:col-span-4 p-3 flex flex-col`}>
+          <div className="flex items-center justify-between mb-3"><span className={heading}>Ordens de produção</span><Package size={15} className="text-[#2D8DB8]" /></div>
+          <div className="text-2xl font-extrabold text-[#123B50] font-mono">{ops.length}</div><p className="text-[11px] text-slate-500 mt-1">Ordens retornadas pelo banco para a empresa</p>
+          <button onClick={() => onNavigate('/pcp/programacao')} className="mt-auto pt-3 text-left text-[11px] font-semibold text-[#2D8DB8] hover:underline">Consultar OPs →</button>
+        </div>
+        <div className={`${card} md:col-span-4 p-3 flex flex-col`}>
+          <div className="flex items-center justify-between mb-3"><span className={heading}>Acessos rápidos</span><span className="text-[10px] text-slate-400 font-mono">ERP</span></div>
+          <div className="grid grid-cols-2 gap-2">
+            <button onClick={() => onNavigate('/pcp/programacao')} className="p-2 bg-slate-50 hover:bg-[#F4FBFD] border border-slate-200 hover:border-[#2D8DB8] rounded-[2px] flex flex-col items-center text-center"><FileText size={17} className="text-[#2D8DB8] mb-1" /><span className="text-[10px] font-bold">Programação PCP</span></button>
+            <button onClick={() => onNavigate('/produtos')} className="p-2 bg-slate-50 hover:bg-[#F4FBFD] border border-slate-200 hover:border-[#2D8DB8] rounded-[2px] flex flex-col items-center text-center"><Search size={17} className="text-[#123B50] mb-1" /><span className="text-[10px] font-bold">Consultar produtos</span></button>
+            <button onClick={() => onNavigate('/rpnc')} className="p-2 bg-slate-50 hover:bg-[#F4FBFD] border border-slate-200 hover:border-[#2D8DB8] rounded-[2px] flex flex-col items-center text-center"><ShieldCheck size={17} className="text-[#3A9D78] mb-1" /><span className="text-[10px] font-bold">Não conformidades</span></button>
+            <button onClick={() => onNavigate('/estoque')} className="p-2 bg-slate-50 hover:bg-[#F4FBFD] border border-slate-200 hover:border-[#2D8DB8] rounded-[2px] flex flex-col items-center text-center"><Package size={17} className="text-[#E6A34A] mb-1" /><span className="text-[10px] font-bold">Estoque</span></button>
+          </div>
+          <div className="pt-2 mt-2 border-t border-slate-100 text-[10px] text-slate-400 text-center font-mono">SYSNQRA ERP • Indicadores vinculados ao banco</div>
+        </div>
+      </section>
 
-        <section className="dp-panel dp-status-panel">
-          <div className="dp-head"><span>STATUS DOS SETORES · PCP</span><h2>Distribuição das ordens de produção</h2></div>
-          {opStatus.length ? <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={opStatus} layout="vertical" margin={{left:16,right:18}}><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" horizontal={false}/><XAxis type="number" axisLine={false} tickLine={false}/><YAxis type="category" dataKey="status" width={105} axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="quantidade" name="OPs" fill="#48B7C7" radius={[0,7,7,0]} maxBarSize={26}/></BarChart></ResponsiveContainer></div> : <div className="dp-empty dp-empty-compact">Sem ordens de produção reais para distribuir.</div>}
-        </section>
-      </main>
-
-    </div>
+      {selectedMachine && <div role="dialog" aria-modal="true" aria-label={`Detalhes da máquina ${selectedMachine.codigo}`} className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-white border border-slate-300 rounded-[2px] shadow-2xl max-w-md w-full overflow-hidden">
+          <div className="bg-[#123B50] text-white px-4 py-2.5 flex items-center justify-between"><h3 className="text-xs font-bold font-mono uppercase">{selectedMachine.codigo} — {selectedMachine.nome}</h3><button onClick={() => setSelectedMachine(null)} aria-label="Fechar detalhes"><X size={16} /></button></div>
+          <div className="p-4 space-y-3 text-xs"><div className="grid grid-cols-2 gap-2 bg-slate-50 p-2.5 border border-slate-200 rounded-[2px]"><div><span className="text-[10px] text-slate-500 uppercase block">Status</span><strong>{statusLabel(selectedMachine.status)}</strong></div><div><span className="text-[10px] text-slate-500 uppercase block">Tipo</span><strong>{selectedMachine.tipo || 'Não informado'}</strong></div><div><span className="text-[10px] text-slate-500 uppercase block">OP atual</span><strong>{selectedMachine.opAtual || 'Nenhuma identificada'}</strong></div><div><span className="text-[10px] text-slate-500 uppercase block">Código</span><strong>{selectedMachine.codigo}</strong></div></div><div className="flex justify-end gap-2"><button onClick={() => setSelectedMachine(null)} className={smallButton}>Fechar</button><button onClick={() => { setSelectedMachine(null); onNavigate('/pcp/agenda-maquinas') }} className="h-[28px] px-2 bg-[#2D8DB8] text-white rounded-[2px] text-[10px] font-semibold">Ver agenda</button></div></div>
+        </div>
+      </div>}
+    </main>
   )
 }
