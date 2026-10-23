@@ -69,9 +69,6 @@ export default function EstoqueEtiquetas() {
   }, [])
 
   const product = products.find(item => item.id === productId)
-  useEffect(() => {
-    if (product) { setGrossWeight(String(product.peso_bruto ?? 0)); setNetWeight(String(product.peso_liquido ?? 0)) }
-  }, [productId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const brand = company?.nome_fantasia || company?.razao_social || ''
   const address = [company?.endereco, company?.cidade, company?.uf, company?.cep ? 'CEP ' + company.cep : null].filter(Boolean).join(' · ')
@@ -165,7 +162,7 @@ export default function EstoqueEtiquetas() {
       {error && <div role="alert" className="no-label-print flex items-start gap-1.5 rounded-[2px] border border-rose-200 bg-rose-50 p-2 text-[10px] font-bold text-rose-800"><AlertTriangle size={13} className="mt-0.5 shrink-0" />{error}</div>}
       {message && <div role="status" className="no-label-print flex items-start gap-1.5 rounded-[2px] border border-emerald-200 bg-emerald-50 p-2 text-[10px] font-bold text-emerald-800"><CheckCircle2 size={13} className="mt-0.5 shrink-0" />{message}</div>}
       <div className="no-label-print grid grid-cols-1 gap-3 rounded-[2px] border border-slate-200 bg-white p-3 shadow-sm md:grid-cols-12">
-        <label className={label + ' md:col-span-5'}><span className="flex items-center gap-1"><Package size={10} /> Produto ativo</span><select className={input} value={productId} onChange={event => { setProductId(event.target.value); setMessage(''); setError('') }} disabled={loading || !!error}><option value="">{loading ? 'Carregando catálogo…' : 'Selecione um produto'}</option>{products.map(item => <option key={item.id} value={item.id}>{item.codigo} · {item.nome}</option>)}</select></label>
+        <label className={label + ' md:col-span-5'}><span className="flex items-center gap-1"><Package size={10} /> Produto ativo</span><select className={input} value={productId} onChange={event => { const selected = products.find(item => item.id === event.target.value); setProductId(event.target.value); setGrossWeight(String(selected?.peso_bruto ?? 0)); setNetWeight(String(selected?.peso_liquido ?? 0)); setMessage(''); setError('') }} disabled={loading || !!error}><option value="">{loading ? 'Carregando catálogo…' : 'Selecione um produto'}</option>{products.map(item => <option key={item.id} value={item.id}>{item.codigo} · {item.nome}</option>)}</select></label>
         <label className={label + ' md:col-span-4'}><span className="flex items-center gap-1"><Tags size={10} /> Modelo de etiqueta</span><select className={input} value={model} onChange={event => setModel(event.target.value as Model)}>{Object.entries(models).map(([value, item]) => <option key={value} value={value}>{item.label}</option>)}</select></label>
         <label className={label + ' md:col-span-1'}>Cópias<input className={input + ' text-center font-mono'} type="number" min={1} max={100} value={quantity} onChange={event => setQuantity(Math.max(1, Math.min(100, Math.floor(Number(event.target.value) || 1))))} /></label>
         <label className={label + ' md:col-span-2'}>Data fabricação<input className={input} type="date" value={issueDate} onChange={event => setIssueDate(event.target.value)} /></label>
