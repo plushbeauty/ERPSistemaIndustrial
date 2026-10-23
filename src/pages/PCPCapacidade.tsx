@@ -2,7 +2,8 @@
  * =========================================================================
  * SYSNQRA SISTEMAS INDUSTRIAIS — PCP / CAPACIDADE
  * Arquivo: src/pages/PCPCapacidade.tsx
- * Revisão: PCP-CAPACIDADE-002 | 22/10/2026
+ * Revisão: PCP-CAPACIDADE-003 | 23/10/2026
+ * Correção: diagnóstico explícito para erro de esquema/cache na consulta de capacidade.
  * Dados reais Supabase/RLS por empresa. Sem máquinas ou cargas simuladas.
  * =========================================================================
  */
@@ -76,7 +77,13 @@ export default function PCPCapacidade() {
     } catch (cause) {
       setMachines([])
       setOps([])
-      setError(cause instanceof Error ? cause.message : 'Não foi possível consultar a capacidade do PCP.')
+      const detail = cause && typeof cause === 'object' && 'message' in cause
+        ? String((cause as { message?: unknown }).message ?? '')
+        : cause instanceof Error ? cause.message : ''
+      const schemaMismatch = /horas_capacidade_dia|dias_trabalho_semana|schema cache|column .* does not exist|could not find the/i.test(detail)
+      setError(schemaMismatch
+        ? `O banco não reconheceu os campos de capacidade das máquinas. Aplique a migração supabase/migrations/20261023120000_pcp_capacidade_schema_sync.sql no projeto Supabase e atualize a tela. Detalhe: ${detail || 'erro de esquema'}`
+        : detail || 'Não foi possível consultar a capacidade do PCP.')
     } finally {
       setLoading(false)
     }
