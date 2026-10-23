@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import {
   Factory,
   Search,
@@ -99,6 +99,9 @@ function normalizeStatus(value: string | undefined): 'PENDENTE' | 'EM_PROCESSO' 
   return 'PENDENTE'
 }
 
+// Revisão IT-PCP-ORDENS-006 — 23/10/2026
+// Escopo: estabilização das dependências da sincronização da OP e do recálculo MRP.
+// Mantém layout, rotas, consultas multiempresa e ações existentes.
 export default function PCPOrdens() {
   const [products, setProducts] = useState<Product[]>([])
   const [machines, setMachines] = useState<Machine[]>([])
@@ -251,31 +254,57 @@ export default function PCPOrdens() {
   const selectedMachine = selectedOp?.maquina_id ? machineMap.get(selectedOp.maquina_id) : null
   const selectedPedido = selectedOp?.pedido_venda_id ? pedidoMap.get(selectedOp.pedido_venda_id) : null
 
-  // Sincroniza formulário da OP selecionada
+  // Campos primitivos evitam reexecutar a sincronização quando a lista recebe
+  // novos objetos com os mesmos valores operacionais.
+  const selectedMachineId = selectedOp?.maquina_id || ''
+  const selectedPlannedQty = selectedOp?.quantidade_planejada || selectedOp?.quantidade || 0
+  const selectedRate = selectedOp?.velocidade_nominal_hora || 0
+  const selectedDoubleOp = Boolean(selectedOp?.operacao_dupla)
+  const selectedPriority = selectedOp?.prioridade || 'ALTA'
+  const selectedDueDate = selectedOp?.data_prevista || ''
+  const selectedNotes = selectedOp?.observacoes || ''
+  const selectedProducedQty = selectedOp?.quantidade_produzida || 0
+  const selectedProductId = selectedOp?.produto_id || ''
+  const selectedDemandRef = selectedOp?.pedido_venda_id ? 'PCP_OP_PEDIDO' : 'PCP_OP'
+
+  // Sincroniza apenas quando a OP selecionada ou seus valores mudam.
   useEffect(() => {
-    if (selectedOp) {
-      setMachineId(selectedOp.maquina_id || '')
-      setQty(String(selectedOp.quantidade_planejada || selectedOp.quantidade || ''))
-      setRate(String(selectedOp.velocidade_nominal_hora || ''))
-      setDoubleOp(Boolean(selectedOp.operacao_dupla))
-      setPriority(selectedOp.prioridade || 'ALTA')
-      setDueDate(selectedOp.data_prevista || '')
-      setNotes(selectedOp.observacoes || '')
-      setProducedInput(String(selectedOp.quantidade_produzida || 0))
-      if (selectedOp.produto_id) {
-        void explodeMRP(selectedOp.produto_id, Number(selectedOp.quantidade_planejada || selectedOp.quantidade || 0))
-      }
-    }
-  }, [selectedOpId, selectedOp])
+    if (!selectedOpId || !selectedOp) return
+    setMachineId(selectedMachineId)
+    setQty(String(selectedPlannedQty || ''))
+    setRate(String(selectedRate || ''))
+    setDoubleOp(selectedDoubleOp)
+    setPriority(selectedPriority)
+    setDueDate(selectedDueDate)
+    setNotes(selectedNotes)
+    setProducedInput(String(selectedProducedQty))
+  }, [
+    selectedOpId,
+    selectedOp,
+    selectedMachineId,
+    selectedPlannedQty,
+    selectedRate,
+    selectedDoubleOp,
+    selectedPriority,
+    selectedDueDate,
+    selectedNotes,
+    selectedProducedQty
+  ])
 
   // Cálculos de capacidade técnica
   const effectiveRate = Number(rate) > 0 ? Number(rate) * (doubleOp ? 2 : 1) : 0
   const estimatedHours = Number(qty) > 0 && effectiveRate > 0 ? Number(qty) / effectiveRate : 0
 
-  // Explosão MRP via RPC real
-  async function explodeMRP(produtoId: string, quantidade: number) {
+  // Explosão MRP via RPC real. Callback estável para impedir efeitos
+  // dependentes de uma nova função a cada renderização.
+  const explodeMRP = useCallback(async (
+    produtoId: string,
+    quantidade: number,
+    demandaRef: string
+  ) => {
     if (!produtoId || quantidade <= 0) {
       setMaterials([])
+      setMrpLoading(false)
       return
     }
     setMrpLoading(true)
@@ -283,7 +312,7 @@ export default function PCPOrdens() {
       const run = await supabase.rpc('erp_mrp_explodir', {
         p_produto_id: produtoId,
         p_quantidade: quantidade,
-        p_demanda_ref: selectedOp?.pedido_venda_id ? 'PCP_OP_PEDIDO' : 'PCP_OP'
+        p_demanda_ref: demandaRef
       })
       if (run.error) throw run.error
 
@@ -314,12 +343,23 @@ export default function PCPOrdens() {
         }))
       )
     } catch {
-      // Se não houver BOM cadastrada, zera lista sem quebrar a tela
+      // Falha de MRP não pode ser apresentada como uma BOM vazia válida.
       setMaterials([])
     } finally {
       setMrpLoading(false)
     }
-  }
+  }, [])
+
+  // MRP só é recalculado quando produto, quantidade planejada ou tipo de demanda
+  // da OP selecionada realmente muda — nunca apenas porque mudou a referência do objeto.
+  useEffect(() => {
+    if (!selectedProductId) {
+      setMaterials([])
+      setMrpLoading(false)
+      return
+    }
+    void explodeMRP(selectedProductId, Number(selectedPlannedQty), selectedDemandRef)
+  }, [selectedProductId, selectedPlannedQty, selectedDemandRef, explodeMRP])
 
   // Gravação dos parâmetros técnicos
   async function saveTechnicalParameters() {
@@ -470,7 +510,7 @@ export default function PCPOrdens() {
       setSelectedOpId(row.id)
       setMessage(`OP-${row.numero_op} gerada com sucesso e integrada ao PCP!`)
       await loadData()
-      void explodeMRP(newProdutoId, quantidade)
+      void explodeMRP(newProdutoId, quantidade, newOpType === 'PEDIDO' ? 'PCP_OP_PEDIDO' : 'PCP_OP')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Falha ao criar a ordem de produção.')
     } finally {
