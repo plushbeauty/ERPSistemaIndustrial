@@ -8,7 +8,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import {
-  Activity, AlertTriangle, CheckCircle2, Clock, Factory,
+  Activity, AlertTriangle, CheckCircle2, Factory,
   FileText, Maximize2, Minus, Package, Plus, RefreshCw, Search,
   ShieldCheck, Wrench, X
 } from 'lucide-react'
@@ -205,10 +205,6 @@ export default function IndustrialCommandDashboard({ onNavigate }: Props) {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-slate-600">
-          <div className="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 border border-slate-200 rounded-[2px]">
-            <Clock size={13} className="text-[#2D8DB8]" />
-            {clock.toLocaleDateString('pt-BR')} • {clock.toLocaleTimeString('pt-BR')}
-          </div>
           <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase">
             <span className={`w-2 h-2 rounded-full ${error ? 'bg-rose-500' : loading ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
             {error ? 'Atenção' : loading ? 'Sincronizando' : 'Dados sincronizados'}
