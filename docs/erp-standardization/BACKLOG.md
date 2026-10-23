@@ -211,3 +211,15 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - [ ] Aplicar a migração no projeto Supabase remoto e confirmar que a chamada REST retorna 200.
 - [ ] Validar a tela autenticada com RLS, carregar máquinas e testar salvamento de capacidade; não preencher dados operacionais fictícios.
 - **Código:** [d7231a8](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/d7231a8ed5e11aebe2a23e0e4cd91cc878eaaf67). **Migração:** [9bde7b1](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/9bde7b1bfb6046c676598da4042a181ba666c44e).
+
+
+## Correção prioritária — Ficha de Processo / contraste dos cartões (2026-10-23)
+
+- **Rota:** `/pcp/fichas-processo`.
+- **Arquivo:** `src/pages/PCPFichasProcesso.tsx`.
+- **Problema confirmado no CSS da própria página:** os fundos de cartões operacionais escuros eram normalizados para branco em tela, mas a regra global escopada `.pcp-process-page .text-white` mantinha o texto branco. Isso podia deixar títulos, rótulos e valores ilegíveis em superfícies claras.
+- **Correção aplicada:** revisão `REV-FICHA-009`; texto padrão dos cartões claros passa a usar `#123B50`; texto branco fica reservado aos elementos com fundo azul-petróleo e ao diagrama técnico escuro. Campos de entrada, persistência Supabase, isolamento por empresa, layout de fotos e impressão não foram intencionalmente alterados.
+- **Contrato de tela aprovada:** alteração explicitamente autorizada pelo usuário nesta rodada; hash atualizado de forma deliberada em `scripts/verify-approved-ui-lock.mjs`. Nenhuma outra tela congelada foi alterada.
+- **Commits:** correção visual `f5620ff4e22c6feb991a0708ca606339b1ca0a5a`; atualização do lock `61c1aa0d08f351c78f77b961c141bf0a142055d9`.
+- **Estado:** CORRIGIDO AGUARDANDO VALIDAÇÃO. Ainda não foram executados type-check, lint, verify:approved-ui-lock, auditoria de UI, teste autenticado/RLS, impressão nem inspeção visual no navegador nesta rodada. Não declarar a ficha validada até obter essas evidências.
+- **Próxima ação:** validar o lock e os gates do commit atual; depois continuar a auditoria de PCP/Manufatura e tablet de Qualidade, mantendo as demais telas aprovadas congeladas.
