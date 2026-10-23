@@ -222,7 +222,7 @@ export const PCP_AUDIT_FINDINGS: AuditFinding[] = [
     status: 'CORRIGIDO',
     dataIdentificacao: '2026-10-17',
     dataUltimaVerificacao: '2026-10-17',
-  },,
+  },
   {
     id: 'PCP-013',
     prioridade: 'P2',
