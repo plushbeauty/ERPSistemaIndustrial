@@ -222,6 +222,7 @@ export default function VendasCatalogoDigital() {
       title="Catálogo Digital"
       subtitle="Produtos industriais cadastrados e organizados por grupo"
       onRefresh={() => void load()}
+      showStatusCards={false}
     >
       <main className="text-[11px]">
         <section className="overflow-hidden border border-slate-200 bg-white">
@@ -343,7 +344,7 @@ export default function VendasCatalogoDigital() {
                       onClick={() => setDetalhe(produto)}
                       className="block w-full text-left"
                     >
-                      <div className={visualizacao === 'grade' ? 'relative flex h-48 items-center justify-center overflow-hidden bg-slate-50' : 'relative flex h-24 shrink-0 items-center justify-center overflow-hidden bg-slate-50 md:w-32'}>
+                      <div className={visualizacao === 'grade' ? 'relative flex h-32 items-center justify-center overflow-hidden bg-slate-50' : 'relative flex h-24 shrink-0 items-center justify-center overflow-hidden bg-slate-50 md:w-32'}>
                         {produto.foto_url ? (
                           <img
                             src={produto.foto_url}
@@ -367,7 +368,7 @@ export default function VendasCatalogoDigital() {
                            </span>
                          )}
                       </div>
-                      <div className={visualizacao === 'grade' ? 'p-3.5' : 'min-w-0 flex-1 p-2'}>
+                      <div className={visualizacao === 'grade' ? 'p-2.5' : 'min-w-0 flex-1 p-2'}>
                         <div className="flex items-center justify-between gap-2"><span className="font-mono text-[8px] text-slate-400">{produto.codigo}</span>{produto.subgrupo&&<span className="truncate text-[8px] text-slate-400">{produto.subgrupo}</span>}</div>
                         <h2 className="mt-2 min-h-9 text-[12px] font-medium leading-4 text-[#123B50]">
                           {produto.nome}
