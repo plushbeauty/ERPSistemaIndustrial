@@ -7,6 +7,7 @@ type Props = {
   companyId: string
   filename: string
   folder?: 'produtos' | 'fichas-processo' | 'desenhos-tecnicos' | 'fotos' | 'imagens'
+  permissionModule?: 'vendas' | 'pcp'
   alt: string
   className?: string
   showPlaceholder?: boolean
@@ -17,6 +18,7 @@ export default function IndustrialFileImage({
   companyId,
   filename,
   folder = 'produtos',
+  permissionModule = 'vendas',
   alt,
   className = 'h-full w-full object-contain',
   showPlaceholder = false,
@@ -33,7 +35,7 @@ export default function IndustrialFileImage({
     const load = async () => {
       if (src || !companyId || !filename) return
       setTriedFallback(true)
-      objectUrl = await loadIndustrialFallbackImage(companyId, folder, filename)
+      objectUrl = await loadIndustrialFallbackImage(companyId, folder, filename, permissionModule)
       if (active) setFallbackUrl(objectUrl)
       else if (objectUrl) URL.revokeObjectURL(objectUrl)
     }
@@ -43,7 +45,7 @@ export default function IndustrialFileImage({
       active = false
       if (objectUrl) URL.revokeObjectURL(objectUrl)
     }
-  }, [src, companyId, filename, folder])
+  }, [src, companyId, filename, folder, permissionModule])
 
   async function tryFallback() {
     if (triedFallback || !companyId || !filename) return
