@@ -133,11 +133,14 @@ As telas editáveis usam consultas e mutações reais no Supabase. O código ins
 5. Após Vendas, iniciar Compras com o mesmo padrão, sem afetar o shell global ou telas aprovadas.
 
 
-## Implementação incremental — REV-VENDAS-UI-003 a UI-011
+## Implementação incremental — REV-VENDAS-UI-003 a UI-013
 
 Arquivos efetivamente alterados nesta branch:
 - `src/pages/VendasAnaliseCustos.tsx`: campos e ação de anexo em 30 px, cards/bordas compactos, cabeçalho da tabela slate-100, linhas de 32 px e rótulo acessível para remover operação.
 - `src/pages/DashboardComercial.tsx`: botão de impressão dos gráficos em 30 px e cabeçalho dos cards com borda/cor compactas; KPIs e alturas dos gráficos mantidos.
+- `src/pages/VendasDashboardGraficos.tsx`: filtros de visão/período e impressão em 30 px; resumo compactado e altura do gráfico preservada.
+- `src/pages/VendasPedidoStatus.tsx`: cards de resumo e condições, bloco de status e tabela de itens compactados; ações, consultas e valores preservados.
+- `src/pages/VendasMetas.tsx`: tabela localmente escopada para cabeçalho/linhas de 32 px; ações em 30 px.
 - `src/pages/VendasPDV.tsx`: selects, controles de quantidade, seleção de pagamento, limpeza de busca e finalização alinhados a 30 px; cartões de produto/carrinho mantidos como exceções de layout.
 - `src/pages/VendasCatalogoDigital.tsx`: busca e botões de ação compactados; controles de grade, seleção, detalhe e compartilhamento alinhados; imagens e cards de produto mantidos como conteúdo, não controles.
 - `src/pages/TabelaPrecos.tsx`: filtros e ação de reajuste em 30 px; labels compactas; cabeçalho slate-100 e linhas de tabela em 32 px; paginação compacta.
@@ -181,3 +184,13 @@ Vercel:
 - Preview para o SHA atual: **NÃO DISPONÍVEL** por bloqueio de Vercel.
 - Produção: **NÃO PUBLICADO**.
 - Módulo Vendas completo: **PENDENTE** até fechar os testes visuais e revisar as exceções/rotas não ativas.
+
+
+## Atualização após segunda tranche — 2026-10-23
+
+Também foram corrigidos `VendasDashboardGraficos.tsx` e `VendasPedidoStatus.tsx`, além da compactação da tabela de `VendasMetas.tsx`. Esses ajustes ficaram limitados às classes/estrutura de apresentação e a um estilo local escopado, sem alterar consultas, cálculo de faturamento, itens do pedido, ações de edição ou gravação de metas.
+
+Validação da versão de código `5df0967290f2123843d23c9147ce4711200636b9`, workflow push [#40039687284](https://github.com/plushbeauty/ERPSistemaIndustrial/actions/runs/40039687284):
+- **PASSOU:** TypeScript, ESLint, auditoria global, auditoria brutal, auditoria de interações, lazy imports, build de produção, artefatos e rotas.
+- **FALHOU:** somente `verify:quality-tablet-contract`, pela rota protegida `/qualidade/tablet` ausente; fora do escopo de Vendas.
+- **Vercel:** sem deployment para este SHA; o status do check segue bloqueado por `build-rate-limit`.
