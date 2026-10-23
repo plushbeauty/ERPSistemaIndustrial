@@ -24,11 +24,12 @@ const args = Object.fromEntries(process.argv.slice(2).map((arg) => {
 }))
 const port = Number(args.port || process.env.SYSNQRA_PORT || 8970)
 const host = String(args.host || process.env.SYSNQRA_HOST || '127.0.0.1')
-const token = String(args.token || process.env.SYSNQRA_TOKEN || '')
+const tokenFile = String(process.env.SYSNQRA_TOKEN_FILE || '')
+const token = String(args.token || process.env.SYSNQRA_TOKEN || (tokenFile ? fs.readFileSync(tokenFile, 'utf8').trim() : ''))
 const configPath = path.resolve(String(args.config || process.env.SYSNQRA_CONFIG || path.join(__dirname, 'sysnqra-agent-config.json')))
 const corsOrigins = new Set(String(process.env.SYSNQRA_CORS_ORIGINS || 'https://erp-sistema-industrial.vercel.app,http://localhost:5173,http://127.0.0.1:5173').split(',').map(v => v.trim()).filter(Boolean))
 const maxUploadBytes = Math.max(1, Number(process.env.SYSNQRA_MAX_UPLOAD_MB || 100)) * 1024 * 1024
-const DEFAULT_FOLDERS = ['pcp', 'fichas-processo', 'moldes', 'qualidade', 'engenharia', 'compras', 'produtos', 'clientes', 'fornecedores', 'documentos-gerais']
+const DEFAULT_FOLDERS = ['fotos', 'imagens', 'desenhos-tecnicos', 'documentos', 'pcp', 'fichas-processo', 'moldes', 'qualidade', 'engenharia', 'compras', 'produtos', 'clientes', 'fornecedores', 'documentos-gerais']
 const MIME_TYPES = {
   '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp',
   '.gif': 'image/gif', '.svg': 'image/svg+xml', '.pdf': 'application/pdf', '.xml': 'application/xml',
@@ -40,6 +41,7 @@ const MIME_TYPES = {
 let config = {
   primaryPath: path.resolve(String(args.primary || process.env.SYSNQRA_PRIMARY_PATH || 'C:\\SYSNQRA\\Arquivos')),
   networkPath: String(args.network || process.env.SYSNQRA_NETWORK_PATH || ''),
+  tenantId: '',
 }
 
 function sendJson(res, status, data, extra = {}) {
@@ -86,6 +88,7 @@ function loadConfig() {
     const saved = JSON.parse(fs.readFileSync(configPath, 'utf8'))
     if (typeof saved.primaryPath === 'string' && saved.primaryPath) config.primaryPath = path.resolve(saved.primaryPath)
     if (typeof saved.networkPath === 'string') config.networkPath = saved.networkPath
+    if (typeof saved.tenantId === 'string') config.tenantId = saved.tenantId
   } catch (err) {
     if (err.code !== 'ENOENT') throw err
   }
@@ -106,17 +109,34 @@ function safeResolve(root, subpath) {
   const candidate = path.resolve(resolvedRoot, relative)
   const rel = path.relative(resolvedRoot, candidate)
   if (rel === '..' || rel.startsWith('..' + path.sep) || path.isAbsolute(rel)) throw new Error('Caminho fora da pasta autorizada.')
+  // Também bloqueia fuga por links simbólicos/junctions em diretórios existentes.
+  const rootReal = fs.realpathSync(resolvedRoot)
+  let ancestor = candidate
+  while (!fs.existsSync(ancestor)) {
+    const parent = path.dirname(ancestor)
+    if (parent === ancestor) break
+    ancestor = parent
+  }
+  const ancestorReal = fs.realpathSync(ancestor)
+  const realRel = path.relative(rootReal, ancestorReal)
+  if (realRel === '..' || realRel.startsWith('..' + path.sep) || path.isAbsolute(realRel)) throw new Error('Caminho fora da pasta autorizada.')
+  if (fs.existsSync(candidate)) {
+    const candidateReal = fs.realpathSync(candidate)
+    const candidateRel = path.relative(rootReal, candidateReal)
+    if (candidateRel === '..' || candidateRel.startsWith('..' + path.sep) || path.isAbsolute(candidateRel)) throw new Error('Caminho fora da pasta autorizada.')
+  }
   return candidate
 }
 function parseBody(req, limit = 1024 * 1024) {
   return new Promise((resolve, reject) => {
-    const chunks = []; let total = 0
+    const chunks = []; let total = 0; let tooLarge = false
     req.on('data', chunk => {
       total += chunk.length
-      if (total > limit) { reject(Object.assign(new Error('Corpo da solicitação excede o limite permitido.'), { statusCode: 413 })); req.destroy(); return }
-      chunks.push(chunk)
+      if (total > limit) { tooLarge = true; chunks.length = 0; return }
+      if (!tooLarge) chunks.push(chunk)
     })
     req.on('end', () => {
+      if (tooLarge) { reject(Object.assign(new Error('Corpo da solicitação excede o limite permitido.'), { statusCode: 413 })); return }
       try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}')) } catch { reject(Object.assign(new Error('JSON inválido.'), { statusCode: 400 })) }
     })
     req.on('error', reject)
@@ -169,6 +189,7 @@ const server = http.createServer(async (req, res) => {
 
   if (route === '/health' && req.method === 'GET') {
     if (!authOk(req)) return sendJson(res, 401, { error: 'Token ausente ou inválido.' }, cors)
+    if (config.tenantId && String(req.headers['x-sysnqra-company-id'] || '') !== config.tenantId) return sendJson(res, 403, { error: 'Empresa não autorizada neste agente.' }, cors)
     return sendJson(res, 200, {
       status: 'ONLINE', service: 'SYSNQRA File Manager Industrial Agent', version: '1.1.0',
       hostname: os.hostname(), platform: os.platform(), uptimeSeconds: Math.floor(process.uptime()),
@@ -176,10 +197,17 @@ const server = http.createServer(async (req, res) => {
     }, cors)
   }
   if (!authOk(req)) return sendJson(res, 401, { error: 'Não autorizado.' }, cors)
+  if (route !== '/validate-paths' && (!config.tenantId || String(req.headers['x-sysnqra-company-id'] || '') !== config.tenantId)) {
+    return sendJson(res, 403, { error: 'Empresa não autorizada neste agente.' }, cors)
+  }
 
   if (route === '/validate-paths' && req.method === 'POST') {
     try {
       const body = await parseBody(req)
+      const companyId = String(body.companyId || '')
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(companyId)) throw new Error('Empresa da sessão inválida.')
+      if (String(req.headers['x-sysnqra-company-id'] || '') !== companyId) throw new Error('Cabeçalho de empresa não corresponde à configuração.')
+      if (config.tenantId && config.tenantId !== companyId) throw new Error('Este agente já está vinculado a outra empresa. Use uma instalação isolada por empresa.')
       const primaryPath = path.resolve(String(body.primaryPath || config.primaryPath))
       const networkPath = String(body.networkPath || '')
       const folders = body.autoCreateFolders === false ? [] : (Array.isArray(body.folders) ? body.folders : DEFAULT_FOLDERS)
@@ -196,7 +224,7 @@ const server = http.createServer(async (req, res) => {
           if (networkPath && networkOk && ensureDir(path.join(networkPath, folder))) createdFolders.push('rede:' + folder)
         }
       }
-      const next = { primaryPath, networkPath: networkOk ? networkPath : '' }
+      const next = { primaryPath, networkPath: networkOk ? networkPath : '', tenantId: companyId }
       saveConfig(next)
       return sendJson(res, 200, { success: true, primaryOk, networkOk: Boolean(networkOk && networkPath), createdFolders, configured: true }, cors)
     } catch (err) {
