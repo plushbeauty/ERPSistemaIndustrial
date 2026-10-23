@@ -107,6 +107,7 @@ export default function VendasRelatorios() {
             <div>
               <h2 className="text-[11px] font-medium text-[#123B50]">Relatório de Pedidos</h2>
               <p className="text-[11px] font-semibold text-slate-500">{filtered.length} pedido(s) • total filtrado {money(total)}</p>
+            </div>
             <button type="button" onClick={() => window.print()} className="print-hidden inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-medium hover:bg-slate-50"><Printer size={13}/> IMPRIMIR RELATÓRIO</button>
             </div>
           </div>
@@ -132,7 +133,7 @@ export default function VendasRelatorios() {
                     <td className="px-2 py-1">{order.data_entrada ? new Date(order.data_entrada).toLocaleDateString('pt-BR') : '—'}</td>
                     <td className="px-2 py-1">{order.data_entrega_prometida ? new Date(order.data_entrega_prometida).toLocaleDateString('pt-BR') : '—'}</td>
                     <td className="px-2 py-1 font-medium">{order.status}</td>
-                    <td className="px-4 py-3 text-right font-medium">{money(order.total)}</td>
+                    <td className="px-2 py-1 text-right font-medium">{money(order.total)}</td>
                   </tr>
                 ))}
                 {!loading && !filtered.length && (
