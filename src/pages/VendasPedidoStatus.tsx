@@ -133,17 +133,18 @@ export default function VendasPedidoStatus() {
   return (
     <VendasLayout title="Acompanhamento do pedido" subtitle={order ? `PV-${String(order.numero).padStart(6, '0')}` : 'Vendas'} onRefresh={() => void load()}>
       <main className="sales-workspace sales-detail">
+        <style>{`.sales-detail-toolbar .sales-button{height:30px;min-height:30px;border-radius:2px}`}</style>
         <div className="sales-detail-toolbar">
           <Link to="/vendas/pedidos" className="sales-button sales-button--secondary"><ArrowLeft size={15} /> Pedidos de venda</Link>
           {order && ['rascunho', 'aberto'].some((status) => order.status.toLowerCase().includes(status)) && id && (
             <Link to={`/vendas/novo-pedido?pedido=${encodeURIComponent(id)}`} className="sales-button sales-button--primary erp-row-action"><Pencil size={15} /> Editar rascunho</Link>
           )}
         </div>
-        {error && <div className="mb-4 rounded border border-red-200 bg-red-50 p-3 text-red-800">{error}</div>}
+        {error && <div className="mb-2 rounded-[2px] border border-red-200 bg-red-50 p-2 text-xs text-red-800">{error}</div>}
         {order && (
           <>
-            <section className="rounded-lg border bg-white p-5 shadow-sm">
-              <div className="grid gap-4 md:grid-cols-4 xl:grid-cols-9">
+            <section className="rounded-[2px] border border-slate-300 bg-white p-2 shadow-sm">
+              <div className="grid min-w-0 grid-cols-1 gap-2 md:grid-cols-4 xl:grid-cols-9">
                 <Info label="Pedido" value={`PV-${String(order.numero).padStart(6, '0')}`} />
                 <div><Info label="Cliente" value={order.cliente?.nome || '—'} /><p className="text-[11px] text-slate-500">{order.cliente?.documento || '—'}</p></div>
                 <Info label="Data entrada" value={order.data_entrada || '—'} />
@@ -156,16 +157,16 @@ export default function VendasPedidoStatus() {
               </div>
             </section>
 
-            <section className="mt-5 rounded-lg border bg-white p-5">
+            <section className="mt-2 rounded-[2px] border border-slate-300 bg-white p-2">
               <h2 className="font-medium text-[#123B50]">Itens do pedido</h2>
-              <div className="mt-4 overflow-x-auto">
-                <table className="w-full min-w-[900px]">
-                  <thead><tr className="h-[50px] bg-slate-100 text-left text-sm"><th>Descrição</th><th>Cód. cliente</th><th>Quantidade</th><th>Valor unitário</th><th>Desconto</th><th>Total</th></tr></thead>
+              <div className="mt-2 overflow-x-auto">
+                <table className="w-full min-w-[900px] text-xs">
+                  <thead className="bg-slate-100 text-left text-[9px] font-semibold uppercase tracking-wider text-slate-600"><tr className="h-8"><th className="px-2 py-1">Descrição</th><th className="px-2 py-1">Cód. cliente</th><th className="px-2 py-1">Quantidade</th><th className="px-2 py-1">Valor unitário</th><th className="px-2 py-1">Desconto</th><th className="px-2 py-1">Total</th></tr></thead>
                   <tbody>
                     {items.map((item) => (
-                      <tr key={item.id} className="h-[50px] border-t">
-                        <td>{item.descricao}</td><td>{item.produto_cliente || '—'}</td><td>{item.quantidade}</td>
-                        <td>{money(Number(item.valor_unitario))}</td><td>{money(Number(item.desconto || 0))}</td><td>{money(Number(item.total))}</td>
+                      <tr key={item.id} className="h-8 border-t border-slate-200">
+                        <td className="px-2 py-1">{item.descricao}</td><td className="px-2 py-1">{item.produto_cliente || '—'}</td><td className="px-2 py-1">{item.quantidade}</td>
+                        <td className="px-2 py-1">{money(Number(item.valor_unitario))}</td><td className="px-2 py-1">{money(Number(item.desconto || 0))}</td><td className="px-2 py-1">{money(Number(item.total))}</td>
                       </tr>
                     ))}
                     {!items.length && <tr><td colSpan={6} className="py-8 text-center text-slate-500">Nenhum item encontrado.</td></tr>}
@@ -176,17 +177,17 @@ export default function VendasPedidoStatus() {
 
             <section className="mt-5 rounded-lg border bg-white p-5">
               <h2 className="font-medium text-[#123B50]">Condições comerciais</h2>
-              <div className="mt-4 grid gap-4 text-sm md:grid-cols-5">
+              <div className="mt-2 grid gap-2 text-xs md:grid-cols-5">
                 <Info label="Subtotal" value={money(Number(order.subtotal || 0))} />
                 <Info label="Desconto" value={money(Number(order.desconto_valor || 0))} />
                 <Info label="Frete" value={money(Number(order.valor_frete || 0))} />
                 <Info label="Outras despesas" value={money(Number(order.valor_outras_despesas || 0))} />
                 <Info label="Total" value={money(Number(order.total || 0))} />
               </div>
-              {order.observacoes && <div className="mt-4 rounded border bg-slate-50 p-3 text-sm whitespace-pre-wrap"><strong>Observações:</strong> {order.observacoes}</div>}
+              {order.observacoes && <div className="mt-2 rounded-[2px] border border-slate-300 bg-slate-50 p-2 text-xs whitespace-pre-wrap"><strong>Observações:</strong> {order.observacoes}</div>}
             </section>
 
-            <section className="mt-5 grid gap-5 lg:grid-cols-3">
+            <section className="mt-2 grid gap-2 lg:grid-cols-3">
               <StatusBlock title="Produção" rows={production.map((row) => `OP ${row.numero_op} • ${row.status} • ${row.quantidade_produzida ?? 0}/${row.quantidade_planejada ?? row.quantidade}`)} empty="Nenhuma OP vinculada a este pedido." />
               <StatusBlock title="Expedição" rows={expedition.map((row) => `Expedição ${row.numero} • ${row.status}${row.transportadora ? ' • ' + row.transportadora : ''}`)} empty="Nenhuma expedição vinculada." />
               <StatusBlock title="NF / Saída" rows={fiscal.map((row) => `${row.tipo} • ${row.status} • pendente ${row.quantidade_pendente ?? 0}`)} empty="Nenhuma liberação fiscal vinculada." />
@@ -204,10 +205,10 @@ function Info({ label, value }: { label: string; value: string }) {
 
 function StatusBlock({ title, rows, empty }: { title: string; rows: string[]; empty: string }) {
   return (
-    <div className="rounded-lg border bg-white p-5 shadow-sm">
-      <h2 className="font-medium text-[#123B50]">{title}</h2>
-      <div className="mt-4 space-y-2">
-        {rows.length ? rows.map((row, index) => <div key={index} className="rounded border bg-slate-50 p-3 text-sm">{row}</div>) : <p className="text-sm text-slate-500">{empty}</p>}
+    <div className="rounded-[2px] border border-slate-300 bg-white p-2 shadow-sm">
+      <h2 className="text-xs font-semibold text-[#123B50]">{title}</h2>
+      <div className="mt-2 space-y-1">
+        {rows.length ? rows.map((row, index) => <div key={index} className="rounded-[2px] border border-slate-300 bg-slate-50 p-2 text-xs">{row}</div>) : <p className="text-xs text-slate-500">{empty}</p>}
       </div>
     </div>
   )
