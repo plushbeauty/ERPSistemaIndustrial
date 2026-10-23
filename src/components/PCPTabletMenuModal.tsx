@@ -1,6 +1,6 @@
 /**
- * APROVADO — submenu de Fichas de Processo conforme autorização do usuário em 2026-10-18.
- * Não alterar a estrutura, os rótulos nem os destinos aprovados sem autorização expressa.
+ * REVISÃO AUTORIZADA — inclusão do atalho Chão de Fábrica no menu PCP em 2026-10-23.
+ * Preservados os módulos, rótulos e destinos existentes.
  */
 import { useState } from 'react'
 import { ShieldCheck,
@@ -43,6 +43,7 @@ const modules: readonly ModuleItem[] = [
   { number: 'P13', label: 'AUDITORIA PCP', description: 'Registro de conformidade, erros e melhorias do PCP.', route: '/pcp/auditoria', icon: ShieldCheck },
   { number: 'P14', label: 'TABLET OPERADOR', description: 'Interface dedicada para apontamento no chão de fábrica.', route: '/pcp/tablet-operador', icon: Factory },
   { number: 'P15', label: 'PROGRAMAÇÃO GANTT', description: 'Programação visual das ordens por máquina e horário.', route: '/pcp/programacao-gantt', icon: CalendarDays },
+  { number: 'P18', label: 'CHÃO DE FÁBRICA', description: 'Portal do funcionário: programação individual, CPP e apontamento de produção.', route: '/pcp/portal-operador', icon: Factory },
 ]
 
 export default function PCPTabletMenuModal({
