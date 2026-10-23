@@ -236,6 +236,33 @@ const cardClass = 'rounded-[2px] border border-slate-200 bg-white p-3.5 shadow-x
 const btnClass =
   'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] px-3 text-[10px] font-bold tracking-wide uppercase transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer'
 
+function storageObjectPath(value: string): string | null {
+  if (!value) return null
+  const bucket = 'erp-fichas-processo'
+  if (!/^https?:\/\//i.test(value)) {
+    const normalized = value.replace(/^\/+/, '')
+    return normalized.startsWith(`${bucket}/`) ? normalized.slice(bucket.length + 1) : normalized
+  }
+  try {
+    const parsed = new URL(value)
+    const marker = `/storage/v1/object/`
+    const objectIndex = parsed.pathname.indexOf(marker)
+    if (objectIndex < 0) return null
+    const rest = parsed.pathname.slice(objectIndex + marker.length)
+    const bucketPrefix = `sign/${bucket}/`
+    const publicPrefix = `public/${bucket}/`
+    const rawPrefix = `${bucket}/`
+    const prefix = rest.startsWith(bucketPrefix) ? bucketPrefix
+      : rest.startsWith(publicPrefix) ? publicPrefix
+      : rest.startsWith(rawPrefix) ? rawPrefix
+      : null
+    if (!prefix) return null
+    return decodeURIComponent(rest.slice(prefix.length))
+  } catch {
+    return null
+  }
+}
+
 export function FichasProcesso() {
   const [form, setForm] = useState<FormState>(blank)
   const [activeTab, setActiveTab] = useState<ActiveTab>('PROCESSO')
@@ -245,6 +272,7 @@ export function FichasProcesso() {
   const [machines, setMachines] = useState<Machine[]>([])
   const [rows, setRows] = useState<FormState[]>([])
   const [query, setQuery] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('TODAS')
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
@@ -307,7 +335,21 @@ export function FichasProcesso() {
       setClients((c.data ?? []) as Client[])
       setTools((t.data ?? []) as Tool[])
       setMachines((m.data ?? []) as Machine[])
-      setRows(((f.data ?? []) as Record<string, unknown>[]).map(fromDb))
+      const loadedRows = ((f.data ?? []) as Record<string, unknown>[]).map(fromDb)
+      const refreshedRows = await Promise.all(loadedRows.map(async row => {
+        const refreshUrl = async (value: string): Promise<string> => {
+          const path = storageObjectPath(value)
+          if (!path) return value
+          const signed = await supabase.storage.from('erp-fichas-processo').createSignedUrl(path, 60 * 60 * 24 * 30)
+          return signed.error ? value : signed.data.signedUrl
+        }
+        const [mainImage, photos] = await Promise.all([
+          row.imagem_url ? refreshUrl(row.imagem_url) : Promise.resolve(''),
+          Promise.all(row.fotos_molde.map(async photo => ({ ...photo, url: await refreshUrl(photo.url) })))
+        ])
+        return { ...row, imagem_url: mainImage, fotos_molde: photos }
+      }))
+      setRows(refreshedRows)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Falha ao carregar fichas de processo.')
     }
@@ -368,15 +410,16 @@ export function FichasProcesso() {
 
   const filtered = useMemo(
     () =>
-      rows.filter(
-        x =>
-          !query ||
+      rows.filter(x => {
+        const matchesCategory = categoryFilter === 'TODAS' || x.categoria_processo === categoryFilter
+        const matchesQuery = !query ||
           [x.codigo_ficha, x.codigo_cliente, x.status, x.categoria_processo]
             .join(' ')
             .toLowerCase()
             .includes(query.toLowerCase())
-      ),
-    [rows, query]
+        return matchesCategory && matchesQuery
+      }),
+    [rows, query, categoryFilter]
   )
 
   const selectedProduct = products.find(x => x.id === form.produto_id)
@@ -390,7 +433,7 @@ export function FichasProcesso() {
   }
 
   function newFicha() {
-    setForm(blank)
+    setForm({ ...blank, categoria_processo: categoryFilter !== 'TODAS' ? categoryFilter : 'INJETADOS' })
     // reset preview
     setActiveTab('PROCESSO')
     setMessage('Nova ficha técnica pronta para edição.')
@@ -828,7 +871,24 @@ export function FichasProcesso() {
             {/* Sidebar Esquerda: Fichas Cadastradas */}
             <aside className="rounded-[2px] border border-slate-200 bg-white shadow-xs h-fit">
               <div className="border-b border-slate-200 p-2.5">
-                <span className="text-[9px] font-black uppercase tracking-wider text-slate-500">
+                <label htmlFor="pcp-ficha-category" className="mb-1 block text-[9px] font-black uppercase tracking-wider text-[#123B50]">
+                  Selecione sua ficha de processo
+                </label>
+                <select
+                  id="pcp-ficha-category"
+                  value={categoryFilter}
+                  onChange={e => setCategoryFilter(e.target.value)}
+                  className="h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-bold text-slate-800 outline-none focus:border-[#2D8DB8]"
+                >
+                  <option value="TODAS">Todas as categorias</option>
+                  <option value="INJETADOS">Injetados</option>
+                  <option value="PRENSADOS">Prensados</option>
+                  <option value="ACABAMENTO_ESTAMPO">Acabamento de peças estampadas</option>
+                  <option value="ESTAMPARIA">Peças estampadas</option>
+                  <option value="PECAS_COBRE">Peças de cobre</option>
+                  <option value="MONTAGEM_EMBALAGEM">Montagem / embalagem</option>
+                </select>
+                <span className="mt-2 block text-[9px] font-black uppercase tracking-wider text-slate-500">
                   FICHAS CADASTRADAS ({filtered.length})
                 </span>
                 <div className="mt-2 relative">
@@ -910,7 +970,9 @@ export function FichasProcesso() {
                         >
                           <option value="INJETADOS">INJETADOS (TERMOPLÁSTICOS)</option>
                           <option value="PRENSADOS">PRENSADOS (BORRACHA)</option>
-                          <option value="ESTAMPARIA">ESTAMPARIA</option>
+                          <option value="ACABAMENTO_ESTAMPO">ACABAMENTO DE PEÇAS ESTAMPADAS</option>
+                          <option value="ESTAMPARIA">ESTAMPARIA / PEÇAS ESTAMPADAS</option>
+                          <option value="PECAS_COBRE">PEÇAS DE COBRE</option>
                           <option value="MONTAGEM_EMBALAGEM">MONTAGEM / EMBALAGEM</option>
                         </select>
                       </div>
