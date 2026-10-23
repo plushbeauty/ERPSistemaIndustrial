@@ -1220,7 +1220,8 @@ export default function PCPOrdens() {
                             if (selectedOp.produto_id) {
                               void explodeMRP(
                                 selectedOp.produto_id,
-                                Number(selectedOp.quantidade_planejada || selectedOp.quantidade || 0)
+                                Number(selectedOp.quantidade_planejada || selectedOp.quantidade || 0),
+                                selectedDemandRef
                               )
                             }
                           }}
