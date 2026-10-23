@@ -96,7 +96,6 @@ const stamping: Param[] = [
  {key:'lubrificante',label:'Lubrificante',unit:'—',type:'text'},
  {key:'folga_matriz_mm',label:'Folga de matriz',unit:'mm',type:'number',step:'0.001'},
  {key:'cavidades_ativas',label:'Unidades por golpe / cavidades',unit:'un',type:'number',step:'1'},
- {key:'tempo_ciclo_seg',label:'Tempo de ciclo por golpe',unit:'s',type:'number',step:'0.01',required:true},
  {key:'tipo_estampo',label:'Tipo de estampo',unit:'—',type:'select',options:['Progressivo','Simples','Transfer','Composto']},
  {key:'tipo_alimentacao_chapa',label:'Alimentação da chapa',unit:'—',type:'select',options:['Manual','Automática','Bobina','Folha']},
  {key:'controle_rebarba',label:'Controle de rebarba e arestas',unit:'—',type:'text'},
@@ -126,7 +125,6 @@ const cutting: Param[] = [
  {key:'altura_regua_vinco_mm',label:'Altura da régua de vinco',unit:'mm',type:'number',step:'0.01'},
  {key:'pressao_vinco',label:'Pressão / ajuste de vinco',unit:'—',type:'text'},
  {key:'registro_alimentacao_mm',label:'Registro de alimentação',unit:'mm',type:'number',step:'0.01'},
- {key:'unidades_por_golpe',label:'Peças por golpe / folha',unit:'un',type:'number',step:'1'},
  {key:'tempo_ciclo_seg',label:'Tempo de ciclo por golpe / folha',unit:'s',type:'number',step:'0.01',required:true},
  {key:'cavidades_ativas',label:'Peças por golpe / folha',unit:'un',type:'number',step:'1'},
  {key:'criterio_primeira_peca',label:'Critério de aprovação da primeira peça',unit:'—',type:'text',multiline:true},
@@ -194,6 +192,16 @@ const processParamGroups: Partial<Record<Category,{title:string;keys:string[]}[]
   {title:'3. Temperatura dos platôs e molde',keys:['temp_plato_superior_c','temp_plato_inferior_c','tolerancia_temp_platos_c','temperatura_molde_c','tipo_refrigeracao','vazao_refrigeracao_l_min']},
   {title:'4. Parâmetros de cura e vulcanização',keys:['tempo_pre_aquecimento_seg','tempo_cura_seg','pressao_prensagem_bar','tonelagem_prensa','forca_fechamento_recomendada_ton','tempo_pos_cura_min']},
   {title:'5. Ciclo de desgaseificação (respiro)',keys:['numero_respiros','tempo_primeiro_respiro_seg','tempo_alivio_prensa_aberta_seg','tempo_ciclo_seg','tempo_limpeza_min']},
+ ],
+ ESTAMPARIA:[
+  {title:'1. Identificação da chapa e do estampo',keys:['material_chapa','espessura_chapa_mm','tipo_estampo','tipo_alimentacao_chapa','folga_matriz_mm','altura_molde_mm','tipo_fixacao']},
+  {title:'2. Parâmetros da prensa e alimentação',keys:['forca_prensa_ton','curso_prensa_mm','passo_alimentacao_mm','lubrificante','tempo_ciclo_seg','cavidades_ativas']},
+  {title:'3. Qualidade da peça e segurança',keys:['controle_rebarba','criterio_primeira_peca','torque_aperto_nm','tempo_setup_min','tempo_limpeza_min','seguranca_ppe']},
+ ],
+ CORTE_VINCO:[
+  {title:'1. Material e ferramental',keys:['material_base','espessura_material_mm','ferramenta_corte','tipo_prensa_corte_vinco','tipo_vinco','altura_regua_corte_mm','altura_regua_vinco_mm']},
+  {title:'2. Ajuste, alimentação e produção',keys:['pressao_corte','pressao_vinco','registro_corte_mm','registro_alimentacao_mm','sequencia_operacao','tempo_ciclo_seg','cavidades_ativas']},
+  {title:'3. Inspeção, refugo e segurança',keys:['criterio_rebarba','criterio_primeira_peca','segregacao_refugo','tempo_setup_min','tempo_limpeza_min','seguranca_ppe']},
  ],
  ACABAMENTO:[
   {title:'1. Inspeção visual e separação de canais',keys:['acabamento_inspecao_posto','acabamento_inspecao_setor','acabamento_inspecao_ambiente','acabamento_inspecao_tempo','acabamento_inspecao_checklist','acabamento_inspecao_referencia']},
