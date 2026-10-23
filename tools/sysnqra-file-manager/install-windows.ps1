@@ -4,8 +4,9 @@ $ErrorActionPreference = 'Stop'
 $serviceName = 'SYSNQRAFileManagerIndustrial'
 $installRoot = Join-Path $env:ProgramData 'SYSNQRA\FileManager'
 $storageRoot = 'C:\SYSNQRA\Arquivos'
+$dataRoot = Join-Path $env:ProgramData 'SYSNQRA\FileManagerData'
 $tokenFile = Join-Path $installRoot 'agent.token'
-$configFile = Join-Path $installRoot 'sysnqra-agent-config.json'
+$configFile = Join-Path $dataRoot 'sysnqra-agent-config.json'
 
 $principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
 if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
