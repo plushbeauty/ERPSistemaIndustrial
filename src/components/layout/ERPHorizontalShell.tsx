@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Warehouse, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X, ClipboardList, ClipboardCheck } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Warehouse, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -23,16 +23,16 @@ const menus: MenuItem[] = [
     { label: 'Cadastro de Fornecedores', route: '/cadastros/fornecedores' },
   ] },
   { label: 'Vendas', route: '/vendas', icon: ShoppingCart, children: [
-    { label: 'Dashboard comercial', route: '/vendas', icon: BarChart3 },
-    { label: 'Novo pedido', route: '/vendas/novo-pedido', icon: ShoppingCart },
-    { label: 'Pedidos pendentes', route: '/vendas/pedidos-pendentes', icon: ClipboardList },
-    { label: 'PDV / venda rápida', route: '/vendas/pdv', icon: ShoppingCart },
-    { label: 'Catálogo digital', route: '/vendas/catalogo-digital', icon: Package },
-    { label: 'Gestão do catálogo', route: '/vendas/catalogo-digital/gestao', icon: Settings },
-    { label: 'Orçamentos e custos', route: '/vendas/orcamentos', icon: Wallet },
-    { label: 'Análise de custos', route: '/vendas/analise-custos', icon: BarChart3 },
-    { label: 'Metas', route: '/vendas/metas', icon: BarChart3 },
-    { label: 'Relatórios', route: '/vendas/relatorios', icon: FileText },
+    { label: 'Dashboard comercial', route: '/vendas' },
+    { label: 'Status do pedido', route: '/vendas/status' },
+    { label: 'Novo pedido', route: '/vendas/novo-pedido' },
+    { label: 'PDV / venda rápida', route: '/vendas/pdv' },
+    { label: 'Catálogo digital', route: '/vendas/catalogo-digital' },
+    { label: 'Gestão do catálogo', route: '/vendas/catalogo-digital/gestao' },
+    { label: 'Orçamentos e custos', route: '/vendas/orcamentos' },
+    { label: 'Análise de custos', route: '/vendas/analise-custos' },
+    { label: 'Metas', route: '/vendas/metas' },
+    { label: 'Relatórios', route: '/vendas/relatorios' },
   ] },
   { label: 'Compras', route: '/compras/rfq', icon: Truck, children: [
     { label: 'Central de compras / RFQ', route: '/compras/rfq' },
@@ -68,23 +68,23 @@ const menus: MenuItem[] = [
     { label: 'Caixa', route: '/financeiro/caixa' },
   ] },
   { label: 'Fiscal', route: '/fiscal', icon: FileText },
-  { label: 'Manufatura / PCP', route: '/pcp/ordens', icon: Factory, children: [
-    { label: 'Ordens de produção', route: '/pcp/ordens', icon: ClipboardList },
-    { label: 'Ordens industriais', route: '/pcp/ordens-industriais', icon: Factory },
-    { label: 'Chão de Fábrica · Portal do Funcionário', route: '/pcp/portal-operador', icon: Factory },
-    { label: 'Apontamentos', route: '/pcp/apontamentos', icon: ClipboardCheck },
-    { label: 'Demanda', route: '/pcp/demanda', icon: Package },
-    { label: 'Pedidos pendentes', route: '/pcp/pedidos-pendentes', icon: ShoppingCart },
-    { label: 'Capacidade / Gantt', route: '/pcp/capacidade', icon: BarChart3 },
-    { label: 'Programação Gantt', route: '/pcp/programacao-gantt', icon: BarChart3 },
-    { label: 'MRP II', route: '/pcp/mrp-ii', icon: Package },
-    { label: 'Agenda de máquinas', route: '/pcp/agenda-maquinas', icon: Wrench },
-    { label: 'Sequenciamento', route: '/pcp/sequenciamento', icon: BarChart3 },
-    { label: 'Planejamento', route: '/pcp/planejamento', icon: BarChart3 },
-    { label: 'Fichas de processo', route: '/pcp/fichas-processo', icon: FileText },
-    { label: 'Paradas / setup', route: '/pcp/paradas', icon: Wrench },
-    { label: 'Auditoria PCP', route: '/pcp/auditoria', icon: ShieldCheck },
-    { label: 'PCP Tablet', route: '/pcp', action: 'pcpTablet', icon: Factory },
+  { label: 'Manufatura / PCP', route: '/pcp', icon: Factory, children: [
+    { label: 'Central PCP', route: '/pcp' },
+    { label: 'Ordens de produção', route: '/pcp/ordens' },
+    { label: 'Ordens industriais', route: '/pcp/ordens-industriais' },
+    { label: 'Chão de Fábrica · Portal do Funcionário', route: '/pcp/portal-operador' },
+    { label: 'Apontamentos', route: '/pcp/apontamentos' },
+    { label: 'Demanda', route: '/pcp/demanda' },
+    { label: 'Capacidade / Gantt', route: '/pcp/capacidade' },
+    { label: 'Programação Gantt', route: '/pcp/programacao-gantt' },
+    { label: 'MRP II', route: '/pcp/mrp-ii' },
+    { label: 'Agenda de máquinas', route: '/pcp/agenda-maquinas' },
+    { label: 'Sequenciamento', route: '/pcp/sequenciamento' },
+    { label: 'Planejamento', route: '/pcp/planejamento' },
+    { label: 'Fichas de processo', route: '/pcp/fichas-processo' },
+    { label: 'Paradas / setup', route: '/pcp/paradas' },
+    { label: 'Auditoria PCP', route: '/pcp/auditoria' },
+    { label: 'PCP Tablet', route: '/pcp', action: 'pcpTablet' },
   ] },
   { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, action: 'qualityTablet', children: [
     { label: 'Visual geral da Qualidade', route: '/qualidade' },
@@ -155,9 +155,29 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     return () => window.removeEventListener('erp:open-quality-tablet', openQualityTablet)
   }, [])
 
-  // Revisão 2026-10-23 — removido reload global por eventos Realtime.
-  // O reload em qualquer alteração de tabela provocava ciclos de atualização
-  // e apagava o estado das telas. Cada página mantém seus controles de refresh.
+  // Atualização automática por mudanças reais no banco, sem botão manual.
+  // Não recarrega telas de lançamento/edição para não apagar dados ainda não gravados.
+  useEffect(() => {
+    let refreshTimer: number | undefined
+    // Cada montagem recebe um tópico exclusivo: evita reutilizar um canal Realtime
+    // ainda inscrito durante remontagens rápidas (StrictMode/navegação).
+    const channel = supabase
+      .channel(`erp-global-data-refresh-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+      .on('postgres_changes', { event: '*', schema: 'public' }, () => {
+        if (document.visibilityState !== 'visible') return
+        const routeIsEditing = /\/(novo|editar|cadastro|pedido|rfq|emissao|configuracoes|configuracao|form|apontamento|recebimento|transferencia|inventario|assinatura|login)([-/]|$)/i.test(window.location.pathname)
+        const active = document.activeElement
+        const userIsTyping = active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement || active instanceof HTMLSelectElement || (active instanceof HTMLElement && active.isContentEditable)
+        if (routeIsEditing || userIsTyping) return
+        if (refreshTimer !== undefined) window.clearTimeout(refreshTimer)
+        refreshTimer = window.setTimeout(() => window.location.reload(), 900)
+      })
+      .subscribe()
+    return () => {
+      if (refreshTimer !== undefined) window.clearTimeout(refreshTimer)
+      void supabase.removeChannel(channel)
+    }
+  }, [])
 
   const moduleLabel = pathname.startsWith('/cadastros') || pathname.startsWith('/cadastro-produtos') || pathname.startsWith('/produtos-vendas') ? 'Cadastros'
     : pathname.startsWith('/vendas') ? 'Vendas'
@@ -280,7 +300,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
                     {hasChildren && <button type="button" className="erp-windows-menu-expand" aria-label={`Expandir ${menu.label}`} aria-expanded={expanded} onClick={() => { setOpenMenu(value => value === menu.label ? null : menu.label);  }}>{expanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}</button>}
                   </div>
                   {hasChildren && expanded && <div className="erp-windows-menu-children">
-                    {menu.children?.filter(child => !normalizedSearch || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(child => { const ChildIcon = child.icon; return <button type="button" key={child.label + child.route} className={pathname === child.route ? 'is-active' : ''} onClick={() => { setStartMenuOpen(false); if (child.action) openMenuItem(child); else go(child.route) }}>{ChildIcon && <ChildIcon size={13} aria-hidden="true" />}<span>{child.label}</span></button> })}
+                    {menu.children?.filter(child => !normalizedSearch || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(child => <button type="button" key={child.label + child.route} className={pathname === child.route ? 'is-active' : ''} onClick={() => { setStartMenuOpen(false); if (child.action) openMenuItem(child); else go(child.route) }}>{child.label}</button>)}
                   </div>}
                 </div>
               })}
@@ -366,7 +386,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-windows-menu-main:hover,.erp-windows-menu-expand:hover{background:#f1f5f9}
         .erp-windows-menu-expand{width:30px;align-self:stretch;display:flex;align-items:center;justify-content:center;border:0;background:transparent;cursor:pointer;color:#475569}
         .erp-windows-menu-children{margin:0 0 4px 24px;padding:2px 0 2px 8px;border-left:1px solid #cbd5e1}
-        .erp-windows-menu-children button{display:flex;align-items:center;gap:7px;width:100%;min-height:29px;padding:5px 8px;border:0;background:#fff;text-align:left;color:#334155;font-size:10px;cursor:pointer}.erp-windows-menu-children button svg{flex:0 0 auto;color:#2d8db8}
+        .erp-windows-menu-children button{display:block;width:100%;min-height:29px;padding:5px 8px;border:0;background:#fff;text-align:left;color:#334155;font-size:10px;cursor:pointer}
         .erp-windows-menu-children button:hover,.erp-windows-menu-children button.is-active{background:#eaf5f8;color:#123b50}
         .erp-windows-no-results{margin:12px 8px;font-size:10px;color:#64748b}
         .erp-windows-start-footer{min-height:38px;display:flex;align-items:center;gap:6px;padding:0 10px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:10px;color:#334155}
