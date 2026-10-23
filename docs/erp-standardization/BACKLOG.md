@@ -249,3 +249,15 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **UI-010 permanece ABERTO** até cobrir todas as telas comerciais editáveis, verificar o preview autenticado e concluir os gates aplicáveis.
 - **UI-001 permanece ABERTO**: não foi possível executar `npm run audit:ui-standardization` em checkout local nesta sessão; a tentativa de clonar o repositório foi bloqueada por indisponibilidade de DNS/rede no ambiente de execução.
 - **Deploy:** PENDENTE; o status de Vercel de main estava com limite de builds e o deployment associado ao PR #212 estava cancelado.
+
+
+### Resultado da validação da tranche — 2026-10-23
+
+- PR #215: https://github.com/plushbeauty/ERPSistemaIndustrial/pull/215 — permanece aberto em rascunho.
+- Head auditado: `399dab7a73f6ff733ddb76e800c062a7a1e69545`; o relatório completo registra o resultado.
+- TypeScript, ESLint, auditorias global/brutal/interações, lazy imports, build, artefatos e rotas: **PASSARAM** no CI.
+- CI geral: **FALHOU** em `verify:quality-tablet-contract` por ausência da rota protegida `/qualidade/tablet`; não corrigir dentro da tarefa de Vendas.
+- Vercel: **FALHOU/BLOQUEADO** por `build-rate-limit`; nenhum deployment corresponde ao head atual.
+- `verify:approved-ui-lock`: **NÃO VERIFICADO** no workflow atual, pois foi ignorado após a falha anterior. O diff desta branch não contém arquivos congelados e os hashes das três telas congeladas de Vendas e do shell foram confirmados idênticos à base.
+- `audit:ui-standardization`: **PENDENTE**, não executado; o workflow correspondente só roda em push para `main` ou execução manual, e não houve checkout local por indisponibilidade de DNS/rede.
+- **UI-010 e UI-001 permanecem ABERTOS**. Não marcar Vendas como concluído e não promover para Compras até completar a validação visual/funcional da tranche atual.
