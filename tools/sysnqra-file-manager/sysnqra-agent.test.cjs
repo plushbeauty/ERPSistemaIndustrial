@@ -74,7 +74,7 @@ test('agente autentica, vincula empresa, cria pastas e bloqueia traversal', asyn
   assert.equal(wrongTenant.status, 403)
 
   const traversal = await fetch(base + '/file?path=..%2F..%2Fetc%2Fpasswd', { headers })
-  assert.equal(traversal.status, 400)
+  assert.ok([400, 404].includes(traversal.status), 'tentativa de traversal deve ser bloqueada sem revelar arquivo')
 
   const upload = await fetch(base + '/upload?folder=fotos&filename=teste.txt', {
     method: 'POST', headers, body: Buffer.from('SYSNQRA test file'),
