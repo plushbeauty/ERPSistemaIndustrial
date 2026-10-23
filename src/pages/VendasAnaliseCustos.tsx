@@ -56,12 +56,12 @@ export default function VendasAnaliseCustos(){
   return burden>=100?0:base/(1-burden/100)
  },[custo,impostos,comissao,margem])
  const upload=(input:HTMLInputElement|null)=>{const f=input?.files?.[0];if(!f||!produto)return;if(!empresaId){setError('Empresa não identificada.');return}void (async()=>{setError('');const path=`${empresaId}/${produto.id}/${crypto.randomUUID()}-${f.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;const u=await supabase.storage.from('engenharia-projetos').upload(path,f,{contentType:f.type||'application/octet-stream'});if(u.error){setError(u.error.message);return}setMessage('Desenho técnico armazenado no Storage.');input.value=''})()}
- return <VendasLayout title="Análise de Orçamentos" subtitle="Engenharia ↔ Comercial" onRefresh={()=>void load()}>
+ return <VendasLayout title="Orçamentos e Custos" subtitle="Engenharia industrial, composição do custo e formação do preço de venda" onRefresh={()=>void load()} showStatusCards={false}>
   <div className="space-y-1.5 text-[11px]">
    {(error||message)&&<div className={`border px-2 py-1 text-[10px] ${error?'border-red-200 bg-red-50 text-red-800':'border-emerald-200 bg-emerald-50 text-emerald-800'}`}>{error||message}</div>}
-   <section className="min-w-0 border border-gray-200 bg-white p-2"><div className="grid min-w-0 grid-cols-1 items-end gap-2 sm:grid-cols-2 xl:grid-cols-[minmax(0,140px)_80px_minmax(0,140px)_minmax(0,170px)_minmax(0,1fr)]">
+   <section className="min-w-0 border border-gray-200 bg-white p-2"><div className="grid min-w-0 grid-cols-1 items-end gap-2 sm:grid-cols-2 xl:grid-cols-[minmax(0,200px)_minmax(0,1fr)_minmax(0,180px)_minmax(0,1fr)]">
     <label className="min-w-0 text-[9px] font-bold uppercase text-slate-500">Cód. Projeto / Item<input value={itemBusca} onChange={e=>setItemBusca(e.target.value)} onBlur={()=>void resolve()} onKeyDown={e=>{if(e.key==='Enter')void resolve()}} className="mt-0.5 h-9 w-full rounded border border-gray-200 px-2 text-xs"/></label>
-    <label className="min-w-0 text-[9px] font-bold uppercase text-slate-500">Margem Alvo %<input type="number" value={margem} onChange={e=>setMargem(e.target.value)} className="mt-0.5 h-9 w-full rounded border border-gray-200 px-2 text-xs"/></label>
+    
     <div className="flex min-h-9 min-w-0 flex-wrap items-center gap-x-2 border bg-slate-50 px-2 py-1 text-[10px]">Custo Técnico<strong className="text-xs">{brl(custo.custo_tecnico)}</strong></div>
     <div className="flex min-h-9 min-w-0 flex-wrap items-center gap-x-2 border bg-slate-50 px-2 py-1 text-[10px]">Preço Sugerido<strong className="text-sm text-[#17445A]">{brl(preco)}</strong></div>
     <div className="min-w-0 text-left text-[10px] text-slate-500 xl:text-right">{produto?produto.codigo+' • '+produto.nome:'Digite o código do item e pressione Enter.'}</div>
