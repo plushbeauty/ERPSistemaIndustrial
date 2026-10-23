@@ -1,467 +1,1951 @@
 /**
- * REV-2026-10-23 — REV-FICHA-009: corrige contraste dos cartões após normalização dos fundos; texto escuro em superfícies claras e branco apenas em superfícies azul-petróleo/diagrama. Revisão visual autorizada pelo usuário.
- * REV-2026-10-22 — REV-FICHA-007: layout de alta densidade com 3 painéis de parâmetros e fotos lado a lado.
- * CSS escopado com prioridade para neutralizar conflitos do tema global; persistência e dados reais preservados.
- * REV-2026-10-22 — REV-FICHA-006: anexos fotográficos independentes para molde e máquina, vinculados aos cadastros reais.
- * Preserva dados reais, isolamento por empresa, persistência Supabase e impressão A4.
- * Revisão visual restrita a esta tela; sem dados fictícios ou alteração do contrato de banco.
- * REV-2026-10-21 — REV-FICHA-004: campos editáveis sobre a imagem do equipamento; card de perfil removido e foto do molde mantida ao lado.
- * Preserva dados reais, isolamento por empresa, persistência Supabase e impressão A4.
+ * =========================================================================
+ * SYSNQRA SISTEMAS INDUSTRIAIS — ENGENHARIA DE PROCESSOS & SGQ
+ * Módulo: Ficha Técnica de Processo Industrial (Injetados & Prensados)
+ * Arquivo: src/pages/FichasProcesso.tsx
+ * Padrão Visual: SYSNQRA Industrial Compacto (#F4FBFD, #123B50, #2D8DB8, #48B7C7)
+ * Estrutura em 3 Abas:
+ *   Aba 1 (1/3) — Processo & Mistura (Parâmetros de Injeção, Ciclo, Temperaturas e Setup)
+ *   Aba 2 (2/3) — Fotos do Molde & Ferramental (Setup, Fixação e Refrigeração)
+ *   Aba 3 (3/3) — Qualidade & Desenho (Especificações Técnicas, Desenho e SGQ)
+ * =========================================================================
  */
-import { useEffect, useMemo, useState } from 'react'
-import { CalendarRange, CheckCircle2, ExternalLink, Factory, FileSliders, Printer, RefreshCw, Save, Search } from 'lucide-react'
-import PCPMoldPhotoPanel from '../components/PCPMoldPhotoPanel'
-import PCPMachinePhotoPanel from '../components/PCPMachinePhotoPanel'
-import { useSearchParams } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  AlertTriangle,
+  FileDown,
+  ImagePlus,
+  Layers,
+  Maximize2,
+  Plus,
+  Printer,
+  RotateCcw,
+  Save,
+  Search,
+  ShieldCheck,
+  Sliders,
+  Trash2,
+  Wrench,
+  X,
+} from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import EntityCodeLookup from '../components/industrial/EntityCodeLookup'
+import '../styles/synqra-premium.css'
 
-type Product = { id: string; codigo: string; nome: string }
-type Tool = { id: string; codigo: string; nome: string; tipo: string }
-type Machine = { id: string; codigo: string; nome: string; tipo: string | null }
-export type Category = 'INJETADOS' | 'PRENSADOS' | 'ESTAMPARIA' | 'MECANICA' | 'TRATAMENTO_SUPERFICIAL' | 'PINTURA_QUIMICA' | 'CORTE_VINCO' | 'ACABAMENTO' | 'MONTAGEM_EMBALAGEM'
-export type Param = { key: string; label: string; unit: string; type?: 'number' | 'text' | 'select'; required?: boolean; step?: string; multiline?: boolean; options?: string[] }
-type Saved = { id: string; codigo_ficha: string; produto_id: string; ferramenta_id?: string | null; maquina_id?: string | null; categoria_processo: Category; versao_ficha: number; status: string; data_homologacao?: string | null; assinatura_tecnica?: string | null; parametros_tecnicos: Record<string, unknown>; revisao?: number }
-export const categories: { value: Category; label: string; badge?: string }[] = [
- { value: 'INJETADOS', label: 'Injetados (Termoplásticos)', badge: 'Canhão & Molde' }, { value: 'PRENSADOS', label: 'Prensados (Vulcanização / Borracha)', badge: 'Platôs & Cura' },
- { value: 'ESTAMPARIA', label: 'Estampos / Estamparia' }, { value: 'MECANICA', label: 'Usinagem & Mecânica' },
- { value: 'TRATAMENTO_SUPERFICIAL', label: 'Tratamento Superficial' },
- { value: 'PINTURA_QUIMICA', label: 'Pintura & Química' }, { value: 'CORTE_VINCO', label: 'Corte e Vinco' },
- { value: 'ACABAMENTO', label: 'Acabamento Unificado' }, { value: 'MONTAGEM_EMBALAGEM', label: 'Montagem & Embalagem' },
-]
-const common: Param[] = [
- {key:'tempo_ciclo_seg',label:'Tempo de ciclo padrão',unit:'s',type:'number',step:'0.01',required:true},
- {key:'velocidade_dosagem_curso',label:'Velocidade de dosagem / curso',unit:'mm/s',type:'number',step:'0.01'},
- {key:'altura_molde_mm',label:'Altura do molde',unit:'mm',type:'number',step:'0.01'},
- {key:'tipo_fixacao',label:'Tipo de fixação',unit:'—',type:'text'},
- {key:'torque_aperto_nm',label:'Torque de aperto',unit:'N·m',type:'number',step:'0.1'},
- {key:'tipo_refrigeracao',label:'Refrigeração conectada',unit:'—',type:'text'},
- {key:'vazao_refrigeracao_l_min',label:'Vazão de refrigeração',unit:'L/min',type:'number',step:'0.1'},
- {key:'tempo_setup_min',label:'Tempo padrão de setup',unit:'min',type:'number',step:'0.1'},
- {key:'tempo_limpeza_min',label:'Tempo de limpeza / troca',unit:'min',type:'number',step:'0.1'},
- {key:'seguranca_ppe',label:'EPI e segurança obrigatórios',unit:'—',type:'text'},
-]
-const injection: Param[] = [
- {key:'forca_fechamento_ton',label:'Força de fechamento',unit:'ton',type:'number',step:'0.1',required:true},
- {key:'pressao_injecao_bar',label:'Pressão de injeção',unit:'bar',type:'number',step:'0.1'},
- {key:'pressao_recalque_bar',label:'Pressão de recalque',unit:'bar',type:'number',step:'0.1'},
- {key:'velocidade_injecao_mm_s',label:'Velocidade de injeção',unit:'mm/s',type:'number',step:'0.1'},
- {key:'tempo_injecao_seg',label:'Tempo de injeção',unit:'s',type:'number',step:'0.01'},
- {key:'tempo_recalque_seg',label:'Tempo de recalque',unit:'s',type:'number',step:'0.01'},
- {key:'pressao_contrapressao_bar',label:'Contrapressão',unit:'bar',type:'number',step:'0.1'},
- {key:'rpm_rosca',label:'Rotação da rosca',unit:'rpm',type:'number',step:'1'},
- {key:'posicao_dosagem_mm',label:'Posição de dosagem',unit:'mm',type:'number',step:'0.1'},
- {key:'posicao_comutacao_mm',label:'Posição de comutação',unit:'mm',type:'number',step:'0.1'},
- {key:'zona1_c',label:'Temperatura zona 1',unit:'°C',type:'number',step:'0.1'},
- {key:'zona2_c',label:'Temperatura zona 2',unit:'°C',type:'number',step:'0.1'},
- {key:'zona3_c',label:'Temperatura zona 3',unit:'°C',type:'number',step:'0.1'},
- {key:'zona4_c',label:'Temperatura zona 4 (frontal)',unit:'°C',type:'number',step:'0.1'},
- {key:'temp_bico_c',label:'Temperatura do bico',unit:'°C',type:'number',step:'0.1'},
- {key:'temp_molde_fixo_c',label:'Temperatura do molde fixo',unit:'°C',type:'number',step:'0.1'},
- {key:'temp_molde_movel_c',label:'Temperatura do molde móvel',unit:'°C',type:'number',step:'0.1'},
- {key:'tempo_resfriamento_seg',label:'Tempo de resfriamento',unit:'s',type:'number',step:'0.01'},
- {key:'material_polimero',label:'Material / polímero cadastrado',unit:'—',type:'text',required:true},
- {key:'temperatura_secagem_c',label:'Temperatura de secagem',unit:'°C',type:'number',step:'0.1'},
- {key:'tempo_secagem_h',label:'Tempo de secagem',unit:'h',type:'number',step:'0.1'},
- {key:'cavidades_ativas',label:'Cavidades ativas',unit:'un',type:'number',step:'1',required:true},
- {key:'peso_peca_g',label:'Peso líquido da peça',unit:'g',type:'number',step:'0.001'},
- {key:'peso_canal_g',label:'Peso de canal / refugo',unit:'g',type:'number',step:'0.001'},
-]
-const press: Param[] = [
- {key:'tonelagem_prensa',label:'Tonelagem requerida',unit:'ton',type:'number',step:'0.1',required:true},
- {key:'pressao_prensagem_bar',label:'Pressão de prensagem',unit:'bar',type:'number',step:'0.1'},
- {key:'temperatura_molde_c',label:'Temperatura do molde',unit:'°C',type:'number',step:'0.1'},
- {key:'tempo_cura_seg',label:'Tempo de cura',unit:'s',type:'number',step:'0.1'},
- {key:'tempo_pos_cura_min',label:'Tempo de pós-cura',unit:'min',type:'number',step:'0.1'},
- {key:'composto_material',label:'Composto / material',unit:'—',type:'text',required:true},
- {key:'dureza_shore_a',label:'Dureza solicitada',unit:'Shore A',type:'number',step:'1'},
- {key:'peso_carga_cavidade_g',label:'Peso da carga por cavidade',unit:'g',type:'number',step:'0.001'},
- {key:'peso_total_carga_g',label:'Peso total da carga',unit:'g',type:'number',step:'0.001'},
- {key:'dimensional_molde_mm',label:'Dimensional do molde (C × L × A)',unit:'mm',type:'text'},
- {key:'peso_molde_kg',label:'Peso do molde',unit:'kg',type:'number',step:'0.1'},
- {key:'tempo_pre_aquecimento_seg',label:'Pré-aquecimento da matéria-prima',unit:'s',type:'number',step:'0.1'},
- {key:'temp_plato_superior_c',label:'Temperatura do platô superior',unit:'°C',type:'number',step:'0.1'},
- {key:'temp_plato_inferior_c',label:'Temperatura do platô inferior',unit:'°C',type:'number',step:'0.1'},
- {key:'tolerancia_temp_platos_c',label:'Tolerância dos platôs',unit:'°C',type:'number',step:'0.1'},
- {key:'forca_fechamento_recomendada_ton',label:'Força de fechamento recomendada',unit:'ton',type:'number',step:'0.1'},
- {key:'numero_respiros',label:'Número de respiros',unit:'ciclos',type:'number',step:'1'},
- {key:'tempo_primeiro_respiro_seg',label:'Tempo para o 1º respiro',unit:'s',type:'number',step:'0.1'},
- {key:'tempo_alivio_prensa_aberta_seg',label:'Tempo de alívio (prensa aberta)',unit:'s',type:'number',step:'0.1'},
-]
-const stamping: Param[] = [
- {key:'material_chapa',label:'Material da chapa',unit:'—',type:'text',required:true},
- {key:'espessura_chapa_mm',label:'Espessura da chapa',unit:'mm',type:'number',step:'0.001',required:true},
- {key:'forca_prensa_ton',label:'Força da prensa',unit:'ton',type:'number',step:'0.1',required:true},
- {key:'curso_prensa_mm',label:'Curso da prensa',unit:'mm',type:'number',step:'0.1'},
- {key:'passo_alimentacao_mm',label:'Passo de alimentação',unit:'mm',type:'number',step:'0.01'},
- {key:'lubrificante',label:'Lubrificante',unit:'—',type:'text'},
- {key:'folga_matriz_mm',label:'Folga de matriz',unit:'mm',type:'number',step:'0.001'},
-]
-const surface: Param[] = [
- {key:'tempo_imersao_min',label:'Tempo de imersão / exposição',unit:'min',type:'number',step:'0.1',required:true},
- {key:'temperatura_banho_estufa_c',label:'Temperatura do banho / estufa',unit:'°C',type:'number',step:'0.1',required:true},
- {key:'ph_tanque',label:'pH do tanque',unit:'pH',type:'number',step:'0.01'},
- {key:'concentracao_quimica_pct',label:'Concentração química',unit:'%',type:'number',step:'0.01'},
- {key:'camada_requerida_um',label:'Camada de tinta / zinco requerida',unit:'µm',type:'number',step:'0.1',required:true},
- {key:'pressao_pistola_psi',label:'Pressão de aplicação / pistola',unit:'psi',type:'number',step:'0.1'},
- {key:'tempo_cura_secagem_min',label:'Tempo de cura / secagem',unit:'min',type:'number',step:'0.1',required:true},
- {key:'produto_quimico',label:'Produto químico / ficha de segurança',unit:'—',type:'text',required:true},
-]
-const cutting: Param[] = [
- {key:'material_base',label:'Material base',unit:'—',type:'text',required:true},
- {key:'espessura_material_mm',label:'Espessura do material',unit:'mm',type:'number',step:'0.001',required:true},
- {key:'ferramenta_corte',label:'Faca / ferramenta de corte',unit:'—',type:'text',required:true},
- {key:'pressao_corte',label:'Pressão de corte',unit:'bar',type:'number',step:'0.1'},
- {key:'registro_corte_mm',label:'Tolerância de registro',unit:'mm',type:'number',step:'0.01'},
- {key:'sequencia_operacao',label:'Sequência de corte e vinco',unit:'—',type:'text',required:true},
- {key:'criterio_rebarba',label:'Critério de rebarba / descarte',unit:'—',type:'text'},
-]
-const finishing: Param[] = [
- {key:'material_base',label:'Material base definido na OP',unit:'—',type:'text'},
- {key:'dureza_shore_a',label:'Dureza especificada',unit:'Shore A',type:'number',step:'1'},
- {key:'cavidades_ativas',label:'Quantidade de cavidades',unit:'un',type:'number',step:'1'},
- {key:'dimensional_molde_mm',label:'Dimensional do molde',unit:'mm',type:'text'},
- {key:'tempo_ciclo_seg',label:'Tempo de processo padrão',unit:'s',type:'number',step:'0.01'},
- {key:'acabamento_inspecao_posto',label:'Máquina / posto de inspeção',unit:'—',type:'text'},
- {key:'acabamento_inspecao_setor',label:'Setor de inspeção',unit:'—',type:'text'},
- {key:'acabamento_inspecao_ambiente',label:'Condição / temperatura ambiente',unit:'—',type:'text'},
- {key:'acabamento_inspecao_tempo',label:'Tempo de preparação',unit:'s/pc',type:'number',step:'0.01'},
- {key:'acabamento_inspecao_checklist',label:'Checklist de inspeção visual e separação',unit:'—',type:'text',multiline:true},
- {key:'acabamento_inspecao_referencia',label:'Referência visual de defeitos',unit:'—',type:'text'},
- {key:'acabamento_rebarba_posto',label:'Máquina / posto de rebarbação',unit:'—',type:'text'},
- {key:'acabamento_rebarba_setor',label:'Setor de rebarbação',unit:'—',type:'text'},
- {key:'acabamento_rebarba_tempo',label:'Tempo de preparação',unit:'s/pc',type:'number',step:'0.01'},
- {key:'acabamento_rebarba_checklist',label:'Checklist de rebarbação',unit:'—',type:'text',multiline:true},
- {key:'acabamento_rebarba_referencia',label:'Referência de rebarbação',unit:'—',type:'text'},
- {key:'acabamento_limpeza_posto',label:'Máquina / posto de limpeza',unit:'—',type:'text'},
- {key:'acabamento_limpeza_setor',label:'Setor de limpeza',unit:'—',type:'text'},
- {key:'acabamento_limpeza_tempo',label:'Tempo de preparação',unit:'s/lote',type:'number',step:'0.01'},
- {key:'acabamento_limpeza_checklist',label:'Checklist de limpeza e lubrificação',unit:'—',type:'text',multiline:true},
- {key:'acabamento_limpeza_referencia',label:'Procedimento de limpeza',unit:'—',type:'text'},
- {key:'acabamento_embalagem_posto',label:'Máquina / posto de embalagem',unit:'—',type:'text'},
- {key:'acabamento_embalagem_setor',label:'Setor de embalagem',unit:'—',type:'text'},
- {key:'acabamento_embalagem_tempo',label:'Tempo de preparação',unit:'s/pc',type:'number',step:'0.01'},
- {key:'acabamento_embalagem_checklist',label:'Checklist de embalagem e etiqueta',unit:'—',type:'text',multiline:true},
- {key:'acabamento_embalagem_referencia',label:'Modelo de etiqueta / embalagem',unit:'—',type:'text'},
-]
-const packaging: Param[] = [
- {key:'material_base',label:'Material base definido na OP',unit:'—',type:'text'},
- {key:'tempo_ciclo_seg',label:'Tempo de processo padrão',unit:'s',type:'number',step:'0.01'},
- {key:'aplica_embalagem_plastica',label:'Aplicar embalagem plástica?',unit:'—',type:'select',options:['Sim','Não']},
- {key:'emb_amostragem_base',label:'Amostragem base para contagem',unit:'peças',type:'number',step:'1'},
- {key:'emb_codigo_balanca',label:'Código da balança de contagem',unit:'—',type:'text'},
- {key:'emb_dimensional_saco',label:'Dimensional do saco (L × C × espessura)',unit:'mm',type:'text'},
- {key:'emb_quantidade_pecas_saco',label:'Quantidade de peças por saco',unit:'un',type:'number',step:'1'},
- {key:'emb_peso_pacote_cheio_g',label:'Peso padrão do pacote cheio',unit:'g',type:'number',step:'0.1'},
- {key:'emb_sacos_caixa',label:'Quantidade de sacos por caixa',unit:'sacos',type:'number',step:'1'},
- {key:'emb_pecas_direto_caixa',label:'Quantidade de peças diretas por caixa',unit:'un',type:'number',step:'1'},
- {key:'emb_dimensional_caixa',label:'Dimensional da caixa (C × L × A)',unit:'mm',type:'text'},
- {key:'emb_caixa_modelo',label:'Modelo / referência de montagem da caixa',unit:'—',type:'text'},
- {key:'emb_disposicao_pecas',label:'Referência da disposição das peças',unit:'—',type:'text'},
- {key:'emb_instrucao_montagem',label:'Roteiro de montagem da caixa e acondicionamento',unit:'—',type:'text',multiline:true},
- {key:'emb_instrucao_etiqueta',label:'Instrução de identificação e etiqueta',unit:'—',type:'text',multiline:true},
- {key:'emb_instrucao_paletizacao',label:'Padrão de paletização e empilhamento',unit:'—',type:'text',multiline:true},
- {key:'emb_criterio_liberacao',label:'Critérios de conferência e liberação',unit:'—',type:'text',multiline:true},
-]
-const setupCommon = common.filter(p => ['tempo_ciclo_seg','altura_molde_mm','tipo_fixacao','tempo_setup_min','tempo_limpeza_min','seguranca_ppe'].includes(p.key))
-export const paramsFor = (category: Category) => category === 'INJETADOS' ? [...common, ...injection] : category === 'PRENSADOS' ? [...setupCommon, ...press] : category === 'ESTAMPARIA' || category === 'MECANICA' ? [...setupCommon.filter(p => p.key !== 'altura_molde_mm' && p.key !== 'tipo_fixacao'), ...stamping] : category === 'TRATAMENTO_SUPERFICIAL' || category === 'PINTURA_QUIMICA' ? surface : category === 'CORTE_VINCO' ? cutting : category === 'ACABAMENTO' ? finishing : packaging
-const processParamGroups: Partial<Record<Category,{title:string;keys:string[]}[]>> = {
- INJETADOS:[
-  {title:'Matéria-prima e preparação',keys:['material_polimero','temperatura_secagem_c','tempo_secagem_h','peso_peca_g','peso_canal_g']},
-  {title:'Perfil térmico da injetora',keys:['zona1_c','zona2_c','zona3_c','zona4_c']},
-  {title:'Injeção, recalque e plasticização',keys:['forca_fechamento_ton','pressao_injecao_bar','velocidade_injecao_mm_s','tempo_injecao_seg','pressao_recalque_bar','tempo_recalque_seg','pressao_contrapressao_bar','rpm_rosca','posicao_dosagem_mm','posicao_comutacao_mm']},
-  {title:'Molde, ciclo e refrigeração',keys:['cavidades_ativas','tempo_ciclo_seg','tempo_resfriamento_seg','temperatura_molde_c','altura_molde_mm','tipo_fixacao','tipo_refrigeracao','vazao_refrigeracao_l_min','tempo_setup_min','tempo_limpeza_min','torque_aperto_nm','velocidade_dosagem_curso','seguranca_ppe']},
- ],
- PRENSADOS:[
-  {title:'1. Dados do molde e setup',keys:['cavidades_ativas','dimensional_molde_mm','peso_molde_kg','tempo_setup_min','altura_molde_mm','tipo_fixacao','seguranca_ppe']},
-  {title:'2. Matéria-prima e carga',keys:['composto_material','dureza_shore_a','peso_carga_cavidade_g','peso_total_carga_g']},
-  {title:'3. Temperatura dos platôs e molde',keys:['temp_plato_superior_c','temp_plato_inferior_c','tolerancia_temp_platos_c','temperatura_molde_c','tipo_refrigeracao','vazao_refrigeracao_l_min']},
-  {title:'4. Parâmetros de cura e vulcanização',keys:['tempo_pre_aquecimento_seg','tempo_cura_seg','pressao_prensagem_bar','tonelagem_prensa','forca_fechamento_recomendada_ton','tempo_pos_cura_min']},
-  {title:'5. Ciclo de desgaseificação (respiro)',keys:['numero_respiros','tempo_primeiro_respiro_seg','tempo_alivio_prensa_aberta_seg','tempo_ciclo_seg','tempo_limpeza_min']},
- ],
- ACABAMENTO:[
-  {title:'1. Inspeção visual e separação de canais',keys:['acabamento_inspecao_posto','acabamento_inspecao_setor','acabamento_inspecao_ambiente','acabamento_inspecao_tempo','acabamento_inspecao_checklist','acabamento_inspecao_referencia']},
-  {title:'2. Rebarbação manual',keys:['acabamento_rebarba_posto','acabamento_rebarba_setor','acabamento_rebarba_tempo','acabamento_rebarba_checklist','acabamento_rebarba_referencia']},
-  {title:'3. Limpeza e lubrificação',keys:['acabamento_limpeza_posto','acabamento_limpeza_setor','acabamento_limpeza_tempo','acabamento_limpeza_checklist','acabamento_limpeza_referencia']},
-  {title:'4. Embalagem e etiquetagem',keys:['acabamento_embalagem_posto','acabamento_embalagem_setor','acabamento_embalagem_tempo','acabamento_embalagem_checklist','acabamento_embalagem_referencia']},
- ],
- MONTAGEM_EMBALAGEM:[
-  {title:'1. Dados gerais, saco plástico e contagem',keys:['material_base','tempo_ciclo_seg','aplica_embalagem_plastica','emb_amostragem_base','emb_codigo_balanca','emb_dimensional_saco','emb_quantidade_pecas_saco','emb_peso_pacote_cheio_g']},
-  {title:'2. Embalagem em caixa de papelão',keys:['emb_sacos_caixa','emb_pecas_direto_caixa','emb_dimensional_caixa','emb_caixa_modelo']},
-  {title:'3. Roteiro de montagem, etiqueta e paletização',keys:['emb_disposicao_pecas','emb_instrucao_montagem','emb_instrucao_etiqueta','emb_instrucao_paletizacao','emb_criterio_liberacao']},
- ],
-}
-const inputClass = 'h-[30px] w-full min-w-0 max-w-[200px] rounded-[2px] border border-slate-300 bg-white px-2 text-xs font-semibold text-[#123B50] outline-none transition-colors placeholder:text-slate-400 focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20'
-const labelClass = 'mb-1 block text-[9px] font-black uppercase tracking-wider text-slate-600'
-const blankParameters = (category: Category) => Object.fromEntries(paramsFor(category).map(p => [p.key, ''])) as Record<string, string>
-
-
-/**
- * REV-2026-10-19 — correção visual isolada: diagramas técnicos de processo
- * com controles editáveis sobre o equipamento. Persistência e campos existentes preservados.
- */
-function ProcessEquipmentDiagram({ category, params, onParamChange, productId }: {
- category: Category
- params: Record<string, string>
- onParamChange: (key: string, value: string) => void
- productId?: string
-}) {
- if (category !== 'INJETADOS' && category !== 'PRENSADOS') return null
- const press = category === 'PRENSADOS'
- const fields = press
-  ? [{key:'temp_plato_superior_c',label:'Platô superior',unit:'°C'},{key:'temperatura_molde_c',label:'Molde',unit:'°C'},{key:'temp_plato_inferior_c',label:'Platô inferior',unit:'°C'},{key:'pressao_prensagem_bar',label:'Pressão de prensagem',unit:'bar'},{key:'tempo_cura_seg',label:'Tempo de cura',unit:'s'}]
-  : [{key:'zona1_c',label:'Zona 1 · alimentação',unit:'°C'},{key:'zona2_c',label:'Zona 2 · compressão',unit:'°C'},{key:'zona3_c',label:'Zona 3 · dosagem',unit:'°C'},{key:'zona4_c',label:'Zona 4 · frontal',unit:'°C'},{key:'temp_bico_c',label:'Bico de injeção',unit:'°C'},{key:'temp_molde_fixo_c',label:'Molde fixo',unit:'°C'},{key:'temp_molde_movel_c',label:'Molde móvel',unit:'°C'}]
- return <section className="pcp-process-diagram mt-3 overflow-hidden rounded-[2px] border border-[#CBD5E1] bg-white print:break-inside-avoid">
-  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2E4A62] bg-[#123B50] px-3 py-2">
-   <div><p className="text-[9px] font-bold uppercase tracking-[.16em] text-white">FICHA VISUAL DE PROCESSO</p><h3 className="text-sm font-bold text-[#F4FBFD]">{press?'Prensa hidráulica · platôs, molde e pressão':'Injetora · canhão e perfil térmico'}</h3></div>
-   <span className="rounded border border-[#48B7C7]/40 bg-[#071522]/70 px-2 py-1 text-[9px] font-semibold text-white">VALORES EDITÁVEIS SOBRE O DIAGRAMA</span>
-  </div>
-  <div className="grid grid-cols-1 gap-3 p-3 lg:grid-cols-[minmax(0,1.65fr)_minmax(220px,1fr)]">
-   <div className="relative min-h-[280px] overflow-hidden rounded-lg border border-[#294456] bg-[radial-gradient(ellipse_at_center,_#123B50_0%,_#071522_75%)]">
-    <svg viewBox="0 0 760 340" className="absolute inset-0 h-full w-full" role="img" aria-label={press?'Diagrama técnico da prensa hidráulica com platôs e manômetro':'Diagrama técnico do canhão da injetora com quatro zonas térmicas, bico e moldes'} preserveAspectRatio="xMidYMid meet">
-     <defs>
-      <linearGradient id="pcp-steel-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#D9E7ED"/><stop offset="35%" stopColor="#66899B"/><stop offset="65%" stopColor="#294456"/><stop offset="100%" stopColor="#8DAFBE"/></linearGradient>
-      <linearGradient id="pcp-heat-grad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#2D8DB8"/><stop offset="50%" stopColor="#E6A34A"/><stop offset="100%" stopColor="#D65B61"/></linearGradient>
-      <pattern id="pcp-technical-grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#48B7C7" strokeOpacity=".08" strokeWidth="1"/></pattern>
-     </defs>
-     <rect width="760" height="340" fill="url(#pcp-technical-grid)"/>
-     {press ? <g>
-      <g stroke="#7FA5B6" strokeWidth="2" fill="url(#pcp-steel-grad)">
-       <rect x="155" y="36" width="450" height="28" rx="3"/><rect x="178" y="60" width="22" height="236" rx="3"/><rect x="560" y="60" width="22" height="236" rx="3"/>
-       <rect x="252" y="68" width="256" height="44" rx="4"/><rect x="348" y="18" width="64" height="53" rx="7"/>
-       <rect x="238" y="126" width="284" height="24" rx="2"/><rect x="278" y="154" width="204" height="34" rx="2" fill="#2D8DB8"/>
-       <rect x="258" y="193" width="244" height="30" rx="2"/><rect x="238" y="230" width="284" height="24" rx="2"/>
-       <rect x="155" y="278" width="450" height="20" rx="3"/><rect x="112" y="298" width="536" height="17" rx="3"/>
-      </g>
-      <g fill="none" stroke="#E6A34A" strokeWidth="3"><path d="M290 171H470"/><path d="M290 206H470"/></g>
-      <g stroke="#48B7C7" strokeWidth="3" fill="none"><path d="M605 258h32v-68h25"/><circle cx="684" cy="190" r="24"/><path d="M684 190l11 -11"/></g>
-      <g fill="#A8BBC8" fontSize="12" fontWeight="700"><text x="30" y="45">CILINDRO</text><text x="30" y="60">HIDRÁULICO</text><path d="M120 52H340" stroke="#48B7C7" strokeDasharray="4 4"/><text x="28" y="150">PLATÔ</text><text x="28" y="165">SUPERIOR</text><path d="M125 158H236" stroke="#48B7C7" strokeDasharray="4 4"/><text x="30" y="211">MOLDE /</text><text x="30" y="226">CAVIDADE</text><path d="M130 218H255" stroke="#48B7C7" strokeDasharray="4 4"/><text x="30" y="266">PLATÔ</text><text x="30" y="281">INFERIOR</text><path d="M130 273H236" stroke="#48B7C7" strokeDasharray="4 4"/><text x="650" y="235">MANÔMETRO</text><text x="625" y="332">PRENSA · ESQUEMA TÉCNICO</text></g>
-     </g> : <g>
-      <g stroke="#7FA5B6" strokeWidth="2" fill="url(#pcp-steel-grad)">
-       <path d="M72 95h72v-22h44v22h42v-22h44v22h42v-22h44v22h42v-22h44v22h52l28 26-28 26H72z"/>
-       <rect x="75" y="105" width="365" height="37" rx="3" fill="#294456"/><rect x="90" y="112" width="325" height="22" rx="2" fill="url(#pcp-heat-grad)" stroke="#E6A34A"/>
-       <path d="M440 105h44l40 18-40 18h-44z" fill="#66899B"/><path d="M524 123h50l30 12-30 12h-50z" fill="#D9E7ED"/>
-       <path d="M116 70V40h65v30" fill="#294456"/><path d="M132 40V23h32v17" fill="#66899B"/>
-       <rect x="84" y="158" width="355" height="17" rx="3"/><rect x="92" y="185" width="342" height="18" rx="3"/>
-      </g>
-      <g fill="#A8BBC8" fontSize="12" fontWeight="700"><text x="82" y="219">CANHÃO DE PLASTIFICAÇÃO</text><text x="82" y="238">ZONAS TÉRMICAS → BICO → MOLDE</text><text x="82" y="320">INJETORA · ESQUEMA TÉCNICO</text></g>
-      <g stroke="#48B7C7" strokeWidth="1.5" strokeDasharray="4 4"><path d="M150 83V55"/><path d="M230 83V55"/><path d="M310 83V55"/><path d="M390 83V55"/></g>
-     </g>}
-    </svg>
-    <div className="absolute inset-x-2 bottom-2 z-10 rounded-[2px] border border-white/20 bg-[#071522]/95 p-2 shadow-lg">
-     <div className="mb-2 flex items-center justify-between gap-2"><p className="text-[9px] font-black uppercase tracking-wide text-white">{press?'Parâmetros da prensa':'Temperaturas editáveis · injetora'}</p><span className="text-[9px] font-semibold text-[#48B7C7]">EDITAR NA IMAGEM</span></div>
-     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-      {fields.map(field=><label key={field.key} className="min-w-0">
-       <span className="mb-1 block truncate text-[9px] font-bold text-[#D9E7ED]" title={field.label}>{field.label} ({field.unit})</span>
-       <input type="number" step="0.1" inputMode="decimal" aria-label={field.label} className="h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-xs font-bold text-[#123B50] outline-none focus:border-[#48B7C7] focus:ring-1 focus:ring-[#48B7C7]/30" value={params[field.key]??''} onChange={e=>onParamChange(field.key,e.target.value)} placeholder={field.unit==='°C'?'°C':field.unit}/>
-      </label>)}
-     </div>
-    </div>
-   </div>
-  </div>
- </section>
+type Product = {
+  id: string
+  codigo: string
+  nome: string
+  descricao?: string | null
 }
 
-export default function PCPFichasProcesso() {
- const [searchParams, setSearchParams] = useSearchParams()
- const initialCategory = (categories.find(c => c.value === searchParams.get('tipo')?.toUpperCase())?.value ?? 'INJETADOS') as Category
- const [category, setCategory] = useState<Category>(initialCategory)
- const [company, setCompany] = useState('')
- const [products, setProducts] = useState<Product[]>([])
- const [tools, setTools] = useState<Tool[]>([])
- const [machines, setMachines] = useState<Machine[]>([])
- const [rows, setRows] = useState<Saved[]>([])
- const [query, setQuery] = useState('')
- const [productId, setProductId] = useState(searchParams.get('produto') ?? '')
- const [toolId, setToolId] = useState('')
- const [machineId, setMachineId] = useState('')
- const [code, setCode] = useState('')
- const [version, setVersion] = useState('1')
- const [approvedAt, setApprovedAt] = useState('')
- const [signature, setSignature] = useState('')
- const [status, setStatus] = useState('RASCUNHO')
- const [params, setParams] = useState<Record<string, string>>(() => blankParameters(initialCategory))
- const [instructions, setInstructions] = useState('')
- const [busy, setBusy] = useState(false)
- const [error, setError] = useState('')
- const [notice, setNotice] = useState('')
- const [photoPreview, setPhotoPreview] = useState<string | null>(null)
-
- useEffect(() => {
-  const next = categories.find(c => c.value === searchParams.get('tipo')?.toUpperCase())?.value
-  if (next && next !== category) { setCategory(next); setParams(blankParameters(next)) }
-  const product = searchParams.get('produto')
-  if (product && product !== productId) setProductId(product)
- }, [searchParams, category, productId])
-
- async function load() {
-  setBusy(true); setError('')
-  try {
-   const tenant = await supabase.rpc('erp_current_empresa_id')
-   if (tenant.error || typeof tenant.data !== 'string' || !tenant.data) throw tenant.error ?? new Error('Empresa da sessão não identificada.')
-   setCompany(tenant.data)
-   const [p, t, m, f] = await Promise.all([
-    supabase.from('erp_produtos').select('id,codigo,nome').eq('empresa_id', tenant.data).eq('ativo', true).order('codigo').limit(3000),
-    supabase.from('erp_ferramentas_industriais').select('id,codigo,nome,tipo').eq('empresa_id', tenant.data).eq('ativo', true).order('codigo').limit(2000),
-    supabase.from('erp_maquinas').select('id,codigo,nome,tipo').eq('empresa_id', tenant.data).not('status', 'eq', 'INATIVA').order('codigo').limit(2000),
-    supabase.from('erp_fichas_processo').select('id,codigo_ficha,produto_id,ferramenta_id,maquina_id,categoria_processo,versao_ficha,status,data_homologacao,assinatura_tecnica,parametros_tecnicos,revisao').eq('empresa_id', tenant.data).order('codigo_ficha').limit(1000),
-   ])
-   for (const result of [p, t, m, f]) if (result.error) throw result.error
-   setProducts((p.data ?? []) as Product[]); setTools((t.data ?? []) as Tool[]); setMachines((m.data ?? []) as Machine[]); setRows((f.data ?? []) as Saved[])
-  } catch (e) { setError(e instanceof Error ? e.message : 'Falha ao carregar os cadastros da ficha.') }
-  finally { setBusy(false) }
- }
- useEffect(() => { void load() }, [])
-
- const visibleRows = useMemo(() => rows.filter(r => {
-  const product = products.find(p => p.id === r.produto_id)
-  return !query || [r.codigo_ficha, product?.codigo, product?.nome, r.categoria_processo, r.status].join(' ').toLowerCase().includes(query.toLowerCase())
- }), [rows, products, query])
- const updateParam = (key: string, value: string) => setParams(current => ({ ...current, [key]: value }))
-
- function openRow(row: Saved) {
-  setCode(row.codigo_ficha); setProductId(row.produto_id); setCategory(row.categoria_processo)
-  setVersion(String(row.versao_ficha ?? row.revisao ?? 1)); setStatus(row.status); setToolId(row.ferramenta_id ?? ''); setMachineId(row.maquina_id ?? '')
-  setParams({ ...blankParameters(row.categoria_processo), ...Object.fromEntries(Object.entries(row.parametros_tecnicos ?? {}).map(([k,v]) => [k, String(v ?? '')])) })
-  setApprovedAt(row.data_homologacao ?? ''); setSignature(row.assinatura_tecnica ?? ''); setInstructions(String(row.parametros_tecnicos?.instrucoes_setup ?? ''))
-  setSearchParams({ tipo: row.categoria_processo, produto: row.produto_id })
-  setError(''); setNotice('Ficha carregada para edição. Altere os campos e clique em “Atualizar ficha”.')
- }
-
- async function save() {
-  setBusy(true); setError(''); setNotice('')
-  try {
-   if (!company) throw new Error('Empresa não identificada.')
-   if (!code.trim() || !productId) throw new Error('Código da ficha e produto são obrigatórios.')
-   const versionNumber = Number(version)
-   if (!Number.isInteger(versionNumber) || versionNumber < 1) throw new Error('Versão deve ser um inteiro maior que zero.')
-   const missing = paramsFor(category).filter(p => p.required && !String(params[p.key] ?? '').trim())
-   if (missing.length) throw new Error('Preencha os parâmetros obrigatórios: ' + missing.map(p => p.label).join(', ') + '.')
-   const numericInvalid = paramsFor(category).filter(p => p.type === 'number' && params[p.key] !== '' && !Number.isFinite(Number(params[p.key])))
-   if (numericInvalid.length) throw new Error('Parâmetros numéricos inválidos: ' + numericInvalid.map(p => p.label).join(', ') + '.')
-   if (approvedAt && !signature.trim()) throw new Error('A homologação requer assinatura técnica identificada.')
-   const numericParams = Object.fromEntries(Object.entries(params).map(([key, value]) => {
-    const definition = paramsFor(category).find(p => p.key === key)
-    return [key, definition?.type === 'number' && value !== '' ? Number(value) : value]
-   }))
-   const payload = {
-    empresa_id: company, codigo_ficha: code.trim(), produto_id: productId, ferramenta_id: toolId || null, maquina_id: machineId || null,
-    cavidades_ativas: Number(params.cavidades_ativas) || 1, revisao: versionNumber, versao_ficha: versionNumber,
-    categoria_processo: category, data_homologacao: approvedAt || null, assinatura_tecnica: signature.trim() || null,
-    status, parametros_tecnicos: { ...numericParams, instrucoes_setup: instructions.trim() || null },
-    ativo: status !== 'OBSOLETA', atualizado_em: new Date().toISOString(),
-   }
-   const result = await supabase.from('erp_fichas_processo').upsert(payload, { onConflict: 'empresa_id,codigo_ficha' }).select('id,codigo_ficha,produto_id,ferramenta_id,maquina_id,categoria_processo,versao_ficha,status,data_homologacao,assinatura_tecnica,parametros_tecnicos,revisao').single()
-   if (result.error) throw result.error
-   const saved = result.data as Saved
-   setRows(current => [saved, ...current.filter(r => r.id !== saved.id)])
-   setNotice('Ficha técnica gravada no cadastro de engenharia da empresa.')
-  } catch (e) { setError(e instanceof Error ? e.message : 'Falha ao gravar a ficha técnica.') }
-  finally { setBusy(false) }
- }
-
- const fields = paramsFor(category)
- const isEditing = rows.some(row => row.codigo_ficha === code)
- const selectedProduct = products.find(p => p.id === productId)
- const selectedTool = tools.find(t => t.id === toolId)
- const selectedMachine = machines.find(m => m.id === machineId)
- const singleResourceProcess = category !== 'ACABAMENTO' && category !== 'MONTAGEM_EMBALAGEM'
- const expectedPph = singleResourceProcess && Number(params.tempo_ciclo_seg) > 0 ? (3600 / Number(params.tempo_ciclo_seg)) * Math.max(1, Number(params.cavidades_ativas) || 1) : 0
- const fieldGroups = processParamGroups[category] ?? [{title:'Parâmetros técnicos do processo',keys:fields.map(field=>field.key)}]
- const assignedKeys = new Set(fieldGroups.flatMap(group=>group.keys))
- const diagramOwnedKeys = category === 'INJETADOS' ? new Set(['zona1_c','zona2_c','zona3_c','zona4_c','temp_bico_c','temp_molde_fixo_c','temp_molde_movel_c']) : category === 'PRENSADOS' ? new Set(['temp_plato_superior_c','temperatura_molde_c','temp_plato_inferior_c','pressao_prensagem_bar','tempo_cura_seg']) : new Set<string>()
- const parameterCards = [...fieldGroups.map(group=>({...group,fields:fields.filter(field=>group.keys.includes(field.key) && !diagramOwnedKeys.has(field.key))})).filter(group=>group.fields.length>0),...(fields.some(field=>!assignedKeys.has(field.key) && !diagramOwnedKeys.has(field.key))?[{title:'Parâmetros complementares',keys:[],fields:fields.filter(field=>!assignedKeys.has(field.key) && !diagramOwnedKeys.has(field.key))}]:[])]
- const valueLabel = (key:string,unit='') => params[key] ? `${params[key]}${unit ? ` ${unit}` : ''}` : 'Não informado'
- const summaryPanels = category === 'ACABAMENTO'
-  ? [
-   {title:'Identificação do produto',items:[['Produto',selectedProduct?.nome||'—'],['SKU',selectedProduct?.codigo||'—'],['Dureza',valueLabel('dureza_shore_a','Shore A')],['Dimensional do molde',valueLabel('dimensional_molde_mm','mm')]]},
-   {title:'Dados de processo',items:[['Cavidades',valueLabel('cavidades_ativas')],['Material base',valueLabel('material_base')],['Tempo padrão',valueLabel('tempo_ciclo_seg','s')],['Recurso principal',selectedMachine?.codigo||'Não definido']]},
-   {title:'Roteiro e controle',items:[['Etapas', 'Inspeção · rebarbação · limpeza · embalagem'],['Revisão',version],['Estado',status],['Homologação',approvedAt||'Não homologada']]},
-  ]
-  : category === 'MONTAGEM_EMBALAGEM'
-   ? [
-    {title:'Identificação do produto',items:[['Produto',selectedProduct?.nome||'—'],['SKU',selectedProduct?.codigo||'—'],['Material base',valueLabel('material_base')]]},
-    {title:'Contagem e acondicionamento',items:[['Embalagem plástica',valueLabel('aplica_embalagem_plastica')],['Amostragem',valueLabel('emb_amostragem_base','peças')],['Peças por saco',valueLabel('emb_quantidade_pecas_saco','un')],['Peso pacote',valueLabel('emb_peso_pacote_cheio_g','g')]]},
-    {title:'Caixa e processo',items:[['Sacos por caixa',valueLabel('emb_sacos_caixa')],['Dimensional da caixa',valueLabel('emb_dimensional_caixa','mm')],['Tempo padrão',valueLabel('tempo_ciclo_seg','s')],['Recurso principal',selectedMachine?.codigo||'Não definido']]},
-   ]
-   : []
- const pressCharge = Number(params.peso_carga_cavidade_g)>0&&Number(params.cavidades_ativas)>0?Number(params.peso_carga_cavidade_g)*Number(params.cavidades_ativas):null
-
- return <main className="pcp-process-page min-h-screen bg-[#F8FAFC] p-2 text-[#123B50] md:p-3">
-  <div className="mx-auto max-w-[1650px]">
-   <header className="mb-3 flex flex-wrap items-center gap-3 rounded-[2px] border border-slate-200 bg-white p-2.5 shadow-[0_3px_12px_rgba(18,59,80,0.07)]">
-    <span className="flex h-10 w-10 items-center justify-center rounded-[2px] border border-[#48B7C7]/50 bg-[#123B50] text-[#48B7C7]"><Factory size={20}/></span>
-    <div className="min-w-[240px]"><p className="text-[9px] font-black uppercase tracking-[.18em] text-[#48B7C7]">SYSNQRA SISTEMAS INDUSTRIAIS · SGQ / IT-PCP-001</p><h1 className="text-base font-black leading-5 md:text-lg">{category==='INJETADOS'?'Ficha técnica de processo — Injetados':category==='PRENSADOS'?'Ficha hidráulica de processo — Prensados':`Ficha de processo — ${categories.find(item=>item.value===category)?.label??category}`}</h1><p className="text-xs text-white">Parâmetros homologados, preparação, capacidade e rastreabilidade de revisão.</p></div>
-    <div className="ml-auto grid min-w-[260px] flex-1 grid-cols-3 gap-2 md:max-w-[430px]">{[{label:'Documento',value:code||'Novo documento'},{label:'Revisão',value:version.padStart(2,'0')},{label:'Status',value:status}].map(item=><div key={item.label} className="rounded-lg border border-[#294456] bg-[#071522] px-3 py-2"><span className="block text-[10px] text-white">{item.label}</span><strong className={`mt-0.5 block truncate text-sm ${item.label==='Status'&&['APROVADA','LIBERADA'].includes(status)?'text-[#3A9D78]':'text-[#F4FBFD]'}`}>{item.value}</strong></div>)}</div>
-    <div className="flex w-full flex-wrap justify-end gap-2 print:hidden">{productId&&<a href={`/engenharia/bom?produto=${encodeURIComponent(productId)}`} className="inline-flex h-[30px] items-center gap-1.5 rounded-[2px] border border-[#2D8DB8] bg-[#123B50] px-3 text-[10px] font-black uppercase tracking-wider text-[#48B7C7] transition-colors hover:bg-[#2D8DB8] hover:text-white"><ExternalLink size={13}/> Ficha de Engenharia</a>}<button className="erp-premium-button erp-premium-button-secondary" type="button" onClick={()=>{if(!rows.some(row=>row.codigo_ficha===code)){setError('Abra uma ficha existente na lista para editar.');return}setNotice('Ficha pronta para edição. Altere os campos e clique em Atualizar ficha.')}}><FileSliders size={14}/> Editar ficha</button><button className="erp-premium-button erp-premium-button-secondary" type="button" onClick={()=>window.print()}><Printer size={14}/> Imprimir ficha</button><button className="erp-premium-button erp-premium-button-secondary" type="button" onClick={()=>void load()} disabled={busy}><RefreshCw size={14}/> Recarregar lista</button><button className="erp-premium-button" type="button" onClick={()=>{setCode('');setProductId('');setToolId('');setMachineId('');setVersion('1');setApprovedAt('');setSignature('');setStatus('RASCUNHO');setParams(blankParameters(category));setInstructions('');setSearchParams({tipo:category});setNotice('Nova ficha pronta para preencher. Preencha os campos agrupados e grave a ficha.');setError('')}}>Nova ficha</button></div>
-   </header>
-   {error && <div role="alert" className="mb-3 rounded-lg border border-[#D65B61]/50 bg-[#D65B61]/10 p-3 text-sm text-[#F4B8BB]">{error}</div>}
-   {notice && <div role="status" className="mb-3 flex items-center gap-2 rounded-lg border border-[#3A9D78]/40 bg-[#3A9D78]/10 p-3 text-sm text-[#8ED0B4]"><CheckCircle2 size={16}/>{notice}</div>}
-   <section className="mb-3 rounded-[2px] border border-slate-200 bg-white p-2.5 shadow-sm print:hidden">
-    <div className="mb-3 grid min-w-0 grid-cols-1 items-end gap-3 sm:grid-cols-2 xl:grid-cols-4"><label className="min-w-0"><span className={labelClass}>Pesquisar ficha / produto</span><span className="relative block max-w-[240px]"><Search size={15} className="absolute left-2.5 top-2 text-white"/><input className={inputClass+' max-w-[240px] pl-8'} value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código ou produto"/></span></label><label className="min-w-0"><span className={labelClass}>Modelo da ficha</span><select className={inputClass+' max-w-[210px]'} value={category} onChange={e=>{const next=e.target.value as Category;setCategory(next);setParams(blankParameters(next));setSearchParams({tipo:next})}}>{categories.map(c=><option key={c.value} value={c.value}>{c.label}</option>)}</select></label></div>
-    <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">{visibleRows.map(row=><button key={row.id} type="button" onClick={()=>openRow(row)} className="grid min-h-[52px] grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-lg border border-[#294456] bg-[#071522] px-3 text-left transition hover:border-[#48B7C7] hover:bg-[#123B50]"><span className="min-w-0"><span className="block truncate text-xs font-bold text-[#F4FBFD]">{row.codigo_ficha} · {products.find(p=>p.id===row.produto_id)?.codigo ?? 'Produto'}</span><span className="block truncate text-[11px] text-white">{categories.find(c=>c.value===row.categoria_processo)?.label ?? row.categoria_processo} · revisão {row.versao_ficha ?? row.revisao} · {row.status}</span></span><span className="text-xs font-semibold text-white">Abrir ficha →</span></button>)}</div>
-   </section>
-   <section className="pcp-ficha-print-sheet rounded-[2px] border border-[#2E4A62] bg-[#0D2638] p-3 shadow-lg shadow-black/10 print:border-0 print:p-0"><div className="mb-3 hidden border-b border-slate-400 pb-2 print:block"><h1 className="text-base font-bold">FICHA TÉCNICA DE PROCESSO INDUSTRIAL</h1><p className="text-[10px]">Documento operacional para consulta e assinatura no posto de trabalho.</p></div>
-    <div className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-[#2E4A62] pb-3 print:hidden"><div><p className="text-[9px] font-black uppercase tracking-[.16em] text-[#48B7C7]">{category==='INJETADOS'?'PROCESSO · INJEÇÃO TERMOPLÁSTICA':category==='PRENSADOS'?'PROCESSO · PRENSAGEM HIDRÁULICA E VULCANIZAÇÃO':'PROCESSO · '+(categories.find(item=>item.value===category)?.label||category)}</p><h2 className="mt-1 text-lg font-semibold text-[#F4FBFD]">{selectedProduct?selectedProduct.nome:'Selecione o produto da ficha'}</h2><p className="text-xs text-white">{selectedProduct?`${selectedProduct.codigo} · ${selectedTool?.codigo??'sem ferramental'} · ${selectedMachine?.codigo??'sem máquina vinculada'}`:'A ficha salva usará os cadastros reais da empresa.'}</p></div><span className="rounded-[2px] border border-[#48B7C7]/50 bg-[#123B50] px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-[#48B7C7]">{status}</span></div>
-    <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
-     <label><span className={labelClass}>ID / código da ficha</span><input className={inputClass} value={code} onChange={e=>setCode(e.target.value)} required/></label>
-     <label className="min-w-0"><span className={labelClass}>Produto vinculado</span><select className={inputClass} value={productId} onChange={e=>setProductId(e.target.value)} required><option value="">Selecione</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} · {p.nome}</option>)}</select></label>
-     <label className="min-w-0"><span className={labelClass}>Molde / ferramental</span><select className={inputClass} value={toolId} onChange={e=>setToolId(e.target.value)}><option value="">Não aplicável</option>{tools.map(t=><option key={t.id} value={t.id}>{t.codigo} · {t.nome}</option>)}</select></label>
-     <label className="min-w-0"><span className={labelClass}>Máquina / recurso industrial</span><select className={inputClass} value={machineId} onChange={e=>setMachineId(e.target.value)}><option value="">Selecione</option>{machines.map(m=><option key={m.id} value={m.id}>{m.codigo} · {m.nome}</option>)}</select></label>
-     <label className="min-w-0"><span className={labelClass}>Versão da ficha</span><input className={inputClass+' max-w-[76px]'} style={{width:76,maxWidth:76}} type="number" min="1" step="1" value={version} onChange={e=>setVersion(e.target.value)} required/></label>
-     <label className="min-w-0"><span className={labelClass}>Data de homologação</span><input className={inputClass+' max-w-[140px]'} style={{width:140,maxWidth:140}} type="date" value={approvedAt} onChange={e=>setApprovedAt(e.target.value)}/></label>
-     <label className="xl:col-span-2"><span className={labelClass}>Assinatura técnica do engenheiro</span><input className={inputClass} value={signature} onChange={e=>setSignature(e.target.value)} placeholder="Nome completo / registro profissional"/></label>
-     <label><span className={labelClass}>Estado da ficha</span><select className={inputClass} value={status} onChange={e=>setStatus(e.target.value)}><option>RASCUNHO</option><option>EM_ANALISE</option><option>APROVADA</option><option>LIBERADA</option><option>OBSOLETA</option></select></label>
-    </div>
-    <div className="pcp-equipment-top grid min-w-0 grid-cols-1 items-stretch gap-3 xl:grid-cols-12">
-     <div className="min-w-0 xl:col-span-7"><ProcessEquipmentDiagram category={category} params={params} productId={productId} onParamChange={(key,value)=>setParams(current=>({...current,[key]:value}))}/></div>
-     <div className="pcp-photo-pair grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 xl:col-span-5">
-      <PCPMoldPhotoPanel productId={productId}/>
-      <PCPMachinePhotoPanel machineId={machineId}/>
-     </div>
-    </div>
-    <div className="pcp-parameter-cards mt-3 grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-3">
-     {parameterCards.map(group=><article key={group.title} className="rounded-[2px] border border-[#2E4A62] bg-[#0E1E2F] p-2.5">
-      <h3 className="mb-2 border-b border-[#2E4A62] pb-2 text-[10px] font-black uppercase tracking-wide text-[#48B7C7]">{group.title}</h3>
-      <div className="pcp-parameter-fields flex min-w-0 flex-col gap-2">
-       {group.fields.map(field=><label key={field.key} className={'min-w-0 '+(field.multiline?'sm:col-span-2':'')}>
-        <span className={labelClass}>{field.label} {field.required&&<span className="text-[#D65B61]">*</span>}</span>
-        <span className="flex min-w-0 items-start">
-         {field.type==='select'
-          ? <select className={inputClass+' w-full min-w-0 max-w-none rounded-r-none'} style={{width:'100%',maxWidth:'none',flex:'1 1 auto'}} value={params[field.key]??''} onChange={event=>updateParam(field.key,event.target.value)}><option value="">Selecione</option>{(field.options??[]).map(option=><option key={option} value={option}>{option}</option>)}</select>
-          : field.multiline
-           ? <textarea className={inputClass+' min-h-[76px] w-full min-w-0 max-w-none resize-y rounded-r-none py-2'} style={{width:'100%',maxWidth:'none',flex:'1 1 auto'}} value={params[field.key]??''} onChange={event=>updateParam(field.key,event.target.value)} placeholder="Registrar instruções aprovadas"/>
-           : <input className={inputClass+' w-full min-w-0 max-w-none rounded-r-none'} style={{width:'100%',maxWidth:'none',flex:'1 1 auto'}} type={field.type==='number'?'number':'text'} step={field.step} value={params[field.key]??''} onChange={event=>updateParam(field.key,event.target.value)} placeholder={field.unit==='—'?'Informar':field.unit}/>}
-         <span className="flex min-h-[30px] min-w-[46px] shrink-0 items-center justify-center rounded-r-md border border-l-0 border-[#294456] bg-[#123B50] px-1.5 text-[10px] text-white">{field.unit}</span>
-        </span>
-       </label>)}
-      </div>
-     </article>)}
-    </div>
-
-     {category==='MONTAGEM_EMBALAGEM'&&<section className="mt-4 rounded-lg border border-[#294456] bg-[#071522] p-3 print:break-inside-avoid"><div className="mb-3 border-b border-[#294456] pb-2"><p className="text-[10px] font-bold uppercase tracking-wide text-white">REGISTRO VISUAL DA EMBALAGEM</p><h3 className="text-sm font-bold text-white">Fotos de montagem da caixa</h3><p className="mt-1 text-xs text-white">Quatro registros: montagem da caixa, acondicionamento, etiqueta e paletização. Clique na foto para ampliar; em celulares, você pode usar a câmera.</p></div><div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{[1,2,3,4].map(n=>{const key='foto_montagem_'+n;const src=params[key]||'';return <div key={key} className="flex min-h-[150px] flex-col rounded border border-dashed border-[#48B7C7]/70 bg-[#0D2638] p-2 text-center">{src?<button type="button" className="h-[112px] w-full overflow-hidden rounded bg-white" onClick={()=>setPhotoPreview(src)}><img src={src} alt={'Foto de montagem da embalagem '+n} className="h-full w-full object-contain"/></button>:<label className="flex h-[112px] cursor-pointer items-center justify-center rounded bg-[#123B50] text-xs text-white">Adicionar foto {n}<input className="hidden" type="file" accept="image/*" capture="environment" onChange={event=>{const file=event.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{const image=new Image();image.onload=()=>{const scale=Math.min(1,1280/Math.max(image.width,image.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.width*scale));canvas.height=Math.max(1,Math.round(image.height*scale));canvas.getContext('2d')?.drawImage(image,0,0,canvas.width,canvas.height);updateParam(key,canvas.toDataURL('image/jpeg',0.72))};image.src=String(reader.result||'')};reader.readAsDataURL(file)}}/></label>}<span className="mt-2 text-[10px] font-bold text-white">{['Montagem da caixa','Acondicionamento','Etiqueta / identificação','Paletização'][n-1]}</span>{src&&<><button type="button" className="mt-1 text-[10px] text-white underline" onClick={()=>setPhotoPreview(src)}>Ampliar foto</button><label className="mt-1 cursor-pointer text-[10px] text-white underline">Trocar foto<input className="hidden" type="file" accept="image/*" capture="environment" onChange={event=>{const file=event.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{const image=new Image();image.onload=()=>{const scale=Math.min(1,1280/Math.max(image.width,image.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.width*scale));canvas.height=Math.max(1,Math.round(image.height*scale));canvas.getContext('2d')?.drawImage(image,0,0,canvas.width,canvas.height);updateParam(key,canvas.toDataURL('image/jpeg',0.72))};image.src=String(reader.result||'')};reader.readAsDataURL(file)}}/></label></>}</div>})}</div></section>}
-     {photoPreview&&<div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 print:hidden" role="dialog" aria-modal="true" aria-label="Foto ampliada" onClick={()=>setPhotoPreview(null)}><div className="relative max-h-[90vh] max-w-[92vw] rounded-lg border border-[#48B7C7] bg-white p-3" onClick={e=>e.stopPropagation()}><button className="mb-2 rounded bg-[#123B50] px-3 py-1 text-xs font-bold text-white" type="button" onClick={()=>setPhotoPreview(null)}>Fechar</button><img src={photoPreview} alt="Foto de montagem ampliada" className="max-h-[78vh] max-w-[88vw] object-contain"/></div></div>}
-    {summaryPanels.length>0&&<div className="mt-4 grid grid-cols-1 gap-2 lg:grid-cols-3">{summaryPanels.map((panel,index)=><article key={panel.title} className="overflow-hidden rounded-lg border border-[#294456] bg-[#071522]"><h3 className={`border-b border-[#294456] px-3 py-2 text-xs font-bold ${index===0?'bg-[#123B50] text-[#F4FBFD]':'text-white'}`}>{panel.title}</h3><dl className="divide-y divide-[#294456] px-3">{panel.items.map(([label,value])=><div key={label} className="flex min-h-9 items-center justify-between gap-3 py-1.5 text-xs"><dt className="text-white">{label}</dt><dd className="text-right font-semibold text-[#F4FBFD]">{value}</dd></div>)}</dl></article>)}</div>}
-    <div className="mt-4 grid grid-cols-1 gap-3 xl:grid-cols-3">
-     <article className="rounded-lg border border-[#294456] bg-[#071522] p-3"><h3 className="text-xs font-bold uppercase tracking-wide text-[#F4FBFD]">Identificação e componentes</h3><dl className="mt-2 divide-y divide-[#294456] text-xs"><div className="flex justify-between gap-3 py-2"><dt className="text-white">Documento</dt><dd className="font-semibold">{code||'—'}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-white">Produto</dt><dd className="text-right font-semibold">{selectedProduct?`${selectedProduct.codigo} · ${selectedProduct.nome}`:'—'}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-white">Ferramental / máquina</dt><dd className="text-right font-semibold">{selectedTool?.codigo??'—'} / {selectedMachine?.codigo??'—'}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-white">Cavidades ativas</dt><dd className="font-semibold">{valueLabel('cavidades_ativas','cav.')}</dd></div></dl></article>
-     {category==='PRENSADOS'?<article className="rounded-lg border border-[#294456] bg-[#071522] p-3"><h3 className="text-xs font-bold uppercase tracking-wide text-[#F4FBFD]">Matéria-prima e carga</h3><dl className="mt-2 divide-y divide-[#294456] text-xs"><div className="flex justify-between gap-3 py-2"><dt className="text-white">Composto</dt><dd className="text-right font-semibold">{valueLabel('composto_material')}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-white">Dureza</dt><dd className="font-semibold">{valueLabel('dureza_shore_a','Shore A')}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-white">Carga / cavidade</dt><dd className="font-semibold">{valueLabel('peso_carga_cavidade_g','g')}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-white">Carga total calculada</dt><dd className="font-semibold">{pressCharge===null?'—':`${pressCharge.toLocaleString('pt-BR',{maximumFractionDigits:3})} g`}</dd></div></dl></article>:<article className="rounded-lg border border-[#294456] bg-[#071522] p-3"><h3 className="text-xs font-bold uppercase tracking-wide text-[#F4FBFD]">Material e preparação</h3><dl className="mt-2 divide-y divide-[#294456] text-xs"><div className="flex justify-between gap-3 py-2"><dt className="text-white">Ciclo padrão</dt><dd className="font-semibold">{valueLabel('tempo_ciclo_seg','s')}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-white">Setup</dt><dd className="font-semibold">{valueLabel('tempo_setup_min','min')}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-white">Capacidade nominal</dt><dd className="font-semibold">{expectedPph>0?`${expectedPph.toLocaleString('pt-BR',{maximumFractionDigits:1})} peças/h`:'—'}</dd></div></dl></article>}
-     {category==='INJETADOS'?<article className="rounded-lg border border-[#294456] bg-[#071522] p-3"><h3 className="text-xs font-bold uppercase tracking-wide text-[#F4FBFD]">Tempos do ciclo</h3>{[{label:'Injeção',key:'tempo_injecao_seg'},{label:'Recalque',key:'tempo_recalque_seg'},{label:'Resfriamento',key:'tempo_resfriamento_seg'},{label:'Ciclo total',key:'tempo_ciclo_seg'}].map(item=><div key={item.key} className="mt-2"><div className="flex justify-between gap-2 text-xs"><span className="text-white">{item.label}</span><strong>{valueLabel(item.key,'s')}</strong></div><div className="mt-1 h-1.5 overflow-hidden rounded bg-[#294456]"><i className="block h-full rounded bg-[#3A9D78]" style={{width:Number(params[item.key])>0&&Number(params.tempo_ciclo_seg)>0?`${Math.max(4,Math.min(100,Number(params[item.key])/Number(params.tempo_ciclo_seg)*100))}%`:'0%'}}/></div></div>)}</article>:category==='PRENSADOS'?<article className="rounded-lg border border-[#294456] bg-[#071522] p-3"><h3 className="text-xs font-bold uppercase tracking-wide text-[#F4FBFD]">Cura e parâmetros da prensa</h3><dl className="mt-2 divide-y divide-[#294456] text-xs"><div className="flex justify-between gap-3 py-2"><dt className="text-white">Pré-aquecimento</dt><dd className="font-semibold">{valueLabel('tempo_pre_aquecimento_seg','s')}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-white">Cura / vulcanização</dt><dd className="font-semibold">{valueLabel('tempo_cura_seg','s')}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-white">Pressão de trabalho</dt><dd className="font-semibold">{valueLabel('pressao_prensagem_bar','bar')}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-white">Força recomendada</dt><dd className="font-semibold">{valueLabel('forca_fechamento_recomendada_ton','ton')}</dd></div></dl></article>:null}
-    </div>
-    <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-[#294456] bg-[#071522] px-3 py-3"><span className="text-[10px] font-bold uppercase tracking-wide text-white">{singleResourceProcess?'Capacidade nominal de saída':'Planejamento do roteiro'}</span><strong className="text-lg tabular-nums text-white">{singleResourceProcess?(expectedPph>0?expectedPph.toLocaleString('pt-BR',{maximumFractionDigits:1})+' peças/h':'Informe ciclo e cavidades'):'Fluxo multiposto — definir operações e recursos no PCP'}</strong><span className="text-xs text-white">{singleResourceProcess?'Cálculo: 3.600 ÷ ciclo (s) × cavidades ativas; sem aplicar eficiência ou paradas.':'Esta ficha não é usada como ciclo único de máquina, evitando estimativa incorreta para etapas distintas.'}</span></div>
-    {(category==='ACABAMENTO'||category==='MONTAGEM_EMBALAGEM')&&<section className="mt-4 rounded-lg border border-[#294456] bg-[#071522] p-3"><div className="mb-3 border-b border-[#294456] pb-2"><p className="text-[10px] font-bold uppercase tracking-wide text-white">VISUALIZAÇÃO OPERACIONAL</p><h3 className="text-sm font-bold text-[#F4FBFD]">{category==='ACABAMENTO'?'Roteiro de acabamento por posto':'Fluxo de embalagem e paletização'}</h3><p className="mt-1 text-xs text-white">A prévia reflete os dados preenchidos abaixo; campos sem definição aparecem como “Não informado”.</p></div>{category==='ACABAMENTO'?<div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">{[{title:'1. Inspeção visual e separação de canais',post:'acabamento_inspecao_posto',sector:'acabamento_inspecao_setor',time:'acabamento_inspecao_tempo',timeUnit:'s/pc',checklist:'acabamento_inspecao_checklist',reference:'acabamento_inspecao_referencia'},{title:'2. Rebarbação manual',post:'acabamento_rebarba_posto',sector:'acabamento_rebarba_setor',time:'acabamento_rebarba_tempo',timeUnit:'s/pc',checklist:'acabamento_rebarba_checklist',reference:'acabamento_rebarba_referencia'},{title:'3. Limpeza e lubrificação',post:'acabamento_limpeza_posto',sector:'acabamento_limpeza_setor',time:'acabamento_limpeza_tempo',timeUnit:'s/lote',checklist:'acabamento_limpeza_checklist',reference:'acabamento_limpeza_referencia'},{title:'4. Embalagem e etiquetagem',post:'acabamento_embalagem_posto',sector:'acabamento_embalagem_setor',time:'acabamento_embalagem_tempo',timeUnit:'s/pc',checklist:'acabamento_embalagem_checklist',reference:'acabamento_embalagem_referencia'}].map((stage,index)=><article key={stage.title} className="flex min-h-[230px] flex-col rounded-lg border border-[#294456] bg-[#0D2638] p-3"><h4 className={`min-h-10 border-b border-[#294456] pb-2 text-xs font-bold ${index===0?'bg-gradient-to-r from-[#2D8DB8]/20 to-transparent text-white':'text-[#F4FBFD]'}`}>{stage.title}</h4><dl className="mt-2 space-y-2 text-xs"><div><dt className="text-white">Máquina / posto</dt><dd className="font-medium">{valueLabel(stage.post)}</dd></div><div><dt className="text-white">Setor</dt><dd className="font-medium">{valueLabel(stage.sector)}</dd></div><div><dt className="text-white">Tempo de preparação</dt><dd className="font-medium">{valueLabel(stage.time,stage.timeUnit)}</dd></div><div><dt className="text-white">Checklist</dt><dd className="whitespace-pre-line font-medium">{valueLabel(stage.checklist)}</dd></div><div className="mt-auto border-t border-[#294456] pt-2"><dt className="text-white">Documento de referência</dt><dd className="font-medium">{valueLabel(stage.reference)}</dd></div></dl></article>)}</div>:<div className="grid grid-cols-1 gap-3 xl:grid-cols-2"><article className="rounded-lg border border-[#294456] bg-[#0D2638] p-3"><h4 className="border-b border-[#294456] pb-2 text-xs font-bold text-[#F4FBFD]">1. Embalagem em saco plástico / contagem</h4><dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-2 text-xs sm:grid-cols-2">{[['Embalagem plástica','aplica_embalagem_plastica'],['Amostragem base','emb_amostragem_base'],['Código da balança','emb_codigo_balanca'],['Dimensional do saco','emb_dimensional_saco'],['Peças por saco','emb_quantidade_pecas_saco'],['Peso pacote cheio','emb_peso_pacote_cheio_g']].map(([label,key])=><div key={key}><dt className="text-white">{label}</dt><dd className="font-medium">{valueLabel(key)}</dd></div>)}</dl></article><article className="rounded-lg border border-[#294456] bg-[#0D2638] p-3"><h4 className="border-b border-[#294456] pb-2 text-xs font-bold text-[#F4FBFD]">2. Embalagem em caixa de papelão</h4><dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-2 text-xs sm:grid-cols-2">{[['Sacos por caixa','emb_sacos_caixa'],['Peças diretas por caixa','emb_pecas_direto_caixa'],['Dimensional da caixa','emb_dimensional_caixa'],['Referência de montagem','emb_caixa_modelo']].map(([label,key])=><div key={key}><dt className="text-white">{label}</dt><dd className="font-medium">{valueLabel(key)}</dd></div>)}</dl></article><article className="rounded-lg border border-[#294456] bg-[#0D2638] p-3 xl:col-span-2"><h4 className="border-b border-[#294456] pb-2 text-xs font-bold text-[#F4FBFD]">3. Roteiro de montagem, etiqueta e paletização</h4><dl className="mt-2 grid grid-cols-1 gap-3 text-xs md:grid-cols-2">{[['Disposição das peças','emb_disposicao_pecas'],['Instruções de montagem','emb_instrucao_montagem'],['Etiqueta e identificação','emb_instrucao_etiqueta'],['Padrão de paletização','emb_instrucao_paletizacao'],['Critérios de liberação','emb_criterio_liberacao']].map(([label,key])=><div key={key}><dt className="text-white">{label}</dt><dd className="whitespace-pre-line font-medium">{valueLabel(key)}</dd></div>)}</dl></article></div>}</section>}
-    <label className="mt-4 block"><span className={labelClass}>Instruções de setup / processo / segurança</span><textarea className="min-h-[100px] w-full rounded-md border border-[#294456] bg-[#071522] p-3 text-sm text-[#F4FBFD] outline-none focus:border-[#48B7C7]" value={instructions} onChange={e=>setInstructions(e.target.value)} placeholder="Sequência operacional, parâmetros de controle, inspeção inicial, reação a desvio, EPI e cuidados ambientais…"/></label>
-    <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[#2E4A62] pt-3"><span className="text-[10px] font-bold uppercase tracking-wide text-[#A8BBC8]">Dados por empresa · revisão técnica · sem valores fictícios</span><button className="erp-premium-button print:hidden" type="button" onClick={()=>void save()} disabled={busy}><Save size={14}/>{busy?'Salvando…':isEditing?'Atualizar ficha':'Gravar ficha'}</button></div>
-   </section>
-   <footer className="mt-3 flex items-center gap-2 border-t border-[#2E4A62] pt-3 text-[10px] text-[#A8BBC8] print:hidden"><CalendarRange size={14}/>{singleResourceProcess?'O PCP estima a duração a partir da ficha liberada, capacidade, ciclo e setup; datas continuam sujeitas ao calendário de recursos.':'Para programar este roteiro multiposto, cadastre as operações e recursos correspondentes no roteiro do PCP; ele não será aplicado como ciclo de uma única máquina.'}</footer>
-  </div>
- <style>{`@media screen{.pcp-process-page{background:#F8FAFC!important;color:#123B50!important}.pcp-process-page [class*="bg-[#071522]"],.pcp-process-page [class*="bg-[#0D2638]"],.pcp-process-page [class*="bg-[#0E1E2F]"]{background:#FFFFFF!important}.pcp-process-page [class*="bg-[#123B50]"]{background:#123B50!important}.pcp-process-page [class*="border-[#2E4A62]"],.pcp-process-page [class*="border-[#294456]"]{border-color:#CBD5E1!important}.pcp-process-page .text-white{color:#123B50!important}.pcp-process-page [class*="bg-[#123B50]"].text-white,.pcp-process-page [class*="bg-[#123B50]"] .text-white,.pcp-process-page .pcp-process-diagram .text-white{color:#FFFFFF!important}.pcp-process-page [class*="text-[#F4FBFD]"]{color:#123B50!important}.pcp-process-page [class*="text-[#A8BBC8]"]{color:#475569!important}.pcp-process-page input:not([type="file"]),.pcp-process-page select,.pcp-process-page textarea{background:#FFFFFF!important;color:#123B50!important;border-color:#CBD5E1!important;caret-color:#123B50!important}.pcp-process-page input::placeholder,.pcp-process-page textarea::placeholder{color:#64748B!important}.pcp-process-diagram .text-white{color:#FFFFFF!important}.pcp-process-diagram [class*="bg-[#071522]"]{background:#071522!important}.pcp-process-diagram [class*="bg-[#0D2638]"]{background:#0D2638!important}.pcp-process-diagram [class*="bg-[#123B50]"]{background:#123B50!important}}@page{size:A4 portrait;margin:10mm}@media print{html,body,#root{background:#fff!important;color:#111!important;margin:0!important;padding:0!important}.pcp-process-page{background:#fff!important;color:#111!important;padding:0!important}.pcp-process-page .print\\:hidden{display:none!important}.pcp-ficha-print-sheet{width:100%!important;max-width:none!important;background:#fff!important;color:#111!important;border:0!important;padding:0!important;margin:0!important;box-shadow:none!important;overflow:visible!important}.pcp-ficha-print-sheet,.pcp-ficha-print-sheet article,.pcp-ficha-print-sheet div,.pcp-ficha-print-sheet section{background:#fff!important;color:#111!important;border-color:#777!important;box-shadow:none!important}.pcp-ficha-print-sheet input,.pcp-ficha-print-sheet select,.pcp-ficha-print-sheet textarea{color:#111!important;background:#fff!important;border:1px solid #777!important;box-shadow:none!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}.pcp-ficha-print-sheet label,.pcp-ficha-print-sheet article{break-inside:avoid}.pcp-ficha-print-sheet button{display:none!important}.pcp-ficha-print-sheet span,.pcp-ficha-print-sheet dt,.pcp-ficha-print-sheet p,.pcp-ficha-print-sheet h1,.pcp-ficha-print-sheet h2,.pcp-ficha-print-sheet h3{color:#111!important}.pcp-ficha-print-sheet img{max-width:100%!important;max-height:65mm!important;object-fit:contain!important}
-      .pcp-process-page .pcp-equipment-top{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important}
-      .pcp-process-page .pcp-photo-pair{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
-      .pcp-process-page .pcp-parameter-cards{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
-      .pcp-process-page .pcp-parameter-fields{display:flex!important;flex-direction:column!important;gap:8px!important}
-      .pcp-process-page .pcp-parameter-fields input,.pcp-process-page .pcp-parameter-fields select,.pcp-process-page .pcp-parameter-fields textarea{width:100%!important;max-width:none!important;min-width:0!important;box-sizing:border-box!important}
-      .pcp-process-page .pcp-parameter-cards article{min-width:0!important;box-shadow:0 4px 20px rgba(0,0,0,.04)!important;border-radius:2px!important}
-      @media(min-width:1024px){.pcp-process-page .pcp-equipment-top{grid-template-columns:minmax(0,7fr) minmax(0,5fr)!important}.pcp-process-page .pcp-photo-pair{grid-template-columns:repeat(2,minmax(0,1fr))!important}.pcp-process-page .pcp-parameter-cards{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
-      @media(max-width:1023px){.pcp-process-page .pcp-parameter-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
-      @media(max-width:639px){.pcp-process-page .pcp-parameter-cards,.pcp-process-page .pcp-photo-pair{grid-template-columns:minmax(0,1fr)!important}}}'`}</style>
-  </main>
+type Client = {
+  id: string
+  codigo: string
+  nome: string
+  documento?: string | null
 }
+
+type Tool = {
+  id: string
+  codigo: string
+  nome: string
+  tipo: string
+  numero_cavidades: number | null
+  cavidades_ativas?: number | null
+}
+
+type Machine = {
+  id: string
+  codigo: string
+  nome: string
+  tipo: string | null
+  status: string
+}
+
+type Status = 'RASCUNHO' | 'EM_ANALISE' | 'APROVADA' | 'LIBERADA' | 'OBSOLETA'
+type ActiveTab = 'PROCESSO' | 'MOLDE' | 'QUALIDADE'
+
+export type MaterialMixtureItem = {
+  id: string
+  tipo: string
+  descricao: string
+  codigo: string
+  dosagem_kg: number
+  proporcao_pct: number
+}
+
+export type MoldPhoto = {
+  id: string
+  titulo: string
+  tipo: 'CAVIDADE' | 'FIXO' | 'GAVETAS' | 'MONTAGEM' | 'OUTRO'
+  url: string
+}
+
+export type InspectionItem = {
+  id: string
+  caracteristica: string
+  instrumento: string
+  frequencia: string
+  criterio: string
+  tolerancia?: string
+  status_aprovacao?: 'CONFORME' | 'NAO_CONFORME' | 'EM_ANALISE'
+}
+
+type FormState = {
+  id: string
+  codigo_ficha: string
+  produto_id: string
+  codigo_cliente: string
+  ferramenta_id: string
+  maquina_id: string
+  cavidades_ativas: string
+  revisao: string
+  status: Status
+  categoria_processo: string
+  forca_fechamento: string
+  pressao_trabalho: string
+  temperatura_trabalho: string
+  pressao_injecao: string
+  pressao_recalque: string
+  contrapressao: string
+  ciclo_seg: string
+  tempo_injecao_seg: string
+  tempo_resfriamento_seg: string
+  peso_peca: string
+  peso_canal: string
+  tolerancia_temp: string
+  bico: string
+  zona1: string
+  zona2: string
+  zona3: string
+  zona4: string
+  zona_molde: string
+  imagem_url: string
+  observacoes_setup: string
+  observacoes: string
+  aviso_destaque: string
+  desenho_numero: string
+  desenho_url: string
+  formulario_sgq: string
+  especificacoes_acabamento: string
+  especificacoes_cor: string
+  especificacoes_gravacao: string
+  mistura: MaterialMixtureItem[]
+  fotos_molde: MoldPhoto[]
+  inspecoes: InspectionItem[]
+}
+
+const defaultMistura: MaterialMixtureItem[] = [
+  {
+    id: 'mat-1',
+    tipo: 'Polímero Base',
+    descricao: 'Polipropileno Copolímero Fluidez 40%',
+    codigo: '20082',
+    dosagem_kg: 25.0,
+    proporcao_pct: 98.04
+  },
+  {
+    id: 'mat-2',
+    tipo: 'Masterbatch / Cor',
+    descricao: 'Master Color Preto',
+    codigo: '20023',
+    dosagem_kg: 0.5,
+    proporcao_pct: 1.96
+  }
+]
+
+const defaultInspecoes: InspectionItem[] = [
+  {
+    id: 'insp-1',
+    caracteristica: 'Visual: Rebarba no fechamento da partição',
+    instrumento: 'Inspeção Visual / Lupa 10x',
+    frequencia: '1ª peça no setup / A cada 1 hora',
+    criterio: 'Isento de rebarbas cortantes',
+    status_aprovacao: 'CONFORME'
+  },
+  {
+    id: 'insp-2',
+    caracteristica: 'Massa líquida unitária da peça',
+    instrumento: 'Balança Analítica 0.01g',
+    frequencia: 'A cada início de turno (5 peças)',
+    criterio: 'Peso nominal ± 2.0%',
+    tolerancia: '± 0.20 g',
+    status_aprovacao: 'CONFORME'
+  },
+  {
+    id: 'insp-3',
+    caracteristica: 'Cota crítica A (Encaixe / Dimensional)',
+    instrumento: 'Paquímetro Digital Calibrado',
+    frequencia: 'Início de lote e a cada 4 horas',
+    criterio: 'Conforme desenho de engenharia',
+    tolerancia: '± 0.05 mm',
+    status_aprovacao: 'CONFORME'
+  }
+]
+
+const blank: FormState = {
+  id: '',
+  codigo_ficha: '',
+  produto_id: '',
+  codigo_cliente: '',
+  ferramenta_id: '',
+  maquina_id: '',
+  cavidades_ativas: '1',
+  revisao: '1',
+  status: 'RASCUNHO',
+  categoria_processo: 'INJETADOS',
+  forca_fechamento: '',
+  pressao_trabalho: '',
+  temperatura_trabalho: '',
+  pressao_injecao: '',
+  pressao_recalque: '',
+  contrapressao: '',
+  ciclo_seg: '',
+  tempo_injecao_seg: '',
+  tempo_resfriamento_seg: '',
+  peso_peca: '',
+  peso_canal: '',
+  tolerancia_temp: '5',
+  bico: '210',
+  zona1: '200',
+  zona2: '190',
+  zona3: '180',
+  zona4: '170',
+  zona_molde: '35',
+  imagem_url: '',
+  observacoes_setup:
+    '1 - Realizar Check List para liberação da máquina. Verificar se toda documentação se encontra na mesma. A falta de qualquer informação deve ser comunicada ao responsável da produção ou da qualidade.\n2 - Peças de início de processo, ou seja ajuste de máquina, que saírem com defeito devem ser separadas para reciclagem e não devem ser contadas como refugo operacional.\n3 - Na troca da matéria prima ou material de cor diferente, é necessário efetuar limpeza do canhão, para que não haja contaminação. Após a limpeza é necessário injetar algumas peças para total limpeza do canhão. Essas peças devem ser separadas para posterior reciclagem.\n4 - Após a validação do processo pela Qualidade, as peças com defeito devem ser separadas e encaminhadas junto com o cartão ao setor de acabamento para contagem e finalização.',
+  observacoes: '',
+  aviso_destaque: 'Aplicar desmoldante a cada 100 injetadas',
+  desenho_numero: 'TPA01201',
+  desenho_url: '',
+  formulario_sgq: 'FPT-1J-010/2 • FPT-1J-010/3',
+  especificacoes_acabamento: 'VDI 24 / Polimento espelhado na cavidade',
+  especificacoes_cor: 'Preto Técnico Fosco (Master 20023)',
+  especificacoes_gravacao: 'Datador ano/mês e gravação da cavidade em alto relevo 0.3mm',
+  mistura: defaultMistura,
+  fotos_molde: [],
+  inspecoes: defaultInspecoes
+}
+
+const inputClass =
+  'h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2.5 text-[11px] font-semibold text-slate-800 outline-none transition-all focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20'
+const labelClass = 'block text-[9px] font-bold uppercase tracking-wider text-slate-600 mb-1'
+const cardClass = 'rounded-[2px] border border-slate-200 bg-white p-3.5 shadow-xs'
+const btnClass =
+  'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] px-3 text-[10px] font-bold tracking-wide uppercase transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer'
+
+export function FichasProcesso() {
+  const [form, setForm] = useState<FormState>(blank)
+  const [activeTab, setActiveTab] = useState<ActiveTab>('PROCESSO')
+  const [products, setProducts] = useState<Product[]>([])
+  const [clients, setClients] = useState<Client[]>([])
+  const [tools, setTools] = useState<Tool[]>([])
+  const [machines, setMachines] = useState<Machine[]>([])
+  const [rows, setRows] = useState<FormState[]>([])
+  const [query, setQuery] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const [selectedPhotoZoom, setSelectedPhotoZoom] = useState<string | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
+  const moldPhotoRef = useRef<HTMLInputElement>(null)
+
+  // Carrega registros da empresa atual com RLS
+  const load = useCallback(async () => {
+    setError('')
+    try {
+      const company = await supabase.rpc('erp_current_empresa_id')
+      if (company.error || !company.data) {
+        throw company.error || new Error('Empresa ERP não identificada.')
+      }
+      const empresaId = String(company.data)
+
+      const [p, c, t, m, f] = await Promise.all([
+        supabase
+          .from('erp_produtos')
+          .select('id,codigo,nome,descricao')
+          .eq('empresa_id', empresaId)
+          .eq('ativo', true)
+          .order('codigo')
+          .limit(3000),
+        supabase
+          .from('erp_clientes')
+          .select('id,codigo,nome,documento')
+          .eq('empresa_id', empresaId)
+          .eq('ativo', true)
+          .order('codigo')
+          .limit(3000),
+        supabase
+          .from('erp_ferramentas_industriais')
+          .select('id,codigo,nome,tipo,numero_cavidades,parametros')
+          .eq('empresa_id', empresaId)
+          .eq('ativo', true)
+          .order('codigo')
+          .limit(2000),
+        supabase
+          .from('erp_maquinas')
+          .select('id,codigo,nome,tipo,status')
+          .eq('empresa_id', empresaId)
+          .not('status', 'eq', 'INATIVA')
+          .order('codigo')
+          .limit(2000),
+        supabase
+          .from('erp_fichas_processo')
+          .select('*')
+          .eq('empresa_id', empresaId)
+          .order('codigo_ficha')
+          .limit(500)
+      ])
+
+      for (const x of [p, c, t, m, f]) {
+        if (x.error) throw x.error
+      }
+
+      setProducts((p.data ?? []) as Product[])
+      setClients((c.data ?? []) as Client[])
+      setTools((t.data ?? []) as Tool[])
+      setMachines((m.data ?? []) as Machine[])
+      setRows(((f.data ?? []) as Record<string, unknown>[]).map(fromDb))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Falha ao carregar fichas de processo.')
+    }
+  }, [])
+
+  function fromDb(x: Record<string, unknown>): FormState {
+    const z = (x.zonas_temperatura ?? {}) as Record<string, unknown>
+    const pt = (x.parametros_tecnicos ?? {}) as Record<string, unknown>
+
+    return {
+      id: String(x.id ?? ''),
+      codigo_ficha: String(x.codigo_ficha ?? ''),
+      produto_id: String(x.produto_id ?? ''),
+      codigo_cliente: String(x.codigo_cliente ?? ''),
+      ferramenta_id: String(x.ferramenta_id ?? ''),
+      maquina_id: String(x.maquina_id ?? ''),
+      cavidades_ativas: String(x.cavidades_ativas ?? '1'),
+      revisao: String(x.revisao ?? '1'),
+      status: (String(x.status ?? 'RASCUNHO') as Status),
+      categoria_processo: String(x.categoria_processo ?? 'INJETADOS'),
+      forca_fechamento: String(x.forca_fechamento ?? ''),
+      pressao_trabalho: String(x.pressao_trabalho ?? ''),
+      temperatura_trabalho: String(x.temperatura_trabalho ?? ''),
+      pressao_injecao: String(x.pressao_injecao ?? ''),
+      pressao_recalque: String(pt.pressao_recalque ?? ''),
+      contrapressao: String(pt.contrapressao ?? ''),
+      ciclo_seg: String(x.ciclo_seg ?? ''),
+      tempo_injecao_seg: String(pt.tempo_injecao_seg ?? ''),
+      tempo_resfriamento_seg: String(pt.tempo_resfriamento_seg ?? ''),
+      peso_peca: String(x.peso_peca ?? ''),
+      peso_canal: String(x.peso_canal ?? ''),
+      tolerancia_temp: String(z.tolerancia ?? '5'),
+      bico: String(z.bico ?? '210'),
+      zona1: String(z.zona1 ?? '200'),
+      zona2: String(z.zona2 ?? '190'),
+      zona3: String(z.zona3 ?? '180'),
+      zona4: String(z.zona4 ?? '170'),
+      zona_molde: String(z.molde ?? '35'),
+      imagem_url: String(x.imagem_url ?? ''),
+      observacoes_setup: String(x.observacoes_setup ?? blank.observacoes_setup),
+      observacoes: String(x.observacoes ?? ''),
+      aviso_destaque: String(pt.aviso_destaque ?? blank.aviso_destaque),
+      desenho_numero: String(pt.desenho_numero ?? blank.desenho_numero),
+      desenho_url: String(pt.desenho_url ?? ''),
+      formulario_sgq: String(pt.formulario_sgq ?? blank.formulario_sgq),
+      especificacoes_acabamento: String(pt.especificacoes_acabamento ?? blank.especificacoes_acabamento),
+      especificacoes_cor: String(pt.especificacoes_cor ?? blank.especificacoes_cor),
+      especificacoes_gravacao: String(pt.especificacoes_gravacao ?? blank.especificacoes_gravacao),
+      mistura: Array.isArray(pt.mistura) ? (pt.mistura as MaterialMixtureItem[]) : defaultMistura,
+      fotos_molde: Array.isArray(pt.fotos_molde) ? (pt.fotos_molde as MoldPhoto[]) : [],
+      inspecoes: Array.isArray(pt.inspecoes) ? (pt.inspecoes as InspectionItem[]) : defaultInspecoes
+    }
+  }
+
+  useEffect(() => {
+    void load()
+  }, [load])
+
+  const filtered = useMemo(
+    () =>
+      rows.filter(
+        x =>
+          !query ||
+          [x.codigo_ficha, x.codigo_cliente, x.status, x.categoria_processo]
+            .join(' ')
+            .toLowerCase()
+            .includes(query.toLowerCase())
+      ),
+    [rows, query]
+  )
+
+  const selectedProduct = products.find(x => x.id === form.produto_id)
+  const selectedTool = tools.find(x => x.id === form.ferramenta_id)
+  const selectedMachine = machines.find(x => x.id === form.maquina_id)
+
+  function update<K extends keyof FormState>(key: K, value: FormState[K]) {
+    setForm(x => ({ ...x, [key]: value }))
+    setMessage('')
+    setError('')
+  }
+
+  function newFicha() {
+    setForm(blank)
+    // reset preview
+    setActiveTab('PROCESSO')
+    setMessage('Nova ficha técnica pronta para edição.')
+    setError('')
+  }
+
+  function openFicha(x: FormState) {
+    setForm(x)
+    // set preview
+    setActiveTab('PROCESSO')
+    setMessage('')
+    setError('')
+  }
+
+  // Upload de Imagem Técnica Geral / Matéria-Prima
+  async function handleFile(file?: File) {
+    if (!file) return
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+      setError('Use imagem no formato PNG, JPG ou WEBP.')
+      return
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setError('A imagem deve ter no máximo 8 MB.')
+      return
+    }
+
+    setBusy(true)
+    setError('')
+    try {
+      const company = await supabase.rpc('erp_current_empresa_id')
+      if (company.error || !company.data) {
+        throw company.error || new Error('Empresa ERP não identificada.')
+      }
+      const path = `${company.data}/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
+      const upload = await supabase.storage.from('erp-fichas-processo').upload(path, file, {
+        upsert: false,
+        contentType: file.type
+      })
+      if (upload.error) throw upload.error
+
+      const signed = await supabase.storage.from('erp-fichas-processo').createSignedUrl(path, 60 * 60 * 24 * 30)
+      if (signed.error) throw signed.error
+
+      update('imagem_url', signed.data.signedUrl)
+      // set preview
+      setMessage('Imagem técnica vinculada à ficha com sucesso.')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Falha ao enviar a imagem técnica.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  // Upload específico para fotos do molde na Aba 2
+  async function handleMoldPhotoUpload(file?: File, tipo: MoldPhoto['tipo'] = 'CAVIDADE') {
+    if (!file) return
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+      setError('A foto do molde deve ser PNG, JPG ou WEBP.')
+      return
+    }
+
+    setBusy(true)
+    setError('')
+    try {
+      const company = await supabase.rpc('erp_current_empresa_id')
+      if (company.error || !company.data) {
+        throw company.error || new Error('Empresa ERP não identificada.')
+      }
+      const path = `${company.data}/molde-${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
+      const upload = await supabase.storage.from('erp-fichas-processo').upload(path, file, {
+        upsert: false,
+        contentType: file.type
+      })
+      if (upload.error) throw upload.error
+
+      const signed = await supabase.storage.from('erp-fichas-processo').createSignedUrl(path, 60 * 60 * 24 * 30)
+      if (signed.error) throw signed.error
+
+      const newPhoto: MoldPhoto = {
+        id: crypto.randomUUID(),
+        titulo: file.name.replace(/\.[^/.]+$/, ''),
+        tipo,
+        url: signed.data.signedUrl
+      }
+
+      setForm(prev => ({
+        ...prev,
+        fotos_molde: [...prev.fotos_molde, newPhoto]
+      }))
+      setMessage('Foto do molde adicionada à galeria.')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Falha ao enviar a foto do molde.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  // Salvar no Supabase
+  async function save() {
+    setBusy(true)
+    setError('')
+    setMessage('')
+    try {
+      if (!form.codigo_ficha.trim()) throw new Error('Código da ficha é obrigatório.')
+      if (!form.produto_id) throw new Error('Selecione o produto vinculado à ficha.')
+
+      const cavities = Number(form.cavidades_ativas)
+      if (!Number.isFinite(cavities) || cavities <= 0) {
+        throw new Error('Informe o número de cavidades ativas maior que zero.')
+      }
+
+      const revision = Number(form.revisao)
+      if (!Number.isInteger(revision) || revision < 1) {
+        throw new Error('A revisão deve ser um número inteiro positivo.')
+      }
+
+      const company = await supabase.rpc('erp_current_empresa_id')
+      const user = await supabase.auth.getUser()
+      if (company.error || !company.data) throw company.error || new Error('Empresa ERP não identificada.')
+      const empresaId = String(company.data)
+
+      const payload = {
+        empresa_id: empresaId,
+        codigo_ficha: form.codigo_ficha.trim(),
+        produto_id: form.produto_id,
+        codigo_cliente: form.codigo_cliente.trim() || null,
+        ferramenta_id: form.ferramenta_id || null,
+        maquina_id: form.maquina_id || null,
+        cavidades_ativas: cavities,
+        revisao: revision,
+        status: form.status,
+        categoria_processo: form.categoria_processo,
+        forca_fechamento: Number(form.forca_fechamento) || null,
+        pressao_trabalho: Number(form.pressao_trabalho) || null,
+        temperatura_trabalho: Number(form.temperatura_trabalho) || null,
+        pressao_injecao: Number(form.pressao_injecao) || null,
+        ciclo_seg: Number(form.ciclo_seg) || null,
+        peso_peca: Number(form.peso_peca) || null,
+        peso_canal: Number(form.peso_canal) || null,
+        zonas_temperatura: {
+          tolerancia: form.tolerancia_temp,
+          bico: form.bico,
+          zona1: form.zona1,
+          zona2: form.zona2,
+          zona3: form.zona3,
+          zona4: form.zona4,
+          molde: form.zona_molde
+        },
+        parametros_tecnicos: {
+          pressao_recalque: form.pressao_recalque,
+          contrapressao: form.contrapressao,
+          tempo_injecao_seg: form.tempo_injecao_seg,
+          tempo_resfriamento_seg: form.tempo_resfriamento_seg,
+          aviso_destaque: form.aviso_destaque,
+          desenho_numero: form.desenho_numero,
+          desenho_url: form.desenho_url,
+          formulario_sgq: form.formulario_sgq,
+          especificacoes_acabamento: form.especificacoes_acabamento,
+          especificacoes_cor: form.especificacoes_cor,
+          especificacoes_gravacao: form.especificacoes_gravacao,
+          mistura: form.mistura,
+          fotos_molde: form.fotos_molde,
+          inspecoes: form.inspecoes
+        },
+        imagem_url: form.imagem_url || null,
+        observacoes_setup: form.observacoes_setup.trim() || null,
+        observacoes: form.observacoes.trim() || null,
+        atualizado_por: user.data.user?.id || null,
+        atualizado_em: new Date().toISOString()
+      }
+
+      const result = form.id
+        ? await supabase.from('erp_fichas_processo').update(payload).eq('id', form.id).select('*').single()
+        : await supabase
+            .from('erp_fichas_processo')
+            .insert({ ...payload, criado_por: user.data.user?.id || null })
+            .select('*')
+            .single()
+
+      if (result.error) throw result.error
+
+      setForm(fromDb(result.data as Record<string, unknown>))
+      // set preview
+      setMessage('Ficha técnica gravada com sucesso no sistema!')
+      await load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Não foi possível gravar a ficha técnica.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  // Deletar ficha
+  async function remove() {
+    if (!form.id) return
+    if (!window.confirm(`Deseja excluir a ficha técnica ${form.codigo_ficha}?`)) return
+    setBusy(true)
+    setError('')
+    try {
+      const r = await supabase.from('erp_fichas_processo').delete().eq('id', form.id)
+      if (r.error) throw r.error
+      newFicha()
+      setMessage('Ficha técnica excluída.')
+      await load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Não foi possível excluir a ficha.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  // Cálculos automáticos de capacidade
+  const cycleSec = Number(form.ciclo_seg) || 0
+  const cavitiesNum = Number(form.cavidades_ativas) || 1
+  const pcsPerHour = cycleSec > 0 ? ((3600 / cycleSec) * cavitiesNum).toFixed(0) : '—'
+  const cyclesPerHour = cycleSec > 0 ? (3600 / cycleSec).toFixed(0) : '—'
+  const totalBateladaKg = form.mistura.reduce((acc, m) => acc + (Number(m.dosagem_kg) || 0), 0)
+
+  return (
+    <>
+      {/* Folha Oficial de Impressão A4 SYSNQRA — SGQ IT-PCP-001 */}
+      <style>{`
+        @media print {
+          body * { visibility: hidden !important; }
+          .ficha-print-sheet, .ficha-print-sheet * { visibility: visible !important; }
+          .ficha-print-sheet {
+            display: block !important;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            padding: 8mm !important;
+            background: #fff !important;
+            color: #0f172a !important;
+            font-family: Arial, sans-serif !important;
+          }
+          .ficha-print-sheet table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+          }
+          .ficha-print-sheet th, .ficha-print-sheet td {
+            border: 1px solid #334155;
+            padding: 4px 6px;
+            font-size: 8pt;
+            text-align: left;
+          }
+          .ficha-print-sheet th {
+            background: #f1f5f9 !important;
+            font-weight: bold;
+            text-transform: uppercase;
+          }
+        }
+        @media screen {
+          .ficha-print-sheet { display: none; }
+        }
+      `}</style>
+
+      <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900 md:p-5">
+        <div className="mx-auto max-w-[1750px] space-y-3.5">
+          
+          {/* Header Superior — SYSNQRA SGQ IT-PCP-001 */}
+          <header className="flex flex-wrap items-center justify-between gap-3 rounded-[2px] border border-slate-200 bg-white p-3 shadow-xs">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-[2px] bg-[#123B50] text-[#48B7C7]">
+                <Layers size={22} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="rounded bg-[#123B50] px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white">
+                    SYSNQRA SGQ • IT-PCP-001
+                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-wide text-[#2D8DB8]">
+                    ENGENHARIA DE PROCESSOS • PADRÃO INDUSTRIAL A4
+                  </span>
+                </div>
+                <h1 className="mt-0.5 text-base font-black tracking-tight text-[#123B50]">
+                  Ficha Técnica de Processo Industrial ({form.codigo_ficha || 'Nova Ficha'})
+                </h1>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={newFicha}
+                className={`${btnClass} border border-slate-300 bg-white text-slate-700 hover:bg-slate-50`}
+              >
+                <FileDown size={13} />
+                <span>Nova Ficha</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => void save()}
+                disabled={busy}
+                className={`${btnClass} bg-[#2D8DB8] text-white hover:bg-[#236F91] shadow-xs`}
+              >
+                <Save size={13} />
+                <span>{busy ? 'Gravando...' : 'Gravar Ficha'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className={`${btnClass} border border-slate-300 bg-white text-slate-700 hover:bg-slate-50`}
+              >
+                <Printer size={13} />
+                <span>Imprimir A4</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => void load()}
+                className={`${btnClass} border border-slate-300 bg-white text-slate-700 hover:bg-slate-50`}
+                title="Recarregar"
+              >
+                <RotateCcw size={13} />
+              </button>
+
+              {form.id && (
+                <button
+                  type="button"
+                  onClick={() => void remove()}
+                  disabled={busy}
+                  className={`${btnClass} border border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100`}
+                >
+                  <Trash2 size={13} />
+                  <span>Excluir</span>
+                </button>
+              )}
+            </div>
+          </header>
+
+          {/* Notificações e Alertas */}
+          {(noticeMessage(error, message)) && (
+            <div
+              className={`flex items-center justify-between rounded-[2px] border px-3 py-2 text-xs font-bold ${
+                error
+                  ? 'border-rose-300 bg-rose-50 text-rose-800'
+                  : 'border-emerald-300 bg-emerald-50 text-emerald-800'
+              }`}
+            >
+              <span>{error || message}</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setError('')
+                  setMessage('')
+                }}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          )}
+
+          {/* Barra de Abas Industriais (1/3, 2/3, 3/3) */}
+          <nav className="flex flex-wrap items-center justify-between gap-3 rounded-[2px] border border-slate-200 bg-white p-2 shadow-xs">
+            <div className="flex flex-wrap items-center gap-1.5">
+              
+              {/* Aba 1: Processo & Mistura (1/3) */}
+              <button
+                type="button"
+                onClick={() => setActiveTab('PROCESSO')}
+                className={`flex h-[32px] items-center gap-2 rounded-[2px] px-3.5 text-[10px] font-black uppercase tracking-wider transition-all ${
+                  activeTab === 'PROCESSO'
+                    ? 'bg-[#123B50] text-white shadow-xs'
+                    : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <span className="rounded bg-sky-500/20 px-1.5 py-0.5 font-mono text-[9px] text-[#48B7C7]">1 / 3</span>
+                <Sliders size={13} />
+                <span>Processo &amp; Mistura</span>
+              </button>
+
+              {/* Aba 2: Fotos do Molde & Ferramental (2/3) */}
+              <button
+                type="button"
+                onClick={() => setActiveTab('MOLDE')}
+                className={`flex h-[32px] items-center gap-2 rounded-[2px] px-3.5 text-[10px] font-black uppercase tracking-wider transition-all ${
+                  activeTab === 'MOLDE'
+                    ? 'bg-[#123B50] text-white shadow-xs'
+                    : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <span className="rounded bg-sky-500/20 px-1.5 py-0.5 font-mono text-[9px] text-[#48B7C7]">2 / 3</span>
+                <Wrench size={13} />
+                <span>Fotos do Molde &amp; Setup</span>
+                {form.fotos_molde.length > 0 && (
+                  <span className="rounded-full bg-[#2D8DB8] px-1.5 py-0.2 text-[8px] text-white">
+                    {form.fotos_molde.length}
+                  </span>
+                )}
+              </button>
+
+              {/* Aba 3: Qualidade, Especificações & Desenho (3/3) */}
+              <button
+                type="button"
+                onClick={() => setActiveTab('QUALIDADE')}
+                className={`flex h-[32px] items-center gap-2 rounded-[2px] px-3.5 text-[10px] font-black uppercase tracking-wider transition-all ${
+                  activeTab === 'QUALIDADE'
+                    ? 'bg-[#123B50] text-white shadow-xs'
+                    : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <span className="rounded bg-sky-500/20 px-1.5 py-0.5 font-mono text-[9px] text-[#48B7C7]">3 / 3</span>
+                <ShieldCheck size={13} />
+                <span>Qualidade, Desenho &amp; SGQ</span>
+              </button>
+            </div>
+
+            {/* Informações de Cabeçalho da Ficha */}
+            <div className="flex items-center gap-3 text-[10px] font-bold text-slate-600">
+              <span className="rounded bg-slate-100 px-2 py-1">
+                Revisão: <strong className="text-slate-900">Rev. {form.revisao}</strong>
+              </span>
+              <span
+                className={`rounded px-2 py-1 uppercase text-[9px] font-black ${
+                  form.status === 'APROVADA' || form.status === 'LIBERADA'
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : form.status === 'EM_ANALISE'
+                    ? 'bg-amber-100 text-amber-800'
+                    : 'bg-slate-100 text-slate-700'
+                }`}
+              >
+                {form.status}
+              </span>
+            </div>
+          </nav>
+
+          {/* Layout Principal: Lista Lateral de Fichas + Conteúdo das Abas */}
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-[280px_minmax(0,1fr)]">
+            
+            {/* Sidebar Esquerda: Fichas Cadastradas */}
+            <aside className="rounded-[2px] border border-slate-200 bg-white shadow-xs h-fit">
+              <div className="border-b border-slate-200 p-2.5">
+                <span className="text-[9px] font-black uppercase tracking-wider text-slate-500">
+                  FICHAS CADASTRADAS ({filtered.length})
+                </span>
+                <div className="mt-2 relative">
+                  <Search size={13} className="absolute left-2.5 top-2 text-slate-400" />
+                  <input
+                    type="text"
+                    value={query}
+                    onChange={e => setQuery(e.target.value)}
+                    placeholder="Buscar código ou peça..."
+                    className="h-[28px] w-full rounded-[2px] border border-slate-300 bg-white pl-8 pr-2 text-[11px] font-semibold text-slate-800 outline-none focus:border-[#2D8DB8]"
+                  />
+                </div>
+              </div>
+
+              <div className="max-h-[75vh] overflow-y-auto p-1.5 space-y-1">
+                {filtered.map(x => {
+                  const prod = products.find(p => p.id === x.produto_id)
+                  const isCurrent = x.id === form.id
+
+                  return (
+                    <button
+                      key={x.id}
+                      type="button"
+                      onClick={() => openFicha(x)}
+                      className={`w-full rounded-[2px] border p-2 text-left transition-all ${
+                        isCurrent
+                          ? 'border-[#2D8DB8] bg-sky-50 shadow-xs'
+                          : 'border-slate-200 bg-white hover:bg-slate-50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <strong className="text-[11px] font-black text-[#123B50]">{x.codigo_ficha}</strong>
+                        <span className="text-[9px] font-bold text-slate-500">Rev. {x.revisao}</span>
+                      </div>
+                      <div className="mt-0.5 truncate text-[10px] text-slate-700">
+                        {prod ? `${prod.codigo} — ${prod.nome}` : 'Produto não selecionado'}
+                      </div>
+                      <div className="mt-1 flex items-center justify-between text-[8.5px] font-bold">
+                        <span className="text-[#2D8DB8]">{x.categoria_processo}</span>
+                        <span className="text-slate-500">{x.status}</span>
+                      </div>
+                    </button>
+                  )
+                })}
+                {filtered.length === 0 && (
+                  <div className="p-4 text-center text-xs font-semibold text-slate-400">
+                    Nenhuma ficha cadastrada.
+                  </div>
+                )}
+              </div>
+            </aside>
+
+            {/* Conteúdo Dinâmico por Aba */}
+            <div className="space-y-3">
+              
+              {/* ========================================================================= */}
+              {/* ABA 1 (1/3): PROCESSO & MISTURA (Ciclo, Parâmetros, Temperaturas e Setup) */}
+              {/* ========================================================================= */}
+              {activeTab === 'PROCESSO' && (
+                <div className="space-y-3">
+                  
+                  {/* Bloco 1: Identificação Master (Produto, Molde, Máquina, Cliente) */}
+                  <section className={cardClass}>
+                    <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="rounded bg-[#123B50] px-1.5 py-0.5 text-[8.5px] font-black text-white uppercase">
+                          SEÇÃO 1
+                        </span>
+                        <h2 className="text-xs font-black uppercase tracking-wider text-[#123B50]">
+                          IDENTIFICAÇÃO DO PRODUTO, FERRAMENTAL E RECURSO
+                        </h2>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label className="text-[9px] font-bold text-slate-500">Categoria:</label>
+                        <select
+                          value={form.categoria_processo}
+                          onChange={e => update('categoria_processo', e.target.value)}
+                          className="h-[24px] rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-bold text-slate-700 outline-none"
+                        >
+                          <option value="INJETADOS">INJETADOS (TERMOPLÁSTICOS)</option>
+                          <option value="PRENSADOS">PRENSADOS (BORRACHA)</option>
+                          <option value="ESTAMPARIA">ESTAMPARIA</option>
+                          <option value="MONTAGEM_EMBALAGEM">MONTAGEM / EMBALAGEM</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+                      <div>
+                        <label className={labelClass}>Cód. da Ficha *</label>
+                        <input
+                          type="text"
+                          required
+                          value={form.codigo_ficha}
+                          onChange={e => update('codigo_ficha', e.target.value)}
+                          placeholder="Ex: FP-01/001 ou FCH-2026-089"
+                          className={inputClass}
+                        />
+                      </div>
+
+                      <div>
+                        <label className={labelClass}>Revisão *</label>
+                        <input
+                          type="number"
+                          min="1"
+                          required
+                          value={form.revisao}
+                          onChange={e => update('revisao', e.target.value)}
+                          className={inputClass}
+                        />
+                      </div>
+
+                      <div>
+                        <label className={labelClass}>Cavidades Ativas *</label>
+                        <input
+                          type="number"
+                          min="1"
+                          required
+                          value={form.cavidades_ativas}
+                          onChange={e => update('cavidades_ativas', e.target.value)}
+                          className={inputClass}
+                        />
+                      </div>
+
+                      <div>
+                        <label className={labelClass}>Status da Ficha</label>
+                        <select
+                          value={form.status}
+                          onChange={e => update('status', e.target.value as Status)}
+                          className={inputClass}
+                        >
+                          <option value="RASCUNHO">RASCUNHO</option>
+                          <option value="EM_ANALISE">EM ANÁLISE</option>
+                          <option value="APROVADA">APROVADA</option>
+                          <option value="LIBERADA">LIBERADA P/ PRODUÇÃO</option>
+                          <option value="OBSOLETA">OBSOLETA</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="mt-2.5 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+                      <div>
+                        <EntityCodeLookup
+                          label="PRODUTO / PEÇA *"
+                          value={form.produto_id}
+                          records={products.map(p => ({ id: p.id, codigo: p.codigo, nome: p.nome }))}
+                          onChange={v => update('produto_id', v)}
+                          onSelect={r => {
+                            update('produto_id', r.id)
+                            setMessage(`Produto ${r.codigo} selecionado.`)
+                          }}
+                          required
+                          compact
+                          placeholder="Buscar peça..."
+                        />
+                      </div>
+
+                      <div>
+                        <EntityCodeLookup
+                          label="MOLDE / FERRAMENTAL *"
+                          value={form.ferramenta_id}
+                          records={tools.map(t => ({
+                            id: t.id,
+                            codigo: t.codigo,
+                            nome: t.nome,
+                            dimensoes: t.tipo
+                          }))}
+                          onChange={v => update('ferramenta_id', v)}
+                          onSelect={r => {
+                            update('ferramenta_id', r.id)
+                            const tHit = tools.find(x => x.id === r.id)
+                            if (tHit?.cavidades_ativas || tHit?.numero_cavidades) {
+                              update('cavidades_ativas', String(tHit.cavidades_ativas || tHit.numero_cavidades))
+                            }
+                          }}
+                          compact
+                          placeholder="Buscar molde..."
+                        />
+                      </div>
+
+                      <div>
+                        <EntityCodeLookup
+                          label="MÁQUINA / INJETORA *"
+                          value={form.maquina_id}
+                          records={machines.map(m => ({
+                            id: m.id,
+                            codigo: m.codigo,
+                            nome: m.nome,
+                            dimensoes: m.tipo
+                          }))}
+                          onChange={v => update('maquina_id', v)}
+                          compact
+                          placeholder="Buscar máquina..."
+                        />
+                      </div>
+
+                      <div>
+                        <EntityCodeLookup
+                          label="CLIENTE INDUSTRIAL"
+                          value={form.codigo_cliente}
+                          records={clients.map(c => ({
+                            id: c.codigo,
+                            codigo: c.codigo,
+                            nome: c.nome,
+                            documento: c.documento
+                          }))}
+                          onChange={v => update('codigo_cliente', v)}
+                          compact
+                          placeholder="Cód. do cliente..."
+                        />
+                      </div>
+                    </div>
+
+                    {/* Resumo Dinâmico do Item Selecionado */}
+                    <div className="mt-2.5 rounded-[2px] bg-slate-50 p-2 text-[10px] text-slate-700 grid grid-cols-1 sm:grid-cols-3 gap-2 border border-slate-200">
+                      <div>
+                        <strong>Peça:</strong> {selectedProduct ? `${selectedProduct.codigo} — ${selectedProduct.nome}` : 'Nenhuma selecionada'}
+                      </div>
+                      <div>
+                        <strong>Molde:</strong> {selectedTool ? `${selectedTool.codigo} (${selectedTool.numero_cavidades ?? '1'} cav.)` : 'Nenhum selecionado'}
+                      </div>
+                      <div>
+                        <strong>Máquina:</strong> {selectedMachine ? `${selectedMachine.codigo} — ${selectedMachine.nome}` : 'Nenhuma alocada'}
+                      </div>
+                    </div>
+                  </section>
+
+                  {/* Bloco 2: Matéria-Prima & Mistura do Material (Conforme Modelo do PDF) */}
+                  <section className={cardClass}>
+                    <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="rounded bg-[#123B50] px-1.5 py-0.5 text-[8.5px] font-black text-white uppercase">
+                          SEÇÃO 2
+                        </span>
+                        <h2 className="text-xs font-black uppercase tracking-wider text-[#123B50]">
+                          COMPOSIÇÕES &amp; MISTURA DO MATERIAL (DOSAGEM DA BATELADA)
+                        </h2>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          ref={fileRef}
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp"
+                          className="hidden"
+                          onChange={e => void handleFile(e.target.files?.[0])}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => fileRef.current?.click()}
+                          className="h-6 px-2 text-[9px] font-bold uppercase rounded border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 flex items-center gap-1"
+                        >
+                          <ImagePlus size={12} />
+                          <span>Foto Material/Resina</span>
+                        </button>
+                      </div>
+                      <span className="text-[10px] font-mono font-bold text-slate-600">
+                        Total Batelada: <strong className="text-[#123B50]">{totalBateladaKg.toFixed(3)} kg</strong>
+                      </span>
+                    </div>
+
+                    {/* Tabela de Componentes da Mistura */}
+                    <div className="overflow-x-auto rounded-[2px] border border-slate-200">
+                      <table className="w-full border-collapse text-[11px]">
+                        <thead className="bg-[#123B50] text-white">
+                          <tr className="h-[28px]">
+                            <th className="px-2 text-left font-bold uppercase text-[9px] w-[140px]">Tipo Componente</th>
+                            <th className="px-2 text-left font-bold uppercase text-[9px]">Descrição do Material</th>
+                            <th className="px-2 text-left font-bold uppercase text-[9px] w-[100px]">Cód. MP</th>
+                            <th className="px-2 text-right font-bold uppercase text-[9px] w-[110px]">Dosagem (kg)</th>
+                            <th className="px-2 text-right font-bold uppercase text-[9px] w-[90px]">Proporção (%)</th>
+                            <th className="px-2 text-center font-bold uppercase text-[9px] w-[50px]">Ação</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 bg-white">
+                          {form.mistura.map((mat, idx) => (
+                            <tr key={mat.id} className="hover:bg-slate-50">
+                              <td className="p-1.5">
+                                <input
+                                  type="text"
+                                  value={mat.tipo}
+                                  onChange={e => {
+                                    const next = [...form.mistura]
+                                    next[idx].tipo = e.target.value
+                                    update('mistura', next)
+                                  }}
+                                  className="h-6 w-full rounded border border-slate-300 px-1.5 text-[10px] font-bold"
+                                />
+                              </td>
+                              <td className="p-1.5">
+                                <input
+                                  type="text"
+                                  value={mat.descricao}
+                                  onChange={e => {
+                                    const next = [...form.mistura]
+                                    next[idx].descricao = e.target.value
+                                    update('mistura', next)
+                                  }}
+                                  className="h-6 w-full rounded border border-slate-300 px-1.5 text-[10px]"
+                                />
+                              </td>
+                              <td className="p-1.5">
+                                <input
+                                  type="text"
+                                  value={mat.codigo}
+                                  onChange={e => {
+                                    const next = [...form.mistura]
+                                    next[idx].codigo = e.target.value
+                                    update('mistura', next)
+                                  }}
+                                  className="h-6 w-full rounded border border-slate-300 px-1.5 text-[10px] font-mono font-bold"
+                                />
+                              </td>
+                              <td className="p-1.5">
+                                <input
+                                  type="number"
+                                  step="any"
+                                  value={mat.dosagem_kg}
+                                  onChange={e => {
+                                    const val = Number(e.target.value) || 0
+                                    const next = [...form.mistura]
+                                    next[idx].dosagem_kg = val
+                                    const newTotal = next.reduce((acc, m) => acc + (m.dosagem_kg || 0), 0)
+                                    if (newTotal > 0) {
+                                      next.forEach(m => {
+                                        m.proporcao_pct = Number(((m.dosagem_kg / newTotal) * 100).toFixed(2))
+                                      })
+                                    }
+                                    update('mistura', next)
+                                  }}
+                                  className="h-6 w-full rounded border border-slate-300 px-1.5 text-[10px] text-right font-mono font-bold text-[#123B50]"
+                                />
+                              </td>
+                              <td className="p-1.5 text-right font-mono font-bold text-slate-700">
+                                {mat.proporcao_pct}%
+                              </td>
+                              <td className="p-1.5 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const next = form.mistura.filter((_, i) => i !== idx)
+                                    update('mistura', next)
+                                  }}
+                                  className="text-slate-400 hover:text-rose-600"
+                                  title="Remover componente"
+                                >
+                                  <X size={14} />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="mt-2 flex items-center justify-between">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = [
+                            ...form.mistura,
+                            {
+                              id: crypto.randomUUID(),
+                              tipo: 'Aditivo / Moído',
+                              descricao: 'Material Moído Reutilizável',
+                              codigo: 'MOIDO-01',
+                              dosagem_kg: 1.0,
+                              proporcao_pct: 0
+                            }
+                          ]
+                          update('mistura', next)
+                        }}
+                        className="h-6 px-2 text-[9px] font-bold uppercase rounded border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 flex items-center gap-1"
+                      >
+                        <Plus size={12} />
+                        <span>Adicionar Componente à Mistura</span>
+                      </button>
+
+                      <span className="text-[9px] text-slate-500 italic">
+                        Proporções recalculadas automaticamente com base no peso de cada componente.
+                      </span>
+                    </div>
+                  </section>
+
+                  {/* Bloco 3: Ciclo Produtivo & Parâmetros Térmicos */}
+                  <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                    
+                    {/* Ciclo e Rendimento da Máquina */}
+                    <section className={cardClass}>
+                      <div className="flex items-center gap-2 border-b border-slate-200 pb-2 mb-3">
+                        <span className="rounded bg-[#123B50] px-1.5 py-0.5 text-[8.5px] font-black text-white uppercase">
+                          SEÇÃO 3A
+                        </span>
+                        <h2 className="text-xs font-black uppercase tracking-wider text-[#123B50]">
+                          CICLO DE INJEÇÃO &amp; RENDIMENTO
+                        </h2>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+                        <div>
+                          <label className={labelClass}>Ciclo Total (s) *</label>
+                          <input
+                            type="number"
+                            step="any"
+                            value={form.ciclo_seg}
+                            onChange={e => update('ciclo_seg', e.target.value)}
+                            placeholder="36"
+                            className={inputClass}
+                          />
+                        </div>
+                        <div>
+                          <label className={labelClass}>Injeção (s)</label>
+                          <input
+                            type="number"
+                            step="any"
+                            value={form.tempo_injecao_seg}
+                            onChange={e => update('tempo_injecao_seg', e.target.value)}
+                            placeholder="3.5"
+                            className={inputClass}
+                          />
+                        </div>
+                        <div>
+                          <label className={labelClass}>Resfriamento (s)</label>
+                          <input
+                            type="number"
+                            step="any"
+                            value={form.tempo_resfriamento_seg}
+                            onChange={e => update('tempo_resfriamento_seg', e.target.value)}
+                            placeholder="18"
+                            className={inputClass}
+                          />
+                        </div>
+                        <div>
+                          <label className={labelClass}>Fechamento (Ton)</label>
+                          <input
+                            type="number"
+                            step="any"
+                            value={form.forca_fechamento}
+                            onChange={e => update('forca_fechamento', e.target.value)}
+                            placeholder="120"
+                            className={inputClass}
+                          />
+                        </div>
+                      </div>
+
+                      {/* KPIs Calculados de Rendimento */}
+                      <div className="mt-3 grid grid-cols-3 gap-2 rounded-[2px] bg-slate-50 p-2 border border-slate-200">
+                        <div className="text-center">
+                          <span className="text-[8.5px] font-bold uppercase text-slate-500">Capacidade</span>
+                          <div className="text-sm font-black text-[#123B50] font-mono">{pcsPerHour} un/h</div>
+                        </div>
+                        <div className="text-center">
+                          <span className="text-[8.5px] font-bold uppercase text-slate-500">Ciclos / Hora</span>
+                          <div className="text-sm font-black text-[#2D8DB8] font-mono">{cyclesPerHour} cic/h</div>
+                        </div>
+                        <div className="text-center">
+                          <span className="text-[8.5px] font-bold uppercase text-slate-500">Cavidades</span>
+                          <div className="text-sm font-black text-slate-800 font-mono">{cavitiesNum} ativas</div>
+                        </div>
+                      </div>
+
+                      {/* Parâmetros de Peso */}
+                      <div className="mt-3 grid grid-cols-2 gap-2.5">
+                        <div>
+                          <label className={labelClass}>Peso Peça Líquida (kg)</label>
+                          <input
+                            type="number"
+                            step="any"
+                            value={form.peso_peca}
+                            onChange={e => update('peso_peca', e.target.value)}
+                            placeholder="0.035"
+                            className={inputClass}
+                          />
+                        </div>
+                        <div>
+                          <label className={labelClass}>Peso Canal / Galho (kg)</label>
+                          <input
+                            type="number"
+                            step="any"
+                            value={form.peso_canal}
+                            onChange={e => update('peso_canal', e.target.value)}
+                            placeholder="0.005"
+                            className={inputClass}
+                          />
+                        </div>
+                      </div>
+                    </section>
+
+                    {/* Temperaturas das Zonas de Plastificação */}
+                    <section className={cardClass}>
+                      <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="rounded bg-[#123B50] px-1.5 py-0.5 text-[8.5px] font-black text-white uppercase">
+                            SEÇÃO 3B
+                          </span>
+                          <h2 className="text-xs font-black uppercase tracking-wider text-[#123B50]">
+                            TEMPERATURAS DO CANHÃO &amp; MOLDE (°C)
+                          </h2>
+                        </div>
+                        <span className="text-[9px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                          Tolerância: ± {form.tolerancia_temp || '5'} °C
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                        <div>
+                          <label className={labelClass}>Bico (°C)</label>
+                          <input
+                            type="number"
+                            value={form.bico}
+                            onChange={e => update('bico', e.target.value)}
+                            className={inputClass}
+                          />
+                        </div>
+                        <div>
+                          <label className={labelClass}>Zona 1 (°C)</label>
+                          <input
+                            type="number"
+                            value={form.zona1}
+                            onChange={e => update('zona1', e.target.value)}
+                            className={inputClass}
+                          />
+                        </div>
+                        <div>
+                          <label className={labelClass}>Zona 2 (°C)</label>
+                          <input
+                            type="number"
+                            value={form.zona2}
+                            onChange={e => update('zona2', e.target.value)}
+                            className={inputClass}
+                          />
+                        </div>
+                        <div>
+                          <label className={labelClass}>Zona 3 (°C)</label>
+                          <input
+                            type="number"
+                            value={form.zona3}
+                            onChange={e => update('zona3', e.target.value)}
+                            className={inputClass}
+                          />
+                        </div>
+                        <div>
+                          <label className={labelClass}>Zona 4 (°C)</label>
+                          <input
+                            type="number"
+                            value={form.zona4}
+                            onChange={e => update('zona4', e.target.value)}
+                            className={inputClass}
+                          />
+                        </div>
+                        <div>
+                          <label className={labelClass}>Molde (°C)</label>
+                          <input
+                            type="number"
+                            value={form.zona_molde}
+                            onChange={e => update('zona_molde', e.target.value)}
+                            className={inputClass}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Diagrama Visual Esquemático do Canhão de Injeção */}
+                      <div className="mt-3 rounded-[2px] border border-slate-200 bg-slate-900 p-2.5 text-white">
+                        <div className="text-[9px] font-bold uppercase tracking-wider text-[#48B7C7] mb-1">
+                          Perfil Térmico do Canhão de Plastificação
+                        </div>
+                        <div className="flex items-center justify-between text-center gap-1 font-mono text-[10px]">
+                          <div className="flex-1 bg-slate-800 p-1 rounded border border-rose-500/40">
+                            <span className="text-[8px] text-slate-400 block">Bico</span>
+                            <strong className="text-rose-400">{form.bico}°C</strong>
+                          </div>
+                          <span className="text-slate-600">→</span>
+                          <div className="flex-1 bg-slate-800 p-1 rounded border border-amber-500/40">
+                            <span className="text-[8px] text-slate-400 block">Z1 (Frente)</span>
+                            <strong className="text-amber-400">{form.zona1}°C</strong>
+                          </div>
+                          <span className="text-slate-600">→</span>
+                          <div className="flex-1 bg-slate-800 p-1 rounded border border-yellow-500/40">
+                            <span className="text-[8px] text-slate-400 block">Z2 (Meio)</span>
+                            <strong className="text-yellow-400">{form.zona2}°C</strong>
+                          </div>
+                          <span className="text-slate-600">→</span>
+                          <div className="flex-1 bg-slate-800 p-1 rounded border border-sky-500/40">
+                            <span className="text-[8px] text-slate-400 block">Z3 (Alim.)</span>
+                            <strong className="text-sky-400">{form.zona3}°C</strong>
+                          </div>
+                          <span className="text-slate-600">→</span>
+                          <div className="flex-1 bg-slate-800 p-1 rounded border border-teal-500/40">
+                            <span className="text-[8px] text-slate-400 block">Z4 (Funil)</span>
+                            <strong className="text-teal-400">{form.zona4}°C</strong>
+                          </div>
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+
+                  {/* Bloco 4: Aviso Importante & Instruções de Operação (Conforme Modelo do PDF) */}
+                  <section className={cardClass}>
+                    <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="rounded bg-[#D65B61] px-1.5 py-0.5 text-[8.5px] font-black text-white uppercase">
+                          AVISO OBRIGATÓRIO
+                        </span>
+                        <h2 className="text-xs font-black uppercase tracking-wider text-[#D65B61]">
+                          INSTRUÇÕES OPERACIONAIS &amp; LIBERAÇÃO DA MÁQUINA
+                        </h2>
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-500">
+                        SGQ • Auditoria de Posto de Trabalho
+                      </span>
+                    </div>
+
+                    {/* Caixa de Destaque com Alerta (ex: Desmoldante) */}
+                    <div className="rounded-[2px] border-l-4 border-l-[#D65B61] bg-rose-50/80 p-2.5">
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle size={16} className="text-[#D65B61]" />
+                        <strong className="text-xs font-black uppercase text-rose-900">
+                          Alerta Crítico de Processo:
+                        </strong>
+                      </div>
+                      <input
+                        type="text"
+                        value={form.aviso_destaque}
+                        onChange={e => update('aviso_destaque', e.target.value)}
+                        placeholder="Ex: Aplicar desmoldante a cada 100 injetadas"
+                        className="mt-1 h-[28px] w-full rounded border border-rose-300 bg-white px-2 text-[11px] font-bold text-rose-900 outline-none"
+                      />
+                    </div>
+
+                    {/* Procedimentos Padrão de Setup */}
+                    <div className="mt-3">
+                      <label className={labelClass}>Procedimento Operacional Padronizado (POP Chão de Fábrica)</label>
+                      <textarea
+                        rows={5}
+                        value={form.observacoes_setup}
+                        onChange={e => update('observacoes_setup', e.target.value)}
+                        className="w-full rounded-[2px] border border-slate-300 bg-white p-2 text-[11px] text-slate-800 outline-none focus:border-[#2D8DB8]"
+                      />
+                    </div>
+                  </section>
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* ABA 2 (2/3): FOTOS DO MOLDE & FERRAMENTAL (Setup, Cavidade e Refrigeração) */}
+              {/* ========================================================================= */}
+              {activeTab === 'MOLDE' && (
+                <div className="space-y-3">
+                  
+                  {/* Seção Superior de Upload de Fotos do Molde */}
+                  <section className={cardClass}>
+                    <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="rounded bg-[#123B50] px-1.5 py-0.5 text-[8.5px] font-black text-white uppercase">
+                          MOLDE 2/3
+                        </span>
+                        <h2 className="text-xs font-black uppercase tracking-wider text-[#123B50]">
+                          GALERIA FOTOGRÁFICA DO MOLDE &amp; FERRAMENTAL
+                        </h2>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => moldPhotoRef.current?.click()}
+                        className={`${btnClass} bg-[#2D8DB8] text-white hover:bg-[#236F91]`}
+                      >
+                        <ImagePlus size={13} />
+                        <span>Adicionar Foto do Molde</span>
+                      </button>
+                    </div>
+
+                    <input
+                      ref={moldPhotoRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      className="hidden"
+                      onChange={e => void handleMoldPhotoUpload(e.target.files?.[0])}
+                    />
+
+                    {/* Grid de Fotos Técnicas Sem Repetição */}
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                      
+                      {/* Foto Principal da Ficha (se houver) */}
+                      {form.imagem_url && (
+                        <div className="rounded-[2px] border border-slate-200 bg-white overflow-hidden shadow-xs group relative">
+                          <div className="h-44 bg-slate-100 flex items-center justify-center p-2">
+                            <img
+                              src={form.imagem_url}
+                              alt="Foto Principal"
+                              className="max-h-full max-w-full object-contain cursor-pointer"
+                              onClick={() => setSelectedPhotoZoom(form.imagem_url)}
+                            />
+                          </div>
+                          <div className="p-2 border-t border-slate-100 flex items-center justify-between bg-slate-50">
+                            <div>
+                              <strong className="text-[10px] text-slate-800 block">Foto Principal da Peça</strong>
+                              <span className="text-[8.5px] text-slate-500">Imagem Mestre</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedPhotoZoom(form.imagem_url)}
+                              className="text-slate-400 hover:text-slate-700"
+                              title="Visualizar ampliada"
+                            >
+                              <Maximize2 size={13} />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Fotos Adicionadas à Galeria do Molde */}
+                      {form.fotos_molde.map((foto, idx) => (
+                        <div
+                          key={foto.id}
+                          className="rounded-[2px] border border-slate-200 bg-white overflow-hidden shadow-xs relative group"
+                        >
+                          <div className="h-44 bg-slate-100 flex items-center justify-center p-2">
+                            <img
+                              src={foto.url}
+                              alt={foto.titulo}
+                              className="max-h-full max-w-full object-contain cursor-pointer"
+                              onClick={() => setSelectedPhotoZoom(foto.url)}
+                            />
+                          </div>
+                          <div className="p-2 border-t border-slate-100 bg-slate-50">
+                            <div className="flex items-center justify-between">
+                              <span className="rounded bg-[#123B50] px-1 py-0.2 text-[8px] font-black uppercase text-white">
+                                {foto.tipo}
+                              </span>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedPhotoZoom(foto.url)}
+                                  className="text-slate-400 hover:text-slate-700"
+                                  title="Ver ampliada"
+                                >
+                                  <Maximize2 size={12} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const next = form.fotos_molde.filter((_, i) => i !== idx)
+                                    update('fotos_molde', next)
+                                  }}
+                                  className="text-slate-400 hover:text-rose-600"
+                                  title="Remover foto"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
+                            </div>
+                            <input
+                              type="text"
+                              value={foto.titulo}
+                              onChange={e => {
+                                const next = [...form.fotos_molde]
+                                next[idx].titulo = e.target.value
+                                update('fotos_molde', next)
+                              }}
+                              className="mt-1 h-5 w-full text-[10px] font-bold text-slate-800 bg-transparent border-b border-transparent focus:border-[#2D8DB8] outline-none"
+                            />
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Card de Adição Rápida */}
+                      <div
+                        onClick={() => moldPhotoRef.current?.click()}
+                        className="h-56 rounded-[2px] border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-sky-50/50 hover:border-[#2D8DB8] flex flex-col items-center justify-center p-4 cursor-pointer text-center transition-colors"
+                      >
+                        <ImagePlus size={28} className="text-[#2D8DB8]" />
+                        <strong className="mt-2 text-[11px] text-slate-800">Enviar Foto do Molde</strong>
+                        <span className="text-[9px] text-slate-500 mt-0.5">
+                          Cavidade, lado fixo, gavetas ou montagem
+                        </span>
+                      </div>
+                    </div>
+                  </section>
+
+                  {/* Checklist Técnico de Montagem e Fixação do Molde */}
+                  <section className={cardClass}>
+                    <div className="flex items-center gap-2 border-b border-slate-200 pb-2 mb-3">
+                      <span className="rounded bg-[#123B50] px-1.5 py-0.5 text-[8.5px] font-black text-white uppercase">
+                        CHECKLIST
+                      </span>
+                      <h2 className="text-xs font-black uppercase tracking-wider text-[#123B50]">
+                        CONEXÕES TÉCNICAS DE FIXAÇÃO &amp; REFRIGERAÇÃO
+                      </h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-[10px]">
+                      <div className="rounded border border-slate-200 bg-slate-50 p-2 space-y-1">
+                        <strong className="text-slate-800 block text-[11px]">1. Refrigeração</strong>
+                        <div>• Circuito de água conectado</div>
+                        <div>• Temperatura do molde: {form.zona_molde || '35'}°C</div>
+                        <div>• Mangueiras de engate rápido conferidas</div>
+                      </div>
+                      <div className="rounded border border-slate-200 bg-slate-50 p-2 space-y-1">
+                        <strong className="text-slate-800 block text-[11px]">2. Fixação e Grampos</strong>
+                        <div>• Flange de centragem encaixada</div>
+                        <div>• Parafusos e grampos torquizados</div>
+                        <div>• Proteção frontal e traseira liberadas</div>
+                      </div>
+                      <div className="rounded border border-slate-200 bg-slate-50 p-2 space-y-1">
+                        <strong className="text-slate-800 block text-[11px]">3. Extração &amp; Gavetas</strong>
+                        <div>• Tirantes do extrator engatados</div>
+                        <div>• Fim de curso mecânico regulado</div>
+                        <div>• Gavetas lubrificadas com graxa técnica</div>
+                      </div>
+                      <div className="rounded border border-slate-200 bg-slate-50 p-2 space-y-1">
+                        <strong className="text-slate-800 block text-[11px]">4. Desmoldante &amp; Bico</strong>
+                        <div>• Raio da bucha compatível com o bico</div>
+                        <div>• Desmoldante: {form.aviso_destaque}</div>
+                        <div>• Canal de injeção polido e desobstruído</div>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* ABA 3 (3/3): QUALIDADE, DESENHO TÉCNICO & ESPECIFICAÇÕES SGQ              */}
+              {/* ========================================================================= */}
+              {activeTab === 'QUALIDADE' && (
+                <div className="space-y-3">
+                  
+                  {/* Seção Superior: Desenho Técnico & Documentos Relacionados */}
+                  <section className={cardClass}>
+                    <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="rounded bg-[#123B50] px-1.5 py-0.5 text-[8.5px] font-black text-white uppercase">
+                          DESENHO 3/3
+                        </span>
+                        <h2 className="text-xs font-black uppercase tracking-wider text-[#123B50]">
+                          DESENHO TÉCNICO DA PEÇA &amp; DOCUMENTOS DA QUALIDADE
+                        </h2>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-slate-500">Desenho nº:</span>
+                        <input
+                          type="text"
+                          value={form.desenho_numero}
+                          onChange={e => update('desenho_numero', e.target.value)}
+                          placeholder="Ex: TPA01201"
+                          className="h-[24px] w-28 rounded border border-slate-300 px-1.5 text-[10px] font-mono font-bold"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                      <div>
+                        <label className={labelClass}>Formulário SGQ Relacionado</label>
+                        <input
+                          type="text"
+                          value={form.formulario_sgq}
+                          onChange={e => update('formulario_sgq', e.target.value)}
+                          placeholder="FPT-1J-010/2 • FPT-1J-010/3"
+                          className={inputClass}
+                        />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Acabamento Superficial</label>
+                        <input
+                          type="text"
+                          value={form.especificacoes_acabamento}
+                          onChange={e => update('especificacoes_acabamento', e.target.value)}
+                          placeholder="VDI 24 / Polimento espelhado"
+                          className={inputClass}
+                        />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Cor / Padrão Visual</label>
+                        <input
+                          type="text"
+                          value={form.especificacoes_cor}
+                          onChange={e => update('especificacoes_cor', e.target.value)}
+                          placeholder="Preto Técnico Fosco"
+                          className={inputClass}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-2.5">
+                      <label className={labelClass}>Gravação, Datador &amp; Rastreabilidade na Peça</label>
+                      <input
+                        type="text"
+                        value={form.especificacoes_gravacao}
+                        onChange={e => update('especificacoes_gravacao', e.target.value)}
+                        placeholder="Datador ano/mês e gravação da cavidade em relevo"
+                        className={inputClass}
+                      />
+                    </div>
+                  </section>
+
+                  {/* Plano de Inspeção e Controle de Qualidade */}
+                  <section className={cardClass}>
+                    <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="rounded bg-[#123B50] px-1.5 py-0.5 text-[8.5px] font-black text-white uppercase">
+                          PLANO SGQ
+                        </span>
+                        <h2 className="text-xs font-black uppercase tracking-wider text-[#123B50]">
+                          ITENS DE INSPEÇÃO OPERACIONAL NO POSTO DE TRABALHO
+                        </h2>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const novoItem: InspectionItem = {
+                            id: crypto.randomUUID(),
+                            caracteristica: 'Nova característica crítica',
+                            instrumento: 'Paquímetro / Visual',
+                            frequencia: 'A cada 1 hora',
+                            criterio: 'Sem rebarbas / Dentro do dimensional',
+                            tolerancia: '± 0.05 mm',
+                            status_aprovacao: 'CONFORME'
+                          }
+                          update('inspecoes', [...form.inspecoes, novoItem])
+                        }}
+                        className="h-6 px-2 text-[9px] font-bold uppercase rounded border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 flex items-center gap-1"
+                      >
+                        <Plus size={12} />
+                        <span>Adicionar Item de Inspeção</span>
+                      </button>
+                    </div>
+
+                    <div className="overflow-x-auto rounded-[2px] border border-slate-200">
+                      <table className="w-full border-collapse text-[11px]">
+                        <thead className="bg-[#123B50] text-white">
+                          <tr className="h-[28px]">
+                            <th className="px-2 text-left font-bold uppercase text-[9px]">Característica Inspecionada</th>
+                            <th className="px-2 text-left font-bold uppercase text-[9px] w-[180px]">Instrumento / Método</th>
+                            <th className="px-2 text-left font-bold uppercase text-[9px] w-[160px]">Frequência</th>
+                            <th className="px-2 text-left font-bold uppercase text-[9px] w-[180px]">Critério de Aceitação</th>
+                            <th className="px-2 text-center font-bold uppercase text-[9px] w-[90px]">Situação</th>
+                            <th className="px-2 text-center font-bold uppercase text-[9px] w-[40px]">Ação</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 bg-white">
+                          {form.inspecoes.map((insp, idx) => (
+                            <tr key={insp.id} className="hover:bg-slate-50">
+                              <td className="p-1.5">
+                                <input
+                                  type="text"
+                                  value={insp.caracteristica}
+                                  onChange={e => {
+                                    const next = [...form.inspecoes]
+                                    next[idx].caracteristica = e.target.value
+                                    update('inspecoes', next)
+                                  }}
+                                  className="h-6 w-full rounded border border-slate-300 px-1.5 text-[10px] font-semibold"
+                                />
+                              </td>
+                              <td className="p-1.5">
+                                <input
+                                  type="text"
+                                  value={insp.instrumento}
+                                  onChange={e => {
+                                    const next = [...form.inspecoes]
+                                    next[idx].instrumento = e.target.value
+                                    update('inspecoes', next)
+                                  }}
+                                  className="h-6 w-full rounded border border-slate-300 px-1.5 text-[10px]"
+                                />
+                              </td>
+                              <td className="p-1.5">
+                                <input
+                                  type="text"
+                                  value={insp.frequencia}
+                                  onChange={e => {
+                                    const next = [...form.inspecoes]
+                                    next[idx].frequencia = e.target.value
+                                    update('inspecoes', next)
+                                  }}
+                                  className="h-6 w-full rounded border border-slate-300 px-1.5 text-[10px]"
+                                />
+                              </td>
+                              <td className="p-1.5">
+                                <input
+                                  type="text"
+                                  value={insp.criterio}
+                                  onChange={e => {
+                                    const next = [...form.inspecoes]
+                                    next[idx].criterio = e.target.value
+                                    update('inspecoes', next)
+                                  }}
+                                  className="h-6 w-full rounded border border-slate-300 px-1.5 text-[10px]"
+                                />
+                              </td>
+                              <td className="p-1.5 text-center">
+                                <select
+                                  value={insp.status_aprovacao || 'CONFORME'}
+                                  onChange={e => {
+                                    const next = [...form.inspecoes]
+                                    next[idx].status_aprovacao = e.target.value as 'CONFORME' | 'NAO_CONFORME' | 'EM_ANALISE'
+                                    update('inspecoes', next)
+                                  }}
+                                  className="h-6 rounded border border-slate-300 px-1 text-[9px] font-black uppercase text-emerald-800 bg-emerald-50"
+                                >
+                                  <option value="CONFORME">Conforme</option>
+                                  <option value="NAO_CONFORME">Não Conforme</option>
+                                  <option value="EM_ANALISE">Em Análise</option>
+                                </select>
+                              </td>
+                              <td className="p-1.5 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const next = form.inspecoes.filter((_, i) => i !== idx)
+                                    update('inspecoes', next)
+                                  }}
+                                  className="text-slate-400 hover:text-rose-600"
+                                >
+                                  <X size={14} />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Modal de Zoom de Foto */}
+      {selectedPhotoZoom && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 p-4"
+          onClick={() => setSelectedPhotoZoom(null)}
+        >
+          <div className="relative max-h-[90vh] max-w-[90vw] rounded bg-white p-2 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <button
+              type="button"
+              onClick={() => setSelectedPhotoZoom(null)}
+              className="absolute right-3 top-3 rounded-full bg-slate-900/70 p-1 text-white hover:bg-slate-900"
+            >
+              <X size={18} />
+            </button>
+            <img src={selectedPhotoZoom} alt="Visualização técnica ampliada" className="max-h-[85vh] max-w-full object-contain" />
+          </div>
+        </div>
+      )}
+
+      {/* Espelho de Impressão A4 Oficial da Ficha (SYSNQRA IT-PCP-001) */}
+      <section className="ficha-print-sheet" aria-label="Espelho A4 da Ficha Técnica">
+        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: '6px' }}>
+          <div>
+            <h1 style={{ fontSize: '14pt', fontWeight: 'bold', margin: 0 }}>SYSNQRA SISTEMAS INDUSTRIAIS</h1>
+            <p style={{ fontSize: '8pt', color: '#475569', margin: '2px 0 0 0' }}>
+              FICHA DE PROCESSO TÉCNICA (IT-PCP-001) • ENGENHARIA &amp; SGQ
+            </p>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <span style={{ fontSize: '10pt', fontWeight: 'bold' }}>FICHA: {form.codigo_ficha || '—'}</span>
+            <p style={{ fontSize: '8pt', color: '#64748b', margin: '2px 0 0 0' }}>
+              Folha 1 / 3 • Rev. {form.revisao} • {form.status}
+            </p>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '10px', fontSize: '9pt', lineHeight: 1.5 }}>
+          <div><strong>Produto:</strong> {selectedProduct ? `${selectedProduct.codigo} — ${selectedProduct.nome}` : '—'}</div>
+          <div><strong>Molde / Ferramental:</strong> {selectedTool ? `${selectedTool.codigo} (${form.cavidades_ativas} cavidades ativas)` : '—'}</div>
+          <div><strong>Máquina / Recurso:</strong> {selectedMachine ? `${selectedMachine.codigo} — ${selectedMachine.nome}` : '—'}</div>
+          <div><strong>Alerta Operacional:</strong> <span style={{ color: '#b91c1c', fontWeight: 'bold' }}>{form.aviso_destaque}</span></div>
+        </div>
+
+        <table style={{ marginTop: '10px' }}>
+          <thead>
+            <tr>
+              <th colSpan={6} style={{ textAlign: 'center', background: '#e2e8f0' }}>PARÂMETROS DE TEMPERATURA (°C) — TOLERÂNCIA ±{form.tolerancia_temp}°C</th>
+            </tr>
+            <tr>
+              <th>Bico</th><th>Zona 1</th><th>Zona 2</th><th>Zona 3</th><th>Zona 4</th><th>Molde</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{form.bico}°C</td><td>{form.zona1}°C</td><td>{form.zona2}°C</td><td>{form.zona3}°C</td><td>{form.zona4}°C</td><td>{form.zona_molde}°C</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <table style={{ marginTop: '10px' }}>
+          <thead>
+            <tr>
+              <th colSpan={5} style={{ textAlign: 'center', background: '#e2e8f0' }}>COMPOSIÇÃO E MISTURA DE MATÉRIA-PRIMA</th>
+            </tr>
+            <tr>
+              <th>Tipo</th><th>Material</th><th>Código</th><th style={{ textAlign: 'right' }}>Dosagem</th><th style={{ textAlign: 'right' }}>Proporção</th>
+            </tr>
+          </thead>
+          <tbody>
+            {form.mistura.map(m => (
+              <tr key={m.id}>
+                <td>{m.tipo}</td><td>{m.descricao}</td><td>{m.codigo}</td><td style={{ textAlign: 'right' }}>{m.dosagem_kg} kg</td><td style={{ textAlign: 'right' }}>{m.proporcao_pct}%</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <div style={{ marginTop: '12px', fontSize: '8pt', border: '1px solid #cbd5e1', padding: '6px', background: '#f8fafc' }}>
+          <strong>INSTRUÇÕES OBRIGATÓRIAS DO SGQ:</strong>
+          <pre style={{ fontFamily: 'inherit', whiteSpace: 'pre-wrap', margin: '4px 0 0 0', fontSize: '7.5pt' }}>
+            {form.observacoes_setup}
+          </pre>
+        </div>
+      </section>
+    </>
+  )
+}
+
+function noticeMessage(error: string, message: string): string {
+  return error || message
+}
+
+export default FichasProcesso
