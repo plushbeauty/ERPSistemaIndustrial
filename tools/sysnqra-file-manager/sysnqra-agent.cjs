@@ -57,9 +57,14 @@ function authOk(req) {
   const expected = Buffer.from(token)
   return provided.length === expected.length && crypto.timingSafeEqual(provided, expected)
 }
+function isAllowedOrigin(origin) {
+  if (corsOrigins.has(origin)) return true
+  // Permite previews do projeto oficial, sem liberar origens arbitrárias do vercel.app.
+  return /^https:\\/\\/erp-sistema-industrial-[a-z0-9-]+-plushbeauty\\.vercel\\.app$/i.test(origin)
+}
 function sendCors(req, res) {
   const origin = req.headers.origin
-  if (origin && !corsOrigins.has(origin)) {
+  if (origin && !isAllowedOrigin(origin)) {
     sendJson(res, 403, { error: 'Origem não autorizada pelo agente. Configure SYSNQRA_CORS_ORIGINS.' })
     return false
   }
@@ -69,7 +74,7 @@ function sendCors(req, res) {
     'Access-Control-Max-Age': '600',
     'Vary': 'Origin',
   }
-  if (origin && corsOrigins.has(origin)) headers['Access-Control-Allow-Origin'] = origin
+  if (origin && isAllowedOrigin(origin)) headers['Access-Control-Allow-Origin'] = origin
   if (req.method === 'OPTIONS') {
     res.writeHead(204, headers); res.end(); return false
   }
