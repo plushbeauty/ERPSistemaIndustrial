@@ -133,10 +133,11 @@ As telas editáveis usam consultas e mutações reais no Supabase. O código ins
 5. Após Vendas, iniciar Compras com o mesmo padrão, sem afetar o shell global ou telas aprovadas.
 
 
-## Implementação da primeira tranche — REV-VENDAS-UI-003 a UI-010
+## Implementação incremental — REV-VENDAS-UI-003 a UI-011
 
 Arquivos efetivamente alterados nesta branch:
 - `src/pages/VendasAnaliseCustos.tsx`: campos e ação de anexo em 30 px, cards/bordas compactos, cabeçalho da tabela slate-100, linhas de 32 px e rótulo acessível para remover operação.
+- `src/pages/DashboardComercial.tsx`: botão de impressão dos gráficos em 30 px e cabeçalho dos cards com borda/cor compactas; KPIs e alturas dos gráficos mantidos.
 - `src/pages/VendasPDV.tsx`: selects, controles de quantidade, seleção de pagamento, limpeza de busca e finalização alinhados a 30 px; cartões de produto/carrinho mantidos como exceções de layout.
 - `src/pages/VendasCatalogoDigital.tsx`: busca e botões de ação compactados; controles de grade, seleção, detalhe e compartilhamento alinhados; imagens e cards de produto mantidos como conteúdo, não controles.
 - `src/pages/TabelaPrecos.tsx`: filtros e ação de reajuste em 30 px; labels compactas; cabeçalho slate-100 e linhas de tabela em 32 px; paginação compacta.
