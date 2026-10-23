@@ -235,3 +235,11 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Status:** CORRIGIDO AGUARDANDO VALIDAÇÃO. UI-040 e QA-040 permanecem abertos.
 
 - **Ajuste de implementação da normalização:** corrigida a expressão regular Unicode após revisão do conteúdo versionado; commit `1a5d04191e41206af501b51a72e8b9ca2e0f0d85`. A verificação continua pendente de CI/build e teste funcional.
+
+
+### Evidência incremental — Vendas (2026-10-23)
+
+- Relatório: [SALES-UI-AUDIT-2026-10-23.md](./SALES-UI-AUDIT-2026-10-23.md).
+- Escopo estático tratado nesta rodada: `VendasPDV.tsx`, `VendasCatalogoDigital.tsx` e `VendasAnaliseCustos.tsx`; páginas congeladas e layout compartilhado ficaram intocados.
+- **UI-010 permanece aberto**: a rodada cobre apenas três páginas e ainda depende de CI, inspeção visual autenticada e validação do preview. Não marcar o módulo Vendas como concluído.
+- **UI-001 permanece aberto** até execução e revisão comprovada do relatório `audit:ui-standardization` no CI/checkout.
