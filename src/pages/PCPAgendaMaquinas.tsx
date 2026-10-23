@@ -1,5 +1,5 @@
 /**
- * REVISÃO: 2026-10-22 · REV-PCP-AGENDA-006
+ * REVISÃO: 2026-10-23 · REV-PCP-AGENDA-007
  * Alteração: consultas paginadas e limpeza de dados/seleção/calendário anteriores antes de revalidar a empresa da sessão.
  * Preservado: RPCs, filtros por empresa_id, regras operacionais e layout aprovado.
  */
@@ -92,8 +92,9 @@ export default function PCPAgendaMaquinas(){
   if(calendarDraft.horario_fim_jornada.slice(0,5)<=calendarDraft.horario_inicio_jornada.slice(0,5)){setError('O fim da jornada deve ser posterior ao início.');return}
   setBusy(true);setError('');setNotice('')
   try{
-   const r=await supabase.from('erp_pcp_calendario_trabalho').upsert({empresa_id:company,dias_trabalho:calendarDraft.dias_trabalho,horario_inicio_jornada:calendarDraft.horario_inicio_jornada.slice(0,5),horario_fim_jornada:calendarDraft.horario_fim_jornada.slice(0,5),updated_at:new Date().toISOString()},{onConflict:'empresa_id'})
+   const r=await supabase.from('erp_pcp_calendario_trabalho').upsert({empresa_id:company,dias_trabalho:calendarDraft.dias_trabalho,horario_inicio_jornada:calendarDraft.horario_inicio_jornada.slice(0,5),horario_fim_jornada:calendarDraft.horario_fim_jornada.slice(0,5),updated_at:new Date().toISOString()},{onConflict:'empresa_id'}).select('empresa_id').maybeSingle()
    if(r.error)throw r.error
+   if(!r.data||r.data.empresa_id!==company)throw new Error('O calendário não foi confirmado pelo banco para esta empresa.')
    setCalendar(calendarDraft);setCalendarOpen(false);setNotice('Calendário de trabalho salvo para a empresa.')
   }catch(e){setError(messageOf(e))}finally{setBusy(false)}
  }
