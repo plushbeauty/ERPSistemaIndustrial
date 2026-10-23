@@ -1,3 +1,8 @@
+/**
+ * SYSNQRA ERP INDUSTRIAL — Padronização visual incremental de Vendas
+ * Revisão: REV-VENDAS-UI-010 | Data: 2026-10-23
+ * Escopo: largura responsiva da pesquisa; produtos reais e gravação preservados.
+ */
 import { useEffect, useMemo, useState } from 'react'
 import { Check, Save } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -96,7 +101,7 @@ export default function VendasCatalogoDigitalGestao() {
               <p className="mt-1 text-xs text-slate-500">Marque os produtos que devem aparecer no catálogo digital. A fonte é o cadastro real de produtos.</p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar código ou produto" className="h-[30px] w-72 rounded-[2px] border border-slate-300 px-2 text-[10px] outline-none focus:border-[#2D8DB8]" />
+              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar código ou produto" className="h-[30px] w-full max-w-[288px] min-w-0 rounded-[2px] border border-slate-300 px-2 text-xs outline-none focus:border-[#2D8DB8]" />
               <button type="button" onClick={() => void save()} disabled={saving || busy} className="inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">
                 <Save size={12} /> {saving ? 'SALVANDO…' : 'SALVAR ALTERAÇÕES'}
               </button>
