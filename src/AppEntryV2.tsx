@@ -539,8 +539,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/especificacoes" element={<QualityPlanGate><QualidadeEspecificacoesTecnicas /></QualityPlanGate>} />
       <Route path="/qualidade/fmea" element={<QualityPlanGate><QualidadeFMEA /></QualityPlanGate>} />
       <Route path="/qualidade/rnc-capa" element={<Navigate to="/qualidade/rnc" replace />} />
-      <Route path="/qualidade/ishikawa" element={<QualityPlanGate><QualidadeRNC initialTab="ishikawa" /></QualityPlanGate>} />
-      <Route path="/qualidade/capa" element={<QualityPlanGate><QualidadeRNC initialTab="capa" /></QualityPlanGate>} />
+      <Route path="/qualidade/ishikawa" element={<QualityPlanGate><SalaRNC /></QualityPlanGate>} />
+      <Route path="/qualidade/capa" element={<QualityPlanGate><SalaRNC /></QualityPlanGate>} />
       <Route path="/qualidade/cep" element={<QualityPlanGate><QualidadeCEP /></QualityPlanGate>} />
       <Route path="/qualidade/ged-documentos" element={<QualityPlanGate><GEDDocumentos /></QualityPlanGate>} />
       <Route path="/qualidade/controle-desenhos" element={<QualityPlanGate><ControleDesenhos /></QualityPlanGate>} />
@@ -589,8 +589,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/auditorias-planta" element={<QualityPlanGate><QualidadeAuditoriasPlanta /></QualityPlanGate>} />
       <Route path="/qualidade/instrumentos" element={<QualityPlanGate><QualidadeInstrumentosCadastro /></QualityPlanGate>} />
       <Route path="/qualidade/liberacao-lote" element={<QualityPlanGate><QualidadeLiberacaoLotes /></QualityPlanGate>} />
-      <Route path="/qualidade/dashboard-rnc" element={<QualityPlanGate><QualidadeDashboardRNC /></QualityPlanGate>} />
-      <Route path="/qualidade/rpnc" element={<QualityPlanGate><QualidadeRPNCMultiorigem /></QualityPlanGate>} />
+      <Route path="/qualidade/dashboard-rnc" element={<QualityPlanGate><SalaRNC /></QualityPlanGate>} />
+      <Route path="/qualidade/rpnc" element={<QualityPlanGate><SalaRNC /></QualityPlanGate>} />
       <Route path="/qualidade/pfmea" element={<QualityPlanGate><QualidadePFMEA /></QualityPlanGate>} />
       <Route path="/qualidade/documentos" element={<QualityPlanGate><DocumentosQualidadeControle /></QualityPlanGate>} />
       <Route path="/qualidade/inspecao-processo" element={<QualityPlanGate><QualidadeInspecaoProcesso /></QualityPlanGate>} />
