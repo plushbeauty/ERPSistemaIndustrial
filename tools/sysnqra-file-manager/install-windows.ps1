@@ -16,7 +16,7 @@ if (-not $node) { throw 'Node.js 20+ não encontrado. Instale Node.js LTS e exec
 $nodeMajor = [int]((& node -p "process.versions.node.split('.')[0]").Trim())
 if ($nodeMajor -lt 20) { throw 'O agente requer Node.js 20 ou superior.' }
 
-New-Item -ItemType Directory -Force -Path $installRoot, $storageRoot | Out-Null
+New-Item -ItemType Directory -Force -Path $installRoot, $dataRoot, $storageRoot | Out-Null
 Copy-Item (Join-Path $PSScriptRoot 'sysnqra-agent.cjs') $installRoot -Force
 Copy-Item (Join-Path $PSScriptRoot 'install-service.cjs') $installRoot -Force
 Copy-Item (Join-Path $PSScriptRoot 'package.json') $installRoot -Force
@@ -73,6 +73,8 @@ if ($LASTEXITCODE -ne 0) { throw 'Não foi possível configurar a conta de execu
 
 # O serviço lê o token de um arquivo protegido, não de um script versionado.
 & icacls.exe $installRoot /inheritance:r /grant:r 'SYSTEM:(OI)(CI)F' 'BUILTIN\Administrators:(OI)(CI)F' "$($serviceAccount):(OI)(CI)RX" | Out-Null
+& icacls.exe $dataRoot /inheritance:r /grant:r 'SYSTEM:(OI)(CI)F' 'BUILTIN\\Administrators:(OI)(CI)F' "$($serviceAccount):(OI)(CI)M" | Out-Null
+if ($LASTEXITCODE -ne 0) { throw 'Não foi possível proteger a configuração persistente do agente.' }
 & icacls.exe $storageRoot /grant:r "$($serviceAccount):(OI)(CI)M" | Out-Null
 if ($LASTEXITCODE -ne 0) { throw 'Não foi possível aplicar as permissões mínimas ao armazenamento.' }
 
