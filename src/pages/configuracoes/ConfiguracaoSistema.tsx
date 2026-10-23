@@ -46,7 +46,7 @@ function FileManagerInstaller() {
     setBusy(true); setError(''); setMessage(''); setHealth('')
     try {
       if (!token.trim()) throw new Error('Informe o token de acesso configurado no agente local.')
-      const response = await fetch(agentUrl.replace(/\\/$/, '') + '/health', { headers: { Authorization: 'Bearer ' + token.trim() } })
+      const response = await fetch(agentUrl.replace(/\/+$/, '') + '/health', { headers: { Authorization: 'Bearer ' + token.trim() } })
       const data: unknown = await response.json()
       if (!response.ok) throw new Error('O agente respondeu HTTP ' + response.status + '. Confira endereço e token.')
       const status = data as { status?: string; service?: string; version?: string; hostname?: string }
@@ -63,7 +63,7 @@ function FileManagerInstaller() {
     try {
       if (!token.trim()) throw new Error('Informe o token do agente.')
       if (!primaryPath.trim()) throw new Error('Informe a pasta principal de armazenamento.')
-      const response = await fetch(agentUrl.replace(/\\/$/, '') + '/validate-paths', {
+      const response = await fetch(agentUrl.replace(/\/+$/, '') + '/validate-paths', {
         method: 'POST',
         headers: requestHeaders(),
         body: JSON.stringify({
