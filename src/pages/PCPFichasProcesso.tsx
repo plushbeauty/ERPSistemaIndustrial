@@ -417,9 +417,9 @@ export default function PCPFichasProcesso() {
  const isCutVincoProcess = category === 'CORTE_VINCO'
  const isFinishingProcess = category === 'ACABAMENTO'
  const toolFieldLabel = isPressProcess ? 'Molde de compressão / ferramental' : isInjectionProcess ? 'Molde de injeção' : isStampingProcess ? 'Estampo de corte / conformação' : isCutVincoProcess ? 'Estampo / faca e matriz de corte e vinco' : isFinishingProcess ? 'Gabarito / dispositivo de acabamento' : isMechanicalProcess ? 'Ferramenta / dispositivo de usinagem' : 'Ferramental / dispositivo'
- const machineFieldLabel = isPressProcess ? 'Prensa hidráulica / recurso *' : isInjectionProcess ? 'Injetora plástica / recurso *' : isStampingProcess ? 'Prensa de estampagem / recurso *' : isCutVincoProcess ? 'Máquina de corte e vinco / recurso *' : isFinishingProcess ? 'Posto / recurso principal de acabamento' : 'Máquina / recurso industrial'
+ const machineFieldLabel = isPressProcess ? 'Prensa hidráulica / recurso *' : isInjectionProcess ? 'Injetora plástica / recurso *' : isStampingProcess ? 'Prensa de estampagem / recurso *' : isCutVincoProcess ? 'Máquina de corte e vinco / recurso *' : isFinishingProcess ? 'Posto / recurso principal de acabamento' : isMechanicalProcess ? 'Máquina de usinagem / recurso *' : isBatchProcess ? 'Tanque / estufa / linha de tratamento' : 'Máquina / recurso industrial'
  const cavityFieldLabel = isPressProcess ? 'Cavidades do molde' : isStampingProcess ? 'Unidades por golpe / cavidades' : isCutVincoProcess ? 'Peças por golpe / folha' : isMechanicalProcess ? 'Unidades por ciclo' : isFinishingProcess ? 'Etapas do roteiro' : isBatchProcess ? 'Peças por lote' : 'Cavidades ativas'
- const resourceSummaryTitle = isPressProcess ? 'Identificação da prensa e do molde' : isInjectionProcess ? 'Identificação da injetora e do molde' : isStampingProcess ? 'Identificação do estampo e da prensa' : isCutVincoProcess ? 'Identificação do ferramental de corte e vinco' : isFinishingProcess ? 'Roteiro de acabamento por posto' : 'Identificação e componentes'
+ const resourceSummaryTitle = isPressProcess ? 'Identificação da prensa e do molde' : isInjectionProcess ? 'Identificação da injetora e do molde' : isStampingProcess ? 'Identificação do estampo e da prensa' : isCutVincoProcess ? 'Identificação do ferramental de corte e vinco' : isFinishingProcess ? 'Roteiro de acabamento por posto' : isMechanicalProcess ? 'Identificação da máquina de usinagem' : isBatchProcess ? 'Identificação do recurso por lote' : 'Identificação e componentes'
  const instructionsLabel = isPressProcess ? 'Instruções de preparação da prensa / cura / segurança' : isInjectionProcess ? 'Instruções de setup da injetora / processo / segurança' : isStampingProcess ? 'Instruções de setup do estampo / alimentação / segurança' : isCutVincoProcess ? 'Instruções de preparação de corte e vinco / qualidade / segurança' : isFinishingProcess ? 'Instruções de acabamento, inspeção e critérios de liberação' : isMechanicalProcess ? 'Instruções de usinagem, controle dimensional e segurança' : 'Instruções de setup / processo / segurança'
  const instructionsPlaceholder = isPressProcess
   ? 'Sequência de carga do composto, fechamento da prensa, temperatura dos platôs, pressão, cura/vulcanização, respiros, inspeção inicial, EPI e reação a desvios…'
@@ -431,7 +431,11 @@ export default function PCPFichasProcesso() {
      ? 'Conferir faca e matriz, régua e canal de vinco, material e espessura, pressão/ajuste, registro de alimentação, sequência de corte, amostra inicial, remoção de retalhos, qualidade das arestas e segurança…'
      : isFinishingProcess
       ? 'Definir a sequência real por posto: inspeção visual, separação de canais, rebarbação, limpeza/lubrificação e embalagem. Registrar máquina/posto, setor, tempo, checklist, referência visual e critérios de aceitação/rejeição…'
-      : 'Sequência operacional, parâmetros de controle, inspeção inicial, reação a desvio, EPI e cuidados ambientais…'
+      : isMechanicalProcess
+       ? 'Informar operação de usinagem, ferramenta/inserto, rotação, avanço, profundidade de corte, fluido refrigerante, tolerâncias, rugosidade, inspeção da primeira peça e EPI…'
+       : isBatchProcess
+        ? 'Registrar produto químico ou revestimento, concentração, tempo de imersão/cura, temperatura, quantidade por lote, inspeção do acabamento e cuidados da ficha de segurança…'
+        : 'Sequência operacional, parâmetros de controle, inspeção inicial, reação a desvio, EPI e cuidados ambientais…'
  const expectedPph = singleResourceProcess && Number(params.tempo_ciclo_seg) > 0 ? (3600 / Number(params.tempo_ciclo_seg)) * Math.max(1, Number(isMechanicalProcess ? params.unidades_por_ciclo : params.cavidades_ativas) || 1) : 0
  const fieldGroups = processParamGroups[category] ?? [{title:'Parâmetros técnicos do processo',keys:fields.map(field=>field.key)}]
  const assignedKeys = new Set(fieldGroups.flatMap(group=>group.keys))
@@ -440,8 +444,8 @@ export default function PCPFichasProcesso() {
  const valueLabel = (key:string,unit='') => params[key] ? `${params[key]}${unit ? ` ${unit}` : ''}` : 'Não informado'
  const summaryPanels = category === 'ACABAMENTO'
   ? [
-   {title:'Identificação do produto',items:[['Produto',selectedProduct?.nome||'—'],['SKU',selectedProduct?.codigo||'—'],['Dureza',valueLabel('dureza_shore_a','Shore A')],['Dimensional do molde',valueLabel('dimensional_molde_mm','mm')]]},
-   {title:'Dados de processo',items:[['Cavidades',valueLabel('cavidades_ativas')],['Material base',valueLabel('material_base')],['Tempo padrão',valueLabel('tempo_ciclo_seg','s')],['Recurso principal',selectedMachine?.codigo||'Não definido']]},
+   {title:'Identificação do produto',items:[['Produto',selectedProduct?.nome||'—'],['SKU',selectedProduct?.codigo||'—'],['Material base',valueLabel('material_base')],['Ficha / revisão',`${code||'—'} · ${version}`]]},
+   {title:'Dados de processo',items:[['Posto de inspeção',valueLabel('acabamento_inspecao_posto')],['Posto de rebarbação',valueLabel('acabamento_rebarba_posto')],['Tempo padrão',valueLabel('tempo_ciclo_seg','s')],['Recurso principal',selectedMachine?.codigo||'Não definido']]},
    {title:'Roteiro e controle',items:[['Etapas', 'Inspeção · rebarbação · limpeza · embalagem'],['Revisão',version],['Estado',status],['Homologação',approvedAt||'Não homologada']]},
   ]
   : category === 'MONTAGEM_EMBALAGEM'
