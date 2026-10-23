@@ -69,20 +69,29 @@ export default function VendasPedidoStatus() {
   const load = async () => {
     if (!id) return
     setError('')
-    const [orderResult, itemsResult, productionResult, expeditionResult, fiscalResult] = await Promise.all([
+    try {
+      const tenant = await supabase.rpc('erp_current_empresa_id')
+      if (tenant.error || !tenant.data) throw tenant.error ?? new Error('Empresa não identificada.')
+      const companyId = String(tenant.data)
+      const [orderResult, itemsResult, productionResult, expeditionResult, fiscalResult] = await Promise.all([
       supabase
         .from('erp_pedidos_venda')
         .select('numero,status,pedido_cliente,total,subtotal,desconto_valor,valor_frete,valor_outras_despesas,data_entrada,data_entrega_prometida,condicao_pagamento,vendedor_nome,modalidade_frete,transportadora,observacoes,cliente:erp_clientes(nome,documento)')
+        .eq('empresa_id', companyId)
         .eq('id', id)
         .maybeSingle(),
       supabase
         .from('erp_pedidos_venda_itens')
         .select('id,produto_id,descricao,quantidade,valor_unitario,desconto,total,produto_cliente')
+        .eq('empresa_id', companyId)
         .eq('pedido_id', id)
         .order('id'),
       supabase
         .from('erp_ordens_producao')
         .select('numero_op,status,quantidade,quantidade_planejada,quantidade_produzida,data_prevista')
+        .eq('empresa_id', companyId)
+        .eq('empresa_id', companyId)
+        .eq('empresa_id', companyId)
         .eq('pedido_venda_id', id),
       supabase
         .from('erp_expedicoes')
@@ -100,11 +109,19 @@ export default function VendasPedidoStatus() {
     if (expeditionResult.error) setError(expeditionResult.error.message)
     if (fiscalResult.error) setError(fiscalResult.error.message)
 
-    setOrder((orderResult.data ?? null) as unknown as Order | null)
-    setItems((itemsResult.data ?? []) as Item[])
-    setProduction((productionResult.data ?? []) as Production[])
-    setExpedition((expeditionResult.data ?? []) as Expedition[])
-    setFiscal((fiscalResult.data ?? []) as Fiscal[])
+      setOrder((orderResult.data ?? null) as unknown as Order | null)
+      setItems((itemsResult.data ?? []) as Item[])
+      setProduction((productionResult.data ?? []) as Production[])
+      setExpedition((expeditionResult.data ?? []) as Expedition[])
+      setFiscal((fiscalResult.data ?? []) as Fiscal[])
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível carregar o pedido.')
+      setOrder(null)
+      setItems([])
+      setProduction([])
+      setExpedition([])
+      setFiscal([])
+    }
   }
 
   useEffect(() => {
