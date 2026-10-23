@@ -188,3 +188,11 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Código:** [9322205ec24ee5f9228f146b0bc0f7bbbe345cca](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/9322205ec24ee5f9228f146b0bc0f7bbbe345cca).
 - **Relatório:** [ROUTE-AUDIT-2026-10-16.md](./ROUTE-AUDIT-2026-10-16.md), commit `d0970d2d752eb8cbcee70d9cf907e89bace25694`.
 - **Estado:** CORRIGIDO AGUARDANDO VALIDAÇÃO; sem evidência de testes locais, sessão/RLS ou deployment vinculado ao commit. UI-040 e QA-040 continuam pendentes.
+
+## Evidência incremental — calendário PCP e varredura estática do roteador (2026-10-23)
+
+- **PCP:** `src/pages/PCPAgendaMaquinas.tsx`, revisão `REV-PCP-AGENDA-007`; o salvamento da jornada agora confirma `empresa_id` na linha retornada antes de mostrar sucesso. [Commit](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/ec542753c386ce50e951b45fdbba95905a78f128).
+- **UI-002 — resultado parcial:** `src/AppEntryV2.tsx` contém 274 declarações `Route` com `path` e 181 imports dinâmicos; 187 caminhos de import relativo únicos do roteador foram comparados à árvore versionada, sem ausências detectadas. Os 14 arquivos referenciados no contrato visual também existem.
+- **Limite:** não foram confirmados aliases/orfandade de todos os componentes, renderização real, nem executado `npm run audit:ui-standardization`. UI-001, UI-002 e QA-040 continuam pendentes; não retirar do backlog.
+- **Relatório:** commit [edb40a2241dc516f6d2300018d66588a0828b1ff](https://github.com/plushbeauty/ERPSistemaIndustrial/commit/edb40a2241dc516f6d2300018d66588a0828b1ff).
+- **Deployment da nova correção:** aguarda consulta por SHA; o READY do commit anterior não conta como evidência desta mudança.
