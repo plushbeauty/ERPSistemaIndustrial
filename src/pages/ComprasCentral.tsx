@@ -1,3 +1,10 @@
+/**
+ * SYSNQRA ERP INDUSTRIAL — Central de Compras aprovada.
+ * REVISÃO: APROV-COMPRAS-2026-10-24-R1 | DATA: 2026-10-24.
+ * BASE: deployment Vercel EjPo9mBaQ / commit 16060aad0fce987250586f6c7fb7bb2f20b003c7.
+ * ESCOPO desta revisão: corrigir somente geometria dos cards de acesso rápido e congelar esta versão.
+ * Preservar cabeçalho, abas, rotas, paleta e fluxos de dados reais do Supabase.
+ */
 import { ArrowRight, AlertTriangle, BarChart3, ClipboardList, FileText, PackageCheck, ShoppingCart, Truck, ShieldCheck, Boxes, FilePlus2, RefreshCw, LayoutGrid } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -168,6 +175,12 @@ export default function ComprasCentral() {
           .sq-purchase-shortcut-icon{display:grid;place-items:center;flex:0 0 40px;height:40px;border-radius:12px;background:#eff6ff;color:#1d5fd1}
           .sq-purchase-shortcut.orange .sq-purchase-shortcut-icon{background:#fff4e8;color:#c56a1a}.sq-purchase-shortcut.green .sq-purchase-shortcut-icon{background:#eaf8f0;color:#168653}.sq-purchase-shortcut.teal .sq-purchase-shortcut-icon{background:#e6f9fb;color:#12889b}
           .sq-purchase-shortcut strong{display:block;color:#173452;font-size:13px;font-weight:750;line-height:1.45;overflow-wrap:anywhere}.sq-purchase-shortcut small{display:block;margin-top:5px;color:#687b90;font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+          /* APROV-COMPRAS-2026-10-24-R1: neutraliza o reset global de botões de 30px apenas nos cards da Central. */
+          .synqra-purchase-hub .sq-purchase-grid,.synqra-purchase-hub .sq-purchase-shortcuts{align-items:stretch;min-width:0}
+          .synqra-purchase-hub .sq-purchase-card{box-sizing:border-box;width:100%;height:auto!important;min-height:218px!important;padding:18px!important;white-space:normal!important;overflow-wrap:anywhere;border-radius:16px!important;align-items:stretch}
+          .synqra-purchase-hub .sq-purchase-shortcut{box-sizing:border-box;display:flex;width:100%;height:auto!important;min-height:78px!important;padding:18px 20px!important;white-space:normal!important;overflow-wrap:anywhere;border-radius:13px!important;align-items:center}
+          .synqra-purchase-hub .sq-purchase-shortcut>span:nth-child(2){flex:1;min-width:0}
+          .synqra-purchase-hub .sq-purchase-card h3,.synqra-purchase-hub .sq-purchase-card p,.synqra-purchase-hub .sq-purchase-card-foot,.synqra-purchase-hub .sq-purchase-shortcut strong,.synqra-purchase-hub .sq-purchase-shortcut small{min-width:0;overflow-wrap:anywhere}
           .sq-purchase-description{display:flex;align-items:flex-start;gap:13px;margin-top:18px;padding:17px 19px;border:1px solid #e0e7f0;border-radius:15px;background:linear-gradient(110deg,#fff,#f9fbff)}
           .sq-purchase-description-icon{display:grid;place-items:center;flex:0 0 38px;height:38px;border-radius:12px;background:#edf4ff;color:#1d5fd1}
           .sq-purchase-description h3{margin:1px 0 5px;color:#102c4e;font-size:13px;font-weight:750}.sq-purchase-description p{margin:0;color:#5b6f85;font-size:12px;line-height:1.65}
