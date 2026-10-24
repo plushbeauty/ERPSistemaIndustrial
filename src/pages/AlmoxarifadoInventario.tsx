@@ -11,6 +11,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, Archive, CalendarClock, PackageCheck, RefreshCw, Search, ShieldAlert } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import '../styles/estoque-standard.css'
 
 type Product = { id: string; codigo: string | null; nome: string | null; unidade_medida: string | null }
 type Lot = {
