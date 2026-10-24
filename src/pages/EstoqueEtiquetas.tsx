@@ -6,6 +6,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, Barcode, CheckCircle2, Copy, Download, Package, Printer } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import '../styles/estoque-standard.css'
 
 type P = { id: string; codigo: string; nome: string }
@@ -38,14 +39,14 @@ export default function EstoqueEtiquetas() {
           .maybeSingle()
         if (profile.error) throw profile.error
         if (!profile.data?.empresa_id) throw new Error('Empresa da sessão não identificada.')
-        const result = await supabase
+        const productRows = await fetchAllPages<P>((from, to) => supabase
           .from('erp_produtos')
-          .select('id,codigo,nome')
+          .select('id,codigo,nome', { count: 'exact' })
           .eq('empresa_id', profile.data.empresa_id)
           .eq('ativo', true)
           .order('codigo')
-        if (result.error) throw result.error
-        if (!cancelled) setProducts((result.data ?? []) as P[])
+          .range(from, to))
+        if (!cancelled) setProducts(productRows)
       } catch (cause) {
         if (!cancelled) setError(cause instanceof Error ? cause.message : 'Falha ao carregar produtos ativos.')
       } finally {
