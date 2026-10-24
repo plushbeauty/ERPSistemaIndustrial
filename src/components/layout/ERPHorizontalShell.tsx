@@ -4,14 +4,13 @@ import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { BarraWindows11 } from './BarraWindows11'
-import TabletMenuModal from '../TabletMenuModal'
 import PCPTabletMenuModal from '../PCPTabletMenuModal'
 
 type MenuItem = {
   label: string
   route: string
   icon?: LucideIcon
-  action?: 'qualityTablet' | 'pcpTablet'
+  action?: 'pcpTablet'
   children?: MenuItem[]
 }
 
@@ -86,7 +85,7 @@ const menus: MenuItem[] = [
     { label: 'Auditoria PCP', route: '/pcp/auditoria' },
     { label: 'PCP Tablet', route: '/pcp', action: 'pcpTablet' },
   ] },
-  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, action: 'qualityTablet', children: [
+  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, children: [
     { label: 'Visual geral da Qualidade', route: '/qualidade' },
     { label: 'Inspeções de lotes', route: '/qualidade/inspecoes' },
     { label: 'Inspeção em processo', route: '/qualidade/inspecao-processo' },
@@ -95,7 +94,6 @@ const menus: MenuItem[] = [
     { label: 'RNC / CAPA', route: '/qualidade/rnc-capa' },
     { label: 'CEP / medições', route: '/qualidade/cep' },
     { label: 'Cadastro de documentos (GED)', route: '/qualidade/ged-documentos' },
-    { label: 'Qualidade Tablet', route: '/qualidade', action: 'qualityTablet' },
   ] },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench, children: [
     { label: 'Central de manutenção', route: '/manutencao' },
@@ -121,7 +119,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [startMenuOpen, setStartMenuOpen] = useState(false)
   const [moduleSearch, setModuleSearch] = useState('')
   const [helpOpen, setHelpOpen] = useState(false)
-  const [tabletOpen, setTabletOpen] = useState(false)
   const [pcpTabletOpen, setPcpTabletOpen] = useState(false)
   const [now, setNow] = useState(() => new Date())
   const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
@@ -208,15 +205,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       setOpenMenu(null)
       return
     }
-    if (item.action === 'qualityTablet') {
-      // REVISÃO 2026-10-19: o menu Qualidade deve abrir a Central SGQ Tablet atual,
-      // não o modal legado TabletMenuModal.
-      setTabletOpen(false)
-      setOpenMenu(null)
-      setStartMenuOpen(false)
-      navigate('/qualidade/tablet')
-      return
-    }
     go(item.route)
   }
 
@@ -291,7 +279,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
                 return <div className="erp-windows-menu-group" key={menu.label}>
                   <div className={`erp-windows-menu-row ${current?.label === menu.label ? 'is-active' : ''}`}>
                     <button type="button" className="erp-windows-menu-main" onClick={() => {
-                      if (menu.action === 'qualityTablet' || menu.action === 'pcpTablet') { setStartMenuOpen(false); openMenuItem(menu) }
+                      if (menu.action === 'pcpTablet') { setStartMenuOpen(false); openMenuItem(menu) }
                       else if (hasChildren) { setOpenMenu(value => value === menu.label ? null : menu.label);  }
                       else { setStartMenuOpen(false); openMenuItem(menu) }
                     }}>
@@ -333,7 +321,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {children}
       </main>
-      <TabletMenuModal isOpen={tabletOpen} onClose={() => setTabletOpen(false)} onNavigate={(route) => { setTabletOpen(false); go(route) }} />
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
       <BarraWindows11
         ativo={pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/estoque') ? 'est' : pathname.startsWith('/manutencao') ? 'man' : pathname.startsWith('/usuarios') ? 'usu' : pathname.startsWith('/configuracoes') ? 'cfg' : ''}
