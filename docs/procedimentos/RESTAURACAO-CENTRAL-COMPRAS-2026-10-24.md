@@ -20,7 +20,8 @@
 3. Corrigidos somente altura, largura, padding, alinhamento e quebra de texto dos cards “Acesso rápido às rotinas” e “Outras rotinas”, neutralizando o reset global de botão de 30px apenas dentro dos cards da Central.
 4. Adicionados data/revisão no componente e na declaração da rota.
 5. Adicionado hash imutável da Central e contrato de rota ao verificador de UI aprovada.
-6. Atualizado `docs/APPROVED_UI_LOCK.md` com a referência, escopo permitido e política de congelamento.
+6. Corrigido o bloqueio de build independente no shell: removido listener órfão que referenciava `setTabletOpen` inexistente; alteração sem efeito visual, documentada como `APROV-SHELL-2026-10-24-R1` e congelada no contrato.
+7. Atualizado `docs/APPROVED_UI_LOCK.md` com a referência, escopo permitido e política de congelamento.
 
 ## Preservação
 
