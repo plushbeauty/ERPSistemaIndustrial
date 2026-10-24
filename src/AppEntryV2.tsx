@@ -1,9 +1,9 @@
 /**
  * SYNQRA ERP — CORREÇÃO DE SESSÃO E ROTAS MESTRE
- * REVISÃO: 0.3 | DATA: 22/10/2026
+ * REVISÃO: APROV-PARCEIROS-2026-10-24-R1 | DATA/HORA: 2026-10-24 18:52:12 -03:00
  * ID: #AUDIT-ERP-20261016-16
  * ESCOPO: roteador React/Vite e apontamento de módulos para componentes reais.
- * ALTERAÇÃO: rotas de clientes/fornecedores confirmadas; /producao direcionada ao PCPIndustrial; removida legenda redundante do topo da agenda de máquinas.
+ * ALTERAÇÃO: Central de Parceiros unifica Clientes e Fornecedores; rotas antigas redirecionam para abas da central; /producao direcionada ao PCPIndustrial.
  * VALIDAÇÃO: rotas conferidas estaticamente; compilação e navegação autenticada ainda pendentes.
  */
 
@@ -143,11 +143,11 @@ const ComprasRFQ = lazyPage(() => import('./pages/ComprasRFQ'), 'default')
 const ComprasIndustrial = lazyPage(() => import('./pages/ComprasIndustrial'), 'default')
 const ComprasRequisicoes = lazyPage(() => import('./pages/ComprasRequisicoes'), 'default')
 const FiscalCompras = lazyPage(() => import('./pages/FiscalCompras'), 'default')
+const ParceirosIndustrial = lazyPage(() => import('./pages/ParceirosIndustrial'), 'default')
 const ComprasRelatorios = lazyPage(() => import('./pages/ComprasRelatorios'), 'default')
 const ComprasAjuda = lazyPage(() => import('./pages/ComprasAjuda'), 'default')
 const ComprasAnalisePrecos = lazyPage(() => import('./pages/ComprasAnalisePrecos'), 'default')
 const PedidoCompra = lazyPage(() => import('./pages/PedidoCompra'), 'default')
-const VendasClientesPage = lazyPage(() => import('./pages/VendasClientes'), 'default')
 const CentralCustosIndustrial = lazyPage(() => import('./pages/CentralCustosIndustrial'), 'CentralCustosIndustrial')
 const CadastroEmpresa = lazyPage(() => import('./pages/CadastroEmpresa'), 'CadastroEmpresa')
 const PlanosIndustrial = lazyPage(() => import('./pages/PlanosIndustrial'), 'PlanosIndustrial')
@@ -173,8 +173,6 @@ const RecuperarSenha = lazyPage(() => import('./pages/RecuperarSenha'), 'Recuper
 const ConfiguracaoLote = lazyPage(() => import('./pages/ConfiguracaoLote'), 'ConfiguracaoLote')
 const FichaEngenharia = lazyPage(() => import('./pages/FichaEngenharia'), 'FichaEngenharia')
 const ConfiguracaoLotePCP = lazyPage(() => import('./pages/ConfiguracaoLotePCP'), 'ConfiguracaoLotePCP')
-const FornecedoresIndustrial = lazyPage(() => import('./pages/FornecedoresIndustrial'), 'FornecedoresIndustrial')
-const ClientesIndustrial = lazyPage(() => import('./pages/ClientesIndustrial'), 'ClientesIndustrial')
 const TabelaPrecos = lazyPage(() => import('./pages/TabelaPrecos'), 'TabelaPrecos')
 const AjusteGlobal = lazyPage(() => import('./pages/AjusteGlobal'), 'default')
 const CatalogoDigital = lazyPage(() => import('./pages/CatalogoDigital'), 'CatalogoDigital')
@@ -498,9 +496,10 @@ function AppIndustrialAuthenticated() {
       <Route path="/comissoes/perfil" element={<QualityPlanGate>{<PerfilVendedorComissao />}</QualityPlanGate>} />
       <Route path="/vendas/pedido/:id" element={<VendasPedidoStatus />} />
       <Route path="/vendas/catalogo-digital/gestao" element={<VendasCatalogoDigitalGestao />} />
-      <Route path="/vendas/clientes" element={<VendasClientesPage />} />
-      <Route path="/cadastros/clientes" element={<VendasClientesPage />} />
-      <Route path="/cadastros/fornecedores" element={<FornecedoresIndustrial />} />
+      <Route path="/cadastros/parceiros" element={<ParceirosIndustrial />} />
+      <Route path="/vendas/clientes" element={<Navigate to="/cadastros/parceiros?tipo=cliente" replace />} />
+      <Route path="/cadastros/clientes" element={<Navigate to="/cadastros/parceiros?tipo=cliente" replace />} />
+      <Route path="/cadastros/fornecedores" element={<Navigate to="/cadastros/parceiros?tipo=fornecedor" replace />} />
       <Route path="/vendas/catalogo-digital" element={<VendasCatalogoDigital />} />
       <Route path="/vendas/analise-custos" element={<QualityPlanGate>{<VendasAnaliseCustos />}</QualityPlanGate>} />
       <Route path="/vendas/dashboard-graficos" element={<VendasDashboardGraficos />} />
@@ -662,11 +661,11 @@ function AppIndustrialAuthenticated() {
       <Route path="/compras/pedido" element={<ComprasRoute><PedidoCompra /></ComprasRoute>} />
       <Route path="/compras/pedidos" element={<Navigate to="/compras/pedido" replace />} />
       <Route path="/compras/ordem-compra" element={<ComprasRoute><PedidoCompra /></ComprasRoute>} />
-      <Route path="/compras/fornecedores" element={<ComprasRoute><FornecedoresIndustrial /></ComprasRoute>} />
+      <Route path="/compras/fornecedores" element={<Navigate to="/cadastros/parceiros?tipo=fornecedor" replace />} />
       <Route path="/compras/solicitacao-manual" element={<ComprasRoute><ComprasSolicitacaoManual /></ComprasRoute>} />
       <Route path="/solicitacao-compra" element={<ComprasRoute><SolicitacaoCompra /></ComprasRoute>} />
-      <Route path="/fornecedores" element={<FornecedoresIndustrial />} />
-      <Route path="/clientes" element={<ClientesIndustrial />} />
+      <Route path="/fornecedores" element={<Navigate to="/cadastros/parceiros?tipo=fornecedor" replace />} />
+      <Route path="/clientes" element={<Navigate to="/cadastros/parceiros?tipo=cliente" replace />} />
       <Route path="/tabela-precos" element={<AjusteGlobal />} />
       <Route path="/tabelas-preco" element={<AjusteGlobal />} />
       <Route path="/catalogo" element={<CatalogoDigital />} />
