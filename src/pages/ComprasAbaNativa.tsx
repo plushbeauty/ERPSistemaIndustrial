@@ -21,7 +21,11 @@ export default function ComprasAbaNativa({ tab, onRefresh }: { tab: string; onRe
   const [rows,setRows] = useState<Row[]>([])
   const [products,setProducts] = useState<Product[]>([])
   const [suppliers,setSuppliers] = useState<Supplier[]>([])
-  const [description,setDescription] = useState('')
+  const [sector,setSector] = useState('PCP')
+  const [requester,setRequester] = useState('')
+  const [costCenter,setCostCenter] = useState('')
+  const [productionOrder,setProductionOrder] = useState('')
+  const [justification,setJustification] = useState('')
   const [priority,setPriority] = useState('normal')
   const [supplierId,setSupplierId] = useState('')
   const [email,setEmail] = useState('')
@@ -88,17 +92,17 @@ export default function ComprasAbaNativa({ tab, onRefresh }: { tab: string; onRe
     event.preventDefault(); setBusy(true); setError(''); setMessage('')
     try {
       if(!empresaId) throw new Error('Empresa da sessão não identificada.')
-      if(!description.trim()) throw new Error('Informe setor, OP e justificativa da solicitação.')
+      if(!sector.trim() || !requester.trim() || !justification.trim()) throw new Error('Informe setor, solicitante e justificativa da solicitação.')
       const valid=items.filter(item=>item.productId)
       if(!valid.length) throw new Error('Adicione pelo menos um material.')
       if(valid.some(item=>!Number.isFinite(Number(item.quantity))||Number(item.quantity)<=0||!Number.isFinite(Number(item.price))||Number(item.price)<0)) throw new Error('Confira quantidade e valor estimado dos itens.')
       const result=await supabase.rpc('erp_compras_criar_solicitacao',{
-        p_descricao:description.trim(),p_prioridade:priority,p_email_destino:email.trim()||null,p_observacoes:notes.trim()||null,p_fornecedor_id:supplierId||null,
+        p_descricao:[sector.trim(),requester.trim(),costCenter.trim() ? 'Centro de custo: '+costCenter.trim() : '',productionOrder.trim() ? 'OP: '+productionOrder.trim() : ''].filter(Boolean).join(' • '),p_prioridade:priority,p_email_destino:email.trim()||null,p_observacoes:[justification.trim(),notes.trim()].filter(Boolean).join('\n\n')||null,p_fornecedor_id:supplierId||null,
         p_itens:valid.map(item=>{const p=products.find(product=>product.id===item.productId);if(!p)throw new Error('Material selecionado não disponível.');return {produto_id:p.id,descricao:p.nome,unidade:p.unidade_compra||p.unidade||'UN',quantidade:Number(item.quantity),valor_estimado:Number(item.price)}}),
       })
       if(result.error) throw result.error
       setMessage('Solicitação gravada e enviada ao fluxo de autorização do ERP.')
-      setDescription('');setPriority('normal');setSupplierId('');setEmail('');setNotes('');setItems([{productId:'',quantity:'1',price:'0'}])
+      setSector('PCP');setRequester('');setCostCenter('');setProductionOrder('');setJustification('');setPriority('normal');setSupplierId('');setEmail('');setNotes('');setItems([{productId:'',quantity:'1',price:'0'}])
       await load();onRefresh()
     } catch(cause) { setError(cause instanceof Error?cause.message:'Não foi possível registrar a solicitação.') }
     finally { setBusy(false) }
@@ -111,11 +115,15 @@ export default function ComprasAbaNativa({ tab, onRefresh }: { tab: string; onRe
     {message&&<p role="status" style={{margin:'10px 16px',padding:10,background:'#ecfdf5',color:'#166534',fontSize:12}}>{message}</p>}
     {tab==='Pedido do PCP'&&<form onSubmit={event=>void submit(event)} style={{padding:16,borderBottom:'1px solid #e8edf4'}}>
       <div style={{display:'grid',gridTemplateColumns:'repeat(12,minmax(0,1fr))',gap:10}}>
-        <label style={{gridColumn:'span 6',display:'grid',gap:4,fontSize:11}}>Setor / OP / motivo<input required value={description} onChange={e=>setDescription(e.target.value)} placeholder="PCP • OP-8812 • necessidade de material"/></label>
+        <label style={{gridColumn:'span 3',display:'grid',gap:4,fontSize:11}}>Setor<input required value={sector} onChange={e=>setSector(e.target.value)} placeholder="PCP"/></label>
+        <label style={{gridColumn:'span 3',display:'grid',gap:4,fontSize:11}}>Solicitante<input required value={requester} onChange={e=>setRequester(e.target.value)} placeholder="Nome do solicitante"/></label>
+        <label style={{gridColumn:'span 3',display:'grid',gap:4,fontSize:11}}>Centro de custo<input value={costCenter} onChange={e=>setCostCenter(e.target.value)} placeholder="Centro de custo"/></label>
+        <label style={{gridColumn:'span 3',display:'grid',gap:4,fontSize:11}}>Ordem de produção<input value={productionOrder} onChange={e=>setProductionOrder(e.target.value)} placeholder="OP-0000"/></label>
         <label style={{gridColumn:'span 3',display:'grid',gap:4,fontSize:11}}>Prioridade<select value={priority} onChange={e=>setPriority(e.target.value)}><option value="normal">Normal</option><option value="baixa">Baixa</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></label>
         <label style={{gridColumn:'span 3',display:'grid',gap:4,fontSize:11}}>Fornecedor sugerido<select value={supplierId} onChange={e=>setSupplierId(e.target.value)}><option value="">A definir por Compras</option>{suppliers.map(s=><option key={s.id} value={s.id}>{s.razao_social}</option>)}</select></label>
-        <label style={{gridColumn:'span 6',display:'grid',gap:4,fontSize:11}}>Solicitante / e-mail<input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="E-mail de retorno (opcional)"/></label>
-        <label style={{gridColumn:'span 6',display:'grid',gap:4,fontSize:11}}>Centro de custo / justificativa<input value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Centro de custo, OP e justificativa"/></label>
+        <label style={{gridColumn:'span 3',display:'grid',gap:4,fontSize:11}}>E-mail de retorno<input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="Opcional"/></label>
+        <label style={{gridColumn:'span 3',display:'grid',gap:4,fontSize:11}}>Observações<input value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Observações adicionais"/></label>
+        <label style={{gridColumn:'span 12',display:'grid',gap:4,fontSize:11}}>Justificativa<textarea required value={justification} onChange={e=>setJustification(e.target.value)} placeholder="Explique a necessidade de compra" rows={2}/></label>
       </div>
       <div style={{display:'grid',gap:8,marginTop:14}}><strong style={{fontSize:12}}>Itens solicitados</strong>
       {items.map((item,index)=><div key={index} style={{display:'grid',gridTemplateColumns:'minmax(220px,5fr) minmax(90px,1fr) minmax(110px,1fr) 34px',gap:8,alignItems:'end'}}>
