@@ -47,7 +47,12 @@ export default function ComprasAbaNativa({ tab, onRefresh }: { tab: string; onRe
   const [rfqNotes,setRfqNotes] = useState('')
   const [selectedSuppliers,setSelectedSuppliers] = useState<string[]>([])
   const [supplierQuotes,setSupplierQuotes] = useState<Record<string,{cost:string;days:string;payment:string}>>({})
-  const [winnerSupplier,setWinnerSupplier] = useState('')
+
+  const [compareRfq,setCompareRfq] = useState('')
+  const [compareQuotes,setCompareQuotes] = useState<Array<{id:string;fornecedor_id:string;status:string;valor_total:number|null;valor_frete:number;valor_desconto:number;prazo_entrega_dias:number|null;condicao_pagamento:string|null}>>([])
+  const [compareWinner,setCompareWinner] = useState('')
+  const [compareJustification,setCompareJustification] = useState('')
+  const [compareItems,setCompareItems] = useState<Array<{produto_id:string;quantidade:number;unidade:string}>>([])
 
   const load = useCallback(async () => {
     setBusy(true); setError('')
@@ -173,6 +178,75 @@ export default function ComprasAbaNativa({ tab, onRefresh }: { tab: string; onRe
     } finally {setBusy(false)}
   }
 
+
+  async function openComparison(id:string) {
+    setBusy(true);setError('');setMessage('')
+    try {
+      const company=await supabase.rpc('erp_current_empresa_id')
+      if(company.error||!company.data) throw company.error??new Error('Empresa não identificada.')
+      const tenant=String(company.data)
+      const [q,i]=await Promise.all([
+        supabase.from('erp_rfq_fornecedores').select('id,fornecedor_id,status,valor_total,valor_frete,valor_desconto,prazo_entrega_dias,condicao_pagamento').eq('empresa_id',tenant).eq('rfq_id',id),
+        supabase.from('erp_rfq_itens').select('produto_id,quantidade,unidade').eq('empresa_id',tenant).eq('rfq_id',id)
+      ])
+      if(q.error)throw q.error;if(i.error)throw i.error
+      setCompareRfq(id);setCompareQuotes((q.data??[]) as typeof compareQuotes);setCompareItems((i.data??[]) as typeof compareItems)
+      const row=rows.find(item=>String(item.id)===id)
+      setCompareWinner(String(row?.fornecedor_escolhido_id??q.data?.find(item=>item.status==='SELECIONADO')?.fornecedor_id??''))
+      setCompareJustification(String(row?.justificativa_escolha??''))
+    }catch(e){setError(e instanceof Error?e.message:'Não foi possível carregar propostas.')}
+    finally{setBusy(false)}
+  }
+
+  async function saveComparison() {
+    setBusy(true);setError('');setMessage('')
+    try {
+      if(!compareRfq||!compareWinner)throw new Error('Selecione a proposta vencedora.')
+      const chosen=compareQuotes.find(q=>q.fornecedor_id===compareWinner)
+      if(!chosen)throw new Error('A proposta não pertence a esta cotação.')
+      const cost=(q:typeof compareQuotes[number])=>Math.max(0,Number(q.valor_total||0)+Number(q.valor_frete||0)-Number(q.valor_desconto||0))
+      const lowest=Math.min(...compareQuotes.map(cost))
+      if(cost(chosen)>lowest&&!compareJustification.trim())throw new Error('Justifique a escolha quando não for o menor custo líquido.')
+      const company=await supabase.rpc('erp_current_empresa_id')
+      if(company.error||!company.data)throw company.error??new Error('Empresa não identificada.')
+      const tenant=String(company.data)
+      const update=await supabase.from('erp_rfq').update({fornecedor_escolhido_id:compareWinner,menor_preco_ofertado:lowest,justificativa_escolha:compareJustification.trim()||null,menor_custo_liquido_atendido:cost(chosen)===lowest,status_aprovacao:'PENDENTE_APROVACAO',updated_at:new Date().toISOString()}).eq('id',compareRfq).eq('empresa_id',tenant).select('id').single()
+      if(update.error)throw update.error
+      for(const quote of compareQuotes){
+        const result=await supabase.from('erp_rfq_fornecedores').update({selecionado_para_pedido:quote.fornecedor_id===compareWinner,status:quote.fornecedor_id===compareWinner?'SELECIONADO':'COTADO'}).eq('id',quote.id).eq('empresa_id',tenant)
+        if(result.error)throw result.error
+      }
+      setRows(current=>current.map(row=>String(row.id)===compareRfq?{...row,fornecedor_escolhido_id:compareWinner,menor_preco_ofertado:lowest,justificativa_escolha:compareJustification.trim()||null,status_aprovacao:'PENDENTE_APROVACAO'}:row))
+      setMessage('Mapa comparativo salvo e enviado para aprovação.');onRefresh()
+    }catch(e){setError(e instanceof Error?e.message:'Não foi possível salvar a comparação.')}
+    finally{setBusy(false)}
+  }
+
+  async function createOrderFromQuote() {
+    setBusy(true);setError('');setMessage('')
+    try {
+      if(!compareRfq||!compareWinner)throw new Error('Abra uma cotação e selecione o fornecedor vencedor.')
+      const rfq=rows.find(row=>String(row.id)===compareRfq)
+      if(!rfq||String(rfq.fornecedor_escolhido_id??'')!==compareWinner||String(rfq.status_aprovacao??'')!=='PENDENTE_APROVACAO')throw new Error('Salve primeiro o mapa comparativo para encaminhar o pedido à aprovação.')
+      const quote=compareQuotes.find(row=>row.fornecedor_id===compareWinner)
+      if(!quote||!compareItems.length)throw new Error('Proposta ou itens da cotação não encontrados.')
+      const company=await supabase.rpc('erp_current_empresa_id')
+      if(company.error||!company.data)throw company.error??new Error('Empresa não identificada.')
+      const tenant=String(company.data)
+      const totalQty=compareItems.reduce((sum,item)=>sum+Number(item.quantidade),0)
+      if(totalQty<=0)throw new Error('Quantidade total inválida.')
+      const unitPrice=Number(quote.valor_total??0)/totalQty
+      const result=await supabase.rpc('erp_compras_salvar_pedido',{p_pedido_id:null,p_fornecedor_id:compareWinner,p_comprador_nome:rfqBuyer.trim()||null,p_condicao_pagamento:quote.condicao_pagamento||rfqPayment.trim()||null,p_prazo_entrega:null,p_observacoes:'Gerado da cotação RFQ '+String(rfq.numero??compareRfq),p_status:'PENDENTE_APROVACAO',p_itens:compareItems.map(item=>({produto_id:item.produto_id,quantidade:Number(item.quantidade),unidade:item.unidade||'UN',preco_unitario:unitPrice}))})
+      if(result.error)throw result.error
+      const payload=Array.isArray(result.data)?result.data[0]:result.data
+      if(!payload||typeof payload!=='object'||!('id' in payload))throw new Error('O banco não retornou o pedido.')
+      const meta=await supabase.from('erp_pedidos_compra').update({referencia_cotacao:String(rfq.numero??compareRfq)}).eq('id',String(payload.id)).eq('empresa_id',tenant).select('id').single()
+      if(meta.error)throw meta.error
+      setMessage('Pedido de compra criado como pendente de aprovação.');await load();onRefresh()
+    }catch(e){setError(e instanceof Error?e.message:'Não foi possível gerar o pedido.')}
+    finally{setBusy(false)}
+  }
+
   async function approve(id: string) {
     setBusy(true); setError(''); setMessage('')
     try {
@@ -247,6 +321,13 @@ export default function ComprasAbaNativa({ tab, onRefresh }: { tab: string; onRe
       </div><div style={{display:'flex',justifyContent:'flex-end',marginTop:14}}><button type="submit" disabled={busy} style={{background:'#0b2545',color:'#fff',padding:'9px 16px',borderRadius:8,fontWeight:750}}>{busy?'Enviando…':'Enviar para autorização'}</button></div>
     </form>}
     {tab!=='Pedido do PCP'&&<div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,padding:'10px 16px',flexWrap:'wrap'}}><input aria-label={'Pesquisar '+tab} value={query} onChange={e=>setQuery(e.target.value)} placeholder={'Pesquisar '+tab.toLocaleLowerCase('pt-BR')} style={{maxWidth:340}}/><span style={{fontSize:11,color:'#64748b'}}>{visibleRows.length} registros</span></div>}
-    <div className="sq-purchase-mrp-scroll"><table><thead><tr>{cols.map(([label])=><th key={label}>{label}</th>)}{tab==='Requisições'&&<th>Ações</th>}</tr></thead><tbody>{visibleRows.map((row,index)=><tr key={String(row.id??index)}>{cols.map(([label,key])=><td key={key}>{key==='fornecedor_id'&&tab==='Pedidos'?suppliers.find(s=>s.id===String(row[key]??''))?.razao_social??'—':fmt(key,row[key])}</td>)}{tab==='Requisições'&&<td>{row.status==='aguardando_autorizacao'&&<button type="button" disabled={busy||!canApprove} title={!canApprove?'Sem permissão para autorizar':'Autorizar solicitação'} onClick={()=>void approve(String(row.id))} style={{display:'inline-flex',alignItems:'center',gap:5,color:'#166534',border:'1px solid #bbf7d0',padding:'5px 8px',borderRadius:4}}><CheckCircle2 size={13}/> Autorizar</button>}</td>}</tr>)}{!visibleRows.length&&<tr><td colSpan={Math.max(1,cols.length)} className="sq-purchase-empty">{busy?'Carregando…':'Nenhum registro encontrado para esta empresa.'}</td></tr>}</tbody></table></div>
+
+    {tab==='Cotações'&&compareRfq&&<div style={{margin:16,padding:14,border:'1px solid #cbd5e1',borderRadius:6,background:'#f8fafc'}}>
+      <div style={{display:'flex',justifyContent:'space-between',gap:10,alignItems:'center',flexWrap:'wrap'}}><strong style={{fontSize:13}}>Mapa comparativo — RFQ {rows.find(row=>String(row.id)===compareRfq)?.numero??''}</strong><button type="button" onClick={()=>setCompareRfq('')}>Fechar comparação</button></div>
+      <div className="sq-purchase-mrp-scroll" style={{marginTop:10}}><table><thead><tr><th>Fornecedor</th><th>Custo líquido</th><th>Prazo</th><th>Pagamento</th><th>Escolher</th></tr></thead><tbody>{compareQuotes.map(q=><tr key={q.id}><td>{suppliers.find(s=>s.id===q.fornecedor_id)?.razao_social??q.fornecedor_id}</td><td>{money(Math.max(0,Number(q.valor_total||0)+Number(q.valor_frete||0)-Number(q.valor_desconto||0)))}</td><td>{q.prazo_entrega_dias??'—'} dias</td><td>{q.condicao_pagamento??'—'}</td><td><input type="radio" name="compare-winner" checked={compareWinner===q.fornecedor_id} onChange={()=>setCompareWinner(q.fornecedor_id)}/></td></tr>)}</tbody></table></div>
+      <label style={{display:'grid',gap:4,fontSize:11,marginTop:10}}>Justificativa da escolha<textarea rows={2} value={compareJustification} onChange={e=>setCompareJustification(e.target.value)} placeholder="Obrigatória se não escolher o menor custo líquido"/></label>
+      <div style={{display:'flex',justifyContent:'flex-end',gap:8,flexWrap:'wrap',marginTop:10}}><button type="button" disabled={busy} onClick={()=>void saveComparison()}>Salvar comparação e enviar para aprovação</button><button type="button" disabled={busy} onClick={()=>void createOrderFromQuote()} style={{background:'#0b2545',color:'#fff',padding:'8px 12px',borderRadius:6}}>Gerar pedido pendente</button></div>
+    </div>}
+    <div className="sq-purchase-mrp-scroll"><table><thead><tr>{cols.map(([label])=><th key={label}>{label}</th>)}{tab==='Requisições'&&<th>Ações</th>}{tab==='Cotações'&&<th>Ações</th>}</tr></thead><tbody>{visibleRows.map((row,index)=><tr key={String(row.id??index)}>{cols.map(([label,key])=><td key={key}>{key==='fornecedor_id'&&tab==='Pedidos'?suppliers.find(s=>s.id===String(row[key]??''))?.razao_social??'—':fmt(key,row[key])}</td>)}{tab==='Requisições'&&<td>{row.status==='aguardando_autorizacao'&&<button type="button" disabled={busy||!canApprove} title={!canApprove?'Sem permissão para autorizar':'Autorizar solicitação'} onClick={()=>void approve(String(row.id))} style={{display:'inline-flex',alignItems:'center',gap:5,color:'#166534',border:'1px solid #bbf7d0',padding:'5px 8px',borderRadius:4}}><CheckCircle2 size={13}/> Autorizar</button>}</td>}{tab==='Cotações'&&<td><button type="button" disabled={busy} onClick={()=>void openComparison(String(row.id))}>Comparar propostas</button></td>}</tr>)}{!visibleRows.length&&<tr><td colSpan={Math.max(1,cols.length)} className="sq-purchase-empty">{busy?'Carregando…':'Nenhum registro encontrado para esta empresa.'}</td></tr>}</tbody></table></div>
   </section>
 }
