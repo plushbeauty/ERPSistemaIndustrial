@@ -12,7 +12,7 @@ Este documento permite que outra sessão continue o módulo sem refazer a triage
 
 ## Já feito / pode ser considerado apenas localmente corrigido
 
-1. `src/pages/EstoqueAlmoxarifado.tsx`
+1. `src/pages/EstoqueAlmoxarifadoCompact.tsx` (componente ativo das rotas principais); `src/pages/EstoqueAlmoxarifado.tsx` é implementação paralela e não recebe as rotas `/estoque`, `/almoxarifado` ou `/estoque/saldos`.
    - Consultas de produtos, localizações, almoxarifados, OPs, movimentos e itens do inventário usam carregamento por páginas completas e filtro explícito de empresa.
    - Saldo, histórico e inventário têm paginação visual; o comentário do inventário não cita empresa fixa.
    - Entrada/saída/transferência ainda devem ser revisadas quanto a autorização, consistência concorrente e razão de estoque; não declarar esses contratos corretos só porque existe mensagem de sucesso.
@@ -27,7 +27,7 @@ Este documento permite que outra sessão continue o módulo sem refazer a triage
 3. `src/pages/ComprasRequisicoes.tsx` e `supabase/migrations/20261006130000_erp_compras_requisitions_rbac_atomic.sql`
    - Encaminhamento selecionado de requisições com RPC atômica e permissionamento `compras.*`; validar no banco antes de homologar.
 4. `src/pages/estoque/EstoqueRecebimentoLotes.tsx`
-   - Existe fluxo real com upload de certificado e RPC `fn_receber_lote_almoxarifado`, mas a consulta de produtos usa `.limit(2000)` e a limpeza compensatória do arquivo pode falhar sem sinalização.
+   - Existe fluxo real com upload de certificado e RPC `fn_receber_lote_almoxarifado`. Na branch `fix/estoque-anatomia-visual-2026-10-24`, a consulta de produtos usa `fetchAllPages` e a mensagem reporta tanto falha do recebimento quanto falha de limpeza do PDF. A migration `20261024173000_estoque_recebimento_rbac_integrity.sql` adiciona validações de RBAC/tenant e revoga escrita REST direta, mas não foi aplicada nem testada em banco.
    - O contrato da RPC e storage precisa ser comparado com migrations/catálogo remoto antes de mexer.
 
 ## Pendências prioritárias, em ordem sugerida
@@ -109,13 +109,17 @@ Passos:
 
 ## Arquivos e rotas de Estoque mapeados
 
-- `/estoque`, `/almoxarifado`, `/estoque/saldos` → `src/pages/EstoqueAlmoxarifado.tsx`
+- `/estoque`, `/almoxarifado`, `/estoque/saldos`, `/vendas/estoque` → `src/pages/EstoqueAlmoxarifadoCompact.tsx`
 - `/estoque/ajustes` → `src/pages/EstoqueAjustes.tsx`
 - `/estoque/separacao` → `src/pages/EstoqueSeparacao.tsx`
 - `/estoque/etiquetas` → `src/pages/EstoqueEtiquetas.tsx`
 - `/estoque/recebimento-lotes`, `/estoque/recebimento` → `src/pages/estoque/EstoqueRecebimentoLotes.tsx`
 - `/estoque/curva-abc` → `src/pages/EstoqueCurvaABC.tsx`
-- `/inventario/balanco` → `src/features/inventario/BalancoEstoque.tsx`
+- `/inventario/balanco`, `/vendas/balanco` → `src/features/inventario/BalancoEstoque.tsx`
+- `/inventario/auditoria` → `src/features/inventario/AuditoriaSaldos.tsx` (na branch atual, filtro por empresa e paginação de 50 registros)
+- `/estoque/validade` → `src/pages/estoque/InventarioValidade.tsx`
+- `/almoxarifado/inventario-mestre` → `src/pages/AlmoxarifadoInventario.tsx`
+- `/estoque/enderecos`, `/estoque/movimentacoes` → `IndustrialDataWorkspace` (telas genéricas, não formulários especializados)
 - `AuditoriaSaldos.tsx` → localizar e confirmar sua rota antes de alterar.
 
 ## Migrations e objetos a localizar, não recriar
@@ -136,3 +140,13 @@ Não presumir que o nome do arquivo corresponde ao estado remoto. Comparar migra
 ## Prompt pronto para outra sessão
 
 > Continue primeiro o módulo Estoque usando `docs/procedimentos/HANDOFF-ESTOQUE.md` e `docs/ERP-CENTRAL-ERROS-PENDENCIAS.md`. Não repita correções marcadas como validadas localmente; verifique o código atual e implemente A (EstoqueAjustes) e B (Etiquetas) antes de C/D/E, na ordem do handoff. Leia migrations e schema existente antes de qualquer SQL. Não use dados demonstrativos, não crie tabelas duplicadas, não faça commit/deploy, não assuma que a separação baixa estoque. Rode `npm run verify:release` após as mudanças, atualize o registro central com evidência real e declare bloqueio externo claramente se não houver Postgres/Supabase de teste. Depois passe para o próximo domínio do plano geral.
+
+
+## Auditoria integral 2026-10-24 — adendo da branch
+
+- Relatório consolidado: `docs/procedimentos/AUDITORIA-VISUAL-ESTOQUE-2026-10-24.md`.
+- Referência visual: Central de Compras aprovada + `src/styles/estoque-standard.css`; o escopo `.stock-standard` foi aplicado também à validade/FIFO, Almoxarifado Mestre e Auditoria de Saldos.
+- A Curva ABC é valor em estoque (`saldo_fisico × último custo`), não consumo anual. A Validade/FIFO é uma fila de consulta; não substitui o bloqueio transacional no consumo.
+- A auditoria de saldos agora exige empresa contextualizada e pagina o histórico em blocos de 50.
+- Foi adicionada a migration `supabase/migrations/20261024173000_estoque_recebimento_rbac_integrity.sql` para validar permissão `estoque.movimentar`, empresa, produto ativo e valores de recebimento; ela também revoga escrita REST direta nas tabelas de saldo físico e rastreabilidade e acesso direto ao helper de saldo. **Não aplicar em produção sem teste em homologação e revisão do histórico de migrations.**
+- A migration e as mudanças de TypeScript ainda precisam de CI real, type-check, lint, build, verificação de rotas e teste Supabase/RLS/RBAC/Storage. Vercel anteriormente bloqueou por `build-rate-limit`; não interpretar esse status como compilação aprovada.
