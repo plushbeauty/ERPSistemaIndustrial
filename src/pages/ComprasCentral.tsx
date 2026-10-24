@@ -1,5 +1,5 @@
 import { ArrowRight, AlertTriangle, BarChart3, ClipboardList, FileText, PackageCheck, ShoppingCart, Truck, Users, ShieldCheck, Boxes, FilePlus2, RefreshCw, LayoutGrid } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import VendasLayout from './VendasLayout'
@@ -40,7 +40,7 @@ export default function ComprasCentral() {
   const [materialNeeds, setMaterialNeeds] = useState<MaterialNeed[]>([])
   const [loadingIndicators, setLoadingIndicators] = useState(false)
 
-  const loadIndicators = async () => {
+  const loadIndicators = useCallback(async () => {
     setLoadingIndicators(true)
     try {
       const tenant = await supabase.rpc('erp_current_empresa_id')
