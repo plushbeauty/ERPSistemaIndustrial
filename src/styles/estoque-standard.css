@@ -87,3 +87,32 @@
   .stock-standard header h1,
   .stock-standard header h2 { color: #0f172a !important; }
 }
+
+/*
+ * O shell horizontal tem tokens globais de compatibilidade que achatam radius,
+ * fundos e cabeçalhos de tabela. Estas regras mais específicas restauram o
+ * contrato visual aprovado apenas dentro do módulo Estoque.
+ */
+.erp-horizontal-workspace .stock-standard .bg-white { background-color: #fff !important; }
+.erp-horizontal-workspace .stock-standard .bg-slate-50 { background-color: #f8fafc !important; }
+.erp-horizontal-workspace .stock-standard .bg-slate-100 { background-color: #f1f5f9 !important; }
+.erp-horizontal-workspace .stock-standard .border-slate-200 { border-color: #e2e8f0 !important; }
+.erp-horizontal-workspace .stock-standard .text-slate-900 { color: #0f172a !important; }
+.erp-horizontal-workspace .stock-standard .text-slate-700 { color: #334155 !important; }
+.erp-horizontal-workspace .stock-standard .rounded-xl { border-radius: 12px !important; }
+.erp-horizontal-workspace .stock-standard .rounded-2xl { border-radius: 16px !important; }
+.erp-horizontal-workspace .stock-standard .rounded-lg { border-radius: 8px !important; }
+.erp-horizontal-workspace .stock-standard table thead th {
+  background: #0f172a !important;
+  color: #fff !important;
+  border-bottom-color: #1e293b !important;
+}
+.erp-horizontal-workspace .stock-standard table tbody tr:nth-child(even) { background-color: #fff !important; }
+.erp-horizontal-workspace .stock-standard table tbody tr:hover { background-color: #f8fafc !important; }
+.erp-horizontal-workspace .stock-standard input:focus,
+.erp-horizontal-workspace .stock-standard select:focus,
+.erp-horizontal-workspace .stock-standard textarea:focus {
+  border-color: #1d5fd1 !important;
+  outline-color: #1d5fd1 !important;
+  box-shadow: 0 0 0 1px rgba(29, 95, 209, 0.12) !important;
+}
