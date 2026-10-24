@@ -87,4 +87,11 @@ grant execute on function public.fn_receber_lote_almoxarifado(uuid, uuid, text, 
 -- A RPC SECURITY DEFINER acima é o caminho público autorizado para o recebimento.
 revoke all on function public.fn_incrementar_saldo_almoxarifado(uuid, uuid, numeric) from public, anon, authenticated;
 
+-- Saldo e rastreabilidade são escritos por RPCs transacionais / funções SGQ,
+-- não por mutações REST diretas do navegador.
+revoke insert, update, delete on public.erp_produto_estoque from authenticated;
+revoke insert, update, delete on public.erp_estoque_lotes_rastreabilidade from authenticated;
+grant select on public.erp_produto_estoque to authenticated;
+grant select on public.erp_estoque_lotes_rastreabilidade to authenticated;
+
 commit;
