@@ -128,7 +128,7 @@ export default function InventarioValidade() {
   }, [rows, today])
 
   return (
-    <main className="min-h-screen bg-slate-50 p-4 text-slate-800 antialiased sm:p-6">
+    <main className="stock-standard min-h-screen bg-slate-50 p-4 text-slate-800 antialiased sm:p-6">
       <header className="mb-5 border-b border-slate-200 pb-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
