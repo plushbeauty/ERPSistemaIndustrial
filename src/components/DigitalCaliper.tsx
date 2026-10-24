@@ -19,7 +19,7 @@ const fieldClass = 'h-8 w-full rounded-sm border border-slate-700 bg-slate-950 p
 const labelClass = 'block space-y-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400'
 
 export default function DigitalCaliper({ instrumentOptions = [] }: Props) {
-  const [rawValue, setRawValue] = useState(0)
+  const [rawValue, setRawValue] = useState(50)
   const [unit, setUnit] = useState<'mm' | 'in'>('mm')
   const [zeroOffset, setZeroOffset] = useState(0)
   const [history, setHistory] = useState<HistoryLog[]>([])
@@ -37,7 +37,7 @@ export default function DigitalCaliper({ instrumentOptions = [] }: Props) {
   const tol = Number.parseFloat(tolerance) || 0
   const minAllowed = target - tol
   const maxAllowed = target + tol
-  const hasTargetSet = target > 0 && tol > 0
+  const hasTargetSet = targetValue.trim() !== '' && tolerance.trim() !== '' && Number.isFinite(target) && target > 0 && Number.isFinite(tol) && tol >= 0
   const isOutOfTolerance = hasTargetSet && (currentMeasure < minAllowed || currentMeasure > maxAllowed)
   const selectedInstrument = instrumentOptions.find(item => item.codigo === instrumentTag)
   const blockedInstrument = !!selectedInstrument && /BLOQUEADO|VENCIDO|INATIVO|REPROVADO/i.test(selectedInstrument.status)
@@ -62,6 +62,10 @@ export default function DigitalCaliper({ instrumentOptions = [] }: Props) {
     }
     if (!partNumber.trim()) {
       setNotice('Informe a identificação da peça ou lote para garantir a rastreabilidade.')
+      return
+    }
+    if (!hasTargetSet) {
+      setNotice('Informe uma medida alvo maior que zero e uma tolerância válida (zero ou positiva) antes de registrar.')
       return
     }
     if (!selectedInstrument) {
