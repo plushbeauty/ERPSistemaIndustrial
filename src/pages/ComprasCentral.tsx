@@ -211,6 +211,7 @@ export default function ComprasCentral() {
               </tbody></table></div>
             </section>
           </> : <ComprasAbaNativa tab={activeTab} onRefresh={() => void loadIndicators()} />}
+          {activeTab === 'Painel' && <>
           <section aria-labelledby="sq-purchase-main-title">
             <div className="sq-purchase-section-head"><div><h2 id="sq-purchase-main-title">Acesso rápido às rotinas</h2><p>Atalhos para abrir os módulos operacionais de compras já integrados ao ERP.</p></div><small>4 áreas principais</small></div>
             <div className="sq-purchase-grid">
@@ -229,6 +230,7 @@ export default function ComprasCentral() {
               </button>)}
             </div>
           </section>
+          </>}
           <footer className="sq-purchase-footer"><span>SYSNQRA ERP INDUSTRIAL • Compras e Suprimentos</span><span>As rotinas usam os cadastros, permissões e registros reais já existentes no sistema.</span></footer>
         </div>
     </main>
