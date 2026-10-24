@@ -1,6 +1,6 @@
 # SYSNQRA ERP INDUSTRIAL — Restauração da Central de Compras
 
-**Data:** 2026-10-24  
+**Data/hora da revisão:** 2026-10-24 18:36:28 -03:00  
 **Revisão:** APROV-COMPRAS-2026-10-24-R1  
 **Fonte de referência:** deployment Vercel `EjPo9mBaQ`  
 **Commit de referência:** `16060aad0fce987250586f6c7fb7bb2f20b003c7`  
