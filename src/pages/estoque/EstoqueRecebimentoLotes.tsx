@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import EntityCodeLookup, { type LookupRecord } from '../../components/industrial/EntityCodeLookup'
 import VendasLayout from '../VendasLayout'
+import '../../styles/estoque-standard.css'
 
 type Product = LookupRecord & {
   descricao?: string | null
@@ -149,7 +150,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
 
   return (
     <VendasLayout title="Recebimento de Insumos e Lotes" subtitle="Conferência quantitativa, certificado químico e integração rastreável ao Almoxarifado">
-      <main className="space-y-3 p-1 text-xs text-slate-800">
+      <main className="stock-standard space-y-3 p-1 text-xs text-slate-800">
         {(error || success) && <div className={`flex items-start gap-2 rounded-[2px] border px-3 py-2 text-[10px] font-bold ${error ? 'border-rose-200 bg-rose-50 text-rose-900' : 'border-emerald-200 bg-emerald-50 text-emerald-900'}`} role={error ? 'alert' : 'status'}>
           {error ? <X size={15} className="shrink-0" /> : <CheckCircle size={15} className="shrink-0" />}
           <span>{error || success}</span>
