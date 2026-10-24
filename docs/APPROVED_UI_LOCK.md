@@ -9,6 +9,7 @@
 | Vendas → Novo Pedido — `src/pages/NovoPedido.tsx` | APROV-005, controles compactos; revisão expressamente autorizada em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | Vendas → Status do pedido — `src/pages/VendasCentral.tsx` | APROV-006, alinhamento dos cards e legenda visível; revisão autorizada em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | Cadastro de Produtos — `src/pages/ProdutosVendasIndustrial.tsx` | Referência aprovada anterior | Hash Git do arquivo verificado no CI |
+| Compras — `src/pages/ComprasIndustrial.tsx` | **APROV-014 — deploy Vercel `7s1nKuycV`, commit `eaa0716f2f05cd03c189e4d0261f5bda46afdffb`** | **Congelada: hash Git verificado no CI; não alterar sem nova autorização explícita** |
 | Login institucional — `src/styles/industrial-login.css` | APROV-005, texto institucional branco com contorno escuro | Hash Git do arquivo verificado no CI |
 | Qualidade Tablet — `src/pages/QualidadeCentralTablet.tsx` | Tablet aprovado pelo usuário | Hash Git do arquivo verificado no CI |
 | Qualidade Tablet padrão — `src/components/TabletMenuModal.tsx` | Modal central, 22 módulos; visual aprovado preservado | Hash Git do arquivo verificado no CI |
@@ -66,3 +67,11 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - Tablet PCP do operador: registra a revisão do código operacional enviada em 20/10, sem substituir os fluxos reais de apontamento e sessão.
 - Modal do PCP: registra a inclusão do atalho de Programação Gantt solicitada pelo usuário; os módulos e destinos permanecem congelados após esta revisão.
 - O protótipo separado `/pcp/ficha-processo-teste` não substitui a ficha aprovada.
+
+
+## Registro da revisão APROV-014 — 2026-10-24
+
+- Compras (`src/pages/ComprasIndustrial.tsx`) foi declarada pelo usuário como referência visual oficial e congelada, associada ao deploy Vercel `7s1nKuycV` (commit `eaa0716f2f05cd03c189e4d0261f5bda46afdffb`).
+- Cabeçalho, cartão de descrição, cores, geometria, navegação e comportamento de Compras não podem ser alterados em padronizações de outros cadastros.
+- Produtos recebeu uma revisão visual autorizada para aproximar cabeçalho, campos compactos e faixa de ações do padrão de Compras; CRUD, abas e regras de dados permanecem preservados.
+- Clientes e Fornecedores estão em revisão visual separada e não são declarados aprovados até conferência do usuário.
