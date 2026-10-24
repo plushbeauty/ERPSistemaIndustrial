@@ -13,7 +13,7 @@ export default function EstoqueCurvaABC() {
   const [items, setItems] = useState<Product[]>([])
   const [stock, setStock] = useState<Stock[]>([])
   const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusy] = useState(true)
 
   useEffect(() => {
     let active = true
