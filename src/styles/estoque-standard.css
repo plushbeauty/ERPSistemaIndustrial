@@ -1,0 +1,88 @@
+/*
+ * SYSNQRA ERP INDUSTRIAL — Estoque / anatomia visual
+ * Revisão: 2026-10-24
+ * Base visual: Central de Compras aprovada + tokens mestres.
+ * Escopo estrito: telas do Estoque; não altera telas aprovadas de outros módulos.
+ */
+.stock-standard {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1600px;
+  margin-inline: auto;
+  padding: 16px;
+  color: #0f172a;
+  font-size: 12px;
+}
+.stock-standard *,
+.stock-standard *::before,
+.stock-standard *::after { box-sizing: border-box; }
+.stock-standard > header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 16px 24px;
+  border: 1px solid #0f172a;
+  border-radius: 12px;
+  background: #0f172a;
+  color: #fff;
+}
+.stock-standard > header h1,
+.stock-standard > header h2 { margin-block: 2px; color: #fff; font-size: 20px; line-height: 1.25; font-weight: 800; }
+.stock-standard > header p { line-height: 1.45; }
+.stock-standard input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.stock-standard select,
+.stock-standard textarea {
+  min-width: 0;
+  min-height: 36px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.25;
+}
+.stock-standard input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.stock-standard select { height: 36px; }
+.stock-standard textarea { min-height: 76px; padding: 8px 12px; }
+.stock-standard label { min-width: 0; line-height: 1.35; }
+.stock-standard button {
+  min-height: 36px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.2;
+}
+.stock-standard button:disabled { cursor: not-allowed; }
+.stock-standard table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.stock-standard thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 10px 12px;
+  background: #0f172a;
+  color: #fff;
+  font-weight: 700;
+  text-align: left;
+  white-space: nowrap;
+}
+.stock-standard tbody td { padding: 9px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+.stock-standard tbody tr:hover { background-color: #f8fafc; }
+.stock-standard :is(input, select, textarea, button):focus-visible {
+  outline: 2px solid #1d5fd1;
+  outline-offset: 2px;
+}
+.stock-standard [role="alert"] { border-radius: 8px; }
+.stock-standard [role="status"] { border-radius: 8px; }
+.stock-standard .overflow-x-auto { max-width: 100%; }
+@media (max-width: 767px) {
+  .stock-standard { padding: 10px; }
+  .stock-standard > header { padding: 14px; }
+  .stock-standard > header h1,
+  .stock-standard > header h2 { font-size: 18px; }
+  .stock-standard table { min-width: 680px; }
+}
+@media print {
+  .stock-standard { max-width: none; padding: 0; }
+  .stock-standard > header { background: #fff !important; color: #0f172a !important; border-color: #cbd5e1; }
+  .stock-standard > header h1,
+  .stock-standard > header h2 { color: #0f172a !important; }
+}
