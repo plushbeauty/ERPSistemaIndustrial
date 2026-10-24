@@ -43,6 +43,16 @@
 .compras-compact .buy-content,.compras-compact .buy-head{padding:8px!important}
 .compras-compact .buy-card,.compras-compact .buy-report-card{border-radius:2px!important;box-shadow:none!important}
 .compras-compact .buy-content table th,.compras-compact .buy-content table td{padding:5px 7px!important;font-size:10px}
+/* Atalhos operacionais: exceção explícita ao reset global de botões compactos.
+   Cards de navegação precisam de altura automática e texto multilinha para não sobrepor letras. */
+.compras-compact .buy-flow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:12px}
+.compras-compact .buy-flow button{box-sizing:border-box!important;width:100%!important;min-width:0!important;height:auto!important;min-height:76px!important;padding:12px!important;margin:0!important;display:flex!important;align-items:flex-start!important;gap:10px!important;white-space:normal!important;line-height:1.35!important;overflow:hidden}
+.compras-compact .buy-flow button span{display:block;flex:1 1 auto;min-width:0;overflow-wrap:anywhere;white-space:normal}
+.compras-compact .buy-flow button strong,.compras-compact .buy-flow button small{display:block;max-width:100%;white-space:normal!important;overflow-wrap:anywhere;line-height:1.35}
+.compras-compact .buy-flow button strong{font-size:12px;font-weight:700}
+.compras-compact .buy-flow button small{margin-top:4px;font-size:11px}
+.compras-compact .buy-flow button b{flex:0 0 28px;width:28px;height:28px;min-height:28px}
+@media(max-width:560px){.compras-compact .buy-flow{grid-template-columns:minmax(0,1fr)}.compras-compact .buy-flow button{min-height:64px!important}}
 .compras-compact .buy-content input,.compras-compact .buy-content select{height:30px!important;min-height:30px!important}
 .compras-compact .supplier-page{padding:8px!important}
 .compras-compact .supplier-page>div{max-width:none!important}
