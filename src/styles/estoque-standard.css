@@ -16,7 +16,7 @@
 .stock-standard *,
 .stock-standard *::before,
 .stock-standard *::after { box-sizing: border-box; }
-.stock-standard > header {
+.stock-standard header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -29,9 +29,9 @@
   background: #0f172a;
   color: #fff;
 }
-.stock-standard > header h1,
-.stock-standard > header h2 { margin-block: 2px; color: #fff; font-size: 20px; line-height: 1.25; font-weight: 800; }
-.stock-standard > header p { line-height: 1.45; }
+.stock-standard header h1,
+.stock-standard header h2 { margin-block: 2px; color: #fff; font-size: 20px; line-height: 1.25; font-weight: 800; }
+.stock-standard header p { line-height: 1.45; }
 .stock-standard input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 .stock-standard select,
 .stock-standard textarea {
@@ -76,14 +76,14 @@
 .stock-standard .overflow-x-auto { max-width: 100%; }
 @media (max-width: 767px) {
   .stock-standard { padding: 10px; }
-  .stock-standard > header { padding: 14px; }
-  .stock-standard > header h1,
-  .stock-standard > header h2 { font-size: 18px; }
+  .stock-standard header { padding: 14px; }
+  .stock-standard header h1,
+  .stock-standard header h2 { font-size: 18px; }
   .stock-standard table { min-width: 680px; }
 }
 @media print {
   .stock-standard { max-width: none; padding: 0; }
-  .stock-standard > header { background: #fff !important; color: #0f172a !important; border-color: #cbd5e1; }
-  .stock-standard > header h1,
-  .stock-standard > header h2 { color: #0f172a !important; }
+  .stock-standard header { background: #fff !important; color: #0f172a !important; border-color: #cbd5e1; }
+  .stock-standard header h1,
+  .stock-standard header h2 { color: #0f172a !important; }
 }
