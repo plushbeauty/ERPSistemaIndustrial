@@ -90,7 +90,7 @@ Migrations revisadas por leitura de fonte: `20260923190000_plastibor_inventory_d
 
 - Leitura do código, rotas e migrations no GitHub: **concluída**.
 - Alterações gravadas na branch: **concluídas**, sujeitas a revisão.
-- Type-check, lint, auditorias, build e teste de rotas: **não confirmados** nesta execução.
+- Primeiro workflow CI (#7992) parou no type-check por `TS2552` em `ERPHorizontalShell.tsx` (listener sem setter definido); o listener morto foi removido sem mudança de menu. Novo workflow CI (#7996) está em execução; type-check, lint, auditorias, build e rotas ainda **não têm resultado final confirmado**.
 - Teste visual desktop/tablet e navegação real: **não executados**.
 - Testes Supabase/RLS/RBAC/RPC/Storage e corrida de inventário: **não executados**.
 - Migration nova aplicada: **não**.
