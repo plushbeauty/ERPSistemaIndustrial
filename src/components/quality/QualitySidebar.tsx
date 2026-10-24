@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import {
   Activity, Archive, BarChart3, BookOpenCheck, ClipboardCheck, ClipboardList, FileCheck2, FileText,
-  Gauge, GitBranch, Microscope, SearchCheck, ShieldAlert, ShieldCheck, Target, Wrench,
+  Gauge, GitBranch, Microscope, SearchCheck, ShieldAlert, ShieldCheck, Target, Wrench, Ruler,
 } from 'lucide-react'
 import '../../styles/quality-workspace-standard.css'
 
@@ -24,6 +24,7 @@ const modules = [
   { label: 'Auditoria 5S', route: '/qualidade/auditoria-5s', icon: SearchCheck },
   { label: 'CEP / cartas de controle', route: '/qualidade/cep', icon: Activity },
   { label: 'Metrologia e calibração', route: '/qualidade/calibracao', icon: Wrench },
+  { label: 'Paquímetro digital / controle dimensional', route: '/qualidade/paquimetro-digital', icon: Ruler },
   { label: 'Instruções de trabalho', route: '/qualidade/editor-it', icon: ClipboardCheck },
   { label: 'Relatórios do SGQ', route: '/qualidade/relatorios-documentos', icon: FileText },
   { label: 'Análise de refugos e perdas', route: '/qualidade/graficos-refugo', icon: BarChart3 },

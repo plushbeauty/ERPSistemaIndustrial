@@ -1,17 +1,16 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Warehouse, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Warehouse, Wallet, FileText, Factory, Wrench, Ruler, BarChart3, Settings, LogOut, Search, X, ClipboardList } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { BarraWindows11 } from './BarraWindows11'
-import TabletMenuModal from '../TabletMenuModal'
 import PCPTabletMenuModal from '../PCPTabletMenuModal'
 
 type MenuItem = {
   label: string
   route: string
   icon?: LucideIcon
-  action?: 'qualityTablet' | 'pcpTablet'
+  action?: 'pcpTablet'
   children?: MenuItem[]
 }
 
@@ -86,7 +85,7 @@ const menus: MenuItem[] = [
     { label: 'Auditoria PCP', route: '/pcp/auditoria' },
     { label: 'PCP Tablet', route: '/pcp', action: 'pcpTablet' },
   ] },
-  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, action: 'qualityTablet', children: [
+  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, children: [
     { label: 'Visual geral da Qualidade', route: '/qualidade' },
     { label: 'Inspeções de lotes', route: '/qualidade/inspecoes' },
     { label: 'Inspeção em processo', route: '/qualidade/inspecao-processo' },
@@ -94,8 +93,20 @@ const menus: MenuItem[] = [
     { label: 'FMEA / PFMEA', route: '/qualidade/fmea' },
     { label: 'RNC / CAPA', route: '/qualidade/rnc-capa' },
     { label: 'CEP / medições', route: '/qualidade/cep' },
-    { label: 'Cadastro de documentos (GED)', route: '/qualidade/ged-documentos' },
-    { label: 'Qualidade Tablet', route: '/qualidade', action: 'qualityTablet' },
+    { label: 'Paquímetro digital / controle dimensional', route: '/qualidade/paquimetro-digital', icon: Ruler },
+    { label: 'Cadastro de documentos (GED)', route: '/qualidade/ged-documentos', icon: FileText },
+    { label: 'Controle de desenhos técnicos', route: '/qualidade/controle-desenhos', icon: FileText },
+    { label: 'Auditorias da planta', route: '/qualidade/auditorias-planta', icon: ClipboardList },
+    { label: 'Auditoria 5S', route: '/qualidade/auditoria-5s', icon: ShieldCheck },
+    { label: 'Rastreabilidade de lotes', route: '/qualidade/genealogia-lote', icon: Package },
+    { label: 'Liberação de lotes', route: '/qualidade/liberacao-lote', icon: ShieldCheck },
+    { label: 'Quarentena de lotes', route: '/qualidade/quarentena', icon: ShieldCheck },
+    { label: 'Metodologia 8D', route: '/qualidade/metodologia-8d', icon: ClipboardList },
+    { label: 'Instruções de trabalho', route: '/qualidade/editor-it', icon: FileText },
+    { label: 'Relatórios da Qualidade', route: '/qualidade/relatorios-documentos', icon: BarChart3 },
+    { label: 'Análise de refugos e perdas', route: '/qualidade/graficos-refugo', icon: BarChart3 },
+    { label: 'Metrologia e calibração', route: '/qualidade/calibracao', icon: Wrench },
+    { label: 'Cadastro de instrumentos', route: '/qualidade/instrumentos', icon: Settings },
   ] },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench, children: [
     { label: 'Central de manutenção', route: '/manutencao' },
@@ -121,7 +132,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [startMenuOpen, setStartMenuOpen] = useState(false)
   const [moduleSearch, setModuleSearch] = useState('')
   const [helpOpen, setHelpOpen] = useState(false)
-  const [tabletOpen, setTabletOpen] = useState(false)
   const [pcpTabletOpen, setPcpTabletOpen] = useState(false)
   const [now, setNow] = useState(() => new Date())
   const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
@@ -147,12 +157,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     }
     document.addEventListener('mousedown', close)
     return () => document.removeEventListener('mousedown', close)
-  }, [])
-
-  useEffect(() => {
-    const openQualityTablet = () => setTabletOpen(true)
-    window.addEventListener('erp:open-quality-tablet', openQualityTablet)
-    return () => window.removeEventListener('erp:open-quality-tablet', openQualityTablet)
   }, [])
 
   // Atualização automática por mudanças reais no banco, sem botão manual.
@@ -206,15 +210,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     if (item.action === 'pcpTablet') {
       setPcpTabletOpen(true)
       setOpenMenu(null)
-      return
-    }
-    if (item.action === 'qualityTablet') {
-      // REVISÃO 2026-10-19: o menu Qualidade deve abrir a Central SGQ Tablet atual,
-      // não o modal legado TabletMenuModal.
-      setTabletOpen(false)
-      setOpenMenu(null)
-      setStartMenuOpen(false)
-      navigate('/qualidade/tablet')
       return
     }
     go(item.route)
@@ -291,7 +286,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
                 return <div className="erp-windows-menu-group" key={menu.label}>
                   <div className={`erp-windows-menu-row ${current?.label === menu.label ? 'is-active' : ''}`}>
                     <button type="button" className="erp-windows-menu-main" onClick={() => {
-                      if (menu.action === 'qualityTablet' || menu.action === 'pcpTablet') { setStartMenuOpen(false); openMenuItem(menu) }
+                      if (menu.action === 'pcpTablet') { setStartMenuOpen(false); openMenuItem(menu) }
                       else if (hasChildren) { setOpenMenu(value => value === menu.label ? null : menu.label);  }
                       else { setStartMenuOpen(false); openMenuItem(menu) }
                     }}>
@@ -333,7 +328,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {children}
       </main>
-      <TabletMenuModal isOpen={tabletOpen} onClose={() => setTabletOpen(false)} onNavigate={(route) => { setTabletOpen(false); go(route) }} />
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
       <BarraWindows11
         ativo={pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/estoque') ? 'est' : pathname.startsWith('/manutencao') ? 'man' : pathname.startsWith('/usuarios') ? 'usu' : pathname.startsWith('/configuracoes') ? 'cfg' : ''}
