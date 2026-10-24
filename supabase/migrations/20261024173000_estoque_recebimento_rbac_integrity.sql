@@ -89,8 +89,8 @@ revoke all on function public.fn_incrementar_saldo_almoxarifado(uuid, uuid, nume
 
 -- Saldo e rastreabilidade são escritos por RPCs transacionais / funções SGQ,
 -- não por mutações REST diretas do navegador.
-revoke insert, update, delete on public.erp_produto_estoque from authenticated;
-revoke insert, update, delete on public.erp_estoque_lotes_rastreabilidade from authenticated;
+revoke insert, update, delete on public.erp_produto_estoque from public, anon, authenticated;
+revoke insert, update, delete on public.erp_estoque_lotes_rastreabilidade from public, anon, authenticated;
 grant select on public.erp_produto_estoque to authenticated;
 grant select on public.erp_estoque_lotes_rastreabilidade to authenticated;
 
