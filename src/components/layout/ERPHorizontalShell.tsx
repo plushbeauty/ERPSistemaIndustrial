@@ -146,12 +146,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     return () => document.removeEventListener('mousedown', close)
   }, [])
 
-  useEffect(() => {
-    const openQualityTablet = () => setTabletOpen(true)
-    window.addEventListener('erp:open-quality-tablet', openQualityTablet)
-    return () => window.removeEventListener('erp:open-quality-tablet', openQualityTablet)
-  }, [])
-
   // Atualização automática por mudanças reais no banco, sem botão manual.
   // Não recarrega telas de lançamento/edição para não apagar dados ainda não gravados.
   useEffect(() => {
