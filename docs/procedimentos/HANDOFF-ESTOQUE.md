@@ -32,11 +32,11 @@ Este documento permite que outra sessão continue o módulo sem refazer a triage
 
 ## Pendências prioritárias, em ordem sugerida
 
-### A. Ajustes de estoque — tela hoje demonstrativa
+### A. Ajustes de estoque — validar contrato transacional e interface atual
 
 Arquivo: `src/pages/EstoqueAjustes.tsx`.
 
-Evidência observada: saldos `450` e `25` vêm do estado inicial local; o botão de novo apenas zera valores; o botão de efetivar navega para `/estoque`; a lupa de produto recebe `value=""` e `onChange` vazio; lote/posição/motivo não são persistidos; o laudo só chama `window.print()`.
+Evidência atual rechecando `src/pages/EstoqueAjustes.tsx`: produtos ativos são carregados por empresa da sessão, o lookup recebe os produtos reais e a ação chama `erp_estoque_registrar_movimento` com saída/Avaria. A descrição antiga de saldos fixos e botão demonstrativo está desatualizada. Permanecem sem prova os contratos server-side de RBAC, lote, concorrência e atomicidade; o campo de posição é gravado como observação e não como endereço relacional.
 
 Passos:
 
@@ -48,11 +48,11 @@ Passos:
 6. Confirmar resultado com retorno da RPC; separar "novo ajuste" do sucesso/navegação; botão laudo só imprime dados persistidos.
 7. Testar perfil sem `estoque.movimentar`, empresa/lote alheios, quantidade maior que saldo, repetição e falha transacional.
 
-### B. Etiquetas — consulta/identificação atualmente incorreta
+### B. Etiquetas — validar ZPL e contrato físico de impressão
 
 Arquivo: `src/pages/EstoqueEtiquetas.tsx`, rota `/estoque/etiquetas`.
 
-Evidência observada: carrega até 500 itens de `erp_pedidos_venda_itens` sem `empresa_id`; filtra a referência localmente procurando texto no UUID do item/produto, não por pedido ou NF-e; produtos são consultados por IDs sem tenant; query `.in()` pode receber lista vazia; quantidade impressa permite zero e não é usada pela impressão; destino "impressora operacional" é texto fixo; não há renderização de barcode real.
+Evidência atual rechecando `src/pages/EstoqueEtiquetas.tsx`: a tela consulta produtos ativos filtrados pela empresa do perfil autenticado, limita a quantidade a 1–100 e gera ZPL com o SKU. Copiar/baixar informa que a impressora não é acionada. A consulta anterior de itens de pedido e a alegação de destino fixo estão desatualizadas. Ainda falta validar o layout ZPL no modelo de impressora/leitor e definir se a etiqueta deve identificar SKU, lote, OP ou unidade rastreável.
 
 Passos:
 
@@ -68,7 +68,7 @@ Passos:
 
 Arquivo: `src/pages/EstoqueCurvaABC.tsx`, rota `/estoque/curva-abc`.
 
-Evidência observada: leituras de `erp_produtos` e `erp_produto_estoque` não têm empresa explícita nem paginação. Confirmar as policies e chaves compostas existentes. A implementação classifica usando valor atual (custo médio × quantidade) e a série ordenada, mas o rótulo "anual" não é baseado em movimento histórico no código visto.
+Evidência atual rechecando `src/pages/EstoqueCurvaABC.tsx`: produtos, saldos e custos são carregados por páginas completas com `empresa_id` explícito; a classificação usa saldo físico × custo mais recente por produto, não consumo anual. Não chamar o relatório de “anual” sem uma fonte histórica e fórmula de negócio aprovada.
 
 Passos:
 
@@ -82,7 +82,7 @@ Passos:
 
 Arquivos: `src/features/inventario/BalancoEstoque.tsx` e `src/features/inventario/AuditoriaSaldos.tsx`, rotas devem ser confirmadas em `src/AppEntryV2.tsx`.
 
-Evidência observada no balanço: filtro de data, almoxarifado e método de custo existem, mas só alteram estado visual; lista de produtos tem `.limit(5000)` e não tem filtro explícito de empresa; almoxarifados sem tenant explícito; os saldos/custos exibidos vêm de `erp_produtos.estoque_atual`/`custo_medio`, sem snapshot histórico; o status de todos os produtos é derivado como ATIVO/DIVERGENTE sem status real de lote. O export não prova um balanço histórico.
+Evidência atual rechecando `src/features/inventario/BalancoEstoque.tsx`: a consulta original tinha `.limit(5000)` e controles de data/almoxarifado/método sem efeito real sobre o cálculo. A branch `fix/estoque-anatomia-visual-2026-10-24` substitui o limite por `fetchAllPages`, deixa os controles de almoxarifado/método indisponíveis enquanto a fonte não for confirmada e declara que a data identifica o relatório, não um snapshot. A valoração continua baseada no saldo atual e `custo_medio`; não é balanço histórico ou contábil oficial.
 
 Evidência observada na auditoria: consulta a `erp_inventario_auditoria_saldos` até 500 linhas sem tenant explícito e sem paginação; validar se a tabela ainda é fonte oficial e quais policies existem.
 
