@@ -5,8 +5,8 @@
  */
 import { useSearchParams } from 'react-router-dom'
 import { Truck, Users } from 'lucide-react'
-import VendasClientes from './VendasClientes'
-import FornecedoresIndustrial from './FornecedoresIndustrial'
+import VendasClientes from './ParceirosClientesForm'
+import FornecedoresIndustrial from './ParceirosFornecedoresForm'
 
 type PartnerRole = 'cliente' | 'fornecedor'
 
