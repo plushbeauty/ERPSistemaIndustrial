@@ -79,6 +79,7 @@ export default function IndustrialDataWorkspace() {
     '/fiscal/parametros':'fiscal-parametros','/fiscal/nfe-entradas':'fiscal-nfe-entradas','/rh/funcionarios':'rh-funcionarios','/rh/turnos':'rh-turnos','/rh/epis':'rh-epis','/rh/epis/entregas':'rh-entregas-epis'
   }
   const config = configs[routeConfigs[location.pathname] ?? '']
+  const isRhWorkspace = location.pathname.startsWith('/rh/')
   const [rows,setRows] = useState<Record<string, unknown>[]>([])
   const [form,setForm] = useState<Record<string,string>>({})
   const [search,setSearch] = useState('')
@@ -133,7 +134,42 @@ export default function IndustrialDataWorkspace() {
     } catch (e) { setBusy(false); setError(e instanceof Error ? e.message : 'Não foi possível validar o formulário.') }
   }
   if(!config) return <main className="p-4 text-xs">Módulo não encontrado para esta rota.</main>
-  return <main className="min-h-full bg-slate-50 p-3 text-slate-900">
+  return <>
+    {isRhWorkspace && <style>{`
+      .rh-data-workspace{width:100%;max-width:1600px;margin:0 auto;padding:20px 24px 28px;background:#f5f7fb;color:#20364b;font-size:13px;box-sizing:border-box}
+      .rh-data-workspace>header{min-height:66px;align-items:center;margin-bottom:18px;padding:0 0 16px;border-bottom:1px solid #dbe4ef}
+      .rh-data-workspace>header h1{font-size:22px;line-height:1.3;font-weight:650;color:#0b2545;letter-spacing:-.02em}
+      .rh-data-workspace>header p{font-size:13px;line-height:1.5;margin-top:4px;color:#64748b}
+      .rh-data-workspace>header button,.rh-data-workspace button{min-height:36px;border-radius:7px;padding:0 12px;font-size:12px;font-weight:600;gap:7px}
+      .rh-data-workspace>div.grid{gap:12px;margin-bottom:16px}
+      .rh-data-workspace>div.grid section{min-height:82px;padding:14px 16px;border:1px solid #dbe4ef;border-radius:9px;box-shadow:0 2px 6px #0b254508}
+      .rh-data-workspace>div.grid section p{font-size:11px;letter-spacing:.04em;margin-bottom:6px}
+      .rh-data-workspace>div.grid section strong{font-size:23px;line-height:1.3;color:#0b2545}
+      .rh-data-workspace>section{border:1px solid #dbe4ef;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px #0b254508}
+      .rh-data-workspace>section:first-of-type{padding:18px 20px}
+      .rh-data-workspace>section h2{font-size:14px;line-height:1.4;color:#0b2545;margin-bottom:14px}
+      .rh-data-workspace label{display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:0}
+      .rh-data-workspace label span{display:block;margin:0;font-size:12px;line-height:1.4;font-weight:650;letter-spacing:0;text-transform:none;color:#334155}
+      .rh-data-workspace input,.rh-data-workspace select,.rh-data-workspace textarea{box-sizing:border-box;width:100%;min-width:0;min-height:38px;height:38px;padding:0 11px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;font-family:inherit;font-size:13px;line-height:1.4;color:#1e293b;outline:none}
+      .rh-data-workspace textarea{height:auto;min-height:100px;padding:10px 11px;resize:vertical}
+      .rh-data-workspace input:focus,.rh-data-workspace select:focus,.rh-data-workspace textarea:focus{border-color:#1d5fd1;box-shadow:0 0 0 3px #1d5fd11a}
+      .rh-data-workspace input::placeholder{color:#94a3b8}
+      .rh-data-workspace>section:first-of-type .grid{gap:14px 16px}
+      .rh-data-workspace>section:first-of-type>div.mt-3{margin-top:18px;gap:10px}
+      .rh-data-workspace>section:first-of-type>div.mt-3 button{min-height:38px;padding:0 16px}
+      .rh-data-workspace>section:last-of-type>div:first-child{min-height:58px;padding:12px 16px;flex-wrap:wrap}
+      .rh-data-workspace>section:last-of-type>div:first-child h2{margin:0}
+      .rh-data-workspace>section:last-of-type>div:first-child label{width:min(320px,100%)}
+      .rh-data-workspace>section:last-of-type>div:first-child input{height:36px;min-height:36px;padding-left:30px}
+      .rh-data-workspace table{min-width:760px;font-size:12px}
+      .rh-data-workspace thead th{height:42px;padding:10px 12px;font-size:11px;letter-spacing:.035em}
+      .rh-data-workspace tbody td{height:44px;padding:10px 12px;font-size:12px;line-height:1.45}
+      .rh-data-workspace tbody td button{min-height:32px;padding:0 10px}
+      .rh-data-workspace>p{padding-top:10px;font-size:11px;line-height:1.5}
+      @media(max-width:760px){.rh-data-workspace{padding:14px 12px 20px}.rh-data-workspace>header h1{font-size:20px}.rh-data-workspace>div.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-data-workspace>section:first-of-type{padding:14px}.rh-data-workspace>section:first-of-type .grid{grid-template-columns:minmax(0,1fr);gap:12px}.rh-data-workspace>section:first-of-type .grid label{grid-column:auto}.rh-data-workspace>section:last-of-type>div:first-child{align-items:stretch}.rh-data-workspace>section:last-of-type>div:first-child label{width:100%}}
+      @media(max-width:420px){.rh-data-workspace>div.grid{grid-template-columns:minmax(0,1fr)}.rh-data-workspace>header{align-items:flex-start}.rh-data-workspace>header button{width:100%}}
+    `}</style>}
+    <main className={isRhWorkspace ? "rh-data-workspace" : "min-h-full bg-slate-50 p-3 text-slate-900"}>
     <header className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
       <div className="flex items-center gap-2"><ShieldCheck size={17} className="text-sky-700"/><div><h1 className="text-sm font-semibold">{config.title}</h1><p className="text-[10px] text-slate-500">{config.subtitle}</p></div></div>
       <button className={btn} onClick={()=>void load()} disabled={loading}><RefreshCw size={13}/> Atualizar</button>
@@ -160,4 +196,5 @@ export default function IndustrialDataWorkspace() {
     </section>
     <p className="mt-2 text-[9px] text-slate-500">Dados consultados e gravados diretamente no Supabase com as políticas de acesso existentes; não são utilizados registros de demonstração.</p>
   </main>
+  </>
 }
