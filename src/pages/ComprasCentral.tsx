@@ -21,13 +21,13 @@ const shortcuts = [
 type PurchaseIndicators = { alerts: number | null; approvals: number | null; quotes: number | null; openOrders: number | null; openValue: number | null; error: string }
 
 const purchaseTabs = [
-  { label: 'Painel', route: '/compras', Icon: LayoutGrid, count: null },
-  { label: 'Pedido do PCP', route: '/compras/solicitacao', Icon: FilePlus2, count: null },
+  { label: 'Painel', route: '/compras', Icon: LayoutGrid, countKey: undefined },
+  { label: 'Pedido do PCP', route: '/compras/solicitacao', Icon: FilePlus2, countKey: undefined },
   { label: 'Requisições', route: '/compras/requisicoes', Icon: ClipboardList, countKey: 'approvals' as const },
   { label: 'Alertas MRP', route: '/pcp/mrp-ii', Icon: AlertTriangle, countKey: 'alerts' as const },
   { label: 'Cotações', route: '/compras/rfq', Icon: BarChart3, countKey: 'quotes' as const },
   { label: 'Pedidos', route: '/compras/pedido', Icon: ShoppingCart, countKey: 'openOrders' as const },
-  { label: 'Fornecedores', route: '/compras/fornecedores', Icon: Truck, count: null },
+  { label: 'Fornecedores', route: '/compras/fornecedores', Icon: Truck, countKey: undefined },
 ]
 
 const brl = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -129,7 +129,7 @@ export default function ComprasCentral() {
             <button type="button" className="sq-purchase-refresh" onClick={() => void loadIndicators()} disabled={loadingIndicators} aria-label="Atualizar indicadores"><RefreshCw size={15}/></button>
           </nav>
           <section aria-labelledby="sq-purchase-main-title">
-            <div className="sq-purchase-section-head"><div><h2 id="sq-purchase-main-title">Escolha uma área de Compras</h2><p>Acesse diretamente a rotina que você precisa executar.</p></div><small>4 áreas principais</small></div>
+            <div className="sq-purchase-section-head"><div><h2 id="sq-purchase-main-title">Acesso rápido às rotinas</h2><p>Atalhos para abrir os módulos operacionais de compras já integrados ao ERP.</p></div><small>4 áreas principais</small></div>
             <div className="sq-purchase-grid">
               {mainCards.map(({title,description,detail,route,Icon,tone}) => <button key={title} type="button" className={`sq-purchase-card ${tone}`} onClick={() => navigate(route)} aria-label={`Abrir ${title}`}>
                 <span className="sq-purchase-icon"><Icon size={23} strokeWidth={1.9}/></span>
