@@ -1,3 +1,9 @@
+/**
+ * SYSNQRA ERP INDUSTRIAL — Shell global protegido.
+ * REVISÃO: APROV-SHELL-2026-10-24-R1 | DATA: 2026-10-24.
+ * Correção não visual autorizada: remover listener órfão sem emissores que referenciava setter inexistente.
+ * Menu, rotas, comportamento visível e layout permanecem inalterados.
+ */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Warehouse, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -144,12 +150,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     }
     document.addEventListener('mousedown', close)
     return () => document.removeEventListener('mousedown', close)
-  }, [])
-
-  useEffect(() => {
-    const openQualityTablet = () => setTabletOpen(true)
-    window.addEventListener('erp:open-quality-tablet', openQualityTablet)
-    return () => window.removeEventListener('erp:open-quality-tablet', openQualityTablet)
   }, [])
 
   // Atualização automática por mudanças reais no banco, sem botão manual.
