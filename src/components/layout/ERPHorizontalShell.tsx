@@ -20,7 +20,6 @@ const menus: MenuItem[] = [
   { label: 'Cadastros', route: '/produtos-vendas', icon: Database, children: [
     { label: 'Cadastro de Produtos', route: '/produtos-vendas' },
     { label: 'Cadastro de Clientes', route: '/cadastros/clientes' },
-    { label: 'Cadastro de Fornecedores', route: '/cadastros/fornecedores' },
   ] },
   { label: 'Vendas', route: '/vendas', icon: ShoppingCart, children: [
     { label: 'Dashboard comercial', route: '/vendas' },
@@ -34,13 +33,8 @@ const menus: MenuItem[] = [
     { label: 'Metas', route: '/vendas/metas' },
     { label: 'Relatórios', route: '/vendas/relatorios' },
   ] },
-  { label: 'Compras', route: '/compras/rfq', icon: Truck, children: [
-    { label: 'Central de compras / RFQ', route: '/compras/rfq' },
-    { label: 'Solicitações', route: '/compras/solicitacao-manual' },
-    { label: 'Pedido de compra', route: '/compras/pedido' },
-    { label: 'Recebimentos', route: '/compras/recebimentos' },
-    { label: 'Relatórios', route: '/compras/relatorios' },
-  ] },
+  // Central única: Pedido PCP, Requisições, MRP, Cotações, Pedidos e Fornecedores são abas internas.
+  { label: 'Compras', route: '/compras', icon: Truck },
   { label: 'Estoque', route: '/estoque', icon: Package, children: [
     { label: 'Saldos de estoque', route: '/estoque/saldos' },
     { label: 'Endereços físicos', route: '/estoque/enderecos' },
@@ -69,7 +63,6 @@ const menus: MenuItem[] = [
   ] },
   { label: 'Fiscal', route: '/fiscal', icon: FileText },
   { label: 'Manufatura / PCP', route: '/pcp', icon: Factory, children: [
-    { label: 'Central PCP', route: '/pcp' },
     { label: 'Ordens de produção', route: '/pcp/ordens' },
     { label: 'Ordens industriais', route: '/pcp/ordens-industriais' },
     { label: 'Chão de Fábrica · Portal do Funcionário', route: '/pcp/portal-operador' },
@@ -86,16 +79,10 @@ const menus: MenuItem[] = [
     { label: 'Auditoria PCP', route: '/pcp/auditoria' },
     { label: 'PCP Tablet', route: '/pcp', action: 'pcpTablet' },
   ] },
+  // Clique abre a Central SGQ Tablet; a seta mantém atalhos de qualidade sem duplicar o módulo no menu.
   { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, action: 'qualityTablet', children: [
-    { label: 'Visual geral da Qualidade', route: '/qualidade' },
-    { label: 'Inspeções de lotes', route: '/qualidade/inspecoes' },
-    { label: 'Inspeção em processo', route: '/qualidade/inspecao-processo' },
-    { label: 'Especificações técnicas', route: '/qualidade/especificacoes' },
-    { label: 'FMEA / PFMEA', route: '/qualidade/fmea' },
-    { label: 'RNC / CAPA', route: '/qualidade/rnc-capa' },
-    { label: 'CEP / medições', route: '/qualidade/cep' },
-    { label: 'Cadastro de documentos (GED)', route: '/qualidade/ged-documentos' },
-    { label: 'Qualidade Tablet', route: '/qualidade', action: 'qualityTablet' },
+    { label: 'Painel da Qualidade', route: '/qualidade' },
+    { label: 'Sala de RNC', route: '/qualidade/sala-rnc' },
   ] },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench, children: [
     { label: 'Central de manutenção', route: '/manutencao' },
@@ -104,12 +91,8 @@ const menus: MenuItem[] = [
     { label: 'Plano mestre', route: '/manutencao/plano-mestre' },
     { label: 'Indicadores', route: '/manutencao/indicadores' },
   ] },
-  { label: 'Recursos Humanos', route: '/rh/funcionarios', icon: UserRound, children: [
-    { label: 'Funcionários', route: '/rh/funcionarios' },
-    { label: 'Turnos e escalas', route: '/rh/turnos' },
-    { label: 'EPIs', route: '/rh/epis' },
-    { label: 'Entregas de EPI', route: '/rh/epis/entregas' },
-  ] },
+  // Central única de RH: funcionários/fotos, ponto, atestados e faltas, treinamentos, documentos e indicadores em abas.
+  { label: 'Recursos Humanos', route: '/rh', icon: UserRound },
   { label: 'Relatórios', route: '/relatorios', icon: BarChart3 },
   { label: 'Configuração', route: '/configuracoes-adm', icon: Settings },
 ]
@@ -209,12 +192,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       return
     }
     if (item.action === 'qualityTablet') {
-      // REVISÃO 2026-10-19: o menu Qualidade deve abrir a Central SGQ Tablet atual,
-      // não o modal legado TabletMenuModal.
-      setTabletOpen(false)
+      setTabletOpen(true)
       setOpenMenu(null)
       setStartMenuOpen(false)
-      navigate('/qualidade/tablet')
       return
     }
     go(item.route)
