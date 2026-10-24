@@ -85,8 +85,8 @@ function FileManagerInstaller({ companyId }: { companyId: string | null }) {
       const data = result as { primaryOk?: boolean; networkOk?: boolean; createdFolders?: string[] }
       if (!data.primaryOk) throw new Error('O agente não conseguiu criar ou acessar a pasta principal. Confira o caminho e as permissões da conta do serviço.')
       if (target === 'rede' && !data.networkOk) throw new Error('A pasta de rede não foi acessada. Confira o caminho UNC e as permissões da conta que executa o serviço.')
-      sessionStorage.setItem('sysnqra-file-manager-v1', JSON.stringify({ companyId, agentUrl: agentUrl.replace(/\/+$/, ''), token: token.trim() }))
-      setMessage('Diretórios validados para esta empresa. Pastas criadas nesta operação: ' + (data.createdFolders ? data.createdFolders.length : 0) + '. A conexão fica disponível nesta aba até o encerramento da sessão.')
+      // O token não é persistido no navegador; permanece apenas no estado desta tela.
+      setMessage('Diretórios validados para esta empresa. Pastas criadas nesta operação: ' + (data.createdFolders ? data.createdFolders.length : 0) + '. O teste e a validação foram concluídos; o token não foi persistido no navegador.')
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível configurar o armazenamento.')
     } finally { setBusy(false) }
