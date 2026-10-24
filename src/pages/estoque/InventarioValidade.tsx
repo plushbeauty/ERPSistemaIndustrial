@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, Boxes, CalendarClock, MapPin, RefreshCw, Search, ShieldCheck } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { fetchAllPages } from '../../lib/supabasePagination'
+import '../../styles/estoque-standard.css'
 
 type LotRow = {
   id: string
