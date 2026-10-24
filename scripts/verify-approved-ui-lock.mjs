@@ -3,13 +3,14 @@ import { readFileSync } from 'node:fs'
 
 /**
  * Approved UI lock — reviewed 2026-10-19, approval revision APROV-008 (compact edit sizing and removal of duplicated zone controls explicitly authorized by user). Explicitly authorized revisions APROV-005 (Novo Pedido), APROV-006 (Vendas / Status), and APROV-011 (single top Windows 11 navigation with visible Menu control) are frozen alongside the restored screens.
+ * Explicit user authorization on 2026-10-24 permits ProdutosVendasIndustrial.tsx REV-PRODUTO-UI-013: match the approved Compras visual with blue headers and compact aligned controls; preserve CRUD and data rules.
  * Explicit user authorization on 2026-10-23 permits PCPFichasProcesso.tsx REV-FICHA-010: standardize the SGQ/IT-PCP-001 header and light document cards, and highlight the Nova Ficha action with a violet icon/button. Other frozen files remain unchanged.
  * Do not update these hashes as part of ordinary styling/refactor work.
  */
 const approved = [
   { path: 'src/pages/VendasCentral.tsx', sha: '3aa44f48901c8777344a7c7c72f9fd9b81e399a5', label: 'Vendas / Status do pedido', source: 'explicit user-authorized revision APROV-006 — consistent card alignment and visible color legend; frozen after this revision' },
   { path: 'src/pages/NovoPedido.tsx', sha: '6d1368026d51f186baa297f71569a61a1f79e944', label: 'Vendas / Novo Pedido', source: 'explicit user-authorized revision APROV-005 — compact controls, 30px fields, 9px labels and compact buttons; frozen after this revision' },
-  { path: 'src/pages/ProdutosVendasIndustrial.tsx', sha: '95434d18498d1a0709c0ccfb1d7ba51949b71d1d', label: 'Cadastro Mestre de Produtos / padrão visual PCP compacto', source: 'revisão visual explicitamente autorizada pelo usuário em 2026-10-23 — campos alinhados à largura disponível dentro do grid responsivo de 12 colunas, sem cortes artificiais de largura; CRUD e regras de dados preservados; congelar após esta revisão' },
+  { path: 'src/pages/ProdutosVendasIndustrial.tsx', sha: 'bfcefa919a24f13ee82bc0e6c1be63e51948f991', label: 'Cadastro Mestre de Produtos / padrão visual PCP compacto', source: 'revisão REV-PRODUTO-UI-013 explicitamente autorizada pelo usuário em 2026-10-24 — cabeçalho azul e seções azuis no padrão de Compras, controles compactos e grade alinhada responsiva; CRUD e regras de dados preservados; congelar após esta revisão' },
   { path: 'src/styles/industrial-login.css', sha: 'fcbea255f1a476c1e228c7490052a7cea0a507b0', label: 'Login institucional', source: 'explicit user-authorized revision APROV-005 — institutional copy white with black outline for contrast' },
   { path: 'src/pages/QualidadeCentralTablet.tsx', sha: 'f7f497572c4e82b9fdf4923bffe1388b7d234a3b', label: 'Qualidade / Tablet SGQ', source: 'revisão explicitamente autorizada pelo usuário em 2026-10-23 — unificar os acessos RPNC, Ishikawa e CAPA em um único formulário com abas; preservar demais módulos do tablet' },
   { path: 'src/components/TabletMenuModal.tsx', sha: '5a416adfe3154227f7b4a652543584dca88e58d0', label: 'Qualidade / Modal Tablet padrão (22 módulos)', source: 'approved modal design — keep unchanged unless explicitly authorized' },
