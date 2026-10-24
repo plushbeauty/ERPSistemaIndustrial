@@ -42,7 +42,7 @@ export default function ComprasAbaNativa({ tab, onRefresh }: { tab: string; onRe
       const company = await supabase.rpc('erp_current_empresa_id')
       if (company.error || !company.data) throw company.error ?? new Error('Empresa da sessão não identificada.')
       const tenant = String(company.data); setEmpresaId(tenant)
-      if (tab === 'Pedido do PCP' || tab === 'Fornecedores') {
+      if (tab === 'Pedido do PCP' || tab === 'Fornecedores' || tab === 'Pedidos') {
         const [p,s] = await Promise.all([
           supabase.from('erp_produtos').select('id,codigo,nome,unidade,unidade_compra').eq('empresa_id',tenant).eq('ativo',true).order('codigo').limit(2000),
           supabase.from('erp_fornecedores').select('id,razao_social,documento,email').eq('empresa_id',tenant).eq('ativo',true).order('razao_social').limit(2000),
