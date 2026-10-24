@@ -654,7 +654,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/admin/logs" element={<AdminLogs />} />
       <Route path="/outlook/configuracao" element={<OutlookConfiguracao />} />
       <Route path="/outlook/caixa-entrada" element={<OutlookCaixaEntrada />} />
-      <Route path="/compras" element={<ComprasRoute><ComprasCentral /></ComprasRoute>} />
+      <Route path="/compras" element={<ComprasCentral />} />
       <Route path="/compras/requisicoes" element={<ComprasRoute><ComprasRequisicoes /></ComprasRoute>} />
       <Route path="/compras/recebimentos" element={<ComprasRoute><RecebimentoMateriais /></ComprasRoute>} />
       <Route path="/compras/recebimento" element={<Navigate to="/compras/recebimentos" replace />} />
