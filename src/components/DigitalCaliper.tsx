@@ -132,6 +132,30 @@ export default function DigitalCaliper({ instrumentOptions = [] }: Props) {
             : <span className="inline-flex items-center gap-1 border border-emerald-500/40 bg-emerald-500/10 px-2 py-1 text-[9px] font-black tracking-wide text-emerald-300"><CheckCircle2 size={12}/> DIMENSIONAL OK</span>)}
         </header>
         <div className="space-y-5 p-4">
+          <div className="overflow-hidden border border-slate-700 bg-slate-950/70 p-2">
+            <svg viewBox="0 0 420 130" role="img" aria-label={`Ilustração de paquímetro digital com leitura de ${displayValue} ${unit}`} className="h-auto w-full">
+              <defs>
+                <linearGradient id="sysnqra-caliper-steel" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#e2e8f0"/><stop offset="1" stopColor="#64748b"/></linearGradient>
+                <linearGradient id="sysnqra-caliper-body" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#334155"/><stop offset="1" stopColor="#0f172a"/></linearGradient>
+              </defs>
+              <path d="M20 30 h22 v80 l-10 14 h-12 z" fill="url(#sysnqra-caliper-steel)"/>
+              <path d="M20 30 h22 v-18 l-8 -8 h-14 z" fill="url(#sysnqra-caliper-steel)"/>
+              <rect x="20" y="30" width="390" height="26" rx="2" fill="url(#sysnqra-caliper-steel)"/>
+              {Array.from({ length: 61 }, (_, i) => <line key={i} x1={48 + i * 5.9} x2={48 + i * 5.9} y1="30" y2={i % 10 === 0 ? 42 : i % 5 === 0 ? 38 : 35} stroke="#334155" strokeWidth="0.8"/>)}
+              {Array.from({ length: 7 }, (_, i) => <text key={i} x={48 + i * 59} y="51" fontSize="6" textAnchor="middle" fill="#334155" fontFamily="monospace">{i * 25}</text>)}
+              <g transform={`translate(${(rawValue / 150) * 185} 0)`} style={{ transition: 'transform 120ms linear' }}>
+                <path d="M44 56 h18 v54 l-10 14 h-8 z" fill="url(#sysnqra-caliper-steel)"/>
+                <path d="M44 30 v-18 l6 -8 h12 v26 z" fill="url(#sysnqra-caliper-steel)"/>
+                <rect x="44" y="22" width="130" height="62" rx="8" fill="url(#sysnqra-caliper-body)" stroke="#64748b"/>
+                <rect x="56" y="30" width="96" height="30" rx="3" fill="#bbf7d0"/>
+                <text x="104" y="51" fontSize={displayValue.length > 7 ? "13" : "16"} textAnchor="middle" fill="#14532d" fontFamily="monospace" fontWeight="700">{displayValue}</text>
+                <text x="148" y="58" fontSize="7" textAnchor="end" fill="#14532d" fontFamily="monospace">{unit}</text>
+                <circle cx="70" cy="72" r="5" fill="#38bdf8"/><circle cx="90" cy="72" r="5" fill="#64748b"/>
+                <text x="122" y="75" fontSize="6" textAnchor="middle" fill="#cbd5e1" fontFamily="sans-serif" letterSpacing="1">SYSNQRA</text>
+                <rect x="160" y="26" width="6" height="10" rx="2" fill="#475569"/>
+              </g>
+            </svg>
+          </div>
           <div className={`relative flex h-32 flex-col items-end justify-center border p-4 font-mono transition-colors ${isOutOfTolerance ? 'border-rose-500/50 bg-rose-950/40' : 'border-emerald-500/25 bg-emerald-950/20'}`}>
             <p className={`absolute left-3 top-3 text-[9px] font-bold uppercase tracking-widest ${isOutOfTolerance ? 'text-rose-300' : 'text-slate-500'}`}>{isOutOfTolerance ? 'Alerta: discrepância detectada' : `Instrumento selecionado: ${instrumentTag || 'não informado'}`}</p>
             <p className={`text-5xl font-black tracking-tight sm:text-6xl ${isOutOfTolerance ? 'text-rose-400' : 'text-emerald-400'}`}>{displayValue}</p>
