@@ -27,7 +27,7 @@
 - Não redesenhar o cabeçalho azul-marinho, textos, cores, abas, espaçamentos gerais ou posicionamento das rotas.
 - Não trocar as consultas reais do Supabase por dados fictícios.
 - A Central obtém o tenant por `erp_current_empresa_id()` e filtra requisições, pedidos, RFQs e dados MRP por `empresa_id`.
-- `ComprasIndustrial.tsx` não é mais o componente canônico de `/compras`. Ele não foi excluído porque ainda pode ser usado por rotas operacionais; excluir o arquivo antes de auditar todas as referências quebraria funcionalidades.
+- A auditoria de referências no repositório encontrou `ComprasIndustrial.tsx` referenciado somente pelo import antigo de `AppEntryV2.tsx` e pela própria busca do arquivo; removido o import e excluído o arquivo legado da branch. A rota `/compras` não usa mais a tela antiga.
 
 ## Validação e limitações
 
