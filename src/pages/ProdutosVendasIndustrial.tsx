@@ -71,7 +71,7 @@ const fmt=(v:unknown)=>n(v).toLocaleString('pt-BR',{maximumFractionDigits:3})
 const panel:CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:2,boxShadow:'0 2px 7px rgba(18,59,80,.07),0 1px 2px rgba(16,24,40,.04)'}
 const input:CSSProperties={width:'100%',height:30,border:'1px solid #c4ced9',borderRadius:2,padding:'0 8px',fontSize:11,background:'#fff',boxSizing:'border-box',minWidth:0}
 const label:CSSProperties={display:'grid',gap:3,minWidth:0,fontSize:9,lineHeight:'11px',fontWeight:500,color:'#344054',textTransform:'uppercase',overflowWrap:'anywhere'}
-const btn=(kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,height:30,padding:'0 10px',borderRadius:2,border:'1px solid '+(kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#B8CDD5'),background:kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#F4FBFD',color:kind==='primary'||kind==='danger'?'#fff':'#123B50',fontSize:11,fontWeight:600,textTransform:'uppercase',cursor:'pointer',whiteSpace:'nowrap'})
+const btn=(kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,height:30,padding:'0 10px',borderRadius:2,border:'1px solid '+(kind==='danger'?'#D65B61':kind==='primary'?'#2563eb':'#B8CDD5'),background:kind==='danger'?'#D65B61':kind==='primary'?'#2563eb':'#F4FBFD',color:kind==='primary'||kind==='danger'?'#fff':'#123B50',fontSize:11,fontWeight:600,textTransform:'uppercase',cursor:'pointer',whiteSpace:'nowrap'})
 const emptyRow=(text:string,col=7)=><tr><td colSpan={col} style={{padding:22,textAlign:'center',color:'#667085'}}>{text}</td></tr>
 
 export default function ProdutosVendasIndustrial(){
@@ -366,6 +366,18 @@ export default function ProdutosVendasIndustrial(){
   return <><main className="product-master-screen" style={{maxWidth:1600,margin:'0 auto',color:'#172033',fontFamily:'Arial,sans-serif',background:'#fff'}}>
     <style>{`
       .product-master-screen label{min-width:0}
+      /* Padrão APROVADO de Compras: cabeçalho claro, campos compactos e ações em faixa própria. */
+      .product-master-screen > header{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:6px!important;padding:8px 0 10px!important;border-bottom:1px solid #dbe3ea!important}
+      .product-master-screen > header > div:first-child{min-width:220px}
+      .product-master-screen > header > div:last-child{width:100%;display:flex;flex-wrap:wrap;align-items:center;gap:6px!important;padding-top:7px;border-top:1px solid #e5eaf0}
+      .product-master-screen > header > div:first-child > div{color:#2563eb!important;font-size:9px!important;font-weight:800!important;letter-spacing:.12em!important}
+      .product-master-screen > header h1{color:#0f172a!important;font-size:20px!important;font-weight:600!important}
+      .product-master-screen .product-form-section-title{background:#f8fafc!important;border-left:2px solid #2563eb!important;color:#2563eb!important;border-radius:0!important}
+      .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{height:30px!important;min-height:30px!important;border-radius:2px!important;padding:0 8px!important;font-size:11px!important;border-color:#cbd5e1!important}
+      .product-master-screen textarea{height:auto!important;min-height:58px!important;padding:6px 8px!important}
+      .product-master-screen button{border-radius:7px!important;box-shadow:0 2px 0 rgba(15,23,42,.12),0 1px 3px rgba(15,23,42,.08)!important}
+      .product-master-screen button:active{transform:translateY(1px)!important;box-shadow:0 1px 0 rgba(15,23,42,.12)!important}
+      .product-master-screen button:focus-visible{outline:2px solid #2563eb!important;outline-offset:2px}
       /* Revisão visual autorizada: os campos ocupam a coluna disponível e mantêm alinhamento por grid. */
       .product-master-screen input[class^="edit-"],.product-master-screen input[class*=" edit-"],.product-master-screen textarea[class^="edit-"],.product-master-screen textarea[class*=" edit-"],.product-master-screen select[class^="edit-"],.product-master-screen select[class*=" edit-"]{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box}
       .product-master-screen input[type="number"]{text-align:right}
