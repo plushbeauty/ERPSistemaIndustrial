@@ -27,8 +27,8 @@ Regra: não considerar módulo concluído apenas porque existe um card. O card s
 | 19 | SEGURANÇA DO TRABALHO | ainda sem rota operacional própria |
 | 20 | MEIO AMBIENTE | ainda sem rota operacional própria |
 | 21 | TI | ainda sem rota operacional própria |
-| 22 | FORNECEDORES | rota real: /fornecedores |
-| 23 | CLIENTES | rota real: /clientes |
+| 22 | CENTRAL DE PARCEIROS · FORNECEDORES | /cadastros/parceiros?tipo=fornecedor |
+| 23 | CENTRAL DE PARCEIROS · CLIENTES | /cadastros/parceiros?tipo=cliente |
 | 24 | SUPORTE | rota real: /ajuda |
 | 25 | NOTIFICAÇÕES | ainda sem rota operacional própria |
 | 26 | AGENDA | ainda sem rota operacional própria |
