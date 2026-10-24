@@ -79,8 +79,11 @@ const menus: MenuItem[] = [
     { label: 'Auditoria PCP', route: '/pcp/auditoria' },
     { label: 'PCP Tablet', route: '/pcp', action: 'pcpTablet' },
   ] },
-  // A Qualidade abre diretamente o painel; a Central Tablet fica dentro da própria tela.
-  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, action: 'qualityTablet' },
+  // Clique abre a Central SGQ Tablet; a seta mantém atalhos de qualidade sem duplicar o módulo no menu.
+  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, action: 'qualityTablet', children: [
+    { label: 'Painel da Qualidade', route: '/qualidade' },
+    { label: 'Sala de RNC', route: '/qualidade/sala-rnc' },
+  ] },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench, children: [
     { label: 'Central de manutenção', route: '/manutencao' },
     { label: 'Ordens de manutenção', route: '/manutencao/ordens' },
@@ -189,12 +192,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       return
     }
     if (item.action === 'qualityTablet') {
-      // REVISÃO 2026-10-19: o menu Qualidade deve abrir a Central SGQ Tablet atual,
-      // não o modal legado TabletMenuModal.
-      setTabletOpen(false)
+      setTabletOpen(true)
       setOpenMenu(null)
       setStartMenuOpen(false)
-      navigate('/qualidade/tablet')
       return
     }
     go(item.route)
