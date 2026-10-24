@@ -227,7 +227,7 @@ export default function ComprasCentral() {
           <section aria-labelledby="sq-purchase-main-title">
             <div className="sq-purchase-section-head"><div><h2 id="sq-purchase-main-title">Acesso rápido às rotinas</h2><p>Atalhos para abrir os módulos operacionais de compras já integrados ao ERP.</p></div><small>4 áreas principais</small></div>
             <div className="sq-purchase-grid">
-              {mainCards.map(({title,description,detail,route,Icon,tone}) => <button key={title} type="button" className={`sq-purchase-card ${tone}`} onClick={() => navigate(route)} aria-label={`Abrir ${title}`}>
+              {mainCards.map(({title,description,detail,route,Icon,tone}) => <button key={title} type="button" className={`sq-purchase-card ${tone}`} onClick={() => setActiveTab(({ 'Requisições': 'Requisições', 'Cotações e mapa comparativo': 'Cotações', 'Pedidos de compra': 'Pedidos', 'Fornecedores': 'Fornecedores' } as Record<string, string>)[title] ?? 'Painel')} aria-label={`Abrir ${title}`}>
                 <span className="sq-purchase-icon"><Icon size={23} strokeWidth={1.9}/></span>
                 <h3>{title}</h3><p>{description}</p>
                 <span className="sq-purchase-card-foot"><span>{detail}</span><ArrowRight size={17}/></span>
