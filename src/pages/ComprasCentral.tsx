@@ -2,7 +2,6 @@ import { ArrowRight, AlertTriangle, BarChart3, ClipboardList, FileText, PackageC
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
-import VendasLayout from './VendasLayout'
 
 const mainCards = [
   { title: 'Requisições', description: 'Registre necessidades de materiais, acompanhe urgências e encaminhe itens para cotação.', detail: 'NECESSIDADES E APROVAÇÕES', route: '/compras/requisicoes', Icon: ClipboardList, tone: 'blue' },
@@ -127,8 +126,7 @@ export default function ComprasCentral() {
   ]
 
   return (
-    <VendasLayout title="Central de Compras" subtitle="Suprimentos, fornecedores, pedidos e recebimentos">
-      <main className="synqra-purchase-hub">
+    <main className="synqra-purchase-hub">
         <style>{`
           .synqra-purchase-hub{--sq-navy:#0b2545;--sq-blue:#1d5fd1;--sq-cyan:#22b8cf;min-height:calc(100vh - 70px);padding:12px;color:#172b43;background:#f5f7fb;font-family:Inter,Segoe UI,Arial,sans-serif}
           .sq-purchase-wrap{max-width:1600px;margin:0 auto}
@@ -137,7 +135,7 @@ export default function ComprasCentral() {
           .sq-purchase-eyebrow{display:flex;align-items:center;gap:8px;color:#bfeef6;font-size:10px;font-weight:800;letter-spacing:.15em;text-transform:uppercase}
           .sq-purchase-hero h1{margin:8px 0 6px;font-size:clamp(22px,2.4vw,32px);font-weight:750;line-height:1.15;letter-spacing:-.025em;color:#fff}
           .sq-purchase-hero p{max-width:740px;margin:0;color:#e1edf9;font-size:13px;line-height:1.6}
-          .sq-purchase-hero-actions{position:relative;z-index:1;display:flex;align-items:flex-end;flex-direction:column;gap:14px;flex:0 0 auto}.sq-purchase-hero-actions>button{display:flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid rgba(255,255,255,.2);border-radius:8px;background:#fff;color:#0b2545;font-size:12px;font-weight:750;white-space:nowrap;cursor:pointer;box-shadow:0 3px 9px rgba(0,0,0,.1)}.sq-purchase-hero-actions>button:hover{background:#edf6ff}
+          .sq-purchase-hero-actions{position:relative;z-index:1;display:flex;align-items:flex-end;flex-direction:column;gap:14px;flex:0 0 auto}.sq-purchase-hero-actions>button{display:flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid rgba(255,255,255,.2);border-radius:8px;background:linear-gradient(180deg,#fff 0%,#e8f0fa 100%);color:#0b2545;font-size:12px;font-weight:800;white-space:nowrap;cursor:pointer;border-radius:12px;box-shadow:0 5px 0 rgba(4,18,38,.24),0 9px 16px rgba(0,0,0,.16);transition:transform .16s ease,box-shadow .16s ease,background .16s ease}.sq-purchase-hero-actions>button:hover{background:linear-gradient(180deg,#fff 0%,#dceaff 100%);transform:translateY(-1px);box-shadow:0 6px 0 rgba(4,18,38,.2),0 12px 20px rgba(0,0,0,.18)}.sq-purchase-hero-actions>button:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(4,18,38,.2),0 4px 8px rgba(0,0,0,.12)}
           .sq-purchase-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px}.sq-purchase-kpis article{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:16px;border:1px solid #e0e7f0;border-radius:13px;background:#fff;box-shadow:0 3px 10px rgba(15,35,65,.035);min-width:0}.sq-purchase-kpis article span{display:block;color:#64748b;font-size:11px;font-weight:650}.sq-purchase-kpis article strong{display:block;margin-top:7px;color:#102c4e;font-size:27px;line-height:1.1;font-weight:800}.sq-purchase-kpis article small{display:block;margin-top:5px;color:#7b8a9d;font-size:10px}.sq-purchase-kpis article i{display:grid;place-items:center;flex:0 0 36px;height:36px;border-radius:10px;background:#edf4ff;color:#1d5fd1;font-style:normal}.sq-purchase-kpis article i.alert{background:#fff0f0;color:#d12c36}.sq-purchase-kpi-error{grid-column:1/-1;margin:0;padding:8px 10px;border-radius:7px;background:#fff7ed;color:#9a3412;font-size:11px;overflow-wrap:anywhere}
           .sq-purchase-tabs{display:flex;align-items:center;gap:5px;margin:16px 0 4px;padding:7px;border:1px solid #e0e7f0;border-radius:12px;background:#fff;overflow-x:auto}.sq-purchase-tabs button{display:flex;align-items:center;justify-content:center;gap:7px;flex:0 0 auto;min-height:36px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:#52677f;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer}.sq-purchase-tabs button:hover{background:#f1f5f9}.sq-purchase-tabs button.active{background:#0b2545;color:#fff}.sq-purchase-tabs button b{display:grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:99px;background:#dbeafe;color:#1d4ed8;font-size:10px}.sq-purchase-tabs button.active b{background:#fff;color:#0b2545}.sq-purchase-tabs .sq-purchase-refresh{margin-left:auto;min-width:34px;padding:0;color:#1d5fd1}
           .sq-purchase-flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin:14px 0}.sq-purchase-flow article{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #e0e7f0;border-radius:11px;background:#fff}.sq-purchase-flow article>span{display:grid;place-items:center;flex:0 0 29px;height:29px;border-radius:9px;background:#eaf2ff;color:#1d5fd1;font-size:12px;font-weight:800}.sq-purchase-flow small{display:block;color:#64748b;font-size:10px}.sq-purchase-flow strong{display:block;margin-top:3px;color:#102c4e;font-size:18px}
@@ -161,12 +159,12 @@ export default function ComprasCentral() {
           .sq-purchase-card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:17px;padding-top:12px;border-top:1px solid rgba(40,65,95,.12)}
           .sq-purchase-card-foot span{font-size:9px;font-weight:800;letter-spacing:.06em;color:#52677f}
           .sq-purchase-card-foot svg{color:#1d5fd1;transition:transform .18s}.sq-purchase-card:hover .sq-purchase-card-foot svg{transform:translateX(3px)}
-          .sq-purchase-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-          .sq-purchase-shortcut{display:flex;align-items:center;gap:12px;min-width:0;padding:14px;border:1px solid #e0e7f0;border-radius:13px;background:#fff;text-align:left;cursor:pointer;transition:border-color .18s,transform .18s,box-shadow .18s}
+          .sq-purchase-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+          .sq-purchase-shortcut{display:flex;align-items:center;gap:16px;min-width:0;min-height:78px;padding:18px 20px;border:1px solid #e0e7f0;border-radius:13px;background:#fff;text-align:left;cursor:pointer;transition:border-color .18s,transform .18s,box-shadow .18s}
           .sq-purchase-shortcut:hover{transform:translateY(-2px);border-color:#b9d5f5;box-shadow:0 7px 18px rgba(15,35,65,.06)}
           .sq-purchase-shortcut-icon{display:grid;place-items:center;flex:0 0 40px;height:40px;border-radius:12px;background:#eff6ff;color:#1d5fd1}
           .sq-purchase-shortcut.orange .sq-purchase-shortcut-icon{background:#fff4e8;color:#c56a1a}.sq-purchase-shortcut.green .sq-purchase-shortcut-icon{background:#eaf8f0;color:#168653}.sq-purchase-shortcut.teal .sq-purchase-shortcut-icon{background:#e6f9fb;color:#12889b}
-          .sq-purchase-shortcut strong{display:block;color:#173452;font-size:12px;font-weight:750}.sq-purchase-shortcut small{display:block;margin-top:4px;color:#687b90;font-size:10px;line-height:1.4}
+          .sq-purchase-shortcut strong{display:block;color:#173452;font-size:13px;font-weight:750;line-height:1.45;overflow-wrap:anywhere}.sq-purchase-shortcut small{display:block;margin-top:5px;color:#687b90;font-size:11px;line-height:1.5;overflow-wrap:anywhere}
           .sq-purchase-description{display:flex;align-items:flex-start;gap:13px;margin-top:18px;padding:17px 19px;border:1px solid #e0e7f0;border-radius:15px;background:linear-gradient(110deg,#fff,#f9fbff)}
           .sq-purchase-description-icon{display:grid;place-items:center;flex:0 0 38px;height:38px;border-radius:12px;background:#edf4ff;color:#1d5fd1}
           .sq-purchase-description h3{margin:1px 0 5px;color:#102c4e;font-size:13px;font-weight:750}.sq-purchase-description p{margin:0;color:#5b6f85;font-size:12px;line-height:1.65}
@@ -226,13 +224,8 @@ export default function ComprasCentral() {
               </button>)}
             </div>
           </section>
-          <section className="sq-purchase-description" aria-labelledby="sq-purchase-description-title">
-            <span className="sq-purchase-description-icon"><Users size={20}/></span>
-            <div><h3 id="sq-purchase-description-title">Descrição da tela</h3><p>Central operacional para controlar o ciclo de compras industriais, desde a necessidade de material até o pedido e o recebimento, com rastreabilidade, aprovações e integração com estoque e financeiro.</p></div>
-          </section>
           <footer className="sq-purchase-footer"><span>SYSNQRA ERP INDUSTRIAL • Compras e Suprimentos</span><span>As rotinas usam os cadastros, permissões e registros reais já existentes no sistema.</span></footer>
         </div>
-      </main>
-    </VendasLayout>
+    </main>
   )
 }
