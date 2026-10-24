@@ -68,10 +68,10 @@ const empty=():FormData=>({
 const money=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0)
 const n=(v:unknown)=>Number(v??0)||0
 const fmt=(v:unknown)=>n(v).toLocaleString('pt-BR',{maximumFractionDigits:3})
-const panel:CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:2,boxShadow:'0 2px 7px rgba(18,59,80,.07),0 1px 2px rgba(16,24,40,.04)'}
-const input:CSSProperties={width:'100%',height:30,border:'1px solid #c4ced9',borderRadius:2,padding:'0 8px',fontSize:11,background:'#fff',boxSizing:'border-box',minWidth:0}
+const panel:CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:10,boxShadow:'0 2px 7px rgba(18,59,80,.07),0 1px 2px rgba(16,24,40,.04)'}
+const input:CSSProperties={width:'100%',height:30,border:'1px solid #c4ced9',borderRadius:6,padding:'0 8px',fontSize:11,background:'#fff',boxSizing:'border-box',minWidth:0}
 const label:CSSProperties={display:'grid',gap:3,minWidth:0,fontSize:9,lineHeight:'11px',fontWeight:500,color:'#344054',textTransform:'uppercase',overflowWrap:'anywhere'}
-const btn=(kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,height:30,padding:'0 10px',borderRadius:2,border:'1px solid '+(kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#B8CDD5'),background:kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#F4FBFD',color:kind==='primary'||kind==='danger'?'#fff':'#123B50',fontSize:11,fontWeight:600,textTransform:'uppercase',cursor:'pointer',whiteSpace:'nowrap'})
+const btn=(kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,height:30,padding:'0 10px',border:'1px solid '+(kind==='danger'?'#D65B61':kind==='primary'?'#0F172A':'#B8CDD5'),background:kind==='danger'?'#D65B61':kind==='primary'?'#0F172A':'#F4FBFD',color:kind==='primary'||kind==='danger'?'#fff':'#123B50',fontSize:11,fontWeight:600,textTransform:'uppercase',cursor:'pointer',whiteSpace:'nowrap',borderRadius:8,boxShadow:kind==='primary'?'0 2px 0 #020617,0 2px 4px rgba(15,23,42,.14)':'0 1px 2px rgba(16,24,40,.08)'})
 const emptyRow=(text:string,col=7)=><tr><td colSpan={col} style={{padding:22,textAlign:'center',color:'#667085'}}>{text}</td></tr>
 
 export default function ProdutosVendasIndustrial(){
@@ -363,7 +363,7 @@ export default function ProdutosVendasIndustrial(){
       </main>
     )
   }
-  return <><main className="product-master-screen" style={{maxWidth:1600,margin:'0 auto',color:'#172033',fontFamily:'Arial,sans-serif',background:'#fff'}}>
+  return <><main className="product-master-screen" style={{width:'100%',maxWidth:'none',minHeight:'100vh',margin:0,color:'#1e293b',fontFamily:'Arial,sans-serif',background:'#f8fafc',paddingBottom:24,boxSizing:'border-box'}}>
     <style>{`
       .product-master-screen label{min-width:0}
       /* Revisão visual autorizada: os campos ocupam a coluna disponível e mantêm alinhamento por grid. */
@@ -374,7 +374,7 @@ export default function ProdutosVendasIndustrial(){
       @media print{body *{visibility:hidden!important}.product-master-screen,.product-master-screen *{visibility:visible!important}.product-master-screen{position:absolute!important;inset:0!important;width:100%!important;max-width:none!important;background:#fff!important}.product-master-screen .product-workspace{display:block!important;margin:0!important}.product-master-screen .product-list-panel,.product-master-screen header button,.product-master-screen input[type=file],.product-master-screen .product-screen-footer button{display:none!important}.product-master-screen .product-editor-panel{border:0!important}.product-master-screen .product-form-section{break-inside:avoid}.product-master-screen .product-tabs{display:none!important}}
       .product-master-screen button:focus-visible{outline:2px solid #2D8DB8;outline-offset:1px}
       .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{max-width:100%;box-sizing:border-box}
-      .product-master-screen .product-form-section{margin:0 0 8px;padding:8px;background:#fff;border:1px solid #d5dde7;border-radius:2px;box-shadow:0 2px 6px rgba(18,59,80,.055),0 1px 2px rgba(16,24,40,.035);min-width:0}
+       .product-master-screen .product-form-section{margin:0 0 8px;padding:8px;background:#fff;border:1px solid #d5dde7;border-radius:10px;box-shadow:0 2px 6px rgba(18,59,80,.055),0 1px 2px rgba(16,24,40,.035);min-width:0}
       .product-master-screen .product-form-section:last-child{margin-bottom:0}
       .product-master-screen .product-form-section-title{margin:-1px 0 8px;padding:6px 8px;background:linear-gradient(180deg,#f0f8fb 0%,#e7f2f7 100%);border-left:3px solid #2D8DB8;color:#123B50;font-size:10px;line-height:14px;font-weight:700;letter-spacing:.04em}
       /* Grid de 12 colunas: campos curtos ocupam 3, campos longos podem ocupar 6 ou 12. */
@@ -407,13 +407,36 @@ export default function ProdutosVendasIndustrial(){
       @media(min-width:1051px){.product-master-screen .product-list-panel>div:last-child{max-height:360px;overflow:auto}}
       @media(max-width:1150px){.product-master-screen .product-form-grid{grid-template-columns:repeat(12,minmax(0,1fr))}.product-master-screen .product-form-grid>*{grid-column:span 4}.product-master-screen .product-form-grid .product-unit-row{grid-column:span 12}.product-master-screen .product-general-row>*:nth-child(3),.product-master-screen .product-general-row>*:nth-child(4){grid-column:span 8!important}.product-master-screen .product-responsive-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
       .product-master-screen .product-unit-row{grid-column:span 3;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;align-items:center;min-width:0}.product-master-screen .product-unit-row label{display:grid;grid-template-columns:82px minmax(0,1fr);grid-template-rows:30px;align-items:center;gap:5px}.product-master-screen .product-unit-row label>span{min-height:0;line-height:11px}.product-master-screen .product-unit-row label>select{width:100%;min-width:0}.product-master-screen .product-photo-card{cursor:pointer;transition:border-color .12s,background .12s}.product-master-screen .product-photo-card:hover{border-color:#2D8DB8!important;background:#edf7fb!important}.product-master-screen .product-combo-wrap{display:grid;grid-template-columns:minmax(0,1fr) 30px;gap:4px;align-items:end;min-width:0}
-      .product-master-screen .product-plus-button{height:30px;width:30px;border:1px solid #2D8DB8;background:#eaf4f8;color:#123B50;display:inline-flex;align-items:center;justify-content:center;border-radius:2px;cursor:pointer}
+      .product-master-screen .product-plus-button{height:30px;width:30px;border:1px solid #2D8DB8;background:#eaf4f8;color:#123B50;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;cursor:pointer}
       .product-master-screen .product-inline-create{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) auto;gap:5px;padding:7px;margin-top:5px;background:#f4fbfd;border:1px solid #c8dfe8;align-items:end}
+      .product-master-screen .product-workspace{max-width:none;margin:12px 24px; padding:0;gap:16px}
+      .product-master-screen .product-editor-panel,.product-master-screen .product-list-panel,.product-master-screen .product-workspace>section,.product-master-screen section[aria-label]{border-radius:12px!important;border-color:#E2E8F0!important;box-shadow:0 1px 3px rgba(15,23,42,.06)!important}
+      .product-master-screen .product-form-section{border-radius:10px;background:#fff;border-color:#E2E8F0;box-shadow:none;padding:12px;margin-bottom:10px}
+      .product-master-screen .product-form-section-title{background:#F1F5F9;border-left-color:#0F172A;color:#334155;border-radius:4px;padding:7px 10px;font-size:10px;letter-spacing:.06em}
+      .product-master-screen label{font-size:10px!important;font-weight:700!important;color:#475569!important}
+      .product-master-screen .product-form-grid label,.product-master-screen .product-responsive-grid label{grid-template-rows:minmax(12px,auto) 36px!important;gap:4px!important}
+      .product-master-screen .product-form-grid label>input,.product-master-screen .product-form-grid label>select,.product-master-screen .product-form-grid label>textarea,.product-master-screen .product-responsive-grid label>input,.product-master-screen .product-responsive-grid label>select{height:36px!important;border:1px solid #E2E8F0!important;border-radius:8px!important;background:#F8FAFC!important;padding:0 9px!important;font-size:12px!important;color:#1E293B}
+      .product-master-screen .product-form-grid label>textarea{height:58px!important;padding:7px 9px!important}
+      .product-master-screen .product-tabs{background:#F8FAFC;border-bottom-color:#E2E8F0}
+      .product-master-screen .product-tabs button{border-radius:8px 8px 0 0!important;font-size:11px!important;font-weight:700!important}
+      .product-master-screen .product-list-panel>div:first-child{background:#F8FAFC!important;padding:12px!important;gap:10px!important;border-bottom-color:#E2E8F0!important}
+      .product-master-screen .product-list-panel table thead th{background:#F8FAFC!important;color:#334155!important;font-size:11px!important;padding:12px!important;border-bottom-color:#E2E8F0!important}
+      .product-master-screen .product-list-panel table tbody td{font-size:12px!important;padding:10px 12px!important;border-bottom:1px solid #F1F5F9}
+      .product-master-screen .product-list-panel tbody tr[aria-selected="true"]{background:#EFF6FF!important}
+      .product-master-screen .product-plus-button{height:36px!important;width:36px!important;border-radius:8px!important;background:#F1F5F9!important;border-color:#CBD5E1!important;color:#334155!important}
+      .product-master-screen .product-unit-row label{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:minmax(12px,auto) 36px!important}
+      .product-master-screen .product-unit-row label>select{height:36px!important;border-radius:8px!important;background:#F8FAFC!important;border:1px solid #E2E8F0!important;font-size:12px!important}
+      .product-master-screen .product-status-field{border-radius:8px;border-color:#E2E8F0;background:#F8FAFC;min-height:36px}
+      .product-master-screen .product-page-actions button,.product-master-screen button[style*="borderRadius: 8"]{min-height:36px}
+      .product-master-screen .product-page-header button{border-radius:8px}
+      .product-master-screen .product-page-header button[disabled]{opacity:.45}
+      .product-master-screen .product-screen-footer{margin:0 24px;border-top:1px solid #E2E8F0}
+      @media(max-width:700px){.product-master-screen .product-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;padding:12px!important;gap:10px!important}.product-master-screen .product-workspace{margin:10px 12px!important}.product-master-screen .product-page-title{padding:14px 12px 12px!important}.product-master-screen .product-page-actions{padding:10px 12px!important}.product-master-screen .product-screen-footer{margin:0 12px}.product-master-screen .product-kpi-grid article{padding:12px!important}.product-master-screen .product-kpi-grid article div div:last-child{display:none}}
       @media(max-width:700px){.product-master-screen .product-form-grid{grid-template-columns:repeat(12,minmax(0,1fr))}.product-master-screen .product-form-grid>*{grid-column:span 6!important}.product-master-screen .product-form-grid .product-unit-row{grid-column:span 12!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.product-master-screen .product-unit-row label{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(12px,auto) 30px;gap:2px}.product-master-screen .product-general-row>*:nth-child(3),.product-master-screen .product-general-row>*:nth-child(4){grid-column:span 12!important}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 12!important}.product-master-screen .product-responsive-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-responsive-grid{row-gap:9px}.product-master-screen .product-tabs button{padding:7px 8px!important;font-size:9px!important}.product-master-screen .product-responsive-grid>*{grid-column:span 1!important}.product-master-screen .product-inline-create{grid-template-columns:1fr}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 1!important}}
     `}</style>
-    <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
-      <div><div style={{fontSize:11,fontWeight:800,color:'#2D8DB8'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
-      <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
+    <header className="product-page-header" style={{display:'flex',flexDirection:'column',alignItems:'stretch',gap:0,padding:0,background:'#0F172A',borderBottom:'1px solid #1e293b',boxShadow:'0 2px 8px rgba(15,23,42,.12)'}}>
+      <div className="product-page-title" style={{padding:'14px 24px 12px'}}><div style={{fontSize:10,fontWeight:800,color:'#94A3B8',letterSpacing:'.12em'}}>SYSNQRA • VENDAS E ENGENHARIA</div><h1 style={{margin:'3px 0 0',fontSize:20,lineHeight:1.25,fontWeight:800,color:'#fff',letterSpacing:'-.02em'}}>Cadastro Mestre de Produtos</h1><div style={{fontSize:11,color:'#CBD5E1',marginTop:3}}>Cadastro técnico, estoque, produção, qualidade e inteligência fiscal</div></div>
+      <div className="product-page-actions" style={{display:'flex',gap:7,flexWrap:'wrap',alignItems:'center',justifyContent:'flex-start',padding:'10px 24px',marginTop:0,background:'#fff',borderTop:'1px solid #334155',borderBottom:'1px solid #e2e8f0'}}>
         <button type="button" onClick={newProduct} style={btn('primary')}><Plus size={16}/>Novo</button>
         <input ref={importRef} type="file" accept=".xlsx,.xls,.csv" onChange={importExcel} style={{display:'none'}} />
         <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>choosePhoto(e)} style={{display:'none'}} />
@@ -428,7 +451,16 @@ export default function ProdutosVendasIndustrial(){
       </div>
     </header>
 
-    {(message||error)&&<div role="alert" style={{margin:10,padding:'9px 12px',borderRadius:6,border:'1px solid '+(error?'#fecaca':'#bbf7d0'),background:error?'#fff1f2':'#f0fdf4',color:error?'#b91c1c':'#166534',fontWeight:800,fontSize:12}}>{error||message}</div>}
+    {(message||error)&&<div role="alert" style={{margin:'12px 24px 0',padding:'9px 12px',borderRadius:8,border:'1px solid '+(error?'#fecaca':'#bbf7d0'),background:error?'#fff1f2':'#f0fdf4',color:error?'#b91c1c':'#166534',fontWeight:800,fontSize:12}}>{error||message}</div>}
+
+    <section className="product-kpi-grid" aria-label="Indicadores do cadastro de produtos" style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr))',gap:16,padding:'16px 24px 4px'}}>
+      {[
+        {label:'Produtos cadastrados',value:products.length,detail:'Registros da empresa autenticada',icon:Boxes,bg:'#EFF6FF',color:'#2563EB'},
+        {label:'Produtos ativos',value:products.filter(p=>p.ativo).length,detail:'Disponíveis para operação',icon:CheckCircle2,bg:'#F0FDF4',color:'#15803D'},
+        {label:'Produtos inativos',value:products.filter(p=>!p.ativo).length,detail:'Histórico preservado',icon:ShieldCheck,bg:'#FFF7ED',color:'#C2410C'},
+        {label:'Grupos cadastrados',value:groups.length,detail:'Classificações da empresa',icon:Factory,bg:'#F5F3FF',color:'#6D28D9'}
+      ].map(k=>{const Icon=k.icon;return <article key={k.label} style={{background:'#fff',border:'1px solid #E2E8F0',padding:16,borderRadius:12,boxShadow:'0 1px 2px rgba(15,23,42,.05)',display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:10,minWidth:0}}><div style={{minWidth:0}}><div style={{fontSize:11,color:'#64748B',fontWeight:600}}>{k.label}</div><div style={{fontSize:24,lineHeight:1.25,fontWeight:800,color:'#0F172A',marginTop:4,fontVariantNumeric:'tabular-nums'}}>{k.value}</div><div style={{fontSize:10,color:'#94A3B8',marginTop:4}}>{k.detail}</div></div><div style={{width:32,height:32,flex:'0 0 32px',borderRadius:8,background:k.bg,color:k.color,display:'flex',alignItems:'center',justifyContent:'center'}}><Icon size={17}/></div></article>})}
+    </section>
 
     {selectedId&&<section style={{...panel,margin:'10px 10px 0',padding:7}}>
       <div style={{fontSize:9,fontWeight:700,color:'#123B50',marginBottom:5,textTransform:'uppercase'}}>Fotos do produto • catálogo digital</div>
@@ -611,7 +643,7 @@ export default function ProdutosVendasIndustrial(){
 
     <section className="product-list-panel" style={{...panel,overflow:'hidden'}}>
       <div style={{display:'flex',alignItems:'end',gap:6,padding:7,background:'#f7f9fc',borderBottom:'1px solid #d6dde6',flexWrap:'wrap'}}>
-        <Search size={14} color="#2D8DB8"/><label style={{...label,width:'calc(100% - 24px)'}}>PESQUISAR PRODUTO<input aria-label="Pesquisar produto por código, descrição ou grupo" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código, descrição, grupo ou marca..." style={{...input,height:30}}/></label>
+        <label style={{...label,width:'min(100%,520px)'}}>PESQUISAR PRODUTO<div className="product-search-field" style={{position:'relative',width:'100%'}}><Search size={15} color="#64748B" style={{position:'absolute',left:10,top:10,pointerEvents:'none'}}/><input aria-label="Pesquisar produto por código, descrição ou grupo" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código, descrição, grupo ou marca..." style={{...input,height:36,borderRadius:8,background:'#F8FAFC',borderColor:'#E2E8F0',paddingLeft:32,fontSize:12}}/></div></label>
         <label style={{...label,width:'100%'}}>FILTRAR POR GRUPO<select value={groupFilter} onChange={e=>setGroupFilter(e.target.value)} style={{...input,height:30}}><option value="TODAS">Todos os grupos</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}</select></label>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:6,width:'100%'}}><span style={{fontSize:10,color:'#667085'}}><b style={{color:'#123B50'}}>{filtered.length}</b> produto(s) encontrado(s)</span><button type="button" onClick={()=>void load()} disabled={busy} style={{...btn('normal'),height:28}}><RefreshCw size={13}/>Atualizar</button></div>
       </div>
