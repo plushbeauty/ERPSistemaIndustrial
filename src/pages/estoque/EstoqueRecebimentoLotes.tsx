@@ -9,6 +9,7 @@ import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type Rea
 import { CheckCircle, FileText, Inbox, Layers, Save, Scale, Search, ShieldAlert, Upload, X } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
+import { fetchAllPages } from '../../lib/supabasePagination'
 import EntityCodeLookup, { type LookupRecord } from '../../components/industrial/EntityCodeLookup'
 import VendasLayout from '../VendasLayout'
 import '../../styles/estoque-standard.css'
@@ -49,13 +50,13 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
       try {
         const tenant = await supabase.rpc('erp_current_empresa_id')
         if (tenant.error || !tenant.data) throw tenant.error ?? new Error('Não foi possível identificar a empresa da sessão.')
-        const result = await supabase.from('erp_produtos')
-          .select('id,codigo,nome,descricao,unidade,estoque_atual,ativo')
-          .eq('empresa_id', String(tenant.data)).eq('ativo', true).order('codigo').limit(2000)
-        if (result.error) throw result.error
+        const tenantId = String(tenant.data)
+        const productRows = await fetchAllPages<Product>((from, to) => supabase.from('erp_produtos')
+          .select('id,codigo,nome,descricao,unidade,estoque_atual,ativo', { count: 'exact' })
+          .eq('empresa_id', tenantId).eq('ativo', true).order('codigo').range(from, to))
         if (alive) {
-          setEmpresaId(String(tenant.data))
-          setProducts((result.data ?? []) as Product[])
+          setEmpresaId(tenantId)
+          setProducts(productRows)
         }
       } catch (cause) {
         if (alive) setError(cause instanceof Error ? cause.message : 'Falha ao carregar os produtos.')
