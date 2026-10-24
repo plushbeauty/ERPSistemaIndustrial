@@ -140,17 +140,17 @@ export default function IndustrialDataWorkspace() {
       .rh-data-workspace>header{min-height:66px;align-items:center;margin-bottom:18px;padding:0 0 16px;border-bottom:1px solid #dbe4ef}
       .rh-data-workspace>header h1{font-size:22px;line-height:1.3;font-weight:650;color:#0b2545;letter-spacing:-.02em}
       .rh-data-workspace>header p{font-size:13px;line-height:1.5;margin-top:4px;color:#64748b}
-      .rh-data-workspace>header button,.rh-data-workspace button{min-height:36px;border-radius:7px;padding:0 12px;font-size:12px;font-weight:600;gap:7px}
+      .rh-data-workspace>header button,.rh-data-workspace button{min-height:36px;border-radius:3px;padding:0 12px;font-size:12px;font-weight:600;gap:7px}
       .rh-data-workspace>div.grid{gap:12px;margin-bottom:16px}
       .rh-data-workspace>div.grid section{min-height:82px;padding:14px 16px;border:1px solid #dbe4ef;border-radius:9px;box-shadow:0 2px 6px #0b254508}
       .rh-data-workspace>div.grid section p{font-size:11px;letter-spacing:.04em;margin-bottom:6px}
       .rh-data-workspace>div.grid section strong{font-size:23px;line-height:1.3;color:#0b2545}
-      .rh-data-workspace>section{border:1px solid #dbe4ef;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px #0b254508}
+      .rh-data-workspace>section{border:1px solid #c9dce3;border-radius:3px;overflow:hidden;box-shadow:0 2px 8px #0b254508}
       .rh-data-workspace>section:first-of-type{padding:18px 20px}
       .rh-data-workspace>section h2{font-size:14px;line-height:1.4;color:#0b2545;margin-bottom:14px}
       .rh-data-workspace label{display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:0}
       .rh-data-workspace label span{display:block;margin:0;font-size:12px;line-height:1.4;font-weight:650;letter-spacing:0;text-transform:none;color:#334155}
-      .rh-data-workspace input,.rh-data-workspace select,.rh-data-workspace textarea{box-sizing:border-box;width:100%;min-width:0;min-height:38px;height:38px;padding:0 11px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;font-family:inherit;font-size:13px;line-height:1.4;color:#1e293b;outline:none}
+      .rh-data-workspace input,.rh-data-workspace select,.rh-data-workspace textarea{box-sizing:border-box;width:100%;min-width:0;min-height:38px;height:38px;padding:0 11px;border:1px solid #cbd5e1;border-radius:3px;background:#fff;font-family:inherit;font-size:13px;line-height:1.4;color:#17333f;outline:none}
       .rh-data-workspace textarea{height:auto;min-height:100px;padding:10px 11px;resize:vertical}
       .rh-data-workspace input:focus,.rh-data-workspace select:focus,.rh-data-workspace textarea:focus{border-color:#1d5fd1;box-shadow:0 0 0 3px #1d5fd11a}
       .rh-data-workspace input::placeholder{color:#94a3b8}
@@ -166,8 +166,8 @@ export default function IndustrialDataWorkspace() {
       .rh-data-workspace tbody td{height:44px;padding:10px 12px;font-size:12px;line-height:1.45}
       .rh-data-workspace tbody td button{min-height:32px;padding:0 10px}
       .rh-data-workspace>p{padding-top:10px;font-size:11px;line-height:1.5}
-      @media(max-width:760px){.rh-data-workspace{padding:14px 12px 20px}.rh-data-workspace>header h1{font-size:20px}.rh-data-workspace>div.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-data-workspace>section:first-of-type{padding:14px}.rh-data-workspace>section:first-of-type .grid{grid-template-columns:minmax(0,1fr);gap:12px}.rh-data-workspace>section:first-of-type .grid label{grid-column:auto}.rh-data-workspace>section:last-of-type>div:first-child{align-items:stretch}.rh-data-workspace>section:last-of-type>div:first-child label{width:100%}}
-      @media(max-width:420px){.rh-data-workspace>div.grid{grid-template-columns:minmax(0,1fr)}.rh-data-workspace>header{align-items:flex-start}.rh-data-workspace>header button{width:100%}}
+      @media(max-width:760px){.rh-data-workspace{padding:14px 12px 20px}.rh-data-workspace>header h1{font-size:20px}.rh-data-workspace>div.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-data-workspace>section:first-of-type{padding:14px}.rh-data-workspace>section:first-of-type .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.rh-data-workspace>section:first-of-type .grid label{grid-column:auto}.rh-data-workspace>section:last-of-type>div:first-child{align-items:stretch}.rh-data-workspace>section:last-of-type>div:first-child label{width:100%}}
+      @media(max-width:420px){.rh-data-workspace>div.grid{grid-template-columns:minmax(0,1fr)}.rh-data-workspace>section:first-of-type .grid{grid-template-columns:minmax(0,1fr)}.rh-data-workspace>header{align-items:flex-start}.rh-data-workspace>header button{width:100%}}
     `}</style>}
     <main className={isRhWorkspace ? "rh-data-workspace" : "min-h-full bg-slate-50 p-3 text-slate-900"}>
     <header className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
