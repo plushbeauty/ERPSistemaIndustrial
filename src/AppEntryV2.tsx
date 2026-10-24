@@ -653,7 +653,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/admin/logs" element={<AdminLogs />} />
       <Route path="/outlook/configuracao" element={<OutlookConfiguracao />} />
       <Route path="/outlook/caixa-entrada" element={<OutlookCaixaEntrada />} />
-      {/* APROV-COMPRAS-2026-10-24-R1 | 2026-10-24: Central aprovada do deploy EjPo9mBaQ; manter congelada. */}
+      {/* APROV-COMPRAS-2026-10-24-R1 | DATA/HORA 2026-10-24 18:36:28 -03:00: Central aprovada do deploy EjPo9mBaQ; manter congelada. */}
       <Route path="/compras" element={<ComprasRoute><ComprasCentral /></ComprasRoute>} />
       <Route path="/compras/requisicoes" element={<ComprasRoute><ComprasRequisicoes /></ComprasRoute>} />
       <Route path="/compras/recebimentos" element={<ComprasRoute><RecebimentoMateriais /></ComprasRoute>} />
