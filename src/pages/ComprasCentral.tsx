@@ -183,7 +183,7 @@ export default function ComprasCentral() {
               <h1>Central de Compras</h1>
               <p>Requisição → aprovação por alçada → cotação → pedido → recebimento, integrado ao PCP e ao estoque.</p>
             </div>
-            <div className="sq-purchase-hero-actions"><button type="button" onClick={() => navigate('/compras/solicitacao')}><FilePlus2 size={16}/> Novo pedido do PCP</button><div className="sq-purchase-brand"><strong>SYSNQRA</strong><span>GESTÃO INTEGRADA</span></div></div>
+            <div className="sq-purchase-hero-actions"><button type="button" onClick={() => setActiveTab('Pedido do PCP')}><FilePlus2 size={16}/> Novo pedido do PCP</button><div className="sq-purchase-brand"><strong>SYSNQRA</strong><span>GESTÃO INTEGRADA</span></div></div>
           </header>
           <section className="sq-purchase-kpis" aria-label="Indicadores de Compras">
             <article><div><span>Necessidades MRP</span><strong>{indicators.alerts === null ? '—' : indicators.alerts}</strong><small>{indicators.alerts === null ? 'MRP não disponível' : 'necessidades líquidas no último MRP'}</small></div><i className="alert"><AlertTriangle size={20}/></i></article>
