@@ -63,7 +63,6 @@ const menus: MenuItem[] = [
   ] },
   { label: 'Fiscal', route: '/fiscal', icon: FileText },
   { label: 'Manufatura / PCP', route: '/pcp', icon: Factory, children: [
-    { label: 'Central PCP', route: '/pcp' },
     { label: 'Ordens de produção', route: '/pcp/ordens' },
     { label: 'Ordens industriais', route: '/pcp/ordens-industriais' },
     { label: 'Chão de Fábrica · Portal do Funcionário', route: '/pcp/portal-operador' },
@@ -80,17 +79,8 @@ const menus: MenuItem[] = [
     { label: 'Auditoria PCP', route: '/pcp/auditoria' },
     { label: 'PCP Tablet', route: '/pcp', action: 'pcpTablet' },
   ] },
-  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, action: 'qualityTablet', children: [
-    { label: 'Visual geral da Qualidade', route: '/qualidade' },
-    { label: 'Inspeções de lotes', route: '/qualidade/inspecoes' },
-    { label: 'Inspeção em processo', route: '/qualidade/inspecao-processo' },
-    { label: 'Especificações técnicas', route: '/qualidade/especificacoes' },
-    { label: 'FMEA / PFMEA', route: '/qualidade/fmea' },
-    { label: 'RNC / CAPA', route: '/qualidade/rnc-capa' },
-    { label: 'CEP / medições', route: '/qualidade/cep' },
-    { label: 'Cadastro de documentos (GED)', route: '/qualidade/ged-documentos' },
-    { label: 'Qualidade Tablet', route: '/qualidade', action: 'qualityTablet' },
-  ] },
+  // A Qualidade abre diretamente o painel; a Central Tablet fica dentro da própria tela.
+  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench, children: [
     { label: 'Central de manutenção', route: '/manutencao' },
     { label: 'Ordens de manutenção', route: '/manutencao/ordens' },
