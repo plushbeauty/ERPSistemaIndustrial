@@ -116,8 +116,8 @@ export default function ComprasCentral() {
     } finally {
       setLoadingIndicators(false)
     }
-  }
-  useEffect(() => { void loadIndicators() }, [])
+  }, [])
+  useEffect(() => { void loadIndicators() }, [loadIndicators])
   const flowStages: Array<{ step: string; label: string; value: number | null }> = [
     { step: '1', label: 'Aprovação', value: indicators.approvals },
     { step: '2', label: 'Aprovadas', value: indicators.approved },
