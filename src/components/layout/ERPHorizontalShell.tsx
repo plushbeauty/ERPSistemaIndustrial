@@ -18,8 +18,7 @@ const menus: MenuItem[] = [
   { label: 'Início', route: '/erp-industrial', icon: Home },
   { label: 'Cadastros', route: '/produtos-vendas', icon: Database, children: [
     { label: 'Cadastro de Produtos', route: '/produtos-vendas' },
-    { label: 'Cadastro de Clientes', route: '/cadastros/clientes' },
-    { label: 'Cadastro de Fornecedores', route: '/cadastros/fornecedores' },
+    { label: 'Central de Parceiros', route: '/cadastros/parceiros' },
   ] },
   { label: 'Vendas', route: '/vendas', icon: ShoppingCart, children: [
     { label: 'Dashboard comercial', route: '/vendas' },
