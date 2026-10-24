@@ -94,5 +94,37 @@ create policy erp_requisicoes_compra_itens_tenant
 grant select, insert, update, delete on public.erp_requisicoes_compra,
   public.erp_requisicoes_compra_itens, public.erp_rfq, public.erp_pedidos_compra to authenticated;
 
+
+-- Complementos usados pelas telas de análise de preços, relatórios e validação fiscal.
+alter table public.erp_rfq_fornecedores
+  add column if not exists valor_total numeric(18,2),
+  add column if not exists valor_frete numeric(18,2) not null default 0,
+  add column if not exists valor_desconto numeric(18,2) not null default 0,
+  add column if not exists prazo_entrega_dias integer,
+  add column if not exists condicao_pagamento text,
+  add column if not exists validade_proposta date,
+  add column if not exists observacoes_resposta text;
+
+alter table public.erp_pedidos_compra
+  add column if not exists fiscal_status text not null default 'NAO_ANALISADO',
+  add column if not exists fiscal_parecer text,
+  add column if not exists fiscal_analisado_por uuid,
+  add column if not exists fiscal_analisado_em timestamptz,
+  add column if not exists centro_custo text,
+  add column if not exists local_entrega text,
+  add column if not exists especificacao_tecnica text,
+  add column if not exists referencia_cotacao text,
+  add column if not exists valor_frete numeric(18,2) not null default 0,
+  add column if not exists valor_desconto numeric(18,2) not null default 0,
+  add column if not exists transportadora text,
+  add column if not exists modalidade_frete text,
+  add column if not exists numero_contrato text,
+  add column if not exists observacoes_recebimento text;
+
+alter table public.erp_solicitacoes_compra
+  add column if not exists prioridade text not null default 'normal',
+  add column if not exists fornecedor_id uuid null references public.erp_fornecedores(id) on delete set null,
+  add column if not exists updated_at timestamptz not null default now();
+
 -- Solicita ao PostgREST atualizar seu cache de schema após a migration ser aplicada.
 notify pgrst, 'reload schema';
