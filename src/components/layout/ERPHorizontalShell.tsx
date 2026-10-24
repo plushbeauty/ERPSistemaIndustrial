@@ -20,7 +20,6 @@ const menus: MenuItem[] = [
   { label: 'Cadastros', route: '/produtos-vendas', icon: Database, children: [
     { label: 'Cadastro de Produtos', route: '/produtos-vendas' },
     { label: 'Cadastro de Clientes', route: '/cadastros/clientes' },
-    { label: 'Cadastro de Fornecedores', route: '/cadastros/fornecedores' },
   ] },
   { label: 'Vendas', route: '/vendas', icon: ShoppingCart, children: [
     { label: 'Dashboard comercial', route: '/vendas' },
@@ -34,13 +33,8 @@ const menus: MenuItem[] = [
     { label: 'Metas', route: '/vendas/metas' },
     { label: 'Relatórios', route: '/vendas/relatorios' },
   ] },
-  { label: 'Compras', route: '/compras/rfq', icon: Truck, children: [
-    { label: 'Central de compras / RFQ', route: '/compras/rfq' },
-    { label: 'Solicitações', route: '/compras/solicitacao-manual' },
-    { label: 'Pedido de compra', route: '/compras/pedido' },
-    { label: 'Recebimentos', route: '/compras/recebimentos' },
-    { label: 'Relatórios', route: '/compras/relatorios' },
-  ] },
+  // Central única: Pedido PCP, Requisições, MRP, Cotações, Pedidos e Fornecedores são abas internas.
+  { label: 'Compras', route: '/compras', icon: Truck },
   { label: 'Estoque', route: '/estoque', icon: Package, children: [
     { label: 'Saldos de estoque', route: '/estoque/saldos' },
     { label: 'Endereços físicos', route: '/estoque/enderecos' },
@@ -104,12 +98,8 @@ const menus: MenuItem[] = [
     { label: 'Plano mestre', route: '/manutencao/plano-mestre' },
     { label: 'Indicadores', route: '/manutencao/indicadores' },
   ] },
-  { label: 'Recursos Humanos', route: '/rh/funcionarios', icon: UserRound, children: [
-    { label: 'Funcionários', route: '/rh/funcionarios' },
-    { label: 'Turnos e escalas', route: '/rh/turnos' },
-    { label: 'EPIs', route: '/rh/epis' },
-    { label: 'Entregas de EPI', route: '/rh/epis/entregas' },
-  ] },
+  // Central única de RH: funcionários/fotos, ponto, atestados e faltas, treinamentos, documentos e indicadores em abas.
+  { label: 'Recursos Humanos', route: '/rh', icon: UserRound },
   { label: 'Relatórios', route: '/relatorios', icon: BarChart3 },
   { label: 'Configuração', route: '/configuracoes-adm', icon: Settings },
 ]
