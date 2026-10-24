@@ -9,6 +9,7 @@
 | Vendas → Novo Pedido — `src/pages/NovoPedido.tsx` | APROV-005, controles compactos; revisão expressamente autorizada em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | Vendas → Status do pedido — `src/pages/VendasCentral.tsx` | APROV-006, alinhamento dos cards e legenda visível; revisão autorizada em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | Cadastro de Produtos — `src/pages/ProdutosVendasIndustrial.tsx` | Referência aprovada anterior | Hash Git do arquivo verificado no CI |
+| Central de Compras `/compras` — `src/pages/ComprasCentral.tsx` | APROV-COMPRAS-2026-10-24-R1, deployment `EjPo9mBaQ`, commit `16060aad0fce987250586f6c7fb7bb2f20b003c7`; revisão limitada à geometria dos cards de acesso rápido | Hash Git verificado no CI + contrato obrigatório da rota `/compras` |
 | Login institucional — `src/styles/industrial-login.css` | APROV-005, texto institucional branco com contorno escuro | Hash Git do arquivo verificado no CI |
 | Qualidade Tablet — `src/pages/QualidadeCentralTablet.tsx` | Tablet aprovado pelo usuário | Hash Git do arquivo verificado no CI |
 | Qualidade Tablet padrão — `src/components/TabletMenuModal.tsx` | Modal central, 22 módulos; visual aprovado preservado | Hash Git do arquivo verificado no CI |
@@ -66,3 +67,14 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - Tablet PCP do operador: registra a revisão do código operacional enviada em 20/10, sem substituir os fluxos reais de apontamento e sessão.
 - Modal do PCP: registra a inclusão do atalho de Programação Gantt solicitada pelo usuário; os módulos e destinos permanecem congelados após esta revisão.
 - O protótipo separado `/pcp/ficha-processo-teste` não substitui a ficha aprovada.
+
+
+## Registro da revisão APROV-COMPRAS-2026-10-24-R1 — 2026-10-24
+
+- Fonte canônica da Central: deployment Vercel `EjPo9mBaQ`, commit `16060aad0fce987250586f6c7fb7bb2f20b003c7`.
+- A rota `/compras` deve renderizar `ComprasCentral` dentro do wrapper de acesso existente; não deve voltar a renderizar `ComprasIndustrial` como a Central principal.
+- Escopo autorizado: corrigir exclusivamente geometria, altura, padding, quebra de texto e alinhamento dos cards em “Acesso rápido às rotinas” e “Outras rotinas”.
+- Cabeçalho azul-marinho, texto branco, abas, posicionamento, cores, identidade e fluxos de dados Supabase permanecem preservados.
+- Central e rota passam a ser verificadas por hash/contrato no CI. Alterar o hash exige autorização explícita e nova revisão.
+- `ComprasIndustrial.tsx` permanece disponível para fluxos operacionais/rotas independentes que ainda o referenciem; não é o componente canônico de `/compras`. Não excluir até auditar todas as referências.
+- Declarar validação somente após CI (type-check, lint, lock, rotas, build) e verificação Vercel. Build não comprova homologação do schema/PostgREST do Supabase.
