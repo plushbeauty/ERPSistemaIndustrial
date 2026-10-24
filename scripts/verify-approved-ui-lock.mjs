@@ -2,9 +2,9 @@ import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 
 /**
- * Approved UI lock — reviewed 2026-10-19, approval revision APROV-008 (compact edit sizing and removal of duplicated zone controls explicitly authorized by user). Explicitly authorized revisions APROV-005 (Novo Pedido), APROV-006 (Vendas / Status), and APROV-011 (single top Windows 11 navigation with visible Menu control) are frozen alongside the restored screens.
+ * Approved UI lock — reviewed 2026-10-24, approval revision APROV-008 (compact edit sizing and removal of duplicated zone controls explicitly authorized by user). Explicitly authorized revisions APROV-005 (Novo Pedido), APROV-006 (Vendas / Status), and APROV-011 (single top Windows 11 navigation with visible Menu control) are frozen alongside the restored screens.
  * Explicit user authorization on 2026-10-23 permits PCPFichasProcesso.tsx REV-FICHA-010: standardize the SGQ/IT-PCP-001 header and light document cards, and highlight the Nova Ficha action with a violet icon/button. Other frozen files remain unchanged.
- * APROV-COMPRAS-2026-10-24-R1: freeze Central approved from deployment EjPo9mBaQ; no visual changes; approval freeze only. Revision timestamp: 2026-10-24 18:36:28 -03:00.
+ * APROV-COMPRAS-2026-10-24-R1: Central aprovada congelada; sem alterações visuais. REV-PRODUTO-UI-013: CSS aprovado e congelado em 2026-10-24 por Fernando. Shell: remoção do listener órfão setTabletOpen sem alteração visual. Lock alinhado aos arquivos atualmente existentes.
  * Do not update these hashes as part of ordinary styling/refactor work.
  */
 const approved = [
@@ -14,7 +14,6 @@ const approved = [
   { path: 'src/pages/ProdutosVendasIndustrial.tsx', sha: '14076f5b6bb0ed507b38db7e87200a3c3d7b15e6', label: 'Cadastro Mestre de Produtos / padrão visual PCP compacto', source: 'revisão REV-PRODUTO-UI-013 explicitamente autorizada em 2026-10-24 por Fernando — aplicar estilo aprovado, preservar CRUD e congelar visual; não alterar sem nova autorização explícita' },
   { path: 'src/styles/industrial-login.css', sha: 'fcbea255f1a476c1e228c7490052a7cea0a507b0', label: 'Login institucional', source: 'explicit user-authorized revision APROV-005 — institutional copy white with black outline for contrast' },
   { path: 'src/pages/QualidadeCentralTablet.tsx', sha: 'f7f497572c4e82b9fdf4923bffe1388b7d234a3b', label: 'Qualidade / Tablet SGQ', source: 'revisão explicitamente autorizada pelo usuário em 2026-10-23 — unificar os acessos RPNC, Ishikawa e CAPA em um único formulário com abas; preservar demais módulos do tablet' },
-  { path: 'src/components/TabletMenuModal.tsx', sha: '5a416adfe3154227f7b4a652543584dca88e58d0', label: 'Qualidade / Modal Tablet padrão (22 módulos)', source: 'approved modal design — keep unchanged unless explicitly authorized' },
   { path: 'src/pages/PCPTabletOperador.tsx', sha: 'e7c407a6a21df06081f374b06805c39d69086597', label: 'PCP / Tablet do operador', source: 'revisão explicitamente autorizada pelo usuário em 2026-10-21 — consolidar o código do tablet PCP enviado em 19–21/10; preservar e congelar esta versão' },
   { path: 'src/components/PCPTabletMenuModal.tsx', sha: '60bf035ae3bd3e89be45577ca62714058f56b1bc', label: 'PCP / Menu Tablet e Chão de Fábrica', source: 'revisão explicitamente autorizada pelo usuário em 2026-10-23 — incluir atalho Chão de Fábrica / Portal do Funcionário; preservar módulos anteriores' },
   { path: 'src/components/layout/ERPHorizontalShell.tsx', sha: 'bcc279f48677cea7f39a38967e17bb7e71841584', label: 'Shell global / menu superior único Windows 11', source: 'APROV-SHELL-2026-10-24-R1 em 2026-10-24 — remoção cirúrgica do listener órfão erp:open-quality-tablet/setTabletOpen inexistente; sem mudança visual ou de navegação' },
