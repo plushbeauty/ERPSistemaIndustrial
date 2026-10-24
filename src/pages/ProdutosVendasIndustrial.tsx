@@ -71,7 +71,7 @@ const fmt=(v:unknown)=>n(v).toLocaleString('pt-BR',{maximumFractionDigits:3})
 const panel:CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:2,boxShadow:'0 2px 7px rgba(18,59,80,.07),0 1px 2px rgba(16,24,40,.04)'}
 const input:CSSProperties={width:'100%',height:30,border:'1px solid #c4ced9',borderRadius:2,padding:'0 8px',fontSize:11,background:'#fff',boxSizing:'border-box',minWidth:0}
 const label:CSSProperties={display:'grid',gap:3,minWidth:0,fontSize:9,lineHeight:'11px',fontWeight:500,color:'#344054',textTransform:'uppercase',overflowWrap:'anywhere'}
-const btn=(kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,height:30,padding:'0 10px',borderRadius:2,border:'1px solid '+(kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#B8CDD5'),background:kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#F4FBFD',color:kind==='primary'||kind==='danger'?'#fff':'#123B50',fontSize:11,fontWeight:600,textTransform:'uppercase',cursor:'pointer',whiteSpace:'nowrap'})
+const btn=(kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,height:30,padding:'0 10px',borderRadius:2,border:'1px solid '+(kind==='danger'?'#D65B61':kind==='primary'?'#2563eb':'#B8CDD5'),background:kind==='danger'?'#D65B61':kind==='primary'?'#2563eb':'#F4FBFD',color:kind==='primary'||kind==='danger'?'#fff':'#123B50',fontSize:11,fontWeight:600,textTransform:'uppercase',cursor:'pointer',whiteSpace:'nowrap'})
 const emptyRow=(text:string,col=7)=><tr><td colSpan={col} style={{padding:22,textAlign:'center',color:'#667085'}}>{text}</td></tr>
 
 export default function ProdutosVendasIndustrial(){
