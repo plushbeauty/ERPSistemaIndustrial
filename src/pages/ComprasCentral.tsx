@@ -18,24 +18,28 @@ const shortcuts = [
   { title: 'Relatórios', description: 'Consultas e acompanhamento', route: '/compras/relatorios', Icon: Boxes, tone: 'green' },
 ]
 
-type PurchaseIndicators = { alerts: number | null; approvals: number | null; quotes: number | null; openOrders: number | null; openValue: number | null; error: string }
+type PurchaseIndicators = { alerts: number | null; approvals: number | null; approved: number | null; quotes: number | null; openOrders: number | null; received: number | null; openValue: number | null; error: string }
+type MaterialNeed = { id: string; code: string; name: string; level: number; gross: number; stock: number; reserved: number; available: number; net: number; suggestion: string }
+type PurchaseTab = { label: string; route: string; Icon: typeof LayoutGrid; countKey?: 'approvals' | 'alerts' | 'quotes' | 'openOrders' }
 
-const purchaseTabs = [
-  { label: 'Painel', route: '/compras', Icon: LayoutGrid, countKey: undefined },
-  { label: 'Pedido do PCP', route: '/compras/solicitacao', Icon: FilePlus2, countKey: undefined },
-  { label: 'Requisições', route: '/compras/requisicoes', Icon: ClipboardList, countKey: 'approvals' as const },
-  { label: 'Alertas MRP', route: '/pcp/mrp-ii', Icon: AlertTriangle, countKey: 'alerts' as const },
-  { label: 'Cotações', route: '/compras/rfq', Icon: BarChart3, countKey: 'quotes' as const },
-  { label: 'Pedidos', route: '/compras/pedido', Icon: ShoppingCart, countKey: 'openOrders' as const },
-  { label: 'Fornecedores', route: '/compras/fornecedores', Icon: Truck, countKey: undefined },
+const purchaseTabs: PurchaseTab[] = [
+  { label: 'Painel', route: '/compras', Icon: LayoutGrid },
+  { label: 'Pedido do PCP', route: '/compras/solicitacao', Icon: FilePlus2 },
+  { label: 'Requisições', route: '/compras/requisicoes', Icon: ClipboardList, countKey: 'approvals' },
+  { label: 'Alertas MRP', route: '/pcp/mrp-ii', Icon: AlertTriangle, countKey: 'alerts' },
+  { label: 'Cotações', route: '/compras/rfq', Icon: BarChart3, countKey: 'quotes' },
+  { label: 'Pedidos', route: '/compras/pedido', Icon: ShoppingCart, countKey: 'openOrders' },
+  { label: 'Fornecedores', route: '/compras/fornecedores', Icon: Truck },
 ]
 
 const brl = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
 export default function ComprasCentral() {
   const navigate = useNavigate()
-  const [indicators, setIndicators] = useState<PurchaseIndicators>({ alerts: null, approvals: null, quotes: null, openOrders: null, openValue: null, error: '' })
+  const [indicators, setIndicators] = useState<PurchaseIndicators>({ alerts: null, approvals: null, approved: null, quotes: null, openOrders: null, received: null, openValue: null, error: '' })
+  const [materialNeeds, setMaterialNeeds] = useState<MaterialNeed[]>([])
   const [loadingIndicators, setLoadingIndicators] = useState(false)
+
   const loadIndicators = async () => {
     setLoadingIndicators(true)
     try {
@@ -44,22 +48,75 @@ export default function ComprasCentral() {
       const empresaId = String(tenant.data)
       const [requests, orders, quotes, run] = await Promise.all([
         supabase.from('erp_requisicoes_compra').select('id,status').eq('empresa_id', empresaId),
-        supabase.from('erp_pedidos_compra').select('id,total,status', { count: 'exact' }).eq('empresa_id', empresaId),
+        supabase.from('erp_pedidos_compra').select('id,total,status').eq('empresa_id', empresaId),
         supabase.from('erp_rfq').select('id,status').eq('empresa_id', empresaId),
-        supabase.from('erp_mrp_runs').select('id').eq('empresa_id', empresaId).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+        supabase.from('erp_mrp_runs').select('id,created_at').eq('empresa_id', empresaId).order('created_at', { ascending: false }).limit(1).maybeSingle(),
       ])
-      const openOrders = (orders.data ?? []).filter((row) => !['CONCLUIDO', 'CONCLUÍDO', 'CANCELADO', 'CANCELADA', 'RECEBIDO', 'RECEBIDA'].includes(String(row.status ?? '').toUpperCase()))
+      const openOrders = (orders.data ?? []).filter((row) => !['CONCLUIDO', 'CONCLUÍDO', 'CANCELADO', 'CANCELADA', 'RECEBIDO', 'RECEBIDA', 'CONCLUIDA', 'CONCLUÍDA'].includes(String(row.status ?? '').toUpperCase()))
+      const pendingStatuses = new Set(['PENDENTE', 'PENDENTE_APROVACAO', 'AGUARDANDO_APROVACAO', 'EM_ANALISE', 'AGUARDANDO'])
+      const approvedStatuses = new Set(['APROVADA', 'APROVADO', 'AUTORIZADA', 'AUTORIZADO'])
+      const receivedStatuses = new Set(['RECEBIDO', 'RECEBIDA', 'CONCLUIDO', 'CONCLUÍDO', 'CONCLUIDA', 'CONCLUÍDA'])
+      const quoteStatuses = new Set(['ABERTA', 'EM_COTACAO', 'EM COTAÇÃO', 'EM ANÁLISE', 'EM_ANALISE', 'PENDENTE', 'AGUARDANDO_COTACAO'])
       let alerts: number | null = null
+      let loadedNeeds: MaterialNeed[] = []
+      let mrpError: string | null = run.error?.message ?? null
+
       if (run.data?.id) {
-        const needs = await supabase.from('erp_mrp_necessidades').select('id', { count: 'exact', head: true }).eq('empresa_id', empresaId).eq('run_id', run.data.id).gt('necessidade_liquida', 0)
-        if (!needs.error) alerts = needs.count ?? 0
-      } else if (!run.error) alerts = 0
-      const pendingStatuses = new Set(['PENDENTE', 'PENDENTE_APROVACAO', 'AGUARDANDO_APROVACAO', 'EM_ANALISE', 'ABERTA', 'ABERTO'])\n      const quoteStatuses = new Set(['ABERTA', 'EM_COTACAO', 'EM ANÁLISE', 'EM_ANALISE', 'PENDENTE', 'AGUARDANDO_COTACAO'])\n      setIndicators({ alerts, approvals: requests.error ? null : (requests.data ?? []).filter((row) => pendingStatuses.has(String(row.status ?? '').toUpperCase())).length, quotes: quotes.error ? null : (quotes.data ?? []).filter((row) => quoteStatuses.has(String(row.status ?? '').toUpperCase())).length, openOrders: orders.error ? null : openOrders.length, openValue: orders.error ? null : openOrders.reduce((sum, row) => sum + Number(row.total ?? 0), 0), error: [requests.error, orders.error, quotes.error, run.error].filter(Boolean).map((error) => error?.message ?? '').join(' • ') })
+        const needs = await supabase.from('erp_mrp_necessidades')
+          .select('id,componente_id,nivel,quantidade_bruta,estoque_atual,reservado,quantidade_disponivel,necessidade_liquida,sugestao')
+          .eq('empresa_id', empresaId).eq('run_id', run.data.id).gt('necessidade_liquida', 0)
+          .order('nivel').order('componente_id')
+        if (needs.error) {
+          mrpError = needs.error.message
+        } else {
+          const rows = needs.data ?? []
+          alerts = rows.length
+          const ids = [...new Set(rows.map((row) => String(row.componente_id)))]
+          const products = ids.length
+            ? await supabase.from('erp_produtos').select('id,codigo,nome').eq('empresa_id', empresaId).in('id', ids)
+            : { data: [], error: null }
+          if (products.error) {
+            mrpError = products.error.message
+          } else {
+            const productMap = new Map((products.data ?? []).map((product) => [String(product.id), product]))
+            loadedNeeds = rows.map((row) => {
+              const product = productMap.get(String(row.componente_id))
+              return {
+                id: String(row.id),
+                code: product?.codigo ?? '—',
+                name: product?.nome ?? 'Material sem nome cadastrado',
+                level: Number(row.nivel ?? 0),
+                gross: Number(row.quantidade_bruta ?? 0),
+                stock: Number(row.estoque_atual ?? 0),
+                reserved: Number(row.reservado ?? 0),
+                available: Number(row.quantidade_disponivel ?? 0),
+                net: Number(row.necessidade_liquida ?? 0),
+                suggestion: String(row.sugestao ?? '—'),
+              }
+            })
+          }
+        }
+      } else if (!run.error) {
+        alerts = 0
+      }
+      setMaterialNeeds(loadedNeeds)
+      const errorMessages = [requests.error?.message, orders.error?.message, quotes.error?.message, mrpError].filter(Boolean)
+      setIndicators({
+        alerts,
+        approvals: requests.error ? null : (requests.data ?? []).filter((row) => pendingStatuses.has(String(row.status ?? '').toUpperCase())).length,
+        approved: requests.error ? null : (requests.data ?? []).filter((row) => approvedStatuses.has(String(row.status ?? '').toUpperCase())).length,
+        quotes: quotes.error ? null : (quotes.data ?? []).filter((row) => quoteStatuses.has(String(row.status ?? '').toUpperCase())).length,
+        openOrders: orders.error ? null : openOrders.length,
+        received: orders.error ? null : (orders.data ?? []).filter((row) => receivedStatuses.has(String(row.status ?? '').toUpperCase())).length,
+        openValue: orders.error ? null : openOrders.reduce((sum, row) => sum + Number(row.total ?? 0), 0),
+        error: errorMessages.join(' • '),
+      })
     } catch (error) {
       setIndicators((current) => ({ ...current, error: error instanceof Error ? error.message : 'Não foi possível consultar os indicadores.' }))
-    } finally { setLoadingIndicators(false) }
-  }
-  useEffect(() => { void loadIndicators() }, [])
+    } finally {
+      setLoadingIndicators(false)
+    }
+  }  useEffect(() => { void loadIndicators() }, [])
 
   return (
     <VendasLayout title="Central de Compras" subtitle="Suprimentos, fornecedores, pedidos e recebimentos">
