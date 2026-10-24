@@ -52,7 +52,7 @@ export default function ComprasAbaNativa({ tab, onRefresh }: { tab: string; onRe
   const [compareQuotes,setCompareQuotes] = useState<Array<{id:string;fornecedor_id:string;status:string;valor_total:number|null;valor_frete:number;valor_desconto:number;prazo_entrega_dias:number|null;condicao_pagamento:string|null}>>([])
   const [compareWinner,setCompareWinner] = useState('')
   const [compareJustification,setCompareJustification] = useState('')
-  const [compareItems,setCompareItems] = useState<Array<{produto_id:string;quantidade:number;unidade:string}>>([])
+  const [compareItems,setCompareItems] = useState<Array<{produto_id:string;quantidade:number;unidade:string;preco_unitario:string}>>([])
 
   const load = useCallback(async () => {
     setBusy(true); setError('')
@@ -95,7 +95,7 @@ export default function ComprasAbaNativa({ tab, onRefresh }: { tab: string; onRe
           data=(n.data ?? []).map(row=>({...row,codigo:map.get(String(row.componente_id))?.codigo ?? '—',nome:map.get(String(row.componente_id))?.nome ?? 'Material sem nome'})) as Row[]
         }
       } else if (tab === 'Cotações') {
-        const r=await supabase.from('erp_rfq').select('id,numero,status,data_emissao,prazo_resposta,fornecedor_escolhido_id,justificativa_escolha,status_aprovacao,menor_preco_ofertado').eq('empresa_id',tenant).order('created_at',{ascending:false}).limit(500)
+        const r=await supabase.from('erp_rfq').select('id,numero,status,data_emissao,prazo_resposta,fornecedor_escolhido_id,justificativa_escolha,status_aprovacao,menor_preco_ofertado,created_at').eq('empresa_id',tenant).order('created_at',{ascending:false}).limit(500)
         if(r.error) throw r.error; data=(r.data ?? []) as Row[]
       } else if (tab === 'Pedidos') {
         const r=await supabase.from('erp_pedidos_compra').select('id,numero,fornecedor_id,comprador_nome,condicao_pagamento,prazo_entrega,status,data_pedido,total').eq('empresa_id',tenant).order('created_at',{ascending:false}).limit(500)
@@ -190,7 +190,7 @@ export default function ComprasAbaNativa({ tab, onRefresh }: { tab: string; onRe
         supabase.from('erp_rfq_itens').select('produto_id,quantidade,unidade').eq('empresa_id',tenant).eq('rfq_id',id)
       ])
       if(q.error)throw q.error;if(i.error)throw i.error
-      setCompareRfq(id);setCompareQuotes((q.data??[]) as typeof compareQuotes);setCompareItems((i.data??[]) as typeof compareItems)
+      setCompareRfq(id);setCompareQuotes((q.data??[]) as typeof compareQuotes);setCompareItems((i.data??[]).map(item=>({...item,preco_unitario:''})) as typeof compareItems)
       const row=rows.find(item=>String(item.id)===id)
       setCompareWinner(String(row?.fornecedor_escolhido_id??q.data?.find(item=>item.status==='SELECIONADO')?.fornecedor_id??''))
       setCompareJustification(String(row?.justificativa_escolha??''))
@@ -233,10 +233,11 @@ export default function ComprasAbaNativa({ tab, onRefresh }: { tab: string; onRe
       const company=await supabase.rpc('erp_current_empresa_id')
       if(company.error||!company.data)throw company.error??new Error('Empresa não identificada.')
       const tenant=String(company.data)
-      const totalQty=compareItems.reduce((sum,item)=>sum+Number(item.quantidade),0)
-      if(totalQty<=0)throw new Error('Quantidade total inválida.')
-      const unitPrice=Number(quote.valor_total??0)/totalQty
-      const result=await supabase.rpc('erp_compras_salvar_pedido',{p_pedido_id:null,p_fornecedor_id:compareWinner,p_comprador_nome:rfqBuyer.trim()||null,p_condicao_pagamento:quote.condicao_pagamento||rfqPayment.trim()||null,p_prazo_entrega:null,p_observacoes:'Gerado da cotação RFQ '+String(rfq.numero??compareRfq),p_status:'PENDENTE_APROVACAO',p_itens:compareItems.map(item=>({produto_id:item.produto_id,quantidade:Number(item.quantidade),unidade:item.unidade||'UN',preco_unitario:unitPrice}))})
+      if(compareItems.some(item=>!Number.isFinite(Number(item.preco_unitario))||Number(item.preco_unitario)<0||item.preco_unitario.trim()===''))throw new Error('Informe o preço unitário de cada item antes de gerar o pedido.')
+      const itemTotal=compareItems.reduce((sum,item)=>sum+Number(item.quantidade)*Number(item.preco_unitario),0)
+      const quoteTotal=Math.max(0,Number(quote.valor_total||0)+Number(quote.valor_frete||0)-Number(quote.valor_desconto||0))
+      if(Math.abs(itemTotal-quoteTotal)>0.01)throw new Error('A soma dos itens ('+money(itemTotal)+') precisa corresponder ao custo líquido da proposta ('+money(quoteTotal)+'). Ajuste os preços unitários.')
+      const result=await supabase.rpc('erp_compras_salvar_pedido',{p_pedido_id:null,p_fornecedor_id:compareWinner,p_comprador_nome:rfqBuyer.trim()||null,p_condicao_pagamento:quote.condicao_pagamento||rfqPayment.trim()||null,p_prazo_entrega:null,p_observacoes:'Gerado da cotação RFQ '+String(rfq.numero??compareRfq),p_status:'PENDENTE_APROVACAO',p_itens:compareItems.map(item=>({produto_id:item.produto_id,quantidade:Number(item.quantidade),unidade:item.unidade||'UN',preco_unitario:Number(item.preco_unitario)}))})
       if(result.error)throw result.error
       const payload=Array.isArray(result.data)?result.data[0]:result.data
       if(!payload||typeof payload!=='object'||!('id' in payload))throw new Error('O banco não retornou o pedido.')
@@ -324,6 +325,7 @@ export default function ComprasAbaNativa({ tab, onRefresh }: { tab: string; onRe
 
     {tab==='Cotações'&&compareRfq&&<div style={{margin:16,padding:14,border:'1px solid #cbd5e1',borderRadius:6,background:'#f8fafc'}}>
       <div style={{display:'flex',justifyContent:'space-between',gap:10,alignItems:'center',flexWrap:'wrap'}}><strong style={{fontSize:13}}>Mapa comparativo — RFQ {rows.find(row=>String(row.id)===compareRfq)?.numero??''}</strong><button type="button" onClick={()=>setCompareRfq('')}>Fechar comparação</button></div>
+      <div style={{display:'grid',gap:8,marginTop:12}}><strong style={{fontSize:12}}>Itens e preços unitários para o pedido</strong>{compareItems.map((item,index)=><div key={item.produto_id+'-'+index} style={{display:'grid',gridTemplateColumns:'minmax(160px,3fr) minmax(80px,1fr) minmax(120px,1fr)',gap:8,alignItems:'end'}}><span style={{fontSize:11}}>{products.find(p=>p.id===item.produto_id)?.codigo??'Item'} — {products.find(p=>p.id===item.produto_id)?.nome??item.produto_id}</span><span style={{fontSize:11}}>Qtd.: {item.quantidade} {item.unidade}</span><label style={{display:'grid',gap:4,fontSize:10}}>Preço unitário<input type="number" min="0" step="0.01" value={item.preco_unitario} onChange={e=>setCompareItems(current=>current.map((row,i)=>i===index?{...row,preco_unitario:e.target.value}:row))}/></label></div>)}<span style={{fontSize:11,fontWeight:700}}>Total dos itens: {money(compareItems.reduce((sum,item)=>sum+Number(item.quantidade)*Number(item.preco_unitario||0),0))}</span></div>
       <div className="sq-purchase-mrp-scroll" style={{marginTop:10}}><table><thead><tr><th>Fornecedor</th><th>Custo líquido</th><th>Prazo</th><th>Pagamento</th><th>Escolher</th></tr></thead><tbody>{compareQuotes.map(q=><tr key={q.id}><td>{suppliers.find(s=>s.id===q.fornecedor_id)?.razao_social??q.fornecedor_id}</td><td>{money(Math.max(0,Number(q.valor_total||0)+Number(q.valor_frete||0)-Number(q.valor_desconto||0)))}</td><td>{q.prazo_entrega_dias??'—'} dias</td><td>{q.condicao_pagamento??'—'}</td><td><input type="radio" name="compare-winner" checked={compareWinner===q.fornecedor_id} onChange={()=>setCompareWinner(q.fornecedor_id)}/></td></tr>)}</tbody></table></div>
       <label style={{display:'grid',gap:4,fontSize:11,marginTop:10}}>Justificativa da escolha<textarea rows={2} value={compareJustification} onChange={e=>setCompareJustification(e.target.value)} placeholder="Obrigatória se não escolher o menor custo líquido"/></label>
       <div style={{display:'flex',justifyContent:'flex-end',gap:8,flexWrap:'wrap',marginTop:10}}><button type="button" disabled={busy} onClick={()=>void saveComparison()}>Salvar comparação e enviar para aprovação</button><button type="button" disabled={busy} onClick={()=>void createOrderFromQuote()} style={{background:'#0b2545',color:'#fff',padding:'8px 12px',borderRadius:6}}>Gerar pedido pendente</button></div>
