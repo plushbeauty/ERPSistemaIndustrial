@@ -18,7 +18,7 @@
 | M14 Documentos | /documentos-qualidade | DocumentosQualidadeControle | audit.read | VALIDAR |
 | M15 Indicadores | /pcp/dashboard-oee | PCPDashboardOEE | — | VALIDAR |
 | M16 Riscos | /qualidade/pfmea | QualidadePFMEA | — | VALIDAR |
-| M17 Fornecedores | /fornecedores | FornecedoresIndustrial | purchases.read | VALIDAR |
+| M17 Parceiros | /cadastros/parceiros | ParceirosIndustrial | RLS por empresa | EM VALIDAÇÃO |
 | M18 Treinamentos | /rh | RHIndustrial | — | VALIDAR |
 | M19 Calibração | /calibracao | CalibracaoIndustrial | — | VALIDAR |
 | M20 Relatórios | /qualidade/relatorios-documentos | QualidadeRelatoriosDocumentos | audit.read | VALIDAR |

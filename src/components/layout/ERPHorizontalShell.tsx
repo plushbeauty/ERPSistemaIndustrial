@@ -1,3 +1,8 @@
+/**
+ * APROV-PARCEIROS-2026-10-24-R1 | DATA/HORA: 2026-10-24 18:52:12 -03:00.
+ * Alterações autorizadas: consolidar links separados em Central de Parceiros e remover listener órfão que referenciava setter inexistente.
+ * Escopo restrito à navegação/correção de compilação; estilos, geometria e comportamento visual do shell não foram alterados.
+ */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Warehouse, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -18,8 +23,7 @@ const menus: MenuItem[] = [
   { label: 'Início', route: '/erp-industrial', icon: Home },
   { label: 'Cadastros', route: '/produtos-vendas', icon: Database, children: [
     { label: 'Cadastro de Produtos', route: '/produtos-vendas' },
-    { label: 'Cadastro de Clientes', route: '/cadastros/clientes' },
-    { label: 'Cadastro de Fornecedores', route: '/cadastros/fornecedores' },
+    { label: 'Central de Parceiros', route: '/cadastros/parceiros' },
   ] },
   { label: 'Vendas', route: '/vendas', icon: ShoppingCart, children: [
     { label: 'Dashboard comercial', route: '/vendas' },
@@ -144,12 +148,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     }
     document.addEventListener('mousedown', close)
     return () => document.removeEventListener('mousedown', close)
-  }, [])
-
-  useEffect(() => {
-    const openQualityTablet = () => setTabletOpen(true)
-    window.addEventListener('erp:open-quality-tablet', openQualityTablet)
-    return () => window.removeEventListener('erp:open-quality-tablet', openQualityTablet)
   }, [])
 
   // Atualização automática por mudanças reais no banco, sem botão manual.
