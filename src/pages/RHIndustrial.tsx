@@ -1,5 +1,5 @@
 import { ChangeEvent, ReactNode, useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, BarChart3, CalendarCheck2, CalendarDays, CheckCircle2, Clock3, Edit3, FileText, GraduationCap, HeartPulse, ImagePlus, Plus, RefreshCw, Save, Trash2, UserRound, Users, X } from 'lucide-react'
+import { Archive, AlertTriangle, BarChart3, CalendarCheck2, CalendarDays, CheckCircle2, Clock3, Edit3, FileText, GraduationCap, HeartPulse, ImagePlus, Plus, RefreshCw, Save, Trash2, UserRound, Users, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
