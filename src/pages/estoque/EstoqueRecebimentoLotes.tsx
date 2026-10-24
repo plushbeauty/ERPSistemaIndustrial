@@ -139,11 +139,17 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
       setCertificado(null)
       if (fileInputRef.current) fileInputRef.current.value = ''
     } catch (cause) {
+      const receiveError = cause instanceof Error ? cause.message : 'Erro crítico ao efetivar o recebimento.'
       if (uploaded && certificatePath) {
         const cleanup = await supabase.storage.from('documentos-erp').remove([certificatePath])
-        if (cleanup.error) setError(`Falha no recebimento e também na limpeza do PDF: ${cleanup.error.message}`)
+        if (cleanup.error) {
+          setError(`Falha no recebimento: ${receiveError}. A limpeza compensatória do PDF também falhou: ${cleanup.error.message}`)
+        } else {
+          setError(receiveError)
+        }
+      } else {
+        setError(receiveError)
       }
-      setError(previous => previous || (cause instanceof Error ? cause.message : 'Erro crítico ao efetivar o recebimento.'))
     } finally {
       setBusy(false)
     }
