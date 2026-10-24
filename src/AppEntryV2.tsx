@@ -702,7 +702,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/documentos-qualidade" element={<QualityPlanGate><DocumentosQualidadeControle /></QualityPlanGate>} />
       <Route path="/recebimento-materiais" element={<RecebimentoMateriais />} />
       <Route path="/manual-usuario" element={<ManualUsuario />} />
-      <Route path="/rh" element={<QualityPlanGate>{<RHIndustrial />}</QualityPlanGate>} />
+      <Route path="/rh" element={<RHIndustrial />} />
       <Route path="/industrial/modulo-mestre" element={<QualityPlanGate><ModuloMestreIndustrial /></QualityPlanGate>} />
       <Route path="/module-overview" element={<ModuleOverviewIndustrial module="erp" />} />
       <Route path="/setup-adm-inicial" element={<SetupADMInicial />} />
