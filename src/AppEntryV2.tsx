@@ -116,7 +116,6 @@ const PCPPlanejamentoIndustrial = lazyPage(() => import('./pages/PCPPlanejamento
 const MRPIndustrial = lazyPage(() => import('./pages/MRPIndustrial'), 'MRPIndustrial')
 const CentraisIndustriais = lazyPage(() => import('./pages/CentraisIndustriais'), 'CentraisIndustriais')
 const QualidadeIndustrial = lazyPage(() => import('./pages/QualidadeIndustrial'), 'QualidadeIndustrial')
-const QualidadeCentralTablet = lazyPage(() => import('./pages/QualidadeCentralTablet'), 'default')
 const QualidadeInstrumentosCadastro = lazyPage(() => import('./pages/QualidadeInstrumentosCadastro'), 'default')
 const QualidadePaquimetroDigital = lazyPage(() => import('./pages/QualidadePaquimetroDigital'), 'default')
 const AcompanhamentoNaoConformidade = lazyPage(() => import('./pages/AcompanhamentoNaoConformidade'), 'AcompanhamentoNaoConformidade')
