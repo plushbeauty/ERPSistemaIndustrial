@@ -1,7 +1,7 @@
 /**
  * APROV-PARCEIROS-2026-10-24-R1 | DATA/HORA: 2026-10-24 18:52:12 -03:00.
- * Alteração autorizada: consolidar os links separados de Clientes/Fornecedores em Central de Parceiros.
- * Escopo restrito à navegação; estilos, geometria e comportamento visual do shell não foram alterados.
+ * Alterações autorizadas: consolidar links separados em Central de Parceiros e remover listener órfão que referenciava setter inexistente.
+ * Escopo restrito à navegação/correção de compilação; estilos, geometria e comportamento visual do shell não foram alterados.
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Warehouse, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X } from 'lucide-react'
@@ -148,12 +148,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     }
     document.addEventListener('mousedown', close)
     return () => document.removeEventListener('mousedown', close)
-  }, [])
-
-  useEffect(() => {
-    const openQualityTablet = () => setTabletOpen(true)
-    window.addEventListener('erp:open-quality-tablet', openQualityTablet)
-    return () => window.removeEventListener('erp:open-quality-tablet', openQualityTablet)
   }, [])
 
   // Atualização automática por mudanças reais no banco, sem botão manual.
