@@ -3,6 +3,7 @@ import { AlertCircle, ChevronLeft, ChevronRight, Printer, ScanLine } from 'lucid
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import EntityCodeLookup, { type LookupRecord } from '../components/industrial/EntityCodeLookup'
+import '../styles/estoque-standard.css'
 
 type LookupRow = LookupRecord & {
   unidade?: string | null
@@ -240,7 +241,7 @@ export default function EstoqueSeparacao() {
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
   return (
-    <main className="min-h-screen bg-slate-100 p-4 text-slate-900 sm:p-6">
+    <main className="stock-standard min-h-screen bg-slate-100 p-4 text-slate-900 sm:p-6">
       <header className="mx-auto flex max-w-[1700px] flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4 print:hidden">
         <div>
           <p className="text-sm font-bold text-sky-700">ESTOQUE &gt; SEPARAÇÃO</p>

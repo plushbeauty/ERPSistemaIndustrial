@@ -6,6 +6,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, Barcode, CheckCircle2, Copy, Download, Package, Printer } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
+import '../styles/estoque-standard.css'
 
 type P = { id: string; codigo: string; nome: string }
 const input = 'h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] font-semibold text-slate-800 outline-none transition focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-50'
@@ -37,14 +39,15 @@ export default function EstoqueEtiquetas() {
           .maybeSingle()
         if (profile.error) throw profile.error
         if (!profile.data?.empresa_id) throw new Error('Empresa da sessão não identificada.')
-        const result = await supabase
+        const empresaId = profile.data.empresa_id
+        const productRows = await fetchAllPages<P>((from, to) => supabase
           .from('erp_produtos')
-          .select('id,codigo,nome')
-          .eq('empresa_id', profile.data.empresa_id)
+          .select('id,codigo,nome', { count: 'exact' })
+          .eq('empresa_id', empresaId)
           .eq('ativo', true)
           .order('codigo')
-        if (result.error) throw result.error
-        if (!cancelled) setProducts((result.data ?? []) as P[])
+          .range(from, to))
+        if (!cancelled) setProducts(productRows)
       } catch (cause) {
         if (!cancelled) setError(cause instanceof Error ? cause.message : 'Falha ao carregar produtos ativos.')
       } finally {
@@ -86,7 +89,7 @@ export default function EstoqueEtiquetas() {
   }
 
   return (
-    <section className="mx-auto w-full max-w-[1500px] space-y-3 p-2 text-[11px] text-slate-800" aria-busy={loading}>
+    <section className="stock-standard mx-auto w-full max-w-[1500px] space-y-3 p-2 text-[11px] text-slate-800" aria-busy={loading}>
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-2">
         <div>
           <p className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-sky-700"><Barcode size={12} /> Identificação · Etiquetas industriais</p>

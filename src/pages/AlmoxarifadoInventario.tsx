@@ -11,6 +11,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, Archive, CalendarClock, PackageCheck, RefreshCw, Search, ShieldAlert } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import '../styles/estoque-standard.css'
 
 type Product = { id: string; codigo: string | null; nome: string | null; unidade_medida: string | null }
 type Lot = {
@@ -159,7 +160,7 @@ export default function AlmoxarifadoInventario() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F4F8FB] p-3 font-sans text-slate-800 antialiased md:p-5">
+    <main className="stock-standard min-h-screen bg-[#F4F8FB] p-3 font-sans text-slate-800 antialiased md:p-5">
       <div className="mx-auto max-w-[1700px] space-y-4">
         <header className="flex flex-wrap items-center gap-3 border border-slate-200 border-l-4 border-l-[#E6A34A] bg-white p-4 shadow-[0_4px_18px_rgba(18,59,80,0.08)]">
           <span className="flex h-11 w-11 items-center justify-center rounded-[2px] border border-slate-200 bg-[#F4FBFD] text-[#123B50]"><Archive size={22} /></span>

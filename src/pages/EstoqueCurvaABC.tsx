@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
+import '../styles/estoque-standard.css'
 
 type Stock = { produto_id: string; saldo_fisico: number | null }
 type Product = { id: string; codigo: string; descricao: string | null; custo_total: number }
@@ -12,7 +13,7 @@ export default function EstoqueCurvaABC() {
   const [items, setItems] = useState<Product[]>([])
   const [stock, setStock] = useState<Stock[]>([])
   const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusy] = useState(true)
 
   useEffect(() => {
     let active = true
@@ -73,7 +74,7 @@ export default function EstoqueCurvaABC() {
     return [{ name: 'Classe A', value: a }, { name: 'Classe B', value: b }, { name: 'Classe C', value: c }]
   }, [items, stock])
 
-  return <main className="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-6">
+  return <main className="stock-standard min-h-screen bg-slate-50 p-4 text-slate-900 md:p-6">
     <header className="flex flex-wrap items-center gap-2 border-b pb-4">
       <div><p className="text-sm font-black text-slate-600">ESTOQUE &gt; INDICADORES CRÍTICOS</p><h1 className="text-2xl font-black">Curva ABC de Valorização</h1></div>
       <div className="ml-auto flex gap-2 print:hidden"><button type="button" onClick={() => window.print()} className="rounded-sm bg-slate-900 px-4 py-2 text-sm font-bold text-white">IMPRIMIR RELATÓRIO</button></div>

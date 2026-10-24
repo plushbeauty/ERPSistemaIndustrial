@@ -12,7 +12,7 @@ Este documento permite que outra sessão continue o módulo sem refazer a triage
 
 ## Já feito / pode ser considerado apenas localmente corrigido
 
-1. `src/pages/EstoqueAlmoxarifado.tsx`
+1. `src/pages/EstoqueAlmoxarifadoCompact.tsx` (componente ativo das rotas principais); `src/pages/EstoqueAlmoxarifado.tsx` é implementação paralela e não recebe as rotas `/estoque`, `/almoxarifado` ou `/estoque/saldos`.
    - Consultas de produtos, localizações, almoxarifados, OPs, movimentos e itens do inventário usam carregamento por páginas completas e filtro explícito de empresa.
    - Saldo, histórico e inventário têm paginação visual; o comentário do inventário não cita empresa fixa.
    - Entrada/saída/transferência ainda devem ser revisadas quanto a autorização, consistência concorrente e razão de estoque; não declarar esses contratos corretos só porque existe mensagem de sucesso.
@@ -27,16 +27,16 @@ Este documento permite que outra sessão continue o módulo sem refazer a triage
 3. `src/pages/ComprasRequisicoes.tsx` e `supabase/migrations/20261006130000_erp_compras_requisitions_rbac_atomic.sql`
    - Encaminhamento selecionado de requisições com RPC atômica e permissionamento `compras.*`; validar no banco antes de homologar.
 4. `src/pages/estoque/EstoqueRecebimentoLotes.tsx`
-   - Existe fluxo real com upload de certificado e RPC `fn_receber_lote_almoxarifado`, mas a consulta de produtos usa `.limit(2000)` e a limpeza compensatória do arquivo pode falhar sem sinalização.
+   - Existe fluxo real com upload de certificado e RPC `fn_receber_lote_almoxarifado`. Na branch `fix/estoque-anatomia-visual-2026-10-24`, a consulta de produtos usa `fetchAllPages` e a mensagem reporta tanto falha do recebimento quanto falha de limpeza do PDF. A migration `20261024173000_estoque_recebimento_rbac_integrity.sql` adiciona validações de RBAC/tenant e revoga escrita REST direta, mas não foi aplicada nem testada em banco.
    - O contrato da RPC e storage precisa ser comparado com migrations/catálogo remoto antes de mexer.
 
 ## Pendências prioritárias, em ordem sugerida
 
-### A. Ajustes de estoque — tela hoje demonstrativa
+### A. Ajustes de estoque — validar contrato transacional e interface atual
 
 Arquivo: `src/pages/EstoqueAjustes.tsx`.
 
-Evidência observada: saldos `450` e `25` vêm do estado inicial local; o botão de novo apenas zera valores; o botão de efetivar navega para `/estoque`; a lupa de produto recebe `value=""` e `onChange` vazio; lote/posição/motivo não são persistidos; o laudo só chama `window.print()`.
+Evidência atual rechecando `src/pages/EstoqueAjustes.tsx`: produtos ativos são carregados por empresa da sessão, o lookup recebe os produtos reais e a ação chama `erp_estoque_registrar_movimento` com saída/Avaria. A descrição antiga de saldos fixos e botão demonstrativo está desatualizada. Permanecem sem prova os contratos server-side de RBAC, lote, concorrência e atomicidade; o campo de posição é gravado como observação e não como endereço relacional.
 
 Passos:
 
@@ -48,11 +48,11 @@ Passos:
 6. Confirmar resultado com retorno da RPC; separar "novo ajuste" do sucesso/navegação; botão laudo só imprime dados persistidos.
 7. Testar perfil sem `estoque.movimentar`, empresa/lote alheios, quantidade maior que saldo, repetição e falha transacional.
 
-### B. Etiquetas — consulta/identificação atualmente incorreta
+### B. Etiquetas — validar ZPL e contrato físico de impressão
 
 Arquivo: `src/pages/EstoqueEtiquetas.tsx`, rota `/estoque/etiquetas`.
 
-Evidência observada: carrega até 500 itens de `erp_pedidos_venda_itens` sem `empresa_id`; filtra a referência localmente procurando texto no UUID do item/produto, não por pedido ou NF-e; produtos são consultados por IDs sem tenant; query `.in()` pode receber lista vazia; quantidade impressa permite zero e não é usada pela impressão; destino "impressora operacional" é texto fixo; não há renderização de barcode real.
+Evidência atual rechecando `src/pages/EstoqueEtiquetas.tsx`: a tela consulta produtos ativos filtrados pela empresa do perfil autenticado, limita a quantidade a 1–100 e gera ZPL com o SKU. Copiar/baixar informa que a impressora não é acionada. A consulta anterior de itens de pedido e a alegação de destino fixo estão desatualizadas. Ainda falta validar o layout ZPL no modelo de impressora/leitor e definir se a etiqueta deve identificar SKU, lote, OP ou unidade rastreável.
 
 Passos:
 
@@ -68,7 +68,7 @@ Passos:
 
 Arquivo: `src/pages/EstoqueCurvaABC.tsx`, rota `/estoque/curva-abc`.
 
-Evidência observada: leituras de `erp_produtos` e `erp_produto_estoque` não têm empresa explícita nem paginação. Confirmar as policies e chaves compostas existentes. A implementação classifica usando valor atual (custo médio × quantidade) e a série ordenada, mas o rótulo "anual" não é baseado em movimento histórico no código visto.
+Evidência atual rechecando `src/pages/EstoqueCurvaABC.tsx`: produtos, saldos e custos são carregados por páginas completas com `empresa_id` explícito; a classificação usa saldo físico × custo mais recente por produto, não consumo anual. Não chamar o relatório de “anual” sem uma fonte histórica e fórmula de negócio aprovada.
 
 Passos:
 
@@ -82,7 +82,7 @@ Passos:
 
 Arquivos: `src/features/inventario/BalancoEstoque.tsx` e `src/features/inventario/AuditoriaSaldos.tsx`, rotas devem ser confirmadas em `src/AppEntryV2.tsx`.
 
-Evidência observada no balanço: filtro de data, almoxarifado e método de custo existem, mas só alteram estado visual; lista de produtos tem `.limit(5000)` e não tem filtro explícito de empresa; almoxarifados sem tenant explícito; os saldos/custos exibidos vêm de `erp_produtos.estoque_atual`/`custo_medio`, sem snapshot histórico; o status de todos os produtos é derivado como ATIVO/DIVERGENTE sem status real de lote. O export não prova um balanço histórico.
+Evidência atual rechecando `src/features/inventario/BalancoEstoque.tsx`: a consulta original tinha `.limit(5000)` e controles de data/almoxarifado/método sem efeito real sobre o cálculo. A branch `fix/estoque-anatomia-visual-2026-10-24` substitui o limite por `fetchAllPages`, deixa os controles de almoxarifado/método indisponíveis enquanto a fonte não for confirmada e declara que a data identifica o relatório, não um snapshot. A valoração continua baseada no saldo atual e `custo_medio`; não é balanço histórico ou contábil oficial.
 
 Evidência observada na auditoria: consulta a `erp_inventario_auditoria_saldos` até 500 linhas sem tenant explícito e sem paginação; validar se a tabela ainda é fonte oficial e quais policies existem.
 
@@ -109,13 +109,17 @@ Passos:
 
 ## Arquivos e rotas de Estoque mapeados
 
-- `/estoque`, `/almoxarifado`, `/estoque/saldos` → `src/pages/EstoqueAlmoxarifado.tsx`
+- `/estoque`, `/almoxarifado`, `/estoque/saldos`, `/vendas/estoque` → `src/pages/EstoqueAlmoxarifadoCompact.tsx`
 - `/estoque/ajustes` → `src/pages/EstoqueAjustes.tsx`
 - `/estoque/separacao` → `src/pages/EstoqueSeparacao.tsx`
 - `/estoque/etiquetas` → `src/pages/EstoqueEtiquetas.tsx`
 - `/estoque/recebimento-lotes`, `/estoque/recebimento` → `src/pages/estoque/EstoqueRecebimentoLotes.tsx`
 - `/estoque/curva-abc` → `src/pages/EstoqueCurvaABC.tsx`
-- `/inventario/balanco` → `src/features/inventario/BalancoEstoque.tsx`
+- `/inventario/balanco`, `/vendas/balanco` → `src/features/inventario/BalancoEstoque.tsx`
+- `/inventario/auditoria` → `src/features/inventario/AuditoriaSaldos.tsx` (na branch atual, filtro por empresa e paginação de 50 registros)
+- `/estoque/validade` → `src/pages/estoque/InventarioValidade.tsx`
+- `/almoxarifado/inventario-mestre` → `src/pages/AlmoxarifadoInventario.tsx`
+- `/estoque/enderecos`, `/estoque/movimentacoes` → `IndustrialDataWorkspace` (telas genéricas, não formulários especializados)
 - `AuditoriaSaldos.tsx` → localizar e confirmar sua rota antes de alterar.
 
 ## Migrations e objetos a localizar, não recriar
@@ -136,3 +140,13 @@ Não presumir que o nome do arquivo corresponde ao estado remoto. Comparar migra
 ## Prompt pronto para outra sessão
 
 > Continue primeiro o módulo Estoque usando `docs/procedimentos/HANDOFF-ESTOQUE.md` e `docs/ERP-CENTRAL-ERROS-PENDENCIAS.md`. Não repita correções marcadas como validadas localmente; verifique o código atual e implemente A (EstoqueAjustes) e B (Etiquetas) antes de C/D/E, na ordem do handoff. Leia migrations e schema existente antes de qualquer SQL. Não use dados demonstrativos, não crie tabelas duplicadas, não faça commit/deploy, não assuma que a separação baixa estoque. Rode `npm run verify:release` após as mudanças, atualize o registro central com evidência real e declare bloqueio externo claramente se não houver Postgres/Supabase de teste. Depois passe para o próximo domínio do plano geral.
+
+
+## Auditoria integral 2026-10-24 — adendo da branch
+
+- Relatório consolidado: `docs/procedimentos/AUDITORIA-VISUAL-ESTOQUE-2026-10-24.md`.
+- Referência visual: Central de Compras aprovada + `src/styles/estoque-standard.css`; o escopo `.stock-standard` foi aplicado também à validade/FIFO, Almoxarifado Mestre e Auditoria de Saldos.
+- A Curva ABC é valor em estoque (`saldo_fisico × último custo`), não consumo anual. A Validade/FIFO é uma fila de consulta; não substitui o bloqueio transacional no consumo.
+- A auditoria de saldos agora exige empresa contextualizada e pagina o histórico em blocos de 50.
+- Foi adicionada a migration `supabase/migrations/20261024173000_estoque_recebimento_rbac_integrity.sql` para validar permissão `estoque.movimentar`, empresa, produto ativo e valores de recebimento; ela também revoga escrita REST direta nas tabelas de saldo físico e rastreabilidade e acesso direto ao helper de saldo. **Não aplicar em produção sem teste em homologação e revisão do histórico de migrations.**
+- A migration e as mudanças de TypeScript ainda precisam de CI real, type-check, lint, build, verificação de rotas e teste Supabase/RLS/RBAC/Storage. Vercel anteriormente bloqueou por `build-rate-limit`; não interpretar esse status como compilação aprovada.

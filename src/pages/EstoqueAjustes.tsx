@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, CheckCircle2, Printer, RefreshCw, Save, Search, Warehouse } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import EntityCodeLookup, { type LookupRecord } from '../components/industrial/EntityCodeLookup'
 import VendasLayout from './VendasLayout'
+import '../styles/estoque-standard.css'
 
 type Product = { id: string; codigo: string; nome: string; estoque_atual: number; unidade: string | null }
 type Lot = LookupRecord
@@ -32,15 +34,15 @@ export default function EstoqueAjustes() {
       const company = await supabase.rpc('erp_current_empresa_id')
       if (company.error || !company.data) throw company.error ?? new Error('Empresa da sessão não identificada.')
       const empresaId = String(company.data)
-      const result = await supabase
+      const productRows = await fetchAllPages<Product>((from, to) => supabase
         .from('erp_produtos')
-        .select('id,codigo,nome,estoque_atual,unidade')
+        .select('id,codigo,nome,estoque_atual,unidade', { count: 'exact' })
         .eq('empresa_id', empresaId)
         .eq('ativo', true)
         .order('codigo')
-      if (result.error) throw result.error
+        .range(from, to))
       setCompanyId(empresaId)
-      setProducts((result.data ?? []) as Product[])
+      setProducts(productRows)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar produtos.')
     } finally {
@@ -97,7 +99,7 @@ export default function EstoqueAjustes() {
 
   return (
     <VendasLayout title="Ajuste de avaria" subtitle="Estoque • perdas • rastreabilidade">
-      <main className="mx-auto min-h-[70vh] max-w-[1500px] bg-slate-50 p-4 text-slate-900 sm:p-6">
+      <main className="stock-standard mx-auto min-h-[70vh] max-w-[1500px] bg-slate-50 p-4 text-slate-900 sm:p-6">
         <header className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-900 px-5 py-4 text-white shadow-sm">
           <div className="min-w-0">
             <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-300">Estoque • ajuste real</span>

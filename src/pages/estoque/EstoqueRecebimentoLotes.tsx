@@ -9,8 +9,10 @@ import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type Rea
 import { CheckCircle, FileText, Inbox, Layers, Save, Scale, Search, ShieldAlert, Upload, X } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
+import { fetchAllPages } from '../../lib/supabasePagination'
 import EntityCodeLookup, { type LookupRecord } from '../../components/industrial/EntityCodeLookup'
 import VendasLayout from '../VendasLayout'
+import '../../styles/estoque-standard.css'
 
 type Product = LookupRecord & {
   descricao?: string | null
@@ -48,13 +50,13 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
       try {
         const tenant = await supabase.rpc('erp_current_empresa_id')
         if (tenant.error || !tenant.data) throw tenant.error ?? new Error('Não foi possível identificar a empresa da sessão.')
-        const result = await supabase.from('erp_produtos')
-          .select('id,codigo,nome,descricao,unidade,estoque_atual,ativo')
-          .eq('empresa_id', String(tenant.data)).eq('ativo', true).order('codigo').limit(2000)
-        if (result.error) throw result.error
+        const tenantId = String(tenant.data)
+        const productRows = await fetchAllPages<Product>((from, to) => supabase.from('erp_produtos')
+          .select('id,codigo,nome,descricao,unidade,estoque_atual,ativo', { count: 'exact' })
+          .eq('empresa_id', tenantId).eq('ativo', true).order('codigo').range(from, to))
         if (alive) {
-          setEmpresaId(String(tenant.data))
-          setProducts((result.data ?? []) as Product[])
+          setEmpresaId(tenantId)
+          setProducts(productRows)
         }
       } catch (cause) {
         if (alive) setError(cause instanceof Error ? cause.message : 'Falha ao carregar os produtos.')
@@ -137,11 +139,17 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
       setCertificado(null)
       if (fileInputRef.current) fileInputRef.current.value = ''
     } catch (cause) {
+      const receiveError = cause instanceof Error ? cause.message : 'Erro crítico ao efetivar o recebimento.'
       if (uploaded && certificatePath) {
         const cleanup = await supabase.storage.from('documentos-erp').remove([certificatePath])
-        if (cleanup.error) setError(`Falha no recebimento e também na limpeza do PDF: ${cleanup.error.message}`)
+        if (cleanup.error) {
+          setError(`Falha no recebimento: ${receiveError}. A limpeza compensatória do PDF também falhou: ${cleanup.error.message}`)
+        } else {
+          setError(receiveError)
+        }
+      } else {
+        setError(receiveError)
       }
-      setError(previous => previous || (cause instanceof Error ? cause.message : 'Erro crítico ao efetivar o recebimento.'))
     } finally {
       setBusy(false)
     }
@@ -149,7 +157,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
 
   return (
     <VendasLayout title="Recebimento de Insumos e Lotes" subtitle="Conferência quantitativa, certificado químico e integração rastreável ao Almoxarifado">
-      <main className="space-y-3 p-1 text-xs text-slate-800">
+      <main className="stock-standard space-y-3 p-1 text-xs text-slate-800">
         {(error || success) && <div className={`flex items-start gap-2 rounded-[2px] border px-3 py-2 text-[10px] font-bold ${error ? 'border-rose-200 bg-rose-50 text-rose-900' : 'border-emerald-200 bg-emerald-50 text-emerald-900'}`} role={error ? 'alert' : 'status'}>
           {error ? <X size={15} className="shrink-0" /> : <CheckCircle size={15} className="shrink-0" />}
           <span>{error || success}</span>
