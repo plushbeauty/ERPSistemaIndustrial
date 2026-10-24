@@ -140,7 +140,6 @@ const VendasCatalogoDigitalGestao = lazyPage(() => import('./pages/VendasCatalog
 const VendasPDV = lazyPage(() => import('./pages/VendasPDV'), 'default')
 const VendasTablet = lazyPage(() => import('./pages/VendasTablet'), 'default')
 const ComprasRFQ = lazyPage(() => import('./pages/ComprasRFQ'), 'default')
-const ComprasIndustrial = lazyPage(() => import('./pages/ComprasIndustrial'), 'default')
 const ComprasCentral = lazyPage(() => import('./pages/ComprasCentral'), 'default')
 const ComprasRequisicoes = lazyPage(() => import('./pages/ComprasRequisicoes'), 'default')
 const FiscalCompras = lazyPage(() => import('./pages/FiscalCompras'), 'default')
