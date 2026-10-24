@@ -39,10 +39,11 @@ export default function EstoqueEtiquetas() {
           .maybeSingle()
         if (profile.error) throw profile.error
         if (!profile.data?.empresa_id) throw new Error('Empresa da sessão não identificada.')
+        const empresaId = profile.data.empresa_id
         const productRows = await fetchAllPages<P>((from, to) => supabase
           .from('erp_produtos')
           .select('id,codigo,nome', { count: 'exact' })
-          .eq('empresa_id', profile.data.empresa_id)
+          .eq('empresa_id', empresaId)
           .eq('ativo', true)
           .order('codigo')
           .range(from, to))
