@@ -1,19 +1,216 @@
 import { useEffect, useMemo, useState } from 'react'
-import { RefreshCw, Save, Printer } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Printer, RefreshCw, Save, Search, Warehouse } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import EntityCodeLookup, { type LookupRecord } from '../components/industrial/EntityCodeLookup'
 import VendasLayout from './VendasLayout'
 
-type Product = { id:string; codigo:string; nome:string; estoque_atual:number; unidade:string|null }
+type Product = { id: string; codigo: string; nome: string; estoque_atual: number; unidade: string | null }
 type Lot = LookupRecord
 
-export default function EstoqueAjustes(){
- const [companyId,setCompanyId]=useState(''),[products,setProducts]=useState<Product[]>([]),[productId,setProductId]=useState(''),[productSearch,setProductSearch]=useState(''),[lot,setLot]=useState(''),[location,setLocation]=useState(''),[antes,setAntes]=useState(''),[perda,setPerda]=useState(''),[motivo,setMotivo]=useState('Material avariado'),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('')
- const load=async()=>{setBusy(true);setError('');try{const c=await supabase.rpc('erp_current_empresa_id');if(c.error||!c.data)throw c.error??new Error('Empresa da sessão não identificada.');const id=String(c.data);const r=await supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual,unidade').eq('empresa_id',id).eq('ativo',true).order('codigo');if(r.error)throw r.error;setCompanyId(id);setProducts((r.data??[]) as Product[])}catch(e){setError(e instanceof Error?e.message:'Falha ao carregar produtos.')}finally{setBusy(false)}}
- useEffect(()=>{void load()},[])
- const selected=products.find(p=>p.id===productId)
- const filtered=useMemo(()=>products.filter(p=>{const q=productSearch.toLowerCase();return !q||p.codigo.toLowerCase().includes(q)||p.nome.toLowerCase().includes(q)}).slice(0,20),[products,productSearch])
- const qty=Math.max(0,Number(perda)||0),saldo=Number(selected?.estoque_atual||0),novo=Math.max(0,saldo-qty)
- const efetivar=async()=>{if(!companyId||!selected)throw new Error('Selecione um produto real.');if(!lot.trim())throw new Error('Informe o lote quando o ajuste estiver vinculado a lote.');if(qty<=0)throw new Error('Informe uma perda maior que zero.');if(qty>saldo)throw new Error('A perda não pode superar o saldo disponível.');setBusy(true);setError('');setMessage('');try{const r=await supabase.rpc('erp_estoque_registrar_movimento',{p_empresa_id:companyId,p_produto_id:selected.id,p_tipo:'saida',p_quantidade:qty,p_origem:'Avaria',p_documento:lot.trim(),p_observacao:(motivo.trim()||'Material avariado')+(location.trim()?' • '+location.trim():''),p_localizacao_origem_id:null,p_localizacao_destino_id:null});if(r.error)throw r.error;setMessage('Ajuste de avaria registrado no razão de estoque.');setPerda('');setLot('');setLocation('');await load()}catch(e){setError(e instanceof Error?e.message:'Não foi possível efetivar o ajuste.')}finally{setBusy(false)}}
- return <VendasLayout title="Ajuste de avaria" subtitle="Estoque • perdas • rastreabilidade"><main className="mx-auto min-h-[70vh] max-w-[1500px] p-5 text-slate-900"><header className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 pb-4"><div><span className="text-xs font-black tracking-widest text-sky-700">ESTOQUE • AJUSTE REAL</span><h1 className="mt-1 text-2xl font-bold">Ajuste de Avaria</h1><p className="text-sm text-slate-500">Somente dados reais do produto e do saldo do tenant.</p></div><div className="flex gap-2"><button type="button" onClick={()=>void load()} disabled={busy} className="rounded-md border px-3 py-2"><RefreshCw size={15}/></button><button type="button" onClick={()=>window.print()} className="rounded-md border px-3 py-2"><Printer size={15}/> Laudo</button></div></header>{(message||error)&&<div role={error?'alert':'status'} className={error?'mt-3 rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-900':'mt-3 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900'}>{error||message}</div>}<section className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_.8fr]"><article className="rounded-md border border-slate-200 bg-white p-4"><h2 className="text-base font-bold">Identificação do ajuste</h2><div className="mt-3 grid gap-3 md:grid-cols-2"><div><label className="text-sm font-semibold">Produto</label><EntityCodeLookup label="" value={productId} records={filtered.map(p=>({id:p.id,codigo:p.codigo,nome:p.nome})) as Lot[]} onChange={setProductId} onSelect={r=>{setProductId(r.id);setProductSearch(r.codigo+' • '+r.nome)}} entityType="product"/></div><label className="text-sm font-semibold">Pesquisa<input value={productSearch} onChange={e=>setProductSearch(e.target.value)} className="mt-1 w-full rounded-md border p-2"/></label><label className="text-sm font-semibold">Lote / documento<input value={lot} onChange={e=>setLot(e.target.value)} className="mt-1 w-full rounded-md border p-2"/></label><label className="text-sm font-semibold">Silo / posição<input value={location} onChange={e=>setLocation(e.target.value)} className="mt-1 w-full rounded-md border p-2"/></label><label className="text-sm font-semibold">Quantidade perdida<input type="number" min="0.0001" step="0.0001" value={perda} onChange={e=>setPerda(e.target.value)} className="mt-1 w-full rounded-md border p-2"/></label><label className="text-sm font-semibold">Motivo<select value={motivo} onChange={e=>setMotivo(e.target.value)} className="mt-1 w-full rounded-md border p-2"><option>Material avariado</option><option>Quebra</option><option>Contaminação</option><option>Perda de processo</option></select></label></div></article><aside className="rounded-md border border-slate-200 bg-slate-50 p-4"><span className="text-xs font-bold text-slate-500">CONFERÊNCIA</span><p className="mt-2 text-sm">Saldo atual: <strong>{saldo.toLocaleString('pt-BR')} {selected?.unidade||''}</strong></p><p className="text-sm">Perda: <strong>{qty.toLocaleString('pt-BR')}</strong></p><p className="text-sm">Novo saldo: <strong>{novo.toLocaleString('pt-BR')}</strong></p><button type="button" disabled={busy||!selected||qty<=0||qty>saldo} onClick={()=>void efetivar()} className="mt-4 flex w-full items-center justify-center gap-2 rounded-md bg-sky-700 px-4 py-2 font-semibold text-white disabled:opacity-50"><Save size={15}/>{busy?'Gravando…':'Efetivar ajuste real'}</button></aside></section></main></VendasLayout>
+const fieldClass = 'h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-900 outline-none transition focus:border-slate-400 focus:bg-white'
+const labelClass = 'mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-600'
+const buttonClass = 'inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border px-3 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-50'
+const primaryButtonClass = 'inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-slate-900 px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50'
+
+export default function EstoqueAjustes() {
+  const [companyId, setCompanyId] = useState('')
+  const [products, setProducts] = useState<Product[]>([])
+  const [productId, setProductId] = useState('')
+  const [productSearch, setProductSearch] = useState('')
+  const [lot, setLot] = useState('')
+  const [location, setLocation] = useState('')
+  const [perda, setPerda] = useState('')
+  const [motivo, setMotivo] = useState('Material avariado')
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+
+  const load = async () => {
+    setBusy(true)
+    setError('')
+    try {
+      const company = await supabase.rpc('erp_current_empresa_id')
+      if (company.error || !company.data) throw company.error ?? new Error('Empresa da sessão não identificada.')
+      const empresaId = String(company.data)
+      const result = await supabase
+        .from('erp_produtos')
+        .select('id,codigo,nome,estoque_atual,unidade')
+        .eq('empresa_id', empresaId)
+        .eq('ativo', true)
+        .order('codigo')
+      if (result.error) throw result.error
+      setCompanyId(empresaId)
+      setProducts((result.data ?? []) as Product[])
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao carregar produtos.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  useEffect(() => { void load() }, [])
+
+  const selected = products.find(product => product.id === productId)
+  const filtered = useMemo(() => {
+    const query = productSearch.toLowerCase().trim()
+    return products.filter(product =>
+      !query || product.codigo.toLowerCase().includes(query) || product.nome.toLowerCase().includes(query),
+    ).slice(0, 250)
+  }, [products, productSearch])
+  const quantity = Math.max(0, Number(perda) || 0)
+  const balance = Number(selected?.estoque_atual || 0)
+  const newBalance = Math.max(0, balance - quantity)
+
+  const registerAdjustment = async () => {
+    if (!companyId || !selected) throw new Error('Selecione um produto real da empresa.')
+    if (!lot.trim()) throw new Error('Informe o lote ou documento de rastreabilidade.')
+    if (quantity <= 0) throw new Error('Informe uma perda maior que zero.')
+    if (quantity > balance) throw new Error('A perda não pode superar o saldo disponível.')
+
+    setBusy(true)
+    setError('')
+    setMessage('')
+    try {
+      const result = await supabase.rpc('erp_estoque_registrar_movimento', {
+        p_empresa_id: companyId,
+        p_produto_id: selected.id,
+        p_tipo: 'saida',
+        p_quantidade: quantity,
+        p_origem: 'Avaria',
+        p_documento: lot.trim(),
+        p_observacao: (motivo.trim() || 'Material avariado') + (location.trim() ? ' • ' + location.trim() : ''),
+        p_localizacao_origem_id: null,
+        p_localizacao_destino_id: null,
+      })
+      if (result.error) throw result.error
+      setMessage('Ajuste de avaria registrado no razão de estoque.')
+      setPerda('')
+      setLot('')
+      setLocation('')
+      await load()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível efetivar o ajuste.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <VendasLayout title="Ajuste de avaria" subtitle="Estoque • perdas • rastreabilidade">
+      <main className="mx-auto min-h-[70vh] max-w-[1500px] bg-slate-50 p-4 text-slate-900 sm:p-6">
+        <header className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-900 px-5 py-4 text-white shadow-sm">
+          <div className="min-w-0">
+            <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-300">Estoque • ajuste real</span>
+            <h1 className="mt-1 text-lg font-bold">Ajuste de avaria</h1>
+            <p className="mt-1 text-xs text-slate-300">Registro rastreável com dados reais do produto e do saldo da empresa.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button type="button" onClick={() => void load()} disabled={busy} className={`${buttonClass} border-slate-600 bg-slate-800 text-white hover:bg-slate-700`}>
+              <RefreshCw size={14} /> Atualizar
+            </button>
+            <button type="button" onClick={() => window.print()} className={`${buttonClass} border-slate-200 bg-white text-slate-700 hover:bg-slate-50`}>
+              <Printer size={14} /> Laudo / imprimir
+            </button>
+          </div>
+        </header>
+
+        {(message || error) && (
+          <div role={error ? 'alert' : 'status'} className={error
+            ? 'mt-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-900'
+            : 'mt-4 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs font-medium text-emerald-900'}>
+            {error ? <AlertTriangle size={16} className="mt-0.5 shrink-0" /> : <CheckCircle2 size={16} className="mt-0.5 shrink-0" />}
+            <span>{error || message}</span>
+          </div>
+        )}
+
+        <section className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(280px,0.8fr)]">
+          <article className="min-w-0 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="mb-4 flex items-center gap-2 border-b border-slate-100 pb-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-700"><Warehouse size={15} /></span>
+              <div>
+                <h2 className="text-xs font-bold text-slate-900">Identificação do ajuste</h2>
+                <p className="mt-0.5 text-[11px] text-slate-500">Preencha os campos para registrar a perda.</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
+              <div className="min-w-0 space-y-1">
+                <label className={labelClass}>Produto</label>
+                <EntityCodeLookup
+                  label="Produto"
+                  value={productId}
+                  records={filtered.map(product => ({ id: product.id, codigo: product.codigo, nome: product.nome, estoque_atual: product.estoque_atual })) as Lot[]}
+                  onChange={setProductId}
+                  onSelect={record => {
+                    setProductId(record.id)
+                    setProductSearch(record.id ? (record.codigo || '') + ' ' + (record.nome || '') : productSearch)
+                  }}
+                  placeholder="Código do produto"
+                  entityType="product"
+                  compact
+                />
+              </div>
+              <label className="min-w-0 space-y-1">
+                <span className={labelClass}>Pesquisar produto</span>
+                <span className="relative block">
+                  <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input value={productSearch} onChange={event => setProductSearch(event.target.value)} className={`${fieldClass} pl-8`} placeholder="Código ou descrição" />
+                </span>
+              </label>
+              <label className="min-w-0 space-y-1">
+                <span className={labelClass}>Lote / documento</span>
+                <input value={lot} onChange={event => setLot(event.target.value)} className={fieldClass} placeholder="Informe lote ou documento" required />
+              </label>
+              <label className="min-w-0 space-y-1">
+                <span className={labelClass}>Silo / posição</span>
+                <input value={location} onChange={event => setLocation(event.target.value)} className={fieldClass} placeholder="Localização (opcional)" />
+              </label>
+              <label className="min-w-0 space-y-1">
+                <span className={labelClass}>Quantidade perdida</span>
+                <input type="number" min="0.0001" step="0.0001" value={perda} onChange={event => setPerda(event.target.value)} className={fieldClass} placeholder="0,0000" required />
+              </label>
+              <label className="min-w-0 space-y-1">
+                <span className={labelClass}>Motivo</span>
+                <select value={motivo} onChange={event => setMotivo(event.target.value)} className={fieldClass}>
+                  <option>Material avariado</option>
+                  <option>Quebra</option>
+                  <option>Contaminação</option>
+                  <option>Perda de processo</option>
+                </select>
+              </label>
+            </div>
+          </article>
+
+          <aside className="min-w-0 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="mb-4 border-b border-slate-100 pb-3">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Conferência do saldo</span>
+              <h2 className="mt-1 text-xs font-bold text-slate-900">Resumo do ajuste</h2>
+            </div>
+            <dl className="space-y-3">
+              <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+                <dt className="text-xs text-slate-500">Produto selecionado</dt>
+                <dd className="max-w-[65%] text-right text-xs font-semibold text-slate-800">{selected ? `${selected.codigo} — ${selected.nome}` : 'Nenhum produto selecionado'}</dd>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <dt className="text-xs text-slate-500">Saldo atual</dt>
+                <dd className="text-sm font-bold tabular-nums text-slate-900">{balance.toLocaleString('pt-BR')} {selected?.unidade || ''}</dd>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <dt className="text-xs text-slate-500">Perda informada</dt>
+                <dd className="text-sm font-bold tabular-nums text-red-700">{quantity.toLocaleString('pt-BR')} {selected?.unidade || ''}</dd>
+              </div>
+              <div className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 p-3">
+                <dt className="text-xs font-semibold text-slate-600">Novo saldo estimado</dt>
+                <dd className="text-base font-bold tabular-nums text-slate-900">{newBalance.toLocaleString('pt-BR')} {selected?.unidade || ''}</dd>
+              </div>
+            </dl>
+            <p className="mt-3 text-[11px] leading-relaxed text-slate-500">A estimativa é visual. A validação definitiva do saldo deve ocorrer na operação transacional do banco.</p>
+            <button type="button" disabled={busy || !selected || quantity <= 0 || quantity > balance || !lot.trim()} onClick={() => void registerAdjustment()} className={`${primaryButtonClass} mt-4 w-full`}>
+              <Save size={14} /> {busy ? 'Gravando…' : 'Efetivar ajuste real'}
+            </button>
+          </aside>
+        </section>
+      </main>
+    </VendasLayout>
+  )
 }
