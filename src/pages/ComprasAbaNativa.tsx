@@ -37,6 +37,17 @@ export default function ComprasAbaNativa({ tab, onRefresh }: { tab: string; onRe
   const [busy,setBusy] = useState(false)
   const [error,setError] = useState('')
   const [message,setMessage] = useState('')
+  const [rfqBuyer,setRfqBuyer] = useState('')
+  const [rfqApproval,setRfqApproval] = useState('EM_ANALISE')
+  const [rfqDeadline,setRfqDeadline] = useState('')
+  const [rfqDelivery,setRfqDelivery] = useState('')
+  const [rfqResponseDate,setRfqResponseDate] = useState('')
+  const [rfqPayment,setRfqPayment] = useState('')
+  const [rfqJustification,setRfqJustification] = useState('')
+  const [rfqNotes,setRfqNotes] = useState('')
+  const [selectedSuppliers,setSelectedSuppliers] = useState<string[]>([])
+  const [supplierQuotes,setSupplierQuotes] = useState<Record<string,{cost:string;days:string;payment:string}>>({})
+  const [winnerSupplier,setWinnerSupplier] = useState('')
 
   const load = useCallback(async () => {
     setBusy(true); setError('')
@@ -44,7 +55,7 @@ export default function ComprasAbaNativa({ tab, onRefresh }: { tab: string; onRe
       const company = await supabase.rpc('erp_current_empresa_id')
       if (company.error || !company.data) throw company.error ?? new Error('Empresa da sessão não identificada.')
       const tenant = String(company.data); setEmpresaId(tenant)
-      if (tab === 'Requisições') {
+      if (tab === 'Requisições' || tab === 'Cotações') {
         const auth = await supabase.auth.getUser()
         if (auth.error || !auth.data.user) throw auth.error ?? new Error('Sessão não autenticada.')
         const profile = await supabase.from('erp_usuarios').select('id').eq('auth_user_id',auth.data.user.id).eq('empresa_id',tenant).eq('ativo',true).is('deleted_at',null).maybeSingle()
@@ -54,7 +65,7 @@ export default function ComprasAbaNativa({ tab, onRefresh }: { tab: string; onRe
         if (permission.error) throw permission.error
         setCanApprove(Boolean(permission.data) && Boolean(profile.data?.id))
       }
-      if (tab === 'Pedido do PCP' || tab === 'Fornecedores' || tab === 'Pedidos') {
+      if (tab === 'Pedido do PCP' || tab === 'Fornecedores' || tab === 'Pedidos' || tab === 'Cotações') {
         const [p,s] = await Promise.all([
           supabase.from('erp_produtos').select('id,codigo,nome,unidade,unidade_compra').eq('empresa_id',tenant).eq('ativo',true).order('codigo').limit(2000),
           supabase.from('erp_fornecedores').select('id,razao_social,documento,email').eq('empresa_id',tenant).eq('ativo',true).order('razao_social').limit(2000),
@@ -120,6 +131,48 @@ export default function ComprasAbaNativa({ tab, onRefresh }: { tab: string; onRe
     finally { setBusy(false) }
   }
 
+  async function saveRfq(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setBusy(true); setError(''); setMessage('')
+    let rfqId = ''
+    try {
+      if (!empresaId || !profileId) throw new Error('Perfil ERP ativo não identificado para registrar a cotação.')
+      if (!selectedSuppliers.length || !items.some(item=>item.productId)) throw new Error('Selecione ao menos um fornecedor e um material.')
+      if (!winnerSupplier || !selectedSuppliers.includes(winnerSupplier)) throw new Error('Selecione o fornecedor escolhido entre os cotados.')
+      if (selectedSuppliers.some(id => !supplierQuotes[id] || !Number.isFinite(Number(supplierQuotes[id].cost)) || Number(supplierQuotes[id].cost)<0 || !Number.isFinite(Number(supplierQuotes[id].days)) || Number(supplierQuotes[id].days)<0)) throw new Error('Informe custo e prazo válidos para todos os fornecedores selecionados.')
+      const chosenCost = Number(supplierQuotes[winnerSupplier].cost)
+      const lowestCost = Math.min(...selectedSuppliers.map(id=>Number(supplierQuotes[id].cost)))
+      if (chosenCost > lowestCost && !rfqJustification.trim()) throw new Error('Justifique a escolha quando não for o menor custo.')
+      const header = await supabase.from('erp_rfq').insert({
+        empresa_id:empresaId,status:'ABERTA',comprador_responsavel:rfqBuyer.trim()||null,
+        status_aprovacao:rfqApproval,data_limite:rfqDeadline||null,previsao_entrega:rfqDelivery||null,
+        data_conclusao:['APROVADO','REPROVADO'].includes(rfqApproval)?new Date().toISOString().slice(0,10):null,
+        justificativa_escolha:rfqJustification.trim()||null,menor_custo_liquido_atendido:chosenCost===lowestCost,
+        data_necessidade:rfqDeadline||null,prazo_resposta:rfqResponseDate||null,
+        condicao_pagamento:rfqPayment.trim()||null,observacoes:rfqNotes.trim()||null,created_by:profileId
+      }).select('id,numero').single()
+      if (header.error || !header.data) throw header.error ?? new Error('O banco não retornou a cotação.')
+      rfqId=String(header.data.id)
+      const suppliersResult=await supabase.from('erp_rfq_fornecedores').insert(selectedSuppliers.map(id=>{
+        const quote=supplierQuotes[id]; const cost=Number(quote.cost)
+        return {empresa_id:empresaId,rfq_id:rfqId,fornecedor_id:id,valor_total:cost,valor_frete:0,valor_desconto:0,prazo_entrega_dias:Number(quote.days),condicao_pagamento:quote.payment.trim()||rfqPayment.trim()||null,custo_liquido_total:cost,selecionado_para_pedido:id===winnerSupplier,status:id===winnerSupplier?'SELECIONADO':'COTADO'}
+      }))
+      if(suppliersResult.error) throw suppliersResult.error
+      const valid=items.filter(item=>item.productId)
+      const itemResult=await supabase.from('erp_rfq_itens').insert(valid.map(item=>{
+        const product=products.find(p=>p.id===item.productId)
+        if(!product) throw new Error('Um material selecionado não está mais disponível.')
+        return {empresa_id:empresaId,rfq_id:rfqId,produto_id:product.id,descricao:product.nome,codigo:product.codigo,quantidade:Number(item.quantity),unidade:product.unidade_compra||product.unidade||'UN',data_necessidade:rfqDeadline||null,observacoes:null}
+      }))
+      if(itemResult.error) throw itemResult.error
+      setMessage('Cotação #'+header.data.numero+' criada com '+selectedSuppliers.length+' fornecedor(es).')
+      setItems([{productId:'',quantity:'1',price:'0'}]);setSelectedSuppliers([]);setSupplierQuotes({});setWinnerSupplier('');setRfqJustification('');setRfqNotes('')
+      await load();onRefresh()
+    } catch(cause) {
+      if(rfqId&&empresaId){const rollback=await supabase.from('erp_rfq').delete().eq('id',rfqId).eq('empresa_id',empresaId);setError((cause instanceof Error?cause.message:'Falha ao criar cotação.')+(rollback.error?' A reversão falhou: '+rollback.error.message:''))}
+      else setError(cause instanceof Error?cause.message:'Falha ao criar cotação.')
+    } finally {setBusy(false)}
+  }
+
   async function approve(id: string) {
     setBusy(true); setError(''); setMessage('')
     try {
@@ -138,6 +191,39 @@ export default function ComprasAbaNativa({ tab, onRefresh }: { tab: string; onRe
     <div className="sq-purchase-mrp-head"><div><h2>{tab==='Pedido do PCP'?'Pedido do PCP para Compras':tab}</h2><p>{tab==='Pedido do PCP'?'Informe referência da OP, materiais e justificativa. A gravação utiliza a operação existente do ERP.':'Registros reais do Supabase, filtrados pela empresa ativa.'}</p></div><button type="button" onClick={()=>void load()} disabled={busy}><RefreshCw size={14}/> Atualizar</button></div>
     {error&&<p role="alert" className="sq-purchase-kpi-error">{error}</p>}
     {message&&<p role="status" style={{margin:'10px 16px',padding:10,background:'#ecfdf5',color:'#166534',fontSize:12}}>{message}</p>}
+    {tab==='Cotações'&&<form onSubmit={event=>void saveRfq(event)} style={{padding:16,borderBottom:'1px solid #e8edf4'}}>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(12,minmax(0,1fr))',gap:10}}>
+        <label style={{gridColumn:'span 3',display:'grid',gap:4,fontSize:11}}>Comprador<input maxLength={100} value={rfqBuyer} onChange={e=>setRfqBuyer(e.target.value)} /></label>
+        <label style={{gridColumn:'span 3',display:'grid',gap:4,fontSize:11}}>Status inicial<select value={rfqApproval} onChange={e=>setRfqApproval(e.target.value)}><option value="EM_ANALISE">Em análise</option><option value="PENDENTE_APROVACAO">Pendente de aprovação</option></select></label>
+        <label style={{gridColumn:'span 3',display:'grid',gap:4,fontSize:11}}>Data limite<input type="date" value={rfqDeadline} onChange={e=>setRfqDeadline(e.target.value)} /></label>
+        <label style={{gridColumn:'span 3',display:'grid',gap:4,fontSize:11}}>Prazo de resposta<input type="date" value={rfqResponseDate} onChange={e=>setRfqResponseDate(e.target.value)} /></label>
+        <label style={{gridColumn:'span 3',display:'grid',gap:4,fontSize:11}}>Previsão de entrega<input type="date" value={rfqDelivery} onChange={e=>setRfqDelivery(e.target.value)} /></label>
+        <label style={{gridColumn:'span 3',display:'grid',gap:4,fontSize:11}}>Condição de pagamento<input value={rfqPayment} onChange={e=>setRfqPayment(e.target.value)} placeholder="Ex.: 28 dias" /></label>
+        <label style={{gridColumn:'span 6',display:'grid',gap:4,fontSize:11}}>Justificativa da escolha<textarea rows={1} value={rfqJustification} onChange={e=>setRfqJustification(e.target.value)} placeholder="Obrigatória se não escolher o menor custo" /></label>
+        <label style={{gridColumn:'span 12',display:'grid',gap:4,fontSize:11}}>Observações<textarea rows={2} value={rfqNotes} onChange={e=>setRfqNotes(e.target.value)} /></label>
+      </div>
+      <div style={{marginTop:12,display:'grid',gap:8}}><strong style={{fontSize:12}}>Fornecedores para cotar</strong>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:8}}>
+          {suppliers.map(s=><label key={s.id} style={{display:'flex',gap:8,alignItems:'center',border:'1px solid #e2e8f0',padding:8,fontSize:11,borderRadius:4}}><input type="checkbox" checked={selectedSuppliers.includes(s.id)} onChange={e=>{setSelectedSuppliers(current=>e.target.checked?[...current,s.id]:current.filter(id=>id!==s.id));if(!e.target.checked&&winnerSupplier===s.id)setWinnerSupplier('')}}/><span>{s.razao_social}</span></label>)}
+        </div>
+        {selectedSuppliers.map(id=>{const supplier=suppliers.find(s=>s.id===id);const q=supplierQuotes[id]??{cost:'0',days:'0',payment:''};return <div key={id} style={{display:'grid',gridTemplateColumns:'minmax(160px,2fr) repeat(3,minmax(100px,1fr))',gap:8,alignItems:'end',borderBottom:'1px solid #e2e8f0',paddingBottom:8}}>
+          <strong style={{fontSize:11}}>{supplier?.razao_social??'Fornecedor'}</strong>
+          <label style={{display:'grid',gap:4,fontSize:10}}>Custo líquido<input required type="number" min="0" step="0.01" value={q.cost} onChange={e=>setSupplierQuotes(current=>({...current,[id]:{...q,cost:e.target.value}}))}/></label>
+          <label style={{display:'grid',gap:4,fontSize:10}}>Prazo (dias)<input required type="number" min="0" step="1" value={q.days} onChange={e=>setSupplierQuotes(current=>({...current,[id]:{...q,days:e.target.value}}))}/></label>
+          <label style={{display:'grid',gap:4,fontSize:10}}>Pagamento<input value={q.payment} onChange={e=>setSupplierQuotes(current=>({...current,[id]:{...q,payment:e.target.value}}))}/></label>
+        </div>})}
+        <label style={{display:'grid',gap:4,fontSize:11}}>Fornecedor escolhido<select required value={winnerSupplier} onChange={e=>setWinnerSupplier(e.target.value)}><option value="">Selecione</option>{selectedSuppliers.map(id=><option key={id} value={id}>{suppliers.find(s=>s.id===id)?.razao_social??id}</option>)}</select></label>
+      </div>
+      <div style={{display:'grid',gap:8,marginTop:14}}><strong style={{fontSize:12}}>Materiais da cotação</strong>
+      {items.map((item,index)=><div key={index} style={{display:'grid',gridTemplateColumns:'minmax(220px,5fr) minmax(90px,1fr) minmax(110px,1fr) 34px',gap:8,alignItems:'end'}}>
+        <label style={{display:'grid',gap:4,fontSize:10}}>Material<select required value={item.productId} onChange={e=>setItems(current=>current.map((row,i)=>i===index?{...row,productId:e.target.value}:row))}><option value="">Selecione</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} — {p.nome}</option>)}</select></label>
+        <label style={{display:'grid',gap:4,fontSize:10}}>Quantidade<input required type="number" min="0.001" step="0.001" value={item.quantity} onChange={e=>setItems(current=>current.map((row,i)=>i===index?{...row,quantity:e.target.value}:row))}/></label>
+        <label style={{display:'grid',gap:4,fontSize:10}}>Referência unitária<input type="number" min="0" step="0.01" value={item.price} onChange={e=>setItems(current=>current.map((row,i)=>i===index?{...row,price:e.target.value}:row))}/></label>
+        <button type="button" aria-label="Remover material" disabled={items.length===1} onClick={()=>setItems(current=>current.filter((_,i)=>i!==index))}>×</button>
+      </div>)}
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:10,flexWrap:'wrap'}}><button type="button" onClick={()=>setItems(current=>[...current,{productId:'',quantity:'1',price:'0'}])}>+ Adicionar material</button><strong style={{fontSize:12}}>Total de referência: {money(items.reduce((sum,item)=>sum+Number(item.quantity||0)*Number(item.price||0),0))}</strong></div>
+      </div><div style={{display:'flex',justifyContent:'flex-end',marginTop:14}}><button type="submit" disabled={busy} style={{background:'#0b2545',color:'#fff',padding:'9px 16px',borderRadius:8,fontWeight:750}}>{busy?'Salvando…':'Criar cotação'}</button></div>
+    </form>}
     {tab==='Pedido do PCP'&&<form onSubmit={event=>void submit(event)} style={{padding:16,borderBottom:'1px solid #e8edf4'}}>
       <div style={{display:'grid',gridTemplateColumns:'repeat(12,minmax(0,1fr))',gap:10}}>
         <label style={{gridColumn:'span 3',display:'grid',gap:4,fontSize:11}}>Setor<input required value={sector} onChange={e=>setSector(e.target.value)} placeholder="PCP"/></label>
