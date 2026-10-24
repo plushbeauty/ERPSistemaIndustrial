@@ -141,6 +141,7 @@ const VendasPDV = lazyPage(() => import('./pages/VendasPDV'), 'default')
 const VendasTablet = lazyPage(() => import('./pages/VendasTablet'), 'default')
 const ComprasRFQ = lazyPage(() => import('./pages/ComprasRFQ'), 'default')
 const ComprasIndustrial = lazyPage(() => import('./pages/ComprasIndustrial'), 'default')
+const ComprasCentral = lazyPage(() => import('./pages/ComprasCentral'), 'default')
 const ComprasRequisicoes = lazyPage(() => import('./pages/ComprasRequisicoes'), 'default')
 const FiscalCompras = lazyPage(() => import('./pages/FiscalCompras'), 'default')
 const ComprasRelatorios = lazyPage(() => import('./pages/ComprasRelatorios'), 'default')
@@ -594,7 +595,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/inspecao-processo" element={<QualityPlanGate><QualidadeInspecaoProcesso /></QualityPlanGate>} />
       <Route path="/qualidade/fichas-processo" element={<QualityPlanGate><QualidadeFichasProcesso /></QualityPlanGate>} />
       <Route path="/qualidade/inspecoes" element={<QualityPlanGate><QualidadeInspecoesIndustrial /></QualityPlanGate>} />
-      <Route path="/qualidade/tablet" element={<Navigate to="/qualidade" replace />} />
+      <Route path="/qualidade/tablet" element={<QualityPlanGate><Navigate to="/qualidade" replace /></QualityPlanGate>} />
       <Route path="/qualidade/inspecoes/operacao" element={<Navigate to="/qualidade/inspecoes" replace />} />
       <Route path="/qualidade/metodologia-8d" element={<QualityPlanGate><QualidadeMetodologia8D /></QualityPlanGate>} />
       <Route path="/qualidade/auditoria-5s" element={<QualityPlanGate><QualidadeAuditoria5S /></QualityPlanGate>} />
@@ -653,7 +654,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/admin/logs" element={<AdminLogs />} />
       <Route path="/outlook/configuracao" element={<OutlookConfiguracao />} />
       <Route path="/outlook/caixa-entrada" element={<OutlookCaixaEntrada />} />
-      <Route path="/compras" element={<ComprasRoute><ComprasIndustrial /></ComprasRoute>} />
+      <Route path="/compras" element={<ComprasCentral />} />
       <Route path="/compras/requisicoes" element={<ComprasRoute><ComprasRequisicoes /></ComprasRoute>} />
       <Route path="/compras/recebimentos" element={<ComprasRoute><RecebimentoMateriais /></ComprasRoute>} />
       <Route path="/compras/recebimento" element={<Navigate to="/compras/recebimentos" replace />} />

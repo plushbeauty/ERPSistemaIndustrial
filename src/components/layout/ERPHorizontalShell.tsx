@@ -34,8 +34,9 @@ const menus: MenuItem[] = [
     { label: 'Metas', route: '/vendas/metas' },
     { label: 'Relatórios', route: '/vendas/relatorios' },
   ] },
-  { label: 'Compras', route: '/compras/rfq', icon: Truck, children: [
-    { label: 'Central de compras / RFQ', route: '/compras/rfq' },
+  { label: 'Compras', route: '/compras', icon: Truck, children: [
+    { label: 'Central de compras', route: '/compras' },
+    { label: 'Cotações / RFQ', route: '/compras/rfq' },
     { label: 'Solicitações', route: '/compras/solicitacao-manual' },
     { label: 'Pedido de compra', route: '/compras/pedido' },
     { label: 'Recebimentos', route: '/compras/recebimentos' },
