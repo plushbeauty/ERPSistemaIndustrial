@@ -146,7 +146,7 @@ export default function EntityCodeLookup({
             <span className="text-slate-700">{selected.nome ?? 'Registro selecionado'}</span>
           </div>
           {(selected.dimensoes || selected.canal || selected.molde) && (
-            <p className={`mt-1 font-medium text-slate-600 ${compact ? "text-[11px]" : "text-sm"}`}
+            <p className={`mt-1 font-medium text-slate-600 ${compact ? "text-[11px]" : "text-sm"}`}>
               {[selected.dimensoes, selected.canal, selected.molde].filter(Boolean).join(' • ')}
             </p>
           )}
