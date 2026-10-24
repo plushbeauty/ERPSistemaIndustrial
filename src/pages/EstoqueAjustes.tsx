@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, CheckCircle2, Printer, RefreshCw, Save, Search, Warehouse } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import EntityCodeLookup, { type LookupRecord } from '../components/industrial/EntityCodeLookup'
 import VendasLayout from './VendasLayout'
 import '../styles/estoque-standard.css'
@@ -33,15 +34,15 @@ export default function EstoqueAjustes() {
       const company = await supabase.rpc('erp_current_empresa_id')
       if (company.error || !company.data) throw company.error ?? new Error('Empresa da sessão não identificada.')
       const empresaId = String(company.data)
-      const result = await supabase
+      const productRows = await fetchAllPages<Product>((from, to) => supabase
         .from('erp_produtos')
-        .select('id,codigo,nome,estoque_atual,unidade')
+        .select('id,codigo,nome,estoque_atual,unidade', { count: 'exact' })
         .eq('empresa_id', empresaId)
         .eq('ativo', true)
         .order('codigo')
-      if (result.error) throw result.error
+        .range(from, to))
       setCompanyId(empresaId)
-      setProducts((result.data ?? []) as Product[])
+      setProducts(productRows)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar produtos.')
     } finally {
