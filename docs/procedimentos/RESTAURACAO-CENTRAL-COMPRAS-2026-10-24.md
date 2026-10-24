@@ -4,7 +4,7 @@
 **Revisão:** APROV-COMPRAS-2026-10-24-R1  
 **Fonte de referência:** deployment Vercel `EjPo9mBaQ`  
 **Commit de referência:** `16060aad0fce987250586f6c7fb7bb2f20b003c7`  
-**Escopo:** restaurar a Central aprovada em `/compras`, corrigir somente a geometria dos cards e impedir regressão para a página antiga.
+**Escopo:** restaurar a Central aprovada em `/compras`, registrar revisão com data/hora e congelar o visual original sem alterações visuais.
 
 ## Diagnóstico comprovado
 
@@ -17,8 +17,8 @@
 
 1. Restaurados `ComprasCentral.tsx` e `ComprasAbaNativa.tsx` da referência aprovada.
 2. Atualizada a rota `/compras` para renderizar `ComprasCentral` dentro do wrapper de acesso existente.
-3. Corrigidos somente altura, largura, padding, alinhamento e quebra de texto dos cards “Acesso rápido às rotinas” e “Outras rotinas”, neutralizando o reset global de botão de 30px apenas dentro dos cards da Central.
-4. Adicionados data/revisão no componente e na declaração da rota.
+3. Preservado o visual da tela de referência sem alterações de CSS, cores, dimensões, padding, alinhamento ou tipografia.
+4. Adicionados data/hora da revisão no componente e na declaração da rota.
 5. Adicionado hash imutável da Central e contrato de rota ao verificador de UI aprovada.
 6. Corrigido o bloqueio de build independente no shell: removido listener órfão que referenciava `setTabletOpen` inexistente; alteração sem efeito visual, documentada como `APROV-SHELL-2026-10-24-R1` e congelada no contrato.
 7. Atualizado `docs/APPROVED_UI_LOCK.md` com a referência, escopo permitido e política de congelamento.
@@ -40,4 +40,4 @@
 
 ## Regra permanente
 
-Qualquer alteração futura em `ComprasCentral.tsx` exige autorização explícita, nova data/revisão e atualização deliberada do contrato de hash. Alterações comuns em outros módulos não devem modificar esta tela nem atualizar automaticamente seu hash.
+Qualquer alteração futura no visual de `ComprasCentral.tsx` é proibida sem autorização explícita. Revisões administrativas sem alteração visual devem atualizar data/hora e o contrato de hash deliberadamente. Alterações comuns em outros módulos não devem modificar esta tela nem atualizar automaticamente seu hash.
