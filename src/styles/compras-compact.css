@@ -41,7 +41,10 @@
 .compras-compact .buy-shell{font-size:11px}
 .compras-compact .buy-sidebar,.compras-compact .buy-nav{border-radius:2px!important}
 .compras-compact .buy-content,.compras-compact .buy-head{padding:8px!important}
-.compras-compact .buy-card,.compras-compact .buy-report-card{border-radius:2px!important;box-shadow:none!important}
+.compras-compact .buy-card,.compras-compact .buy-report-card{border-radius:12px!important;box-shadow:0 5px 16px rgba(15,35,65,.045)!important}
+.compras-compact .buy-kpis article{border-radius:12px!important;box-shadow:0 5px 16px rgba(15,35,65,.045)!important}
+.compras-compact .buy-nav{border-radius:7px!important}
+.compras-compact .buy-actions button,.compras-compact .buy-card header button,.compras-compact .buy-list-actions button,.compras-compact .buy-form-actions button,.compras-compact .buy-modal>header button{border-radius:6px!important}
 .compras-compact .buy-content table th,.compras-compact .buy-content table td{padding:5px 7px!important;font-size:10px}
 .compras-compact .buy-content input,.compras-compact .buy-content select{height:30px!important;min-height:30px!important}
 .compras-compact .supplier-page{padding:8px!important}
