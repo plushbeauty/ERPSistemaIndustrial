@@ -108,13 +108,13 @@ export default function EntityCodeLookup({
 
   return (
     <div className="w-full">
-      <label className="block text-sm font-extrabold uppercase tracking-wide text-slate-800">
+      <label className={`${compact ? "mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-600" : "block text-sm font-extrabold uppercase tracking-wide text-slate-800"}`}>
         {label}{required ? ' *' : ''}
       </label>
 
-      <div className="mt-1 flex w-fit gap-1">
+      <div className={`mt-1 flex gap-1 ${compact ? "w-full" : "w-fit"}`}>
         <input
-          className={`${compact ? "h-10 w-[140px] text-sm" : inputClass} rounded-md border border-slate-300 bg-white px-2 font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-600 focus:ring-2 focus:ring-sky-100`}
+          className={`${compact ? "h-9 min-w-0 flex-1 text-xs" : inputClass} rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:bg-white focus:ring-0`}
           value={typedCode}
           required={required}
           placeholder={placeholder}
@@ -130,30 +130,30 @@ export default function EntityCodeLookup({
         />
         <button
           type="button"
-          className={`grid ${compact ? "h-10 w-10" : "h-10 w-[44px]"} shrink-0 place-items-center rounded-md border border-slate-300 bg-slate-100 text-slate-800 shadow-sm transition hover:border-sky-500 hover:bg-sky-50 hover:text-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-200`}
+          className={`grid ${compact ? "h-9 w-9" : "h-10 w-[44px]"} shrink-0 place-items-center rounded-lg border border-slate-200 bg-slate-100 text-slate-700 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-200`}
           onClick={() => setOpen(true)}
           aria-label={`Consultar ${label}`}
           title="Consultar por filtros"
         >
-          <Search size={23} />
+          <Search size={compact ? 15 : 23} />
         </button>
       </div>
 
       {selected && (
-        <div className="mt-1 max-w-[360px] rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-sm">
+        <div className={`mt-1 max-w-[360px] rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 ${compact ? "text-[11px]" : "text-sm"}`}>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <strong className="text-slate-950">{selected.codigo ?? '—'}</strong>
             <span className="text-slate-700">{selected.nome ?? 'Registro selecionado'}</span>
           </div>
           {(selected.dimensoes || selected.canal || selected.molde) && (
-            <p className="mt-1 text-sm font-medium text-slate-600">
+            <p className={`mt-1 font-medium text-slate-600 ${compact ? "text-[11px]" : "text-sm"}`}
               {[selected.dimensoes, selected.canal, selected.molde].filter(Boolean).join(' • ')}
             </p>
           )}
         </div>
       )}
 
-      {helper && <p className="mt-1 text-sm font-medium text-slate-600">{helper}</p>}
+      {helper && <p className={`mt-1 font-medium text-slate-600 ${compact ? "text-[11px]" : "text-sm"}`}>{helper}</p>}
 
       {open && (
         <div
