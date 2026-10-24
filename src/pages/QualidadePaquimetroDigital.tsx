@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { AlertTriangle, Gauge, RefreshCw, Ruler, ShieldCheck } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import DigitalCaliper from '../components/DigitalCaliper'
-import QualitySidebar from '../components/quality/QualitySidebar'
 
 type InstrumentOption = { codigo: string; descricao: string; status: string }
 
@@ -41,7 +40,6 @@ export default function QualidadePaquimetroDigital() {
   return (
     <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900 md:p-4">
       <div className="mx-auto max-w-[1680px] space-y-3">
-        <QualitySidebar active="/qualidade" />
         <header className="flex flex-wrap items-center gap-3 border border-slate-200 border-t-2 border-t-[#2D8DB8] bg-white p-3 shadow-sm">
           <span className="grid h-9 w-9 place-items-center border border-sky-200 bg-sky-50 text-[#2D8DB8]"><Ruler size={18}/></span>
           <div className="min-w-0">
