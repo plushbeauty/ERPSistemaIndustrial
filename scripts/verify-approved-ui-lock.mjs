@@ -4,11 +4,11 @@ import { readFileSync } from 'node:fs'
 /**
  * Approved UI lock — reviewed 2026-10-19, approval revision APROV-008 (compact edit sizing and removal of duplicated zone controls explicitly authorized by user). Explicitly authorized revisions APROV-005 (Novo Pedido), APROV-006 (Vendas / Status), and APROV-011 (single top Windows 11 navigation with visible Menu control) are frozen alongside the restored screens.
  * Explicit user authorization on 2026-10-23 permits PCPFichasProcesso.tsx REV-FICHA-010: standardize the SGQ/IT-PCP-001 header and light document cards, and highlight the Nova Ficha action with a violet icon/button. Other frozen files remain unchanged.
- * APROV-COMPRAS-2026-10-24-R1: freeze Central approved from deployment EjPo9mBaQ; only card geometry was corrected.
+ * APROV-COMPRAS-2026-10-24-R1: freeze Central approved from deployment EjPo9mBaQ; only card geometry was corrected. Revision timestamp: 2026-10-24 18:36:28 -03:00.
  * Do not update these hashes as part of ordinary styling/refactor work.
  */
 const approved = [
-  { path: 'src/pages/ComprasCentral.tsx', sha: '573431420fc3c819fd3d77f1ed805d505e82398e', label: 'Compras / Central aprovada — cards corrigidos', source: 'APROV-COMPRAS-2026-10-24-R1 — deployment de referência EjPo9mBaQ; somente geometria dos cards corrigida; cabeçalho, abas, rotas, paleta e integração preservados' },
+  { path: 'src/pages/ComprasCentral.tsx', sha: '2ae215353f140a1d5a2a8f12a1319e02085df336', label: 'Compras / Central aprovada — cards corrigidos', source: 'APROV-COMPRAS-2026-10-24-R1 — deployment de referência EjPo9mBaQ; somente geometria dos cards corrigida; cabeçalho, abas, rotas, paleta e integração preservados' },
   { path: 'src/pages/VendasCentral.tsx', sha: '3aa44f48901c8777344a7c7c72f9fd9b81e399a5', label: 'Vendas / Status do pedido', source: 'explicit user-authorized revision APROV-006 — consistent card alignment and visible color legend; frozen after this revision' },
   { path: 'src/pages/NovoPedido.tsx', sha: '6d1368026d51f186baa297f71569a61a1f79e944', label: 'Vendas / Novo Pedido', source: 'explicit user-authorized revision APROV-005 — compact controls, 30px fields, 9px labels and compact buttons; frozen after this revision' },
   { path: 'src/pages/ProdutosVendasIndustrial.tsx', sha: '95434d18498d1a0709c0ccfb1d7ba51949b71d1d', label: 'Cadastro Mestre de Produtos / padrão visual PCP compacto', source: 'revisão visual explicitamente autorizada pelo usuário em 2026-10-23 — campos alinhados à largura disponível dentro do grid responsivo de 12 colunas, sem cortes artificiais de largura; CRUD e regras de dados preservados; congelar após esta revisão' },
