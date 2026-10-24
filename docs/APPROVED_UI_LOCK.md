@@ -8,7 +8,7 @@
 |---|---|---|
 | Vendas → Novo Pedido — `src/pages/NovoPedido.tsx` | APROV-005, controles compactos; revisão expressamente autorizada em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | Vendas → Status do pedido — `src/pages/VendasCentral.tsx` | APROV-006, alinhamento dos cards e legenda visível; revisão autorizada em 2026-10-18 | Hash Git do arquivo verificado no CI |
-| Cadastro de Produtos — `src/pages/ProdutosVendasIndustrial.tsx` | Referência aprovada anterior | Hash Git do arquivo verificado no CI |
+| Cadastro de Produtos — `src/pages/ProdutosVendasIndustrial.tsx` | REV-PRODUTO-UI-013 — cabeçalho e seções azuis, grade compacta alinhada, autorizado em 2026-10-24 | Hash Git do arquivo verificado no CI |
 | Login institucional — `src/styles/industrial-login.css` | APROV-005, texto institucional branco com contorno escuro | Hash Git do arquivo verificado no CI |
 | Qualidade Tablet — `src/pages/QualidadeCentralTablet.tsx` | Tablet aprovado pelo usuário | Hash Git do arquivo verificado no CI |
 | Qualidade Tablet padrão — `src/components/TabletMenuModal.tsx` | Modal central, 22 módulos; visual aprovado preservado | Hash Git do arquivo verificado no CI |
@@ -19,6 +19,13 @@
 | Página pública — `src/PublicIndustrialHome.tsx` | Carrossel acessível e planos da referência aprovada | Hash Git do arquivo verificado no CI |
 | PCP → Fotos de processo — `src/components/PCPMoldPhotoPanel.tsx` | Painel de fotos da referência aprovada | Hash Git do arquivo verificado no CI |
 | PCP Tablet do operador — `src/pages/PCPTabletOperador.tsx` | Padrão operacional aprovado; visual preservado | Hash Git do arquivo verificado no CI |
+
+## Registro da revisão REV-PRODUTO-UI-013 — 2026-10-24
+
+- Cadastro Mestre de Produtos (`src/pages/ProdutosVendasIndustrial.tsx`): autorização explícita do usuário para alinhar o visual ao padrão de Compras.
+- Cabeçalho principal azul com título branco e ações compactas; títulos das seções azuis; bordas, sombras e espaçamentos compactos e consistentes.
+- Grid responsivo e largura do formulário ajustados sem reescrever o CRUD, alterar filtros por empresa, inventar dados ou mudar regras fiscais/industriais.
+- Nova revisão congelada pelo verificador de hash; futuras alterações exigem nova autorização explícita.
 
 ## Registro da revisão APROV-002 — 2026-10-16
 
