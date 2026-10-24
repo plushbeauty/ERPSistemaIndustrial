@@ -235,3 +235,32 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Status:** CORRIGIDO AGUARDANDO VALIDAÇÃO. UI-040 e QA-040 permanecem abertos.
 
 - **Ajuste de implementação da normalização:** corrigida a expressão regular Unicode após revisão do conteúdo versionado; commit `1a5d04191e41206af501b51a72e8b9ca2e0f0d85`. A verificação continua pendente de CI/build e teste funcional.
+
+
+## Auditoria integral de Vendas — REV-VENDAS-UI-002 (2026-10-23)
+
+- Relatório versionado: [SALES-UI-AUDIT-2026-10-23-R2.md](./SALES-UI-AUDIT-2026-10-23-R2.md).
+- Base auditada: `main` SHA `8d5699c7355943b67fcfd828195ceaf40b55fda5`.
+- Escopo da leitura: rotas comerciais, aliases/reexports, telas principais, componentes UI existentes, tokens de formulário, contrato de telas aprovadas, scripts e auditorias anteriores.
+- Primeira tranche de correções visuais em páginas editáveis: `VendasAnaliseCustos.tsx`, `VendasPDV.tsx`, `VendasCatalogoDigital.tsx`, `TabelaPrecos.tsx`, `VendasRelatorios.tsx`, `VendasMetas.tsx`, `VendasClientes.tsx` e `VendasCatalogoDigitalGestao.tsx`, `DashboardComercial.tsx`, `VendasDashboardGraficos.tsx` e `VendasPedidoStatus.tsx`.
+- Preservação declarada por revisão de diff: chamadas Supabase/RPC, filtros por empresa, cálculos, handlers, filtros de tela, seleção do catálogo e impressão permanecem presentes. Ainda depende de CI/type-check/lint/build e teste funcional para confirmação final.
+- Nenhuma tela congelada, shell global, autenticação, permissões ou schema de banco foi alterado intencionalmente.
+- PR #210 já propõe `src/components/ui/industrial-base.tsx` e não foi integrado; não criar cópia concorrente nesta tranche.
+- **UI-010 permanece ABERTO** até cobrir todas as telas comerciais editáveis, verificar o preview autenticado e concluir os gates aplicáveis.
+- **UI-001 permanece ABERTO**: não foi possível executar `npm run audit:ui-standardization` em checkout local nesta sessão; a tentativa de clonar o repositório foi bloqueada por indisponibilidade de DNS/rede no ambiente de execução.
+- **Deploy:** PENDENTE; o status de Vercel de main estava com limite de builds e o deployment associado ao PR #212 estava cancelado.
+
+
+### Resultado da validação da tranche — 2026-10-23
+
+- PR #215: https://github.com/plushbeauty/ERPSistemaIndustrial/pull/215 — permanece aberto em rascunho.
+- Head auditado: `399dab7a73f6ff733ddb76e800c062a7a1e69545`; o relatório completo registra o resultado.
+- TypeScript, ESLint, auditorias global/brutal/interações, lazy imports, build, artefatos e rotas: **PASSARAM** no CI.
+- CI geral: **FALHOU** em `verify:quality-tablet-contract` por ausência da rota protegida `/qualidade/tablet`; não corrigir dentro da tarefa de Vendas.
+- Vercel: **FALHOU/BLOQUEADO** por `build-rate-limit`; nenhum deployment corresponde ao head atual.
+- `verify:approved-ui-lock`: **NÃO VERIFICADO** no workflow atual, pois foi ignorado após a falha anterior. O diff desta branch não contém arquivos congelados e os hashes das três telas congeladas de Vendas e do shell foram confirmados idênticos à base.
+- `audit:ui-standardization`: **PENDENTE**, não executado; o workflow correspondente só roda em push para `main` ou execução manual, e não houve checkout local por indisponibilidade de DNS/rede.
+- **UI-010 e UI-001 permanecem ABERTOS**. Não marcar Vendas como concluído e não promover para Compras até completar a validação visual/funcional da tranche atual.
+
+
+- Segunda tranche visual acrescentada: `VendasDashboardGraficos.tsx`, `VendasPedidoStatus.tsx` e compactação local da tabela de `VendasMetas.tsx`. CI no SHA `5df0967290f2123843d23c9147ce4711200636b9` passou TypeScript, ESLint, auditorias global/brutal/interações, lazy imports, build e rotas; segue falhando no contrato preexistente do Tablet de Qualidade. Vercel continua bloqueado por `build-rate-limit`.

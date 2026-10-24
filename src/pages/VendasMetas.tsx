@@ -1,3 +1,8 @@
+/**
+ * SYSNQRA ERP INDUSTRIAL — Padronização visual incremental de Vendas
+ * Revisão: REV-VENDAS-UI-008 | Data: 2026-10-23
+ * Escopo: geometria responsiva dos campos e rótulos; metas, cálculos e gravação preservados.
+ */
 import { useEffect, useState } from 'react'
 import { Plus, Save } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -51,23 +56,24 @@ export default function VendasMetas(){
     <div className='sales-list-toolbar'>
      <div style={{flex:1}}>
       <span className='sales-eyebrow'>COMERCIAL / METAS</span>
-      <h1 style={{margin:'6px 0 3px',fontSize:22,fontWeight:650,color:'#17333f'}}>Controle de metas da equipe comercial</h1>
-      <p style={{margin:0,fontSize:11,color:'#71838a'}}>Defina competência, faturamento e quantidade de pedidos.</p>
+      <h1 style={{margin:'6px 0 3px',fontSize:13,fontWeight:650,color:'#123B50'}}>Controle de metas da equipe comercial</h1>
+      <p style={{margin:0,fontSize:10,color:'#64748b'}}>Defina competência, faturamento e quantidade de pedidos.</p>
      </div>
      <div style={{display:'flex',alignItems:'center',gap:7,flexWrap:'wrap'}}>
-      <label style={{display:'flex',alignItems:'center',gap:6,fontSize:10,color:'#526a73'}}>Competência<input type='month' value={mes} onChange={e=>setMes(e.target.value)} style={{height:30,border:'1px solid #d3e0e3',borderRadius:4,padding:'0 7px',fontSize:11}}/></label>
-      <button type='button' className='sales-button sales-button--secondary' onClick={()=>{setValor('0');setPedidos('0');setMsg('Nova meta pronta para preenchimento.')}}><Plus size={13}/>Nova meta</button>
-      <button type='button' className='sales-button sales-button--primary' onClick={()=>void save()}><Save size={13}/>Gravar</button>
+      <label className="flex items-center gap-2 text-[9px] font-semibold uppercase tracking-wider text-slate-500">Competência<input type='month' value={mes} onChange={e=>setMes(e.target.value)} className="h-[30px] rounded-[2px] border border-slate-300 bg-white px-2 text-xs normal-case tracking-normal text-slate-800"/></label>
+      <button type='button' className='sales-button sales-button--secondary !h-[30px] !min-h-[30px] !rounded-[2px] text-xs' onClick={()=>{setValor('0');setPedidos('0');setMsg('Nova meta pronta para preenchimento.')}}><Plus size={13}/>Nova meta</button>
+      <button type='button' className='sales-button sales-button--primary !h-[30px] !min-h-[30px] !rounded-[2px] text-xs' onClick={()=>void save()}><Save size={13}/>Gravar</button>
      </div>
     </div>
-    <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:10,padding:'0 14px 14px'}}>
-     <label style={{display:'grid',gap:4,fontSize:10,fontWeight:600,color:'#526a73'}}>Meta de faturamento<input type='number' min='0' step='0.01' value={valor} onChange={e=>setValor(e.target.value)} style={{height:30,border:'1px solid #d3e0e3',borderRadius:4,padding:'0 8px',fontSize:11}}/></label>
-     <label style={{display:'grid',gap:4,fontSize:10,fontWeight:600,color:'#526a73'}}>Meta de pedidos<input type='number' min='0' step='1' value={pedidos} onChange={e=>setPedidos(e.target.value)} style={{height:30,border:'1px solid #d3e0e3',borderRadius:4,padding:'0 8px',fontSize:11}}/></label>
-     <div style={{border:'1px solid #dfe8ea',background:'#f7f9fa',padding:'7px 10px'}}><span style={{fontSize:10,color:'#71838a'}}>Realizado</span><strong style={{display:'block',marginTop:3,fontSize:18,color:'#123b50'}}>{brl(realizado)}</strong></div>
+    <div className="grid grid-cols-1 gap-2 px-2 pb-2 md:grid-cols-12">
+     <label className="grid min-w-0 gap-[2px] text-[9px] font-semibold uppercase tracking-wider text-slate-500 md:col-span-5">Meta de faturamento<input type='number' min='0' step='0.01' value={valor} onChange={e=>setValor(e.target.value)} className="h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-xs font-normal normal-case tracking-normal text-slate-800"/></label>
+     <label className="grid min-w-0 gap-[2px] text-[9px] font-semibold uppercase tracking-wider text-slate-500 md:col-span-5">Meta de pedidos<input type='number' min='0' step='1' value={pedidos} onChange={e=>setPedidos(e.target.value)} className="h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-xs font-normal normal-case tracking-normal text-slate-800"/></label>
+     <div className="rounded-[2px] border border-slate-300 bg-slate-50 px-2 py-1.5 md:col-span-2"><span className="text-[9px] font-semibold uppercase tracking-wider text-slate-500">Realizado</span><strong className="mt-1 block text-sm font-semibold text-[#123B50]">{brl(realizado)}</strong></div>
     </div>
     {msg&&<div style={{margin:'0 14px 12px',padding:'8px 10px',border:'1px solid #cce1e6',background:'#f1f8fa',color:'#315c69',fontSize:10}}>{msg}</div>}
     <div className='sales-table-scroll'>
-     <table className='sales-orders-table'>
+     <style>{`.sales-metas-table thead th{height:32px!important;padding:0 8px!important;background:#F1F5F9!important;color:#64748B!important;font-size:9px!important;font-weight:600!important}.sales-metas-table tbody td{height:32px!important;padding:4px 8px!important;font-size:11px!important}`}</style>
+     <table className='sales-orders-table sales-metas-table'>
       <thead><tr><th>Vendedor</th><th>Meta de faturamento</th><th>Realizado</th><th>Atingimento</th></tr></thead>
       <tbody>
        {func.map(f=><tr key={f.id}><td className='sales-client-name'>{f.nome}</td><td>{brl(Number(valor)||0)}</td><td>{brl(realizado)}</td><td><div style={{display:'flex',alignItems:'center',gap:8}}><div style={{height:6,flex:1,background:'#e5edef'}}><div style={{height:'100%',width:String(Math.min(pct,100))+'%',background:'#2D8DB8'}}/></div><strong style={{fontSize:10}}>{pct.toFixed(0)}%</strong></div></td></tr>)}
