@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs'
  * Do not update these hashes as part of ordinary styling/refactor work.
  */
 const approved = [
+  { path: 'src/pages/ComprasCentral.tsx', sha: '573431420fc3c819fd3d77f1ed805d505e82398e', label: 'Compras / Central aprovada — cards corrigidos', source: 'APROV-COMPRAS-2026-10-24-R1 — deployment de referência EjPo9mBaQ; somente geometria dos cards corrigida; cabeçalho, abas, rotas, paleta e integração preservados' },
   { path: 'src/pages/VendasCentral.tsx', sha: '3aa44f48901c8777344a7c7c72f9fd9b81e399a5', label: 'Vendas / Status do pedido', source: 'explicit user-authorized revision APROV-006 — consistent card alignment and visible color legend; frozen after this revision' },
   { path: 'src/pages/NovoPedido.tsx', sha: '6d1368026d51f186baa297f71569a61a1f79e944', label: 'Vendas / Novo Pedido', source: 'explicit user-authorized revision APROV-005 — compact controls, 30px fields, 9px labels and compact buttons; frozen after this revision' },
   { path: 'src/pages/ProdutosVendasIndustrial.tsx', sha: '95434d18498d1a0709c0ccfb1d7ba51949b71d1d', label: 'Cadastro Mestre de Produtos / padrão visual PCP compacto', source: 'revisão visual explicitamente autorizada pelo usuário em 2026-10-23 — campos alinhados à largura disponível dentro do grid responsivo de 12 colunas, sem cortes artificiais de largura; CRUD e regras de dados preservados; congelar após esta revisão' },
@@ -36,3 +37,12 @@ if (failed) {
   process.stderr.write('Approved UI lock: alterações em telas aprovadas são bloqueadas. Restaure o conteúdo aprovado ou obtenha autorização explícita para nova revisão e atualização do contrato.\n')
   process.exit(1)
 }
+const appEntry = readFileSync('src/AppEntryV2.tsx', 'utf8')
+const comprasRouteOk = /<Route path="\/compras" element={<ComprasRoute><ComprasCentral \/><\/ComprasRoute>} \/>/.test(appEntry)
+const comprasImportOk = /const ComprasCentral = lazyPage\(\(\) => import\('\.\/pages\/ComprasCentral'\), 'default'\)/.test(appEntry)
+if (!comprasRouteOk || !comprasImportOk) {
+  process.stderr.write('Approved UI lock: /compras deve apontar para ComprasCentral aprovada; rota antiga bloqueada.\\n')
+  process.exit(1)
+}
+process.stdout.write('PASS — Compras / rota canônica aponta para a Central aprovada (APROV-COMPRAS-2026-10-24-R1).\\n')
+
