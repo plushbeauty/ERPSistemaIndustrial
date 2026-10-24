@@ -6,6 +6,7 @@
  * ID da Revisão: REV-059
  * Data da revisão autorizada: 2026-10-22
  * Revisão: REV-PRODUTO-UI-012 — correção do estado inicial da aba tipada
+ * Revisão autorizada: REV-PRODUTO-UI-013 — cabeçalho azul, seções azuis e compactação visual conforme Compras; autorização explícita do usuário em 2026-10-24.
  * Status: consolidação visual preservando CRUD, segurança por empresa, estoque derivado, engenharia e fiscal.
  * Alterações: Ficha Técnica Mestre reúne dados gerais, estoque, produção, qualidade e documentos; fiscal permanece isolado.
  * Dados demonstrativos/fallbacks não são adicionados; falhas de consulta permanecem explícitas.
