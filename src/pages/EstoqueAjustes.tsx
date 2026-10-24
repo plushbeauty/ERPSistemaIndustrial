@@ -3,6 +3,7 @@ import { AlertTriangle, CheckCircle2, Printer, RefreshCw, Save, Search, Warehous
 import { supabase } from '../lib/supabaseClient'
 import EntityCodeLookup, { type LookupRecord } from '../components/industrial/EntityCodeLookup'
 import VendasLayout from './VendasLayout'
+import '../styles/estoque-standard.css'
 
 type Product = { id: string; codigo: string; nome: string; estoque_atual: number; unidade: string | null }
 type Lot = LookupRecord
@@ -97,7 +98,7 @@ export default function EstoqueAjustes() {
 
   return (
     <VendasLayout title="Ajuste de avaria" subtitle="Estoque • perdas • rastreabilidade">
-      <main className="mx-auto min-h-[70vh] max-w-[1500px] bg-slate-50 p-4 text-slate-900 sm:p-6">
+      <main className="stock-standard mx-auto min-h-[70vh] max-w-[1500px] bg-slate-50 p-4 text-slate-900 sm:p-6">
         <header className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-900 px-5 py-4 text-white shadow-sm">
           <div className="min-w-0">
             <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-300">Estoque • ajuste real</span>
