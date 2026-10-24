@@ -116,7 +116,15 @@ export default function ComprasCentral() {
     } finally {
       setLoadingIndicators(false)
     }
-  }  useEffect(() => { void loadIndicators() }, [])
+  }
+  useEffect(() => { void loadIndicators() }, [])
+  const flowStages: Array<{ step: string; label: string; value: number | null }> = [
+    { step: '1', label: 'Aprovação', value: indicators.approvals },
+    { step: '2', label: 'Aprovadas', value: indicators.approved },
+    { step: '3', label: 'Cotação', value: indicators.quotes },
+    { step: '4', label: 'Pedido', value: indicators.openOrders },
+    { step: '5', label: 'Recebido', value: indicators.received },
+  ]
 
   return (
     <VendasLayout title="Central de Compras" subtitle="Suprimentos, fornecedores, pedidos e recebimentos">
@@ -132,6 +140,8 @@ export default function ComprasCentral() {
           .sq-purchase-hero-actions{position:relative;z-index:1;display:flex;align-items:flex-end;flex-direction:column;gap:14px;flex:0 0 auto}.sq-purchase-hero-actions>button{display:flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid rgba(255,255,255,.2);border-radius:8px;background:#fff;color:#0b2545;font-size:12px;font-weight:750;white-space:nowrap;cursor:pointer;box-shadow:0 3px 9px rgba(0,0,0,.1)}.sq-purchase-hero-actions>button:hover{background:#edf6ff}
           .sq-purchase-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px}.sq-purchase-kpis article{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:16px;border:1px solid #e0e7f0;border-radius:13px;background:#fff;box-shadow:0 3px 10px rgba(15,35,65,.035);min-width:0}.sq-purchase-kpis article span{display:block;color:#64748b;font-size:11px;font-weight:650}.sq-purchase-kpis article strong{display:block;margin-top:7px;color:#102c4e;font-size:27px;line-height:1.1;font-weight:800}.sq-purchase-kpis article small{display:block;margin-top:5px;color:#7b8a9d;font-size:10px}.sq-purchase-kpis article i{display:grid;place-items:center;flex:0 0 36px;height:36px;border-radius:10px;background:#edf4ff;color:#1d5fd1;font-style:normal}.sq-purchase-kpis article i.alert{background:#fff0f0;color:#d12c36}.sq-purchase-kpi-error{grid-column:1/-1;margin:0;padding:8px 10px;border-radius:7px;background:#fff7ed;color:#9a3412;font-size:11px;overflow-wrap:anywhere}
           .sq-purchase-tabs{display:flex;align-items:center;gap:5px;margin:16px 0 4px;padding:7px;border:1px solid #e0e7f0;border-radius:12px;background:#fff;overflow-x:auto}.sq-purchase-tabs button{display:flex;align-items:center;justify-content:center;gap:7px;flex:0 0 auto;min-height:36px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:#52677f;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer}.sq-purchase-tabs button:hover{background:#f1f5f9}.sq-purchase-tabs button.active{background:#0b2545;color:#fff}.sq-purchase-tabs button b{display:grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:99px;background:#dbeafe;color:#1d4ed8;font-size:10px}.sq-purchase-tabs button.active b{background:#fff;color:#0b2545}.sq-purchase-tabs .sq-purchase-refresh{margin-left:auto;min-width:34px;padding:0;color:#1d5fd1}
+          .sq-purchase-flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin:14px 0}.sq-purchase-flow article{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #e0e7f0;border-radius:11px;background:#fff}.sq-purchase-flow article>span{display:grid;place-items:center;flex:0 0 29px;height:29px;border-radius:9px;background:#eaf2ff;color:#1d5fd1;font-size:12px;font-weight:800}.sq-purchase-flow small{display:block;color:#64748b;font-size:10px}.sq-purchase-flow strong{display:block;margin-top:3px;color:#102c4e;font-size:18px}
+          .sq-purchase-mrp{margin:14px 0 20px;border:1px solid #e0e7f0;border-radius:14px;background:#fff;overflow:hidden}.sq-purchase-mrp-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid #e8edf4}.sq-purchase-mrp-head h2{margin:0;color:#102c4e;font-size:16px;font-weight:750}.sq-purchase-mrp-head p{margin:5px 0 0;color:#687b90;font-size:11px}.sq-purchase-mrp-head button{display:flex;align-items:center;gap:5px;padding:8px 10px;border:1px solid #cbd9e8;border-radius:7px;background:#fff;color:#1d5fd1;font-size:11px;font-weight:750;white-space:nowrap;cursor:pointer}.sq-purchase-mrp-scroll{overflow-x:auto}.sq-purchase-mrp table{width:100%;border-collapse:collapse;min-width:760px}.sq-purchase-mrp th,.sq-purchase-mrp td{padding:10px 12px;border-bottom:1px solid #edf1f6;text-align:left;color:#334b63;font-size:11px}.sq-purchase-mrp th{background:#f8fafc;color:#64748b;font-size:9px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.sq-purchase-mrp td strong,.sq-purchase-mrp td small{display:block}.sq-purchase-mrp td small{margin-top:3px;color:#718198;font-size:10px}.sq-purchase-mrp-badge{display:inline-block;padding:4px 7px;border:1px solid #dbeafe;border-radius:6px;background:#eff6ff;color:#1d4ed8}.sq-purchase-mrp-badge.critical{border-color:#fecaca;background:#fef2f2;color:#b91c1c}.sq-purchase-mrp-status{display:inline-block;padding:4px 7px;border-radius:6px;background:#f1f5f9;color:#475569;font-size:10px;font-weight:750}.sq-purchase-mrp-status.buy{background:#fff7ed;color:#c2410c}.sq-purchase-empty{text-align:center!important;padding:22px!important;color:#718198!important}
           .sq-purchase-brand{position:relative;z-index:1;flex:0 0 auto;text-align:right}
           .sq-purchase-brand strong{display:block;font-size:13px;letter-spacing:.08em;color:#fff}
           .sq-purchase-brand span{display:block;margin-top:5px;color:#bfeef6;font-size:9px;font-weight:700;letter-spacing:.16em}
@@ -161,8 +171,8 @@ export default function ComprasCentral() {
           .sq-purchase-description-icon{display:grid;place-items:center;flex:0 0 38px;height:38px;border-radius:12px;background:#edf4ff;color:#1d5fd1}
           .sq-purchase-description h3{margin:1px 0 5px;color:#102c4e;font-size:13px;font-weight:750}.sq-purchase-description p{margin:0;color:#5b6f85;font-size:12px;line-height:1.65}
           .sq-purchase-footer{display:flex;justify-content:space-between;gap:12px;margin:12px 2px 0;color:#8190a3;font-size:10px}
-          @media(max-width:1100px){.sq-purchase-grid,.sq-purchase-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))}.sq-purchase-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.sq-purchase-card{min-height:200px}}
-          @media(max-width:650px){.synqra-purchase-hub{padding:8px}.sq-purchase-hero{align-items:flex-start;flex-direction:column;padding:20px;border-radius:15px}.sq-purchase-hero-actions{align-items:flex-start;flex-direction:column-reverse}.sq-purchase-brand{text-align:left}.sq-purchase-section-head{align-items:flex-start;flex-direction:column;margin-top:18px}.sq-purchase-kpis{grid-template-columns:1fr 1fr;gap:7px}.sq-purchase-kpis article{padding:11px}.sq-purchase-kpis article strong{font-size:23px}.sq-purchase-tabs{margin-top:10px}.sq-purchase-tabs button{padding:0 9px}.sq-purchase-grid,.sq-purchase-shortcuts{grid-template-columns:1fr}.sq-purchase-card{min-height:175px}.sq-purchase-footer{flex-direction:column}}
+          @media(max-width:1100px){.sq-purchase-grid,.sq-purchase-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))}.sq-purchase-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.sq-purchase-flow{grid-template-columns:repeat(3,minmax(0,1fr))}.sq-purchase-card{min-height:200px}}
+          @media(max-width:650px){.synqra-purchase-hub{padding:8px}.sq-purchase-hero{align-items:flex-start;flex-direction:column;padding:20px;border-radius:15px}.sq-purchase-hero-actions{align-items:flex-start;flex-direction:column-reverse}.sq-purchase-brand{text-align:left}.sq-purchase-section-head{align-items:flex-start;flex-direction:column;margin-top:18px}.sq-purchase-kpis{grid-template-columns:1fr 1fr;gap:7px}.sq-purchase-kpis article{padding:11px}.sq-purchase-kpis article strong{font-size:23px}.sq-purchase-tabs{margin-top:10px}.sq-purchase-tabs button{padding:0 9px}.sq-purchase-flow{grid-template-columns:1fr 1fr}.sq-purchase-mrp-head{align-items:flex-start;flex-direction:column}.sq-purchase-grid,.sq-purchase-shortcuts{grid-template-columns:1fr}.sq-purchase-card{min-height:175px}.sq-purchase-footer{flex-direction:column}}
           @media(prefers-reduced-motion:reduce){.sq-purchase-card,.sq-purchase-shortcut,.sq-purchase-card-foot svg{transition:none}}
         `}</style>
         <div className="sq-purchase-wrap">
@@ -186,13 +196,17 @@ export default function ComprasCentral() {
             <button type="button" className="sq-purchase-refresh" onClick={() => void loadIndicators()} disabled={loadingIndicators} aria-label="Atualizar indicadores"><RefreshCw size={15}/></button>
           </nav>
           <section className="sq-purchase-flow" aria-label="Fluxo de compras">
-            {[
-              ['1', 'Aprovação', indicators.approvals],
-              ['2', 'Aprovadas', indicators.approved],
-              ['3', 'Cotação', indicators.quotes],
-              ['4', 'Pedido', indicators.openOrders],
-              ['5', 'Recebido', indicators.received],
-            ].map(([step, label, value]) => <article key={step}><span>{step}</span><div><small>{label}</small><strong>{value === null ? '—' : value}</strong></div></article>)}
+            {flowStages.map(({ step, label, value }) => <article key={step}><span>{step}</span><div><small>{label}</small><strong>{value === null ? '—' : value}</strong></div></article>)}
+          </section>
+          <section className="sq-purchase-mrp" aria-labelledby="sq-purchase-mrp-title">
+            <div className="sq-purchase-mrp-head">
+              <div><h2 id="sq-purchase-mrp-title">Alertas de material — MRP</h2><p>Saldo, reservas e necessidades da última execução MRP da empresa ativa. Os dados vêm do cálculo registrado no ERP.</p></div>
+              <button type="button" onClick={() => navigate('/pcp/mrp-ii')}>Abrir MRP <ArrowRight size={14}/></button>
+            </div>
+            <div className="sq-purchase-mrp-scroll"><table><thead><tr><th>Material</th><th>Nível</th><th>Estoque</th><th>Reservado PCP</th><th>Disponível</th><th>Necessidade líquida</th><th>Sugestão</th></tr></thead><tbody>
+              {materialNeeds.map((row) => <tr key={row.id}><td><strong>{row.code}</strong><small>{row.name}</small></td><td>{row.level}</td><td>{row.stock.toLocaleString('pt-BR')}</td><td>{row.reserved.toLocaleString('pt-BR')}</td><td>{row.available.toLocaleString('pt-BR')}</td><td><b className={row.net > row.stock ? 'sq-purchase-mrp-badge critical' : 'sq-purchase-mrp-badge'}>{row.net.toLocaleString('pt-BR')}</b></td><td><span className={row.suggestion === 'COMPRAR' ? 'sq-purchase-mrp-status buy' : 'sq-purchase-mrp-status'}>{row.suggestion}</span></td></tr>)}
+              {!materialNeeds.length && <tr><td colSpan={7} className="sq-purchase-empty">{indicators.alerts === null ? 'Não foi possível consultar o MRP ou ainda não existe execução disponível. Abra o módulo MRP para verificar.' : 'Nenhuma necessidade líquida positiva na última execução MRP.'}</td></tr>}
+            </tbody></table></div>
           </section>
           <section aria-labelledby="sq-purchase-main-title">
             <div className="sq-purchase-section-head"><div><h2 id="sq-purchase-main-title">Acesso rápido às rotinas</h2><p>Atalhos para abrir os módulos operacionais de compras já integrados ao ERP.</p></div><small>4 áreas principais</small></div>
