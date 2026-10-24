@@ -9,7 +9,7 @@ type Supplier = { id: string; razao_social: string; documento: string | null; em
 const columns: Record<string, Array<[string, string]>> = {
   Requisições: [['Código','codigo'],['Status','status'],['Urgência','nivel_urgencia'],['Centro de custo','centro_custo'],['OP','ordem_producao_id'],['Criada em','created_at']],
   'Alertas MRP': [['Código','codigo'],['Material','nome'],['Nível','nivel'],['Estoque','estoque_atual'],['Reservado PCP','reservado'],['Disponível','quantidade_disponivel'],['Necessidade líquida','necessidade_liquida'],['Sugestão','sugestao']],
-  Cotações: [['Nº','numero'],['Descrição','descricao'],['Status','status'],['Prazo','data_limite'],['Criada em','created_at']],
+  Cotações: [['Nº','numero'],['Status','status'],['Data emissão','data_emissao'],['Prazo resposta','prazo_resposta'],['Fornecedor escolhido','fornecedor_escolhido_id'],['Menor preço','menor_preco_ofertado'],['Criada em','created_at']],
   Pedidos: [['Pedido','numero'],['Fornecedor','fornecedor_id'],['Comprador','comprador_nome'],['Pagamento','condicao_pagamento'],['Prazo','prazo_entrega'],['Status','status'],['Total','total']],
   Fornecedores: [['Código','codigo'],['Razão social','razao_social'],['Nome fantasia','nome_fantasia'],['Documento','documento'],['E-mail','email'],['Telefone','telefone'],['Cidade','cidade'],['UF','estado'],['ISO 9001','iso_9001_certificado']],
   'Pedido do PCP': [['Nº','numero'],['Descrição','descricao'],['Prioridade','prioridade'],['Status','status'],['Criada em','created_at']],
@@ -63,7 +63,7 @@ export default function ComprasAbaNativa({ tab, onRefresh }: { tab: string; onRe
           data=(n.data ?? []).map(row=>({...row,codigo:map.get(String(row.componente_id))?.codigo ?? '—',nome:map.get(String(row.componente_id))?.nome ?? 'Material sem nome'})) as Row[]
         }
       } else if (tab === 'Cotações') {
-        const r=await supabase.from('erp_rfq').select('id,status,created_at,numero,descricao,data_limite').eq('empresa_id',tenant).order('created_at',{ascending:false}).limit(500)
+        const r=await supabase.from('erp_rfq').select('id,numero,status,data_emissao,prazo_resposta,fornecedor_escolhido_id,justificativa_escolha,status_aprovacao,menor_preco_ofertado').eq('empresa_id',tenant).order('created_at',{ascending:false}).limit(500)
         if(r.error) throw r.error; data=(r.data ?? []) as Row[]
       } else if (tab === 'Pedidos') {
         const r=await supabase.from('erp_pedidos_compra').select('id,numero,fornecedor_id,comprador_nome,condicao_pagamento,prazo_entrega,status,data_pedido,total').eq('empresa_id',tenant).order('created_at',{ascending:false}).limit(500)
