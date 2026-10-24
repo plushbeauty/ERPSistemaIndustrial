@@ -1,6 +1,6 @@
 /**
  * SYSNQRA ERP INDUSTRIAL — Central de Compras aprovada.
- * REVISÃO: APROV-COMPRAS-2026-10-24-R1 | DATA: 2026-10-24.
+ * REVISÃO: APROV-COMPRAS-2026-10-24-R1 | DATA/HORA: 2026-10-24 18:36:28 -03:00.
  * BASE: deployment Vercel EjPo9mBaQ / commit 16060aad0fce987250586f6c7fb7bb2f20b003c7.
  * ESCOPO desta revisão: corrigir somente geometria dos cards de acesso rápido e congelar esta versão.
  * Preservar cabeçalho, abas, rotas, paleta e fluxos de dados reais do Supabase.
