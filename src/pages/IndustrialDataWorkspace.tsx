@@ -166,8 +166,8 @@ export default function IndustrialDataWorkspace() {
       .rh-data-workspace tbody td{height:44px;padding:10px 12px;font-size:12px;line-height:1.45}
       .rh-data-workspace tbody td button{min-height:32px;padding:0 10px}
       .rh-data-workspace>p{padding-top:10px;font-size:11px;line-height:1.5}
-      @media(max-width:760px){.rh-data-workspace{padding:14px 12px 20px}.rh-data-workspace>header h1{font-size:20px}.rh-data-workspace>div.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-data-workspace>section:first-of-type{padding:14px}.rh-data-workspace>section:first-of-type .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.rh-data-workspace>section:first-of-type .grid label{grid-column:auto}.rh-data-workspace>section:last-of-type>div:first-child{align-items:stretch}.rh-data-workspace>section:last-of-type>div:first-child label{width:100%}}
-      @media(max-width:420px){.rh-data-workspace>div.grid{grid-template-columns:minmax(0,1fr)}.rh-data-workspace>section:first-of-type .grid{grid-template-columns:minmax(0,1fr)}.rh-data-workspace>header{align-items:flex-start}.rh-data-workspace>header button{width:100%}}
+      @media(max-width:760px){.rh-data-workspace{padding:14px 12px 20px}.rh-data-workspace>header h1{font-size:20px}.rh-data-workspace>div.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-data-workspace>section:first-of-type{padding:14px}.rh-data-workspace>section:first-of-type .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.rh-data-workspace>section:last-of-type>div:first-child{align-items:stretch}.rh-data-workspace>section:last-of-type>div:first-child label{width:100%}}
+      @media(max-width:640px){.rh-data-workspace>div.grid{grid-template-columns:minmax(0,1fr)}.rh-data-workspace>section:first-of-type .grid{grid-template-columns:minmax(0,1fr)}.rh-data-workspace>header{align-items:flex-start}.rh-data-workspace>header button{width:100%}}
     `}</style>}
     <main className={isRhWorkspace ? "rh-data-workspace" : "min-h-full bg-slate-50 p-3 text-slate-900"}>
     <header className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
