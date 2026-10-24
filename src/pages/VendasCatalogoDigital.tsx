@@ -1,3 +1,8 @@
+/**
+ * SYSNQRA ERP INDUSTRIAL — Padronização visual incremental de Vendas
+ * Revisão: REV-VENDAS-UI-002 | Data: 2026-10-23
+ * Escopo: controles compactos e densidade visual; catálogo, seleção e compartilhamento preservados.
+ */
 import { useEffect, useMemo, useState } from 'react'
 import { Copy, Filter, LayoutGrid, List, Minus, Plus, Search, Send, ShoppingBag, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -200,11 +205,11 @@ export default function VendasCatalogoDigital() {
           <span className="text-[8px] text-slate-400">{produto.codigo}</span>
           <div className="mt-1 flex items-center justify-between">
             <div className="flex items-center border border-slate-300">
-              <button type="button" onClick={() => decrement(produto)} className="h-6 w-6">
+              <button type="button" onClick={() => decrement(produto)} className="h-[30px] w-6">
                 <Minus size={10} className="mx-auto" />
               </button>
               <span className="w-6 text-center text-[8px]">{quantity}</span>
-              <button type="button" onClick={() => add(produto)} className="h-6 w-6">
+              <button type="button" onClick={() => add(produto)} className="h-[30px] w-6">
                 <Plus size={10} className="mx-auto" />
               </button>
             </div>
@@ -238,7 +243,7 @@ export default function VendasCatalogoDigital() {
                 <button
                   type="button"
                   onClick={() => void copyCatalogLink()}
-                  className="flex h-8 items-center gap-1 border border-white/40 bg-white/10 px-2.5 text-[9px] text-white"
+                  className="flex h-[30px] items-center gap-1 border border-white/40 bg-white/10 px-2.5 text-[9px] text-white"
                 >
                   <Copy size={13} />
                   Compartilhar catálogo
@@ -246,7 +251,7 @@ export default function VendasCatalogoDigital() {
                 <button
                   type="button"
                   onClick={() => setCartOpen(true)}
-                  className="relative flex h-8 items-center gap-1 border border-white bg-white px-2.5 text-[9px] text-[#123B50]"
+                  className="relative flex h-[30px] items-center gap-1 border border-white bg-white px-2.5 text-[9px] text-[#123B50]"
                 >
                   <ShoppingBag size={13} />
                   Minha seleção
@@ -266,7 +271,7 @@ export default function VendasCatalogoDigital() {
               <input
                 value={filtro}
                 onChange={(event) => setFiltro(event.target.value)}
-                className="h-9 w-full border border-slate-300 bg-white pl-8 pr-2 text-[10px] outline-none focus:border-[#2D8DB8]"
+                className="h-[30px] w-full rounded-[2px] border border-slate-300 bg-white pl-8 pr-2 text-xs outline-none focus:border-[#2D8DB8]"
                 placeholder="Buscar por código, produto, referência ou código de barras..."
               />
             </div>
@@ -275,8 +280,8 @@ export default function VendasCatalogoDigital() {
               {rows.length} produtos
             </div>
             <div className="flex items-center gap-1 border border-slate-200 bg-white p-0.5" aria-label="Modo de visualização">
-              <button type="button" title="Visualizar em grade" aria-pressed={visualizacao === 'grade'} onClick={() => setVisualizacao('grade')} className={'flex h-7 w-7 items-center justify-center ' + (visualizacao === 'grade' ? 'bg-[#123B50] text-white' : 'text-slate-600 hover:bg-slate-100')}><LayoutGrid size={13}/></button>
-              <button type="button" title="Visualizar em lista" aria-pressed={visualizacao === 'lista'} onClick={() => setVisualizacao('lista')} className={'flex h-7 w-7 items-center justify-center ' + (visualizacao === 'lista' ? 'bg-[#123B50] text-white' : 'text-slate-600 hover:bg-slate-100')}><List size={13}/></button>
+              <button type="button" title="Visualizar em grade" aria-pressed={visualizacao === 'grade'} onClick={() => setVisualizacao('grade')} className={'flex h-[30px] w-7 items-center justify-center ' + (visualizacao === 'grade' ? 'bg-[#123B50] text-white' : 'text-slate-600 hover:bg-slate-100')}><LayoutGrid size={13}/></button>
+              <button type="button" title="Visualizar em lista" aria-pressed={visualizacao === 'lista'} onClick={() => setVisualizacao('lista')} className={'flex h-[30px] w-7 items-center justify-center ' + (visualizacao === 'lista' ? 'bg-[#123B50] text-white' : 'text-slate-600 hover:bg-slate-100')}><List size={13}/></button>
             </div>
           </div>
 
@@ -321,7 +326,7 @@ export default function VendasCatalogoDigital() {
               Carregando catálogo...
             </div>
           ) : (
-            <div className={visualizacao === 'grade' ? 'grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4' : 'grid grid-cols-1 gap-1'}>
+            <div className={visualizacao === 'grade' ? 'grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4' : 'grid grid-cols-1 gap-1'}>
               {rows.map((produto, index) => {
                 const quantity = quantidades[produto.id] ?? 0
                 const grupo = produto.grupo || 'SEM GRUPO'
@@ -392,7 +397,7 @@ export default function VendasCatalogoDigital() {
                           <button
                             type="button"
                             onClick={() => decrement(produto)}
-                            className="h-7 w-7 text-slate-600 hover:bg-slate-100"
+                            className="h-[30px] w-7 text-slate-600 hover:bg-slate-100"
                           >
                             <Minus size={12} className="mx-auto" />
                           </button>
@@ -400,7 +405,7 @@ export default function VendasCatalogoDigital() {
                           <button
                             type="button"
                             onClick={() => add(produto)}
-                            className="h-7 w-7 text-[#2D8DB8] hover:bg-slate-100"
+                            className="h-[30px] w-7 text-[#2D8DB8] hover:bg-slate-100"
                           >
                             <Plus size={12} className="mx-auto" />
                           </button>
@@ -409,7 +414,7 @@ export default function VendasCatalogoDigital() {
                         <button
                           type="button"
                           onClick={() => add(produto)}
-                          className="flex h-7 flex-1 items-center justify-center gap-1 bg-[#2D8DB8] text-[9px] text-white"
+                          className="flex h-[30px] flex-1 items-center justify-center gap-1 bg-[#2D8DB8] text-[9px] text-white"
                         >
                           <Plus size={12} />
                           Adicionar
@@ -418,7 +423,7 @@ export default function VendasCatalogoDigital() {
                       <button
                         type="button"
                         onClick={() => setDetalhe(produto)}
-                        className="ml-1 h-7 border border-slate-300 px-2 text-[8px] text-slate-600"
+                        className="ml-1 h-[30px] border border-slate-300 px-2 text-[8px] text-slate-600"
                       >
                         Detalhes
                       </button>
@@ -448,7 +453,7 @@ export default function VendasCatalogoDigital() {
             <button
               type="button"
               onClick={() => setCartOpen(true)}
-              className="flex h-8 items-center gap-1 bg-[#123B50] px-3 text-[9px] text-white"
+              className="flex h-[30px] items-center gap-1 bg-[#123B50] px-3 text-[9px] text-white"
             >
               <ShoppingBag size={13} />
               Abrir seleção
@@ -475,7 +480,7 @@ export default function VendasCatalogoDigital() {
                 <button
                   type="button"
                   onClick={() => setDetalhe(null)}
-                  className="h-7 w-7 border border-slate-300"
+                  className="h-[30px] w-7 border border-slate-300"
                 >
                   <X size={13} className="mx-auto" />
                 </button>
@@ -526,7 +531,7 @@ export default function VendasCatalogoDigital() {
                     add(detalhe)
                     setDetalhe(null)
                   }}
-                  className="mt-3 flex h-10 w-full items-center justify-center gap-1 bg-[#2D8DB8] text-[10px] text-white"
+                  className="mt-3 flex h-[30px] w-full items-center justify-center gap-1 bg-[#2D8DB8] text-[10px] text-white"
                 >
                   <Plus size={14} />
                   Adicionar à seleção
@@ -553,7 +558,7 @@ export default function VendasCatalogoDigital() {
                 <button
                   type="button"
                   onClick={() => setCartOpen(false)}
-                  className="h-7 w-7 border border-slate-300"
+                  className="h-[30px] w-7 border border-slate-300"
                 >
                   <X size={13} className="mx-auto" />
                 </button>
@@ -577,7 +582,7 @@ export default function VendasCatalogoDigital() {
                   type="button"
                   disabled={!cart.length}
                   onClick={() => void sendSelection()}
-                  className="flex h-10 w-full items-center justify-center gap-2 bg-[#2D8DB8] text-[10px] text-white disabled:opacity-40"
+                  className="flex h-[30px] w-full items-center justify-center gap-2 bg-[#2D8DB8] text-[10px] text-white disabled:opacity-40"
                 >
                   <Send size={13} />
                   Enviar seleção para pedido

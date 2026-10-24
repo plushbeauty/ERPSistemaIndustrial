@@ -1,3 +1,8 @@
+/**
+ * SYSNQRA ERP INDUSTRIAL — Padronização visual incremental de Vendas
+ * Revisão: REV-VENDAS-UI-001 | Data: 2026-10-23
+ * Escopo: dimensões e alinhamento de controles; lógica de venda e contratos de dados preservados.
+ */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Barcode, CheckCircle2, CreditCard, Minus, Package, Plus, RefreshCw,
@@ -179,7 +184,7 @@ export default function VendasPDV() {
                 aria-label="Pesquisar produto ou código de barras"
                 className="h-[30px] w-full border border-slate-300 pl-8 pr-2 text-[11px]"
               />
-              {query && <button type="button" onClick={() => setQuery('')} aria-label="Limpar pesquisa" className="absolute right-1 top-1 inline-flex h-7 w-7 items-center justify-center text-slate-500 hover:bg-slate-100"><X size={13} /></button>}
+              {query && <button type="button" onClick={() => setQuery('')} aria-label="Limpar pesquisa" className="absolute right-1 top-1 inline-flex h-[30px] w-7 items-center justify-center text-slate-500 hover:bg-slate-100"><X size={13} /></button>}
             </div>
             <div className="flex items-center gap-1 text-[10px] text-slate-500"><Package size={14} /> {loading ? 'Carregando catálogo…' : `${visible.length} de ${products.length} produtos`}</div>
             <button type="button" onClick={() => void load()} disabled={loading || saving} className="erp-standard-button" aria-label="Atualizar catálogo"><RefreshCw size={13} /> Atualizar</button>
@@ -193,8 +198,8 @@ export default function VendasPDV() {
                 onClick={() => setCategory(item)}
                 aria-pressed={category === item}
                 className={category === item
-                  ? 'h-7 shrink-0 border border-[#17445A] bg-[#17445A] px-3 text-[10px] font-semibold text-white'
-                  : 'h-7 shrink-0 border border-slate-200 bg-white px-3 text-[10px] text-slate-700 hover:border-[#2D8DB8]'}
+                  ? 'h-[30px] shrink-0 border border-[#17445A] bg-[#17445A] px-3 text-[10px] font-semibold text-white'
+                  : 'h-[30px] shrink-0 border border-slate-200 bg-white px-3 text-[10px] text-slate-700 hover:border-[#2D8DB8]'}
               >{item === 'TODOS' ? 'Todos os produtos' : item}</button>
             ))}
           </div>
@@ -246,12 +251,12 @@ export default function VendasPDV() {
           </div>
 
           <div className="grid grid-cols-1 gap-2 border-b border-slate-200 p-2">
-            <label htmlFor="pdv-caixa">Caixa operacional</label>
+            <label htmlFor="pdv-caixa" className="text-[9px] font-semibold uppercase tracking-wider text-slate-500">Caixa operacional</label>
             <select id="pdv-caixa" value={box} onChange={event => setBox(event.target.value)} disabled={loading || saving} className="w-full">
               <option value="">Selecione um caixa ativo</option>
               {boxes.map(item => <option key={item.id} value={item.id}>{item.codigo} — {item.descricao}</option>)}
             </select>
-            <label htmlFor="pdv-cliente">Cliente (opcional)</label>
+            <label htmlFor="pdv-cliente" className="text-[9px] font-semibold uppercase tracking-wider text-slate-500">Cliente (opcional)</label>
             <select id="pdv-cliente" value={customerId} onChange={event => setCustomerId(event.target.value)} disabled={loading || saving} className="w-full">
               <option value="">Consumidor não identificado</option>
               {customers.map(customer => <option key={customer.id} value={customer.id}>{customer.codigo ? `${customer.codigo} — ` : ''}{customer.nome}{customer.documento ? ` • ${customer.documento}` : ''}</option>)}
@@ -272,10 +277,10 @@ export default function VendasPDV() {
                   <div className="mt-0.5 text-[9px] text-slate-500">{money(Number(item.preco_venda))} / {item.unidade}</div>
                 </div>
                 <div className="flex items-center gap-1">
-                  <button type="button" onClick={() => setQuantity(item.id, item.quantidade - 1)} disabled={saving} aria-label={`Diminuir quantidade de ${item.nome}`} className="flex h-6 w-6 items-center justify-center border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-50"><Minus size={11} /></button>
+                  <button type="button" onClick={() => setQuantity(item.id, item.quantidade - 1)} disabled={saving} aria-label={`Diminuir quantidade de ${item.nome}`} className="flex h-[30px] w-6 items-center justify-center border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-50"><Minus size={11} /></button>
                   <span className="w-6 text-center text-[10px] font-semibold tabular-nums">{item.quantidade}</span>
-                  <button type="button" onClick={() => setQuantity(item.id, item.quantidade + 1)} disabled={saving || item.quantidade >= item.estoque_atual} aria-label={`Aumentar quantidade de ${item.nome}`} className="flex h-6 w-6 items-center justify-center border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-40"><Plus size={11} /></button>
-                  <button type="button" onClick={() => setQuantity(item.id, 0)} disabled={saving} aria-label={`Remover ${item.nome} do carrinho`} className="ml-1 flex h-6 w-6 items-center justify-center text-rose-600 hover:bg-rose-50 disabled:opacity-50"><Trash2 size={12} /></button>
+                  <button type="button" onClick={() => setQuantity(item.id, item.quantidade + 1)} disabled={saving || item.quantidade >= item.estoque_atual} aria-label={`Aumentar quantidade de ${item.nome}`} className="flex h-[30px] w-6 items-center justify-center border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-40"><Plus size={11} /></button>
+                  <button type="button" onClick={() => setQuantity(item.id, 0)} disabled={saving} aria-label={`Remover ${item.nome} do carrinho`} className="ml-1 flex h-[30px] w-6 items-center justify-center text-rose-600 hover:bg-rose-50 disabled:opacity-50"><Trash2 size={12} /></button>
                 </div>
                 <strong className="col-span-2 mt-1 text-right text-[10px] font-semibold tabular-nums text-[#17445A]">{money(item.quantidade * Number(item.preco_venda))}</strong>
               </div>
@@ -297,7 +302,7 @@ export default function VendasPDV() {
               { value: 'CARTAO', label: 'Cartão', Icon: CreditCard },
               { value: 'PIX', label: 'PIX', Icon: CheckCircle2 },
             ].map(({ value, label, Icon }) => (
-              <button key={value} type="button" onClick={() => setPayment(value)} disabled={saving} aria-pressed={payment === value} className={payment === value ? 'flex h-9 flex-col items-center justify-center gap-0.5 border border-[#17445A] bg-[#17445A] text-white' : 'flex h-9 flex-col items-center justify-center gap-0.5 border border-slate-200 bg-white text-slate-600 hover:border-[#2D8DB8]'}>
+              <button key={value} type="button" onClick={() => setPayment(value)} disabled={saving} aria-pressed={payment === value} className={payment === value ? 'flex h-[30px] flex-col items-center justify-center gap-0.5 border border-[#17445A] bg-[#17445A] text-white' : 'flex h-[30px] flex-col items-center justify-center gap-0.5 border border-slate-200 bg-white text-slate-600 hover:border-[#2D8DB8]'}>
                 <Icon size={13} /><span className="text-[9px]">{label}</span>
               </button>
             ))}
@@ -307,7 +312,7 @@ export default function VendasPDV() {
           {message && <div role="status" className="mx-2 mb-2 border border-emerald-200 bg-emerald-50 px-2.5 py-2 text-[10px] leading-4 text-emerald-800">{message}</div>}
 
           <div className="border-t border-slate-200 p-2">
-            <button type="button" onClick={() => void finish()} disabled={saving || loading || !cart.length || !box} className="flex h-10 w-full items-center justify-center gap-2 bg-[#3A9D78] px-3 text-[11px] font-semibold text-white hover:bg-[#2e8061] disabled:cursor-not-allowed disabled:opacity-45">
+            <button type="button" onClick={() => void finish()} disabled={saving || loading || !cart.length || !box} className="flex h-[30px] w-full items-center justify-center gap-2 bg-[#3A9D78] px-3 text-[11px] font-semibold text-white hover:bg-[#2e8061] disabled:cursor-not-allowed disabled:opacity-45">
               {saving ? <><RefreshCw size={14} className="animate-spin" /> Finalizando venda…</> : <><CheckCircle2 size={14} /> Finalizar venda</>}
             </button>
             <p className="mt-1.5 text-center text-[9px] leading-3 text-slate-500">A baixa de estoque e o registro da venda são confirmados em uma única transação no banco.</p>
