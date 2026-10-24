@@ -1,3 +1,8 @@
+/**
+ * APROV-PARCEIROS-2026-10-24-R1 | DATA/HORA: 2026-10-24 18:52:12 -03:00.
+ * Alteração autorizada: consolidar os links separados de Clientes/Fornecedores em Central de Parceiros.
+ * Escopo restrito à navegação; estilos, geometria e comportamento visual do shell não foram alterados.
+ */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Warehouse, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
