@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { RefreshCw } from 'lucide-react'
+import { CheckCircle2, RefreshCw } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type Row = Record<string, unknown>
@@ -18,6 +18,8 @@ const money = (v: number) => v.toLocaleString('pt-BR',{style:'currency',currency
 
 export default function ComprasAbaNativa({ tab, onRefresh }: { tab: string; onRefresh: () => void }) {
   const [empresaId,setEmpresaId] = useState('')
+  const [profileId,setProfileId] = useState('')
+  const [canApprove,setCanApprove] = useState(false)
   const [rows,setRows] = useState<Row[]>([])
   const [products,setProducts] = useState<Product[]>([])
   const [suppliers,setSuppliers] = useState<Supplier[]>([])
@@ -42,6 +44,16 @@ export default function ComprasAbaNativa({ tab, onRefresh }: { tab: string; onRe
       const company = await supabase.rpc('erp_current_empresa_id')
       if (company.error || !company.data) throw company.error ?? new Error('Empresa da sessão não identificada.')
       const tenant = String(company.data); setEmpresaId(tenant)
+      if (tab === 'Requisições') {
+        const auth = await supabase.auth.getUser()
+        if (auth.error || !auth.data.user) throw auth.error ?? new Error('Sessão não autenticada.')
+        const profile = await supabase.from('erp_usuarios').select('id').eq('auth_user_id',auth.data.user.id).eq('empresa_id',tenant).eq('ativo',true).is('deleted_at',null).maybeSingle()
+        if (profile.error) throw profile.error
+        setProfileId(profile.data?.id ?? '')
+        const permission = await supabase.rpc('erp_has_permission',{p_modulo:'compras',p_acao:'editar'})
+        if (permission.error) throw permission.error
+        setCanApprove(Boolean(permission.data) && Boolean(profile.data?.id))
+      }
       if (tab === 'Pedido do PCP' || tab === 'Fornecedores' || tab === 'Pedidos') {
         const [p,s] = await Promise.all([
           supabase.from('erp_produtos').select('id,codigo,nome,unidade,unidade_compra').eq('empresa_id',tenant).eq('ativo',true).order('codigo').limit(2000),
@@ -108,6 +120,19 @@ export default function ComprasAbaNativa({ tab, onRefresh }: { tab: string; onRe
     finally { setBusy(false) }
   }
 
+  async function approve(id: string) {
+    setBusy(true); setError(''); setMessage('')
+    try {
+      if (!canApprove) throw new Error('Seu perfil não possui permissão para autorizar compras.')
+      if (!empresaId || !profileId) throw new Error('Perfil da empresa não identificado.')
+      const result = await supabase.from('erp_solicitacoes_compra').update({status:'autorizada',autorizado_por:profileId,autorizado_em:new Date().toISOString()}).eq('id',id).eq('empresa_id',empresaId).eq('status','aguardando_autorizacao').select('id').single()
+      if (result.error) throw result.error
+      setMessage('Solicitação autorizada e encaminhada para Compras.')
+      await load(); onRefresh()
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Não foi possível autorizar a solicitação.') }
+    finally { setBusy(false) }
+  }
+
   const cols=columns[tab] ?? []
   return <section className="sq-purchase-mrp" aria-label={tab}>
     <div className="sq-purchase-mrp-head"><div><h2>{tab==='Pedido do PCP'?'Pedido do PCP para Compras':tab}</h2><p>{tab==='Pedido do PCP'?'Informe referência da OP, materiais e justificativa. A gravação utiliza a operação existente do ERP.':'Registros reais do Supabase, filtrados pela empresa ativa.'}</p></div><button type="button" onClick={()=>void load()} disabled={busy}><RefreshCw size={14}/> Atualizar</button></div>
@@ -136,6 +161,6 @@ export default function ComprasAbaNativa({ tab, onRefresh }: { tab: string; onRe
       </div><div style={{display:'flex',justifyContent:'flex-end',marginTop:14}}><button type="submit" disabled={busy} style={{background:'#0b2545',color:'#fff',padding:'9px 16px',borderRadius:8,fontWeight:750}}>{busy?'Enviando…':'Enviar para autorização'}</button></div>
     </form>}
     {tab!=='Pedido do PCP'&&<div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,padding:'10px 16px',flexWrap:'wrap'}}><input aria-label={'Pesquisar '+tab} value={query} onChange={e=>setQuery(e.target.value)} placeholder={'Pesquisar '+tab.toLocaleLowerCase('pt-BR')} style={{maxWidth:340}}/><span style={{fontSize:11,color:'#64748b'}}>{visibleRows.length} registros</span></div>}
-    <div className="sq-purchase-mrp-scroll"><table><thead><tr>{cols.map(([label])=><th key={label}>{label}</th>)}</tr></thead><tbody>{visibleRows.map((row,index)=><tr key={String(row.id??index)}>{cols.map(([label,key])=><td key={key}>{key==='fornecedor_id'&&tab==='Pedidos'?suppliers.find(s=>s.id===String(row[key]??''))?.razao_social??'—':fmt(key,row[key])}</td>)}</tr>)}{!visibleRows.length&&<tr><td colSpan={Math.max(1,cols.length)} className="sq-purchase-empty">{busy?'Carregando…':'Nenhum registro encontrado para esta empresa.'}</td></tr>}</tbody></table></div>
+    <div className="sq-purchase-mrp-scroll"><table><thead><tr>{cols.map(([label])=><th key={label}>{label}</th>)}{tab==='Requisições'&&<th>Ações</th>}</tr></thead><tbody>{visibleRows.map((row,index)=><tr key={String(row.id??index)}>{cols.map(([label,key])=><td key={key}>{key==='fornecedor_id'&&tab==='Pedidos'?suppliers.find(s=>s.id===String(row[key]??''))?.razao_social??'—':fmt(key,row[key])}</td>)}{tab==='Requisições'&&<td>{row.status==='aguardando_autorizacao'&&<button type="button" disabled={busy||!canApprove} title={!canApprove?'Sem permissão para autorizar':'Autorizar solicitação'} onClick={()=>void approve(String(row.id))} style={{display:'inline-flex',alignItems:'center',gap:5,color:'#166534',border:'1px solid #bbf7d0',padding:'5px 8px',borderRadius:4}}><CheckCircle2 size={13}/> Autorizar</button>}</td>}</tr>)}{!visibleRows.length&&<tr><td colSpan={Math.max(1,cols.length)} className="sq-purchase-empty">{busy?'Carregando…':'Nenhum registro encontrado para esta empresa.'}</td></tr>}</tbody></table></div>
   </section>
 }
