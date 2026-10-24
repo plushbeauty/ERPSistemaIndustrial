@@ -1,8 +1,8 @@
 /*
 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
 - Arquivo: src/AppIndustrialV7.tsx
-- Status Atual: Revisão 3 (Compras, Comercial e Qualidade Conectados)
-- Total de Linhas Gerado: 233
+- Status Atual: Revisão 4 (Central de Parceiros integrada)
+- Revisão: APROV-PARCEIROS-2026-10-24-R1 | DATA/HORA: 2026-10-24 18:52:12 -03:00
 - Assinatura de Entrada (Primeiros 3 Imports): import { useEffect, useState } from 'react' | import { motion, AnimatePresence } from 'motion/react' | import { Activity, ArrowUpRight, Boxes, ClipboardCheck, Factory, FileText, LayoutGrid, Package, Search, Settings, ShoppingCart, Store, Truck, Users, Wrench } from 'lucide-react'
 - Regra de Negócio Incorporada: Navegação real para clientes, fornecedores ISO 9001 e tabelas de preços por cliente.
 */
@@ -18,12 +18,11 @@ import MoldesFerramentaria from './pages/MoldesFerramentaria'
 import ComercialSuprimentos from './pages/ComercialSuprimentos'
 import ConfiguracoesADM from './pages/configuracoes/ConfiguracoesADM'
 import CalibracaoIndustrial from './pages/CalibracaoIndustrial'
-import VendasClientesPage from './pages/VendasClientes'
 import FinanceiroCustoPadrao from './pages/FinanceiroCustoPadrao'
 import AdminLogs from './pages/AdminLogs'
 import OutlookConfiguracao from './pages/OutlookConfiguracao'
-import FornecedoresIndustrial from './pages/FornecedoresIndustrial'
 import { useNavigate } from 'react-router-dom'
+import ParceirosIndustrial from './pages/ParceirosIndustrial'
 
 type Field = { key: string; label: string; type?: 'text' | 'number' | 'date' | 'email'; required?: boolean }
 type Module = { name: string; title: string; description: string; icon: LucideIcon; table?: string; fields?: Field[] }
@@ -37,8 +36,7 @@ const M = (name: string, title: string, description: string, icon: LucideIcon, t
 
 const industrialModules: Module[] = [
   M('Dashboard', 'Dashboard industrial', 'Indicadores de produção, estoque, qualidade, custos e financeiro.', Activity),
-  M('Clientes', 'Clientes', 'Clientes industriais, contatos, documentos e política comercial.', Users, 'erp_clientes', [F('nome', 'Nome / Razão social', true), F('documento', 'CPF / CNPJ'), F('email', 'E-mail', false, 'email'), F('telefone', 'Telefone'), F('tipo_cliente', 'Tipo de cliente'), F('tabela_preco_id', 'Tabela de preço ID'), F('desconto_padrao_percentual', 'Desconto padrão (%)', false, 'number')]),
-  M('Fornecedores', 'Fornecedores', 'Cadastro, qualificação, certificado ISO 9001 e documentos de compras.', Truck),
+  M('Central de Parceiros', 'Central de Parceiros', 'Cadastro integrado de clientes, fornecedores e dados comerciais.', Users),
   M('Tabelas de preços', 'Tabelas de preços', 'Preços por tipo de cliente e valores específicos por produto.', ShoppingCart),
   M('Produtos', 'Produtos e materiais', 'Produtos acabados, componentes, matérias-primas e insumos.', Package, 'erp_produtos', [F('codigo', 'Código', true), F('nome', 'Nome', true), F('unidade', 'Unidade'), F('tipo', 'Tipo'), F('ponto_reposicao', 'Estoque mínimo', false, 'number'), F('custo_medio', 'Custo médio', false, 'number'), F('preco_venda', 'Preço de venda', false, 'number')]),
   M('Engenharia', 'Engenharia / BOM', 'Fichas técnicas, versões, estruturas e roteiro de fabricação.', Boxes, 'erp_fichas_tecnicas', [F('produto_id', 'Produto ID', true), F('versao', 'Versão', true, 'number'), F('rendimento', 'Rendimento', false, 'number'), F('unidade_rendimento', 'Unidade'), F('observacoes', 'Observações')]),
@@ -62,7 +60,7 @@ const industrialModules: Module[] = [
 ]
 
 const commonModules: Module[] = [
-  M('Clientes', 'Clientes', 'Cadastro e relacionamento com clientes.', Users, 'erp_clientes', [F('nome', 'Nome / Razão social', true), F('documento', 'CPF / CNPJ'), F('email', 'E-mail', false, 'email'), F('telefone', 'Telefone')]),
+  M('Central de Parceiros', 'Central de Parceiros', 'Cadastro integrado de clientes e fornecedores.', Users),
   M('Produtos', 'Produtos', 'Catálogo, preços e itens.', Package, 'erp_produtos', [F('codigo', 'Código', true), F('nome', 'Nome', true), F('unidade', 'Unidade')]),
   M('Estoque', 'Estoque', 'Saldo, inventário e movimentações.', Package),
   M('Compras', 'Compras', 'Fornecedores, cotações e pedidos.', ShoppingCart),
@@ -161,7 +159,7 @@ export default function AppIndustrialV7() {
             <AnimatePresence mode="wait" initial={false}>
               <motion.div key={specialPath + active} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: .2 }}>
                 {specialPath === '/vendas/clientes'
-                  ? <VendasClientesPage />
+                  ? <ParceirosIndustrial />
                   : specialPath === '/financeiro/custo-padrao'
                     ? <FinanceiroCustoPadrao />
                     : specialPath === '/admin/logs'
@@ -169,7 +167,7 @@ export default function AppIndustrialV7() {
                       : specialPath === '/outlook/configuracao'
                         ? <OutlookConfiguracao />
                         : specialPath === '/compras/fornecedores'
-                          ? <FornecedoresIndustrial />
+                          ? <ParceirosIndustrial />
                           : specialPath.startsWith('/configuracoes-adm')
                             ? <ConfiguracoesADM />
                             : active === 'Dashboard'
@@ -180,8 +178,10 @@ export default function AppIndustrialV7() {
                                   }
                                   navigate(route)
                                 }} />
-                              : active === 'Configurações' || active === 'Configuração'
-                                ? <ConfiguracoesADM />
+                              : active === 'Central de Parceiros'
+                                ? <ParceirosIndustrial />
+                                : active === 'Configurações' || active === 'Configuração'
+                                  ? <ConfiguracoesADM />
                                 : location.pathname === '/qualidade/calibracao'
                                   ? <CalibracaoIndustrial />
                                   : location.pathname === '/moldes-injecao'
