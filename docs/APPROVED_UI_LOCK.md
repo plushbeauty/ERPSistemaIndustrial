@@ -78,3 +78,10 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - Central e rota passam a ser verificadas por hash/contrato no CI. Alterar o hash exige autorização explícita e nova revisão.
 - `ComprasIndustrial.tsx` permanece disponível para fluxos operacionais/rotas independentes que ainda o referenciem; não é o componente canônico de `/compras`. Não excluir até auditar todas as referências.
 - Declarar validação somente após CI (type-check, lint, lock, rotas, build) e verificação Vercel. Build não comprova homologação do schema/PostgREST do Supabase.
+
+
+## Registro da revisão APROV-SHELL-2026-10-24-R1 — 2026-10-24
+
+- Correção cirúrgica autorizada do shell protegido: removido o listener órfão `erp:open-quality-tablet` que chamava `setTabletOpen`, setter inexistente, e bloqueava TypeScript/build.
+- A busca do repositório não encontrou emissores desse evento; remover o listener não altera menu, rotas ou aparência.
+- Hash atualizado deliberadamente no verificador para registrar esta revisão; mudanças visuais no shell continuam proibidas sem nova autorização.
