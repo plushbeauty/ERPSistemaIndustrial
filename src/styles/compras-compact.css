@@ -1,59 +1,90 @@
-/* Compras: padrão compacto industrial, compartilhado por todas as rotas de suprimentos. */
-.compras-compact{font-size:11px;color:#0f172a}
-.compras-compact input,.compras-compact select,.compras-compact textarea{min-height:30px;height:30px;border-radius:2px!important;padding:0 6px!important;font-size:11px;line-height:1.2}
-.compras-compact textarea{height:auto;min-height:58px;padding:6px!important}
-.compras-compact label{font-size:9px;line-height:1.1;letter-spacing:.05em;text-transform:uppercase;gap:2px}
-.compras-compact button,.compras-compact .industrial-primary,.compras-compact .industrial-secondary,.compras-compact .industrial-danger{min-height:30px;height:30px;border-radius:2px!important;padding:0 8px!important;font-size:11px;font-weight:500;transform:none!important;box-shadow:none!important}
-.compras-compact section,.compras-compact .industrial-panel,.compras-compact .industrial-form-page,.compras-compact .pc-card,.compras-compact .pc-list{border-radius:2px!important}
-.compras-compact .pc-page{padding:8px!important;min-height:100%}
-.compras-compact .pc-wrap{max-width:none}
-.compras-compact .pc-header{gap:8px;margin-bottom:8px;align-items:center}
-.compras-compact .pc-header h1{margin:2px 0;font-size:18px;font-weight:500}
-.compras-compact .pc-header p{font-size:10px}
-.compras-compact .pc-eyebrow{font-size:9px;font-weight:500;letter-spacing:.12em}
-.compras-compact .pc-actions{gap:4px}
-.compras-compact .pc-btn{min-height:30px;height:30px;border-radius:2px;padding:0 8px;font-weight:500}
-.compras-compact .pc-list{box-shadow:none}
-.compras-compact .pc-table th,.compras-compact .pc-table td{height:30px;padding:4px 7px;font-size:10px}
-.compras-compact .pc-detail{margin-top:8px;padding:8px}
-.compras-compact .pc-detail-head{margin-bottom:7px}
-.compras-compact .pc-detail-head h2{font-size:13px;font-weight:500}
-.compras-compact .pc-grid{gap:6px}
-.compras-compact .pc-field{gap:2px;font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:.05em}
-.compras-compact .pc-field input,.compras-compact .pc-field textarea{border-radius:2px;padding:0 6px;font-size:11px}
-.compras-compact .pc-field textarea{padding:6px;min-height:58px}
-.compras-compact .pc-items{margin-top:8px}
-.compras-compact .pc-items input{border-radius:2px;padding:4px;height:30px}
-.compras-compact .pc-item-actions{margin-top:5px}
-.compras-compact .pc-total{margin-top:8px;font-size:11px}
-.compras-compact .pc-total strong{font-size:15px}
-.compras-compact .pc-footer{gap:4px;margin-top:8px;padding-top:8px}
-.compras-compact .pc-modal{border-radius:2px;padding:8px}
-.compras-compact .pc-modal-head{margin-bottom:7px}
-.compras-compact .pc-search{border-radius:2px;margin-bottom:7px}
-.compras-compact .pc-search input{height:30px;padding:0}
-.compras-compact .receipt-form-grid{gap:6px}
-.compras-compact .receipt-upload{border-radius:2px;padding:0 8px;height:30px;font-weight:500}
-.compras-compact .receipt-item{gap:6px;padding:6px;border-radius:2px}
-.compras-compact .receipt-item-number{height:30px;border-radius:2px}
-.compras-compact .receipt-summary{padding:8px;border-radius:2px;margin-top:8px}
-.compras-compact .receipt-alert{border-radius:2px;padding:6px 8px;margin-top:6px;font-weight:500}
-.compras-compact .buy-shell{font-size:11px}
-.compras-compact .buy-sidebar,.compras-compact .buy-nav{border-radius:2px!important}
-.compras-compact .buy-content,.compras-compact .buy-head{padding:8px!important}
-.compras-compact .buy-card,.compras-compact .buy-report-card{border-radius:12px!important;box-shadow:0 5px 16px rgba(15,35,65,.045)!important}
-.compras-compact .buy-kpis article{border-radius:12px!important;box-shadow:0 5px 16px rgba(15,35,65,.045)!important}
-.compras-compact .buy-nav{border-radius:7px!important}
-.compras-compact .buy-actions button,.compras-compact .buy-card header button,.compras-compact .buy-list-actions button,.compras-compact .buy-form-actions button,.compras-compact .buy-modal>header button{border-radius:6px!important}
-.compras-compact .buy-content table th,.compras-compact .buy-content table td{padding:5px 7px!important;font-size:10px}
-.compras-compact .buy-content input,.compras-compact .buy-content select{height:30px!important;min-height:30px!important}
-.compras-compact .supplier-page{padding:8px!important}
-.compras-compact .supplier-page>div{max-width:none!important}
-.compras-compact .supplier-page-head{margin-bottom:8px!important}
-.compras-compact .supplier-page-head h1{font-size:18px!important;font-weight:500!important}
-.compras-compact .supplier-page section{padding:8px!important;border-radius:2px!important;box-shadow:none!important}
-.compras-compact .supplier-page table th,.compras-compact .supplier-page table td{padding:5px!important;font-size:10px}
-.compras-compact .supplier-page input{height:30px!important;min-height:30px!important}
-.compras-compact .supplier-page form{padding:8px!important;border-radius:2px!important}
-@media(max-width:900px){.compras-compact .pc-grid{grid-template-columns:1fr 1fr}.compras-compact .pc-page{padding:6px!important}}
-@media(max-width:620px){.compras-compact .pc-grid{grid-template-columns:1fr}}
+/* Compras: base operacional compacta. */
+
+
+/*
+ * CONTRATO VISUAL CANÔNICO — COMPRAS SYSNQRA
+ * Fonte única de medidas para os formulários operacionais de Compras.
+ * Inputs/selects: 30px; labels: 9px/12px; texto de campo: 11px;
+ * botões: 30px; linhas de tabela: 30px; gap de formulário: 8px;
+ * cards: 12px de raio, borda sutil e sombra discreta.
+ * A Central premium mantém seus cards e abas próprios para preservar a referência Lovable.
+ */
+:root{
+  --sq-buy-control-height:30px;
+  --sq-buy-control-font:11px;
+  --sq-buy-label-font:9px;
+  --sq-buy-label-line:12px;
+  --sq-buy-table-font:10px;
+  --sq-buy-row-height:30px;
+  --sq-buy-field-gap:8px;
+  --sq-buy-card-radius:12px;
+  --sq-buy-control-radius:6px;
+  --sq-buy-border:#dbe3ec;
+  --sq-buy-ink:#102c4e;
+  --sq-buy-muted:#64748b;
+  --sq-buy-focus:#1d5fd1;
+}
+.compras-compact,.compras-compact *{box-sizing:border-box}
+.compras-compact input:not([type=checkbox]):not([type=radio]):not([type=range]),
+.compras-compact select{
+  height:var(--sq-buy-control-height)!important;
+  min-height:var(--sq-buy-control-height)!important;
+  max-width:100%;
+  border-radius:var(--sq-buy-control-radius)!important;
+  padding:0 8px!important;
+  font-size:var(--sq-buy-control-font)!important;
+  line-height:14px!important;
+}
+.compras-compact textarea{
+  min-height:58px!important;height:auto!important;max-width:100%;
+  border-radius:var(--sq-buy-control-radius)!important;
+  padding:7px 8px!important;font-size:var(--sq-buy-control-font)!important;
+}
+.compras-compact label,.compras-compact .pc-field{
+  font-size:var(--sq-buy-label-font)!important;
+  line-height:var(--sq-buy-label-line)!important;
+  letter-spacing:.04em;
+}
+.compras-compact button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button){
+  min-height:var(--sq-buy-control-height)!important;
+  height:var(--sq-buy-control-height)!important;
+  border-radius:var(--sq-buy-control-radius)!important;
+  font-size:var(--sq-buy-control-font)!important;
+  line-height:14px!important;
+}
+.compras-compact input:focus-visible,.compras-compact select:focus-visible,.compras-compact textarea:focus-visible,
+.compras-compact button:focus-visible{
+  outline:2px solid color-mix(in srgb,var(--sq-buy-focus) 60%,transparent);
+  outline-offset:1px;
+}
+.compras-compact .pc-grid,.compras-compact .buy-form,.compras-compact .receipt-form-grid{
+  gap:var(--sq-buy-field-gap)!important;
+}
+.compras-compact .pc-table th,.compras-compact .pc-table td,
+.compras-compact .buy-content table th,.compras-compact .buy-content table td,
+.compras-compact .supplier-page table th,.compras-compact .supplier-page table td{
+  min-height:var(--sq-buy-row-height);
+  padding:5px 8px!important;
+  font-size:var(--sq-buy-table-font)!important;
+  vertical-align:middle;
+}
+.compras-compact .pc-card,.compras-compact .pc-list,
+.compras-compact .industrial-panel,.compras-compact .industrial-form-page,
+.compras-compact .supplier-page section,.compras-compact .supplier-page form,
+.compras-compact .receipt-summary,.compras-compact .buy-card,
+.compras-compact .buy-report-card,.compras-compact .buy-kpis article{
+  border:1px solid var(--sq-buy-border);
+  border-radius:var(--sq-buy-card-radius)!important;
+  box-shadow:0 3px 12px rgba(15,35,65,.045);
+}
+.compras-compact .pc-grid,.compras-compact .buy-form{min-width:0}
+.compras-compact .pc-field,.compras-compact .buy-form label{min-width:0}
+.compras-compact .pc-field input,.compras-compact .pc-field select,
+.compras-compact .buy-form input,.compras-compact .buy-form select,
+.compras-compact .buy-form textarea{width:100%;min-width:0;box-sizing:border-box}
+@media(max-width:900px){
+  .compras-compact .pc-grid,.compras-compact .buy-form{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:620px){
+  .compras-compact .pc-grid,.compras-compact .buy-form{grid-template-columns:minmax(0,1fr)}
+}
