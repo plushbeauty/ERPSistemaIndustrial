@@ -80,7 +80,7 @@ const menus: MenuItem[] = [
     { label: 'PCP Tablet', route: '/pcp', action: 'pcpTablet' },
   ] },
   // A Qualidade abre diretamente o painel; a Central Tablet fica dentro da própria tela.
-  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck },
+  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, action: 'qualityTablet' },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench, children: [
     { label: 'Central de manutenção', route: '/manutencao' },
     { label: 'Ordens de manutenção', route: '/manutencao/ordens' },
