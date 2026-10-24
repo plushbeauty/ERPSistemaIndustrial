@@ -11,7 +11,7 @@
 - As rotas antigas redirecionam para a aba correspondente:
   - `/vendas/clientes`, `/cadastros/clientes`, `/clientes` → `/cadastros/parceiros?tipo=cliente`
   - `/cadastros/fornecedores`, `/fornecedores`, `/compras/fornecedores` → `/cadastros/parceiros?tipo=fornecedor`
-- A tela antiga duplicada `ClientesIndustrial.tsx` foi removida por não ser mais usada. `VendasClientes.tsx` e `FornecedoresIndustrial.tsx` permanecem como componentes reutilizados pela Central para preservar formulários, validações e persistência.
+- A tela antiga duplicada `ClientesIndustrial.tsx` foi removida por não ser mais usada. `ParceirosClientesForm.tsx` e `ParceirosFornecedoresForm.tsx` preservam os formulários e funções CRUD originais dentro da Central; os arquivos de página separados foram removidos para preservar formulários, validações e persistência.
 
 ## Dados e segurança
 
