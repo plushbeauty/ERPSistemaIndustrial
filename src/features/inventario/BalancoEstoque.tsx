@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { makeXlsx } from '../../utils/makeXlsx'
+import '../../styles/estoque-standard.css'
 
 type Product={id:string;codigo:string;nome:string;unidade:string|null;estoque_atual:number|null;custo_medio:number|null}
 type Warehouse={id:string;codigo:string;nome:string}
@@ -20,7 +21,7 @@ export default function BalancoEstoque(){
  useEffect(()=>{void (async()=>{try{const empresa=await supabase.rpc('erp_current_empresa_id');if(empresa.error||!empresa.data)throw empresa.error??new Error('Empresa da sessão não identificada.');const empresaId=String(empresa.data);const [w,p]=await Promise.all([supabase.from('erp_almoxarifados').select('id,codigo,nome').eq('empresa_id',empresaId).eq('ativo',true).order('codigo'),supabase.from('erp_produtos').select('id,codigo,nome,unidade,estoque_atual,custo_medio').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(5000)]);if(w.error)throw w.error;if(p.error)throw p.error;setWarehouses((w.data??[]) as Warehouse[]);setProducts((p.data??[]) as Product[])}catch(e){setError(e instanceof Error?e.message:'Falha ao carregar balanço.')}finally{setLoading(false)}})()},[])
  const rows=useMemo<Row[]>(()=>products.filter(p=>fuzzy(p.codigo+' '+p.nome,search)).map(p=>{const saldo=Number(p.estoque_atual??0);const custo=Number(p.custo_medio??0);return {...p,saldo,custo,total:saldo*custo,status:saldo<0?'DIVERGENTE':'ATIVO'}}),[products,search])
  const total=rows.reduce((s,r)=>s+r.total,0)
- return <main className="min-h-screen bg-slate-50 p-3 text-gray-800">
+ return <main className="stock-standard min-h-screen bg-slate-50 p-3 text-gray-800">
   <div className="mx-auto max-w-[1600px] space-y-2">
    <div className="flex items-center gap-2"><button type="button" onClick={()=>navigate('/estoque')} className={button+' border border-gray-200 bg-white text-gray-600'}><ArrowLeft size={12}/>Voltar</button><h1 className="text-[13px] font-bold text-gray-700">VALORAÇÃO CONTÁBIL DE ESTOQUE</h1></div>
    {error&&<div className="border border-red-200 bg-red-50 px-2 py-1 text-[10px] text-red-700">{error}</div>}
