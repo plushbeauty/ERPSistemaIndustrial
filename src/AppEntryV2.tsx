@@ -106,7 +106,7 @@ const PCPExecucaoIndustrial = lazyPage(() => import('./pages/PCPExecucaoIndustri
 const PCPCapacidade = lazyPage(() => import('./pages/PCPCapacidade'), 'default')
 const PCPAgendaMaquinas = lazyPage(() => import('./pages/PCPAgendaMaquinas'), 'default')
 const PCPProgramacaoGantt = lazyPage(() => import('./pages/PCPProgramacaoGantt'), 'default')
-const PCPFichasProcesso = lazyPage(() => import('./pages/PCPFichasProcesso'), 'default')
+const PCPFichasProcesso = lazyPage(() => import('./pages/PCPFichaProcessoTeste'), 'default')
 const PCPFichaProcessoTeste = lazyPage(() => import('./pages/PCPFichaProcessoTeste'), 'default')
 const QualidadeFichasProcesso = lazyPage(() => import('./pages/qualidade/FichasProcesso'), 'default')
 const HelpPCPFichas = lazyPage(() => import('./pages/HelpPCPFichas'), 'default')
