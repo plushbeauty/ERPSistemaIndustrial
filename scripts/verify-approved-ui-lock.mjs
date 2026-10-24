@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs'
 /**
  * Approved UI lock — reviewed 2026-10-19, approval revision APROV-008 (compact edit sizing and removal of duplicated zone controls explicitly authorized by user). Explicitly authorized revisions APROV-005 (Novo Pedido), APROV-006 (Vendas / Status), and APROV-011 (single top Windows 11 navigation with visible Menu control) are frozen alongside the restored screens.
  * Explicit user authorization on 2026-10-23 permits PCPFichasProcesso.tsx REV-FICHA-010: standardize the SGQ/IT-PCP-001 header and light document cards, and highlight the Nova Ficha action with a violet icon/button. Other frozen files remain unchanged.
+ * APROV-COMPRAS-2026-10-24-R1: freeze Central approved from deployment EjPo9mBaQ; only card geometry was corrected.
  * Do not update these hashes as part of ordinary styling/refactor work.
  */
 const approved = [
@@ -41,8 +42,8 @@ const appEntry = readFileSync('src/AppEntryV2.tsx', 'utf8')
 const comprasRouteOk = /<Route path="\/compras" element={<ComprasRoute><ComprasCentral \/><\/ComprasRoute>} \/>/.test(appEntry)
 const comprasImportOk = /const ComprasCentral = lazyPage\(\(\) => import\('\.\/pages\/ComprasCentral'\), 'default'\)/.test(appEntry)
 if (!comprasRouteOk || !comprasImportOk) {
-  process.stderr.write('Approved UI lock: /compras deve apontar para ComprasCentral aprovada; rota antiga bloqueada.\\n')
+  process.stderr.write('Approved UI lock: /compras deve apontar para ComprasCentral aprovada; rota antiga bloqueada.\n')
   process.exit(1)
 }
-process.stdout.write('PASS — Compras / rota canônica aponta para a Central aprovada (APROV-COMPRAS-2026-10-24-R1).\\n')
+process.stdout.write('PASS — Compras / rota canônica aponta para a Central aprovada (APROV-COMPRAS-2026-10-24-R1).\n')
 
