@@ -1,6 +1,13 @@
 import { ArrowRight, AlertTriangle, BarChart3, ClipboardList, FileText, PackageCheck, ShoppingCart, Truck, Users, ShieldCheck, Boxes, FilePlus2, RefreshCw, LayoutGrid } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+
+const PedidoPCPTab = lazy(() => import('./ComprasSolicitacaoManual'))
+const RequisicoesTab = lazy(() => import('./ComprasRequisicoes'))
+const AlertasMRPTab = lazy(() => import('./MRPIndustrial'))
+const CotacoesTab = lazy(() => import('./ComprasRFQ'))
+const PedidosTab = lazy(() => import('./PedidoCompra'))
+const FornecedoresTab = lazy(() => import('./FornecedoresIndustrial'))
 import { supabase } from '../lib/supabaseClient'
 
 const mainCards = [
@@ -38,6 +45,7 @@ export default function ComprasCentral() {
   const [indicators, setIndicators] = useState<PurchaseIndicators>({ alerts: null, approvals: null, approved: null, quotes: null, openOrders: null, received: null, openValue: null, error: '' })
   const [materialNeeds, setMaterialNeeds] = useState<MaterialNeed[]>([])
   const [loadingIndicators, setLoadingIndicators] = useState(false)
+  const [activeTab, setActiveTab] = useState('Painel')
 
   const loadIndicators = useCallback(async () => {
     setLoadingIndicators(true)
@@ -190,22 +198,32 @@ export default function ComprasCentral() {
             {indicators.error && <p className="sq-purchase-kpi-error" role="status">Alguns indicadores não puderam ser atualizados: {indicators.error}</p>}
           </section>
           <nav className="sq-purchase-tabs" aria-label="Navegação da Central de Compras">
-            {purchaseTabs.map(({ label, route, Icon, countKey }) => <button key={label} type="button" className={route === '/compras' ? 'active' : ''} aria-current={route === '/compras' ? 'page' : undefined} onClick={() => route === '/compras' ? void loadIndicators() : navigate(route)}><Icon size={15}/><span>{label}</span>{countKey && indicators[countKey] !== null && <b>{indicators[countKey]}</b>}</button>)}
+            {purchaseTabs.map(({ label, Icon, countKey }) => <button key={label} type="button" className={activeTab === label ? 'active' : ''} aria-current={activeTab === label ? 'page' : undefined} onClick={() => setActiveTab(label)}><Icon size={15}/><span>{label}</span>{countKey && indicators[countKey] !== null && <b>{indicators[countKey]}</b>}</button>)}
             <button type="button" className="sq-purchase-refresh" onClick={() => void loadIndicators()} disabled={loadingIndicators} aria-label="Atualizar indicadores"><RefreshCw size={15}/></button>
           </nav>
-          <section className="sq-purchase-flow" aria-label="Fluxo de compras">
-            {flowStages.map(({ step, label, value }) => <article key={step}><span>{step}</span><div><small>{label}</small><strong>{value === null ? '—' : value}</strong></div></article>)}
-          </section>
-          <section className="sq-purchase-mrp" aria-labelledby="sq-purchase-mrp-title">
-            <div className="sq-purchase-mrp-head">
-              <div><h2 id="sq-purchase-mrp-title">Alertas de material — MRP</h2><p>Saldo, reservas e necessidades da última execução MRP da empresa ativa. Os dados vêm do cálculo registrado no ERP.</p></div>
-              <button type="button" onClick={() => navigate('/pcp/mrp-ii')}>Abrir MRP <ArrowRight size={14}/></button>
-            </div>
-            <div className="sq-purchase-mrp-scroll"><table><thead><tr><th>Material</th><th>Nível</th><th>Estoque</th><th>Reservado PCP</th><th>Disponível</th><th>Necessidade líquida</th><th>Sugestão</th></tr></thead><tbody>
-              {materialNeeds.map((row) => <tr key={row.id}><td><strong>{row.code}</strong><small>{row.name}</small></td><td>{row.level}</td><td>{row.stock.toLocaleString('pt-BR')}</td><td>{row.reserved.toLocaleString('pt-BR')}</td><td>{row.available.toLocaleString('pt-BR')}</td><td><b className={row.net > row.stock ? 'sq-purchase-mrp-badge critical' : 'sq-purchase-mrp-badge'}>{row.net.toLocaleString('pt-BR')}</b></td><td><span className={row.suggestion === 'COMPRAR' ? 'sq-purchase-mrp-status buy' : 'sq-purchase-mrp-status'}>{row.suggestion}</span></td></tr>)}
-              {!materialNeeds.length && <tr><td colSpan={7} className="sq-purchase-empty">{indicators.alerts === null ? 'Não foi possível consultar o MRP ou ainda não existe execução disponível. Abra o módulo MRP para verificar.' : 'Nenhuma necessidade líquida positiva na última execução MRP.'}</td></tr>}
-            </tbody></table></div>
-          </section>
+          <Suspense fallback={<section className="sq-purchase-mrp"><p className="sq-purchase-empty">Carregando rotina de Compras…</p></section>}>
+            {activeTab === 'Painel' && <>
+              <section className="sq-purchase-flow" aria-label="Fluxo de compras">
+                {flowStages.map(({ step, label, value }) => <article key={step}><span>{step}</span><div><small>{label}</small><strong>{value === null ? '—' : value}</strong></div></article>)}
+              </section>
+              <section className="sq-purchase-mrp" aria-labelledby="sq-purchase-mrp-title">
+                <div className="sq-purchase-mrp-head">
+                  <div><h2 id="sq-purchase-mrp-title">Alertas de material — MRP</h2><p>Saldo, reservas e necessidades da última execução MRP da empresa ativa. Os dados vêm do cálculo registrado no ERP.</p></div>
+                  <button type="button" onClick={() => setActiveTab('Alertas MRP')}>Ver Alertas MRP <ArrowRight size={14}/></button>
+                </div>
+                <div className="sq-purchase-mrp-scroll"><table><thead><tr><th>Material</th><th>Nível</th><th>Estoque</th><th>Reservado PCP</th><th>Disponível</th><th>Necessidade líquida</th><th>Sugestão</th></tr></thead><tbody>
+                  {materialNeeds.map((row) => <tr key={row.id}><td><strong>{row.code}</strong><small>{row.name}</small></td><td>{row.level}</td><td>{row.stock.toLocaleString('pt-BR')}</td><td>{row.reserved.toLocaleString('pt-BR')}</td><td>{row.available.toLocaleString('pt-BR')}</td><td><b className={row.net > row.stock ? 'sq-purchase-mrp-badge critical' : 'sq-purchase-mrp-badge'}>{row.net.toLocaleString('pt-BR')}</b></td><td><span className={row.suggestion === 'COMPRAR' ? 'sq-purchase-mrp-status buy' : 'sq-purchase-mrp-status'}>{row.suggestion}</span></td></tr>)}
+                  {!materialNeeds.length && <tr><td colSpan={7} className="sq-purchase-empty">{indicators.alerts === null ? 'Não foi possível consultar o MRP ou ainda não existe execução disponível.' : 'Nenhuma necessidade líquida positiva na última execução MRP.'}</td></tr>}
+                </tbody></table></div>
+              </section>
+            </>}
+            {activeTab === 'Pedido do PCP' && <PedidoPCPTab />}
+            {activeTab === 'Requisições' && <RequisicoesTab />}
+            {activeTab === 'Alertas MRP' && <AlertasMRPTab />}
+            {activeTab === 'Cotações' && <CotacoesTab />}
+            {activeTab === 'Pedidos' && <PedidosTab />}
+            {activeTab === 'Fornecedores' && <FornecedoresTab />}
+          </Suspense>
           <section aria-labelledby="sq-purchase-main-title">
             <div className="sq-purchase-section-head"><div><h2 id="sq-purchase-main-title">Acesso rápido às rotinas</h2><p>Atalhos para abrir os módulos operacionais de compras já integrados ao ERP.</p></div><small>4 áreas principais</small></div>
             <div className="sq-purchase-grid">
