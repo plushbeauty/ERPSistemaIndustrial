@@ -1,4 +1,4 @@
-import { ArrowRight, AlertTriangle, BarChart3, ClipboardList, FileText, PackageCheck, ShoppingCart, Truck, Users, ShieldCheck, Boxes, FilePlus2, RefreshCw } from 'lucide-react'
+import { ArrowRight, AlertTriangle, BarChart3, ClipboardList, FileText, PackageCheck, ShoppingCart, Truck, Users, ShieldCheck, Boxes, FilePlus2, RefreshCw, LayoutGrid } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
@@ -24,7 +24,7 @@ const purchaseTabs = [
   { label: 'Painel', route: '/compras', Icon: LayoutGrid, count: null },
   { label: 'Pedido do PCP', route: '/compras/solicitacao', Icon: FilePlus2, count: null },
   { label: 'Requisições', route: '/compras/requisicoes', Icon: ClipboardList, countKey: 'approvals' as const },
-  { label: 'Alertas MRP', route: '/pcp/mrp', Icon: AlertTriangle, countKey: 'alerts' as const },
+  { label: 'Alertas MRP', route: '/pcp/mrp-ii', Icon: AlertTriangle, countKey: 'alerts' as const },
   { label: 'Cotações', route: '/compras/rfq', Icon: BarChart3, countKey: 'quotes' as const },
   { label: 'Pedidos', route: '/compras/pedido', Icon: ShoppingCart, countKey: 'openOrders' as const },
   { label: 'Fornecedores', route: '/compras/fornecedores', Icon: Truck, count: null },
@@ -43,9 +43,9 @@ export default function ComprasCentral() {
       if (tenant.error || !tenant.data) throw tenant.error ?? new Error('Empresa da sessão não identificada.')
       const empresaId = String(tenant.data)
       const [requests, orders, quotes, run] = await Promise.all([
-        supabase.from('erp_requisicoes_compra').select('id,status', { count: 'exact', head: true }).eq('empresa_id', empresaId),
+        supabase.from('erp_requisicoes_compra').select('id,status').eq('empresa_id', empresaId),
         supabase.from('erp_pedidos_compra').select('id,total,status', { count: 'exact' }).eq('empresa_id', empresaId),
-        supabase.from('erp_rfq').select('id,status', { count: 'exact', head: true }).eq('empresa_id', empresaId),
+        supabase.from('erp_rfq').select('id,status').eq('empresa_id', empresaId),
         supabase.from('erp_mrp_runs').select('id').eq('empresa_id', empresaId).order('created_at', { ascending: false }).limit(1).maybeSingle(),
       ])
       const openOrders = (orders.data ?? []).filter((row) => !['CONCLUIDO', 'CONCLUÍDO', 'CANCELADO', 'CANCELADA', 'RECEBIDO', 'RECEBIDA'].includes(String(row.status ?? '').toUpperCase()))
@@ -54,7 +54,7 @@ export default function ComprasCentral() {
         const needs = await supabase.from('erp_mrp_necessidades').select('id', { count: 'exact', head: true }).eq('empresa_id', empresaId).eq('run_id', run.data.id).gt('necessidade_liquida', 0)
         if (!needs.error) alerts = needs.count ?? 0
       } else if (!run.error) alerts = 0
-      setIndicators({ alerts, approvals: requests.error ? null : requests.count ?? 0, quotes: quotes.error ? null : quotes.count ?? 0, openOrders: orders.error ? null : openOrders.length, openValue: orders.error ? null : openOrders.reduce((sum, row) => sum + Number(row.total ?? 0), 0), error: [requests.error, orders.error, quotes.error, run.error].filter(Boolean).map((error) => error?.message ?? '').join(' • ') })
+      const pendingStatuses = new Set(['PENDENTE', 'PENDENTE_APROVACAO', 'AGUARDANDO_APROVACAO', 'EM_ANALISE', 'ABERTA', 'ABERTO'])\n      const quoteStatuses = new Set(['ABERTA', 'EM_COTACAO', 'EM ANÁLISE', 'EM_ANALISE', 'PENDENTE', 'AGUARDANDO_COTACAO'])\n      setIndicators({ alerts, approvals: requests.error ? null : (requests.data ?? []).filter((row) => pendingStatuses.has(String(row.status ?? '').toUpperCase())).length, quotes: quotes.error ? null : (quotes.data ?? []).filter((row) => quoteStatuses.has(String(row.status ?? '').toUpperCase())).length, openOrders: orders.error ? null : openOrders.length, openValue: orders.error ? null : openOrders.reduce((sum, row) => sum + Number(row.total ?? 0), 0), error: [requests.error, orders.error, quotes.error, run.error].filter(Boolean).map((error) => error?.message ?? '').join(' • ') })
     } catch (error) {
       setIndicators((current) => ({ ...current, error: error instanceof Error ? error.message : 'Não foi possível consultar os indicadores.' }))
     } finally { setLoadingIndicators(false) }
@@ -118,9 +118,9 @@ export default function ComprasCentral() {
             <div className="sq-purchase-hero-actions"><button type="button" onClick={() => navigate('/compras/solicitacao')}><FilePlus2 size={16}/> Novo pedido do PCP</button><div className="sq-purchase-brand"><strong>SYSNQRA</strong><span>GESTÃO INTEGRADA</span></div></div>
           </header>
           <section className="sq-purchase-kpis" aria-label="Indicadores de Compras">
-            <article><div><span>Materiais em alerta</span><strong>{indicators.alerts === null ? '—' : indicators.alerts}</strong><small>{indicators.alerts === null ? 'MRP não disponível' : 'necessidades líquidas no último MRP'}</small></div><i className="alert"><AlertTriangle size={20}/></i></article>
-            <article><div><span>Aguardando aprovação</span><strong>{indicators.approvals === null ? '—' : indicators.approvals}</strong><small>requisições cadastradas</small></div><i><ClipboardList size={20}/></i></article>
-            <article><div><span>Em cotação</span><strong>{indicators.quotes === null ? '—' : indicators.quotes}</strong><small>mapas de cotação</small></div><i><BarChart3 size={20}/></i></article>
+            <article><div><span>Necessidades MRP</span><strong>{indicators.alerts === null ? '—' : indicators.alerts}</strong><small>{indicators.alerts === null ? 'MRP não disponível' : 'necessidades líquidas no último MRP'}</small></div><i className="alert"><AlertTriangle size={20}/></i></article>
+            <article><div><span>Aguardando aprovação</span><strong>{indicators.approvals === null ? '—' : indicators.approvals}</strong><small>requisições pendentes</small></div><i><ClipboardList size={20}/></i></article>
+            <article><div><span>Em cotação</span><strong>{indicators.quotes === null ? '—' : indicators.quotes}</strong><small>mapas em andamento</small></div><i><BarChart3 size={20}/></i></article>
             <article><div><span>Pedidos em aberto</span><strong>{indicators.openOrders === null ? '—' : indicators.openOrders}</strong><small>{indicators.openValue === null ? 'valor indisponível' : brl(indicators.openValue)}</small></div><i><Truck size={20}/></i></article>
             {indicators.error && <p className="sq-purchase-kpi-error" role="status">Alguns indicadores não puderam ser atualizados: {indicators.error}</p>}
           </section>
