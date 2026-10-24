@@ -128,6 +128,15 @@ export default function ComprasCentral() {
             {purchaseTabs.map(({ label, route, Icon, countKey }) => <button key={label} type="button" className={route === '/compras' ? 'active' : ''} aria-current={route === '/compras' ? 'page' : undefined} onClick={() => route === '/compras' ? void loadIndicators() : navigate(route)}><Icon size={15}/><span>{label}</span>{countKey && indicators[countKey] !== null && <b>{indicators[countKey]}</b>}</button>)}
             <button type="button" className="sq-purchase-refresh" onClick={() => void loadIndicators()} disabled={loadingIndicators} aria-label="Atualizar indicadores"><RefreshCw size={15}/></button>
           </nav>
+          <section className="sq-purchase-flow" aria-label="Fluxo de compras">
+            {[
+              ['1', 'Aprovação', indicators.approvals],
+              ['2', 'Aprovadas', indicators.approved],
+              ['3', 'Cotação', indicators.quotes],
+              ['4', 'Pedido', indicators.openOrders],
+              ['5', 'Recebido', indicators.received],
+            ].map(([step, label, value]) => <article key={step}><span>{step}</span><div><small>{label}</small><strong>{value === null ? '—' : value}</strong></div></article>)}
+          </section>
           <section aria-labelledby="sq-purchase-main-title">
             <div className="sq-purchase-section-head"><div><h2 id="sq-purchase-main-title">Acesso rápido às rotinas</h2><p>Atalhos para abrir os módulos operacionais de compras já integrados ao ERP.</p></div><small>4 áreas principais</small></div>
             <div className="sq-purchase-grid">
