@@ -195,6 +195,10 @@ const FinanceiroGraficoDesvios = lazyPage(() => import('./pages/FinanceiroGrafic
 const ExpedicaoRoteirizacao = lazyPage(() => import('./pages/ExpedicaoRoteirizacao'), 'ExpedicaoRoteirizacao')
 const QualidadePFMEA = lazyPage(() => import('./pages/QualidadePFMEA'), 'QualidadePFMEA')
 const ManutencaoOrdens = lazyPage(() => import('./pages/ManutencaoOrdens'), 'ManutencaoOrdens')
+const ManutencaoAtivos = lazyPage(() => import('./pages/manutencao/Ativos'), 'default')
+const ManutencaoPreventivas = lazyPage(() => import('./pages/manutencao/Preventivas'), 'default')
+const ManutencaoOrdensServico = lazyPage(() => import('./pages/manutencao/OrdensServico'), 'default')
+const ManutencaoInsumos = lazyPage(() => import('./pages/manutencao/Insumos'), 'default')
 const ManutencaoCentral = lazyPage(() => import('./pages/ManutencaoCentral'), 'default')
 const ManutencaoCronograma = lazyPage(() => import('./pages/ManutencaoCronograma'), 'default')
 const ManutencaoPlanoMestre = lazyPage(() => import('./pages/ManutencaoPlanoMestre'), 'default')
@@ -713,6 +717,11 @@ function AppIndustrialAuthenticated() {
       <Route path="/compras/solicitacoes" element={<Navigate to="/compras/requisicoes" replace />} />
       <Route path="/compras-solicitacao" element={<ComprasSolicitacaoManual />} />
       <Route path="/manutencao" element={<QualityPlanGate><ManutencaoCentral /></QualityPlanGate>} />
+      <Route path="/tablet/manutencao" element={<QualityPlanGate><ManutencaoCentral /></QualityPlanGate>} />
+      <Route path="/manutencao/ativos" element={<QualityPlanGate><ManutencaoAtivos /></QualityPlanGate>} />
+      <Route path="/manutencao/preventivas" element={<QualityPlanGate><ManutencaoPreventivas /></QualityPlanGate>} />
+      <Route path="/manutencao/ordens-servico" element={<QualityPlanGate><ManutencaoOrdensServico /></QualityPlanGate>} />
+      <Route path="/manutencao/insumos" element={<QualityPlanGate><ManutencaoInsumos /></QualityPlanGate>} />
       <Route path="/manutencao/cronograma" element={<QualityPlanGate><ManutencaoCronograma /></QualityPlanGate>} />
       <Route path="/manutencao/plano-mestre" element={<QualityPlanGate><ManutencaoPlanoMestre /></QualityPlanGate>} />
       <Route path="/manutencao/indicadores" element={<QualityPlanGate><ManutencaoIndicadores /></QualityPlanGate>} />

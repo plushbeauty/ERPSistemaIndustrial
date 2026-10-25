@@ -10,24 +10,25 @@ create index if not exists idx_erp_paradas_manutencao_ordem
   on public.erp_producao_paradas(empresa_id, ordem_manutencao_id)
   where ordem_manutencao_id is not null;
 
-insert into public.erp_permissions (codigo, nome, modulo, ativo)
+insert into public.erp_permissions (code, name, description)
 values
-  ('manutencao.ver', 'Visualizar manutenção', 'manutencao', true),
-  ('manutencao.criar', 'Criar ordens de manutenção', 'manutencao', true),
-  ('manutencao.editar', 'Editar e concluir manutenção', 'manutencao', true),
-  ('manutencao.excluir', 'Excluir ordens de manutenção', 'manutencao', true)
-on conflict (codigo) do update
-set nome = excluded.nome, modulo = excluded.modulo, ativo = excluded.ativo;
+  ('manutencao.ver', 'Visualizar manutenção', 'Acessar manutenção'),
+  ('manutencao.criar', 'Criar ordens de manutenção', 'Acessar manutenção'),
+  ('manutencao.editar', 'Editar e concluir manutenção', 'Acessar manutenção'),
+  ('manutencao.excluir', 'Excluir ordens de manutenção', 'Acessar manutenção')
+on conflict (code) do update
+set name = excluded.name, description = excluded.description;
 
 insert into public.erp_role_permissions (role_id, permission_id)
 select r.id, p.id
 from public.erp_roles r
 cross join public.erp_permissions p
 where r.codigo in ('ADMIN', 'MANAGER', 'MASTER')
-  and p.codigo in ('manutencao.ver', 'manutencao.criar', 'manutencao.editar', 'manutencao.excluir')
+  and p.code in ('manutencao.ver', 'manutencao.criar', 'manutencao.editar', 'manutencao.excluir')
 on conflict do nothing;
 
 drop policy if exists erp_manut_ordens_tenant on public.erp_manutencao_ordens;
+drop policy if exists erp_manutencao_ordens_tenant on public.erp_manutencao_ordens;
 drop policy if exists erp_manut_ordens_select on public.erp_manutencao_ordens;
 drop policy if exists erp_manut_ordens_insert on public.erp_manutencao_ordens;
 drop policy if exists erp_manut_ordens_update on public.erp_manutencao_ordens;
@@ -35,20 +36,20 @@ drop policy if exists erp_manut_ordens_delete on public.erp_manutencao_ordens;
 
 create policy erp_manut_ordens_select on public.erp_manutencao_ordens
 for select to authenticated
-using (empresa_id = public.erp_current_empresa_id() and public.erp_has_permission('manutencao', 'ver'));
+using (public.erp_is_master() or (empresa_id = public.erp_current_empresa_id() and public.erp_has_permission('manutencao', 'ver')));
 
 create policy erp_manut_ordens_insert on public.erp_manutencao_ordens
 for insert to authenticated
-with check (empresa_id = public.erp_current_empresa_id() and public.erp_has_permission('manutencao', 'criar'));
+with check (public.erp_is_master() or (empresa_id = public.erp_current_empresa_id() and public.erp_has_permission('manutencao', 'criar')));
 
 create policy erp_manut_ordens_update on public.erp_manutencao_ordens
 for update to authenticated
-using (empresa_id = public.erp_current_empresa_id() and public.erp_has_permission('manutencao', 'editar'))
-with check (empresa_id = public.erp_current_empresa_id() and public.erp_has_permission('manutencao', 'editar'));
+using (public.erp_is_master() or (empresa_id = public.erp_current_empresa_id() and public.erp_has_permission('manutencao', 'editar')))
+with check (public.erp_is_master() or (empresa_id = public.erp_current_empresa_id() and public.erp_has_permission('manutencao', 'editar')));
 
 create policy erp_manut_ordens_delete on public.erp_manutencao_ordens
 for delete to authenticated
-using (empresa_id = public.erp_current_empresa_id() and public.erp_has_permission('manutencao', 'excluir'));
+using (public.erp_is_master() or (empresa_id = public.erp_current_empresa_id() and public.erp_has_permission('manutencao', 'excluir')));
 
 create or replace function public.erp_registrar_parada_manutencao(
   p_maquina_id uuid,
@@ -163,6 +164,8 @@ declare
   v_agora timestamptz := clock_timestamp();
   v_mttr numeric(14,2);
   v_saldo numeric;
+  v_saldo_fisico numeric;
+  v_saldo_fisico_existe boolean := false;
 begin
   if auth.uid() is null or v_empresa is null then
     raise exception 'Sessão ou empresa não identificada.' using errcode = '42501';
@@ -210,6 +213,23 @@ begin
     if v_saldo < p_quantidade then
       raise exception 'Estoque insuficiente para o componente.';
     end if;
+    select s.saldo_fisico into v_saldo_fisico
+    from public.erp_produto_estoque s
+    where s.empresa_id = v_empresa and s.produto_id = p_componente_id
+    for update;
+    v_saldo_fisico_existe := found;
+    if v_saldo_fisico_existe and abs(v_saldo_fisico - v_saldo) > 0.0001 then
+      raise exception 'Divergência entre saldo físico e saldo do produto; reconcilie o estoque antes da baixa.';
+    end if;
+    if v_saldo_fisico_existe and v_saldo_fisico < p_quantidade then
+      raise exception 'Estoque físico insuficiente para o componente.';
+    end if;
+    update public.erp_produtos
+    set estoque_atual = estoque_atual - p_quantidade
+    where id = p_componente_id and empresa_id = v_empresa and estoque_atual >= p_quantidade;
+    if not found then
+      raise exception 'Saldo alterado durante a operação; recarregue o estoque.';
+    end if;
     insert into public.erp_estoque_movimentos (
       empresa_id, produto_id, tipo, quantidade, origem, documento, observacao
     )
@@ -217,6 +237,12 @@ begin
       v_empresa, p_componente_id, 'consumo', p_quantidade, 'manutencao',
       v_ordem.numero_os, 'Componente aplicado na O.S. ' || coalesce(v_ordem.numero_os, v_ordem.id::text)
     );
+    insert into public.erp_produto_estoque
+      (id, empresa_id, produto_id, saldo_fisico, created_at, updated_at)
+    values
+      (gen_random_uuid(), v_empresa, p_componente_id, v_saldo - p_quantidade, now(), now())
+    on conflict (empresa_id, produto_id)
+    do update set saldo_fisico = excluded.saldo_fisico, updated_at = now();
   end if;
 
   v_mttr := greatest(extract(epoch from (v_agora - coalesce(v_ordem.inicio_atendimento, v_ordem.created_at))) / 60, 0);
