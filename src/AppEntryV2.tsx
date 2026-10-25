@@ -199,6 +199,7 @@ const ManutencaoCentral = lazyPage(() => import('./pages/ManutencaoCentral'), 'd
 const ManutencaoCronograma = lazyPage(() => import('./pages/ManutencaoCronograma'), 'default')
 const ManutencaoPlanoMestre = lazyPage(() => import('./pages/ManutencaoPlanoMestre'), 'default')
 const ManutencaoIndicadores = lazyPage(() => import('./pages/manutencao/ManutencaoIndicadores'), 'default')
+const ManutencaoInsumos = lazyPage(() => import('./pages/manutencao/Insumos'), 'default')
 const PCPTabletOperador = lazyPage(() => import('./pages/PCPTabletOperador'), 'PCPTabletOperador')
 const PCPAreaFuncionario = lazyPage(() => import('./pages/PCPAreaFuncionario'), 'default')
 const EstoqueAjustes = lazyPage(() => import('./pages/EstoqueAjustes'), 'EstoqueAjustes')
@@ -717,6 +718,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/manutencao/plano-mestre" element={<QualityPlanGate><ManutencaoPlanoMestre /></QualityPlanGate>} />
       <Route path="/manutencao/indicadores" element={<QualityPlanGate><ManutencaoIndicadores /></QualityPlanGate>} />
       <Route path="/manutencao/ordens" element={<QualityPlanGate>{<ManutencaoOrdens />}</QualityPlanGate>} />
+      <Route path="/manutencao/insumos" element={<QualityPlanGate><ManutencaoInsumos /></QualityPlanGate>} />
       <Route path="/fiscal/carteira" element={<QualityPlanGate>{<FiscalCarteiraNFe />}</QualityPlanGate>} />
       <Route path="/qualidade/rnc" element={<Navigate to="/qualidade/rpnc" replace />} />
       <Route path="/qualidade/sala-rnc" element={<Navigate to="/qualidade/rpnc" replace />} />
