@@ -1,7 +1,8 @@
 /**
- * Revisão: SGQ-METROLOGIA-2026-10-22-R1
- * Escopo: remover campo duplicado de tipo de instrumento no formulário de cadastro.
- * Preservado: consultas Supabase, RPC, validações, persistência e estrutura visual restante.
+ * @DATA_REVISAO_APROVACAO 2026-10-26
+ * @STATUS_APROVACAO REV-SGQ-CALIBRACAO-PAQUIMETRO-001
+ * Escopo: recuperar o paquímetro digital na tela de calibração aprovada, mantendo o cadastro técnico e o histórico.
+ * Preservado: consultas Supabase, RPC, validações, persistência e bloqueio metrológico.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Download, History, LockKeyhole, Plus, Printer, RefreshCw, Save, ShieldCheck, X } from 'lucide-react'
@@ -9,6 +10,7 @@ import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '../components/ui/dialog'
 import QualitySidebar from '../components/quality/QualitySidebar'
+import DigitalCaliper from '../components/DigitalCaliper'
 
 type NumericText = string
 type Equipment = {
@@ -370,6 +372,13 @@ export default function CalibracaoIndustrial() {
         </div>
       </header>
       {(error || notice) && <div role={error ? 'alert' : 'status'} className={error ? 'border border-red-300 bg-red-50 p-2 text-[10px] text-red-800' : 'border border-emerald-300 bg-emerald-50 p-2 text-[10px] text-emerald-800'}>{error || notice}</div>}
+      <section aria-label="Paquímetro digital aprovado" className="border border-[#C8E3EE] bg-white p-2">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <div><p className="text-[9px] font-bold uppercase tracking-[.16em] text-[#2D8DB8]">METROLOGIA · REV-SGQ-CALIBRACAO-PAQUIMETRO-001</p><h2 className="text-[12px] font-semibold">Paquímetro Digital</h2></div>
+          <span className="text-[9px] text-slate-500">Leitura demonstrativa; não representa conexão com sensor físico.</span>
+        </div>
+        <DigitalCaliper instrumentOptions={equipments.map(item => ({ codigo: item.codigo, descricao: item.descricao, status: item.status, proxima_calibracao: item.proxima_calibracao }))} />
+      </section>
       <section className="grid grid-cols-2 gap-2 md:grid-cols-4">
         <div className="border border-[#C8E3EE] bg-white p-2"><p className="text-[9px] uppercase text-slate-500">Instrumentos cadastrados</p><p className="text-[18px] font-semibold">{equipments.length}</p></div>
         <div className="border border-[#C8E3EE] bg-white p-2"><p className="text-[9px] uppercase text-slate-500">Aptos para uso</p><p className="text-[18px] font-semibold text-emerald-700">{approvedCount}</p></div>
