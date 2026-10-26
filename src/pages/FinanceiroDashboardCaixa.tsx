@@ -1,3 +1,8 @@
+/**
+ * @DATA_REVISAO_APROVACAO 2026-10-26
+ * @STATUS_APROVACAO REV-FINANCEIRO-CAIXA-PREMIUM-001
+ * Caixa e Fluxo de Caixa compartilham o painel; indicadores resumidos sem cartões repetitivos.
+ */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ArrowRight, CalendarClock, RefreshCw, Wallet, CreditCard, ArrowDownToLine, GitCompare, FileSpreadsheet, CalendarRange, Factory } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -85,7 +90,6 @@ export default function FinanceiroDashboardCaixa() {
 
   const today = dayKey(new Date())
   const currentMonth = monthKey(new Date())
-  const currentYear = new Date().getFullYear()
   const sumOpen = (direction: Direction, predicate: (value: string) => boolean) => installments
     .filter(item=>item.title.tipo===direction&&item.saldo>0&&predicate(item.vencimento))
     .reduce((sum,item)=>sum+Number(item.saldo),0)
@@ -96,12 +100,8 @@ export default function FinanceiroDashboardCaixa() {
   const cards = [
     {label:'A receber hoje',value:sumOpen('RECEBER',d=>d===today)},
     {label:'A pagar hoje',value:sumOpen('PAGAR',d=>d===today)},
-    {label:'A receber no mês',value:sumOpen('RECEBER',d=>monthKey(dateFromKey(d))===currentMonth)},
-    {label:'A pagar no mês',value:sumOpen('PAGAR',d=>monthKey(dateFromKey(d))===currentMonth)},
     {label:'Recebido no mês',value:sumSettled('RECEBER',d=>monthKey(dateFromKey(d))===currentMonth)},
     {label:'Pago no mês',value:sumSettled('PAGAR',d=>monthKey(dateFromKey(d))===currentMonth)},
-    {label:'A receber no ano',value:sumOpen('RECEBER',d=>dateFromKey(d).getFullYear()===currentYear)},
-    {label:'A pagar no ano',value:sumOpen('PAGAR',d=>dateFromKey(d).getFullYear()===currentYear)},
   ]
 
   const buckets = useMemo(() => {
@@ -161,8 +161,8 @@ export default function FinanceiroDashboardCaixa() {
   return <VendasLayout title="Fluxo de caixa" subtitle="Tesouraria • parcelas • baixas • projeção" onRefresh={()=>void load()} navSections={financeNav}><main className="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-6"><div className="mx-auto max-w-[1600px] space-y-4">
     <header className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 pb-3"><div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-sky-700">Financeiro / Tesouraria</p><h1 className="text-2xl font-semibold text-[#123B50]">Fluxo de caixa</h1><p className="mt-1 text-sm text-slate-600">Entradas e saídas são parcelas e baixas registradas no financeiro da empresa.</p></div><button type="button" onClick={()=>void load()} disabled={loading} className="inline-flex h-9 items-center gap-2 border border-slate-300 bg-white px-3 text-sm disabled:opacity-50"><RefreshCw size={15}/>Atualizar</button></header>
     {error&&<div role="alert" className="border border-red-300 bg-red-50 p-3 text-sm text-red-900">{error}</div>}
-    <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      {cards.map(card=><article key={card.label} className="border border-slate-200 bg-white p-3"><span className="block text-xs text-slate-600">{card.label}</span><strong className="mt-1 block text-lg font-semibold text-[#123B50]">{loading?'…':currency(card.value)}</strong></article>)}
+    <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      {cards.map(card=><article key={card.label} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><span className="block text-xs font-medium text-slate-500">{card.label}</span><strong className="mt-1 block text-lg font-extrabold text-slate-900">{loading?'…':currency(card.value)}</strong></article>)}
     </section>
     <section className="border border-slate-200 bg-white">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 p-3"><div><h2 className="flex items-center gap-2 font-semibold"><CalendarClock size={17}/>Entradas, saídas e variação projetada</h2><p className="text-xs text-slate-600">Saldo projetado exibido como variação acumulada dos títulos e baixas; não substitui saldo bancário conciliado.</p></div><div className="flex flex-wrap items-center gap-2"><button type="button" onClick={()=>shift(-1)} aria-label="Períodos anteriores" className="grid size-9 place-items-center border border-slate-300"><ArrowLeft size={16}/></button>{(['DIA','SEMANA','MÊS','ANO'] as TimeScale[]).map(value=><button key={value} type="button" onClick={()=>setScale(value)} aria-pressed={scale===value} className={`h-9 border px-3 text-xs font-semibold ${scale===value?'border-sky-800 bg-sky-800 text-white':'border-slate-300 bg-white'}`}>{value}</button>)}<button type="button" onClick={()=>shift(1)} aria-label="Próximos períodos" className="grid size-9 place-items-center border border-slate-300"><ArrowRight size={16}/></button></div></div>
