@@ -4,6 +4,7 @@ const page = readFileSync('src/pages/ComprasRFQ.tsx', 'utf8')
 const styles = readFileSync('src/styles/synqra-workspace.css', 'utf8')
 const purchaseOrder = readFileSync('src/pages/ComprasPedidoCompra.tsx', 'utf8')
 const legacyPurchaseOrder = readFileSync('src/pages/PedidoCompra.tsx', 'utf8')
+const purchaseOrderMigration = readFileSync('supabase/migrations/20261026120000_erp_compras_pedido_fiscal_items.sql', 'utf8')
 
 const requiredPageMarkers = [
   '@DATA_REVISAO_APROVACAO 2026-10-26',
