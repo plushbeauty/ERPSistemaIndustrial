@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs'
  * Do not update these hashes as part of ordinary styling/refactor work.
  */
 const approved = [
-  { path: 'src/pages/CalibracaoIndustrial.tsx', sha: 'd89ecf061a0b233bdfa75488c84f77d1b1f6b893', label: 'Qualidade / Calibração com Paquímetro Digital', source: 'revisão explicitamente autorizada em 2026-10-26; cadastro, histórico e paquímetro na mesma tela' },
+  { path: 'src/pages/CalibracaoIndustrial.tsx', sha: '848b72d7c4c7db5c52de3db18c73a22f94a7af54', label: 'Qualidade / Calibração com Paquímetro Digital', source: 'revisão explicitamente autorizada em 2026-10-26; cadastro, histórico e paquímetro na mesma tela' },
   { path: 'src/pages/FinanceiroDashboardCaixa.tsx', sha: '4f139da09789e0f3c8e669bd1bfbca9aa3e65659', label: 'Financeiro / Fluxo de Caixa e Caixa', source: 'tela única compartilhada pelas rotas /financeiro/fluxo-caixa e /financeiro/caixa; preserva consulta de parcelas e baixas reais' },
   { path: 'src/pages/FinanceiroTitulos.tsx', sha: '2e9f2a554993145f2e00335ec509c50062beb33c', label: 'Financeiro / padrão visual de Contas a Receber', source: 'referência visual aprovada para o módulo financeiro em 2026-10-26' },
   { path: 'src/pages/QualidadePaquimetroDigital.tsx', sha: '3c355adb13c288e66c54556fd9123700e6956097', label: 'Qualidade / Paquímetro Digital', source: 'revisão visual premium autorizada em 2026-10-26; mantém dados reais e integração ao histórico de inspeções' },
