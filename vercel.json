@@ -30,5 +30,5 @@
       ]
     }
   ],
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':(exclude)docs/auditoria/**'"
+  "ignoreCommand": "if git diff --quiet HEAD^ HEAD -- . ':(exclude)docs/auditoria/**'; then exit 0; else exit 1; fi"
 }
