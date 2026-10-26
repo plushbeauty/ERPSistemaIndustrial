@@ -31,7 +31,7 @@ if (page.includes('compras-rfq-compact')) missing.push('página: wrapper legado 
 for (const marker of ['@DATA_REVISAO_APROVACAO 2026-10-26', '@STATUS_APROVACAO REV-COMPRAS-PO-PREMIUM-001', 'erp_compras_salvar_pedido', 'aliquota_ipi', 'aliquota_icms', 'centro_custo', 'synqra-po-page']) {
   if (!purchaseOrder.includes(marker)) missing.push(`pedido de compra: ${marker}`)
 }
-if (!/^\\s*\\/\\*\\*?[^]*?\\*\\/\\s*export \\{ default \\} from '\\.\\/ComprasPedidoCompra'\\s*$/m.test(legacyPurchaseOrder)) missing.push('PedidoCompra.tsx: implementação antiga deve permanecer removida e só reexportar a tela premium')
+if (!legacyPurchaseOrder.includes("export { default } from './ComprasPedidoCompra'") || legacyPurchaseOrder.includes('function PedidoCompra') || legacyPurchaseOrder.length > 500) missing.push('PedidoCompra.tsx: implementação antiga deve permanecer removida e só reexportar a tela premium')
 if (missing.length) {
   process.stderr.write(`FAIL — trava da RFQ premium: marcadores ausentes/legado detectado: ${missing.join('; ')}\n`)
   process.exit(1)
