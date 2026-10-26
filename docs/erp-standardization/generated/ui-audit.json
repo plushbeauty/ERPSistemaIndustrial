@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-10-26T17:41:51.756Z",
+  "generatedAt": "2026-10-26T17:48:43.574Z",
   "revision": "UI-AUDIT-R1",
   "mode": "static-analysis-only",
   "summary": {
     "sourceFilesScanned": 278,
     "routeDeclarationsDetected": 278,
     "filesUsingSharedFormTokens": 2,
-    "filesWithLocalStyleHints": 105,
+    "filesWithLocalStyleHints": 107,
     "filesWithControlsWithoutDetectedStaticHeight": 226
   },
   "routes": {
@@ -2942,7 +2942,7 @@
     },
     {
       "file": "src/components/fiscal/FiscalSidebar.tsx",
-      "lines": 37,
+      "lines": 33,
       "controlsDetected": 0,
       "tags": {
         "input": 0,
@@ -2957,7 +2957,7 @@
         "printHints": 0
       },
       "sharedFormTokensImported": false,
-      "localStyleHints": false,
+      "localStyleHints": true,
       "heightSummary": {},
       "controls": []
     },
@@ -11403,7 +11403,7 @@
     },
     {
       "file": "src/pages/FiscalPendencias.tsx",
-      "lines": 95,
+      "lines": 105,
       "controlsDetected": 4,
       "tags": {
         "input": 1,
@@ -11413,20 +11413,27 @@
         "forms": 0,
         "tables": 1,
         "grids": 0,
-        "roundedClasses": 3,
+        "roundedClasses": 0,
         "lookupHints": 0,
         "printHints": 0
       },
       "sharedFormTokensImported": false,
-      "localStyleHints": false,
+      "localStyleHints": true,
       "heightSummary": {
-        "9": 2,
-        "not-detected-static": 2
+        "not-detected-static": 4
       },
       "controls": [
         {
+          "tag": "button",
+          "line": 78,
+          "heightClasses": [],
+          "widthClasses": [],
+          "maxLength": null,
+          "classNameStaticDetected": true
+        },
+        {
           "tag": "input",
-          "line": 68,
+          "line": 87,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11434,28 +11441,16 @@
         },
         {
           "tag": "button",
-          "line": 70,
+          "line": 98,
           "heightClasses": [],
-          "widthClasses": [],
-          "maxLength": null,
-          "classNameStaticDetected": false
-        },
-        {
-          "tag": "button",
-          "line": 89,
-          "heightClasses": [
-            "9"
-          ],
           "widthClasses": [],
           "maxLength": null,
           "classNameStaticDetected": true
         },
         {
           "tag": "button",
-          "line": 89,
-          "heightClasses": [
-            "9"
-          ],
+          "line": 98,
+          "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
           "classNameStaticDetected": true
