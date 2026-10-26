@@ -1,20 +1,20 @@
 /**
  * ERPSis — CONTROLE DE REVISÃO VISUAL
- * Data Atual: 2026-10-16
- * Revisão Incremental: REV-063
- * Escopo: padronização industrial de inputs, seletores, botões e densidade tipográfica;
- * cantos retos, foco azul, cabeçalhos escuros e alinhamento de dados conforme aplicável.
+ * Data Atual: 2026-10-26
+ * Revisão Incremental: padrão premium financeiro
+ * Escopo: unificação de contas a pagar e receber, filtros e controles alinhados.
  * Escopo funcional preservado: consultas Supabase, validações, tenant, RPCs e gravações.
  */
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { BrowserMultiFormatReader } from '@zxing/browser'
 import type { IScannerControls } from '@zxing/browser'
 import type { LucideIcon } from 'lucide-react'
-import { ArrowDownCircle, ArrowUpCircle, Barcode, CalendarClock, Camera, Edit3, Plus, RefreshCw, ScanLine, Users, X, Wallet, CreditCard, ArrowDownToLine, GitCompare, FileSpreadsheet, CalendarRange, Factory } from 'lucide-react'
+import { ArrowDownCircle, ArrowUpCircle, Barcode, CalendarClock, Camera, Edit3, Plus, RefreshCw, ScanLine, X, Wallet, CalendarRange, History, CircleDollarSign } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import VendasLayout, { type SalesNavSection } from './VendasLayout'
 import { fetchAllPages } from '../lib/supabasePagination'
 import { parseBoleto } from '../lib/boleto'
+import { localDateIso, makeInstallments, matchesDueFilter, type DueFilter } from '../lib/financeiroTitulos.mjs'
 
 type Kind = 'PAGAR' | 'RECEBER'
 const financeNav: SalesNavSection[] = [{ label:'Financeiro', items:[{label:'Caixa',href:'/financeiro/caixa',icon:CalendarClock},{label:'Contas a pagar',href:'/financeiro/contas-pagar',icon:CalendarClock},{label:'Contas a receber',href:'/financeiro/contas-receber',icon:CalendarClock},{label:'Fluxo de caixa',href:'/financeiro/fluxo-caixa',icon:CalendarClock},{label:'Conciliação',href:'/financeiro/reconciliacao',icon:CalendarClock},{label:'Importar extratos',href:'/financeiro/importar-extratos',icon:CalendarClock},{label:'Ano fiscal',href:'/financeiro/ano-fiscal',icon:CalendarClock},{label:'Custos padrão',href:'/financeiro/custo-padrao',icon:CalendarClock}] }]
@@ -47,9 +47,11 @@ type SourceOrder = {
   descricao: string
 }
 type Profile = { empresa_id: string | null; is_master: boolean }
+type PaymentHistoryRow = { id: string; parcela_id: string; valor: number; ocorrido_em: string; forma_pagamento: string; referencia: string | null }
+type TitleStatusFilter = 'TODOS' | 'ABERTO' | 'PARCIAL' | 'LIQUIDADO' | 'CANCELADO'
 
 const currency = (value: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
-const dateToday = () => new Date().toISOString().slice(0, 10)
+const dateToday = () => localDateIso()
 const PAGE_SIZE = 25
 const emptyForm = {
   titleId: '',
@@ -65,27 +67,6 @@ const emptyForm = {
   sourceId: '',
 }
 
-function addMonthsClamped(isoDate: string, months: number): string {
-  const [year, month, day] = isoDate.split('-').map(Number)
-  const firstOfTarget = new Date(Date.UTC(year, month - 1 + months, 1))
-  const lastDay = new Date(Date.UTC(firstOfTarget.getUTCFullYear(), firstOfTarget.getUTCMonth() + 1, 0)).getUTCDate()
-  return [
-    firstOfTarget.getUTCFullYear(),
-    String(firstOfTarget.getUTCMonth() + 1).padStart(2, '0'),
-    String(Math.min(day, lastDay)).padStart(2, '0'),
-  ].join('-')
-}
-
-function makeInstallments(total: number, count: number, firstDue: string) {
-  const cents = Math.round(total * 100)
-  const base = Math.floor(cents / count)
-  return Array.from({ length: count }, (_, index) => ({
-    numero: index + 1,
-    vencimento: addMonthsClamped(firstDue, index),
-    valor: (index === count - 1 ? cents - base * (count - 1) : base) / 100,
-  }))
-}
-
 export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
   const payable = kind === 'PAGAR'
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -97,6 +78,8 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
   const [page, setPage] = useState(0)
   const [form, setForm] = useState(emptyForm)
   const [query, setQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<TitleStatusFilter>('TODOS')
+  const [dueFilter, setDueFilter] = useState<DueFilter>('TODOS')
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(true)
@@ -108,6 +91,10 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
   const [paymentDate, setPaymentDate] = useState(() => new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16))
   const [paymentMethod, setPaymentMethod] = useState('')
   const [paymentReference, setPaymentReference] = useState('')
+  const [historyTitle, setHistoryTitle] = useState<Title | null>(null)
+  const [historyRows, setHistoryRows] = useState<PaymentHistoryRow[]>([])
+  const [historyLoading, setHistoryLoading] = useState(false)
+  const [paymentsThisMonth, setPaymentsThisMonth] = useState(0)
   const [barcode, setBarcode] = useState('')
   const [barcodeMessage, setBarcodeMessage] = useState('')
   const [scannerOpen, setScannerOpen] = useState(false)
@@ -122,6 +109,7 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
     if (!companyId) {
       setTitles([])
       setPartners([])
+      setPaymentsThisMonth(0)
       setPage(0)
       setLoading(false)
       return
@@ -129,7 +117,11 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
     setLoading(true)
     setError('')
     try {
-      const [titleRows, partnerRows] = await Promise.all([
+      const now = new Date()
+      const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01T00:00:00`
+      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+      const nextMonthStart = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}-01T00:00:00`
+      const [titleRows, partnerRows, paymentRows] = await Promise.all([
         fetchAllPages<unknown>((from, to) =>
           supabase.from('erp_financeiro_titulos')
             .select('id,empresa_id,tipo,parceiro_tipo,parceiro_id,descricao,documento,categoria,centro_custo,data_emissao,origem_tipo,origem_id,valor_total,status,erp_financeiro_parcelas(id,numero,vencimento,valor,saldo,status)', { count: 'exact' })
@@ -142,12 +134,18 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
           : fetchAllPages<unknown>((from, to) =>
               supabase.from('erp_clientes').select('id,nome', { count: 'exact' }).eq('empresa_id', companyId).eq('ativo', true).order('nome').range(from, to),
             ),
+        fetchAllPages<{ valor: number }>((from, to) =>
+          supabase.from('erp_financeiro_baixas').select('valor,erp_financeiro_titulos!inner(tipo)', { count: 'exact' })
+            .eq('empresa_id', companyId).eq('erp_financeiro_titulos.tipo', kind)
+            .gte('ocorrido_em', monthStart).lt('ocorrido_em', nextMonthStart).range(from, to),
+        ),
       ])
       setTitles(titleRows as unknown as Title[])
       setPartners(partnerRows.map((partner) => {
         const row = partner as { id: string; razao_social?: string; nome?: string }
         return { id: String(row.id), nome: String(payable ? row.razao_social ?? '' : row.nome ?? '') }
       }))
+      setPaymentsThisMonth(paymentRows.reduce((sum, row) => sum + Number(row.valor || 0), 0))
       setPage(0)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível consultar os títulos financeiros.')
@@ -272,11 +270,16 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase('pt-BR')
-    return titles.filter(title => !needle || [
-      title.descricao, title.documento, title.categoria, title.centro_custo, title.status,
-      partners.find(partner => partner.id === title.parceiro_id)?.nome,
-    ].some(value => String(value ?? '').toLocaleLowerCase('pt-BR').includes(needle)))
-  }, [partners, query, titles])
+    return titles.filter(title => {
+      const searchMatches = !needle || [
+        title.descricao, title.documento, title.categoria, title.centro_custo, title.status,
+        partners.find(partner => partner.id === title.parceiro_id)?.nome,
+      ].some(value => String(value ?? '').toLocaleLowerCase('pt-BR').includes(needle))
+      const statusMatches = statusFilter === 'TODOS' || title.status === statusFilter
+      const dueMatches = matchesDueFilter(title.erp_financeiro_parcelas ?? [], dueFilter, dateToday())
+      return searchMatches && statusMatches && dueMatches
+    })
+  }, [dueFilter, partners, query, statusFilter, titles])
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const visibleTitles = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
   useEffect(() => { setPage(current => Math.min(current, pageCount - 1)) }, [pageCount])
@@ -442,38 +445,80 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
     }
   }
 
+  const openHistory = async (title: Title) => {
+    setHistoryTitle(title)
+    setHistoryRows([])
+    setHistoryLoading(true)
+    setError('')
+    try {
+      const rows = await fetchAllPages<PaymentHistoryRow>((from, to) =>
+        supabase.from('erp_financeiro_baixas')
+          .select('id,parcela_id,valor,ocorrido_em,forma_pagamento,referencia', { count: 'exact' })
+          .eq('empresa_id', title.empresa_id).eq('titulo_id', title.id)
+          .order('ocorrido_em', { ascending: false }).range(from, to),
+      )
+      setHistoryRows(rows)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível consultar o histórico de baixas.')
+      setHistoryTitle(null)
+    } finally {
+      setHistoryLoading(false)
+    }
+  }
+
   const title = payable ? 'Contas a pagar' : 'Contas a receber'
-  return <VendasLayout title={title} subtitle="Títulos • parcelas • baixas • integração com vendas e compras" onRefresh={()=>void load()} navSections={financeNav}><main className="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-6">
+  const openBalance = titles.reduce((sum, row) => sum + (row.erp_financeiro_parcelas ?? []).reduce((total, installment) => total + Number(installment.saldo), 0), 0)
+  const overdueBalance = titles.reduce((sum, row) => sum + (row.erp_financeiro_parcelas ?? []).filter(part => part.saldo > 0 && part.vencimento < dateToday()).reduce((total, part) => total + Number(part.saldo), 0), 0)
+  const dueSoon = titles.reduce((sum, row) => sum + (row.erp_financeiro_parcelas ?? []).filter(part => part.saldo > 0 && matchesDueFilter([part], 'PROXIMOS_7', dateToday())).reduce((total, part) => total + Number(part.saldo), 0), 0)
+  return <VendasLayout title="" subtitle="" showPageHeader={false} showStatusCards={false} onRefresh={()=>void load()} navSections={financeNav}><main className="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-6">
     <div className="mx-auto max-w-[1500px] space-y-4">
-      <header className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 pb-3">
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-[.16em] text-sky-700">Financeiro / Tesouraria</p>
-          <h1 className="text-2xl font-semibold text-[#123B50]">{title}</h1>
-          <p className="mt-1 text-sm text-slate-600">Títulos, parcelas e baixas persistidos por empresa. Nenhum pagamento é criado pela leitura do boleto.</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {profile?.is_master && <label className="grid gap-1 text-xs font-semibold">Empresa
-            <select value={selectedCompany} onChange={event => setSelectedCompany(event.target.value)} className="h-8 min-w-56 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold">
+      <header className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-950 via-blue-950 to-blue-700 px-6 py-5 text-white shadow-lg">
+        <div className="pointer-events-none absolute -right-12 -top-28 size-80 rounded-full border-[24px] border-white/5" />
+        <p className="relative text-[10px] font-bold uppercase tracking-[.18em] text-sky-200">Financeiro · Tesouraria industrial</p>
+        <h1 className="relative mt-1 text-2xl font-extrabold">{title}</h1>
+        <p className="relative mt-1 text-xs text-blue-100">Títulos, parcelas, vencimentos e baixas integrados com compras e vendas.</p>
+        <span className="relative mt-3 inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-semibold text-blue-50">Atualizado · Padrão Premium · 26/10/2026</span>
+      </header>
+      <nav aria-label="Contas financeiras" className="flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
+        <a href="/financeiro/contas-pagar" className={`inline-flex h-9 items-center gap-2 rounded-lg px-4 text-xs font-bold ${payable ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'}`}><ArrowUpCircle size={15}/>Contas a pagar</a>
+        <a href="/financeiro/contas-receber" className={`inline-flex h-9 items-center gap-2 rounded-lg px-4 text-xs font-bold ${!payable ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'}`}><ArrowDownCircle size={15}/>Contas a receber</a>
+      </nav>
+      <div className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+        <label className="grid min-w-56 flex-1 gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-600">Buscar título
+          <input value={query} onChange={event => { setQuery(event.target.value); setPage(0) }} className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-medium normal-case tracking-normal outline-none focus:border-slate-400 focus:bg-white" placeholder="Parceiro, documento, categoria..."/>
+        </label>
+        <label className="grid min-w-36 gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-600">Status
+          <select value={statusFilter} onChange={event => { setStatusFilter(event.target.value as TitleStatusFilter); setPage(0) }} className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-medium normal-case tracking-normal outline-none focus:border-slate-400 focus:bg-white">
+            <option value="TODOS">Todos</option><option value="ABERTO">Aberto</option><option value="PARCIAL">Parcial</option><option value="LIQUIDADO">Liquidado</option><option value="CANCELADO">Cancelado</option>
+          </select>
+        </label>
+        <label className="grid min-w-40 gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-600">Vencimento
+          <select value={dueFilter} onChange={event => { setDueFilter(event.target.value as DueFilter); setPage(0) }} className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-medium normal-case tracking-normal outline-none focus:border-slate-400 focus:bg-white">
+            <option value="TODOS">Todos os períodos</option><option value="VENCIDO">Vencidos</option><option value="HOJE">Vence hoje</option><option value="PROXIMOS_7">Próximos 7 dias</option>
+          </select>
+        </label>
+        {profile?.is_master && <label className="grid min-w-56 gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-600">Empresa
+            <select value={selectedCompany} onChange={event => setSelectedCompany(event.target.value)} className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-medium normal-case tracking-normal outline-none focus:border-slate-400 focus:bg-white">
               <option value="">Selecionar empresa</option>
               {companies.map(company => <option key={company.id} value={company.id}>{company.nome}</option>)}
             </select>
           </label>}
-          <button type="button" onClick={() => void load()} disabled={loading || busy} className="inline-flex h-8 items-center gap-2 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold disabled:opacity-50"><RefreshCw size={15}/>Atualizar</button>
-          <button type="button" onClick={openNew} disabled={!companyId || busy} className="inline-flex h-8 items-center gap-2 rounded-[2px] bg-[#123B50] px-3 text-xs font-semibold text-white disabled:opacity-50"><Plus size={15}/>Novo título</button>
-        </div>
-      </header>
+        <button type="button" onClick={() => void load()} disabled={loading || busy} className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50"><RefreshCw size={15}/>Atualizar</button>
+        <button type="button" onClick={openNew} disabled={!companyId || busy} className="inline-flex h-9 items-center gap-2 rounded-lg bg-blue-700 px-4 text-xs font-bold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-800 disabled:opacity-50"><Plus size={15}/>Novo título</button>
+      </div>
       {error && <div role="alert" className="border border-red-300 bg-red-50 p-3 text-sm text-red-900">{error}</div>}
       {message && <div role="status" className="border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-900">{message}</div>}
       {!companyId && profile?.is_master && <p className="border border-amber-300 bg-amber-50 p-3 text-sm">Selecione a empresa que o Master vai administrar.</p>}
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <Kpi icon={payable ? ArrowUpCircle : ArrowDownCircle} label="Títulos" value={String(filtered.length)} />
-        <Kpi icon={payable ? ArrowUpCircle : ArrowDownCircle} label="Saldo em aberto" value={currency(filtered.reduce((sum, row) => sum+(row.erp_financeiro_parcelas??[]).reduce((parcelSum, installment) => parcelSum+Number(installment.saldo),0),0))} />
-        <Kpi icon={CalendarClock} label="Parcelas vencidas" value={String(filtered.reduce((sum,row) => sum+(row.erp_financeiro_parcelas??[]).filter(part => part.saldo>0&&part.vencimento<dateToday()).length,0))} />
-        <Kpi icon={Users} label="Parceiros ativos" value={String(partners.length)} />
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <Kpi icon={payable ? ArrowUpCircle : ArrowDownCircle} label="Títulos registrados" value={String(titles.length)} />
+        <Kpi icon={Wallet} label="Saldo em aberto" value={currency(openBalance)} />
+        <Kpi icon={CalendarClock} label="Saldo vencido" value={currency(overdueBalance)} />
+        <Kpi icon={CalendarRange} label="Vencendo em 7 dias" value={currency(dueSoon)} />
+        <Kpi icon={CircleDollarSign} label={payable ? 'Pagamentos no mês' : 'Recebimentos no mês'} value={currency(paymentsThisMonth)} />
       </section>
 
-      {showForm && <section className="border border-slate-300 bg-white p-4">
+      {showForm && <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
           <div><h2 className="font-semibold">{form.titleId ? 'Editar título manual' : sourceMode ? 'Gerar título do pedido' : 'Novo título manual'}</h2><p className="text-xs text-slate-600">O parcelamento soma exatamente o valor total; gravar não baixa nem liquida parcelas.</p></div>
           <button type="button" onClick={() => setShowForm(false)} aria-label="Fechar formulário" className="grid size-8 place-items-center border border-slate-300"><X size={16}/></button>
@@ -483,51 +528,51 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
           <button type="button" onClick={() => setSourceMode(true)} className={`border px-3 py-2 text-xs ${sourceMode?'border-sky-700 bg-sky-50 font-semibold':'border-slate-300'}`}>Vincular pedido de {payable?'compra':'venda'}</button>
         </div>}
         {sourceMode && !form.titleId && <label className="mb-3 grid gap-1 text-xs font-semibold">Pedido elegível
-          <select value={form.sourceId} onChange={event => chooseSource(event.target.value)} className="h-8 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold">
+          <select value={form.sourceId} onChange={event => chooseSource(event.target.value)} className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-medium">
             <option value="">Selecionar pedido aprovado</option>
             {sources.map(source => <option key={source.id} value={source.id}>{source.descricao} · {currency(source.total)} · {source.data ?? 'sem data'}</option>)}
           </select>
         </label>}
-        {payable && !form.titleId && !sourceMode && <section className="mb-3 border border-sky-200 bg-sky-50 p-3">
+        {payable && !form.titleId && !sourceMode && <section className="mb-3 rounded-xl border border-sky-200 bg-sky-50 p-3">
           <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-sky-950"><Barcode size={17}/>Ler código de boleto (somente preenchimento)</div>
-          <div className="flex flex-wrap gap-2">
-            <input value={barcode} onChange={event => setBarcode(event.target.value)} placeholder="Linha digitável (47 dígitos) ou código de barras (44)" className="h-8 min-w-72 flex-1 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold"/>
-            <button type="button" onClick={() => parseAndApplyBoleto(barcode)} className="h-8 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold">Validar linha</button>
-            <button type="button" onClick={() => void startScanner()} className="inline-flex h-8 items-center gap-1 rounded-[2px] bg-sky-800 px-3 text-xs font-semibold text-white"><Camera size={15}/>Abrir câmera</button>
+          <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+            <input value={barcode} onChange={event => setBarcode(event.target.value)} placeholder="Linha digitável (47 dígitos) ou código de barras (44)" className="h-9 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold"/>
+            <button type="button" onClick={() => parseAndApplyBoleto(barcode)} className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold shadow-sm">Validar linha</button>
+            <button type="button" onClick={() => void startScanner()} className="inline-flex h-9 items-center justify-center gap-1 rounded-lg bg-blue-700 px-3 text-xs font-semibold text-white shadow-sm"><Camera size={15}/>Abrir câmera</button>
           </div>
           {barcodeMessage && <p role="status" className="mt-2 text-xs text-emerald-800">{barcodeMessage}</p>}
           <p className="mt-1 text-[11px] text-slate-600">A leitura nunca registra pagamento: confira beneficiário, vencimento e valor antes de salvar o título.</p>
         </section>}
         <form onSubmit={event => void saveTitle(event)} className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <label className="grid gap-1 text-xs font-semibold xl:col-span-2">Parceiro
-            <select required value={form.partnerId} disabled={Boolean(form.sourceId)} onChange={event => setForm(current => ({...current,partnerId:event.target.value}))} className="h-8 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold disabled:bg-slate-100">
+          <label className="grid gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-600 xl:col-span-2">Parceiro
+            <select required value={form.partnerId} disabled={Boolean(form.sourceId)} onChange={event => setForm(current => ({...current,partnerId:event.target.value}))} className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-medium normal-case tracking-normal focus:bg-white disabled:bg-slate-100">
               <option value="">Selecionar {payable?'fornecedor':'cliente'}</option>
               {partners.map(partner => <option key={partner.id} value={partner.id}>{partner.nome}</option>)}
             </select>
           </label>
-          <label className="grid gap-1 text-xs font-semibold xl:col-span-2">Descrição
-            <input required value={form.description} onChange={event => setForm(current => ({...current,description:event.target.value}))} className="h-8 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold"/>
+          <label className="grid gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-600 xl:col-span-2">Descrição
+            <input required value={form.description} onChange={event => setForm(current => ({...current,description:event.target.value}))} className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-medium normal-case tracking-normal focus:bg-white"/>
           </label>
-          <label className="grid gap-1 text-xs font-semibold">Documento
-            <input value={form.document} onChange={event => setForm(current => ({...current,document:event.target.value}))} className="h-8 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold"/>
+          <label className="grid gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-600">Documento
+            <input value={form.document} onChange={event => setForm(current => ({...current,document:event.target.value}))} className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-medium normal-case tracking-normal focus:bg-white"/>
           </label>
-          <label className="grid gap-1 text-xs font-semibold">Categoria
-            <input value={form.category} onChange={event => setForm(current => ({...current,category:event.target.value}))} className="h-8 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold"/>
+          <label className="grid gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-600">Categoria
+            <input value={form.category} onChange={event => setForm(current => ({...current,category:event.target.value}))} className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-medium normal-case tracking-normal focus:bg-white"/>
           </label>
-          <label className="grid gap-1 text-xs font-semibold">Centro de custo
-            <input value={form.costCenter} onChange={event => setForm(current => ({...current,costCenter:event.target.value}))} className="h-8 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold"/>
+          <label className="grid gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-600">Centro de custo
+            <input value={form.costCenter} onChange={event => setForm(current => ({...current,costCenter:event.target.value}))} className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-medium normal-case tracking-normal focus:bg-white"/>
           </label>
-          <label className="grid gap-1 text-xs font-semibold">Data de emissão
-            <input required type="date" value={form.issueDate} onChange={event => setForm(current => ({...current,issueDate:event.target.value}))} className="h-8 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold"/>
+          <label className="grid gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-600">Data de emissão
+            <input required type="date" value={form.issueDate} onChange={event => setForm(current => ({...current,issueDate:event.target.value}))} className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-medium normal-case tracking-normal focus:bg-white"/>
           </label>
-          <label className="grid gap-1 text-xs font-semibold">Valor total
-            <input required type="number" min="0.01" step="0.01" value={form.total} disabled={Boolean(form.sourceId)} onChange={event => setForm(current => ({...current,total:event.target.value}))} className="h-8 rounded-[2px] border border-slate-300 px-3 text-xs font-semibold disabled:bg-slate-100"/>
+          <label className="grid gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-600">Valor total
+            <input required type="number" min="0.01" step="0.01" value={form.total} disabled={Boolean(form.sourceId)} onChange={event => setForm(current => ({...current,total:event.target.value}))} className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-medium normal-case tracking-normal disabled:bg-slate-100"/>
           </label>
-          <label className="grid gap-1 text-xs font-semibold">Número de parcelas
-            <input required type="number" min="1" max="120" step="1" value={form.installments} onChange={event => setForm(current => ({...current,installments:event.target.value}))} className="h-8 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold"/>
+          <label className="grid gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-600">Número de parcelas
+            <input required type="number" min="1" max="120" step="1" value={form.installments} onChange={event => setForm(current => ({...current,installments:event.target.value}))} className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-medium normal-case tracking-normal"/>
           </label>
-          <label className="grid gap-1 text-xs font-semibold">Primeiro vencimento
-            <input required type="date" value={form.firstDue} onChange={event => setForm(current => ({...current,firstDue:event.target.value}))} className="h-8 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold"/>
+          <label className="grid gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-600">Primeiro vencimento
+            <input required type="date" value={form.firstDue} onChange={event => setForm(current => ({...current,firstDue:event.target.value}))} className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-medium normal-case tracking-normal"/>
           </label>
           <div className="flex items-end gap-2 xl:col-span-4">
             <button type="button" onClick={() => setShowForm(false)} className="h-10 border border-slate-300 px-4 text-sm">Cancelar</button>
@@ -536,13 +581,8 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
         </form>
       </section>}
 
-      <section className="border border-slate-200 bg-white">
-        <div className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 p-3">
-          <label className="grid min-w-60 flex-1 gap-1 text-xs font-semibold">Buscar título
-            <input value={query} onChange={event => { setQuery(event.target.value); setPage(0) }} className="h-9 border border-slate-300 px-2" placeholder="Parceiro, documento, categoria ou status"/>
-          </label>
-          <span className="text-xs text-slate-600">{filtered.length} título(s)</span>
-        </div>
+      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex items-center justify-between gap-3 border-b border-slate-200 p-3"><div><h2 className="text-sm font-bold text-slate-800">Títulos e parcelas</h2><p className="text-xs text-slate-500">{filtered.length} resultado(s) · consulta da empresa selecionada</p></div><span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-800">{loading ? 'Atualizando…' : `${filtered.length} registros`}</span></div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1050px] border-collapse text-left text-sm">
             <thead className="bg-slate-100 text-xs uppercase text-slate-600"><tr><th className="px-3 py-2">Parceiro / descrição</th><th className="px-3 py-2">Documento</th><th className="px-3 py-2">Origem</th><th className="px-3 py-2">Parcelas</th><th className="px-3 py-2">Total / saldo</th><th className="px-3 py-2">Status</th><th className="px-3 py-2">Ações</th></tr></thead>
@@ -555,10 +595,10 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
                   <td className="px-3 py-2"><strong>{partners.find(partner=>partner.id===title.parceiro_id)?.nome ?? 'Parceiro não disponível'}</strong><br/><span className="text-xs text-slate-600">{title.descricao}</span>{title.categoria&&<div className="text-[11px] text-slate-500">{title.categoria}{title.centro_custo?` · ${title.centro_custo}`:''}</div>}</td>
                   <td className="px-3 py-2">{title.documento||'—'}</td>
                   <td className="px-3 py-2">{title.origem_tipo==='MANUAL'?'Manual':`${title.origem_tipo==='PEDIDO_COMPRA'?'Pedido de compra':'Pedido de venda'} · idempotente`}</td>
-                  <td className="px-3 py-2"><div className="space-y-1">{installments.map(item=><div key={item.id} className="flex items-center gap-2 text-xs"><span>#{item.numero} · {item.vencimento} · {currency(item.valor)} · saldo {currency(item.saldo)} · {item.status}</span>{item.saldo>0&&<button type="button" onClick={()=>{setPayment({title,installment:item});setPaymentValue(item.saldo.toFixed(2));setPaymentMethod('')}} className="shrink-0 border border-sky-700 px-2 py-1 text-[11px] text-sky-900">Baixar</button>}</div>)}</div></td>
+                  <td className="px-3 py-2"><div className="space-y-1">{installments.map(item=><div key={item.id} className="flex flex-wrap items-center gap-2 rounded-lg bg-slate-50 p-2 text-xs"><span>#{item.numero} · {item.vencimento} · {currency(item.valor)} · saldo {currency(item.saldo)} · <StatusBadge status={item.status}/></span>{item.saldo>0&&<button type="button" onClick={()=>{setPayment({title,installment:item});setPaymentValue(item.saldo.toFixed(2));setPaymentMethod('')}} className="inline-flex h-9 shrink-0 items-center rounded-lg border border-blue-200 bg-white px-2 text-[11px] font-bold text-blue-800 shadow-sm hover:bg-blue-50">Baixar</button>}</div>)}</div></td>
                   <td className="px-3 py-2 tabular-nums">{currency(title.valor_total)}<div className="text-xs text-slate-600">{currency(balance)} em aberto</div></td>
-                  <td className="px-3 py-2">{title.status}</td>
-                  <td className="px-3 py-2">{title.origem_tipo==='MANUAL'&&title.status==='ABERTO'&&balance===title.valor_total&&<button type="button" onClick={()=>editTitle(title)} aria-label="Editar título manual" className="erp-edit-button"><Edit3 size={13}/>Editar</button>}</td>
+                  <td className="px-3 py-2"><StatusBadge status={title.status}/></td>
+                  <td className="space-y-1 px-3 py-2"><button type="button" onClick={()=>void openHistory(title)} className="inline-flex h-9 items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-bold text-slate-700 shadow-sm hover:bg-slate-50"><History size={13}/>Histórico</button>{title.origem_tipo==='MANUAL'&&title.status==='ABERTO'&&balance===title.valor_total&&<button type="button" onClick={()=>editTitle(title)} aria-label="Editar título manual" className="erp-edit-button"><Edit3 size={13}/>Editar</button>}</td>
                 </tr>
               })}
               {!loading&&!filtered.length&&<tr><td colSpan={7} className="px-3 py-10 text-center text-slate-600">Nenhum título registrado para esta empresa.</td></tr>}
@@ -571,20 +611,26 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
           <button type="button" disabled={page + 1 >= pageCount} onClick={() => setPage(current => Math.min(pageCount - 1, current + 1))} className="h-9 border border-slate-300 px-3 text-sm disabled:opacity-50">Próxima</button>
         </nav>
       </section>
+      {historyTitle&&<div role="dialog" aria-modal="true" aria-labelledby="history-title" className="fixed inset-0 z-[1000] grid place-items-center bg-slate-950/50 p-4">
+        <section className="w-full max-w-3xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl">
+          <header className="flex items-center justify-between border-b border-slate-200 px-5 py-4"><div><h2 id="history-title" className="font-bold text-slate-900">Histórico de baixas</h2><p className="text-xs text-slate-500">{historyTitle.descricao} · {historyTitle.documento || 'sem documento'}</p></div><button type="button" onClick={()=>setHistoryTitle(null)} aria-label="Fechar histórico" className="grid size-9 place-items-center rounded-lg border border-slate-200"><X size={16}/></button></header>
+          <div className="max-h-[60vh] overflow-auto p-4">{historyLoading?<p className="py-8 text-center text-sm text-slate-500">Consultando baixas registradas…</p>:historyRows.length?<table className="w-full text-left text-xs"><thead className="bg-slate-100 uppercase text-slate-600"><tr><th className="p-3">Data</th><th className="p-3">Forma</th><th className="p-3">Referência</th><th className="p-3 text-right">Valor</th></tr></thead><tbody>{historyRows.map(row=><tr key={row.id} className="border-t border-slate-100"><td className="p-3">{new Date(row.ocorrido_em).toLocaleString('pt-BR')}</td><td className="p-3">{row.forma_pagamento}</td><td className="p-3">{row.referencia || '—'}</td><td className="p-3 text-right font-semibold">{currency(Number(row.valor))}</td></tr>)}</tbody></table>:<p className="py-8 text-center text-sm text-slate-500">Nenhuma baixa registrada neste título.</p>}</div>
+        </section>
+      </div>}
       {payment&&<div role="dialog" aria-modal="true" aria-labelledby="payment-title" className="fixed inset-0 z-[1000] grid place-items-center bg-slate-950/40 p-4">
         <form onSubmit={event=>void submitPayment(event)} className="w-full max-w-lg space-y-3 border border-slate-300 bg-white p-5 shadow-xl">
           <div className="flex items-start justify-between"><div><h2 id="payment-title" className="font-semibold">Registrar baixa</h2><p className="text-xs text-slate-600">Parcela #{payment.installment.numero} · saldo {currency(payment.installment.saldo)}</p></div><button type="button" onClick={()=>setPayment(null)} aria-label="Fechar baixa"><X size={17}/></button></div>
           <label className="grid gap-1 text-xs font-semibold">Valor recebido/pago
-            <input required type="number" min="0.01" max={payment.installment.saldo} step="0.01" value={paymentValue} onChange={event=>setPaymentValue(event.target.value)} className="h-8 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold"/>
+            <input required type="number" min="0.01" max={payment.installment.saldo} step="0.01" value={paymentValue} onChange={event=>setPaymentValue(event.target.value)} className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-semibold"/>
           </label>
           <label className="grid gap-1 text-xs font-semibold">Data e hora da baixa
-            <input required type="datetime-local" value={paymentDate} onChange={event=>setPaymentDate(event.target.value)} className="h-8 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold"/>
+            <input required type="datetime-local" value={paymentDate} onChange={event=>setPaymentDate(event.target.value)} className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-semibold"/>
           </label>
           <label className="grid gap-1 text-xs font-semibold">Forma de pagamento/recebimento
-            <select required value={paymentMethod} onChange={event=>setPaymentMethod(event.target.value)} className="h-8 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold"><option value="">Selecionar forma</option><option>PIX</option><option>TED/DOC</option><option>Boleto</option><option>Cartão</option><option>Dinheiro</option><option>Outro</option></select>
+            <select required value={paymentMethod} onChange={event=>setPaymentMethod(event.target.value)} className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-semibold"><option value="">Selecionar forma</option><option>PIX</option><option>TED/DOC</option><option>Boleto</option><option>Cartão</option><option>Dinheiro</option><option>Outro</option></select>
           </label>
           <label className="grid gap-1 text-xs font-semibold">Referência / comprovante
-            <input value={paymentReference} onChange={event=>setPaymentReference(event.target.value)} className="h-8 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold"/>
+            <input value={paymentReference} onChange={event=>setPaymentReference(event.target.value)} className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-semibold"/>
           </label>
           <div className="flex justify-end gap-2"><button type="button" onClick={()=>setPayment(null)} className="h-9 border border-slate-300 px-3 text-sm">Cancelar</button><button disabled={busy} className="h-9 bg-sky-800 px-4 text-sm font-semibold text-white disabled:opacity-50">{busy?'Registrando…':'Confirmar baixa'}</button></div>
         </form>
@@ -613,5 +659,14 @@ export function FinanceiroContasReceber({ kind }: { kind: Kind }) {
 }
 
 function Kpi({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
-  return <article className="flex items-center gap-3 border border-slate-200 bg-white p-3"><Icon size={19} className="text-sky-800"/><div><span className="block text-xs text-slate-600">{label}</span><strong className="mt-1 block text-lg font-semibold text-[#123B50]">{value}</strong></div></article>
+  return <article className="flex min-h-24 items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-700"><Icon size={19}/></span><div className="min-w-0"><span className="block text-xs font-medium text-slate-500">{label}</span><strong className="mt-1 block truncate text-lg font-extrabold text-slate-900">{value}</strong></div></article>
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const normalized = status.toUpperCase()
+  const color = normalized === 'LIQUIDADO' ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+    : normalized === 'PARCIAL' ? 'border-amber-200 bg-amber-50 text-amber-800'
+    : normalized === 'CANCELADO' ? 'border-slate-300 bg-slate-100 text-slate-700'
+    : 'border-blue-200 bg-blue-50 text-blue-800'
+  return <span className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase ${color}`}>{status}</span>
 }

@@ -58,8 +58,8 @@ function moduleMenu(pathname:string):ModuleMenu{
  return{label:'MENU PRINCIPAL',route:'/erp-industrial',icon:LayoutDashboard}
 }
 
-export default function VendasLayout({children,title,subtitle,onRefresh,topContent,titleActions,showStatusCards}:{
- children:ReactNode;title:string;subtitle?:string;onRefresh?:()=>void;navSections?:SalesNavSection[];topContent?:ReactNode;titleActions?:ReactNode;showStatusCards?:boolean
+export default function VendasLayout({children,title,subtitle,onRefresh,topContent,titleActions,showStatusCards,showPageHeader}:{
+ children:ReactNode;title:string;subtitle?:string;onRefresh?:()=>void;navSections?:SalesNavSection[];topContent?:ReactNode;titleActions?:ReactNode;showStatusCards?:boolean;showPageHeader?:boolean
 }){
  const {pathname}=useLocation()
  const isVendas=pathname.startsWith('/vendas')
@@ -74,7 +74,7 @@ export default function VendasLayout({children,title,subtitle,onRefresh,topConte
  }, [onRefresh])
 
  const showCards=showStatusCards ?? true
- const showPageHero=Boolean(title || subtitle) && pathname !== '/compras'
+ const showPageHero=showPageHeader!==false && Boolean(title || subtitle) && pathname !== '/compras'
  const moduleLabel=moduleMenu(pathname).label.replace('MENU ', '')
 
  return <SynqraLayoutProvider>
@@ -87,7 +87,7 @@ export default function VendasLayout({children,title,subtitle,onRefresh,topConte
       </div>
       <span className="synqra-premium-stamp" aria-label="Atualizado no padrão premium em 26 de outubro de 2026">Atualizado · Padrão Premium · 26/10/2026</span>
     </section>}
-    {!showPageHero && pathname !== '/compras' && <div className="synqra-page-update-only"><span className="synqra-premium-stamp" aria-label="Atualizado no padrão premium em 26 de outubro de 2026">Atualizado · Padrão Premium · 26/10/2026</span></div>}
+    {showPageHeader!==false && !showPageHero && pathname !== '/compras' && <div className="synqra-page-update-only"><span className="synqra-premium-stamp" aria-label="Atualizado no padrão premium em 26 de outubro de 2026">Atualizado · Padrão Premium · 26/10/2026</span></div>}
     {(titleActions || onRefresh) && pathname !== '/compras' && <div className="synqra-page-commandbar">
       <div className="synqra-page-commandbar-actions">{titleActions}</div>
       {onRefresh && <button type="button" className="synqra-page-refresh" onClick={onRefresh} aria-label="Atualizar tela"><RefreshCw size={15}/> Atualizar</button>}
