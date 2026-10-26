@@ -1,5 +1,6 @@
 /** REVISÃO: PAQUIMETRO-APLICACAO-2026-10-26-R1 | Controle demonstrativo; não simula conexão física nem persistência. */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { supabase } from '../lib/supabaseClient'
 import { AlertTriangle, CheckCircle2, Lock, Ruler, ShieldCheck, Unlock, XCircle } from 'lucide-react'
 
 type HistoryLog = {
@@ -30,6 +31,8 @@ export default function DigitalCaliper({ instrumentOptions = [] }: Props) {
   const [targetValue, setTargetValue] = useState('50.00')
   const [tolerance, setTolerance] = useState('0.50')
   const [notice, setNotice] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [historyLoading, setHistoryLoading] = useState(true)
 
   const calibratedValueInMM = rawValue - zeroOffset
   const currentMeasure = unit === 'mm' ? calibratedValueInMM : calibratedValueInMM / 25.4
@@ -41,6 +44,44 @@ export default function DigitalCaliper({ instrumentOptions = [] }: Props) {
   const hasTargetSet = targetValue.trim() !== '' && tolerance.trim() !== '' && Number.isFinite(target) && target > 0 && Number.isFinite(tol) && tol >= 0
   const isOutOfTolerance = hasTargetSet && (currentMeasure < minAllowed || currentMeasure > maxAllowed)
   const selectedInstrument = instrumentOptions.find(item => item.codigo === instrumentTag)
+  async function loadHistory() {
+    setHistoryLoading(true)
+    try {
+      const company = await supabase.rpc('erp_current_empresa_id')
+      if (company.error) throw company.error
+      if (!company.data) throw new Error('Empresa ativa não identificada.')
+      const result = await supabase.from('erp_inspecoes')
+        .select('id,resultado,medicoes,created_at')
+        .eq('empresa_id', company.data)
+        .eq('tipo', 'PAQUIMETRO_DIGITAL')
+        .order('created_at', { ascending: false })
+        .limit(50)
+      if (result.error) throw result.error
+      const rows: HistoryLog[] = (result.data ?? []).map(item => {
+        const first = Array.isArray(item.medicoes) && item.medicoes.length > 0
+          ? item.medicoes[0] as Record<string, unknown>
+          : {}
+        const stamp = typeof item.created_at === 'string' ? new Date(item.created_at) : new Date()
+        return {
+          id: String(item.id),
+          instrumentTag: String(first.instrumentTag ?? ''),
+          partNumber: String(first.partNumber ?? ''),
+          value: String(first.value ?? ''),
+          unit: first.unit === 'in' ? 'in' : 'mm',
+          status: item.resultado === 'APROVADO' ? 'APROVADO' : 'REJEITADO',
+          timestamp: Number.isNaN(stamp.getTime()) ? '—' : stamp.toLocaleString('pt-BR'),
+        }
+      })
+      setHistory(rows)
+    } catch (cause) {
+      setNotice(cause instanceof Error ? cause.message : 'Não foi possível consultar o histórico persistido.')
+    } finally {
+      setHistoryLoading(false)
+    }
+  }
+
+  useEffect(() => { void loadHistory() }, [])
+
   const todayISO = new Date().toISOString().slice(0, 10)
   const blockedInstrument = !!selectedInstrument && (/BLOQUEADO|VENCIDO|INATIVO|REPROVADO/i.test(selectedInstrument.status) || (!!selectedInstrument.proxima_calibracao && selectedInstrument.proxima_calibracao < todayISO))
 
@@ -57,7 +98,7 @@ export default function DigitalCaliper({ instrumentOptions = [] }: Props) {
     }
   }
 
-  function saveMeasurement() {
+  async function saveMeasurement() {
     if (!instrumentTag.trim()) {
       setNotice('Selecione ou informe a TAG de um instrumento cadastrado.')
       return
@@ -78,17 +119,54 @@ export default function DigitalCaliper({ instrumentOptions = [] }: Props) {
       setNotice('Medição não registrada: o instrumento está bloqueado ou com calibração vencida.')
       return
     }
-    const status = isOutOfTolerance ? 'REJEITADO' : 'APROVADO'
-    setHistory(previous => [{
-      id: `${Date.now()}-${previous.length}`,
-      instrumentTag,
-      partNumber: partNumber.trim(),
-      value: displayValue,
-      unit,
-      status,
-      timestamp: new Date().toLocaleString('pt-BR'),
-    }, ...previous])
-    setNotice(`Medição registrada nesta sessão: ${status}. Para rastreabilidade permanente, grave o resultado no fluxo de inspeção aprovado do ERP.`)
+    setSaving(true)
+    setNotice('')
+    try {
+      const company = await supabase.rpc('erp_current_empresa_id')
+      const user = await supabase.auth.getUser()
+      if (company.error) throw company.error
+      if (!company.data) throw new Error('Empresa ativa não identificada.')
+      if (user.error) throw user.error
+      const status: HistoryLog['status'] = isOutOfTolerance ? 'REJEITADO' : 'APROVADO'
+      const result = await supabase.from('erp_inspecoes').insert({
+        empresa_id: company.data,
+        produto_id: null,
+        lote_id: null,
+        ordem_producao_id: null,
+        maquina_id: null,
+        tipo: 'PAQUIMETRO_DIGITAL',
+        resultado: status,
+        quantidade_inspecionada: 1,
+        quantidade_aprovada: status === 'APROVADO' ? 1 : 0,
+        quantidade_reprovada: status === 'REJEITADO' ? 1 : 0,
+        observacao: 'Controle dimensional — peça/lote: ' + partNumber.trim(),
+        inspetor_nome: user.data.user?.email ?? null,
+        medicoes: [{
+          instrumentTag,
+          instrumentId: selectedInstrument.codigo,
+          instrumentDescription: selectedInstrument.descricao,
+          partNumber: partNumber.trim(),
+          value: displayValue,
+          valueMm: calibratedValueInMM.toFixed(4),
+          unit,
+          target: targetValue,
+          tolerance,
+          minimum: minAllowed.toFixed(4),
+          maximum: maxAllowed.toFixed(4),
+          status,
+          source: 'DIGITAL_CALIPER_SLIDER_DEMONSTRATION',
+        }],
+        acao_bloqueio: status === 'APROVADO' ? 'NENHUMA' : 'SEGREGAR_LOTE',
+        criado_por: user.data.user?.id ?? null,
+      })
+      if (result.error) throw result.error
+      setNotice(`Medição salva no banco da empresa: ${status}.`)
+      await loadHistory()
+    } catch (cause) {
+      setNotice(cause instanceof Error ? 'Falha ao gravar medição: ' + cause.message : 'Falha ao gravar medição no banco.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -178,20 +256,20 @@ export default function DigitalCaliper({ instrumentOptions = [] }: Props) {
             <button type="button" disabled={isLocked} onClick={() => setUnit(value => value === 'mm' ? 'in' : 'mm')} className="h-8 border border-slate-700 px-3 text-[10px] font-bold uppercase hover:border-sky-400 disabled:opacity-40">Unidade: {unit} · alternar</button>
             <button type="button" disabled={isLocked} onClick={() => setZeroOffset(rawValue)} className="h-8 border border-slate-700 px-3 text-[10px] font-bold uppercase hover:border-sky-400 disabled:opacity-40">Zero / tara</button>
             <button type="button" disabled={isLocked} onClick={() => { setZeroOffset(0); setRawValue(0) }} className="h-8 border border-slate-700 px-3 text-[10px] font-bold uppercase hover:border-sky-400 disabled:opacity-40">Resetar</button>
-            <button type="button" onClick={saveMeasurement} disabled={blockedInstrument} className="ml-auto inline-flex h-8 items-center gap-1.5 border border-sky-500 bg-sky-600 px-3 text-[10px] font-black uppercase text-white hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-40"><CheckCircle2 size={13}/> Registrar medição</button>
+            <button type="button" onClick={() => void saveMeasurement()} disabled={blockedInstrument || saving} className="ml-auto inline-flex h-8 items-center gap-1.5 border border-sky-500 bg-sky-600 px-3 text-[10px] font-black uppercase text-white hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-40"><CheckCircle2 size={13}/> {saving ? 'Gravando…' : 'Registrar medição'}</button>
           </div>
           {blockedInstrument && <p role="alert" className="flex items-center gap-2 border border-rose-500/40 bg-rose-950/40 p-2 text-[10px] font-bold text-rose-300"><AlertTriangle size={14}/> Instrumento bloqueado: não é permitido registrar medição.</p>}
           {notice && <p role="status" className="border border-slate-700 bg-slate-950 p-2 text-[10px] text-slate-300">{notice}</p>}
         </div>
         <div className="border-t border-slate-800 p-4">
-          <div className="mb-2 flex items-center justify-between gap-2"><h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Histórico de medições desta sessão</h3><span className="font-mono text-[10px] text-slate-500">{history.length} registro(s)</span></div>
+          <div className="mb-2 flex items-center justify-between gap-2"><h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Histórico de medições persistido no ERP</h3><span className="font-mono text-[10px] text-slate-500">{history.length} registro(s)</span></div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[620px] text-left text-[10px]">
               <thead className="text-[9px] uppercase tracking-wide text-slate-500"><tr>{['Data/hora','TAG','Peça / lote','Leitura','Resultado'].map(label => <th key={label} className="border-b border-slate-800 px-2 py-2">{label}</th>)}</tr></thead>
               <tbody>{history.map(item => <tr key={item.id} className="border-b border-slate-800/70"><td className="px-2 py-2 text-slate-400">{item.timestamp}</td><td className="px-2 py-2 font-mono">{item.instrumentTag}</td><td className="px-2 py-2">{item.partNumber}</td><td className="px-2 py-2 font-mono">{item.value} {item.unit}</td><td className={`px-2 py-2 font-black ${item.status === 'APROVADO' ? 'text-emerald-400' : 'text-rose-400'}`}>{item.status}</td></tr>)}</tbody>
             </table>
           </div>
-          {!history.length && <p className="py-4 text-center text-[10px] text-slate-500">Nenhuma medição registrada nesta sessão.</p>}
+          {!history.length && <p className="py-4 text-center text-[10px] text-slate-500">{historyLoading ? 'Consultando histórico do ERP…' : 'Nenhuma medição registrada para esta empresa.'}</p>}
         </div>
       </article>
     </section>
