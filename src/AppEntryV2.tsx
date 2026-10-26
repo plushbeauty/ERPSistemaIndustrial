@@ -139,6 +139,7 @@ const VendasPedidoStatus = lazyPage(() => import('./pages/VendasPedidoStatus'), 
 const VendasCatalogoDigitalGestao = lazyPage(() => import('./pages/VendasCatalogoDigitalGestao'), 'VendasCatalogoDigitalGestao')
 const VendasPDV = lazyPage(() => import('./pages/VendasPDV'), 'default')
 const VendasTablet = lazyPage(() => import('./pages/VendasTablet'), 'default')
+const ComprasCentral = lazyPage(() => import('./pages/ComprasCentral'), 'default')
 const ComprasRFQ = lazyPage(() => import('./pages/ComprasRFQ'), 'default')
 const ComprasIndustrial = lazyPage(() => import('./pages/ComprasIndustrial'), 'default')
 const ComprasRequisicoes = lazyPage(() => import('./pages/ComprasRequisicoes'), 'default')
@@ -583,9 +584,10 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/tablet" element={<Navigate to="/pcp/tablet-operador" replace />} />
       <Route path="/pcp/auditoria" element={<QualityPlanGate>{<PCPAuditoria />}</QualityPlanGate>} />
       <Route path="/qualidade/industrial" element={<QualityPlanGate><QualidadeIndustrial /></QualityPlanGate>} />
-      <Route path="/qualidade" element={<QualityPlanGate><QualidadeDashboardSGQ /></QualityPlanGate>} />
+      <Route path="/qualidade" element={<Navigate to="/qualidade/inspecoes" replace />} />
       <Route path="/qualidade/auditorias-planta" element={<QualityPlanGate><QualidadeAuditoriasPlanta /></QualityPlanGate>} />
-      <Route path="/qualidade/instrumentos" element={<QualityPlanGate><QualidadeInstrumentosCadastro /></QualityPlanGate>} />
+      <Route path="/qualidade/instrumentos" element={<Navigate to="/qualidade/paquimetro-digital" replace />} />
+      <Route path="/qualidade/paquimetro-digital" element={<QualityPlanGate><QualidadeInstrumentosCadastro /></QualityPlanGate>} />
       <Route path="/qualidade/liberacao-lote" element={<QualityPlanGate><QualidadeLiberacaoLotes /></QualityPlanGate>} />
       <Route path="/qualidade/dashboard-rnc" element={<Navigate to="/qualidade/rpnc" replace />} />
       <Route path="/qualidade/rpnc" element={<QualityPlanGate><QualidadeRPNCCompleta /></QualityPlanGate>} />
@@ -594,7 +596,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/inspecao-processo" element={<QualityPlanGate><QualidadeInspecaoProcesso /></QualityPlanGate>} />
       <Route path="/qualidade/fichas-processo" element={<QualityPlanGate><QualidadeFichasProcesso /></QualityPlanGate>} />
       <Route path="/qualidade/inspecoes" element={<QualityPlanGate><QualidadeInspecoesIndustrial /></QualityPlanGate>} />
-      <Route path="/qualidade/tablet" element={<Navigate to="/qualidade" replace />} />
+      <Route path="/qualidade/tablet" element={<Navigate to="/qualidade/inspecoes" replace />} />
       <Route path="/qualidade/inspecoes/operacao" element={<Navigate to="/qualidade/inspecoes" replace />} />
       <Route path="/qualidade/metodologia-8d" element={<QualityPlanGate><QualidadeMetodologia8D /></QualityPlanGate>} />
       <Route path="/qualidade/auditoria-5s" element={<QualityPlanGate><QualidadeAuditoria5S /></QualityPlanGate>} />
@@ -653,7 +655,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/admin/logs" element={<AdminLogs />} />
       <Route path="/outlook/configuracao" element={<OutlookConfiguracao />} />
       <Route path="/outlook/caixa-entrada" element={<OutlookCaixaEntrada />} />
-      <Route path="/compras" element={<ComprasRoute><ComprasIndustrial /></ComprasRoute>} />
+      <Route path="/compras" element={<ComprasRoute><ComprasCentral /></ComprasRoute>} />
       <Route path="/compras/requisicoes" element={<ComprasRoute><ComprasRequisicoes /></ComprasRoute>} />
       <Route path="/compras/recebimentos" element={<ComprasRoute><RecebimentoMateriais /></ComprasRoute>} />
       <Route path="/compras/recebimento" element={<Navigate to="/compras/recebimentos" replace />} />
