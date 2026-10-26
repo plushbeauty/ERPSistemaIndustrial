@@ -12,6 +12,7 @@ import type { LucideIcon } from 'lucide-react'
 import { ArrowDownCircle, ArrowUpCircle, Barcode, CalendarClock, Camera, Edit3, Plus, RefreshCw, ScanLine, X, Wallet, CalendarRange, History, CircleDollarSign } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import VendasLayout, { type SalesNavSection } from './VendasLayout'
+import { Link } from 'react-router-dom'
 import { fetchAllPages } from '../lib/supabasePagination'
 import { parseBoleto } from '../lib/boleto'
 import { localDateIso, makeInstallments, matchesDueFilter, type DueFilter } from '../lib/financeiroTitulos.mjs'
@@ -474,14 +475,14 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
     <div className="mx-auto max-w-[1500px] space-y-4">
       <header className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-950 via-blue-950 to-blue-700 px-6 py-5 text-white shadow-lg">
         <div className="pointer-events-none absolute -right-12 -top-28 size-80 rounded-full border-[24px] border-white/5" />
-        <p className="relative text-[10px] font-bold uppercase tracking-[.18em] text-sky-200">Financeiro · Tesouraria industrial</p>
+        <p className="relative text-[10px] font-bold uppercase tracking-[.18em] text-white">Financeiro · Tesouraria industrial</p>
         <h1 className="relative mt-1 text-2xl font-extrabold">{title}</h1>
-        <p className="relative mt-1 text-xs text-blue-100">Títulos, parcelas, vencimentos e baixas integrados com compras e vendas.</p>
-        <span className="relative mt-3 inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-semibold text-blue-50">Atualizado · Padrão Premium · 26/10/2026</span>
+        <p className="relative mt-1 text-xs text-white">Títulos, parcelas, vencimentos e baixas integrados com compras e vendas.</p>
+        <span className="relative mt-3 inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-semibold text-white">Atualizado · Padrão Premium · 26/10/2026</span>
       </header>
       <nav aria-label="Contas financeiras" className="flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
-        <a href="/financeiro/contas-pagar" className={`inline-flex h-9 items-center gap-2 rounded-lg px-4 text-xs font-bold ${payable ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'}`}><ArrowUpCircle size={15}/>Contas a pagar</a>
-        <a href="/financeiro/contas-receber" className={`inline-flex h-9 items-center gap-2 rounded-lg px-4 text-xs font-bold ${!payable ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'}`}><ArrowDownCircle size={15}/>Contas a receber</a>
+        <Link to="/financeiro/contas-pagar" className={`inline-flex h-9 items-center gap-2 rounded-lg px-4 text-xs font-bold ${payable ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'}`}><ArrowUpCircle size={15}/>Contas a pagar</Link>
+        <Link to="/financeiro/contas-receber" className={`inline-flex h-9 items-center gap-2 rounded-lg px-4 text-xs font-bold ${!payable ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'}`}><ArrowDownCircle size={15}/>Contas a receber</Link>
       </nav>
       <div className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
         <label className="grid min-w-56 flex-1 gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-600">Buscar título
@@ -503,7 +504,6 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
               {companies.map(company => <option key={company.id} value={company.id}>{company.nome}</option>)}
             </select>
           </label>}
-        <button type="button" onClick={() => void load()} disabled={loading || busy} className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50"><RefreshCw size={15}/>Atualizar</button>
         <button type="button" onClick={openNew} disabled={!companyId || busy} className="inline-flex h-9 items-center gap-2 rounded-lg bg-blue-700 px-4 text-xs font-bold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-800 disabled:opacity-50"><Plus size={15}/>Novo título</button>
       </div>
       {error && <div role="alert" className="border border-red-300 bg-red-50 p-3 text-sm text-red-900">{error}</div>}
