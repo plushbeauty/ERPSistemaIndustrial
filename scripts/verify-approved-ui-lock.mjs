@@ -7,6 +7,9 @@ import { readFileSync } from 'node:fs'
  * Do not update these hashes as part of ordinary styling/refactor work.
  */
 const approved = [
+  { path: 'src/pages/CalibracaoIndustrial.tsx', sha: 'd89ecf061a0b233bdfa75488c84f77d1b1f6b893', label: 'Qualidade / Calibração com Paquímetro Digital', source: 'revisão explicitamente autorizada em 2026-10-26; cadastro, histórico e paquímetro na mesma tela' },
+  { path: 'src/pages/FinanceiroDashboardCaixa.tsx', sha: '2069aed36fc1b07dbd945d606bb1c602bc442f71', label: 'Financeiro / Fluxo de Caixa e Caixa', source: 'tela única compartilhada pelas rotas /financeiro/fluxo-caixa e /financeiro/caixa; preserva consulta de parcelas e baixas reais' },
+  { path: 'src/pages/FinanceiroTitulos.tsx', sha: '2e9f2a554993145f2e00335ec509c50062beb33c', label: 'Financeiro / padrão visual de Contas a Receber', source: 'referência visual aprovada para o módulo financeiro em 2026-10-26' },
   { path: 'src/pages/QualidadePaquimetroDigital.tsx', sha: '3c355adb13c288e66c54556fd9123700e6956097', label: 'Qualidade / Paquímetro Digital', source: 'revisão visual premium autorizada em 2026-10-26; mantém dados reais e integração ao histórico de inspeções' },
   { path: 'src/components/DigitalCaliper.tsx', sha: '2de2550896b0ccb33730432bc0457085f693b488', label: 'Qualidade / componente Paquímetro Digital', source: 'revisão visual premium autorizada em 2026-10-26; mantém validação de calibração e identifica a leitura simulada sem conexão física' },
   { path: 'src/pages/ComprasCentral.tsx', sha: '6d7947a4dcbe1b2f04f10e56a5165d031cedc4f3', label: 'Compras / Central aprovada', source: 'restaurada conforme referência APROV-COMPRAS-2026-10-24-R1; congelar o visual original' },
@@ -34,6 +37,23 @@ for (const item of approved) {
   process.stdout.write(`${ok ? 'PASS' : 'FAIL'} — ${item.label} [${item.path}] — ${ok ? 'aprovado e congelado' : `hash divergente; esperado=${item.sha}; encontrado=${actual}`}\n`)
   if (!ok) failed = true
 }
+
+const routeContent = readFileSync('src/AppEntryV2.tsx', 'utf8')
+const requiredRoutes = [
+  ['Financeiro / Fluxo de Caixa usa o painel padronizado', '<Route path="/financeiro/fluxo-caixa" element={<QualityPlanGate>{<FinanceiroDashboardCaixa />}</QualityPlanGate>} />'],
+  ['Financeiro / Caixa usa o painel padronizado', '<Route path="/financeiro/caixa" element={<QualityPlanGate>{<FinanceiroDashboardCaixa />}</QualityPlanGate>} />'],
+  ['Qualidade / Calibração mantém a tela com Paquímetro Digital', '<Route path="/qualidade/calibracao" element={<QualityPlanGate><CalibracaoIndustrial /></QualityPlanGate>} />'],
+]
+for (const [label, route] of requiredRoutes) {
+  const ok = routeContent.includes(route)
+  process.stdout.write(`${ok ? 'PASS' : 'FAIL'} — ${label}\n`)
+  if (!ok) failed = true
+}
+if (routeContent.includes("import('./pages/FinanceiroFluxoCaixa')")) {
+  process.stderr.write('Approved route lock: a tela legada de Fluxo de Caixa foi reintroduzida.\n')
+  failed = true
+}
+
 if (failed) {
   process.stderr.write('Approved UI lock: alterações em telas aprovadas são bloqueadas. Restaure o conteúdo aprovado ou obtenha autorização explícita para nova revisão e atualização do contrato.\n')
   process.exit(1)
