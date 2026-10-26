@@ -8,18 +8,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  ArrowRight,
   CalendarClock,
   CheckCircle2,
   CircleAlert,
   ClipboardList,
   FilePlus2,
   PackageCheck,
+  RefreshCw,
   Search,
   XCircle,
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import '../styles/stock-sales-premium.css'
 import VendasLayout from './VendasLayout'
 
 type Order = {
@@ -165,7 +166,19 @@ export default function VendasCentral() {
 
   return (
     <VendasLayout title="Status do pedido" showStatusCards={false}>
-      <main className="sales-workspace">
+      <main className="sales-workspace sales-premium-shell">
+        <header className="sales-premium-hero">
+          <div>
+            <span className="sales-premium-eyebrow">VENDAS · ACOMPANHAMENTO INDUSTRIAL</span>
+            <h1>Status dos pedidos</h1>
+            <p>Visão integrada de pedido, produção, qualidade, expedição e faturamento.</p>
+            <span className="premium-update-mark">Atualizado Padrão Premium · 26/10/2026</span>
+          </div>
+          <button type="button" className="sales-button sales-button--hero" onClick={() => void load()} disabled={loading}>
+            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+            {loading ? 'Atualizando…' : 'Atualizar pedidos'}
+          </button>
+        </header>
         {error && <div className="sales-alert" role="alert"><CircleAlert size={17} />{error}</div>}
 
         <section className="sales-orders-card">
@@ -309,3 +322,4 @@ function ProcessStages({ order, production, inspections, expeditions, fiscal }: 
     {stages.map((stage) => <div key={stage.label} className={`sales-process-stage ${stage.tone}`} title={`${stage.label}: ${stage.detail}`}><span>{stage.label}</span><strong>{stage.detail}</strong></div>)}
   </div>
 }
+

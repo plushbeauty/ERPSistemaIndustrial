@@ -14,6 +14,7 @@ import { ArrowLeft, ArrowRightLeft, CalendarClock, Boxes, CheckCircle2, Clipboar
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import '../styles/stock-sales-premium.css'
 import VendasLayout, { type SalesNavSection } from './VendasLayout'
 const stockNav: SalesNavSection[] = [{label:'Estoque',items:[{label:'Saldos',href:'/estoque/saldos',icon:Boxes},{label:'Ajustes',href:'/estoque/ajustes',icon:PackagePlus},{label:'Separação',href:'/estoque/separacao',icon:ClipboardCheck},{label:'Recebimento',href:'/estoque/recebimento-lotes',icon:PackageMinus},{label:'Etiquetas',href:'/estoque/etiquetas',icon:Boxes},{label:'Validade / FIFO',href:'/estoque/validade',icon:CalendarClock},{label:'Curva ABC',href:'/estoque/curva-abc',icon:Warehouse}]},{label:'Integrações',items:[{label:'Compras',href:'/compras',icon:PackagePlus},{label:'PCP',href:'/pcp',icon:Boxes},{label:'Qualidade',href:'/qualidade',icon:ClipboardCheck}]}]
 type Tab='saldo'|'entrada'|'saida'|'transferencia'|'almox'|'producao'|'historico'|'inventario'
@@ -75,3 +76,4 @@ function MovementForm({title,productId,setProductId,productSearch,setProductSear
 
 function Select({label,value,onChange,options}:{label:string;value:string;onChange:(v:string)=>void;options:[string,string][]}){return <label>{label}<select value={value} onChange={e=>onChange(e.target.value)}><option value="">Selecione</option>{options.map(([v,t])=><option key={v} value={v}>{t}</option>)}</select></label>}
 function Table({title,cols,rows}:{title:string;cols:string[];rows:(string|number)[][]}){return <section className="crud-list" style={{marginTop:14}}><div className="crud-list-head"><strong>{title}</strong><small>{rows.length} registros</small></div><div className="crud-table-wrap"><table><thead><tr>{cols.map(c=><th key={c}>{c}</th>)}</tr></thead><tbody>{rows.map((r,i)=><tr key={i}>{r.map((v,j)=><td key={j}>{String(v??'—')}</td>)}</tr>)}</tbody></table></div></section>}
+

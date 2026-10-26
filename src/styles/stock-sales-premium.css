@@ -1,0 +1,339 @@
+main[data-synqra-density='30px'] {
+  max-width: 1750px;
+  padding: clamp(16px, 2vw, 28px) !important;
+  color: #142b47;
+}
+
+main[data-synqra-density='30px'] .pcp-toolbar {
+  position: relative;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: clamp(20px, 2.5vw, 32px);
+  border: 1px solid #245da4;
+  border-radius: 20px;
+  background: linear-gradient(112deg, #102944 0%, #174b88 64%, #2563c7 100%);
+  box-shadow: 0 14px 32px rgb(15 39 71 / 18%);
+  color: #fff;
+}
+
+main[data-synqra-density='30px'] .pcp-toolbar h1 {
+  color: #fff;
+  font-size: clamp(24px, 3vw, 34px) !important;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+main[data-synqra-density='30px'] .pcp-toolbar p {
+  color: #d9e8ff !important;
+  font-size: 13px !important;
+}
+
+main[data-synqra-density='30px'] .pcp-toolbar .v2-eyebrow {
+  color: #a9dcff !important;
+}
+
+main[data-synqra-density='30px'] .pcp-toolbar::after {
+  position: absolute;
+  right: 28px;
+  bottom: 16px;
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 10%);
+  padding: 5px 10px;
+  color: #e5f1ff;
+  content: 'Atualizado Padrão Premium · 26/10/2026';
+  font-size: 10px;
+  font-weight: 750;
+}
+
+main[data-synqra-density='30px'] .pcp-toolbar .stock-action-blue {
+  min-height: 40px !important;
+  border: 1px solid #fff !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  color: #12365f !important;
+  font-weight: 800;
+  box-shadow: 0 3px 0 rgb(5 20 42 / 24%);
+}
+
+main[data-synqra-density='30px'] .quality-tabs {
+  gap: 8px;
+  padding: 8px 0 12px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid #dbe5f1;
+}
+
+main[data-synqra-density='30px'] .quality-tabs button {
+  min-height: 40px;
+  padding: 0 14px !important;
+  border: 1px solid #dbe5f1 !important;
+  border-radius: 11px !important;
+  background: #fff !important;
+  color: #49617c !important;
+  font-size: 11px;
+  box-shadow: 0 2px 5px rgb(15 39 71 / 5%);
+}
+
+main[data-synqra-density='30px'] .quality-tabs button.active {
+  border-color: #173e70 !important;
+  background: linear-gradient(135deg, #102944, #1d56a0) !important;
+  color: #fff !important;
+  box-shadow: 0 3px 0 rgb(8 27 51 / 22%);
+}
+
+main[data-synqra-density='30px'] .crud-list,
+main[data-synqra-density='30px'] .erp-card {
+  overflow: hidden;
+  border: 1px solid #dce5f0 !important;
+  border-radius: 16px !important;
+  background: #fff !important;
+  box-shadow: 0 7px 22px rgb(15 39 71 / 7%);
+}
+
+main[data-synqra-density='30px'] .crud-list-head {
+  padding: 16px 18px;
+  margin: 0;
+  border-bottom: 1px solid #e8eef6;
+  background: #fbfdff;
+}
+
+main[data-synqra-density='30px'] .crud-list-head strong {
+  color: #17365d !important;
+  font-size: 14px !important;
+  font-weight: 800;
+}
+
+main[data-synqra-density='30px'] .crud-list-head small {
+  color: #718198 !important;
+  font-size: 11px !important;
+}
+
+main[data-synqra-density='30px'] input:not([type='checkbox']):not([type='radio']):not([type='range']),
+main[data-synqra-density='30px'] select,
+main[data-synqra-density='30px'] .stock-action-blue,
+main[data-synqra-density='30px'] .secondary-v2 {
+  min-height: 36px !important;
+  height: 36px !important;
+  border-radius: 9px !important;
+  font-size: 11px !important;
+}
+
+main[data-synqra-density='30px'] textarea {
+  min-height: 84px !important;
+  border-radius: 9px !important;
+  font-size: 12px !important;
+}
+
+main[data-synqra-density='30px'] input:focus,
+main[data-synqra-density='30px'] select:focus,
+main[data-synqra-density='30px'] textarea:focus {
+  border-color: #3979cb !important;
+  box-shadow: 0 0 0 3px rgb(57 121 203 / 15%) !important;
+  outline: 0;
+}
+
+main[data-synqra-density='30px'] .stock-action-blue {
+  padding: 0 12px !important;
+  border: 1px solid #1e55a0 !important;
+  background: linear-gradient(180deg, #2868bd, #1b4f96) !important;
+  color: #fff !important;
+  font-weight: 750;
+  box-shadow: 0 2px 0 #143c70;
+}
+
+main[data-synqra-density='30px'] .stock-action-blue:hover:not(:disabled) {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+main[data-synqra-density='30px'] .secondary-v2 {
+  padding: 0 12px !important;
+  border: 1px solid #cbd7e5 !important;
+  background: #fff !important;
+  color: #294866 !important;
+  box-shadow: 0 2px 0 #e5ebf3;
+}
+
+main[data-synqra-density='30px'] .crud-table-wrap {
+  border-color: #e2e9f2;
+  border-radius: 0 0 14px 14px;
+}
+
+main[data-synqra-density='30px'] table {
+  font-size: 12px !important;
+}
+
+main[data-synqra-density='30px'] table th {
+  height: 40px !important;
+  padding: 8px 12px !important;
+  background: #f1f5fb !important;
+  color: #526983 !important;
+  font-size: 10px !important;
+}
+
+main[data-synqra-density='30px'] table td {
+  min-height: 42px;
+  padding: 9px 12px !important;
+  color: #344b64;
+  font-size: 11px !important;
+}
+
+main[data-synqra-density='30px'] .quality-kpis article {
+  min-height: 100px;
+  border-radius: 13px !important;
+  padding: 15px !important;
+  box-shadow: 0 4px 12px rgb(15 39 71 / 5%);
+}
+
+.sales-premium-shell {
+  display: grid;
+  gap: 16px;
+  color: #142b47;
+}
+
+.sales-premium-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  overflow: hidden;
+  border: 1px solid #245da4;
+  border-radius: 20px;
+  background: linear-gradient(112deg, #102944 0%, #174b88 64%, #2563c7 100%);
+  padding: clamp(20px, 2.5vw, 32px);
+  box-shadow: 0 14px 32px rgb(15 39 71 / 18%);
+  color: #fff;
+}
+
+.sales-premium-eyebrow {
+  color: #a9dcff;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.13em;
+}
+
+.sales-premium-hero h1 {
+  margin: 8px 0 5px;
+  color: #fff;
+  font-size: clamp(24px, 3vw, 34px);
+  font-weight: 850;
+  letter-spacing: -0.04em;
+}
+
+.sales-premium-hero p {
+  margin: 0;
+  color: #d9e8ff;
+  font-size: 12px;
+}
+
+.sales-premium-shell .premium-update-mark {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 12px;
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 10%);
+  padding: 5px 10px;
+  color: #e5f1ff;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.sales-premium-shell .sales-button--hero {
+  min-height: 40px;
+  border-color: #fff;
+  border-radius: 10px;
+  background: #fff;
+  color: #12365f;
+  box-shadow: 0 3px 0 rgb(5 20 42 / 24%);
+  white-space: nowrap;
+}
+
+.sales-premium-shell .sales-orders-card {
+  border-color: #dce5f0;
+  border-radius: 16px;
+  box-shadow: 0 7px 22px rgb(15 39 71 / 7%);
+}
+
+.sales-premium-shell .sales-orders-status-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 155px), 1fr));
+  gap: 10px;
+  padding: 16px 16px 4px;
+}
+
+.sales-premium-shell .sales-orders-status-card {
+  min-height: 74px !important;
+  height: auto !important;
+  justify-content: space-between;
+  border-radius: 12px !important;
+  padding: 12px 14px !important;
+  box-shadow: 0 3px 9px rgb(15 39 71 / 6%);
+  text-align: left;
+}
+
+.sales-premium-shell .sales-orders-status-card span {
+  color: #536a84;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.sales-premium-shell .sales-orders-status-card strong {
+  margin-top: 4px;
+  color: #142f52 !important;
+  font-size: 22px;
+  font-weight: 850;
+}
+
+.sales-premium-shell .sales-orders-status-card.is-active {
+  outline: 2px solid #245da4;
+  outline-offset: -2px;
+  box-shadow: 0 5px 14px rgb(36 93 164 / 17%);
+}
+
+.sales-premium-shell .sales-orders-status-card.is-active span,
+.sales-premium-shell .sales-orders-status-card.is-active strong {
+  color: #12365f !important;
+}
+
+.sales-premium-shell .sales-list-toolbar {
+  padding: 12px 16px;
+}
+
+.sales-premium-shell .sales-search {
+  min-height: 38px;
+  border-radius: 9px;
+}
+
+.sales-premium-shell .sales-search input {
+  min-height: 36px;
+}
+
+.sales-premium-shell .sales-orders-table tbody td {
+  height: 56px;
+}
+
+@media (max-width: 700px) {
+  main[data-synqra-density='30px'] {
+    padding: 12px !important;
+  }
+
+  main[data-synqra-density='30px'] .pcp-toolbar,
+  .sales-premium-hero {
+    align-items: flex-start;
+    flex-direction: column;
+    border-radius: 15px;
+    padding: 18px;
+  }
+
+  main[data-synqra-density='30px'] .pcp-toolbar::after {
+    position: static;
+    align-self: flex-start;
+    margin-top: 12px;
+  }
+
+  .sales-premium-shell .sales-orders-status-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 12px 12px 2px;
+  }
+}
+
