@@ -69,6 +69,7 @@ import './styles/compras-compact.css'
 import './styles/maintenance-workspace.css'
 
 import IndustrialLoginDirect from './IndustrialLoginDirect'
+import FloatingLoginModal from './components/auth/FloatingLoginModal'
 
 const AppIndustrial = lazyPage(() => import('./AppIndustrialV7'), 'AppIndustrial')
 const PublicIndustrialHome = lazyPage(() => import('./PublicIndustrialHome'), 'PublicIndustrialHome')
@@ -431,7 +432,7 @@ function AppIndustrialAuthenticated() {
 
   const publicRoutes = (
     <Routes>
-      <Route path="/" element={<PublicIndustrialHome />} />
+      <Route path="/" element={<PublicHomeWithLogin />} />
       <Route path="/login" element={<IndustrialLoginDirect returnTo={safeReturnTo(new URLSearchParams(location.search).get('returnTo'))} masterMode={false} />} />
       <Route path="/cadastro-master" element={<SetupADMInicial />} />
       <Route path="/recuperar-senha" element={<RecuperarSenha />} />
@@ -758,4 +759,21 @@ function AppIndustrialAuthenticated() {
   )
   // O ERP entra diretamente no conteúdo operacional. A navegação lateral global foi removida; o dashboard industrial/Tablet concentra os módulos.
   return appContent
+}
+
+function PublicHomeWithLogin() {
+  const [loginOpen, setLoginOpen] = useState(false)
+  useEffect(() => {
+    const openLogin = (event: MouseEvent) => {
+      const target = event.target
+      if (!(target instanceof Element)) return
+      const link = target.closest<HTMLAnchorElement>('a[href="/login"]')
+      if (!link) return
+      event.preventDefault()
+      setLoginOpen(true)
+    }
+    document.addEventListener('click', openLogin)
+    return () => document.removeEventListener('click', openLogin)
+  }, [])
+  return <><PublicIndustrialHome /><FloatingLoginModal isOpen={loginOpen} onClose={() => setLoginOpen(false)} returnTo="/erp-industrial" /></>
 }

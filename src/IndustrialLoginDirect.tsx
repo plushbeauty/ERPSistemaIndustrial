@@ -9,6 +9,7 @@ import './styles/industrial-login.css'
 type Props = {
   returnTo?: string
   masterMode?: boolean
+  onLoginStateChange?: (state: 'idle' | 'authenticating' | 'unlocked' | 'error') => void
 }
 
 function safeReturnTo(value?: string | null) {
@@ -88,7 +89,7 @@ async function validateIndustrialSession(userId: string): Promise<IndustrialDest
   return { profile, empresa, isMaster: false, perfil }
 }
 
-export default function IndustrialLoginDirect({ returnTo, masterMode = false }: Props) {
+export default function IndustrialLoginDirect({ returnTo, masterMode = false, onLoginStateChange }: Props) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -169,6 +170,7 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
     }
 
     setBusy(true)
+    onLoginStateChange?.('authenticating')
 
     try {
       const { data, error: authError } = await supabase.auth.signInWithPassword({
@@ -195,6 +197,11 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
         `Acesso validado para ${destinationName}. Abrindo o ERP…`,
       )
 
+      if (onLoginStateChange) {
+        onLoginStateChange('unlocked')
+        await new Promise(resolve => window.setTimeout(resolve, 650))
+      }
+
       window.location.replace(destination)
     } catch (err) {
       console.error('[ERP login]', err)
@@ -209,6 +216,7 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
             : message
 
       setError(friendly)
+      onLoginStateChange?.('error')
     } finally {
       setBusy(false)
     }
