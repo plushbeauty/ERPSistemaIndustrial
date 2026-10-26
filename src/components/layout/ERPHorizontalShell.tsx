@@ -1,5 +1,6 @@
+/** REVISÃO: CONTROLE-EQUIPAMENTOS-MEDICAO-2026-10-26-R1 | Inclusão exclusiva do acesso ao controle dimensional; preservar layout aprovado. */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Warehouse, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Warehouse, Wallet, FileText, Factory, Wrench, Ruler, BarChart3, Settings, LogOut, Search, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -86,14 +87,27 @@ const menus: MenuItem[] = [
     { label: 'PCP Tablet', route: '/pcp', action: 'pcpTablet' },
   ] },
   { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, children: [
-    { label: 'Visual geral da Qualidade', route: '/qualidade' },
+    { label: 'Central da Qualidade / SGQ', route: '/qualidade' },
     { label: 'Inspeções de lotes', route: '/qualidade/inspecoes' },
     { label: 'Inspeção em processo', route: '/qualidade/inspecao-processo' },
     { label: 'Especificações técnicas', route: '/qualidade/especificacoes' },
-    { label: 'FMEA / PFMEA', route: '/qualidade/fmea' },
-    { label: 'RNC / CAPA', route: '/qualidade/rnc-capa' },
-    { label: 'CEP / medições', route: '/qualidade/cep' },
-    { label: 'Cadastro de documentos (GED)', route: '/qualidade/ged-documentos' },
+    { label: 'Cadastro de instrumentos de medição', route: '/qualidade/instrumentos', icon: Ruler },
+    { label: 'Liberação de lotes', route: '/qualidade/liberacao-lote' },
+    { label: 'Quarentena de lotes', route: '/qualidade/quarentena' },
+    { label: 'Genealogia de lotes', route: '/qualidade/genealogia-lote' },
+    { label: 'RPNC / não conformidade', route: '/qualidade/rpnc' },
+    { label: 'Metodologia 8D', route: '/qualidade/metodologia-8d' },
+    { label: 'FMEA / PFMEA', route: '/qualidade/pfmea' },
+    { label: 'CEP / cartas de controle', route: '/qualidade/cep' },
+    { label: 'Paquímetro digital / controle dimensional', route: '/qualidade/paquimetro-digital', icon: Ruler },
+    { label: 'Metrologia e calibração', route: '/qualidade/calibracao' },
+    { label: 'Documentos controlados (GED)', route: '/qualidade/ged-documentos' },
+    { label: 'Controle de desenhos técnicos', route: '/qualidade/controle-desenhos' },
+    { label: 'Procedimentos e PDFs', route: '/qualidade/procedimentos' },
+    { label: 'Lista mestre de documentos', route: '/qualidade/lista-mestre' },
+    { label: 'Auditoria 5S', route: '/qualidade/auditoria-5s' },
+    { label: 'Instruções de trabalho', route: '/qualidade/editor-it' },
+    { label: 'Relatórios do SGQ', route: '/qualidade/relatorios-documentos' },
   ] },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench, children: [
     { label: 'Central de manutenção', route: '/manutencao' },
@@ -144,12 +158,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     }
     document.addEventListener('mousedown', close)
     return () => document.removeEventListener('mousedown', close)
-  }, [])
-
-  useEffect(() => {
-    const openQualityTablet = () => setTabletOpen(true)
-    window.addEventListener('erp:open-quality-tablet', openQualityTablet)
-    return () => window.removeEventListener('erp:open-quality-tablet', openQualityTablet)
   }, [])
 
   // Atualização automática por mudanças reais no banco, sem botão manual.

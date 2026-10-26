@@ -26,3 +26,5 @@
 | M22 Auditoria Sistema | /admin/logs | AdminLogs | users.read/audit | VALIDAR |
 
 Rotas são estado de auditoria, não autorização para inventar endpoints.
+
+| M18 Controle de Equipamentos de Medição / Paquímetro Digital | /qualidade/paquimetro-digital | QualidadePaquimetroDigital + DigitalCaliper | quality.read | EM VALIDAÇÃO |
