@@ -97,3 +97,22 @@
 .sales-process-stage.is-stage-muted{background:#f5f7f8;border-color:#d3dce0;color:#64748b}
 @media(max-width:1100px){.sales-orders-status-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.sales-process-stages{min-width:230px}}
 @media(max-width:800px){.sales-orders-status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sales-process-stages{min-width:220px}}
+
+
+/* Flowbite-inspired premium treatment — scoped to the shared workspace layout */
+.synqra-page-hero{display:flex;align-items:center;justify-content:space-between;gap:16px;min-width:0;margin:0 0 12px;padding:14px 16px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.synqra-page-hero-copy{min-width:0}
+.synqra-page-hero-copy>span{display:block;margin-bottom:4px;color:#64748b;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.synqra-page-hero h1{margin:0;color:#0b2545;font-size:18px;line-height:1.35;font-weight:700}
+.synqra-page-hero p{margin:4px 0 0;color:#64748b;font-size:12px;line-height:1.5}
+.synqra-premium-stamp{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;padding:5px 9px;border:1px solid #bfdbfe;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:10px;font-weight:700;line-height:1.3;white-space:nowrap}
+.synqra-page-update-only{display:flex;justify-content:flex-end;margin:0 0 8px}
+.synqra-page-commandbar{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;margin:0 0 10px}
+.synqra-page-commandbar-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+.synqra-page-refresh{height:36px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 12px;border:1px solid #1d4ed8;border-radius:8px;background:#1d4ed8;color:#fff;font-size:12px;font-weight:600;cursor:pointer}
+.synqra-page-refresh:hover{background:#1e40af}
+.synqra-workspace-main input,.synqra-workspace-main select{height:36px;min-height:36px;border-radius:8px;border-color:#cbd5e1;font-size:12px}
+.synqra-workspace-main input:focus,.synqra-workspace-main select:focus,.synqra-workspace-main textarea:focus{border-color:#2563eb;outline:0;box-shadow:0 0 0 3px rgba(37,99,235,.14)}
+.synqra-workspace-main textarea{border-radius:8px}
+.synqra-workspace-main .synqra-status-cell{border-radius:12px}
+@media(max-width:700px){.synqra-page-hero{align-items:flex-start;flex-direction:column;padding:12px}.synqra-premium-stamp{white-space:normal}.synqra-page-commandbar{align-items:flex-start;flex-direction:column}.synqra-page-refresh{height:36px}}
