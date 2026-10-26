@@ -279,6 +279,32 @@ Esta rodada ampliou a leitura dos componentes de Fornecedores, Clientes, Compras
 | `src/pages/EstoqueAlmoxarifadoMestre.tsx` | `44328191ca9a5174d7d78bd0004eff67c50fccea` | ALIAS | Exporta `EstoqueAlmoxarifadoCompact.tsx`; confirmar se essa é a tela ativa. |
 | `src/pages/PCPIndustrial.tsx` | `d1788a46a6fbb2e836d19a96f2103ce97c683054` | ALERTA DE ESTILO MISTO | Comentário de revisão de 23/10/2026 e paleta institucional; um card genérico detectado. Verificar abas internas separadamente. |
 
+
+## Décima primeira passada — Compras, Estoque, Manutenção e páginas de impressão (26/10/2026)
+
+| Arquivo | Hash verificado | Triagem estática | Observação |
+|---|---|---|---|
+| `src/pages/ComprasAjuda.tsx` | `3fd67d9adfc5dd4788f42b75ba26f35d38fd16b0` | REVISÃO VISUAL PENDENTE | Usa layout compartilhado; confirmar aparência renderizada. |
+| `src/pages/ComprasAnalisePrecos.tsx` | `5246efee71b03cf7908304b67e530846598d8aac` | REVISÃO VISUAL PENDENTE | Revisão anotada e layout compartilhado; conferir CSS efetivo. |
+| `src/pages/EstoqueCurvaABC.tsx` | `d5f113090628646ac45db2461eecb30de766b4d2` | POSSÍVEL MODELO ANTIGO | Vários cards genéricos sem sinais compactos/paleta. |
+| `src/pages/EstoqueEtiquetas.tsx` | `99c3ccd38b31f1a183b5bb93b375039d414d9837` | ALERTA DE ESTILO MISTO | Controles compactos coexistem com cards genéricos. |
+| `src/pages/ExpedicaoSaida.tsx` | `014e7661028b78d408e70097a0cc51878d2c493a` | POSSÍVEL MODELO ANTIGO | Cards genéricos e sem sinais locais do padrão compacto. |
+| `src/pages/FerramentariaPreventiva.tsx` | `0ad7ec699a886ec01369b4a56224e7be201fffcf` | REVISÃO VISUAL PENDENTE | Um card genérico; sem sinais locais suficientes. |
+| `src/pages/ImprimirPedido.tsx` | `d4577a116746594dc552f21ad6e2ccee174ced01` | REVISÃO VISUAL PENDENTE | Avaliar a folha de impressão com regras próprias de impressão. |
+| `src/pages/ImprimirProduto.tsx` | `1ade2e37ee3015905f1ca6ab66e247db14a1f722` | REVISÃO VISUAL PENDENTE | Avaliar a folha de impressão com regras próprias de impressão. |
+| `src/pages/ManutencaoOrdens.tsx` | `d995a683728198453ffc615782e334d66c68f048` | ALERTA DE ESTILO MISTO | Controles compactos/paleta limitados, três padrões genéricos de card. |
+| `src/pages/ManutencaoCronograma.tsx` | `287293f957e8c8b27adad4c12ac4afaab0d6aafd` | PADRÃO NOVO — triagem | Controles compactos e paleta institucional. |
+| `src/pages/MoldesFerramentaria.tsx` | `4a343d64d219bbbf22d22fa1bb00997e6ab10f81` | REVISÃO VISUAL PENDENTE | Sem sinais locais claros da anatomia visual nova. |
+| `src/pages/OperacaoIndustrial.tsx` | `3118daecfb1e65c92a94383bfb8423afbf7b8b95` | REVISÃO VISUAL PENDENTE | Usa layout compartilhado; verificar a tela real. |
+| `src/pages/ProcessoIndustrialPage.tsx` | `b8c511fb0948f76fe6d41646b8c3530fda01c19c` | REVISÃO VISUAL PENDENTE | Usa layout compartilhado; verificar a tela real. |
+| `src/pages/RecebimentoMateriais.tsx` | `5a995f5cdfa4eb2f30f86e7e1225a2f666df3945` | REVISÃO VISUAL PENDENTE | Paleta parcial; controles compactos não detectados localmente. |
+| `src/pages/QualidadeCertificados.tsx` | `7bbd946e5a9fbe47cf94ef575ec7c92d071263e1` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes; conferir componente de destino. |
+| `src/pages/QualidadeConfigTemplates.tsx` | `f39f1df9b050ef010d8ff1493a96791793b94a2d` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes; conferir componente de destino. |
+| `src/pages/QualidadeDashboardRNC.tsx` | `27f871b4dc5bb4ed4327153348afb34992da8034` | ALERTA DE ESTILO MISTO | Usa layout compartilhado, paleta parcial e cards genéricos. |
+| `src/pages/QualidadeRNC.tsx` | `a86127d0dc965a93474db9e1afb8fe73e18b5e21` | PADRÃO NOVO — triagem | Controles compactos e paleta institucional. |
+| `src/pages/QualidadePaquimetroDigital.tsx` | `3c355adb13c28893` | APROVADA / CONGELADA — hash íntegro | Amostra atual mostra controles compactos; classes genéricas também existem. Preservar arquivo e conferir produção. |
+| `src/pages/QualidadePFMEA.tsx` | `28314f7d3787429438ae6ebb689105c5d654e6f4` | PADRÃO NOVO — triagem | Controles compactos e paleta institucional. |
+
 ## Próxima etapa da auditoria
 
 Continuar o inventário por módulo — Cadastros, Compras, Vendas, Financeiro, PCP, Qualidade/SGQ, Estoque, Fiscal, RH, Engenharia, Manutenção, Logística e Administração — registrando cada rota, componente, hash, estado visual e pendência. Só marcar **VERIFICADA VISUALMENTE** depois de comparar a tela renderizada com a referência aprovada.
