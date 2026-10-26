@@ -1,0 +1,108 @@
+.rpnc-workspace {
+  --rpnc-control-height: 36px;
+  --rpnc-label-size: 11px;
+  --rpnc-grid-gap: 8px;
+  --rpnc-ink: #123b50;
+  --rpnc-muted: #526d79;
+  --rpnc-line: #cbd5e1;
+  --rpnc-success: #067647;
+  --rpnc-error-accounting: #b42318;
+  color: var(--rpnc-ink);
+}
+
+.rpnc-workspace .rpnc-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--rpnc-muted);
+  font-size: var(--rpnc-label-size);
+  font-weight: 800;
+  letter-spacing: .06em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.rpnc-workspace .rpnc-control {
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  min-height: var(--rpnc-control-height);
+  border: 1px solid var(--rpnc-line);
+  border-radius: 2px;
+  background: #fff;
+  padding: 7px 9px;
+  color: var(--rpnc-ink);
+  font-size: 12px;
+  outline: none;
+}
+
+.rpnc-workspace textarea.rpnc-control {
+  min-height: 84px;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.rpnc-workspace .rpnc-control:focus {
+  border-color: #2d8db8;
+  box-shadow: 0 0 0 2px rgb(45 141 184 / 12%);
+}
+
+.rpnc-workspace .rpnc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.rpnc-workspace .rpnc-table th {
+  padding: 9px 10px;
+  border-bottom: 1px solid #cbd5e1;
+  background: #edf6f9;
+  color: #123b50;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .04em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.rpnc-workspace .rpnc-table td {
+  padding: 7px 8px;
+  border-bottom: 1px solid #e5edf0;
+  vertical-align: middle;
+}
+
+.rpnc-workspace .rpnc-number {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  text-align: right;
+}
+
+.rpnc-workspace .rpnc-tab {
+  min-height: 36px;
+  border-bottom: 2px solid transparent;
+  padding: 7px 10px;
+  color: #607681;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.rpnc-workspace .rpnc-tab[aria-selected="true"] {
+  border-color: #2d8db8;
+  background: #f0f8fa;
+  color: #123b50;
+}
+
+.rpnc-workspace .rpnc-state-success {
+  color: var(--rpnc-success);
+}
+
+.rpnc-workspace .rpnc-state-error {
+  color: var(--rpnc-error-accounting);
+}
+
+@media (max-width: 720px) {
+  .rpnc-workspace .rpnc-tab {
+    padding-inline: 8px;
+    font-size: 10px;
+  }
+}

@@ -1,6 +1,6 @@
 /**
  * APROVADO — tela principal restaurada do arquivo enviado em 2026-10-18.
- * Não alterar o layout, indicadores ou navegação sem autorização expressa.
+ * Autorização expressa do usuário em 2026-10-26: incluir atalho ao Portal do Operador.
  */
 import { useEffect, useMemo, useState } from 'react'
 import {
@@ -363,6 +363,12 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
           <div className="dp-head"><span>STATUS DOS SETORES · PCP</span><h2>Distribuição das ordens de produção</h2></div>
           {opStatus.length ? <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={opStatus} layout="vertical" margin={{left:16,right:18}}><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" horizontal={false}/><XAxis type="number" axisLine={false} tickLine={false}/><YAxis type="category" dataKey="status" width={105} axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="quantidade" name="OPs" fill="#48B7C7" radius={[0,7,7,0]} maxBarSize={26}/></BarChart></ResponsiveContainer></div> : <div className="dp-empty dp-empty-compact">Sem ordens de produção reais para distribuir.</div>}
         </section>
+
+        <button type="button" onClick={() => onNavigate('/pcp/portal-operador')} style={{display:'flex',alignItems:'center',gap:16,width:'100%',marginTop:14,padding:'12px 16px',textAlign:'left',background:'#fff',border:'1px solid #d7e5ea',borderRadius:16,boxShadow:'0 8px 22px rgba(18,59,80,.07)',cursor:'pointer'}}>
+          <img src="/icons/portal-operador-industrial.png" alt="" style={{width:64,height:64,objectFit:'contain',flex:'none'}} />
+          <span><strong style={{display:'block',color:'#123B50',fontSize:14,fontWeight:900}}>Portal do Operador</strong><small style={{display:'block',marginTop:4,color:'#627985',fontSize:11}}>Chão de fábrica · programação, ordens e apontamentos</small></span>
+          <span style={{marginLeft:'auto',padding:'9px 14px',borderRadius:8,background:'#123B50',color:'#fff',fontSize:11,fontWeight:850,whiteSpace:'nowrap'}}>Acessar portal</span>
+        </button>
       </main>
 
     </div>
