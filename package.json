@@ -42,7 +42,8 @@
     "verify:approved-ui-contract": "node scripts/verify-approved-ui-contract.mjs",
     "verify:approved-ui-lock": "node scripts/verify-approved-ui-lock.mjs",
     "verify:compras-rfq-premium-lock": "node scripts/verify-compras-rfq-premium-lock.mjs",
-    "audit:ui-standardization": "node scripts/audit-erp-ui-standardization.mjs"
+    "audit:ui-standardization": "node scripts/audit-erp-ui-standardization.mjs",
+    "test:file-manager": "node --test tools/sysnqra-file-manager/sysnqra-agent.test.cjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.14",
