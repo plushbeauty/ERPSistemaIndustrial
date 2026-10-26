@@ -34,7 +34,7 @@
 | `src/pages/FinanceiroTitulos.tsx` | `2e9f2a554993145f2e00335ec509c50062beb33c` | APROVADA / REFERÊNCIA FINANCEIRA | Padrão de referência para Financeiro conforme contrato; preservar o layout. |
 | `src/pages/QualidadePaquimetroDigital.tsx` | `3c355adb13c288e66c54556fd9123700e6956097` | APROVADA / CONGELADA | Página dedicada de paquímetro; código mantido intacto. |
 | `src/components/DigitalCaliper.tsx` | `2de2550896b0ccb33730432bc0457085f693b488` | APROVADA / CONGELADA | Componente de medição aprovado; manter validações e identificação da leitura simulada. |
-| `src/pages/FornecedoresIndustrial.tsx` | `bb45757288a43ebb681ba3095f2ebf9a15dfb715` | PADRÃO NOVO — evidência estática | Há tokens compactos e paleta institucional. Precisa inspeção no navegador para confirmar cards excedentes, alinhamento e responsividade solicitados. |
+| `src/pages/FornecedoresIndustrial.tsx` | `da0978ec2ed0c66f106b32be7ce3047ddae7f23e` | PADRÃO NOVO — evidência estática | Há tokens compactos e paleta institucional. Precisa inspeção no navegador para confirmar cards excedentes, alinhamento e responsividade solicitados. |
 | `src/pages/PCPProgramacaoGantt.tsx` | `d6a9b3150006ba4af0d74e348da714728a3e6a0e` | PADRÃO NOVO — evidência estática | Paleta institucional presente; ainda precisa validação de tela publicada e de dados reais. |
 
 ## Alertas encontrados nesta passada
@@ -43,6 +43,34 @@
 2. **Não carimbar arquivos congelados individualmente:** inserir comentários nesses arquivos mudaria seus hashes e faria a trava falhar. A data e o hash verificado ficam neste registro de auditoria, mantendo os arquivos aprovados intactos.
 3. **A presença de classes modernas não comprova que a tela esteja homologada.** Telas com estilos mistos devem ser revisadas no navegador.
 4. **O build e o deploy são uma verificação separada.** Esta auditoria não declara CI verde nem produção validada.
+
+
+## Segunda passada — leitura de código por módulo (26/10/2026)
+
+Esta rodada ampliou a leitura dos componentes de Fornecedores, Clientes, Compras, Vendas, Financeiro, PCP, Qualidade e Estoque. A classificação abaixo é **triagem estática**, não aprovação visual definitiva.
+
+| Arquivo | Hash verificado nesta rodada | Triagem | Evidência / próximo passo |
+|---|---|---|---|
+| `src/pages/FornecedoresIndustrial.tsx` | `da0978ec2ed0c66f106b32be7ce3047ddae7f23e` | PADRÃO NOVO — triagem | Paleta institucional e sinais compactos presentes; confirmar visualmente a remoção de cards excedentes e alinhamento dos campos. |
+| `src/pages/ClientesIndustrial.tsx` | `29cb9f19d39954f965b699e660051404b20b77a6` | PADRÃO NOVO — triagem | Paleta institucional e consultas Supabase presentes; precisa comparação visual com Fornecedores. |
+| `src/pages/ComprasRFQ.tsx` | `acc6ab9645f4a5a2c8aaff7ea92c2d2063c57efb` | REVISÃO VISUAL PENDENTE | Tem marcação de revisão, mas a página importa parte do visual; confirmar CSS efetivo e tela renderizada. |
+| `src/pages/ComprasIndustrial.tsx` | `9bfc4df93c834c85660fa3279cc4523fddb6e434` | REVISÃO VISUAL PENDENTE | Não foi possível confirmar a anatomia nova pelos tokens locais; verificar se usa CSS compartilhado. |
+| `src/pages/ComprasRequisicoes.tsx` | `c3d6363264e0fc00410ff5efb04bf99bd07cb1d0` | ALERTA DE ESTILO MISTO | Há controles compactos e paleta institucional, junto de pelo menos um padrão genérico de card. |
+| `src/pages/ComprasPedidoCompra.tsx` | `077612fa7e1249ccd87275d4a57e80f684bd5e03` | REVISÃO VISUAL PENDENTE | Marcadores de revisão presentes; tokens visuais podem vir de estilos compartilhados. |
+| `src/pages/ComprasRelatorios.tsx` | `c90af80902d3ae0e8f6ed6d8d79154880e28a0f9` | REVISÃO VISUAL PENDENTE | Conferir CSS compartilhado e consistência com a Central de Compras. |
+| `src/pages/VendasClientes.tsx` | `6fd01f2609c25f9f192c1a702cf6746f15129ebf` | ALERTA DE ESTILO MISTO | Controles compactos presentes, mas o componente usa layout compartilhado; conferir cabeçalho e cards no navegador. |
+| `src/pages/VendasPDV.tsx` | `429dadc34087b6df95968e98fcd31bf30e64a508` | PADRÃO NOVO — triagem | Paleta institucional e vários controles compactos; confirmar responsividade e fluxo operacional. |
+| `src/pages/VendasRelatorios.tsx` | `f007cee075cfa43c38b9f8a1daeafe441c7e212d` | ALERTA DE ESTILO MISTO | Controles compactos coexistem com cards genéricos; comparar com padrão aprovado de Vendas. |
+| `src/pages/DashboardComercial.tsx` | `f474c5b4b0b846b202a5858e297624a08429925a` | PADRÃO NOVO — triagem | Tokens compactos e paleta institucional presentes; validar consistência do layout. |
+| `src/pages/FinanceiroCustoPadrao.tsx` | `e65b085cc7eceda9c57358f395aeee24ac4b43b0` | POSSÍVEL MODELO ANTIGO | Sem sinais claros da paleta/controles compactos nesta leitura e com múltiplos cards genéricos; priorizar revisão. |
+| `src/pages/FinanceiroGraficoDesvios.tsx` | `6305319fc1375225f407d54c0659b01267847b84` | POSSÍVEL MODELO ANTIGO | Sem sinais claros da anatomia visual nova e com cards genéricos; priorizar revisão. |
+| `src/pages/PCPIndustrial.tsx` | `d1788a46a6fbb2e836d19a96f2103ce97c683054` | ALERTA DE ESTILO MISTO | Paleta institucional presente em muitos pontos, mas também há padrões genéricos; revisar telas internas/abas separadamente. |
+| `src/pages/PCPOrdens.tsx` | `9b1d1a74f184e58424bd4ab7c7e0ed4fe83c4428` | ALERTA DE ESTILO MISTO | Muitos controles compactos e tokens institucionais, com cards genéricos residuais. |
+| `src/pages/PCPPlanejamentoIndustrial.tsx` | `90ccdc6231b5b9ccad620c0dbdc63cd376aeeeff` | REVISÃO VISUAL PENDENTE | Poucos tokens locais detectados; pode depender de CSS compartilhado. |
+| `src/pages/QualidadeIndustrial.tsx` | `ba610f5e7994217e4f1b68e5978fe8870148f0be` | REVISÃO VISUAL PENDENTE | Precisa inspeção do layout compartilhado e dos acessos SGQ. |
+| `src/pages/QualidadeRNC.tsx` | `a86127d0dc965a93474db9e1afb8fe73e18b5e21` | PADRÃO NOVO — triagem | Paleta e controles compactos presentes; validar fluxos e consistência do formulário. |
+| `src/pages/EstoqueAlmoxarifadoCompact.tsx` | `4bd25f3b2556919ad64609d3ea0ee885859a91f4` | REVISÃO VISUAL PENDENTE | Nome indica variante compacta, mas não basta para confirmar o visual; verificar CSS e rota ativa. |
+| `src/pages/EstoqueAlmoxarifado.tsx` | `d3ad3801d09b59192a33394a78f8e5f13b878872` | REVISÃO VISUAL PENDENTE | Conferir qual variante é usada em produção e impedir que uma rota antiga aponte para a versão antiga. |
 
 ## Próxima etapa da auditoria
 
