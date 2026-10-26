@@ -48,19 +48,6 @@ export default function FornecedoresIndustrial(){
  useEffect(()=>{void load()},[])
  const statusOf=(r:Supplier)=>purchaseStatus(purchases,r.id)
  const filtered=useMemo(()=>rows.filter(r=>{const q=query.trim().toLowerCase();const text=`${r.razao_social} ${r.nome_fantasia??''} ${r.documento??''} ${r.codigo??''}`.toLowerCase();return (!q||text.includes(q))&&(!statusFilter||statusOf(r)===statusFilter)}),[rows,purchases,query,statusFilter])
- const handleQuickScan=(value:string)=>{
-  setBarcodeQuery(value)
-  const scanned=digits(value)
-  if(scanned.length!==14)return
-  const match=rows.find(r=>digits(r.documento??'')===scanned)
-  if(match){
-   loadForm(match)
-   setQuery(match.razao_social)
-   setFilterOpen(true)
-   setMessage('Fornecedor localizado pelo CNPJ e carregado para conferência.')
-   setError('')
-  }
- }
  const selectRow=(r:Supplier)=>{setSelected(r)}
  const loadForm=(r:Supplier)=>{setSelected(r);setEditing(r.id);setForm({codigo:r.codigo??'',razao_social:r.razao_social,nome_fantasia:r.nome_fantasia??'',documento:r.documento??'',email:r.email??'',telefone:r.telefone??'',endereco:r.endereco??'',cidade:r.cidade??'',estado:r.estado??'',contato:r.contato??'',iso_9001_certificado:r.iso_9001_certificado,iso_certificado_validade:r.iso_certificado_validade??'',iso_certificado_numero:r.iso_certificado_numero??'',observacoes:r.observacoes??''});setFile(null);setMessage('');setError('')}
  const openNew=()=>{setSelected(null);setEditing(null);setForm(empty);setFile(null);setMessage('');setError('')}
