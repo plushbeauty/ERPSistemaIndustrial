@@ -97,3 +97,17 @@
 .sales-process-stage.is-stage-muted{background:#f5f7f8;border-color:#d3dce0;color:#64748b}
 @media(max-width:1100px){.sales-orders-status-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.sales-process-stages{min-width:230px}}
 @media(max-width:800px){.sales-orders-status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sales-process-stages{min-width:220px}}
+
+/* VendasLayout premium workspace — revisão 2026-10-26 */
+.synqra-page-hero{display:flex;align-items:center;justify-content:space-between;gap:16px;min-width:0;margin:0 0 8px;padding:10px 12px;background:#fff;border:1px solid #dbe3ee;border-left:3px solid #1d5fd1;border-radius:3px}
+.synqra-page-hero-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+.synqra-page-hero-copy>span{color:#52677e;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.synqra-page-hero-copy h1{margin:0;color:#0b2545;font-size:16px;font-weight:700;line-height:1.25}
+.synqra-page-hero-copy p{margin:0;color:#5b6b7d;font-size:11px;line-height:1.4}
+.synqra-premium-stamp{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:5px 8px;border:1px solid #cbd9eb;border-radius:2px;background:#f5f8fd;color:#315274;font-size:9px;font-weight:600;white-space:nowrap}
+.synqra-page-update-only{display:flex;justify-content:flex-end;margin:0 0 6px}
+.synqra-page-commandbar{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:32px;margin:0 0 8px}
+.synqra-page-commandbar-actions{display:flex;align-items:center;gap:6px;min-width:0;flex-wrap:wrap}
+.synqra-page-refresh{height:30px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 10px;border:1px solid #b9c9dc;border-radius:2px;background:#fff;color:#173b63;font-size:10px;font-weight:600;white-space:nowrap;cursor:pointer}
+.synqra-page-refresh:hover{background:#edf4fc;border-color:#7fa6d7}
+@media(max-width:800px){.synqra-page-hero{align-items:flex-start;flex-direction:column}.synqra-premium-stamp{white-space:normal}.synqra-page-commandbar{align-items:flex-start;flex-direction:column}}
