@@ -1,5 +1,7 @@
+// Atualizado · Padrão Premium · 26/10/2026 — Carteira de documentos fiscais.
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { FileCode2, FilePlus2, FileText, Receipt, RefreshCw } from 'lucide-react'
 import FiscalSidebar from '../components/fiscal/FiscalSidebar'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
@@ -40,6 +42,13 @@ type Note = FiscalDocument & {
 const dateTime = (value: string | null) => value ? new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value)) : '—'
 const currency = (value: number | null) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value ?? 0))
 const PAGE_SIZE = 25
+const statusBadge = (status: string) => {
+  const value = String(status || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+  if (/autoriz|aprov|conclu/.test(value)) return 'invoice-badge invoice-success'
+  if (/rejeit|erro|cancel|deneg/.test(value)) return 'invoice-badge invoice-danger'
+  if (/process|penden|rascunho|conting/.test(value)) return 'invoice-badge invoice-pending'
+  return 'invoice-badge invoice-neutral'
+}
 
 export default function FiscalCarteiraNFe() {
   const [notes, setNotes] = useState<Note[]>([])
@@ -134,66 +143,42 @@ export default function FiscalCarteiraNFe() {
     }
   }
 
-  return <main className="erp-dense fiscal-workspace min-h-screen bg-slate-50 text-slate-900">
-    <header className="border-b border-slate-200 bg-white px-5 py-4">
-      <p className="text-xs font-bold uppercase tracking-wide text-blue-800">Fiscal / NF-e</p>
-      <h1 className="text-xl font-semibold">Carteira de documentos fiscais</h1>
-      <p className="mt-1 text-sm text-slate-600">Status, protocolos e arquivos consultados do banco do ERP; nenhuma autorização é inferida pela interface.</p>
-    </header>
-    <div className="block">
-      <FiscalSidebar />
-      <section className="min-w-0 flex-1 space-y-4 p-4">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <label className="grid min-w-64 flex-1 gap-1 text-xs font-semibold text-slate-700">
-            Buscar por número, destinatário, chave ou status
-            <input value={filter} onChange={(event) => { setFilter(event.target.value); setPage(0) }} className="h-9 rounded-sm border border-slate-300 bg-white px-2 text-sm" />
-          </label>
-          <div className="flex gap-2">
-            <button type="button" onClick={() => void load()} disabled={loading} className="h-9 rounded-sm border border-slate-300 bg-white px-3 text-sm font-medium disabled:opacity-50">Atualizar</button>
-            <Link to="/fiscal/emissao" className="flex h-9 items-center rounded-sm bg-blue-800 px-3 text-sm font-semibold text-white">Nova NF-e</Link>
-          </div>
-        </div>
-        {error && <div role="alert" className="border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-900">{error}</div>}
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(300px,1fr)]">
-          <section className="overflow-hidden border border-slate-200 bg-white">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[720px] border-collapse text-left text-sm">
-                <thead className="bg-slate-100 text-xs uppercase text-slate-600"><tr>
-                  <th className="px-3 py-2">Número / série</th><th className="px-3 py-2">Destinatário</th><th className="px-3 py-2">Emissão</th><th className="px-3 py-2">Total</th><th className="px-3 py-2">Status registrado</th>
-                </tr></thead>
-                <tbody>
-                  {loading && <tr><td colSpan={5} className="px-3 py-8 text-center text-slate-600">Consultando documentos fiscais…</td></tr>}
-                  {!loading && visiblePageNotes.map((note) => <tr key={note.id} className={`border-t border-slate-100 hover:bg-blue-50 ${selectedId === note.id ? 'bg-blue-50' : ''}`}>
-                    <td className="px-3 py-2 font-mono"><button type="button" aria-pressed={selectedId === note.id} onClick={() => setSelectedId(note.id)} className="underline decoration-dotted underline-offset-2">{note.numero ?? '—'} / {note.serie ?? '—'}</button></td>
-                    <td className="px-3 py-2">{note.destinatario_nome || '—'}</td>
-                    <td className="px-3 py-2">{dateTime(note.data_emissao)}</td>
-                    <td className="px-3 py-2 tabular-nums">{currency(note.valor_total)}</td>
-                    <td className="px-3 py-2">{note.status || '—'}</td>
-                  </tr>)}
-                  {!loading && !visibleNotes.length && <tr><td colSpan={5} className="px-3 py-8 text-center text-slate-600">{notes.length ? 'Nenhuma NF-e corresponde à busca.' : 'Nenhum documento NF-e cadastrado para esta empresa.'}</td></tr>}
-                </tbody>
-              </table>
-            </div>
-            <nav aria-label="Paginação da carteira fiscal" className="flex items-center justify-between gap-3 border-t border-slate-200 p-3 text-sm"><span>{visibleNotes.length} NF-e(s) · página {page + 1} de {pageCount}</span><div className="flex gap-2"><button type="button" disabled={page === 0} onClick={() => setPage((current) => Math.max(0, current - 1))} className="min-h-10 rounded border border-slate-300 px-3 font-semibold disabled:opacity-50">Anterior</button><button type="button" disabled={page + 1 >= pageCount} onClick={() => setPage((current) => Math.min(pageCount - 1, current + 1))} className="min-h-10 rounded border border-slate-300 px-3 font-semibold disabled:opacity-50">Próxima</button></div></nav>
+  const totalValue = notes.reduce((sum, note) => sum + Number(note.valor_total ?? 0), 0)
+  const authorizedCount = notes.filter(note => /autoriz|aprov/i.test(note.status)).length
+  const pendingCount = notes.filter(note => /rascunho|process|penden|conting/i.test(note.status)).length
+  return (
+    <main className="invoice-page">
+      <div className="invoice-content">
+        <header className="invoice-hero"><div><span>FISCAL · DOCUMENTOS ELETRÔNICOS</span><h1>Carteira de documentos fiscais</h1><p>Status registrados, protocolos e arquivos NF-e persistidos pela empresa no ERP.</p><small>Atualizado · Padrão Premium · 26/10/2026</small></div><Receipt size={38} aria-hidden="true"/></header>
+        <FiscalSidebar/>
+        <div className="invoice-actions"><span>Consulta fiscal da empresa ativa</span><div><button type="button" className="invoice-button invoice-secondary" onClick={() => void load()} disabled={loading}><RefreshCw size={15} className={loading?'animate-spin':''}/>{loading?'Atualizando…':'Atualizar dados'}</button><Link to="/fiscal/emissao" className="invoice-button invoice-primary"><FilePlus2 size={15}/> Nova NF-e</Link></div></div>
+        {error&&<div role="alert" className="invoice-alert">{error}</div>}
+        <section className="invoice-kpis" aria-label="Resumo da carteira fiscal"><article><span>Documentos localizados</span><strong>{notes.length}</strong></article><article className="invoice-kpi-success"><span>Autorizadas</span><strong>{authorizedCount}</strong></article><article className="invoice-kpi-pending"><span>Em acompanhamento</span><strong>{pendingCount}</strong></article><article><span>Valor total</span><strong>{currency(totalValue)}</strong></article></section>
+        <div className="invoice-workspace">
+          <section className="invoice-panel invoice-list-panel">
+            <div className="invoice-toolbar"><div><h2>Notas fiscais</h2><p>Status e valores registrados pelo ERP, sem autorização presumida.</p></div><label>Pesquisar documentos<input aria-label="Buscar número, destinatário, chave ou status" value={filter} onChange={event=>{setFilter(event.target.value);setPage(0)}} placeholder="Número, destinatário, chave ou status…"/></label></div>
+            <div className="invoice-table-wrap"><table className="invoice-table"><thead><tr><th>Número / série</th><th>Destinatário</th><th>Emissão</th><th className="numeric">Total</th><th>Status registrado</th></tr></thead><tbody>
+              {loading&&<tr><td colSpan={5} className="invoice-empty">Consultando documentos fiscais…</td></tr>}
+              {!loading&&visiblePageNotes.map(note=><tr key={note.id} className={selectedId===note.id?'selected':''}>
+                <td><button type="button" aria-pressed={selectedId===note.id} onClick={()=>setSelectedId(note.id)} className="invoice-row-select">{note.numero??'—'} / {note.serie??'—'}</button></td>
+                <td>{note.destinatario_nome||'—'}</td><td>{dateTime(note.data_emissao)}</td><td className="numeric">{currency(note.valor_total)}</td><td><span className={statusBadge(note.status)}>{note.status||'Sem status'}</span></td>
+              </tr>)}
+              {!loading&&!visibleNotes.length&&<tr><td colSpan={5} className="invoice-empty">{notes.length?'Nenhuma NF-e corresponde à busca.':'Nenhum documento NF-e cadastrado para esta empresa.'}</td></tr>}
+            </tbody></table></div>
+            <nav aria-label="Paginação da carteira fiscal" className="invoice-pagination"><span>{visibleNotes.length} NF-e(s) · página {page+1} de {pageCount}</span><div><button type="button" className="invoice-button invoice-secondary" disabled={page===0} onClick={()=>setPage(current=>Math.max(0,current-1))}>Anterior</button><button type="button" className="invoice-button invoice-secondary" disabled={page+1>=pageCount} onClick={()=>setPage(current=>Math.min(pageCount-1,current+1))}>Próxima</button></div></nav>
           </section>
-          <aside className="border border-slate-200 bg-white p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div><p className="text-xs font-bold uppercase text-blue-800">Protocolo e documentos</p><h2 className="mt-1 text-base font-semibold">{selected ? `NF-e ${selected.numero ?? 'sem número'}` : 'Nenhuma nota selecionada'}</h2></div>
-              {selected && <span className="text-xs font-semibold text-slate-700">{selected.status}</span>}
-            </div>
-            {selected ? <dl className="mt-4 space-y-3 text-sm">
-              <div><dt className="text-xs text-slate-500">Chave de acesso</dt><dd className="break-all font-mono">{selected.chave_acesso || 'Não retornada pelo integrador.'}</dd></div>
-              <div><dt className="text-xs text-slate-500">Protocolo de autorização</dt><dd className="break-all font-mono">{selected.protocolo || 'Não registrado.'}</dd></div>
-              <div><dt className="text-xs text-slate-500">Autorização em</dt><dd>{dateTime(selected.authorizedAt)}</dd></div>
-              <div><dt className="text-xs text-slate-500">Retorno fiscal</dt><dd className="whitespace-pre-wrap">{selected.retorno || 'Sem mensagem registrada.'}</dd></div>
-              <div className="flex flex-wrap gap-2 pt-2">
-                <button type="button" disabled={busy || !selected.xmlPath} onClick={() => void openStoredFile(selected.xmlPath, 'XML')} className="h-9 rounded-sm border border-slate-300 px-3 text-sm font-medium disabled:opacity-50">Abrir XML</button>
-                <button type="button" disabled={busy || !selected.danfePath} onClick={() => void openStoredFile(selected.danfePath, 'DANFE')} className="h-9 rounded-sm bg-blue-800 px-3 text-sm font-semibold text-white disabled:opacity-50">Visualizar DANFE</button>
-              </div>
-            </dl> : <p className="mt-4 text-sm text-slate-600">Selecione um documento para consultar os dados persistidos.</p>}
+          <aside className="invoice-panel invoice-detail-panel">
+            <div className="invoice-detail-heading"><div><span>PROTOCOLO E ARQUIVOS</span><h2>{selected?`NF-e ${selected.numero??'sem número'}`:'Nenhuma nota selecionada'}</h2></div>{selected&&<span className={statusBadge(selected.status)}>{selected.status}</span>}</div>
+            {selected?<>
+              <dl className="invoice-details"><div><dt>Chave de acesso</dt><dd className="breakable">{selected.chave_acesso||'Não retornada pelo integrador.'}</dd></div><div><dt>Protocolo de autorização</dt><dd className="breakable">{selected.protocolo||'Não registrado.'}</dd></div><div><dt>Autorização em</dt><dd>{dateTime(selected.authorizedAt)}</dd></div><div><dt>Retorno fiscal</dt><dd className="invoice-return">{selected.retorno||'Sem mensagem registrada.'}</dd></div></dl>
+              <div className="invoice-file-actions"><button type="button" className="invoice-button invoice-secondary" disabled={busy||!selected.xmlPath} onClick={()=>void openStoredFile(selected.xmlPath,'XML')}><FileCode2 size={15}/>{busy?'Abrindo…':'Abrir XML'}</button><button type="button" className="invoice-button invoice-primary" disabled={busy||!selected.danfePath} onClick={()=>void openStoredFile(selected.danfePath,'DANFE')}><FileText size={15}/>Visualizar DANFE</button></div>
+              {!selected.xmlPath&&!selected.danfePath&&<p className="invoice-file-note">Arquivos ainda não foram associados a esta NF-e.</p>}
+            </>:<p className="invoice-detail-empty">Selecione uma nota na lista para consultar chave, protocolo, retorno fiscal e arquivos.</p>}
           </aside>
         </div>
-      </section>
-    </div>
-  </main>
+      </div>
+      <style>{`.invoice-page{min-height:100vh;background:#f3f6fb;color:#0f172a;font-family:Inter,Segoe UI,Arial,sans-serif}.invoice-content{width:min(100%,1600px);margin:0 auto;padding:18px 22px 32px;display:grid;gap:13px}.invoice-hero{position:relative;display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:130px;overflow:hidden;padding:20px 26px;border-radius:16px;background:linear-gradient(112deg,#0b2545 0%,#123f72 58%,#1d5fd1 100%);color:#fff;box-shadow:0 10px 24px rgba(11,37,69,.15)}.invoice-hero:after{position:absolute;right:9%;top:-115px;width:270px;height:270px;border:1px solid rgba(255,255,255,.14);border-radius:50%;box-shadow:0 0 0 30px rgba(255,255,255,.04),0 0 0 62px rgba(255,255,255,.025);content:"";pointer-events:none}.invoice-hero>div,.invoice-hero>svg{position:relative;z-index:1}.invoice-hero div>span{color:#bfeef6;font-size:10px;font-weight:800;letter-spacing:.15em}.invoice-hero h1{margin:7px 0 5px;color:#fff;font-size:24px;font-weight:800;line-height:1.2}.invoice-hero p{margin:0;color:#e1edf9;font-size:12px;line-height:1.5}.invoice-hero small{display:inline-flex;margin-top:10px;padding:4px 9px;border:1px solid rgba(255,255,255,.22);border-radius:999px;background:rgba(255,255,255,.1);color:#fff;font-size:10px;font-weight:700}.invoice-hero>svg{margin-right:18px;color:#dbeafe}.invoice-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;padding:9px 12px;border:1px solid #dfe7f1;border-radius:11px;background:#fff;box-shadow:0 2px 7px rgba(15,23,42,.045)}.invoice-actions>span{color:#64748b;font-size:11px;font-weight:650}.invoice-actions>div,.invoice-pagination>div{display:flex;flex-wrap:wrap;gap:8px}.invoice-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:36px;min-height:36px;padding:0 12px;border:1px solid transparent;border-radius:8px;font-size:10px;font-weight:750;line-height:1;text-decoration:none;white-space:nowrap;cursor:pointer}.invoice-button:disabled{cursor:not-allowed;opacity:.48}.invoice-primary{background:linear-gradient(180deg,#2563eb,#1d4ed8);color:#fff;box-shadow:0 3px 0 #173f91}.invoice-secondary{border-color:#cbd5e1;background:linear-gradient(180deg,#fff,#f1f5f9);color:#173452;box-shadow:0 2px 0 #d6dee8}.invoice-alert{padding:10px 13px;border:1px solid #fecaca;border-radius:9px;background:#fff1f2;color:#b42318;font-size:11px;font-weight:700}.invoice-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}.invoice-kpis article{display:flex;min-width:0;min-height:78px;flex-direction:column;justify-content:center;padding:11px 14px;border:1px solid #dfe7f1;border-radius:11px;background:#fff;box-shadow:0 3px 10px rgba(15,23,42,.045)}.invoice-kpis span{color:#64748b;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}.invoice-kpis strong{margin-top:5px;color:#102c4e;font-size:19px;font-weight:850;overflow-wrap:anywhere}.invoice-kpis .invoice-kpi-success{border-color:#bbf7d0;background:#f0fdf4}.invoice-kpis .invoice-kpi-success strong{color:#15803d}.invoice-kpis .invoice-kpi-pending{border-color:#fde68a;background:#fffbeb}.invoice-kpis .invoice-kpi-pending strong{color:#b45309}.invoice-workspace{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,.9fr);align-items:start;gap:13px}.invoice-panel{min-width:0;padding:14px;border:1px solid #dfe7f1;border-radius:12px;background:#fff;box-shadow:0 3px 10px rgba(15,23,42,.045)}.invoice-toolbar{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:12px;padding-bottom:11px;border-bottom:1px solid #e7edf5}.invoice-toolbar h2,.invoice-detail-heading h2{margin:0;color:#173452;font-size:14px;font-weight:800}.invoice-toolbar p{margin:4px 0 0;color:#64748b;font-size:10px}.invoice-toolbar label{display:grid;min-width:min(100%,300px);gap:4px;color:#475569;font-size:9px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.invoice-toolbar input{height:36px;min-height:36px;box-sizing:border-box;padding:0 10px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;color:#0f172a;font:500 11px Inter,Segoe UI,Arial,sans-serif;outline:none;text-transform:none}.invoice-toolbar input:focus{border-color:#2563eb;background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.12)}.invoice-table-wrap{overflow:auto}.invoice-table{width:100%;min-width:720px;border-collapse:separate;border-spacing:0;text-align:left;font-size:10px}.invoice-table th{padding:9px;border-bottom:1px solid #dfe7f1;background:#f1f5f9;color:#475569;font-size:8px;font-weight:800;letter-spacing:.045em;text-transform:uppercase;white-space:nowrap}.invoice-table td{padding:9px;border-bottom:1px solid #edf1f6;color:#334155;vertical-align:middle}.invoice-table tbody tr:nth-child(even){background:#f8fafc}.invoice-table tbody tr:hover,.invoice-table tbody tr.selected{background:#eff6ff}.invoice-table .numeric{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.invoice-row-select{padding:0;border:0;background:none;color:#1d4ed8;font:750 10px Inter,Segoe UI,Arial,sans-serif;cursor:pointer}.invoice-row-select:hover{text-decoration:underline}.invoice-badge{display:inline-flex;align-items:center;min-height:21px;padding:3px 7px;border:1px solid;border-radius:6px;font-size:9px;font-weight:800;white-space:nowrap}.invoice-success{border-color:#bbf7d0;background:#dcfce7;color:#166534}.invoice-danger{border-color:#fecaca;background:#fee2e2;color:#b91c1c}.invoice-pending{border-color:#fde68a;background:#fef3c7;color:#92400e}.invoice-neutral{border-color:#bfdbfe;background:#dbeafe;color:#1d4ed8}.invoice-empty,.invoice-detail-empty{padding:22px!important;color:#64748b!important;font-size:11px;text-align:center}.invoice-pagination{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:11px;color:#64748b;font-size:10px}.invoice-detail-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding-bottom:12px;border-bottom:1px solid #e7edf5}.invoice-detail-heading>div>span{display:block;margin-bottom:5px;color:#1d4ed8;font-size:8px;font-weight:850;letter-spacing:.11em}.invoice-details{display:grid;gap:12px;margin:13px 0}.invoice-details>div{min-width:0}.invoice-details dt{margin-bottom:3px;color:#64748b;font-size:9px;font-weight:750;letter-spacing:.04em;text-transform:uppercase}.invoice-details dd{margin:0;color:#334155;font-size:10px;line-height:1.5}.invoice-details .breakable{overflow-wrap:anywhere;font-family:ui-monospace,Consolas,monospace}.invoice-details .invoice-return{max-height:130px;overflow:auto;white-space:pre-wrap}.invoice-file-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:12px;border-top:1px solid #e7edf5}.invoice-file-note{margin:9px 0 0;color:#64748b;font-size:9px}.invoice-page :focus-visible{outline:3px solid rgba(34,184,207,.65);outline-offset:2px}@media(max-width:1000px){.invoice-workspace{grid-template-columns:minmax(0,1fr)}.invoice-detail-panel{grid-row:1}.invoice-list-panel{grid-row:2}}@media(max-width:720px){.invoice-content{padding:10px 10px 24px}.invoice-hero{min-height:0;padding:17px}.invoice-hero h1{font-size:20px}.invoice-hero>svg{width:28px;height:28px;margin:0}.invoice-actions{align-items:stretch;flex-direction:column}.invoice-actions>div{display:grid;grid-template-columns:1fr 1fr}.invoice-button{padding:0 8px;font-size:9px}.invoice-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.invoice-kpis article{min-height:68px;padding:9px}.invoice-kpis strong{font-size:16px}.invoice-panel{padding:11px}.invoice-toolbar{align-items:stretch;flex-direction:column}.invoice-toolbar label{min-width:0}.invoice-pagination{align-items:flex-start;flex-direction:column}}@media(max-width:460px){.invoice-hero>svg{display:none}.invoice-actions>div,.invoice-file-actions{grid-template-columns:minmax(0,1fr)}.invoice-detail-heading{align-items:flex-start;flex-direction:column}}@media print{.invoice-page{background:#fff}.invoice-content{padding:0}.invoice-actions{display:none}.invoice-hero{background:#0b2545!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.invoice-panel,.invoice-kpis article{box-shadow:none;break-inside:avoid}}
+      `}</style>
+    </main>
+  )
 }

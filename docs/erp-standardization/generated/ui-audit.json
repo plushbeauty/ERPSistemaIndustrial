@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-10-26T17:48:43.574Z",
+  "generatedAt": "2026-10-26T17:52:37.678Z",
   "revision": "UI-AUDIT-R1",
   "mode": "static-analysis-only",
   "summary": {
     "sourceFilesScanned": 278,
     "routeDeclarationsDetected": 278,
     "filesUsingSharedFormTokens": 2,
-    "filesWithLocalStyleHints": 107,
+    "filesWithLocalStyleHints": 108,
     "filesWithControlsWithoutDetectedStaticHeight": 226
   },
   "routes": {
@@ -11187,7 +11187,7 @@
     },
     {
       "file": "src/pages/FiscalCarteiraNFe.tsx",
-      "lines": 200,
+      "lines": 185,
       "controlsDetected": 7,
       "tags": {
         "input": 1,
@@ -11196,20 +11196,28 @@
         "button": 6,
         "forms": 0,
         "tables": 1,
-        "grids": 1,
-        "roundedClasses": 5,
+        "grids": 0,
+        "roundedClasses": 0,
         "lookupHints": 0,
         "printHints": 0
       },
       "sharedFormTokensImported": false,
-      "localStyleHints": false,
+      "localStyleHints": true,
       "heightSummary": {
         "not-detected-static": 7
       },
       "controls": [
         {
+          "tag": "button",
+          "line": 154,
+          "heightClasses": [],
+          "widthClasses": [],
+          "maxLength": null,
+          "classNameStaticDetected": true
+        },
+        {
           "tag": "input",
-          "line": 149,
+          "line": 159,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11217,7 +11225,7 @@
         },
         {
           "tag": "button",
-          "line": 152,
+          "line": 163,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11225,43 +11233,35 @@
         },
         {
           "tag": "button",
-          "line": 167,
+          "line": 168,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
-          "classNameStaticDetected": false
+          "classNameStaticDetected": true
         },
         {
           "tag": "button",
-          "line": 177,
+          "line": 168,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
-          "classNameStaticDetected": false
+          "classNameStaticDetected": true
         },
         {
           "tag": "button",
-          "line": 177,
+          "line": 174,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
-          "classNameStaticDetected": false
+          "classNameStaticDetected": true
         },
         {
           "tag": "button",
-          "line": 190,
+          "line": 174,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
-          "classNameStaticDetected": false
-        },
-        {
-          "tag": "button",
-          "line": 191,
-          "heightClasses": [],
-          "widthClasses": [],
-          "maxLength": null,
-          "classNameStaticDetected": false
+          "classNameStaticDetected": true
         }
       ]
     },
