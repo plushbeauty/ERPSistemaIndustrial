@@ -253,6 +253,32 @@ Esta rodada ampliou a leitura dos componentes de Fornecedores, Clientes, Compras
 | `src/pages/manutencao/ManutencaoPreventivas.tsx` | `1f88aee988e7fdda4f3631b21e7f4415b77a0e82` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes para confirmar o padrão novo. |
 | `src/pages/pcp/ControleProcessoInjetora.tsx` | `c61502c0e95d3f2df1a7fc11829c5021db124b8b` | PADRÃO NOVO — triagem | Revisão registrada, controles compactos, paleta e layout compartilhado. |
 
+
+## Décima passada — aliases, páginas de molde/MRP e destinos de rotas (26/10/2026)
+
+| Arquivo | Hash verificado | Triagem estática | Observação |
+|---|---|---|---|
+| `src/pages/AjusteGlobal.tsx` | `d896068e2a2ae3e5c2635d616d7bb5d721c238d4` | ALIAS | Redireciona exportação para `TabelaPrecos.tsx`; auditar o destino, não duplicar a revisão. |
+| `src/pages/CentralQualidade.tsx` | `12172615814d70f533035f1f89a025b26c15ca37` | ALIAS / ARQUIVO DELEGADOR | Arquivo curto com cabeçalho descritivo; confirmar componente importado e rota efetiva. |
+| `src/pages/ComprasOrdemCompra.tsx` | `56b25276584d0c6ffc5d26dcd6b03580d9806620` | ALIAS / ARQUIVO MÍNIMO | Arquivo de 617 bytes; confirmar se é delegador ou página antiga incompleta. |
+| `src/pages/ComprasSolicitacaoManual.tsx` | `ace09fc21ab6f1ecff259fa73758673b1388d322` | ALIAS | Exporta `SolicitacaoCompra.tsx`; inspecionar destino. |
+| `src/pages/ManutencaoPreventivaCorretiva.tsx` | `dd14ba19cfb7346c5c7c818d599e2086f23f12a1` | ALIAS | Exporta `ManutencaoIndustrial.tsx`; inspecionar destino. |
+| `src/pages/MoldesFerramentaria.tsx` | `4a343d64d219bbbf22d22fa1bb00997e6ab10f81` | REVISÃO VISUAL PENDENTE | Sem sinais locais claros de paleta compacta. |
+| `src/pages/MoldesInjecao.tsx` | `d079e08c6eccfb46bde4610bdbae3d89b0ed2a3d` | ALERTA DE ESTILO MISTO | Poucos controles compactos e cards genéricos. |
+| `src/pages/MRPIndustrial.tsx` | `dd219f9e30a259315e1429973cbe3c82c9c189a6` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes; conferir CSS global. |
+| `src/pages/PCPDashboardOEECentral.tsx` | `edaab20275a9b9856a64e3eb479cee4754474b56` | REVISÃO VISUAL PENDENTE | Sem sinais locais claros; confirmar rota ativa. |
+| `src/pages/PcpChaoDeFabricaMestre.tsx` | `e9ba78bbd63e101695f979687b495ef7944bbc96` | ALIAS | Exporta `PCPIndustrial.tsx`; auditar o destino. |
+| `src/pages/PedidoCompra.tsx` | `cf2ce4c2d693c5c5742acbeadb0712d5b7492101` | ALIAS / REVISÃO REGISTRADA | Exporta `ComprasPedidoCompra.tsx`; manter a implementação única. |
+| `src/pages/PedidosVendas.tsx` | `6087f452d845bedf01543c6b47e6bcb3f10b0787` | ALIAS / ARQUIVO DELEGADOR | Arquivo curto; confirmar componente efetivo. |
+| `src/PublicIndustrialHome.tsx (alias em pages)` | `98280f506ba5a69cb2c4e727e870d7e769eed284` | ALIAS | Exporta a home pública de `src/PublicIndustrialHome.tsx`, que está congelada. |
+| `src/pages/QualidadeCalibracao.tsx` | `439e1ae8d9c025abfe7024465927edbbf20fac32` | ALIAS | Exporta `CalibracaoIndustrial.tsx`; evitar duplicar revisão. |
+| `src/pages/QualidadeMetrologia.tsx` | `439e1ae8d9c025abfe7024465927edbbf20fac32` | ALIAS | Exporta `CalibracaoIndustrial.tsx`; evitar duplicar revisão. |
+| `src/pages/SgqManagementCompact.tsx` | `b06e27740f5e1e0c66e701461070f50c14b45032` | ALIAS | Exporta `QualidadeRNC.tsx`; auditar o destino. |
+| `src/pages/VendasPedidosMestre.tsx` | `490234000e08c5dee0b579d65e934f6d423de0a1` | ALIAS | Exporta `NovoPedido.tsx`, que está congelada. |
+| `src/pages/VirtualGuide.tsx` | `cf0805f146906614ba07fca595f957b5fe91dc23` | ALIAS | Exporta o componente `components/VirtualGuide`. |
+| `src/pages/EstoqueAlmoxarifadoMestre.tsx` | `44328191ca9a5174d7d78bd0004eff67c50fccea` | ALIAS | Exporta `EstoqueAlmoxarifadoCompact.tsx`; confirmar se essa é a tela ativa. |
+| `src/pages/PCPIndustrial.tsx` | `d1788a46a6fbb2e836d19a96f2103ce97c683054` | ALERTA DE ESTILO MISTO | Comentário de revisão de 23/10/2026 e paleta institucional; um card genérico detectado. Verificar abas internas separadamente. |
+
 ## Próxima etapa da auditoria
 
 Continuar o inventário por módulo — Cadastros, Compras, Vendas, Financeiro, PCP, Qualidade/SGQ, Estoque, Fiscal, RH, Engenharia, Manutenção, Logística e Administração — registrando cada rota, componente, hash, estado visual e pendência. Só marcar **VERIFICADA VISUALMENTE** depois de comparar a tela renderizada com a referência aprovada.
