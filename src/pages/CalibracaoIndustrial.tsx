@@ -1,6 +1,6 @@
 /**
  * @DATA_REVISAO_APROVACAO 2026-10-26
- * @STATUS_APROVACAO REV-SGQ-CALIBRACAO-PAQUIMETRO-001
+ * @STATUS_APROVACAO REV-SGQ-CALIBRACAO-PAQUIMETRO-002
  * Escopo: recuperar o paquímetro digital na tela de calibração aprovada, mantendo o cadastro técnico e o histórico.
  * Preservado: consultas Supabase, RPC, validações, persistência e bloqueio metrológico.
  */
@@ -373,9 +373,31 @@ export default function CalibracaoIndustrial() {
       </header>
       {(error || notice) && <div role={error ? 'alert' : 'status'} className={error ? 'border border-red-300 bg-red-50 p-2 text-[10px] text-red-800' : 'border border-emerald-300 bg-emerald-50 p-2 text-[10px] text-emerald-800'}>{error || notice}</div>}
       <section aria-label="Paquímetro digital aprovado" className="border border-[#C8E3EE] bg-white p-2">
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <div><p className="text-[9px] font-bold uppercase tracking-[.16em] text-[#2D8DB8]">METROLOGIA · REV-SGQ-CALIBRACAO-PAQUIMETRO-001</p><h2 className="text-[12px] font-semibold">Paquímetro Digital</h2></div>
-          <span className="text-[9px] text-slate-500">Leitura demonstrativa; não representa conexão com sensor físico.</span>
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="grid h-[76px] w-[220px] shrink-0 place-items-center overflow-hidden rounded-lg border border-slate-700 bg-[#171b22] p-2">
+              <svg viewBox="0 0 420 130" role="img" aria-label="Imagem ilustrativa do paquímetro digital no card de controle de equipamentos" className="h-auto w-full">
+                <defs>
+                  <linearGradient id="sysnqra-card-steel" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#dce2e9"/><stop offset="1" stopColor="#687483"/></linearGradient>
+                  <linearGradient id="sysnqra-card-body" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#353d49"/><stop offset="1" stopColor="#171b22"/></linearGradient>
+                </defs>
+                <path d="M20 30 h22 v80 l-10 14 h-12 z M20 30 h22 v-18 l-8 -8 h-14 z" fill="url(#sysnqra-card-steel)"/>
+                <rect x="20" y="30" width="390" height="26" rx="2" fill="url(#sysnqra-card-steel)"/>
+                {Array.from({ length: 61 }, (_, i) => <g key={i}><line x1={48 + i * 5.9} x2={48 + i * 5.9} y1="30" y2={i % 10 === 0 ? 42 : i % 5 === 0 ? 38 : 35} stroke="#171b22" strokeWidth=".8"/></g>)}
+                <g transform="translate(72 0)">
+                  <path d="M44 56 h18 v54 l-10 14 h-8 z M44 30 v-18 l6 -8 h12 v26 z" fill="url(#sysnqra-card-steel)"/>
+                  <rect x="44" y="22" width="130" height="62" rx="8" fill="url(#sysnqra-card-body)" stroke="#353b46"/>
+                  <rect x="56" y="30" width="96" height="30" rx="3" fill="#b9d8a8"/>
+                  <text x="104" y="52" fontSize="19" textAnchor="middle" fill="#263d2b" fontFamily="monospace" fontWeight="700">50.00</text>
+                  <text x="60" y="37" fontSize="5" fill="#263d2b" fontFamily="monospace">mm</text>
+                  <circle cx="70" cy="72" r="5" fill="#f4c66a"/><circle cx="90" cy="72" r="5" fill="#9aa3b2"/>
+                  <text x="122" y="75" fontSize="6" textAnchor="middle" fill="#9aa3b2" fontFamily="sans-serif" letterSpacing="1">SYSNQRA</text>
+                </g>
+              </svg>
+            </div>
+            <div><p className="text-[9px] font-bold uppercase tracking-[.16em] text-[#2D8DB8]">METROLOGIA · REV-SGQ-CALIBRACAO-PAQUIMETRO-002</p><h2 className="text-[12px] font-semibold">Paquímetro Digital</h2></div>
+          </div>
+          <span className="text-[9px] text-slate-500">Ilustração do instrumento; leitura demonstrativa, sem conexão com sensor físico.</span>
         </div>
         <DigitalCaliper instrumentOptions={equipments.map(item => ({ codigo: item.codigo, descricao: item.descricao, status: item.status, proxima_calibracao: item.proxima_calibracao }))} />
       </section>
