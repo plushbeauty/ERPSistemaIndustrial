@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Warehouse, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X, Ruler, ClipboardCheck, ClipboardList, Gauge, Target, Radio, Globe, Clipboard } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Warehouse, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X, Ruler, ClipboardCheck, ClipboardList, Gauge, Target, Radio, Globe, Clipboard, CalendarDays } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -10,6 +10,7 @@ type MenuItem = {
   label: string
   route: string
   icon?: LucideIcon
+  isNew?: boolean
   action?: 'pcpTablet'
   children?: MenuItem[]
 }
@@ -23,13 +24,13 @@ const menus: MenuItem[] = [
   ] },
   { label: 'Vendas', route: '/vendas', icon: ShoppingCart, children: [
     { label: 'Dashboard comercial', route: '/vendas' },
-    { label: 'CRM industrial · Funil', route: '/vendas/crm', icon: Target },
+    { label: 'CRM industrial · Funil', route: '/vendas/crm', icon: Target, isNew: true },
     { label: 'Status do pedido', route: '/vendas/status' },
     { label: 'Novo pedido', route: '/vendas/novo-pedido' },
     { label: 'PDV / venda rápida', route: '/vendas/pdv' },
     { label: 'Catálogo digital', route: '/vendas/catalogo-digital' },
     { label: 'Gestão do catálogo', route: '/vendas/catalogo-digital/gestao' },
-    { label: 'Orçamentos e custos', route: '/vendas/orcamentos' },
+    { label: 'Orçamentos e custos', route: '/vendas/orcamentos', icon: BarChart3, isNew: true },
     { label: 'Análise de custos', route: '/vendas/analise-custos' },
     { label: 'Metas', route: '/vendas/metas' },
     { label: 'Relatórios', route: '/vendas/relatorios' },
@@ -59,10 +60,10 @@ const menus: MenuItem[] = [
   { label: 'Engenharia', route: '/engenharia', icon: Database, children: [
     { label: 'Central de Engenharia', route: '/engenharia' },
     { label: 'Catálogo de itens', route: '/engenharia/produtos' },
-    { label: 'Estrutura BOM', route: '/engenharia/bom' },
+    { label: 'Estrutura BOM', route: '/engenharia/bom', icon: Database, isNew: true },
     { label: 'Roteiros de fabricação', route: '/engenharia/roteiros' },
-    { label: 'Revisões BOM', route: '/engenharia/revisoes-bom' },
-    { label: 'Fichas de processo', route: '/engenharia/fichas-processo' },
+    { label: 'Revisões BOM', route: '/engenharia/revisoes-bom', icon: ClipboardList, isNew: true },
+    { label: 'Fichas de processo', route: '/engenharia/fichas-processo', icon: ClipboardCheck, isNew: true },
   ] },
   { label: 'Financeiro', route: '/financeiro/custo-padrao', icon: Wallet, children: [
     { label: 'Custo padrão', route: '/financeiro/custo-padrao' },
@@ -72,32 +73,33 @@ const menus: MenuItem[] = [
     { label: 'Caixa', route: '/financeiro/caixa' },
   ] },
   { label: 'Fiscal', route: '/fiscal', icon: FileText, children: [
-    { label: 'Central Fiscal', route: '/fiscal', icon: FileText },
-    { label: 'Bloco K · SPED Industrial', route: '/fiscal/bloco-k', icon: Clipboard },
-    { label: 'Carteira de NF-e', route: '/fiscal/carteira-nfe', icon: FileText },
+    { label: 'Central Fiscal', route: '/fiscal', icon: FileText, isNew: true },
+    { label: 'Bloco K · SPED Industrial', route: '/fiscal/bloco-k', icon: Clipboard, isNew: true },
+    { label: 'Carteira de NF-e', route: '/fiscal/carteira-nfe', icon: FileText, isNew: true },
+    { label: 'Pendências de NF-e', route: '/fiscal/pendencias', icon: ClipboardList, isNew: true },
   ] },
   { label: 'Manufatura / PCP', route: '/pcp', icon: Factory, children: [
     { label: 'Central PCP', route: '/pcp' },
-    { label: 'Ordens de produção', route: '/pcp/ordens' },
-    { label: 'Ordens industriais', route: '/pcp/ordens-industriais' },
-    { label: 'Chão de Fábrica · Portal do Funcionário', route: '/pcp/portal-operador' },
-    { label: 'Apontamentos', route: '/pcp/apontamentos' },
+    { label: 'Ordens de produção', route: '/pcp/ordens', icon: ClipboardList, isNew: true },
+    { label: 'Ordens industriais', route: '/pcp/ordens-industriais', icon: ClipboardList, isNew: true },
+    { label: 'Chão de Fábrica · Portal do Funcionário', route: '/pcp/portal-operador', icon: Factory, isNew: true },
+    { label: 'Apontamentos', route: '/pcp/apontamentos', icon: ClipboardCheck, isNew: true },
     { label: 'Demanda', route: '/pcp/demanda' },
-    { label: 'Capacidade / Gantt', route: '/pcp/capacidade' },
+    { label: 'Capacidade / Gantt', route: '/pcp/capacidade', icon: Gauge, isNew: true },
     { label: 'Programação Gantt', route: '/pcp/programacao-gantt' },
-    { label: 'MRP II', route: '/pcp/mrp-ii' },
+    { label: 'MRP II', route: '/pcp/mrp-ii', icon: Package, isNew: true },
     { label: 'Agenda de máquinas', route: '/pcp/agenda-maquinas' },
-    { label: 'Sequenciamento', route: '/pcp/sequenciamento' },
-    { label: 'Planejamento', route: '/pcp/planejamento' },
+    { label: 'Sequenciamento', route: '/pcp/sequenciamento', icon: ClipboardList, isNew: true },
+    { label: 'Planejamento', route: '/pcp/planejamento', icon: CalendarDays, isNew: true },
     { label: 'Fichas de processo', route: '/pcp/fichas-processo' },
     { label: 'Paradas / setup', route: '/pcp/paradas' },
-    { label: 'Coleta MES · IoT', route: '/pcp/iot', icon: Radio },
+    { label: 'Coleta MES · IoT', route: '/pcp/iot', icon: Radio, isNew: true },
     { label: 'Auditoria PCP', route: '/pcp/auditoria' },
-    { label: 'PCP Tablet', route: '/pcp', action: 'pcpTablet' },
+    { label: 'PCP Tablet', route: '/pcp', icon: Factory, isNew: true, action: 'pcpTablet' },
   ] },
   { label: 'Qualidade', route: '/qualidade/inspecoes', icon: ShieldCheck, children: [
-    { label: 'Inspeções de lotes', route: '/qualidade/inspecoes', icon: ClipboardList },
-    { label: 'Inspeção em processo', route: '/qualidade/inspecao-processo', icon: ClipboardCheck },
+    { label: 'Inspeções de lotes', route: '/qualidade/inspecoes', icon: ClipboardList, isNew: true },
+    { label: 'Inspeção em processo', route: '/qualidade/inspecao-processo', icon: ClipboardCheck, isNew: true },
     { label: 'Paquímetro Digital / Metrologia', route: '/qualidade/paquimetro-digital', icon: Ruler },
     { label: 'Calibração de instrumentos', route: '/qualidade/calibracao', icon: Wrench },
     { label: 'Central de Metrologia', route: '/qualidade/metrologia', icon: Gauge },
@@ -105,7 +107,7 @@ const menus: MenuItem[] = [
     { label: 'Liberação de lotes', route: '/qualidade/liberacao-lote', icon: ShieldCheck },
     { label: 'Quarentena de lotes', route: '/qualidade/quarentena', icon: ShieldCheck },
     { label: 'Genealogia de lotes', route: '/qualidade/genealogia-lote', icon: Package },
-    { label: 'RPNC / CAPA', route: '/qualidade/rpnc', icon: ClipboardList },
+    { label: 'RPNC / CAPA', route: '/qualidade/rpnc', icon: ClipboardList, isNew: true },
     { label: 'Metodologia 8D', route: '/qualidade/metodologia-8d', icon: ClipboardCheck },
     { label: 'FMEA', route: '/qualidade/fmea', icon: ShieldCheck },
     { label: 'PFMEA', route: '/qualidade/pfmea', icon: ShieldCheck },
@@ -117,7 +119,7 @@ const menus: MenuItem[] = [
     { label: 'Auditoria 5S', route: '/qualidade/auditoria-5s', icon: ShieldCheck },
     { label: 'Instruções de trabalho', route: '/qualidade/editor-it', icon: ClipboardCheck },
     { label: 'Relatórios do SGQ', route: '/qualidade/relatorios-documentos', icon: BarChart3 },
-    { label: 'Auditorias da planta', route: '/qualidade/auditorias-planta', icon: ClipboardCheck },
+    { label: 'Auditorias da planta', route: '/qualidade/auditorias-planta', icon: ClipboardCheck, isNew: true },
     { label: 'Fichas de processo', route: '/qualidade/fichas-processo', icon: FileText },
   ] },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench, children: [
@@ -128,8 +130,8 @@ const menus: MenuItem[] = [
     { label: 'Indicadores', route: '/manutencao/indicadores' },
   ] },
   { label: 'Portais externos', route: '/portal/cliente', icon: Globe, children: [
-    { label: 'Portal do cliente', route: '/portal/cliente', icon: UserRound },
-    { label: 'Portal do fornecedor · RFQ', route: '/portal/fornecedor', icon: Truck },
+    { label: 'Portal do cliente', route: '/portal/cliente', icon: UserRound, isNew: true },
+    { label: 'Portal do fornecedor · RFQ', route: '/portal/fornecedor', icon: Truck, isNew: true },
   ] },
   { label: 'Recursos Humanos', route: '/rh/funcionarios', icon: UserRound, children: [
     { label: 'Funcionários', route: '/rh/funcionarios' },
@@ -298,20 +300,21 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
               {searchedMenus.map(menu => {
                 const Icon = menu.icon ?? Home
                 const hasChildren = Boolean(menu.children?.length)
+                const hasNewItems = Boolean(menu.isNew || menu.children?.some(child => child.isNew))
                 const expanded = openMenu === menu.label || Boolean(normalizedSearch && menu.children?.length)
                 return <div className="erp-windows-menu-group" key={menu.label}>
-                  <div className={`erp-windows-menu-row ${current?.label === menu.label ? 'is-active' : ''}`}>
-                    <button type="button" className="erp-windows-menu-main" onClick={() => {
+                  <div className={`erp-windows-menu-row ${current?.label === menu.label ? 'is-active' : ''} ${hasNewItems ? 'has-new' : ''}`}>
+                    <button type="button" className="erp-windows-menu-main" title={hasNewItems ? 'Este módulo contém telas novas' : undefined} onClick={() => {
                       if (menu.action === 'pcpTablet') { setStartMenuOpen(false); openMenuItem(menu) }
                       else if (hasChildren) { setOpenMenu(value => value === menu.label ? null : menu.label);  }
                       else { setStartMenuOpen(false); openMenuItem(menu) }
                     }}>
-                      <Icon size={16} /><span>{menu.label}</span>
+                      <Icon size={16} className={hasNewItems ? 'is-new-icon' : undefined} /><span>{menu.label}</span>
                     </button>
                     {hasChildren && <button type="button" className="erp-windows-menu-expand" aria-label={`Expandir ${menu.label}`} aria-expanded={expanded} onClick={() => { setOpenMenu(value => value === menu.label ? null : menu.label);  }}>{expanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}</button>}
                   </div>
                   {hasChildren && expanded && <div className="erp-windows-menu-children">
-                    {menu.children?.filter(child => !normalizedSearch || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(child => { const ChildIcon = child.icon; return <button type="button" key={child.label + child.route} className={pathname === child.route ? (child.route === '/compras/rfq' ? 'is-active is-rfq-active' : 'is-active') : ''} onClick={() => { setStartMenuOpen(false); if (child.action) openMenuItem(child); else go(child.route) }}>{ChildIcon && <ChildIcon size={14} />}<span>{child.label}</span></button> })}
+                    {menu.children?.filter(child => !normalizedSearch || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(child => { const ChildIcon = child.icon; const active = pathname === child.route; return <button type="button" key={child.label + child.route} className={`${active ? (child.route === '/compras/rfq' ? 'is-active is-rfq-active' : 'is-active') : ''}${child.isNew ? ' is-new' : ''}`} onClick={() => { setStartMenuOpen(false); if (child.action) openMenuItem(child); else go(child.route) }} title={child.isNew ? 'Tela nova' : undefined}>{ChildIcon && <ChildIcon size={14} className={child.isNew ? 'is-new-icon' : undefined} />}<span>{child.label}</span></button> })}
                   </div>}
                 </div>
               })}
@@ -391,12 +394,14 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-windows-menu-list{padding:0 6px 8px;overflow:auto;min-height:0}
         .erp-windows-menu-row{min-height:34px;display:flex;align-items:center;border:1px solid transparent}
         .erp-windows-menu-row.is-active{background:#edf6fa;border-color:#d5e8ef}
+        .erp-windows-menu-main>svg.is-new-icon,.erp-windows-menu-children button.is-new>svg.is-new-icon{color:#C65D00!important}
         .erp-windows-menu-main{flex:1;min-width:0;min-height:32px;display:flex;align-items:center;gap:9px;padding:0 8px;border:0;background:transparent;text-align:left;color:#1e293b;font-size:11px;cursor:pointer}
         .erp-windows-menu-main span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .erp-windows-menu-main:hover,.erp-windows-menu-expand:hover{background:#f1f5f9}
         .erp-windows-menu-expand{width:30px;align-self:stretch;display:flex;align-items:center;justify-content:center;border:0;background:transparent;cursor:pointer;color:#475569}
         .erp-windows-menu-children{margin:0 0 4px 24px;padding:2px 0 2px 8px;border-left:1px solid #cbd5e1}
-        .erp-windows-menu-children button{display:flex;align-items:center;gap:8px;display:block;width:100%;min-height:29px;padding:5px 8px;border:0;background:#fff;text-align:left;color:#334155;font-size:10px;cursor:pointer}
+        .erp-windows-menu-children button{display:flex;align-items:center;gap:8px;width:100%;min-height:29px;padding:5px 8px;border:0;background:#fff;text-align:left;color:#334155;font-size:10px;cursor:pointer}
+        .erp-windows-menu-children button>svg{flex:0 0 auto}.erp-windows-menu-children button>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .erp-windows-menu-children button:hover,.erp-windows-menu-children button.is-active{background:#eaf5f8;color:#123b50}
         .erp-windows-menu-children button.is-rfq-active{background:#1d5fd1!important;border-color:#1d5fd1!important;color:#fff!important;font-weight:800;box-shadow:inset 3px 0 #0b2545}
         .erp-windows-no-results{margin:12px 8px;font-size:10px;color:#64748b}

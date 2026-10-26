@@ -533,7 +533,6 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp" element={<QualityPlanGate><SynqraLayoutProvider><PCPIndustrial /></SynqraLayoutProvider></QualityPlanGate>} />
       <Route path="/producao" element={<QualityPlanGate><SynqraLayoutProvider><PCPIndustrial /></SynqraLayoutProvider></QualityPlanGate>} />
       <Route path="/engenharia/produtos" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
-      <Route path="/engenharia/bom" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
       <Route path="/engenharia/roteiros" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
       <Route path="/estoque/enderecos" element={<IndustrialDataWorkspace />} />
       <Route path="/estoque/movimentacoes" element={<IndustrialDataWorkspace />} />

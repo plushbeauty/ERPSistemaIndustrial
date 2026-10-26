@@ -5,6 +5,7 @@ const root = process.cwd()
 const appPath = path.join(root, 'src', 'AppEntryV2.tsx')
 const sourceDir = path.dirname(appPath)
 const app = fs.readFileSync(appPath, 'utf8')
+const moduleMenu = fs.readFileSync(path.join(root, 'src', 'components', 'layout', 'ERPHorizontalShell.tsx'), 'utf8')
 const bootstrapPath = path.join(root, 'src', 'AppBootstrap.tsx')
 const bootstrap = fs.readFileSync(bootstrapPath, 'utf8')
 const entryPath = path.join(root, 'src', 'main.tsx')
@@ -17,6 +18,12 @@ const lazyImports = new Map(
 )
 const allowedLocal = new Set(['Navigate', 'MasterOnly', 'AppIndustrial', 'IndustrialLoginDirect', 'PublicIndustrialHome', 'PublicHomeWithLogin', 'ComprasRoute', 'QualityPlanGate', 'ERPHorizontalShell'])
 const failures = []
+
+for (const [groupIndex, [, routeGroup]] of [...app.matchAll(/<Routes>([\s\S]*?)<\/Routes>/g)].entries()) {
+  const paths = [...routeGroup.matchAll(/<Route\s+path=["']([^"']+)["']/g)].map(([, route]) => route)
+  const duplicates = [...new Set(paths.filter((route, index) => paths.indexOf(route) !== index))]
+  for (const route of duplicates) failures.push(`Route ${route} is declared more than once inside Routes group ${groupIndex + 1}.`)
+}
 
 const publicPathDeclaration = bootstrap.match(/const publicPaths\s*=\s*new Set\(\[([\s\S]*?)\]\)/)
 if (!publicPathDeclaration) {
@@ -38,6 +45,15 @@ for (const [, route, component] of routeMatches) {
     failures.push(`Rota ${route} referencia componente ${component} sem import/local declarado.`)
   }
 }
+
+const declaredRoutes = new Set(routeMatches.map(([, route]) => route))
+const newMenuEntries = [...moduleMenu.matchAll(/\{\s*label:\s*'[^']+'\s*,\s*route:\s*'([^']+)'[^}]*isNew:\s*true[^}]*\}/g)]
+for (const [entry, route] of newMenuEntries) {
+  const handledByPathResolver = new RegExp(`path\\s*===\\s*['"]${route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`).test(app)
+  if (!declaredRoutes.has(route) && !handledByPathResolver) failures.push(`New menu entry ${route} has no matching application route.`)
+  if (!/\bicon:\s*[A-Z][A-Za-z0-9]*/.test(entry)) failures.push(`New menu entry ${route} needs an icon.`)
+}
+if (newMenuEntries.length && !/\.is-new-icon[^{}]*\{[^}]*color:\s*#C65D00/i.test(moduleMenu)) failures.push('New menu icons must use the approved orange marker color #C65D00.')
 
 for (const [name, importPath] of lazyImports) {
   const candidates = [

@@ -270,3 +270,93 @@ body{background:#EDF5F8;color:#123B50}
 .pcp-modern-page .pcp-page-head p{line-height:1.5!important}
 @media(max-width:800px){.pcp-modern-page .pcp-dash-card{min-height:0!important}.pcp-modern-page .pcp-flow button{min-height:100px!important}}
 
+/* SYSNQRA UI CONTRACT — unified authenticated module controls and surfaces. */
+.erp-global-surface {
+  --erp-control-height: 30px;
+  --erp-control-radius: 2px;
+  --erp-surface-radius: 2px;
+  --erp-brand: #2D8DB8;
+  --erp-brand-hover: #236F93;
+  --erp-ink: #123B50;
+  --erp-line: #C9DDE5;
+}
+.erp-global-surface input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+.erp-global-surface select {
+  box-sizing: border-box !important;
+  height: var(--erp-control-height) !important;
+  min-height: var(--erp-control-height) !important;
+  border-radius: var(--erp-control-radius) !important;
+  font-family: inherit !important;
+  font-size: 11px !important;
+}
+.erp-global-surface button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button),
+.erp-global-surface a[role="button"] {
+  box-sizing: border-box !important;
+  height: var(--erp-control-height) !important;
+  min-height: var(--erp-control-height) !important;
+  border-radius: var(--erp-control-radius) !important;
+  font-family: inherit !important;
+  font-size: 11px !important;
+  line-height: 14px !important;
+}
+.erp-global-surface [class*="card"],
+.erp-global-surface [class*="Card"],
+.erp-global-surface [class*="panel"],
+.erp-global-surface [class*="Panel"] {
+  border-radius: var(--erp-surface-radius) !important;
+}
+.erp-global-surface button.primary,
+.erp-global-surface button.erp-btn-primary,
+.erp-global-surface button.erp-button--primary {
+  border-color: var(--erp-brand) !important;
+  background-color: var(--erp-brand) !important;
+  color: #fff !important;
+}
+.erp-global-surface button.primary:hover,
+.erp-global-surface button.erp-btn-primary:hover,
+.erp-global-surface button.erp-button--primary:hover {
+  border-color: var(--erp-brand-hover) !important;
+  background-color: var(--erp-brand-hover) !important;
+}
+.erp-global-surface button.secondary,
+.erp-global-surface button.erp-btn-secondary,
+.erp-global-surface button.erp-button--secondary {
+  border: 1px solid var(--erp-line) !important;
+  background: #fff !important;
+  color: var(--erp-ink) !important;
+}
+@media (pointer: coarse) {
+  .erp-global-surface input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  .erp-global-surface select,
+  .erp-global-surface button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button),
+  .erp-global-surface a[role="button"] {
+    --erp-control-height: 44px;
+    font-size: 12px !important;
+  }
+}
+@media print {
+  .erp-global-surface .erp-windows-topbar,
+  .erp-global-surface .print-toolbar,
+  .erp-global-surface .print-hidden,
+  .erp-global-surface .no-print,
+  .erp-global-surface nav,
+  .erp-global-surface button,
+  .erp-global-surface input[type="button"],
+  .erp-global-surface input[type="submit"] {
+    display: none !important;
+  }
+  .erp-global-surface,
+  .erp-global-surface .erp-horizontal-shell,
+  .erp-global-surface .erp-horizontal-workspace {
+    min-height: 0 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    color: #111827 !important;
+  }
+  .erp-global-surface * {
+    box-shadow: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
