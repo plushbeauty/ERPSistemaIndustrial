@@ -89,13 +89,26 @@ table td{color:#17333F!important;border-color:#dceaf0!important;font-size:16px!i
 .sgq-theme-toggle{min-height:44px!important;padding:0 13px!important;border:1px solid #b9d2da!important;border-radius:10px!important;background:#fff!important;color:#17333F!important;font-weight:800}
 
 
-/* INDUSTRIAL BI PRINT */
+/* ERP print baseline: preserve document titles/content and hide only ERP chrome/actions. */
 @media print {
-  nav, aside, sidebar, header, button, .print\\:hidden { display:none !important; }
-  body, main { background:#fff !important; color:#000 !important; width:100% !important; margin:0 !important; padding:0 !important; }
+  @page { size: A4; margin: 12mm; }
+  .erp-windows-topbar, .erp-horizontal-header, .erp-horizontal-menu,
+  .erp-global-status-row, .w11-bar, .w11-start, .v7-topbar, .v7-sidebar,
+  .v7-launcher-backdrop, .floating-tablet-shell, .global-help-button,
+  .global-help-panel, .print-toolbar, .print-hidden, .no-print,
+  .print\\:hidden, [data-print-hide], button, input[type="button"], input[type="submit"] {
+    display: none !important;
+  }
+  body, main { background:#fff !important; color:#000 !important; width:100% !important; max-width:none !important; margin:0 !important; padding:0 !important; }
+  .erp-horizontal-shell, .erp-horizontal-workspace { min-height:0 !important; background:#fff !important; padding:0 !important; }
+  .erp-horizontal-workspace * { box-shadow:none !important; backdrop-filter:none !important; }
+  table { max-width:100% !important; }
+  thead { display:table-header-group; }
+  tr, img, svg { break-inside:avoid; }
+  a { color:inherit !important; text-decoration:none !important; }
   .print\\:w-full { width:100% !important; }
   .page-break { break-before:page; page-break-before:always; }
-  table tr { height:54px !important; }
+  .overflow-auto, .overflow-x-auto, .overflow-y-auto { overflow:visible !important; }
 }
 
 

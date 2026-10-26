@@ -6,6 +6,7 @@ import VendasLayout from './VendasLayout'
 
 type Product = { id: string; codigo: string; nome: string; estoque_atual: number; unidade: string | null }
 type Lot = LookupRecord
+type AdjustmentReceipt = { codigo: string; produto: string; lote: string; localizacao: string; quantidade: number; unidade: string; motivo: string; saldoAnterior: number; saldoEstimado: number; data: string }
 
 const fieldClass = 'h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-900 outline-none transition focus:border-slate-400 focus:bg-white'
 const labelClass = 'mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-600'
@@ -24,6 +25,7 @@ export default function EstoqueAjustes() {
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [lastAdjustment, setLastAdjustment] = useState<AdjustmentReceipt | null>(null)
 
   const load = async () => {
     setBusy(true)
@@ -61,6 +63,17 @@ export default function EstoqueAjustes() {
   const balance = Number(selected?.estoque_atual || 0)
   const newBalance = Math.max(0, balance - quantity)
 
+  const printReceipt = () => {
+    if (!lastAdjustment) return
+    const escape = (value: string) => value.replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char] || char)
+    const receipt = lastAdjustment
+    const popup = window.open('', '_blank', 'width=900,height=700')
+    if (!popup) { setError('Permita a abertura de janela para imprimir o comprovante do ajuste gravado.'); return }
+    popup.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Comprovante ${escape(receipt.codigo)}</title><style>@page{size:A4;margin:16mm}*{box-sizing:border-box}body{font:13px Arial,sans-serif;color:#142b3c;margin:0}.sheet{max-width:760px;margin:0 auto}.head{border-bottom:3px solid #123b50;padding-bottom:14px;margin-bottom:18px}.eyebrow{font-size:10px;letter-spacing:.12em;font-weight:bold;color:#337f9f}.head h1{margin:5px 0;font-size:22px}.code{font-size:15px;font-weight:bold;color:#123b50}.notice{background:#eef7f2;border:1px solid #b9dfca;padding:10px;margin:16px 0;font-weight:bold;color:#067647}.grid{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #cbd5dc;border-left:1px solid #cbd5dc}.cell{padding:11px;border-right:1px solid #cbd5dc;border-bottom:1px solid #cbd5dc;min-height:58px}.label{display:block;font-size:9px;color:#64748b;font-weight:bold;letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}.value{font-weight:600;overflow-wrap:anywhere}.footer{margin-top:36px;display:grid;grid-template-columns:1fr 1fr;gap:36px}.sign{border-top:1px solid #637887;padding-top:7px;text-align:center;font-size:11px}.actions{text-align:center;margin:22px}@media print{.actions{display:none}}</style></head><body><main class="sheet"><header class="head"><div class="eyebrow">ERP INDUSTRIAL · ESTOQUE · MOVIMENTO REGISTRADO</div><h1>Comprovante de ajuste por avaria</h1><div class="code">${escape(receipt.codigo)}</div></header><div class="notice">Ajuste efetivado no razão de estoque em ${escape(receipt.data)}.</div><section class="grid"><div class="cell"><span class="label">Produto</span><span class="value">${escape(receipt.produto)}</span></div><div class="cell"><span class="label">Lote / documento</span><span class="value">${escape(receipt.lote)}</span></div><div class="cell"><span class="label">Localização</span><span class="value">${escape(receipt.localizacao)}</span></div><div class="cell"><span class="label">Motivo</span><span class="value">${escape(receipt.motivo)}</span></div><div class="cell"><span class="label">Quantidade retirada</span><span class="value">${receipt.quantidade.toLocaleString('pt-BR')} ${escape(receipt.unidade)}</span></div><div class="cell"><span class="label">Saldo antes / saldo estimado após</span><span class="value">${receipt.saldoAnterior.toLocaleString('pt-BR')} / ${receipt.saldoEstimado.toLocaleString('pt-BR')} ${escape(receipt.unidade)}</span></div></section><footer class="footer"><div class="sign">Responsável pelo lançamento</div><div class="sign">Conferência / aprovação</div></footer><div class="actions"><button onclick="window.print()">Imprimir comprovante</button></div></main></body></html>`)
+    popup.document.close()
+    popup.focus()
+  }
+
   const registerAdjustment = async () => {
     if (!companyId || !selected) throw new Error('Selecione um produto real da empresa.')
     if (!lot.trim()) throw new Error('Informe o lote ou documento de rastreabilidade.')
@@ -83,6 +96,7 @@ export default function EstoqueAjustes() {
         p_localizacao_destino_id: null,
       })
       if (result.error) throw result.error
+      setLastAdjustment({ codigo: `AJ-${new Date().toISOString().replace(/[-:TZ.]/g, '').slice(0, 14)}`, produto: `${selected.codigo} — ${selected.nome}`, lote: lot.trim(), localizacao: location.trim() || 'Não informada', quantidade: quantity, unidade: selected.unidade || 'un', motivo: motivo.trim(), saldoAnterior: balance, saldoEstimado: newBalance, data: new Date().toLocaleString('pt-BR') })
       setMessage('Ajuste de avaria registrado no razão de estoque.')
       setPerda('')
       setLot('')
@@ -108,7 +122,7 @@ export default function EstoqueAjustes() {
             <button type="button" onClick={() => void load()} disabled={busy} className={`${buttonClass} border-slate-600 bg-slate-800 text-white hover:bg-slate-700`}>
               <RefreshCw size={14} /> Atualizar
             </button>
-            <button type="button" onClick={() => window.print()} className={`${buttonClass} border-slate-200 bg-white text-slate-700 hover:bg-slate-50`}>
+            <button type="button" onClick={printReceipt} disabled={!lastAdjustment} title={lastAdjustment ? 'Imprimir o último ajuste efetivado' : 'Efetive um ajuste para habilitar o comprovante'} className={`${buttonClass} border-slate-200 bg-white text-slate-700 hover:bg-slate-50`}>
               <Printer size={14} /> Laudo / imprimir
             </button>
           </div>

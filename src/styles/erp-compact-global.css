@@ -86,8 +86,7 @@
 @media print {
   .erp-global-surface .print-toolbar,
   .erp-global-surface .v7-topbar,
-  .erp-global-surface nav,
-  .erp-global-surface aside {
+  .erp-global-surface nav {
     display: none !important;
   }
 }
