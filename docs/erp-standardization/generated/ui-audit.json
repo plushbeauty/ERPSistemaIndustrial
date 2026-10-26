@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-10-26T17:31:15.705Z",
+  "generatedAt": "2026-10-26T17:36:55.056Z",
   "revision": "UI-AUDIT-R1",
   "mode": "static-analysis-only",
   "summary": {
     "sourceFilesScanned": 278,
     "routeDeclarationsDetected": 278,
     "filesUsingSharedFormTokens": 2,
-    "filesWithLocalStyleHints": 103,
+    "filesWithLocalStyleHints": 104,
     "filesWithControlsWithoutDetectedStaticHeight": 226
   },
   "routes": {
@@ -10683,7 +10683,7 @@
     },
     {
       "file": "src/pages/FinanceiroGraficoDesvios.tsx",
-      "lines": 38,
+      "lines": 140,
       "controlsDetected": 2,
       "tags": {
         "input": 0,
@@ -10691,33 +10691,33 @@
         "textarea": 0,
         "button": 2,
         "forms": 0,
-        "tables": 0,
+        "tables": 1,
         "grids": 0,
-        "roundedClasses": 6,
+        "roundedClasses": 0,
         "lookupHints": 0,
         "printHints": 1
       },
       "sharedFormTokensImported": false,
-      "localStyleHints": false,
+      "localStyleHints": true,
       "heightSummary": {
         "not-detected-static": 2
       },
       "controls": [
         {
           "tag": "button",
-          "line": 28,
+          "line": 75,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
-          "classNameStaticDetected": false
+          "classNameStaticDetected": true
         },
         {
           "tag": "button",
-          "line": 28,
+          "line": 76,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
-          "classNameStaticDetected": false
+          "classNameStaticDetected": true
         }
       ]
     },
@@ -17908,7 +17908,7 @@
     },
     {
       "file": "src/pages/ProdutosVendasIndustrial.tsx",
-      "lines": 642,
+      "lines": 639,
       "controlsDetected": 33,
       "tags": {
         "input": 13,
@@ -17978,6 +17978,30 @@
         },
         {
           "tag": "button",
+          "line": 414,
+          "heightClasses": [],
+          "widthClasses": [],
+          "maxLength": null,
+          "classNameStaticDetected": false
+        },
+        {
+          "tag": "input",
+          "line": 415,
+          "heightClasses": [],
+          "widthClasses": [],
+          "maxLength": null,
+          "classNameStaticDetected": false
+        },
+        {
+          "tag": "input",
+          "line": 416,
+          "heightClasses": [],
+          "widthClasses": [],
+          "maxLength": null,
+          "classNameStaticDetected": false
+        },
+        {
+          "tag": "button",
           "line": 417,
           "heightClasses": [],
           "widthClasses": [],
@@ -17985,16 +18009,16 @@
           "classNameStaticDetected": false
         },
         {
-          "tag": "input",
-          "line": 418,
+          "tag": "button",
+          "line": 419,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
-          "classNameStaticDetected": false
+          "classNameStaticDetected": true
         },
         {
-          "tag": "input",
-          "line": 419,
+          "tag": "button",
+          "line": 420,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -18010,15 +18034,23 @@
         },
         {
           "tag": "button",
+          "line": 421,
+          "heightClasses": [],
+          "widthClasses": [],
+          "maxLength": null,
+          "classNameStaticDetected": false
+        },
+        {
+          "tag": "button",
           "line": 422,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
-          "classNameStaticDetected": true
+          "classNameStaticDetected": false
         },
         {
           "tag": "button",
-          "line": 423,
+          "line": 436,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -18026,39 +18058,7 @@
         },
         {
           "tag": "button",
-          "line": 423,
-          "heightClasses": [],
-          "widthClasses": [],
-          "maxLength": null,
-          "classNameStaticDetected": false
-        },
-        {
-          "tag": "button",
-          "line": 424,
-          "heightClasses": [],
-          "widthClasses": [],
-          "maxLength": null,
-          "classNameStaticDetected": false
-        },
-        {
-          "tag": "button",
-          "line": 425,
-          "heightClasses": [],
-          "widthClasses": [],
-          "maxLength": null,
-          "classNameStaticDetected": false
-        },
-        {
-          "tag": "button",
-          "line": 439,
-          "heightClasses": [],
-          "widthClasses": [],
-          "maxLength": null,
-          "classNameStaticDetected": false
-        },
-        {
-          "tag": "button",
-          "line": 454,
+          "line": 451,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -18066,7 +18066,7 @@
         },
         {
           "tag": "input",
-          "line": 465,
+          "line": 462,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -18074,7 +18074,7 @@
         },
         {
           "tag": "button",
-          "line": 465,
+          "line": 462,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -18082,7 +18082,7 @@
         },
         {
           "tag": "input",
-          "line": 466,
+          "line": 463,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -18090,7 +18090,7 @@
         },
         {
           "tag": "button",
-          "line": 466,
+          "line": 463,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -18098,7 +18098,7 @@
         },
         {
           "tag": "select",
-          "line": 480,
+          "line": 477,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -18106,7 +18106,7 @@
         },
         {
           "tag": "textarea",
-          "line": 519,
+          "line": 516,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -18114,6 +18114,30 @@
         },
         {
           "tag": "input",
+          "line": 567,
+          "heightClasses": [],
+          "widthClasses": [],
+          "maxLength": null,
+          "classNameStaticDetected": false
+        },
+        {
+          "tag": "input",
+          "line": 568,
+          "heightClasses": [],
+          "widthClasses": [],
+          "maxLength": null,
+          "classNameStaticDetected": false
+        },
+        {
+          "tag": "input",
+          "line": 569,
+          "heightClasses": [],
+          "widthClasses": [],
+          "maxLength": null,
+          "classNameStaticDetected": false
+        },
+        {
+          "tag": "select",
           "line": 570,
           "heightClasses": [],
           "widthClasses": [],
@@ -18122,7 +18146,7 @@
         },
         {
           "tag": "input",
-          "line": 571,
+          "line": 582,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -18130,31 +18154,7 @@
         },
         {
           "tag": "input",
-          "line": 572,
-          "heightClasses": [],
-          "widthClasses": [],
-          "maxLength": null,
-          "classNameStaticDetected": false
-        },
-        {
-          "tag": "select",
-          "line": 573,
-          "heightClasses": [],
-          "widthClasses": [],
-          "maxLength": null,
-          "classNameStaticDetected": false
-        },
-        {
-          "tag": "input",
-          "line": 585,
-          "heightClasses": [],
-          "widthClasses": [],
-          "maxLength": null,
-          "classNameStaticDetected": false
-        },
-        {
-          "tag": "input",
-          "line": 586,
+          "line": 583,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -18162,7 +18162,7 @@
         },
         {
           "tag": "button",
-          "line": 587,
+          "line": 584,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -18170,7 +18170,7 @@
         },
         {
           "tag": "input",
-          "line": 612,
+          "line": 609,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -18178,7 +18178,7 @@
         },
         {
           "tag": "select",
-          "line": 613,
+          "line": 610,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -18186,7 +18186,7 @@
         },
         {
           "tag": "button",
-          "line": 614,
+          "line": 611,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
