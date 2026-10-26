@@ -72,6 +72,31 @@ Esta rodada ampliou a leitura dos componentes de Fornecedores, Clientes, Compras
 | `src/pages/EstoqueAlmoxarifadoCompact.tsx` | `4bd25f3b2556919ad64609d3ea0ee885859a91f4` | REVISÃO VISUAL PENDENTE | Nome indica variante compacta, mas não basta para confirmar o visual; verificar CSS e rota ativa. |
 | `src/pages/EstoqueAlmoxarifado.tsx` | `d3ad3801d09b59192a33394a78f8e5f13b878872` | REVISÃO VISUAL PENDENTE | Conferir qual variante é usada em produção e impedir que uma rota antiga aponte para a versão antiga. |
 
+
+## Terceira passada — Financeiro, Fiscal, RH, Manutenção, Engenharia, Estoque e Logística (26/10/2026)
+
+| Arquivo | Hash verificado nesta rodada | Triagem | Evidência / próximo passo |
+|---|---|---|---|
+| `src/pages/FinanceiroTitulos.tsx` | `2e9f2a554993145f2e00335ec509c50062beb33c` | REFERÊNCIA FINANCEIRA PROTEGIDA | É a referência definida no contrato, embora use classes genéricas de cards; não alterar sem autorização. Usar comparação visual antes de padronizar outras páginas. |
+| `src/pages/Fiscal.tsx` | `7e8493a13db5cf86cb6d375e24655ae3574ae5c5` | POSSÍVEL MODELO ANTIGO | Não foram encontrados sinais locais claros de controles compactos/paleta; 14 usos de padrões genéricos de card. Prioridade para inspeção. |
+| `src/pages/FiscalCarteiraNFe.tsx` | `b3b44a733bee1ddbc4077262d4cf35ead2ca7dad` | PARCIAL — triagem | Há controles compactos, mas sem tokens de paleta local; conferir estilos globais. |
+| `src/pages/FiscalImpostos.tsx` | `354f69a378abaa4b9f7f0d61aaaf674b6c7a5c9e` | PARCIAL — triagem | Controles compactos presentes; verificar cores e estrutura no navegador. |
+| `src/pages/FiscalPendencias.tsx` | `e0088a12c78ce40831b201adbb3b2e380fb9e293` | PARCIAL — triagem | Controles compactos presentes; confirmar padrão global. |
+| `src/pages/FiscalPrevisaoCaixa.tsx` | `2e83fd2d1b795959956e00951b56e5337bb48c91` | POSSÍVEL MODELO ANTIGO | Sem sinais claros de controles compactos/paleta; múltiplos cards genéricos. |
+| `src/pages/RHIndustrial.tsx` | `8c8e33b952b6fbc2851f4340b54e580c914f7b78` | REVISÃO VISUAL PENDENTE | Usa layout compartilhado; conferir a implementação efetiva e comparar com a Central de Compras aprovada. |
+| `src/pages/ManutencaoCentral.tsx` | `94af8f3431edfd82cedb9d668bd93af6883f42b6` | PADRÃO NOVO — triagem | Sinais de paleta institucional e controles compactos presentes. |
+| `src/pages/ManutencaoCronograma.tsx` | `287293f957e8c8b27adad4c12ac4afaab0d6aafd` | PADRÃO NOVO — triagem | Sinais de paleta institucional e controles compactos presentes. |
+| `src/pages/ManutencaoIndustrial.tsx` | `598fc552880778c270837d31685dff4cc6e86689` | REVISÃO VISUAL PENDENTE | Poucos tokens visuais locais; confirmar se o CSS compartilhado aplica o padrão. |
+| `src/pages/ManutencaoPlanoMestre.tsx` | `c2e984e3c5e1a84ef9c08f68c2d536dd09edc735` | PARCIAL — triagem | Controles compactos presentes, mas verificar dados, CSS e tela publicada. |
+| `src/pages/EngenhariaCentral.tsx` | `9bbc3242660db6a1c417dd05774b79613c216c9c` | PADRÃO NOVO — triagem | Paleta institucional detectada; precisa inspeção visual final. |
+| `src/pages/EngenhariaBOM.tsx` | `61f87995e8c762560794f990e38b29cc0489ff74` | PADRÃO NOVO — triagem | Controles compactos e paleta institucional presentes. |
+| `src/pages/EngenhariaRevisoesBOM.tsx` | `660d7cf2c87b5128810eb633121208a09d65837e` | REVISÃO VISUAL PENDENTE | Sinais locais insuficientes e card genérico detectado. |
+| `src/pages/EstoqueAjustes.tsx` | `7f8871b674e237b5a04890eab080faf8b88992eb` | ALERTA DE ESTILO MISTO | Controles compactos, porém múltiplos cards genéricos; comparar com a tela ativa de Estoque. |
+| `src/pages/EstoqueSeparacao.tsx` | `82382012cfa9b87bd027aaa7378801df22d83749` | REVISÃO VISUAL PENDENTE | Padrões genéricos de card presentes; verificar layout efetivo. |
+| `src/pages/ExpedicaoPortaria.tsx` | `d5f6de70410f6c0317f4c8bf6f2acbda2814ca6a` | PARCIAL — triagem | Controles compactos com alguns padrões genéricos; confirmar responsividade. |
+| `src/pages/ExpedicaoRoteirizacao.tsx` | `ab7c3b57c51ef7e9a82133deb183276de062438a` | POSSÍVEL MODELO ANTIGO | Vários padrões genéricos de card e ausência de sinais claros da paleta compacta. |
+| `src/pages/RecebimentoMateriais.tsx` | `5a995f5cdfa4eb2f30f86e7e1225a2f666df3945` | REVISÃO VISUAL PENDENTE | Paleta institucional aparece, mas controles compactos não foram detectados localmente. |
+
 ## Próxima etapa da auditoria
 
 Continuar o inventário por módulo — Cadastros, Compras, Vendas, Financeiro, PCP, Qualidade/SGQ, Estoque, Fiscal, RH, Engenharia, Manutenção, Logística e Administração — registrando cada rota, componente, hash, estado visual e pendência. Só marcar **VERIFICADA VISUALMENTE** depois de comparar a tela renderizada com a referência aprovada.
