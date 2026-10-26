@@ -175,6 +175,32 @@ Esta rodada ampliou a leitura dos componentes de Fornecedores, Clientes, Compras
 | `src/pages/VendasStatusPedidos.tsx` | `5ba4917be5ef9b93984091e5e5e6dadc9deeb17f` | PARCIAL — triagem | Alguns controles compactos, sem paleta local clara. |
 | `src/pages/VendasTablet.tsx` | `48cb6abe18cb88d04fb60fa5b1c49932e52b08da` | REVISÃO VISUAL PENDENTE | Usa layout compartilhado; confirmar se é a tela de tablet pretendida. |
 
+
+## Sétima passada — páginas públicas, fiscais, financeiras e administrativas (26/10/2026)
+
+| Arquivo | Hash verificado | Triagem estática | Observação |
+|---|---|---|---|
+| `src/pages/Blog.tsx` | `78646c610fafa26abc71c43a9f2897a89fe2205d` | REVISÃO VISUAL PENDENTE | Página pública; avaliar com referência visual própria, não com o formulário industrial. |
+| `src/pages/Contato.tsx` | `521a06f95c148957eabb9e1015fafa431a4426ae` | REVISÃO VISUAL PENDENTE | Página pública; verificar separadamente do shell interno. |
+| `src/pages/AtivarAcesso.tsx` | `c359688ab6850c005c099fb1993dbe3cfab2c918` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes para classificar. |
+| `src/pages/RecuperarSenha.tsx` | `57907ac773557f002644dac96a7e3f954b422975` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes para classificar; preservar autenticação. |
+| `src/pages/SetupADMInicial.tsx` | `cc3ee7dd6571b826791306497fa396a789a38e1a` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes; não alterar fluxo de bootstrap sem auditoria funcional. |
+| `src/pages/Master.tsx` | `a1b467291424366781a2027a283183bd2debe4fb` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes; preservar RBAC e área Master. |
+| `src/pages/PlanosIndustrial.tsx` | `8bc1b4d9802355f840a2c18d4f44fc16cbcd03a4` | ALERTA DE ESTILO MISTO | Cards genéricos detectados; verificar padrão da página pública de planos. |
+| `src/pages/ModuleOverviewIndustrial.tsx` | `c17520a39278eefdb718446684cc574bb33493e5` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes para classificar. |
+| `src/pages/ManualUsuario.tsx` | `7076458b20ea8e1bdd3dd5167a5b1241fb220f0c` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes; avaliar hierarquia e legibilidade. |
+| `src/pages/TesteERP.tsx` | `f34bd5fd84a8698c7fe7a762af503b96cca55684` | REVISÃO VISUAL PENDENTE | Página de teste; verificar se está acessível em produção e se deve permanecer no menu. |
+| `src/pages/OutlookCaixaEntrada.tsx` | `c812b8a278dda673b42639fa5059b2ba4608169a` | ALERTA DE ESTILO MISTO | Um padrão genérico de card; sem paleta compacta detectada localmente. |
+| `src/pages/OutlookConfiguracao.tsx` | `c3eac9e680464c9037898c6fb65b0de0a4254017` | POSSÍVEL MODELO ANTIGO | Cards genéricos e sem sinais locais claros de paleta/controles compactos. |
+| `src/pages/FinanceiroGraficoDesvios.tsx` | `6305319fc1375225f407d54c0659b01267847b84` | POSSÍVEL MODELO ANTIGO | Reforça o alerta anterior: cards genéricos sem sinais do padrão novo. |
+| `src/pages/FiscalCompras.tsx` | `447a2ebc2973ed66ed07b12088ff81b0d19d7d7d` | REVISÃO VISUAL PENDENTE | Usa layout compartilhado; verificar CSS e tela renderizada. |
+| `src/pages/FiscalPublic.tsx` | `ccfb5e65722b41df77b601f38410ad9c7f3d03fb` | ALERTA DE ESTILO MISTO | Um sinal compacto, mas vários cards genéricos. |
+| `src/pages/NFeEmissaoCompact.tsx` | `d871d4835c0e85ea385fc96bcb33a92b88afbb00` | REVISÃO VISUAL PENDENTE | A palavra Compact no nome não comprova o visual; inspecionar CSS e tela. |
+| `src/pages/NFeEmissao.tsx` | `1469d2e1c70873336b715abd049b3e161c65c487` | PARCIAL — triagem | Paleta institucional aparece, mas controles compactos não foram detectados localmente. |
+| `src/pages/FinanceiroCustoPadrao.tsx` | `e65b085cc7eceda9c57358f395aeee24ac4b43b0` | POSSÍVEL MODELO ANTIGO | Confirma ausência de sinais claros do padrão compacto e uso de cards genéricos. |
+| `src/pages/FinanceiroDashboardCaixa.tsx` | `4f139da09789e0f3c8e669bd1bfbca9aa3e65659` | ALERTA DE ESTILO MISTO — protegido | Controles compactos/paleta coexistem com cards genéricos; hash congelado. Não modificar sem autorização explícita. |
+| `src/pages/FinancasContasPagar.tsx` | `6eecd65cc1451d39e6ae4829a6a1dcb1c85325e4` | ALIAS / ARQUIVO MÍNIMO | Arquivo com 228 bytes; conferir o componente efetivo que a rota renderiza. |
+
 ## Próxima etapa da auditoria
 
 Continuar o inventário por módulo — Cadastros, Compras, Vendas, Financeiro, PCP, Qualidade/SGQ, Estoque, Fiscal, RH, Engenharia, Manutenção, Logística e Administração — registrando cada rota, componente, hash, estado visual e pendência. Só marcar **VERIFICADA VISUALMENTE** depois de comparar a tela renderizada com a referência aprovada.
