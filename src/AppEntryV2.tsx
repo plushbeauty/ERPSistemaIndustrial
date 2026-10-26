@@ -520,7 +520,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/conciliacao" element={<QualityPlanGate>{<BankingReconciliation />}</QualityPlanGate>} />
       <Route path="/vendas/importador" element={<QualityPlanGate>{<BankingStatementImporter />}</QualityPlanGate>} />
       <Route path="/vendas/ano-fiscal" element={<QualityPlanGate>{<AnoFiscal />}</QualityPlanGate>} />
-      <Route path="/vendas/fluxo-caixa" element={<QualityPlanGate>{<FinanceiroFluxoCaixa />}</QualityPlanGate>} />
+      <Route path="/vendas/fluxo-caixa" element={<QualityPlanGate>{<FinanceiroDashboardCaixa />}</QualityPlanGate>} />
       <Route path="/vendas/balanco" element={<QualityPlanGate>{<BalancoEstoque />}</QualityPlanGate>} />
       <Route path="/vendas/auditoria" element={<QualityPlanGate>{<PainelLucratividade />}</QualityPlanGate>} />
       <Route path="/vendas/classificacao-fiscal" element={<QualityPlanGate>{<ClassificacaoFiscal />}</QualityPlanGate>} />
