@@ -4,7 +4,7 @@ import { AlertTriangle, Gauge, RefreshCw, Ruler, ShieldCheck } from 'lucide-reac
 import { supabase } from '../lib/supabaseClient'
 import DigitalCaliper from '../components/DigitalCaliper'
 
-type InstrumentOption = { codigo: string; descricao: string; status: string }
+type InstrumentOption = { codigo: string; descricao: string; status: string; proxima_calibracao: string | null }
 
 export default function QualidadePaquimetroDigital() {
   const [instruments, setInstruments] = useState<InstrumentOption[]>([])
@@ -23,11 +23,11 @@ export default function QualidadePaquimetroDigital() {
       const empresaId = companyResult.data
       if (!empresaId) throw new Error('A sessão não possui empresa ativa. Selecione uma empresa antes de continuar.')
       const result = await supabase.from('erp_equipamentos_medicao')
-        .select('codigo,descricao,status')
+        .select('codigo,descricao,status,proxima_calibracao')
         .eq('empresa_id', empresaId)
         .order('codigo')
       if (result.error) throw result.error
-      setInstruments((result.data ?? []).map(item => ({ codigo: item.codigo, descricao: item.descricao, status: item.status })))
+      setInstruments((result.data ?? []).map(item => ({ codigo: item.codigo, descricao: item.descricao, status: item.status, proxima_calibracao: item.proxima_calibracao })))
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível consultar os instrumentos cadastrados.')
     } finally {
@@ -37,7 +37,8 @@ export default function QualidadePaquimetroDigital() {
 
   useEffect(() => { void loadInstruments() }, [])
 
-  const blocked = instruments.filter(item => /BLOQUEADO|VENCIDO|INATIVO|REPROVADO/i.test(item.status)).length
+  const today = new Date().toISOString().slice(0, 10)
+  const blocked = instruments.filter(item => /BLOQUEADO|VENCIDO|INATIVO|REPROVADO/i.test(item.status) || (!!item.proxima_calibracao && item.proxima_calibracao < today)).length
   return (
     <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900 md:p-4">
       <div className="mx-auto max-w-[1680px] space-y-3">
