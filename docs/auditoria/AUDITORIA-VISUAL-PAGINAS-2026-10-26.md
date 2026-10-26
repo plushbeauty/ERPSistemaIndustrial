@@ -302,7 +302,7 @@ Esta rodada ampliou a leitura dos componentes de Fornecedores, Clientes, Compras
 | `src/pages/QualidadeConfigTemplates.tsx` | `f39f1df9b050ef010d8ff1493a96791793b94a2d` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes; conferir componente de destino. |
 | `src/pages/QualidadeDashboardRNC.tsx` | `27f871b4dc5bb4ed4327153348afb34992da8034` | ALERTA DE ESTILO MISTO | Usa layout compartilhado, paleta parcial e cards genéricos. |
 | `src/pages/QualidadeRNC.tsx` | `a86127d0dc965a93474db9e1afb8fe73e18b5e21` | PADRÃO NOVO — triagem | Controles compactos e paleta institucional. |
-| `src/pages/QualidadePaquimetroDigital.tsx` | `3c355adb13c28893` | APROVADA / CONGELADA — hash íntegro | Amostra atual mostra controles compactos; classes genéricas também existem. Preservar arquivo e conferir produção. |
+| `src/pages/QualidadePaquimetroDigital.tsx` | `3c355adb13c28893e66c54556fd9123700e6956097` | APROVADA / CONGELADA — hash íntegro | Amostra atual mostra controles compactos; classes genéricas também existem. Preservar arquivo e conferir produção. |
 | `src/pages/QualidadePFMEA.tsx` | `28314f7d3787429438ae6ebb689105c5d654e6f4` | PADRÃO NOVO — triagem | Controles compactos e paleta institucional. |
 
 ## Próxima etapa da auditoria
