@@ -5,7 +5,7 @@ const login = readFileSync('src/styles/industrial-login.css', 'utf8')
 const loginPage = readFileSync('src/IndustrialLoginDirect.tsx', 'utf8')
 
 const checks = [
-  ['Cadastro de Produtos com abas', product.includes("['gerais','DADOS GERAIS'") && product.includes("['fiscal','FISCAL'") && product.includes("['estoque','ESTOQUE'")],
+  ['Cadastro de Produtos com abas aprovadas', product.includes("type Tab='tecnica'|'fiscal'") && product.includes("['tecnica','FICHA TÉCNICA MESTRE'") && product.includes("['fiscal','INTELIGÊNCIA FISCAL'")],
   ['Seção de identificação do produto', product.includes('IDENTIFICAÇÃO DO PRODUTO')],
   ['Grade compacta do formulário aprovado', product.includes('product-form-grid') && product.includes('product-general-row')],
   ['Grupo com ação de inclusão', product.includes('product-plus-button') && product.includes('addGroup')],
