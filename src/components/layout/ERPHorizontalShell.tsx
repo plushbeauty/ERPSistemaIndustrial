@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Warehouse, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Warehouse, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X, Ruler, ClipboardCheck, ClipboardList, Gauge } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -33,11 +33,15 @@ const menus: MenuItem[] = [
     { label: 'Metas', route: '/vendas/metas' },
     { label: 'Relatórios', route: '/vendas/relatorios' },
   ] },
-  { label: 'Compras', route: '/compras/rfq', icon: Truck, children: [
-    { label: 'Central de compras / RFQ', route: '/compras/rfq' },
-    { label: 'Solicitações', route: '/compras/solicitacao-manual' },
-    { label: 'Pedido de compra', route: '/compras/pedido' },
+  { label: 'Compras', route: '/compras', icon: Truck, children: [
+    { label: 'Central de Compras aprovada', route: '/compras' },
+    { label: 'Requisições de compra', route: '/compras/requisicoes' },
+    { label: 'Cotações / RFQ', route: '/compras/rfq' },
+    { label: 'Análise de preços', route: '/compras/analise-precos' },
+    { label: 'Pedidos de compra', route: '/compras/pedido' },
+    { label: 'Fornecedores', route: '/compras/fornecedores' },
     { label: 'Recebimentos', route: '/compras/recebimentos' },
+    { label: 'Validação fiscal', route: '/fiscal/compras' },
     { label: 'Relatórios', route: '/compras/relatorios' },
   ] },
   { label: 'Estoque', route: '/estoque', icon: Package, children: [
@@ -85,15 +89,30 @@ const menus: MenuItem[] = [
     { label: 'Auditoria PCP', route: '/pcp/auditoria' },
     { label: 'PCP Tablet', route: '/pcp', action: 'pcpTablet' },
   ] },
-  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, children: [
-    { label: 'Visual geral da Qualidade', route: '/qualidade' },
-    { label: 'Inspeções de lotes', route: '/qualidade/inspecoes' },
-    { label: 'Inspeção em processo', route: '/qualidade/inspecao-processo' },
-    { label: 'Especificações técnicas', route: '/qualidade/especificacoes' },
-    { label: 'FMEA / PFMEA', route: '/qualidade/fmea' },
-    { label: 'RNC / CAPA', route: '/qualidade/rnc-capa' },
-    { label: 'CEP / medições', route: '/qualidade/cep' },
-    { label: 'Cadastro de documentos (GED)', route: '/qualidade/ged-documentos' },
+  { label: 'Qualidade', route: '/qualidade/inspecoes', icon: ShieldCheck, children: [
+    { label: 'Inspeções de lotes', route: '/qualidade/inspecoes', icon: ClipboardList },
+    { label: 'Inspeção em processo', route: '/qualidade/inspecao-processo', icon: ClipboardCheck },
+    { label: 'Paquímetro Digital / Metrologia', route: '/qualidade/paquimetro-digital', icon: Ruler },
+    { label: 'Calibração de instrumentos', route: '/qualidade/calibracao', icon: Wrench },
+    { label: 'Central de Metrologia', route: '/qualidade/metrologia', icon: Gauge },
+    { label: 'Especificações técnicas', route: '/qualidade/especificacoes', icon: FileText },
+    { label: 'Liberação de lotes', route: '/qualidade/liberacao-lote', icon: ShieldCheck },
+    { label: 'Quarentena de lotes', route: '/qualidade/quarentena', icon: ShieldCheck },
+    { label: 'Genealogia de lotes', route: '/qualidade/genealogia-lote', icon: Package },
+    { label: 'RPNC / CAPA', route: '/qualidade/rpnc', icon: ClipboardList },
+    { label: 'Metodologia 8D', route: '/qualidade/metodologia-8d', icon: ClipboardCheck },
+    { label: 'FMEA', route: '/qualidade/fmea', icon: ShieldCheck },
+    { label: 'PFMEA', route: '/qualidade/pfmea', icon: ShieldCheck },
+    { label: 'CEP / Cartas de controle', route: '/qualidade/cep', icon: BarChart3 },
+    { label: 'Documentos controlados (GED)', route: '/qualidade/ged-documentos', icon: FileText },
+    { label: 'Controle de desenhos técnicos', route: '/qualidade/controle-desenhos', icon: FileText },
+    { label: 'Procedimentos e PDFs', route: '/qualidade/procedimentos', icon: FileText },
+    { label: 'Lista mestre', route: '/qualidade/lista-mestre', icon: ClipboardList },
+    { label: 'Auditoria 5S', route: '/qualidade/auditoria-5s', icon: ShieldCheck },
+    { label: 'Instruções de trabalho', route: '/qualidade/editor-it', icon: ClipboardCheck },
+    { label: 'Relatórios do SGQ', route: '/qualidade/relatorios-documentos', icon: BarChart3 },
+    { label: 'Auditorias da planta', route: '/qualidade/auditorias-planta', icon: ClipboardCheck },
+    { label: 'Fichas de processo', route: '/qualidade/fichas-processo', icon: FileText },
   ] },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench, children: [
     { label: 'Central de manutenção', route: '/manutencao' },
