@@ -64,3 +64,11 @@
 .compras-compact .synqra-purchase-hub .sq-purchase-mrp{border-radius:14px!important}
 .compras-compact .synqra-purchase-hub .sq-purchase-description{border-radius:15px!important}
 .compras-compact .synqra-purchase-hub .sq-purchase-kpis article{border-radius:13px!important}
+
+.compras-compact .synqra-purchase-hub .sq-purchase-card{box-shadow:0 5px 16px rgba(15,35,65,.045)!important;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease!important}
+.compras-compact .synqra-purchase-hub .sq-purchase-card:hover{transform:translateY(-3px)!important;box-shadow:0 12px 25px rgba(15,35,65,.11)!important}
+.compras-compact .synqra-purchase-hub .sq-purchase-shortcut{box-shadow:none!important;transition:border-color .18s,transform .18s,box-shadow .18s!important}
+.compras-compact .synqra-purchase-hub .sq-purchase-shortcut:hover{transform:translateY(-2px)!important;box-shadow:0 7px 18px rgba(15,35,65,.06)!important}
+.compras-compact .synqra-purchase-hub .sq-purchase-hero-actions>button{box-shadow:0 5px 0 rgba(4,18,38,.24),0 9px 16px rgba(0,0,0,.16)!important;transition:transform .16s ease,box-shadow .16s ease,background .16s ease!important}
+.compras-compact .synqra-purchase-hub .sq-purchase-hero-actions>button:hover{transform:translateY(-1px)!important;box-shadow:0 6px 0 rgba(4,18,38,.2),0 12px 20px rgba(0,0,0,.18)!important}
+.compras-compact .synqra-purchase-hub .sq-purchase-hero-actions>button:active{transform:translateY(2px)!important;box-shadow:0 2px 0 rgba(4,18,38,.2),0 4px 8px rgba(0,0,0,.12)!important}
