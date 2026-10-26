@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-26T17:56:46.633Z",
+  "generatedAt": "2026-10-26T18:02:50.013Z",
   "revision": "UI-AUDIT-R1",
   "mode": "static-analysis-only",
   "summary": {
@@ -13678,7 +13678,7 @@
     },
     {
       "file": "src/pages/NFeEmissaoCompact.tsx",
-      "lines": 383,
+      "lines": 386,
       "controlsDetected": 17,
       "tags": {
         "input": 13,
@@ -13700,22 +13700,6 @@
       "controls": [
         {
           "tag": "select",
-          "line": 314,
-          "heightClasses": [],
-          "widthClasses": [],
-          "maxLength": null,
-          "classNameStaticDetected": false
-        },
-        {
-          "tag": "input",
-          "line": 315,
-          "heightClasses": [],
-          "widthClasses": [],
-          "maxLength": null,
-          "classNameStaticDetected": false
-        },
-        {
-          "tag": "input",
           "line": 316,
           "heightClasses": [],
           "widthClasses": [],
@@ -13727,7 +13711,7 @@
           "line": 317,
           "heightClasses": [],
           "widthClasses": [],
-          "maxLength": "8",
+          "maxLength": null,
           "classNameStaticDetected": false
         },
         {
@@ -13735,7 +13719,7 @@
           "line": 318,
           "heightClasses": [],
           "widthClasses": [],
-          "maxLength": "4",
+          "maxLength": null,
           "classNameStaticDetected": false
         },
         {
@@ -13743,7 +13727,7 @@
           "line": 319,
           "heightClasses": [],
           "widthClasses": [],
-          "maxLength": "4",
+          "maxLength": "8",
           "classNameStaticDetected": false
         },
         {
@@ -13751,7 +13735,7 @@
           "line": 320,
           "heightClasses": [],
           "widthClasses": [],
-          "maxLength": null,
+          "maxLength": "4",
           "classNameStaticDetected": false
         },
         {
@@ -13759,8 +13743,8 @@
           "line": 321,
           "heightClasses": [],
           "widthClasses": [],
-          "maxLength": null,
-          "classNameStaticDetected": true
+          "maxLength": "4",
+          "classNameStaticDetected": false
         },
         {
           "tag": "input",
@@ -13768,7 +13752,7 @@
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
-          "classNameStaticDetected": true
+          "classNameStaticDetected": false
         },
         {
           "tag": "input",
@@ -13811,7 +13795,15 @@
           "classNameStaticDetected": true
         },
         {
-          "tag": "button",
+          "tag": "input",
+          "line": 328,
+          "heightClasses": [],
+          "widthClasses": [],
+          "maxLength": null,
+          "classNameStaticDetected": true
+        },
+        {
+          "tag": "input",
           "line": 329,
           "heightClasses": [],
           "widthClasses": [],
@@ -13819,8 +13811,16 @@
           "classNameStaticDetected": true
         },
         {
+          "tag": "button",
+          "line": 331,
+          "heightClasses": [],
+          "widthClasses": [],
+          "maxLength": null,
+          "classNameStaticDetected": true
+        },
+        {
           "tag": "select",
-          "line": 366,
+          "line": 368,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -13828,7 +13828,7 @@
         },
         {
           "tag": "textarea",
-          "line": 375,
+          "line": 377,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
