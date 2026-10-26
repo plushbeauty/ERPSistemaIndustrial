@@ -190,3 +190,67 @@
 @media(max-width:1100px){.rfq-main-grid{grid-template-columns:minmax(210px,250px) minmax(0,1fr)}.rfq-fields-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.rfq-heading-metrics>div{min-width:60px}}
 @media(max-width:760px){.rfq-main-grid{grid-template-columns:minmax(0,1fr)}.rfq-page-heading{align-items:flex-start;flex-direction:column}.rfq-heading-metrics{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.rfq-fields-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.rfq-add-item-grid{grid-template-columns:minmax(0,1fr) 100px}.rfq-product-search{grid-column:1/-1}.rfq-add-button{grid-column:1/-1}.rfq-save-bar{align-items:flex-start;flex-direction:column}.rfq-save-button{width:100%}}
 @media(max-width:420px){.rfq-fields-grid{grid-template-columns:minmax(0,1fr)}.rfq-panel{padding:9px}.rfq-page-heading{padding:10px}}
+
+/* @DATA_REVISAO_APROVACAO 2026-10-26 — Análise de Preços premium, escopo isolado. */
+.synqra-analysis-page{min-height:calc(100vh - 100px);padding:12px;background:#080f1c;color:#dbe7f4;font-size:12px;font-family:Inter,ui-sans-serif,system-ui,sans-serif}
+.synqra-analysis-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding:4px 2px 12px;border-bottom:1px solid #26364b}
+.synqra-analysis-eyebrow{margin-bottom:5px;color:#38bdf8;font-size:9px;font-weight:800;letter-spacing:.15em}
+.synqra-analysis-heading h1{color:#f1f6fc;font-size:18px;font-weight:750;letter-spacing:-.025em}
+.synqra-analysis-heading p,.synqra-analysis-section-heading p{margin-top:4px;color:#8fa4bc;font-size:10px}
+.synqra-analysis-heading-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.synqra-analysis-status{display:inline-flex;align-items:center;gap:5px;border:1px solid #254c70;border-radius:4px;background:#10273e;padding:5px 8px;color:#7dd3fc;font-size:9px;font-weight:800;letter-spacing:.04em}
+.synqra-analysis-action{display:inline-flex;min-height:32px;align-items:center;justify-content:center;gap:7px;border:1px solid transparent;border-radius:4px;padding:0 11px;font-size:11px;font-weight:700;transition:background .15s,border-color .15s;cursor:pointer}
+.synqra-analysis-action:disabled{opacity:.5;cursor:not-allowed}
+.synqra-analysis-action-secondary{border-color:#34465d;background:#172438;color:#dbe7f4}
+.synqra-analysis-action-secondary:hover{background:#21344b}
+.synqra-analysis-action-primary{background:#1d5fd1;color:white;box-shadow:0 3px 10px #0b1e38}
+.synqra-analysis-action-primary:hover{background:#194fae}
+.synqra-analysis-feedback{display:flex;align-items:center;gap:8px;margin-bottom:10px;border:1px solid;border-radius:4px;padding:9px 10px;font-size:11px}
+.synqra-analysis-feedback-error{border-color:#7f1d2d;background:#30111b;color:#fda4af}
+.synqra-analysis-feedback-success{border-color:#14532d;background:#0d281d;color:#86efac}
+.synqra-analysis-panel{margin-bottom:11px;border:1px solid #26374c;border-radius:5px;background:#111c2b;padding:12px}
+.synqra-analysis-panel-flush{padding:0;overflow:hidden}
+.synqra-analysis-panel-heading{display:flex;align-items:center;gap:9px;margin-bottom:11px}
+.synqra-analysis-icon{display:flex;width:27px;height:27px;flex:none;align-items:center;justify-content:center;border:1px solid #1e4b70;border-radius:4px;background:#102a42;color:#38bdf8}
+.synqra-analysis-panel-heading h2,.synqra-analysis-section-heading h2{display:flex;align-items:center;gap:7px;color:#e8f1fb;font-size:11px;font-weight:800;letter-spacing:.035em}
+.synqra-analysis-panel-heading p{margin-top:3px;color:#8fa4bc;font-size:10px}
+.synqra-analysis-search-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(150px,.45fr);gap:10px;align-items:end}
+.synqra-analysis-label{display:block;margin-bottom:5px;color:#9cafc4;font-size:9px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+.synqra-analysis-edit,.synqra-analysis-search-input,.synqra-analysis-readonly{display:flex;width:100%;height:32px;min-width:0;align-items:center;border:1px solid #34465d;border-radius:4px;background:#080f1c;padding:0 9px;color:#e3edf8;font-size:11px;outline:none}
+.synqra-analysis-edit:focus,.synqra-analysis-search-input:focus-within,.synqra-analysis-textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 2px #0ea5e922}
+.synqra-analysis-search-input{gap:7px;color:#7188a2}
+.synqra-analysis-search-input input{width:100%;min-width:0;background:transparent;color:#e3edf8;outline:none}
+.synqra-analysis-search-input input::placeholder,.synqra-analysis-textarea::placeholder{color:#62758d}
+.synqra-analysis-readonly{background:#0d1725;color:#a9bbce}
+.synqra-analysis-section-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #26374c;padding:12px}
+.synqra-analysis-items{padding:9px 12px;border-bottom:1px solid #26374c;background:#0d1725;color:#9fb1c5;font-size:10px;line-height:1.65}
+.synqra-analysis-items strong{margin-right:9px;color:#7189a3;font-size:9px;letter-spacing:.08em}
+.synqra-analysis-table-wrap{width:100%;overflow-x:auto}
+.synqra-analysis-table{width:100%;min-width:950px;border-collapse:collapse;text-align:left}
+.synqra-analysis-table th{height:33px;border-bottom:1px solid #30445c;background:#192a40;padding:0 10px;color:#a9bfd5;font-size:9px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.synqra-analysis-table td{height:38px;border-bottom:1px solid #24364b;padding:6px 10px;color:#c5d4e5;font-size:10px;white-space:nowrap}
+.synqra-analysis-table tbody tr:hover{background:#17283b}
+.synqra-analysis-table tbody tr.is-selected{background:#102a43}
+.synqra-analysis-table input[type=radio]{width:14px;height:14px;accent-color:#0ea5e9}
+.synqra-analysis-supplier{font-weight:700;color:#e2edf8!important}
+.synqra-analysis-selected-tag{display:inline-block;margin-left:7px;border:1px solid #1d547c;border-radius:3px;background:#10304b;padding:2px 5px;color:#7dd3fc;font-size:8px;font-weight:800}
+.synqra-analysis-number{font-variant-numeric:tabular-nums}
+.synqra-analysis-cost{color:#f1f7ff!important;font-weight:800}
+.synqra-analysis-winner{display:inline-flex;align-items:center;gap:4px;border:1px solid #166047;border-radius:3px;background:#0e3027;padding:3px 6px;color:#6ee7b7;font-size:8px;font-weight:800}
+.synqra-analysis-muted{color:#50657c}
+.synqra-analysis-empty{height:95px!important;color:#8298b0!important;text-align:center;white-space:normal!important}
+.synqra-analysis-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;border-top:1px solid #26374c;background:#0d1725;padding:12px}
+.synqra-analysis-kpi{display:flex;align-items:center;gap:9px;color:#38bdf8}
+.synqra-analysis-kpi span{display:block;margin-bottom:4px;color:#8298b0;font-size:8px;font-weight:800;letter-spacing:.06em}
+.synqra-analysis-kpi strong{display:block;color:#e5eef8;font-size:12px;font-weight:800}
+.synqra-analysis-textarea{display:block;width:100%;resize:vertical;border:1px solid #34465d;border-radius:4px;background:#080f1c;padding:9px;color:#e3edf8;font-size:11px;outline:none}
+.synqra-analysis-required{color:#fda4af}
+.synqra-analysis-warning{margin-top:6px;color:#fbbf24;font-size:10px}
+.synqra-analysis-savebar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;border-top:1px solid #26374c;padding-top:11px}
+.synqra-analysis-savebar p{color:#8fa4bc;font-size:10px}
+.synqra-analysis-empty-state{display:flex;min-height:180px;flex-direction:column;align-items:center;justify-content:center;color:#68829e;text-align:center}
+.synqra-analysis-empty-state h2{margin-top:9px;color:#e2edf8;font-size:12px;font-weight:800}
+.synqra-analysis-empty-state p{margin-top:5px;color:#8fa4bc;font-size:10px}
+@media(max-width:900px){.synqra-analysis-search-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.synqra-analysis-search-grid>div:last-child{grid-column:1/-1}}
+@media(max-width:650px){.synqra-analysis-page{padding:8px}.synqra-analysis-heading{align-items:flex-start;flex-direction:column}.synqra-analysis-heading-actions{width:100%;justify-content:space-between}.synqra-analysis-search-grid,.synqra-analysis-kpis{grid-template-columns:minmax(0,1fr)}.synqra-analysis-savebar{align-items:stretch;flex-direction:column}.synqra-analysis-action-primary{width:100%}.synqra-analysis-panel{padding:9px}.synqra-analysis-panel-flush{padding:0}}
+@media(prefers-reduced-motion:reduce){.synqra-analysis-action{transition:none}}
