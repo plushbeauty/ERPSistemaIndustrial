@@ -140,3 +140,102 @@
   .buy-report .buy-report-actions,.buy-report .buy-report-search{display:none!important}
   .buy-report .buy-report-card,.buy-report .buy-report-kpis article{box-shadow:none!important}
 }
+
+
+/* ComprasIndustrial quando hospedada no shell global: neutraliza estilos inline divergentes. */
+.buy-hosted-by-synqra .buy-sidebar{
+  margin:0 0 8px!important;
+  padding:6px!important;
+  gap:4px!important;
+  border:1px solid #C9DDE5!important;
+  border-radius:2px!important;
+  background:#fff!important;
+  color:#123B50!important;
+  box-shadow:none!important;
+}
+.buy-hosted-by-synqra .buy-nav{
+  min-height:36px!important;
+  height:36px!important;
+  padding:0 9px!important;
+  border-radius:2px!important;
+  color:#496574!important;
+  font-size:11px!important;
+  transition:none!important;
+  transform:none!important;
+}
+.buy-hosted-by-synqra .buy-nav:hover{background:#F4F7F9!important}
+.buy-hosted-by-synqra .buy-nav.active{
+  background:#2D8DB8!important;
+  color:#fff!important;
+  box-shadow:none!important;
+}
+.buy-hosted-by-synqra .buy-nav.active small{color:#fff!important}
+.buy-hosted-by-synqra .buy-head,
+.buy-hosted-by-synqra .buy-content{padding-left:0!important;padding-right:0!important}
+.buy-hosted-by-synqra .buy-head{padding-top:0!important;padding-bottom:8px!important;gap:8px!important}
+.buy-hosted-by-synqra .buy-head h1{margin:2px 0!important;color:#123B50!important;font-size:18px!important;line-height:1.25!important;font-weight:600!important}
+.buy-hosted-by-synqra .buy-head p{font-size:11px!important;color:#496574!important;line-height:1.4!important}
+.buy-hosted-by-synqra .buy-head span,
+.buy-hosted-by-synqra .buy-card header span{color:#2D8DB8!important;font-size:9px!important;font-weight:700!important;letter-spacing:.08em!important}
+.buy-hosted-by-synqra .buy-actions{gap:6px!important;flex-wrap:wrap!important}
+.buy-hosted-by-synqra .buy-actions button,
+.buy-hosted-by-synqra .buy-card header button,
+.buy-hosted-by-synqra .buy-list-actions button,
+.buy-hosted-by-synqra .buy-commandbar button,
+.buy-hosted-by-synqra .buy-form-actions button{
+  box-sizing:border-box!important;
+  height:36px!important;
+  min-height:36px!important;
+  border:1px solid #C9DDE5!important;
+  border-radius:2px!important;
+  padding:0 9px!important;
+  background:#fff!important;
+  color:#123B50!important;
+  font-size:11px!important;
+  font-weight:600!important;
+  box-shadow:none!important;
+  transform:none!important;
+}
+.buy-hosted-by-synqra .buy-actions .buy-primary,
+.buy-hosted-by-synqra .buy-commandbar .buy-primary{
+  background:#2D8DB8!important;
+  border-color:#2D8DB8!important;
+  color:#fff!important;
+}
+.buy-hosted-by-synqra .buy-commandbar{gap:6px!important;padding:0 0 8px!important;overflow:visible!important;flex-wrap:wrap!important}
+.buy-hosted-by-synqra .buy-message{margin:0 0 8px!important;border-radius:2px!important;font-size:11px!important}
+.buy-hosted-by-synqra .buy-kpis{gap:8px!important}
+.buy-hosted-by-synqra .buy-kpis article,
+.buy-hosted-by-synqra .buy-card{
+  border:1px solid #C9DDE5!important;
+  border-radius:2px!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+.buy-hosted-by-synqra .buy-kpis article{padding:8px!important}
+.buy-hosted-by-synqra .buy-kpis span{color:#496574!important;font-size:9px!important;font-weight:700!important}
+.buy-hosted-by-synqra .buy-kpis b{margin-top:4px!important;color:#123B50!important;font-size:18px!important}
+.buy-hosted-by-synqra .buy-grid,
+.buy-hosted-by-synqra .buy-bottom{gap:8px!important;margin-top:8px!important}
+.buy-hosted-by-synqra .buy-card header{padding:8px!important;border-bottom:1px solid #E4EBEF!important}
+.buy-hosted-by-synqra .buy-card header h2{margin:2px 0 0!important;color:#123B50!important;font-size:13px!important;font-weight:600!important}
+.buy-hosted-by-synqra .buy-table th,
+.buy-hosted-by-synqra .buy-table td{height:30px!important;padding:5px 7px!important;font-size:11px!important;border-bottom:1px solid #E4EBEF!important}
+.buy-hosted-by-synqra .buy-table th{background:#F4F7F9!important;color:#496574!important;font-size:9px!important;font-weight:700!important}
+.buy-hosted-by-synqra .buy-table td{color:#123B50!important}
+.buy-hosted-by-synqra .buy-table tbody tr:nth-child(even){background:#F8FAFB!important}
+.buy-hosted-by-synqra .buy-flow{padding:6px!important}
+.buy-hosted-by-synqra .buy-flow button{margin:3px 0!important;padding:8px!important;border:1px solid #E4EBEF!important;border-radius:2px!important;background:#F8FAFB!important}
+.buy-hosted-by-synqra .buy-flow b{border-radius:2px!important;background:#2D8DB8!important}
+.buy-hosted-by-synqra .buy-form{gap:8px!important}
+.buy-hosted-by-synqra .buy-form label{font-size:9px!important;line-height:1.3!important;font-weight:700!important;letter-spacing:.04em!important}
+.buy-hosted-by-synqra .buy-form input,
+.buy-hosted-by-synqra .buy-form select{height:36px!important;min-height:36px!important;border-radius:2px!important;font-size:11px!important}
+.buy-hosted-by-synqra .buy-form textarea{min-height:64px!important;border-radius:2px!important;font-size:11px!important}
+.buy-hosted-by-synqra .buy-modal{border-radius:2px!important;padding:12px!important}
+@media(max-width:800px){
+  .buy-hosted-by-synqra .buy-sidebar{margin:0 0 8px!important;padding:5px!important}
+  .buy-hosted-by-synqra .buy-head,.buy-hosted-by-synqra .buy-content{padding-left:0!important;padding-right:0!important}
+  .buy-hosted-by-synqra .buy-commandbar{flex-wrap:nowrap!important;overflow-x:auto!important}
+  .buy-hosted-by-synqra .buy-commandbar button{flex:0 0 auto!important}
+}
