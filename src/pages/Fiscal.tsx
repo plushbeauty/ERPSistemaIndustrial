@@ -28,6 +28,14 @@ type TabDefinition = { id: Tab; label: string; icon: typeof ShieldCheck }
 
 const money = (value: number): string => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value || 0))
 
+function fiscalStatusClass(value: string): string {
+  const status = value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+  if (/(autoriz|conclu|recebid|liquid|pago|ativa|ativo)/.test(status)) return 'fiscal-status fiscal-status-success'
+  if (/(cancel|rejeit|erro|bloque|denegad)/.test(status)) return 'fiscal-status fiscal-status-danger'
+  if (/(rascunho|process|penden|aguard|abert|analise)/.test(status)) return 'fiscal-status fiscal-status-pending'
+  return 'fiscal-status fiscal-status-neutral'
+}
+
 const tabs: TabDefinition[] = [
   { id: 'liberacao', label: 'Liberação para NF', icon: ShieldCheck },
   { id: 'notas', label: 'Notas Fiscais', icon: FileCheck2 },
@@ -191,39 +199,38 @@ export default function Fiscal() {
   }), [docs, receber, pagar, orders])
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]"><FiscalSidebar/><main className="erp-dense fiscal-workspace min-h-screen bg-[#f8fafc] p-2 md:p-3 font-sans text-[#0f172a]">
-      <header className="mb-2 flex flex-col gap-2 border-b border-[#C9E1E8] pb-2 xl:flex-row xl:items-center xl:justify-between">
-        <div>
-          <button
-            className="mb-1 flex h-[30px] min-h-[30px] items-center gap-1 rounded-[2px] border border-[#C9E1E8] bg-white px-2 py-1 text-[11px] font-medium text-[#0f172a] shadow-sm hover:bg-slate-50"
-            onClick={() => { window.location.href = '/erp-industrial' }}
-          >
-            <ArrowLeft size={17} /> Voltar ao Painel
-          </button>
-          <span className="text-[9px] font-medium uppercase tracking-wider text-[#2563eb]">ERP • MÓDULO FISCAL</span>
-          <h1 className="mt-0.5 text-[16px] font-medium leading-5 text-[#0f172a]">Central Fiscal Integrada</h1>
-          <p className="mt-0.5 text-[11px] text-slate-600">Liberação para faturamento, monitoramento de notas fiscais, contas a pagar, receber e relatórios consolidados.</p>
+    <div className="fiscal-shell"><FiscalSidebar/><main className="erp-dense fiscal-workspace">
+      <header className="fiscal-hero">
+        <div className="fiscal-hero-copy">
+          <span>ERP INDUSTRIAL · CONTROLE FISCAL</span>
+          <h1>Central Fiscal Integrada</h1>
+          <p>Liberação para faturamento, monitoramento de notas fiscais, contas a pagar, receber e relatórios consolidados.</p>
+          <small>Atualizado · Padrão Premium · 26/10/2026</small>
         </div>
-        <button
-          className="flex h-[30px] min-h-[30px] items-center justify-center gap-1 rounded-[2px] bg-[#2563eb] px-3 py-1 text-[11px] font-medium text-white shadow-sm transition-all hover:bg-blue-700 disabled:opacity-60"
-          onClick={() => void load()}
-          disabled={busy}
-        >
-          <RefreshCw size={18} className={busy ? 'animate-spin' : ''} /> {busy ? 'Sincronizando...' : 'Atualizar Dados'}
-        </button>
+        <Receipt className="fiscal-hero-icon" size={40} aria-hidden="true" />
       </header>
 
+      <div className="fiscal-actionbar" aria-label="Ações da Central Fiscal">
+        <button className="fiscal-button fiscal-button-secondary" type="button" onClick={() => { window.location.href = '/erp-industrial' }}>
+          <ArrowLeft size={15} /> Voltar ao Painel
+        </button>
+        <button className="fiscal-button fiscal-button-primary" type="button" onClick={() => void load()} disabled={busy}>
+          <RefreshCw size={15} className={busy ? 'animate-spin' : ''} /> {busy ? 'Sincronizando...' : 'Atualizar dados'}
+        </button>
+      </div>
+
       {(message || error) && (
-        <div className={error ? 'mb-6 rounded-[2px] border border-red-200 bg-red-50 p-4 text-base font-medium text-red-700' : 'mb-6 rounded-[2px] border border-emerald-200 bg-emerald-50 p-4 text-base font-medium text-emerald-700'}>
+        <div role={error ? 'alert' : 'status'} className={error ? 'fiscal-message fiscal-message-error' : 'fiscal-message fiscal-message-success'}>
           {error || message}
         </div>
       )}
 
-      <nav className="mb-6 grid grid-cols-1 gap-2 border-b border-slate-200 pb-2 md:grid-cols-5">
+      <nav className="fiscal-tabs" role="tablist" aria-label="Seções da Central Fiscal">
         {tabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
-            className={'flex min-h-11 items-center justify-center gap-2 rounded-t-lg border-b-2 px-4 py-2 text-base font-semibold transition-all ' + (tab === id ? 'border-[#2563eb] text-[#2563eb]' : 'border-transparent text-slate-500 hover:bg-white hover:text-slate-800')}
+            type="button" role="tab" aria-selected={tab === id}
+            className={'fiscal-tab' + (tab === id ? ' active' : '')}
             onClick={() => setTab(id)}
           >
             <Icon size={18} /> {label}
@@ -232,52 +239,52 @@ export default function Fiscal() {
       </nav>
 
       {tab === 'liberacao' && (
-        <section className="space-y-6">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <section className="fiscal-release-section" role="tabpanel" aria-label="Liberação para faturamento">
+          <div className="fiscal-stats">
             {[
               ['Carteira de Pedidos', String(filteredOrders.length)],
               ['Itens Carregados', String(items.length)],
               ['Critério Liberação', 'Total / Parcial'],
               ['Rastreabilidade', 'Saldo por Item']
             ].map(([title, value]) => (
-              <article key={title} className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm">
-                <span className="text-sm font-semibold uppercase text-slate-400">{title}</span>
-                <strong className="mt-1 block text-[15px] font-bold text-[#0f172a]">{value}</strong>
+              <article key={title} className="fiscal-stat-card">
+                <span>{title}</span>
+                <strong>{value}</strong>
               </article>
             ))}
           </div>
 
-          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
-            <div className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2">
-              <div className="mb-4 flex flex-col gap-3 border-b pb-3 md:flex-row md:items-center md:justify-between">
+          <div className="fiscal-release-grid">
+            <div className="fiscal-panel fiscal-release-panel">
+              <div className="fiscal-panel-heading">
                 <div>
-                  <h2 className="text-[13px] font-bold text-[#0f172a]">Carteira de Pedidos de Venda</h2>
-                  <p className="mt-0.5 text-sm text-slate-500">Selecione o pedido para conferir as quantidades liberadas.</p>
+                  <h2>Carteira de Pedidos de Venda</h2>
+                  <p>Selecione um pedido para conferir os saldos que podem ser liberados.</p>
                 </div>
-                <label className="flex min-h-11 items-center gap-2 rounded-[2px] border bg-slate-50 px-3 text-base">
+                <label className="fiscal-search">
                   <Search size={17} className="text-slate-400" />
-                  <input className="w-full bg-transparent text-base outline-none md:w-56" placeholder="Pedido ou status..." value={query} onChange={event => { setQuery(event.target.value); setOrdersPage(1) }} />
+                  <input aria-label="Filtrar pedidos fiscais por número ou status" className="fiscal-input" placeholder="Pedido ou status..." value={query} onChange={event => { setQuery(event.target.value); setOrdersPage(1) }} />
                 </label>
               </div>
 
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-left text-base">
+                <table className="fiscal-table">
                   <thead>
-                    <tr className="border-b bg-slate-50 font-semibold text-slate-700">
-                      <th className="p-3">Número Pedido</th>
-                      <th className="p-3">Status Comercial</th>
-                      <th className="p-3 text-right">Valor Líquido</th>
-                      <th className="p-3 text-center">Ação</th>
+                    <tr>
+                      <th>Número Pedido</th>
+                      <th>Status Comercial</th>
+                      <th className="numeric">Valor Líquido</th>
+                      <th className="center">Ação</th>
                     </tr>
                   </thead>
                   <tbody>
                     {visibleOrders.map(order => (
-                      <tr key={order.id} className="border-b border-slate-100 hover:bg-slate-50">
-                        <td className="p-3 font-bold text-[#2563eb]">#{order.numero}</td>
-                        <td className="p-3">{order.status}</td>
-                        <td className="p-3 text-right font-semibold">{money(order.total)}</td>
-                        <td className="p-3 text-center">
-                          <button className="h-[30px] min-h-[30px] rounded-[2px] border border-slate-200 bg-white px-3 py-2 text-base font-semibold hover:bg-slate-50" onClick={() => void openOrder(order.id)}>
+                      <tr key={order.id} className={selected === order.id ? 'selected' : ''}>
+                        <td className="link-value">#{order.numero}</td>
+                        <td><span className={fiscalStatusClass(order.status)}>{order.status}</span></td>
+                        <td className="numeric">{money(order.total)}</td>
+                        <td className="center">
+                          <button type="button" className="fiscal-button fiscal-button-secondary fiscal-button-small" onClick={() => void openOrder(order.id)}>
                             Conferir
                           </button>
                         </td>
@@ -285,48 +292,48 @@ export default function Fiscal() {
                     ))}
                   </tbody>
                 </table>
-                {!filteredOrders.length && <p className="p-6 text-center text-base text-slate-500">Nenhum pedido real encontrado para o filtro informado.</p>}
+                {!filteredOrders.length && <p className="fiscal-empty">Nenhum pedido real encontrado para o filtro informado.</p>}
                 {filteredOrders.length > orderPageSize && (
-                  <nav aria-label="Paginação da carteira fiscal de pedidos" className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-3 text-sm">
+                  <nav aria-label="Paginação da carteira fiscal de pedidos" className="fiscal-pagination">
                     <span aria-live="polite">Exibindo {(ordersPage - 1) * orderPageSize + 1}–{Math.min(ordersPage * orderPageSize, filteredOrders.length)} de {filteredOrders.length}</span>
                     <div className="flex gap-2">
-                      <button type="button" className="h-[30px] min-h-[30px] rounded-[2px] border px-3 py-2 disabled:opacity-50" disabled={ordersPage === 1} onClick={() => setOrdersPage(page => Math.max(1, page - 1))}>Anterior</button>
+                      <button type="button" className="fiscal-button fiscal-button-secondary fiscal-button-small" disabled={ordersPage === 1} onClick={() => setOrdersPage(page => Math.max(1, page - 1))}>Anterior</button>
                       <span className="self-center">Página {ordersPage} de {orderPageCount}</span>
-                      <button type="button" className="h-[30px] min-h-[30px] rounded-[2px] border px-3 py-2 disabled:opacity-50" disabled={ordersPage === orderPageCount} onClick={() => setOrdersPage(page => Math.min(orderPageCount, page + 1))}>Próxima</button>
+                      <button type="button" className="fiscal-button fiscal-button-secondary fiscal-button-small" disabled={ordersPage === orderPageCount} onClick={() => setOrdersPage(page => Math.min(orderPageCount, page + 1))}>Próxima</button>
                     </div>
                   </nav>
                 )}
               </div>
             </div>
 
-            <aside className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm">
-              <h2 className="text-[13px] font-bold text-[#0f172a]">Itens do Pedido</h2>
-              <p className="mt-1 text-base text-slate-500">Pedido selecionado: {selected ? '#' + (orders.find(order => order.id === selected)?.numero ?? '') : '—'}</p>
-              <div className="mt-5 space-y-4">
+            <aside className="fiscal-panel fiscal-items-panel">
+              <div className="fiscal-panel-heading"><h2>Itens do Pedido</h2>
+              <p>Pedido selecionado: {selected ? '#' + (orders.find(order => order.id === selected)?.numero ?? '') : '—'}</p></div>
+              <div className="fiscal-item-list">
                 {items.map(item => (
-                  <article key={item.id} className="rounded-[2px] border border-slate-200 bg-slate-50 p-4">
-                    <strong className="block text-base">{item.descricao}</strong>
-                    <span className="mt-1 block text-sm text-slate-600">Quantidade: {item.quantidade} • Total: {money(item.total)}</span>
-                    <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
-                      <label className="text-base font-semibold">Qtd. a liberar
+                  <article key={item.id} className="fiscal-item-card">
+                    <strong>{item.descricao}</strong>
+                    <span>Quantidade: {item.quantidade} • Total: {money(item.total)}</span>
+                    <div className="fiscal-release-form">
+                      <label>Qtd. a liberar
                         <input
                           type="number"
                           min="0"
                           max={item.quantidade}
                           step="any"
-                          className="mt-1 min-h-11 w-full rounded-[2px] border bg-white p-2 text-base outline-none focus:ring-2 focus:ring-[#2563eb]"
+                          className="fiscal-input"
                           value={qty[item.id] ?? ''}
                           onChange={event => setQty(previous => ({ ...previous, [item.id]: event.target.value }))}
                           placeholder="0"
                         />
                       </label>
-                      <button className="mt-6 flex min-h-11 items-center justify-center gap-2 rounded-[2px] bg-emerald-600 px-4 py-2.5 text-base font-bold text-white hover:bg-emerald-700 disabled:opacity-60" disabled={busy} onClick={() => void release(item)}>
+                      <button type="button" className="fiscal-button fiscal-button-success" disabled={busy} onClick={() => void release(item)}>
                         <CheckCircle2 size={17} /> Liberar
                       </button>
                     </div>
                   </article>
                 ))}
-                {!items.length && <p className="rounded-[2px] border border-dashed border-slate-300 p-6 text-center text-base text-slate-500">Selecione um pedido na tabela para detalhar os itens.</p>}
+                {!items.length && <p className="fiscal-empty">Selecione um pedido na tabela para detalhar os itens.</p>}
               </div>
             </aside>
           </div>
@@ -334,27 +341,27 @@ export default function Fiscal() {
       )}
 
       {tab === 'notas' && (
-        <section className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <section className="fiscal-panel" role="tabpanel" aria-label="Notas fiscais">
+          <div className="fiscal-panel-heading">
             <div>
-              <h2 className="text-[13px] font-bold text-[#0f172a]">Notas Fiscais</h2>
-              <p className="text-base text-slate-500">Documentos fiscais reais da empresa e transmissão pela Edge Function protegida.</p>
+              <h2>Notas Fiscais</h2>
+              <p>Documentos fiscais reais da empresa e transmissão pela Edge Function protegida.</p>
             </div>
-            <span className="rounded-full bg-blue-50 px-3 py-1 text-base font-bold text-blue-800">{docs.length} documentos</span>
+            <span className="fiscal-result-count">{docs.length} documentos</span>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left text-base">
-              <thead><tr className="border-b bg-slate-50 font-semibold"><th className="p-3">Número</th><th className="p-3">Destinatário</th><th className="p-3">Emissão</th><th className="p-3">Status</th><th className="p-3 text-right">Valor</th><th className="p-3 text-center">Ação</th></tr></thead>
+            <table className="fiscal-table">
+              <thead><tr><th>Número</th><th>Destinatário</th><th>Emissão</th><th>Status</th><th className="numeric">Valor</th><th className="center">Ação</th></tr></thead>
               <tbody>
                 {visibleDocuments.map(doc => (
                   <tr key={doc.id} className="border-b border-slate-100">
-                    <td className="p-3 font-bold text-[#1e3a8a]">{doc.numero ?? '—'} / {doc.serie}</td>
-                    <td className="p-3">{doc.destinatario_nome ?? '—'}</td>
-                    <td className="p-3">{doc.data_emissao ? new Date(doc.data_emissao).toLocaleDateString('pt-BR') : '—'}</td>
-                    <td className="p-3">{doc.status}</td>
-                    <td className="p-3 text-right font-semibold">{money(doc.valor_total)}</td>
-                    <td className="p-3 text-center">
-                      <button className="flex h-[30px] min-h-[30px] items-center justify-center gap-2 rounded-[2px] bg-[#2563eb] px-3 py-2 text-base font-semibold text-white hover:bg-blue-700 disabled:opacity-60" disabled={busy || doc.status !== 'Rascunho'} onClick={() => void emitNfe(doc)}>
+                    <td className="link-value">{doc.numero ?? '—'} / {doc.serie}</td>
+                    <td>{doc.destinatario_nome ?? '—'}</td>
+                    <td>{doc.data_emissao ? new Date(doc.data_emissao).toLocaleDateString('pt-BR') : '—'}</td>
+                    <td><span className={fiscalStatusClass(doc.status)}>{doc.status}</span></td>
+                    <td className="numeric">{money(doc.valor_total)}</td>
+                    <td className="center">
+                      <button type="button" className="fiscal-button fiscal-button-primary fiscal-button-small" disabled={busy || doc.status !== 'Rascunho'} onClick={() => void emitNfe(doc)}>
                         <Send size={16} /> {doc.status === 'Rascunho' ? 'Transmitir NF-e' : 'Indisponível neste status'}
                       </button>
                     </td>
@@ -362,26 +369,26 @@ export default function Fiscal() {
                 ))}
               </tbody>
             </table>
-            {!docs.length && <p className="p-6 text-center text-base text-slate-500">Nenhum documento fiscal real encontrado.</p>}
+            {!docs.length && <p className="fiscal-empty">Nenhum documento fiscal real encontrado.</p>}
             <FiscalPagination page={documentsPage} pageCount={documentsPageCount} total={docs.length} pageSize={orderPageSize} label="notas fiscais" onChange={setDocumentsPage}/>
           </div>
         </section>
       )}
 
       {(tab === 'receber' || tab === 'pagar') && (
-        <section className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-[13px] font-bold text-[#0f172a]">{tab === 'receber' ? 'Contas a Receber' : 'Contas a Pagar'}</h2>
+        <section className="fiscal-panel" role="tabpanel" aria-label={tab === 'receber' ? 'Contas a receber' : 'Contas a pagar'}>
+          <div className="fiscal-panel-heading"><h2>{tab === 'receber' ? 'Contas a Receber' : 'Contas a Pagar'}</h2><span className="fiscal-result-count">{currentAccounts.length} títulos</span></div>
           <div className="mt-5 overflow-x-auto">
-            <table className="w-full border-collapse text-left text-base">
-              <thead><tr className="border-b bg-slate-50 font-semibold"><th className="p-3">Descrição</th><th className="p-3">Documento</th><th className="p-3">Vencimento</th><th className="p-3">Status</th><th className="p-3 text-right">Valor</th></tr></thead>
+            <table className="fiscal-table">
+              <thead><tr><th>Descrição</th><th>Documento</th><th>Vencimento</th><th>Status</th><th className="numeric">Valor</th></tr></thead>
               <tbody>
                 {visibleAccounts.map(conta => (
                   <tr key={conta.id} className="border-b border-slate-100">
-                    <td className="p-3">{conta.descricao}</td>
-                    <td className="p-3">{conta.documento ?? '—'}</td>
-                    <td className="p-3">{new Date(conta.vencimento).toLocaleDateString('pt-BR')}</td>
-                    <td className="p-3">{conta.status}</td>
-                    <td className="p-3 text-right font-semibold">{money(conta.valor)}</td>
+                    <td>{conta.descricao}</td>
+                    <td>{conta.documento ?? '—'}</td>
+                    <td>{new Date(conta.vencimento).toLocaleDateString('pt-BR')}</td>
+                    <td><span className={fiscalStatusClass(conta.status)}>{conta.status}</span></td>
+                    <td className="numeric">{money(conta.valor)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -392,31 +399,50 @@ export default function Fiscal() {
       )}
 
       {tab === 'relatorios' && (
-        <section className="space-y-5">
-          <nav className="grid grid-cols-1 gap-2 md:grid-cols-3">
+        <section className="fiscal-section-space" role="tabpanel" aria-label="Relatórios fiscais">
+          <nav className="fiscal-report-tabs" role="tablist" aria-label="Tipo de relatório">
             {([
               ['faturamento', 'Faturamento'],
               ['receber', 'Recebimentos'],
               ['pagar', 'Pagamentos']
             ] as Array<[ReportTab, string]>).map(([id, label]) => (
-              <button key={id} className={'min-h-11 rounded-[2px] border px-4 py-2 text-base font-semibold ' + (reportTab === id ? 'border-[#2563eb] bg-blue-50 text-[#1e3a8a]' : 'border-slate-200 bg-white text-slate-600')} onClick={() => setReportTab(id)}>
+              <button key={id} type="button" role="tab" aria-selected={reportTab === id} className={'fiscal-report-tab' + (reportTab === id ? ' active' : '')} onClick={() => setReportTab(id)}>
                 {label}
               </button>
             ))}
           </nav>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-            <article className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm"><span className="text-sm font-semibold uppercase text-slate-400">NF-e monitoradas</span><strong className="mt-1 block text-[15px]">{report.nfCount}</strong></article>
-            <article className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm"><span className="text-sm font-semibold uppercase text-slate-400">Valor NF-e</span><strong className="mt-1 block text-[15px]">{money(report.nfTotal)}</strong></article>
-            <article className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm"><span className="text-sm font-semibold uppercase text-slate-400">A receber</span><strong className="mt-1 block text-[15px]">{money(report.receber)}</strong></article>
-            <article className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm"><span className="text-sm font-semibold uppercase text-slate-400">A pagar</span><strong className="mt-1 block text-[15px]">{money(report.pagar)}</strong></article>
+          <div className="fiscal-stats">
+            <article className="fiscal-stat-card"><span>NF-e monitoradas</span><strong>{report.nfCount}</strong></article>
+            <article className="fiscal-stat-card"><span>Valor NF-e</span><strong>{money(report.nfTotal)}</strong></article>
+            <article className="fiscal-stat-card"><span>A receber</span><strong>{money(report.receber)}</strong></article>
+            <article className="fiscal-stat-card"><span>A pagar</span><strong>{money(report.pagar)}</strong></article>
           </div>
-          <div className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-[13px] font-bold text-[#0f172a]">{reportTab === 'faturamento' ? 'Faturamento fiscal' : reportTab === 'receber' ? 'Recebimentos' : 'Pagamentos'}</h2>
-            <p className="mt-2 text-base text-slate-600">Dados consolidados diretamente das tabelas fiscais reais. Pedidos ainda abertos: <strong>{report.abertos}</strong>.</p>
+          <div className="fiscal-panel">
+            <h2>{reportTab === 'faturamento' ? 'Faturamento fiscal' : reportTab === 'receber' ? 'Recebimentos' : 'Pagamentos'}</h2>
+            <p>Dados consolidados diretamente das tabelas fiscais reais. Pedidos ainda abertos: <strong>{report.abertos}</strong>.</p>
           </div>
         </section>
       )}
-    <style>{`.fiscal-workspace{font-size:10px}.fiscal-workspace .rounded-[2px],.fiscal-workspace .rounded-[2px],.fiscal-workspace .rounded-[2px],.fiscal-workspace .rounded-full{border-radius:2px!important}.fiscal-workspace .font-bold,.fiscal-workspace .font-extrabold,.fiscal-workspace .font-semibold{font-weight:500!important}.fiscal-workspace button{min-height:28px;padding:0 9px;border-radius:2px!important;font-size:10px!important}.fiscal-workspace input,.fiscal-workspace select{min-height:28px;border-radius:2px!important;font-size:10px!important}.fiscal-workspace table{font-size:10px}.fiscal-workspace th,.fiscal-workspace td{padding:6px 8px}.fiscal-workspace h1{font-size:18px}.fiscal-workspace h2{font-size:13px}.fiscal-workspace .shadow-sm,.fiscal-workspace .shadow-2xl{box-shadow:none!important}`}</style>
+    <style>{`
+      .fiscal-shell{min-height:100vh;background:#f3f6fb;color:#0f172a;font-family:Inter,Segoe UI,Arial,sans-serif}
+      .fiscal-workspace{width:min(100%,1640px);min-height:calc(100vh - 36px);margin:0 auto;padding:18px 22px 32px;font-size:12px;color:#0f172a}
+      .fiscal-hero{position:relative;display:flex;align-items:center;justify-content:space-between;min-height:132px;overflow:hidden;padding:20px 26px;border-radius:16px;background:linear-gradient(112deg,#0b2545 0%,#123f72 58%,#1d5fd1 100%);color:#fff;box-shadow:0 10px 24px rgba(11,37,69,.15)}
+      .fiscal-hero:after{position:absolute;right:8%;top:-105px;width:260px;height:260px;border:1px solid rgba(255,255,255,.14);border-radius:50%;box-shadow:0 0 0 28px rgba(255,255,255,.04),0 0 0 58px rgba(255,255,255,.025);content:"";pointer-events:none}
+      .fiscal-hero-copy{position:relative;z-index:1;max-width:860px}.fiscal-hero-copy>span{color:#bfeef6;font-size:10px;font-weight:800;letter-spacing:.15em}.fiscal-hero h1{margin:7px 0 5px;color:#fff;font-size:25px;font-weight:800;line-height:1.2;letter-spacing:-.02em}.fiscal-hero p{margin:0;color:#e1edf9;font-size:12px;line-height:1.55}.fiscal-hero small{display:inline-flex;margin-top:10px;padding:4px 9px;border:1px solid rgba(255,255,255,.22);border-radius:999px;background:rgba(255,255,255,.1);color:#f8fafc;font-size:10px;font-weight:700}.fiscal-hero-icon{position:relative;z-index:1;flex:none;margin:0 22px;color:#dbeafe}
+      .fiscal-actionbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0;padding:9px 12px;border:1px solid #dfe7f1;border-radius:11px;background:#fff;box-shadow:0 2px 7px rgba(15,23,42,.045)}
+      .fiscal-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:36px;min-height:36px;padding:0 13px;border:1px solid transparent;border-radius:8px;font-size:11px;font-weight:750;line-height:1;white-space:nowrap;cursor:pointer;transition:transform .14s,box-shadow .14s,background .14s}
+      .fiscal-button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 3px 8px rgba(15,23,42,.13)}.fiscal-button:active:not(:disabled){transform:translateY(1px);box-shadow:none}.fiscal-button:disabled{cursor:not-allowed;opacity:.48}.fiscal-button-primary{background:linear-gradient(180deg,#2563eb,#1d4ed8);color:#fff;box-shadow:0 3px 0 #173f91,0 5px 9px rgba(29,78,216,.18)}.fiscal-button-secondary{border-color:#cbd5e1;background:linear-gradient(180deg,#fff,#f1f5f9);color:#173452;box-shadow:0 2px 0 #d6dee8}.fiscal-button-success{background:linear-gradient(180deg,#16a36a,#128253);color:#fff;box-shadow:0 3px 0 #0d6240}.fiscal-button-small{height:32px;min-height:32px;padding:0 10px;font-size:10px}
+      .fiscal-message{margin:10px 0;padding:10px 13px;border:1px solid;border-radius:9px;font-size:12px;font-weight:650;line-height:1.45}.fiscal-message-error{border-color:#fecaca;background:#fff1f2;color:#b42318}.fiscal-message-success{border-color:#bbf7d0;background:#f0fdf4;color:#166534}
+      .fiscal-tabs{display:flex;align-items:center;gap:6px;overflow-x:auto;margin:12px 0;padding:7px;border:1px solid #dfe7f1;border-radius:11px;background:#fff;box-shadow:0 2px 7px rgba(15,23,42,.04)}.fiscal-tab{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:0 0 auto;height:36px;min-height:36px;padding:0 13px;border:0;border-radius:8px;background:transparent;color:#52677f;font-size:11px;font-weight:750;white-space:nowrap;cursor:pointer}.fiscal-tab:hover{background:#f1f5f9}.fiscal-tab.active{background:#0b2545;color:#fff;box-shadow:0 2px 5px rgba(11,37,69,.2)}
+      .fiscal-release-section,.fiscal-section-space{display:grid;gap:14px}.fiscal-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.fiscal-stat-card{display:flex;min-width:0;min-height:90px;flex-direction:column;justify-content:center;padding:14px 16px;border:1px solid #dfe7f1;border-radius:12px;background:#fff;box-shadow:0 3px 10px rgba(15,23,42,.045)}.fiscal-stat-card span{color:#64748b;font-size:10px;font-weight:750;letter-spacing:.035em;text-transform:uppercase}.fiscal-stat-card strong{margin-top:7px;color:#102c4e;font-size:22px;font-weight:800;line-height:1.15;overflow-wrap:anywhere}
+      .fiscal-release-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(310px,1fr);align-items:start;gap:14px}.fiscal-panel{min-width:0;padding:16px;border:1px solid #dfe7f1;border-radius:12px;background:#fff;box-shadow:0 3px 10px rgba(15,23,42,.045)}.fiscal-panel h2{margin:0;color:#173452;font-size:14px;font-weight:800;line-height:1.3}.fiscal-panel>p{margin:7px 0 0;color:#64748b;font-size:11px;line-height:1.5}.fiscal-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;padding-bottom:11px;border-bottom:1px solid #e7edf5}.fiscal-panel-heading p{margin:4px 0 0;color:#64748b;font-size:11px;line-height:1.45}.fiscal-result-count{flex:none;padding:5px 9px;border:1px solid #dbeafe;border-radius:7px;background:#eff6ff;color:#1d4ed8;font-size:10px;font-weight:750}
+      .fiscal-search{display:flex;align-items:center;gap:8px;width:min(100%,340px);height:36px;padding:0 10px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;color:#64748b}.fiscal-input{width:100%;min-width:0;height:36px;min-height:36px;padding:0 10px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;color:#0f172a;font:500 12px Inter,Segoe UI,Arial,sans-serif;outline:none;box-sizing:border-box}.fiscal-search .fiscal-input{height:32px;min-height:32px;padding:0;border:0;background:transparent}.fiscal-input:focus{border-color:#2563eb;background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.12);outline:none}.fiscal-input::placeholder{color:#94a3b8}
+      .fiscal-table{width:100%;min-width:720px;border-collapse:separate;border-spacing:0;text-align:left;font-size:11px}.fiscal-table th{position:sticky;top:0;padding:9px 10px;border-bottom:1px solid #dfe7f1;background:#f1f5f9;color:#475569;font-size:9px;font-weight:800;letter-spacing:.045em;text-transform:uppercase;white-space:nowrap}.fiscal-table td{padding:9px 10px;border-bottom:1px solid #edf1f6;color:#334155;vertical-align:middle}.fiscal-table tbody tr:nth-child(even){background:#f8fafc}.fiscal-table tbody tr:hover,.fiscal-table tbody tr.selected{background:#eff6ff}.fiscal-table .numeric{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.fiscal-table .center{text-align:center}.fiscal-table .link-value{color:#1d4ed8;font-weight:800}.fiscal-status{display:inline-flex;align-items:center;min-height:22px;padding:3px 7px;border:1px solid transparent;border-radius:6px;font-size:9px;font-weight:800;line-height:1.2;white-space:nowrap}.fiscal-status-success{border-color:#bbf7d0;background:#dcfce7;color:#166534}.fiscal-status-pending{border-color:#fde68a;background:#fef3c7;color:#92400e}.fiscal-status-danger{border-color:#fecaca;background:#fee2e2;color:#b91c1c}.fiscal-status-neutral{border-color:#cbd5e1;background:#f1f5f9;color:#475569}
+      .fiscal-pagination{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:10px 2px 0;border-top:1px solid #e2e8f0;color:#64748b;font-size:10px}.fiscal-pagination>div{display:flex;align-items:center;gap:7px}.fiscal-empty{margin:10px 0 0;padding:20px;border:1px dashed #cbd5e1;border-radius:9px;background:#f8fafc;color:#64748b;font-size:11px;text-align:center}.fiscal-item-list{display:grid;gap:9px}.fiscal-item-card{padding:12px;border:1px solid #dfe7f1;border-radius:10px;background:#f8fafc}.fiscal-item-card>strong,.fiscal-item-card>span{display:block}.fiscal-item-card>strong{color:#173452;font-size:12px;font-weight:750;line-height:1.4;overflow-wrap:anywhere}.fiscal-item-card>span{margin-top:4px;color:#64748b;font-size:10px}.fiscal-release-form{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:9px;margin-top:10px}.fiscal-release-form label{display:grid;gap:4px;color:#475569;font-size:10px;font-weight:750}.fiscal-release-form .fiscal-button{min-width:108px}
+      .fiscal-report-tabs{display:flex;flex-wrap:wrap;gap:6px;padding:7px;border:1px solid #dfe7f1;border-radius:10px;background:#fff}.fiscal-report-tab{height:36px;min-height:36px;padding:0 14px;border:1px solid #dfe7f1;border-radius:8px;background:#fff;color:#52677f;font-size:11px;font-weight:750;cursor:pointer}.fiscal-report-tab.active{border-color:#0b2545;background:#0b2545;color:#fff}.fiscal-workspace :focus-visible{outline:3px solid rgba(34,184,207,.65);outline-offset:2px}
+      @media(max-width:1000px){.fiscal-release-grid{grid-template-columns:minmax(0,1fr)}.fiscal-items-panel{grid-row:2}.fiscal-hero-icon{margin-right:4px}}
+      @media(max-width:680px){.fiscal-workspace{padding:10px 10px 24px}.fiscal-hero{min-height:0;padding:17px;border-radius:13px}.fiscal-hero h1{font-size:21px}.fiscal-hero-icon{width:30px;height:30px}.fiscal-actionbar{padding:7px}.fiscal-actionbar .fiscal-button{flex:1}.fiscal-tabs{margin:10px -1px;padding:5px}.fiscal-tab{height:34px;min-height:34px;padding:0 9px;font-size:10px}.fiscal-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.fiscal-stat-card{min-height:76px;padding:11px}.fiscal-stat-card strong{font-size:19px}.fiscal-panel{padding:11px}.fiscal-panel-heading{align-items:flex-start;flex-direction:column}.fiscal-search{width:100%}.fiscal-release-form{grid-template-columns:minmax(0,1fr) auto}.fiscal-release-form .fiscal-button{min-width:92px;padding:0 9px}.fiscal-pagination{align-items:flex-start;flex-direction:column}}
+    `}</style>
     </main>
     </div>
   )
@@ -442,9 +468,9 @@ function FiscalPagination({
     <nav aria-label={`Paginação: ${label}`} className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-3 text-sm">
       <span aria-live="polite">Exibindo {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} de {total}</span>
       <div className="flex gap-2">
-        <button type="button" className="h-[30px] min-h-[30px] rounded-[2px] border px-3 py-2 disabled:opacity-50" disabled={page === 1} onClick={() => onChange(Math.max(1, page - 1))}>Anterior</button>
+        <button type="button" className="fiscal-button fiscal-button-secondary fiscal-button-small" disabled={page === 1} onClick={() => onChange(Math.max(1, page - 1))}>Anterior</button>
         <span className="self-center">Página {page} de {pageCount}</span>
-        <button type="button" className="h-[30px] min-h-[30px] rounded-[2px] border px-3 py-2 disabled:opacity-50" disabled={page === pageCount} onClick={() => onChange(Math.min(pageCount, page + 1))}>Próxima</button>
+        <button type="button" className="fiscal-button fiscal-button-secondary fiscal-button-small" disabled={page === pageCount} onClick={() => onChange(Math.min(pageCount, page + 1))}>Próxima</button>
       </div>
     </nav>
   )

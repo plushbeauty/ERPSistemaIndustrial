@@ -339,3 +339,13 @@ Esta rodada ampliou a leitura dos componentes de Fornecedores, Clientes, Compras
 ## Próxima etapa da auditoria
 
 Continuar o inventário por módulo — Cadastros, Compras, Vendas, Financeiro, PCP, Qualidade/SGQ, Estoque, Fiscal, RH, Engenharia, Manutenção, Logística e Administração — registrando cada rota, componente, hash, estado visual e pendência. Só marcar **VERIFICADA VISUALMENTE** depois de comparar a tela renderizada com a referência aprovada.
+
+## Atualização incremental — Central Fiscal (26/10/2026)
+
+Foi padronizada a página central `src/pages/Fiscal.tsx`, mantendo os fluxos e chamadas de dados existentes. O arquivo passou a usar cabeçalho premium azul-marinho, barra de ações fora do cabeçalho, abas compactas, KPIs, painéis brancos, tabelas densas, badges semânticos de status, controles de 36 px e regras responsivas. Esta atualização cobre as abas Liberação para NF, Notas Fiscais, Contas a Receber, Contas a Pagar e Relatórios.
+
+| Arquivo | Hash após atualização | Estado | Validação |
+|---|---|---|---|
+| `src/pages/Fiscal.tsx` | `5bfb852f2270b42d72f18cf100b09d530557776b` | ATUALIZADO — validação estática aprovada; inspeção visual autenticada pendente | TypeScript global, ESLint direcionado, auditoria de rotas (278), trava de páginas aprovadas, build Vite e verificações de auditoria passaram. A tela publicada requer sessão autenticada para homologação visual. |
+
+Esta entrega não fecha UI-070: páginas fiscais auxiliares e a homologação visual da tela central continuam pendentes. O inventário técnico gerado em `docs/erp-standardization/generated/ui-audit.json` é estático; heurísticas de altura não confirmam o tamanho real calculado no navegador.
