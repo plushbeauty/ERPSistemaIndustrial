@@ -97,6 +97,32 @@ Esta rodada ampliou a leitura dos componentes de Fornecedores, Clientes, Compras
 | `src/pages/ExpedicaoRoteirizacao.tsx` | `ab7c3b57c51ef7e9a82133deb183276de062438a` | POSSÍVEL MODELO ANTIGO | Vários padrões genéricos de card e ausência de sinais claros da paleta compacta. |
 | `src/pages/RecebimentoMateriais.tsx` | `5a995f5cdfa4eb2f30f86e7e1225a2f666df3945` | REVISÃO VISUAL PENDENTE | Paleta institucional aparece, mas controles compactos não foram detectados localmente. |
 
+
+## Quarta passada — Cadastros, operações e páginas de apoio (26/10/2026)
+
+| Arquivo | Hash verificado | Triagem estática | Observação |
+|---|---|---|---|
+| `src/pages/AcompanhamentoNaoConformidade.tsx` | `3071606fa1bf9f6bd746642c335ce25dd8c26b0c` | REVISÃO VISUAL PENDENTE | Não há sinais locais claros de paleta/controles compactos; conferir CSS global. |
+| `src/pages/AdminLogs.tsx` | `9019d5d5abb344e0a8062caeeb9af3441c0aff59` | PARCIAL — triagem | Paleta aparece, mas há card genérico e não há sinal local de controles compactos. |
+| `src/pages/AlmoxarifadoInventario.tsx` | `d1ade3f738404a16c1adae060f9ddf7d15c5659b` | ALERTA DE ESTILO MISTO | Paleta e controles compactos detectados, com um card genérico. |
+| `src/pages/AssistenteAjudaERP.tsx` | `ffd69d18ee85382b1599b61f984ebb0eeb0a8880` | ALERTA DE ESTILO MISTO | Paleta e controles compactos presentes; conferir card e layout. |
+| `src/pages/AtivarAcesso.tsx` | `c359688ab6850c005c099fb1993dbe3cfab2c918` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes para classificar. |
+| `src/pages/CadastroEmpresa.tsx` | `7e2098acee945c8f1d4b3f3287cb8251c850a0a0` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes para classificar. |
+| `src/pages/CatalogoDigital.tsx` | `fa55a62634dc8eb53dac27313fb9eda1244dfc25` | PARCIAL — triagem | Paleta detectada; validar densidade e componentes no navegador. |
+| `src/pages/CentraisIndustriais.tsx` | `680fd4504b68e0751214e95d2e9ac6c1d5cb373b` | PARCIAL — triagem | Paleta detectada; controles compactos não identificados localmente. |
+| `src/pages/CentralCustosIndustrial.tsx` | `e0f63d1104a4abdd05fe3fa0200abfbb101b69b0` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes; pode depender de CSS compartilhado. |
+| `src/pages/ComercialSuprimentos.tsx` | `b7fcaf06e06dd8b35192a1e8370f222f445ad8cb` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes para classificar. |
+| `src/pages/ConfiguracaoLote.tsx` | `67def645e3ddbb70a4705276851278ee74638532` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes para classificar. |
+| `src/pages/ConfiguracaoLotePCP.tsx` | `ff13af0fe8062569212d35cf7554da0094ae6175` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes para classificar. |
+| `src/pages/Configuracoes.tsx` | `b51f633609940d5b420ebfd83a966919c49a1ca8` | PARCIAL — triagem | Controles compactos detectados; confirmar paleta e shell global. |
+| `src/pages/DocumentosQualidadeControle.tsx` | `3f07ea1f6ffd9282178fb537c0cfd868f645b85a` | ALIAS / ARQUIVO MÍNIMO | Arquivo com 144 bytes; conferir o componente de destino. |
+| `src/pages/FichaEngenharia.tsx` | `71fe3693f50a825be2f84e9e7628201a5c9336a5` | PARCIAL — triagem | Paleta institucional detectada; controles compactos não detectados localmente. |
+| `src/pages/FichasProcesso.tsx` | `c51e911df3263f4395be96d59e5bdf410a8942d1` | PADRÃO NOVO — triagem | Paleta institucional e muitos controles compactos detectados. |
+| `src/pages/IndustrialDashboardPremium.tsx` | `3f8e6dc6fae1e2345ab254a7c32ae78a16eef042` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes; conferir CSS/estrutura compartilhada. |
+| `src/pages/IndustrialDataWorkspace.tsx` | `52696452fdd8da965b2d6511790a988abe666d08` | PARCIAL — triagem | Controles compactos e sinal de paleta detectados. |
+| `src/pages/InjecaoIndustrial.tsx` | `f633fe34f6ba22da5d3d20b5f7a60cfb8fd3e7fe` | PADRÃO NOVO — triagem | Paleta institucional, controles compactos e layout compartilhado detectados. |
+| `src/pages/InteligenciaIndustrial.tsx` | `9cf300d56f7b11a855fa7f7741cd69fec792c04f` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes; verificar CSS global e tela renderizada. |
+
 ## Próxima etapa da auditoria
 
 Continuar o inventário por módulo — Cadastros, Compras, Vendas, Financeiro, PCP, Qualidade/SGQ, Estoque, Fiscal, RH, Engenharia, Manutenção, Logística e Administração — registrando cada rota, componente, hash, estado visual e pendência. Só marcar **VERIFICADA VISUALMENTE** depois de comparar a tela renderizada com a referência aprovada.
