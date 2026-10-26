@@ -227,6 +227,32 @@ Esta rodada ampliou a leitura dos componentes de Fornecedores, Clientes, Compras
 | `src/pages/cadastro-produtos/ModuloCadastroProdutos.tsx` | `d1eb3a9c2358edba1cfe6675c1c36aa5158a4802` | ALERTA DE ESTILO MISTO | Controles compactos com vários cards genéricos. |
 | `src/pages/cadastro-produtos/ParametrosCodigo.tsx` | `7e3156bebbcd0612dbc87e6b0e78b5a215b0023e` | ALERTA DE ESTILO MISTO | Revisão registrada; controles compactos e cards genéricos coexistem. |
 
+
+## Nona passada — SGQ especializado, Logística e Manutenção (26/10/2026)
+
+| Arquivo | Hash verificado | Triagem estática | Observação |
+|---|---|---|---|
+| `src/pages/qualidade/CEP.tsx` | `0c2693581dfc0f46cd139121d68f5ee6d8cf673a` | PADRÃO NOVO — triagem | Controles compactos e paleta institucional presentes. |
+| `src/pages/qualidade/ControleDesenhos.tsx` | `db8c8f466b6424feb26fd0689cff24a7e0d8db5d` | ALERTA DE ESTILO MISTO | Controles compactos e paleta, com um card genérico. |
+| `src/pages/qualidade/FichasProcesso.tsx` | `b559b83f4afca92e3aba60e5fa7500d080e08316` | ALERTA DE ESTILO MISTO | Controles compactos e paleta, mas há vários cards genéricos. |
+| `src/pages/qualidade/FMEA.tsx` | `eddbd80e85d44e44f821b88818145f8ddc3b091d` | PADRÃO NOVO — triagem | Controles compactos e sinais da paleta presentes. |
+| `src/pages/qualidade/GEDDocumentos.tsx` | `f711a0511e54ff5695f9470d826caff61a20f802` | PADRÃO NOVO — triagem | Muitos controles compactos e paleta institucional. |
+| `src/pages/qualidade/QualidadeAssinaturaIT.tsx` | `5e4b02b257f5a7309da2d5dcd9c2a03636eaccac` | POSSÍVEL MODELO ANTIGO | Cards genéricos e sem sinais locais de paleta/controles compactos. |
+| `src/pages/qualidade/QualidadeEditorIT.tsx` | `81dbc59bf6370176e60e92068a9d76d1efc32d6b` | ALERTA DE ESTILO MISTO | Poucos controles compactos, um card genérico e sem paleta local clara. |
+| `src/pages/qualidade/QualidadeGenealogiaLote.tsx` | `f6eab2bc49332893babe296359e95dfa090c8ba6` | PADRÃO NOVO — triagem | Revisão registrada, controles compactos e paleta presentes. |
+| `src/pages/qualidade/QualidadeLiberacaoLotes.tsx` | `9b36c7cc6135e9187c4bcdb81fa9aa0c8cea7efd` | PADRÃO NOVO — triagem | Revisão registrada, controles compactos e paleta presentes. |
+| `src/pages/qualidade/QualidadeProcedimentos.tsx` | `ed6eb0e45671538a3786e8e535261c4fa42ae6d1` | PARCIAL — triagem | Sinais limitados de paleta/controles; revisar no navegador. |
+| `src/pages/qualidade/QualidadeQuarentena.tsx` | `7a1a848efd79e8a8394a676177294f78d9e4f5f1` | ALERTA DE ESTILO MISTO | Revisão registrada, muitos controles compactos, mas um card genérico. |
+| `src/pages/qualidade/QualidadeRPNCCompleta.tsx` | `9ba451761e21327945b47503758e7735461e40b9` | PARCIAL — triagem | Paleta detectada, sem controles compactos locais. |
+| `src/pages/qualidade/sala-rnc.tsx` | `236ea137597805e71bfa3972ff0da568a8141d8b` | PADRÃO NOVO — triagem | Muitos controles compactos, paleta institucional e layout compartilhado. |
+| `src/pages/logistica/ExpedicaoNFe.tsx` | `6aef5cdf6b74631b261903cb72811ca35ae3f905` | ALERTA DE ESTILO MISTO | Controles compactos/paleta com um card genérico. |
+| `src/pages/logistica/ImpressaoEtiquetas.tsx` | `3a9bed0ea2914a2b3e6a2b378152b31d8c351fbd` | ALERTA DE ESTILO MISTO | Controles compactos/paleta com um card genérico. |
+| `src/pages/logistica/RomaneioCarga.tsx` | `25ca0b064985f849bd688352c61b3a22183ab884` | ALERTA DE ESTILO MISTO | Controles compactos/paleta com um card genérico. |
+| `src/pages/manutencao/ManutencaoIndicadores.tsx` | `1e78e765d92634bd6a3f630d87840de34aa0589d` | REVISÃO VISUAL PENDENTE | Poucos sinais de paleta e nenhum de controles compactos localmente. |
+| `src/pages/manutencao/ManutencaoOrdens.tsx` | `3ad5fab6c974b8b7c59f5065df2a8cdf79af3666` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes para confirmar o padrão novo. |
+| `src/pages/manutencao/ManutencaoPreventivas.tsx` | `1f88aee988e7fdda4f3631b21e7f4415b77a0e82` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes para confirmar o padrão novo. |
+| `src/pages/pcp/ControleProcessoInjetora.tsx` | `c61502c0e95d3f2df1a7fc11829c5021db124b8b` | PADRÃO NOVO — triagem | Revisão registrada, controles compactos, paleta e layout compartilhado. |
+
 ## Próxima etapa da auditoria
 
 Continuar o inventário por módulo — Cadastros, Compras, Vendas, Financeiro, PCP, Qualidade/SGQ, Estoque, Fiscal, RH, Engenharia, Manutenção, Logística e Administração — registrando cada rota, componente, hash, estado visual e pendência. Só marcar **VERIFICADA VISUALMENTE** depois de comparar a tela renderizada com a referência aprovada.
