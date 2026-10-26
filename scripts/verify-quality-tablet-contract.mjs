@@ -8,7 +8,7 @@ const checks = [
   [!shell.includes("import TabletMenuModal from '../TabletMenuModal'"), 'O shell não deve importar o modal legado de Qualidade Tablet.'],
   [!shell.includes('qualityTablet') && !shell.includes('Qualidade Tablet'), 'O menu global não deve oferecer o módulo Qualidade Tablet.'],
   [routes.includes('path="/qualidade/tablet" element={<Navigate to="/qualidade/inspecoes" replace />} />'), 'A rota legada do tablet deve abrir diretamente Inspeções no menu SGQ.'],
-  [routes.includes('path="/qualidade/paquimetro-digital" element={<QualityPlanGate><QualidadeInstrumentosCadastro /></QualityPlanGate>} />'), 'A rota do Paquímetro Digital deve estar registrada.'],
+  [routes.includes('path="/qualidade/paquimetro-digital" element={<QualityPlanGate><QualidadePaquimetroDigital /></QualityPlanGate>} />'), 'A rota do Paquímetro Digital deve estar registrada.'],
   [routes.includes('path="/qualidade" element={<Navigate to="/qualidade/inspecoes" replace />} />'), 'A rota /qualidade não deve voltar ao painel antigo.'],
   [shell.includes("label: 'Paquímetro Digital / Metrologia', route: '/qualidade/paquimetro-digital', icon: Ruler"), 'O menu global deve exibir o ícone de Paquímetro Digital.'],
 ]
