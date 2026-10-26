@@ -96,7 +96,7 @@ export default function EstoqueAjustes() {
         p_localizacao_destino_id: null,
       })
       if (result.error) throw result.error
-      setLastAdjustment({ codigo: `AJ-${new Date().toISOString().replace(/[-:TZ.]/g, '').slice(0, 14)}`, produto: `${selected.codigo} — ${selected.nome}`, lote: lot.trim(), localizacao: location.trim() || 'Não informada', quantidade: quantity, unidade: selected.unidade || 'un', motivo: motivo.trim(), saldoAnterior: balance, saldoEstimado: newBalance, data: new Date().toLocaleString('pt-BR') })
+      setLastAdjustment({ codigo: `AJ-${Date.now()}`, produto: `${selected.codigo} — ${selected.nome}`, lote: lot.trim(), localizacao: location.trim() || 'Não informada', quantidade: quantity, unidade: selected.unidade || 'un', motivo: motivo.trim(), saldoAnterior: balance, saldoEstimado: newBalance, data: new Date().toLocaleString('pt-BR') })
       setMessage('Ajuste de avaria registrado no razão de estoque.')
       setPerda('')
       setLot('')
