@@ -13,7 +13,7 @@ type HistoryLog = {
 }
 
 type Props = {
-  instrumentOptions?: Array<{ codigo: string; descricao: string; status: string }>
+  instrumentOptions?: Array<{ codigo: string; descricao: string; status: string; proxima_calibracao: string | null }>
 }
 
 const fieldClass = 'h-8 w-full rounded-sm border border-slate-700 bg-slate-950 px-2 text-xs font-mono text-slate-100 outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-500/30 disabled:opacity-60'
@@ -41,7 +41,8 @@ export default function DigitalCaliper({ instrumentOptions = [] }: Props) {
   const hasTargetSet = targetValue.trim() !== '' && tolerance.trim() !== '' && Number.isFinite(target) && target > 0 && Number.isFinite(tol) && tol >= 0
   const isOutOfTolerance = hasTargetSet && (currentMeasure < minAllowed || currentMeasure > maxAllowed)
   const selectedInstrument = instrumentOptions.find(item => item.codigo === instrumentTag)
-  const blockedInstrument = !!selectedInstrument && /BLOQUEADO|VENCIDO|INATIVO|REPROVADO/i.test(selectedInstrument.status)
+  const todayISO = new Date().toISOString().slice(0, 10)
+  const blockedInstrument = !!selectedInstrument && (/BLOQUEADO|VENCIDO|INATIVO|REPROVADO/i.test(selectedInstrument.status) || (!!selectedInstrument.proxima_calibracao && selectedInstrument.proxima_calibracao < todayISO))
 
   function toggleUnit() {
     if (isLocked) return
