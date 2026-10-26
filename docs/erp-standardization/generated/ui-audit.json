@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-10-26T17:52:37.678Z",
+  "generatedAt": "2026-10-26T17:56:46.633Z",
   "revision": "UI-AUDIT-R1",
   "mode": "static-analysis-only",
   "summary": {
     "sourceFilesScanned": 278,
     "routeDeclarationsDetected": 278,
     "filesUsingSharedFormTokens": 2,
-    "filesWithLocalStyleHints": 108,
+    "filesWithLocalStyleHints": 109,
     "filesWithControlsWithoutDetectedStaticHeight": 226
   },
   "routes": {
@@ -11323,13 +11323,13 @@
     },
     {
       "file": "src/pages/FiscalImpostos.tsx",
-      "lines": 247,
-      "controlsDetected": 7,
+      "lines": 250,
+      "controlsDetected": 8,
       "tags": {
         "input": 1,
         "select": 1,
         "textarea": 0,
-        "button": 5,
+        "button": 6,
         "forms": 0,
         "tables": 1,
         "grids": 2,
@@ -11338,22 +11338,30 @@
         "printHints": 0
       },
       "sharedFormTokensImported": false,
-      "localStyleHints": false,
+      "localStyleHints": true,
       "heightSummary": {
-        "not-detected-static": 7
+        "not-detected-static": 8
       },
       "controls": [
         {
           "tag": "input",
-          "line": 194,
+          "line": 196,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
           "classNameStaticDetected": false
+        },
+        {
+          "tag": "button",
+          "line": 201,
+          "heightClasses": [],
+          "widthClasses": [],
+          "maxLength": null,
+          "classNameStaticDetected": true
         },
         {
           "tag": "select",
-          "line": 204,
+          "line": 206,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11361,7 +11369,7 @@
         },
         {
           "tag": "button",
-          "line": 208,
+          "line": 210,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11369,7 +11377,7 @@
         },
         {
           "tag": "button",
-          "line": 212,
+          "line": 214,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11377,7 +11385,7 @@
         },
         {
           "tag": "button",
-          "line": 227,
+          "line": 229,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11385,7 +11393,7 @@
         },
         {
           "tag": "button",
-          "line": 238,
+          "line": 240,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11393,7 +11401,7 @@
         },
         {
           "tag": "button",
-          "line": 238,
+          "line": 240,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
