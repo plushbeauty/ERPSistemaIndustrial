@@ -54,6 +54,10 @@ const missing = [
 ]
 
 if (/<style\s*>/i.test(page)) missing.push('RFQ: estilo inline legado detectado')
+if (/<style\s*>/i.test(analysisPage)) missing.push('Análise de preços: estilo inline legado detectado')
+for (const marker of ['.synqra-analysis-page', '.synqra-analysis-table', '.synqra-analysis-action-primary', '.synqra-analysis-kpis']) {
+  if (!styles.includes(marker)) missing.push(`CSS análise de preços: seletor ausente — ${marker}`)
+}
 if (page.includes('compras-rfq-compact')) missing.push('RFQ: wrapper legado compras-rfq-compact detectado')
 if (
   !legacyPurchaseOrder.includes("export { default } from './ComprasPedidoCompra'") ||
