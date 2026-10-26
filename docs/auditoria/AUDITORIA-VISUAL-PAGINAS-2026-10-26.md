@@ -149,6 +149,32 @@ Esta rodada ampliou a leitura dos componentes de Fornecedores, Clientes, Compras
 | `src/pages/QualidadeGraficosRefugo.tsx` | `7f1ae068d960c00b4d1c228074606cc46216dac0` | PADRÃO NOVO — triagem | Controles compactos e paleta institucional presentes. |
 | `src/pages/QualidadeInspecaoProcesso.tsx` | `ee00a5324f152c17aebb435bb3552997d8c08cfa` | ALERTA DE ESTILO MISTO | Controles compactos, mas vários cards genéricos e sem paleta local clara. |
 
+
+## Sexta passada — SGQ, Vendas, Suprimentos e Administração (26/10/2026)
+
+| Arquivo | Hash verificado | Triagem estática | Observação |
+|---|---|---|---|
+| `src/pages/QualidadeRefugos.tsx` | `0dd79191b0265b839b22814ca6f3bed517a9042f` | PADRÃO NOVO — triagem | Controles compactos e paleta institucional presentes. |
+| `src/pages/QualidadeRelatoriosDocumentos.tsx` | `c251a84732da62dc22424af19a7f8b27a127f55e` | ALERTA DE ESTILO MISTO | Controles compactos coexistem com cards genéricos. |
+| `src/pages/QualidadeRPNCMultiorigem.tsx` | `b91ef1e0cca0d2989c65eddf8065189ecff25216` | PARCIAL — triagem | Paleta institucional presente; confirmar densidade e controles. |
+| `src/pages/QualidadeSGQAvancado.tsx` | `5e6f979eb3f76f32880077f77bff94b742d85022` | REVISÃO VISUAL PENDENTE | Sinais locais insuficientes para confirmar o padrão novo. |
+| `src/pages/RecebimentoNfe.tsx` | `04bc16d97f047d8ecfcda76f1581b8a0f3b3d09e` | ALIAS / ARQUIVO MÍNIMO | Arquivo com 603 bytes; conferir o componente de destino. |
+| `src/pages/SolicitacaoCompra.tsx` | `11a1cbf4cb23ca7d1ed65a98ae2d249d9b70b80f` | REVISÃO VISUAL PENDENTE | Usa layout compartilhado; comparar a tela real com a Central de Compras. |
+| `src/pages/TabelaPrecos.tsx` | `4d850167cb957770418797323e681e146264ed03` | PARCIAL — triagem | Poucos controles compactos e layout compartilhado. |
+| `src/pages/TabletDashboard.tsx` | `196341f90eab71387531b0ac873493092c464993` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes; verificar se é rota ativa ou legado. |
+| `src/pages/TabletHome.tsx` | `1f712dc4aee5edd1d4b281c9ba4804d92d81168b` | REVISÃO VISUAL PENDENTE | Poucos sinais locais de padrão compacto. |
+| `src/pages/UsuariosAdmin.tsx` | `09e06a6ce41d8d57f7e71fa928ab01b9bc534d0e` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes; verificar CSS e tela renderizada. |
+| `src/pages/VendasAnaliseCustos.tsx` | `5c28dfa8ec7920ad0c81fe9d51d76d74c3a86aa4` | PADRÃO NOVO — triagem | Muitos controles compactos e layout compartilhado. |
+| `src/pages/VendasCarteira.tsx` | `abf32dc7da0024e76efb41ac0eaa0b56839852f0` | REVISÃO VISUAL PENDENTE | Usa layout compartilhado, mas sem sinais locais claros de controles compactos. |
+| `src/pages/VendasCatalogoDigital.tsx` | `4c9bfcfbba6fed8baf4d1b0822ea48e5e6c05d47` | ALERTA DE ESTILO MISTO | Paleta e controles compactos, com um card genérico residual. |
+| `src/pages/VendasCatalogoDigitalGestao.tsx` | `635f0cf250c0c0c2f6d1b50b1c797da287350c7a` | ALERTA DE ESTILO MISTO | Alguns controles compactos e paleta, com card genérico. |
+| `src/pages/VendasConfiguracoes.tsx` | `d919807c544bd5c1e4cf0d7d500b4854d2c357a9` | REVISÃO VISUAL PENDENTE | Usa layout compartilhado; revisar a tela renderizada. |
+| `src/pages/VendasDashboardGraficos.tsx` | `25ccb3a03689ec4ce095c23bf42fba1c1011c8a4` | REVISÃO VISUAL PENDENTE | Usa layout compartilhado, sem sinais locais claros de controles compactos. |
+| `src/pages/VendasMetas.tsx` | `682b75e9d5b135e755deb85aa1d0075a41a3d68e` | REVISÃO VISUAL PENDENTE | Usa layout compartilhado; confirmar consistência visual. |
+| `src/pages/VendasPedidoStatus.tsx` | `bd2aff279ed1b9c00d518203e77642bb5138e4e1` | ALERTA DE ESTILO MISTO | Paleta parcial e cards genéricos; comparar com VendasCentral aprovada. |
+| `src/pages/VendasStatusPedidos.tsx` | `5ba4917be5ef9b93984091e5e5e6dadc9deeb17f` | PARCIAL — triagem | Alguns controles compactos, sem paleta local clara. |
+| `src/pages/VendasTablet.tsx` | `48cb6abe18cb88d04fb60fa5b1c49932e52b08da` | REVISÃO VISUAL PENDENTE | Usa layout compartilhado; confirmar se é a tela de tablet pretendida. |
+
 ## Próxima etapa da auditoria
 
 Continuar o inventário por módulo — Cadastros, Compras, Vendas, Financeiro, PCP, Qualidade/SGQ, Estoque, Fiscal, RH, Engenharia, Manutenção, Logística e Administração — registrando cada rota, componente, hash, estado visual e pendência. Só marcar **VERIFICADA VISUALMENTE** depois de comparar a tela renderizada com a referência aprovada.
