@@ -127,14 +127,6 @@ export default function ComprasCentral() {
     }
   }, [])
   useEffect(() => { void loadIndicators() }, [loadIndicators])
-  const flowStages: Array<{ step: string; label: string; value: number | null }> = [
-    { step: '1', label: 'Aprovação', value: indicators.approvals },
-    { step: '2', label: 'Aprovadas', value: indicators.approved },
-    { step: '3', label: 'Cotação', value: indicators.quotes },
-    { step: '4', label: 'Pedido', value: indicators.openOrders },
-    { step: '5', label: 'Recebido', value: indicators.received },
-  ]
-
   return (
     <main className="synqra-purchase-hub">
         <style>{`
@@ -204,9 +196,6 @@ export default function ComprasCentral() {
             <button type="button" className="sq-purchase-refresh" onClick={() => void loadIndicators()} disabled={loadingIndicators} aria-label="Atualizar indicadores"><RefreshCw size={15}/></button>
           </nav>
           {activeTab === 'Painel' ? <>
-            <section className="sq-purchase-flow" aria-label="Fluxo de compras">
-              {flowStages.map(({ step, label, value }) => <article key={step}><span>{step}</span><div><small>{label}</small><strong>{value === null ? '—' : value}</strong></div></article>)}
-            </section>
             <section className="sq-purchase-mrp" aria-labelledby="sq-purchase-mrp-title">
               <div className="sq-purchase-mrp-head">
                 <div><h2 id="sq-purchase-mrp-title">Alertas de material — MRP</h2><p>Saldo, reservas e necessidades da última execução MRP da empresa ativa. Os dados vêm do cálculo registrado no ERP.</p></div>
