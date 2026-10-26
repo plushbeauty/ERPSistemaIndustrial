@@ -201,6 +201,32 @@ Esta rodada ampliou a leitura dos componentes de Fornecedores, Clientes, Compras
 | `src/pages/FinanceiroDashboardCaixa.tsx` | `4f139da09789e0f3c8e669bd1bfbca9aa3e65659` | ALERTA DE ESTILO MISTO — protegido | Controles compactos/paleta coexistem com cards genéricos; hash congelado. Não modificar sem autorização explícita. |
 | `src/pages/FinancasContasPagar.tsx` | `6eecd65cc1451d39e6ae4829a6a1dcb1c85325e4` | ALIAS / ARQUIVO MÍNIMO | Arquivo com 228 bytes; conferir o componente efetivo que a rota renderiza. |
 
+
+## Oitava passada — Configurações e Cadastro Mestre de Produtos (26/10/2026)
+
+| Arquivo | Hash verificado | Triagem estática | Observação |
+|---|---|---|---|
+| `src/pages/configuracoes/Backups.tsx` | `0b59577287f4a88ded6b2b24086c46e73a0b27e3` | PADRÃO NOVO — triagem | Controles compactos e paleta presentes; revisar visualmente. |
+| `src/pages/configuracoes/CodificacaoAreas.tsx` | `a908efc70910e7522b2440dccd6962113054fbf8` | ALERTA DE ESTILO MISTO | Paleta presente, mas muitos cards genéricos e sem controles compactos claros. |
+| `src/pages/configuracoes/ConfiguracaoBackups.tsx` | `6075fdb63491c775ed1c2cf1c06c8d86baf40196` | PARCIAL — triagem | Alguns controles compactos e paleta institucional. |
+| `src/pages/configuracoes/ConfiguracaoCodificacaoAreas.tsx` | `c0d7d50f0b4579624ac038550120253560f1714b` | PADRÃO NOVO — triagem | Muitos sinais de paleta e controles compactos. |
+| `src/pages/configuracoes/ConfiguracaoIntegracoes.tsx` | `4731a855327edb59aa8ea5c7e7918b964065892f` | PADRÃO NOVO — triagem | Paleta e controles compactos detectados. |
+| `src/pages/configuracoes/ConfiguracaoLogs.tsx` | `96111bd03904e39999b24d91dcbd9ea7a294a4c9` | PADRÃO NOVO — triagem | Paleta e controles compactos detectados. |
+| `src/pages/configuracoes/ConfiguracaoPerfis.tsx` | `91670823d90bd67d991ce0a1c356d0e56044bb68` | PADRÃO NOVO — triagem | Paleta e controles compactos detectados. |
+| `src/pages/configuracoes/ConfiguracaoPermissoes.tsx` | `c3d7d83f2bc3bcda31bdae05fa3b623c40d8b299` | PARCIAL — triagem | Muitos controles compactos, mas paleta local limitada. |
+| `src/pages/configuracoes/ConfiguracaoSeguranca.tsx` | `542cf4418c7a16ff47bfb2319a1b92ea751ab3d5` | PADRÃO NOVO — triagem | Paleta e controles compactos detectados. |
+| `src/pages/configuracoes/ConfiguracaoSistema.tsx` | `28ebb3c86268f295f1033e359b22968fff7450f3` | PADRÃO NOVO — triagem | Paleta e controles compactos detectados. |
+| `src/pages/configuracoes/ConfiguracoesADM.tsx` | `2df9ab8933148407c2035b36d6ebe0a45624cc1b` | PARCIAL — triagem | Paleta presente, controles compactos não identificados. |
+| `src/pages/configuracoes/ConfiguracoesEngenhariaLayout.tsx` | `d991f9eb268ada891b206cc0fa44bac9dd8ff038` | ALERTA DE ESTILO MISTO | Controles compactos coexistem com cards genéricos. |
+| `src/pages/configuracoes/ControlePermissoes.tsx` | `f3a604df99187b596e7185eb2c41b20fe0280374` | PARCIAL — triagem | Sinais de paleta, controles compactos limitados. |
+| `src/pages/configuracoes/HelpBackups.tsx` | `72b6bb29e43092addbe97a597f8ccda77579df10` | PADRÃO NOVO — triagem | Revisão registrada, tokens compactos e paleta presentes. |
+| `src/pages/configuracoes/Logs.tsx` | `46dc8e832e312602885d3af2dafe6a4bccca13f9` | ALERTA DE ESTILO MISTO | Paleta e alguns controles compactos, com card genérico. |
+| `src/pages/configuracoes/Perfis.tsx` | `8a2978758292b4a14e59160ca227cbd030314347` | ALERTA DE ESTILO MISTO | Paleta e poucos controles compactos, com card genérico. |
+| `src/pages/cadastro-produtos/FormFichaTecnica.tsx` | `3ffd487c976dfc791d3740fe795110180eb8e669` | ALERTA DE ESTILO MISTO | Revisão registrada; controles compactos coexistem com cards genéricos. |
+| `src/pages/cadastro-produtos/ListagemProdutos.tsx` | `5ddc362e3ded80dd906f1fdd51766466848c8428` | ALERTA DE ESTILO MISTO | Revisão registrada; controles compactos e paleta com cards genéricos. |
+| `src/pages/cadastro-produtos/ModuloCadastroProdutos.tsx` | `d1eb3a9c2358edba1cfe6675c1c36aa5158a4802` | ALERTA DE ESTILO MISTO | Controles compactos com vários cards genéricos. |
+| `src/pages/cadastro-produtos/ParametrosCodigo.tsx` | `7e3156bebbcd0612dbc87e6b0e78b5a215b0023e` | ALERTA DE ESTILO MISTO | Revisão registrada; controles compactos e cards genéricos coexistem. |
+
 ## Próxima etapa da auditoria
 
 Continuar o inventário por módulo — Cadastros, Compras, Vendas, Financeiro, PCP, Qualidade/SGQ, Estoque, Fiscal, RH, Engenharia, Manutenção, Logística e Administração — registrando cada rota, componente, hash, estado visual e pendência. Só marcar **VERIFICADA VISUALMENTE** depois de comparar a tela renderizada com a referência aprovada.
