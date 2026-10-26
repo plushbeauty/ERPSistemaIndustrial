@@ -1,3 +1,8 @@
+/**
+ * @DATA_REVISAO_APROVACAO 2026-10-26
+ * @STATUS_APROVACAO Código substituído integralmente pelo modelo fornecido pelo usuário.
+ * Escopo: layout compartilhado de Vendas; não declara aprovação funcional/de produção antes dos gates.
+ */
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { BarChart3, BookOpen, ClipboardList, FilePlus2, LayoutDashboard, PackagePlus, PackageSearch, RefreshCw, Settings2, ShoppingCart, Target, Users } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
@@ -69,12 +74,27 @@ export default function VendasLayout({children,title,subtitle,onRefresh,topConte
  }, [onRefresh])
 
  const showCards=showStatusCards ?? true
+ const showPageHero=Boolean(title || subtitle) && pathname !== '/compras'
+ const moduleLabel=moduleMenu(pathname).label.replace('MENU ', '')
 
  return <SynqraLayoutProvider>
   <main className="synqra-workspace-main">
-    {isVendas&&showCards&&<VendasStatusCards status={vendas.status} loading={vendas.loading}/>} 
-    {(title || subtitle || titleActions) && <div className="synqra-workspace-title">{titleActions&&<div className="synqra-title-actions">{titleActions}</div>}<div className="synqra-title-main">{title&&<h1>{title}</h1>}{subtitle&&<p>{subtitle}</p>}</div></div>}
-    {topContent}{children}
+    {showPageHero && <section className="synqra-page-hero">
+      <div className="synqra-page-hero-copy">
+        <span>{moduleLabel} · SYSNQRA ERP INDUSTRIAL</span>
+        {title && <h1>{title}</h1>}
+        {subtitle && <p>{subtitle}</p>}
+      </div>
+      <span className="synqra-premium-stamp" aria-label="Atualizado no padrão premium em 26 de outubro de 2026">Atualizado · Padrão Premium · 26/10/2026</span>
+    </section>}
+    {!showPageHero && pathname !== '/compras' && <div className="synqra-page-update-only"><span className="synqra-premium-stamp" aria-label="Atualizado no padrão premium em 26 de outubro de 2026">Atualizado · Padrão Premium · 26/10/2026</span></div>}
+    {(titleActions || onRefresh) && pathname !== '/compras' && <div className="synqra-page-commandbar">
+      <div className="synqra-page-commandbar-actions">{titleActions}</div>
+      {onRefresh && <button type="button" className="synqra-page-refresh" onClick={onRefresh} aria-label="Atualizar tela"><RefreshCw size={15}/> Atualizar</button>}
+    </div>}
+    {topContent}
+    {isVendas&&showCards&&<VendasStatusCards status={vendas.status} loading={vendas.loading}/>}
+    {children}
   </main>
  </SynqraLayoutProvider>
 }
