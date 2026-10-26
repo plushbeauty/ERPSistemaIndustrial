@@ -7,7 +7,7 @@ const routes = read('../src/AppEntryV2.tsx')
 const checks = [
   [!shell.includes("import TabletMenuModal from '../TabletMenuModal'"), 'O shell não deve importar o modal legado de Qualidade Tablet.'],
   [!shell.includes('qualityTablet') && !shell.includes('Qualidade Tablet'), 'O menu não deve oferecer o módulo Qualidade Tablet.'],
-  [/path="\\/qualidade\\/tablet" element={<Navigate to="\\/qualidade" replace \/>}/.test(routes), 'A rota legada deve redirecionar para a Central de Qualidade.'],
+  [/path="\\/qualidade\\/tablet" element={<Navigate to="\\/qualidade\\/inspecoes" replace \/>}/.test(routes), 'A rota legada do tablet deve abrir diretamente Inspeções no menu SGQ.'],
 ]
 
 let failed = false
