@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-10-26T17:22:42.803Z",
+  "generatedAt": "2026-10-26T17:31:15.705Z",
   "revision": "UI-AUDIT-R1",
   "mode": "static-analysis-only",
   "summary": {
     "sourceFilesScanned": 278,
     "routeDeclarationsDetected": 278,
     "filesUsingSharedFormTokens": 2,
-    "filesWithLocalStyleHints": 102,
+    "filesWithLocalStyleHints": 103,
     "filesWithControlsWithoutDetectedStaticHeight": 226
   },
   "routes": {
@@ -10563,7 +10563,7 @@
     },
     {
       "file": "src/pages/FinanceiroCustoPadrao.tsx",
-      "lines": 22,
+      "lines": 82,
       "controlsDetected": 5,
       "tags": {
         "input": 3,
@@ -10572,56 +10572,56 @@
         "button": 2,
         "forms": 0,
         "tables": 1,
-        "grids": 3,
-        "roundedClasses": 8,
+        "grids": 0,
+        "roundedClasses": 0,
         "lookupHints": 6,
         "printHints": 1
       },
       "sharedFormTokensImported": false,
-      "localStyleHints": false,
+      "localStyleHints": true,
       "heightSummary": {
         "not-detected-static": 5
       },
       "controls": [
         {
           "tag": "button",
-          "line": 20,
+          "line": 35,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
-          "classNameStaticDetected": false
+          "classNameStaticDetected": true
         },
         {
           "tag": "button",
-          "line": 20,
+          "line": 36,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
-          "classNameStaticDetected": false
+          "classNameStaticDetected": true
         },
         {
           "tag": "input",
-          "line": 20,
+          "line": 45,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
-          "classNameStaticDetected": false
+          "classNameStaticDetected": true
         },
         {
           "tag": "input",
-          "line": 20,
+          "line": 46,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
-          "classNameStaticDetected": false
+          "classNameStaticDetected": true
         },
         {
           "tag": "input",
-          "line": 20,
+          "line": 47,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
-          "classNameStaticDetected": false
+          "classNameStaticDetected": true
         }
       ]
     },
@@ -11059,7 +11059,7 @@
     },
     {
       "file": "src/pages/Fiscal.tsx",
-      "lines": 478,
+      "lines": 479,
       "controlsDetected": 13,
       "tags": {
         "input": 2,
@@ -11081,7 +11081,7 @@
       "controls": [
         {
           "tag": "button",
-          "line": 214,
+          "line": 215,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11089,7 +11089,7 @@
         },
         {
           "tag": "button",
-          "line": 217,
+          "line": 218,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11097,7 +11097,7 @@
         },
         {
           "tag": "button",
-          "line": 230,
+          "line": 231,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11105,7 +11105,7 @@
         },
         {
           "tag": "input",
-          "line": 266,
+          "line": 267,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11113,7 +11113,7 @@
         },
         {
           "tag": "button",
-          "line": 287,
+          "line": 288,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11121,7 +11121,7 @@
         },
         {
           "tag": "button",
-          "line": 300,
+          "line": 301,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11129,7 +11129,7 @@
         },
         {
           "tag": "button",
-          "line": 302,
+          "line": 303,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11137,7 +11137,7 @@
         },
         {
           "tag": "input",
-          "line": 319,
+          "line": 320,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11145,7 +11145,7 @@
         },
         {
           "tag": "button",
-          "line": 330,
+          "line": 331,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11153,7 +11153,7 @@
         },
         {
           "tag": "button",
-          "line": 364,
+          "line": 365,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11161,7 +11161,7 @@
         },
         {
           "tag": "button",
-          "line": 409,
+          "line": 410,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11169,7 +11169,7 @@
         },
         {
           "tag": "button",
-          "line": 471,
+          "line": 472,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11177,7 +11177,7 @@
         },
         {
           "tag": "button",
-          "line": 473,
+          "line": 474,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,

@@ -5,11 +5,14 @@ import { readFileSync } from 'node:fs'
  * Approved UI lock — reviewed 2026-10-19, approval revision APROV-008 (compact edit sizing and removal of duplicated zone controls explicitly authorized by user). Explicitly authorized revisions APROV-005 (Novo Pedido), APROV-006 (Vendas / Status), and APROV-011 (single top Windows 11 navigation with visible Menu control) are frozen alongside the restored screens.
  * Explicit user authorization on 2026-10-23 permits PCPFichasProcesso.tsx REV-FICHA-010: standardize the SGQ/IT-PCP-001 header and light document cards, and highlight the Nova Ficha action with a violet icon/button. Other frozen files remain unchanged.
  * Do not update these hashes as part of ordinary styling/refactor work. On 2026-10-26 the user explicitly authorized a shared master cadastro for Products, Customers and Suppliers, including new premium alignment and redirecting legacy entry points; the revised screens are frozen below.
+ * Explicit user authorization on 2026-10-26 permits premium visual revisions and freezing each completed screen. Fiscal central and standard-cost pricing were revised and frozen in this batch; preserve their business logic and visual layout unless the user authorizes another revision.
  */
 const approved = [
   { path: 'src/pages/CalibracaoIndustrial.tsx', sha: '848b72d7c4c7db5c52de3db18c73a22f94a7af54', label: 'Qualidade / Calibração com Paquímetro Digital', source: 'revisão explicitamente autorizada em 2026-10-26; cadastro, histórico e paquímetro na mesma tela' },
   { path: 'src/pages/FinanceiroDashboardCaixa.tsx', sha: '4f139da09789e0f3c8e669bd1bfbca9aa3e65659', label: 'Financeiro / Fluxo de Caixa e Caixa', source: 'tela única compartilhada pelas rotas /financeiro/fluxo-caixa e /financeiro/caixa; preserva consulta de parcelas e baixas reais' },
   { path: 'src/pages/FinanceiroTitulos.tsx', sha: '2e9f2a554993145f2e00335ec509c50062beb33c', label: 'Financeiro / padrão visual de Contas a Receber', source: 'referência visual aprovada para o módulo financeiro em 2026-10-26' },
+  { path: 'src/pages/Fiscal.tsx', sha: '8c5198778cb3e4d1ba27ec8377c18b63a6948089', label: 'Fiscal / Central Fiscal Premium', source: 'revisão visual autorizada em 2026-10-26; cinco abas, ações separadas, tabelas compactas e regras fiscais preservadas' },
+  { path: 'src/pages/FinanceiroCustoPadrao.tsx', sha: '2ef871badab8dcb534f5c1f0bfa39f16dc2765a3', label: 'Financeiro / Custo Padrão e Formação de Preço', source: 'revisão visual autorizada em 2026-10-26; campos compactos, resumo de custos e BOM real preservada' },
   { path: 'src/pages/QualidadePaquimetroDigital.tsx', sha: '3c355adb13c288e66c54556fd9123700e6956097', label: 'Qualidade / Paquímetro Digital', source: 'revisão visual premium autorizada em 2026-10-26; mantém dados reais e integração ao histórico de inspeções' },
   { path: 'src/components/DigitalCaliper.tsx', sha: '2de2550896b0ccb33730432bc0457085f693b488', label: 'Qualidade / componente Paquímetro Digital', source: 'revisão visual premium autorizada em 2026-10-26; mantém validação de calibração e identifica a leitura simulada sem conexão física' },
   { path: 'src/pages/ComprasCentral.tsx', sha: '6d7947a4dcbe1b2f04f10e56a5165d031cedc4f3', label: 'Compras / Central aprovada', source: 'restaurada conforme referência APROV-COMPRAS-2026-10-24-R1; congelar o visual original' },
@@ -31,11 +34,18 @@ const approved = [
 
 let failed = false
 for (const item of approved) {
-  // Hash through Git's clean filters so CRLF checkouts on Windows produce the
-  // same content ID as LF checkouts in CI/Linux.
-  const actual = execFileSync('git', ['hash-object', '--', item.path], { encoding: 'utf8' }).trim()
-  const ok = actual === item.sha
-  process.stdout.write(`${ok ? 'PASS' : 'FAIL'} — ${item.label} [${item.path}] — ${ok ? 'aprovado e congelado' : `hash divergente; esperado=${item.sha}; encontrado=${actual}`}\n`)
+  // Compare the committed Git blob and require a clean worktree for this path.
+  // Hashing the raw Windows working file can produce a false CRLF mismatch.
+  const actual = execFileSync('git', ['rev-parse', `HEAD:${item.path}`], { encoding: 'utf8' }).trim()
+  let worktreeClean = true
+  try {
+    execFileSync('git', ['diff', '--quiet', 'HEAD', '--', item.path], { stdio: 'ignore' })
+  } catch {
+    worktreeClean = false
+  }
+  const ok = worktreeClean && actual === item.sha
+  const reason = !worktreeClean ? 'arquivo modificado na árvore de trabalho' : `hash divergente; esperado=${item.sha}; encontrado=${actual}`
+  process.stdout.write(`${ok ? 'PASS' : 'FAIL'} — ${item.label} [${item.path}] — ${ok ? 'aprovado e congelado' : reason}\n`)
   if (!ok) failed = true
 }
 

@@ -11,6 +11,7 @@
  * =========================================================================
  */
 
+// Atualizado · Padrão Premium · 26/10/2026 — Central Fiscal em cinco abas.
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, CheckCircle2, FileCheck2, FileText, Landmark, RefreshCw, Receipt, Search, ShieldCheck, Send } from 'lucide-react'
 import { supabase, invokeSecureEdgeFunction } from '../lib/supabaseClient'

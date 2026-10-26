@@ -346,6 +346,7 @@ Foi padronizada a página central `src/pages/Fiscal.tsx`, mantendo os fluxos e c
 
 | Arquivo | Hash após atualização | Estado | Validação |
 |---|---|---|---|
-| `src/pages/Fiscal.tsx` | `5bfb852f2270b42d72f18cf100b09d530557776b` | ATUALIZADO — validação estática aprovada; inspeção visual autenticada pendente | TypeScript global, ESLint direcionado, auditoria de rotas (278), trava de páginas aprovadas, build Vite e verificações de auditoria passaram. A tela publicada requer sessão autenticada para homologação visual. |
+| `src/pages/Fiscal.tsx` | `8c5198778cb3e4d1ba27ec8377c18b63a6948089` | ATUALIZADO E CONGELADO — validação estática aprovada; inspeção visual autenticada pendente | TypeScript global, ESLint direcionado, auditoria de rotas (278), trava de páginas aprovadas, build Vite e verificações de auditoria passaram. A tela publicada requer sessão autenticada para homologação visual. |
+| `src/pages/FinanceiroCustoPadrao.tsx` | `2ef871badab8dcb534f5c1f0bfa39f16dc2765a3` | ATUALIZADO E CONGELADO — validação estática aprovada; inspeção visual pendente | Formulário com controles de 36 px em grade compacta, indicadores de custos, tabela densa da BOM e ações separadas. TypeScript global, ESLint direcionado, `git diff --check` e build Vite passaram. |
 
 Esta entrega não fecha UI-070: páginas fiscais auxiliares e a homologação visual da tela central continuam pendentes. O inventário técnico gerado em `docs/erp-standardization/generated/ui-audit.json` é estático; heurísticas de altura não confirmam o tamanho real calculado no navegador.
