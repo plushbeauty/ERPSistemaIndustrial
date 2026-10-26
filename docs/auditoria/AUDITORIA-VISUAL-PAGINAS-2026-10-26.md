@@ -123,6 +123,32 @@ Esta rodada ampliou a leitura dos componentes de Fornecedores, Clientes, Compras
 | `src/pages/InjecaoIndustrial.tsx` | `f633fe34f6ba22da5d3d20b5f7a60cfb8fd3e7fe` | PADRÃO NOVO — triagem | Paleta institucional, controles compactos e layout compartilhado detectados. |
 | `src/pages/InteligenciaIndustrial.tsx` | `9cf300d56f7b11a855fa7f7741cd69fec792c04f` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes; verificar CSS global e tela renderizada. |
 
+
+## Quinta passada — PCP e Qualidade/SGQ (26/10/2026)
+
+| Arquivo | Hash verificado | Triagem estática | Observação |
+|---|---|---|---|
+| `src/pages/PCPAcabamento.tsx` | `5c1bf3938ffa247e975cabd777ef5c422e611b16` | REVISÃO VISUAL PENDENTE | Um padrão genérico de card e nenhum sinal local claro de controles compactos. |
+| `src/pages/PCPAgendaMaquinas.tsx` | `0b52989e6cd2bc3cc85a64c5a52380f1e34887d1` | PADRÃO NOVO — triagem | Muitos controles compactos e sinal da paleta institucional. |
+| `src/pages/PCPAprovacaoSetup.tsx` | `3ba6557efc023b0d92f7b999453c276b604df471` | POSSÍVEL MODELO ANTIGO | Vários cards genéricos sem sinais locais de paleta/controles compactos. |
+| `src/pages/PCPAreaFuncionario.tsx` | `5c3f1723bd306c54a42aea5839787ee46067a75b` | PADRÃO NOVO — triagem | Muitos controles compactos e tokens institucionais. |
+| `src/pages/PCPCapacidade.tsx` | `7dc46177ebe93d550f5b9f21288feac76cb77c75` | ALERTA DE ESTILO MISTO | Tokens institucionais e controles compactos coexistem com cards genéricos. |
+| `src/pages/PCPDashboardOEE.tsx` | `1da281205afb6128f2995d1dcefd5d576da154d1` | POSSÍVEL MODELO ANTIGO | Cards genéricos e nenhum sinal local claro do padrão compacto. |
+| `src/pages/PCPDemanda.tsx` | `f8e336429be88de84b56a23c7760a5ae8727d178` | POSSÍVEL MODELO ANTIGO | Cards genéricos sem sinais locais de paleta/controles compactos. |
+| `src/pages/PCPExecucaoIndustrial.tsx` | `84a6f594801998b999078bbde7daeecfaa418770` | PADRÃO NOVO — triagem | Controles compactos e sinais institucionais presentes. |
+| `src/pages/PCPFichaProcessoTeste.tsx` | `fd501a9f654257f67dbbc7c0263b22e3f99f19d0` | ALERTA DE ESTILO MISTO | Controles compactos e paleta presentes, mas vários cards genéricos. |
+| `src/pages/PCPParadas.tsx` | `ecedbfe0cb4992c275cc61064b26478af3c06f02` | PARCIAL — triagem | Paleta institucional presente; controles compactos não detectados localmente. |
+| `src/pages/PCPParadasMaquina.tsx` | `c650ddf704ecd169e455ce54d8236d358fd1074d` | PADRÃO NOVO — triagem | Controles compactos e paleta institucional presentes. |
+| `src/pages/PCPPedidosPendentes.tsx` | `e4fcbfbbdbb6e2c932f9d0448ec42e819a03e1a7` | ALERTA DE ESTILO MISTO | Controles compactos e paleta presentes; ainda há um card genérico. |
+| `src/pages/PCPSequenciamento.tsx` | `93f4944f1c86e47e25cf4c786e5376f3029d07f3` | PARCIAL — triagem | Poucos sinais locais; validar estilos globais e densidade. |
+| `src/pages/PCPTabletOperador.tsx` | `e7c407a6a21df06081f374b06805c39d69086597` | APROVADA / CONGELADA — confirmar publicação | Arquivo congelado; classes genéricas são presentes, portanto conferir que o deploy usa o código aprovado antes de qualquer alteração. |
+| `src/pages/PCPValidaFluxo.tsx` | `b7e83277b90795f9f7bbe3213b6629f6467bdc07` | PADRÃO NOVO — triagem | Controles compactos presentes; validar paleta e comportamento. |
+| `src/pages/QualidadeAuditoria5S.tsx` | `62cabb6cd507a97ce86d099a048bdea9373ad4ea` | ALERTA DE ESTILO MISTO | Controles compactos e paleta presentes com vários cards genéricos. |
+| `src/pages/QualidadeAuditoriasPlanta.tsx` | `fbfd9a994a7974f3deda1123894dbaa0ecb7700e` | PADRÃO NOVO — triagem | Controles compactos, paleta e layout compartilhado presentes. |
+| `src/pages/QualidadeEspecificacoesTecnicas.tsx` | `f35b450aaedea0b456d629e461cf156d94646258` | ALERTA DE ESTILO MISTO | Muitos controles compactos e alguns cards genéricos; conferir consistência. |
+| `src/pages/QualidadeGraficosRefugo.tsx` | `7f1ae068d960c00b4d1c228074606cc46216dac0` | PADRÃO NOVO — triagem | Controles compactos e paleta institucional presentes. |
+| `src/pages/QualidadeInspecaoProcesso.tsx` | `ee00a5324f152c17aebb435bb3552997d8c08cfa` | ALERTA DE ESTILO MISTO | Controles compactos, mas vários cards genéricos e sem paleta local clara. |
+
 ## Próxima etapa da auditoria
 
 Continuar o inventário por módulo — Cadastros, Compras, Vendas, Financeiro, PCP, Qualidade/SGQ, Estoque, Fiscal, RH, Engenharia, Manutenção, Logística e Administração — registrando cada rota, componente, hash, estado visual e pendência. Só marcar **VERIFICADA VISUALMENTE** depois de comparar a tela renderizada com a referência aprovada.
