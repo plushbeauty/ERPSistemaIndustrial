@@ -1,22 +1,23 @@
-import { createHash } from 'node:crypto'
+import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 
 /**
  * Approved UI lock — reviewed 2026-10-19, approval revision APROV-008 (compact edit sizing and removal of duplicated zone controls explicitly authorized by user). Explicitly authorized revisions APROV-005 (Novo Pedido), APROV-006 (Vendas / Status), and APROV-011 (single top Windows 11 navigation with visible Menu control) are frozen alongside the restored screens.
  * Explicit user authorization on 2026-10-23 permits PCPFichasProcesso.tsx REV-FICHA-010: standardize the SGQ/IT-PCP-001 header and light document cards, and highlight the Nova Ficha action with a violet icon/button. Other frozen files remain unchanged.
- * Do not update these hashes as part of ordinary styling/refactor work.
+ * Do not update these hashes as part of ordinary styling/refactor work. On 2026-10-26 the user explicitly authorized a shared master cadastro for Products, Customers and Suppliers, including new premium alignment and redirecting legacy entry points; the revised screens are frozen below.
  */
 const approved = [
   { path: 'src/pages/CalibracaoIndustrial.tsx', sha: '848b72d7c4c7db5c52de3db18c73a22f94a7af54', label: 'Qualidade / Calibração com Paquímetro Digital', source: 'revisão explicitamente autorizada em 2026-10-26; cadastro, histórico e paquímetro na mesma tela' },
-  { path: 'src/pages/FinanceiroDashboardCaixa.tsx', sha: '4f139da09789e0f3c8e669bd1bfbca9aa3e65659', label: 'Financeiro / Fluxo de Caixa e Caixa', source: 'tela única compartilhada pelas rotas /financeiro/fluxo-caixa e /financeiro/caixa; preserva consulta de parcelas e baixas reais' },
-  { path: 'src/pages/FinanceiroTitulos.tsx', sha: '2e9f2a554993145f2e00335ec509c50062beb33c', label: 'Financeiro / padrão visual de Contas a Receber', source: 'referência visual aprovada para o módulo financeiro em 2026-10-26' },
-  { path: 'src/pages/QualidadePaquimetroDigital.tsx', sha: '3c355adb13c288e66c54556fd9123700e6956097', label: 'Qualidade / Paquímetro Digital', source: 'revisão visual premium autorizada em 2026-10-26; mantém dados reais e integração ao histórico de inspeções' },
-  { path: 'src/components/DigitalCaliper.tsx', sha: '2de2550896b0ccb33730432bc0457085f693b488', label: 'Qualidade / componente Paquímetro Digital', source: 'revisão visual premium autorizada em 2026-10-26; mantém validação de calibração e identifica a leitura simulada sem conexão física' },
+  { path: 'src/pages/FinanceiroDashboardCaixa.tsx', sha: '5fbb93ac38a5fe2ba540a3547a85b52b5269a38b', label: 'Financeiro / Fluxo de Caixa e Caixa', source: 'revisão autorizada pelo usuário em 2026-10-26; tela única compartilhada pelas rotas /financeiro/fluxo-caixa e /financeiro/caixa, sem cards redundantes' },
+  { path: 'src/pages/FinanceiroTitulos.tsx', sha: 'd1e2a0eb6fe6612b29059ca5f8bb756c7e611461', label: 'Financeiro / padrão visual de Contas a Receber', source: 'revisão visual premium autorizada pelo usuário em 2026-10-26; abas na mesma tela e filtros unificados' },
+  { path: 'src/pages/QualidadePaquimetroDigital.tsx', sha: 'da5864aaccd8e5b04f608499ae7dfff9fb46d212', label: 'Qualidade / Paquímetro Digital', source: 'revisão premium autorizada pelo usuário em 2026-10-26; equipamento, calibração e registro de medição na mesma tela' },
+  { path: 'src/components/DigitalCaliper.tsx', sha: 'b72a37a3fb064bc46d825ee200a84d07d6fdc10b', label: 'Qualidade / componente Paquímetro Digital', source: 'revisão autorizada pelo usuário em 2026-10-26; mantém validação de calibração e identifica leitura simulada sem conexão física' },
   { path: 'src/pages/ComprasCentral.tsx', sha: '6d7947a4dcbe1b2f04f10e56a5165d031cedc4f3', label: 'Compras / Central aprovada', source: 'restaurada conforme referência APROV-COMPRAS-2026-10-24-R1; congelar o visual original' },
   { path: 'src/pages/ComprasAbaNativa.tsx', sha: 'adbf0e76c6c627a2c53fe82e7f7f8370d2265083', label: 'Compras / abas nativas', source: 'correção funcional não visual autorizada em 2026-10-26: estado do fornecedor vencedor e renderização tipada; preservar layout aprovado' },
-  { path: 'src/pages/VendasCentral.tsx', sha: '0129b7cd990ed03982803d473fcb917589969947', label: 'Vendas / Status do pedido', source: 'explicit user-authorized revision APROV-006 — consistent card alignment and visible color legend; frozen after this revision' },
+  { path: 'src/pages/VendasCentral.tsx', sha: '11b3525aafb6572b9559a3083bcf5dd6828b48ba', label: 'Vendas / Status do pedido', source: 'revisão visual autorizada pelo usuário em 2026-10-26 — status em colunas coloridas e indicadores separados; congelar após esta revisão' },
   { path: 'src/pages/NovoPedido.tsx', sha: '6d1368026d51f186baa297f71569a61a1f79e944', label: 'Vendas / Novo Pedido', source: 'explicit user-authorized revision APROV-005 — compact controls, 30px fields, 9px labels and compact buttons; frozen after this revision' },
-  { path: 'src/pages/ProdutosVendasIndustrial.tsx', sha: '95434d18498d1a0709c0ccfb1d7ba51949b71d1d', label: 'Cadastro Mestre de Produtos / padrão visual PCP compacto', source: 'revisão visual explicitamente autorizada pelo usuário em 2026-10-23 — campos alinhados à largura disponível dentro do grid responsivo de 12 colunas, sem cortes artificiais de largura; CRUD e regras de dados preservados; congelar após esta revisão' },
+  { path: 'src/pages/ProdutosVendasIndustrial.tsx', sha: '8869092853f36a3b3298ce349a793c6fff14e664', label: 'Cadastro Mestre de Produtos / padrão visual premium', source: 'revisão visual explicitamente autorizada pelo usuário em 2026-10-26 — página mestra com campos compactos alinhados, botões sem duplicidade e CRUD preservado' },
+  { path: 'src/pages/CadastroMestreIndustrial.tsx', sha: 'a8abd0e55f4c0396ee3a8a375792e12475a62265', label: 'Cadastro Mestre / abas de produtos, clientes e fornecedores', source: 'revisão explicitamente autorizada pelo usuário em 2026-10-26 — uma página, navegação por abas e redirecionamento dos caminhos legados' },
   { path: 'src/styles/industrial-login.css', sha: 'fcbea255f1a476c1e228c7490052a7cea0a507b0', label: 'Login institucional', source: 'explicit user-authorized revision APROV-005 — institutional copy white with black outline for contrast' },
   { path: 'src/pages/PCPTabletOperador.tsx', sha: 'e7c407a6a21df06081f374b06805c39d69086597', label: 'PCP / Tablet do operador', source: 'revisão explicitamente autorizada pelo usuário em 2026-10-21 — consolidar o código do tablet PCP enviado em 19–21/10; preservar e congelar esta versão' },
   { path: 'src/components/PCPTabletMenuModal.tsx', sha: '60bf035ae3bd3e89be45577ca62714058f56b1bc', label: 'PCP / Menu Tablet e Chão de Fábrica', source: 'revisão explicitamente autorizada pelo usuário em 2026-10-23 — incluir atalho Chão de Fábrica / Portal do Funcionário; preservar módulos anteriores' },
@@ -30,9 +31,9 @@ const approved = [
 
 let failed = false
 for (const item of approved) {
-  const content = readFileSync(item.path)
-  const header = Buffer.from(`blob ${content.byteLength}\0`, 'utf8')
-  const actual = createHash('sha1').update(header).update(content).digest('hex')
+  // Hash through Git's clean filters so CRLF checkouts on Windows produce the
+  // same content ID as LF checkouts in CI/Linux.
+  const actual = execFileSync('git', ['hash-object', '--', item.path], { encoding: 'utf8' }).trim()
   const ok = actual === item.sha
   process.stdout.write(`${ok ? 'PASS' : 'FAIL'} — ${item.label} [${item.path}] — ${ok ? 'aprovado e congelado' : `hash divergente; esperado=${item.sha}; encontrado=${actual}`}\n`)
   if (!ok) failed = true
@@ -44,6 +45,9 @@ const requiredRoutes = [
   ['Financeiro / Caixa usa o painel padronizado', '<Route path="/financeiro/caixa" element={<QualityPlanGate>{<FinanceiroDashboardCaixa />}</QualityPlanGate>} />'],
   ['Vendas / atalho de Fluxo de Caixa usa o painel padronizado', '<Route path="/vendas/fluxo-caixa" element={<QualityPlanGate>{<FinanceiroDashboardCaixa />}</QualityPlanGate>} />'],
   ['Qualidade / Calibração mantém a tela com Paquímetro Digital', '<Route path="/qualidade/calibracao" element={<QualityPlanGate><CalibracaoIndustrial /></QualityPlanGate>} />'],
+  ['Cadastro Mestre / tela única de produtos, clientes e fornecedores', '<Route path="/produtos-vendas" element={<CadastroMestreIndustrial />} />'],
+  ['Cadastro de clientes legado redireciona para a aba unificada', '<Route path="/cadastros/clientes" element={<Navigate to="/produtos-vendas?aba=clientes" replace />} />'],
+  ['Cadastro de fornecedores legado redireciona para a aba unificada', '<Route path="/cadastros/fornecedores" element={<Navigate to="/produtos-vendas?aba=fornecedores" replace />} />'],
 ]
 for (const [label, route] of requiredRoutes) {
   const ok = routeContent.includes(route)
