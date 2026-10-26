@@ -140,7 +140,7 @@ const VendasCatalogoDigitalGestao = lazyPage(() => import('./pages/VendasCatalog
 const VendasPDV = lazyPage(() => import('./pages/VendasPDV'), 'default')
 const VendasTablet = lazyPage(() => import('./pages/VendasTablet'), 'default')
 const ComprasRFQ = lazyPage(() => import('./pages/ComprasRFQ'), 'default')
-const ComprasIndustrial = lazyPage(() => import('./pages/ComprasIndustrial'), 'default')
+const ComprasCentral = lazyPage(() => import('./pages/ComprasCentral'), 'default')
 const ComprasRequisicoes = lazyPage(() => import('./pages/ComprasRequisicoes'), 'default')
 const FiscalCompras = lazyPage(() => import('./pages/FiscalCompras'), 'default')
 const ComprasRelatorios = lazyPage(() => import('./pages/ComprasRelatorios'), 'default')
@@ -653,7 +653,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/admin/logs" element={<AdminLogs />} />
       <Route path="/outlook/configuracao" element={<OutlookConfiguracao />} />
       <Route path="/outlook/caixa-entrada" element={<OutlookCaixaEntrada />} />
-      <Route path="/compras" element={<ComprasRoute><ComprasIndustrial /></ComprasRoute>} />
+      {/* APROV-COMPRAS-2026-10-24-R1 | DATA/HORA 2026-10-24 18:36:28 -03:00: Central aprovada do deploy EjPo9mBaQ; manter congelada. */}
+      <Route path="/compras" element={<ComprasRoute><ComprasCentral /></ComprasRoute>} />
       <Route path="/compras/requisicoes" element={<ComprasRoute><ComprasRequisicoes /></ComprasRoute>} />
       <Route path="/compras/recebimentos" element={<ComprasRoute><RecebimentoMateriais /></ComprasRoute>} />
       <Route path="/compras/recebimento" element={<Navigate to="/compras/recebimentos" replace />} />
