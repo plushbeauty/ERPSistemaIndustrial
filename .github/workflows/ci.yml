@@ -30,6 +30,9 @@ jobs:
       - name: Instalação determinística
         run: npm ci --legacy-peer-deps --no-audit --no-fund
 
+      - name: Testes do agente File Manager
+        run: npm run test:file-manager
+
       - name: Lockfile
         run: npm run verify:lockfile
 

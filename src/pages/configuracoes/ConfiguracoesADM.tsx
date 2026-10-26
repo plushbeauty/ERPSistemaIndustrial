@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   Activity, ArrowRight, BarChart3, Building2, DatabaseBackup,
-  FileClock, KeyRound, LayoutDashboard, LockKeyhole, Network, Search,
+  FileClock, HardDrive, KeyRound, LayoutDashboard, LockKeyhole, Network, Search,
   Settings, ShieldCheck, UsersRound,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -43,6 +43,7 @@ const groups: Group[] = [
   { label: 'PLATAFORMA', items: [
     { path: '/configuracoes-adm/integracoes', label: 'Integrações', description: 'Serviços conectados', icon: Network },
     { path: '/configuracoes-adm/sistema', label: 'Parâmetros do sistema', description: 'Preferências disponíveis', icon: Settings },
+    { path: '/configuracoes-adm/instalacao', label: 'Instalação do sistema', description: 'Configurar PC ou servidor de arquivos', icon: HardDrive },
   ] },
 ]
 const allItems = groups.flatMap(group => group.items)
@@ -132,6 +133,7 @@ function SectionContent({ item, navigate }: { item: Item; navigate: ReturnType<t
   if (item.path === '/configuracoes-adm/usuarios') return <UsuariosAdmin />
   if (item.path === '/configuracoes-adm/integracoes') return <ConfiguracaoIntegracoes />
   if (item.path === '/configuracoes-adm/sistema') return <ConfiguracaoSistema />
+  if (item.path === '/configuracoes-adm/instalacao') return <ConfiguracaoSistema initialShowInstaller />
   return <UnavailableSection item={item} />
 }
 
@@ -207,28 +209,29 @@ export default function ConfiguracoesADM() {
       @media(max-width:1100px){.adm-navigation{grid-template-columns:repeat(2,minmax(0,1fr))}.adm-scope{display:none}}
       @media(max-width:700px){.adm-topbar{flex-wrap:wrap}.adm-brand{min-width:0}.adm-brand strong{font-size:12px}.adm-search{width:min(300px,48vw)}.adm-navigation{grid-template-columns:1fr;padding:7px}.adm-main{padding:8px}.adm-page-heading{align-items:flex-start}.adm-back-button{font-size:8px}.adm-overview-grid{grid-template-columns:1fr}}
       @media(max-width:430px){.adm-brand span{font-size:8px}.adm-brand strong{font-size:11px}.adm-search{width:100%}.adm-page-heading h1{font-size:15px}}
-      /* Administration workspace refreshed to the shared industrial ERP standard. */
-      .adm-root{background:#f3f7fa;color:#123B50;font-size:12px}
-      .adm-topbar{min-height:62px;padding:10px clamp(14px,2vw,28px);gap:16px;border-color:#d8e4ea;box-shadow:0 2px 8px rgba(18,59,80,.04)}
-      .adm-brand{min-width:230px}.adm-brand span{font-size:9px;color:#2D8DB8}.adm-brand strong{font-size:16px;font-weight:850}
-      .adm-search{height:36px;width:min(420px,34vw);padding-inline:10px;border-radius:7px;background:#f8fbfc}.adm-search input{height:34px;font-size:12px}
-      .adm-scope{padding:8px 10px;border:1px solid #d8e4ea;border-radius:7px;background:#f8fbfc;font-size:9px}
-      .adm-navigation{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px clamp(14px,2vw,28px);background:transparent;border-bottom:0}
-      .adm-nav-group{padding:10px;border:1px solid #d8e4ea;border-radius:8px;box-shadow:0 3px 10px rgba(18,59,80,.04)}
-      .adm-group-title{margin-bottom:8px;font-size:9px;color:#526d79}
-      .adm-nav-items{gap:6px}.adm-nav-link{min-height:34px;gap:7px;padding:0 9px;border-color:#d8e4ea;border-radius:6px;font-size:10px;font-weight:750;transition:background .15s,border-color .15s}
-      .adm-nav-link.is-active{box-shadow:0 3px 8px rgba(18,59,80,.14)}
-      .adm-main{padding:12px clamp(14px,2vw,28px) 20px;max-width:1800px}
-      .adm-page-heading{margin-bottom:14px;padding:4px 0 13px;border-color:#d8e4ea}
-      .adm-page-heading h1{font-size:21px;font-weight:850}.adm-page-heading p{font-size:12px}
-      .adm-back-button{height:36px;padding:0 12px;border-radius:7px;font-size:10px;font-weight:850}
-      .adm-overview-grid{gap:10px}.adm-overview-item{min-height:76px;gap:10px;padding:11px;border-color:#d8e4ea;border-radius:8px;box-shadow:0 3px 10px rgba(18,59,80,.04);transition:transform .15s,border-color .15s,box-shadow .15s}
-      .adm-overview-item:hover{transform:translateY(-1px);box-shadow:0 7px 16px rgba(18,59,80,.08)}.adm-overview-icon{width:34px;height:34px;border-radius:7px}
-      .adm-overview-copy strong{font-size:11px}.adm-overview-copy small{font-size:10px;line-height:1.4}
-      .adm-root input:not([type=checkbox]):not([type=radio]):not([type=file]),.adm-root select{border-radius:6px}
-      .adm-root table{font-size:11px}.adm-root thead th{font-size:10px}
+      /* Revisão visual: 26/10/2026 — padrão premium industrial compacto, sem duplicação de barras. */
+      .adm-root{background:#F5F7FB;color:#334155;font-size:12px}
+      .adm-topbar{min-height:56px;padding:8px clamp(12px,1.5vw,22px);gap:12px;background:#fff;border-color:#D8E4EA;box-shadow:none}
+      .adm-brand{min-width:200px}.adm-brand span{font-size:9px;color:#1D5FD1}.adm-brand strong{font-size:14px;font-weight:800}
+      .adm-search{height:36px;width:min(380px,34vw);padding-inline:9px;border-radius:2px;background:#F8FAFC}.adm-search input{height:34px;font-size:11px}
+      .adm-scope{padding:7px 9px;border:1px solid #D8E4EA;border-radius:2px;background:#F8FAFC;font-size:9px}
+      .adm-navigation{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:8px clamp(12px,1.5vw,22px);background:#F5F7FB;border-bottom:1px solid #D8E4EA}
+      .adm-nav-group{padding:8px;border:1px solid #D8E4EA;border-radius:2px;box-shadow:none}
+      .adm-group-title{margin-bottom:6px;font-size:9px;color:#526D79}
+      .adm-nav-items{gap:5px}.adm-nav-link{min-height:32px;gap:6px;padding:0 8px;border-color:#D8E4EA;border-radius:2px;font-size:10px;font-weight:750;transition:background .15s,border-color .15s}
+      .adm-nav-link.is-active{background:#0B2545;border-color:#0B2545;box-shadow:none}
+      .adm-main{padding:10px clamp(12px,1.5vw,22px) 16px;max-width:1800px}
+      .adm-page-heading{margin-bottom:10px;padding:3px 0 10px;border-color:#D8E4EA}
+      .adm-page-heading h1{font-size:19px;font-weight:800;color:#0B2545}.adm-page-heading p{font-size:11px}
+      .adm-back-button{height:36px;padding:0 10px;border-radius:2px;font-size:10px;font-weight:800}
+      .adm-overview-grid{gap:8px}.adm-overview-item{min-height:60px;gap:8px;padding:8px;border-color:#D8E4EA;border-radius:2px;box-shadow:none;transition:border-color .15s,background .15s}
+      .adm-overview-item:hover{transform:none;box-shadow:none}.adm-overview-icon{width:30px;height:30px;border-radius:2px;background:#E8F0FF;color:#1D5FD1}
+      .adm-overview-copy strong{font-size:10px}.adm-overview-copy small{font-size:9px;line-height:1.35}
+      .adm-root input:not([type=checkbox]):not([type=radio]):not([type=file]),.adm-root select{border-radius:2px}
+      .adm-root table{font-size:10px}.adm-root thead th{font-size:9px}
       @media(max-width:1100px){.adm-navigation{grid-template-columns:repeat(2,minmax(0,1fr))}}
-      @media(max-width:700px){.adm-topbar{gap:8px}.adm-brand{min-width:0}.adm-brand strong{font-size:14px}.adm-search{width:100%}.adm-navigation{grid-template-columns:1fr}.adm-main{padding:8px 10px}.adm-page-heading h1{font-size:18px}.adm-overview-grid{grid-template-columns:1fr}}
+      @media(max-width:700px){.adm-topbar{gap:8px}.adm-brand{min-width:0}.adm-brand strong{font-size:13px}.adm-search{width:100%}.adm-navigation{grid-template-columns:1fr;padding:7px}.adm-main{padding:8px 10px}.adm-page-heading h1{font-size:17px}.adm-overview-grid{grid-template-columns:1fr}}
+      @media(max-width:430px){.adm-brand span{font-size:8px}.adm-brand strong{font-size:12px}.adm-page-heading h1{font-size:15px}}
     `}</style>
   </div>
 }
