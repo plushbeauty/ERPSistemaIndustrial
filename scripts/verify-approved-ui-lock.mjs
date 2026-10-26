@@ -7,8 +7,8 @@ import { readFileSync } from 'node:fs'
  * Do not update these hashes as part of ordinary styling/refactor work.
  */
 const approved = [
-  { path: 'src/pages/QualidadePaquimetroDigital.tsx', sha: 'a6cc1e8dcfa69d86c1d40dc283d3e93ac1bd3bbb', label: 'Qualidade / Paquímetro Digital', source: 'código submetido pelo usuário, layout escuro técnico e integração real ao histórico de inspeções; preservar a revisão aplicada' },
-  { path: 'src/components/DigitalCaliper.tsx', sha: 'ae034600e513a95e3dbe83fbee9a690d7f899017', label: 'Qualidade / componente Paquímetro Digital', source: 'componente submetido pelo usuário; mantém validação de calibração e persistência do histórico; leitura física automática não é simulada' },
+  { path: 'src/pages/QualidadePaquimetroDigital.tsx', sha: 'e086a3ed04eec3606a960fcdc41054a944e48afb', label: 'Qualidade / Paquímetro Digital', source: 'revisão visual premium autorizada em 2026-10-26; mantém dados reais e integração ao histórico de inspeções' },
+  { path: 'src/components/DigitalCaliper.tsx', sha: '2e479d9fbff5feaf177f9745dd826392adf7f092', label: 'Qualidade / componente Paquímetro Digital', source: 'revisão visual premium autorizada em 2026-10-26; mantém validação de calibração e identifica a leitura simulada sem conexão física' },
   { path: 'src/pages/ComprasCentral.tsx', sha: '6d7947a4dcbe1b2f04f10e56a5165d031cedc4f3', label: 'Compras / Central aprovada', source: 'restaurada conforme referência APROV-COMPRAS-2026-10-24-R1; congelar o visual original' },
   { path: 'src/pages/ComprasAbaNativa.tsx', sha: 'adbf0e76c6c627a2c53fe82e7f7f8370d2265083', label: 'Compras / abas nativas', source: 'correção funcional não visual autorizada em 2026-10-26: estado do fornecedor vencedor e renderização tipada; preservar layout aprovado' },
   { path: 'src/pages/VendasCentral.tsx', sha: '3aa44f48901c8777344a7c7c72f9fd9b81e399a5', label: 'Vendas / Status do pedido', source: 'explicit user-authorized revision APROV-006 — consistent card alignment and visible color legend; frozen after this revision' },
@@ -38,3 +38,4 @@ if (failed) {
   process.stderr.write('Approved UI lock: alterações em telas aprovadas são bloqueadas. Restaure o conteúdo aprovado ou obtenha autorização explícita para nova revisão e atualização do contrato.\n')
   process.exit(1)
 }
+

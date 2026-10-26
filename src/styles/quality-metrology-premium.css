@@ -1,0 +1,64 @@
+/* Atualizado: padrão visual premium SYSNQRA · 26/10/2026. */
+.quality-metrology-page {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.quality-metrology-hero {
+  isolation: isolate;
+}
+
+.quality-metrology-hero::after {
+  position: absolute;
+  z-index: -1;
+  top: -150px;
+  right: 90px;
+  width: 340px;
+  height: 340px;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 50%;
+  box-shadow: 0 0 0 28px rgb(255 255 255 / 4%), 0 0 0 58px rgb(255 255 255 / 3%);
+  content: '';
+}
+
+.quality-metrology-page button:focus-visible,
+.quality-metrology-page input:focus-visible,
+.quality-metrology-page select:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.quality-metrology-hero button:focus-visible {
+  outline-color: #bfdbfe;
+}
+
+.quality-metrology-table th {
+  font-size: 10px;
+}
+
+.quality-metrology-caliper article {
+  min-width: 0;
+}
+
+.quality-metrology-caliper select option {
+  color: #0f172a;
+  background: #fff;
+}
+
+.quality-metrology-caliper input[type='range'] {
+  accent-color: #2563eb;
+}
+
+.quality-metrology-caliper table {
+  border-collapse: collapse;
+}
+
+@media (max-width: 700px) {
+  .quality-metrology-hero::after {
+    right: -220px;
+  }
+
+  .quality-metrology-hero svg {
+    max-width: 100%;
+  }
+}
+

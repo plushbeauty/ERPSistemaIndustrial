@@ -1,4 +1,4 @@
-/** REVISÃO: PAQUIMETRO-APLICACAO-2026-10-26-R1 | Controle demonstrativo; não simula conexão física nem persistência. */
+/** Atualizado: padrão visual premium SYSNQRA · 26/10/2026 · leitura demonstrativa sem sensor físico. */
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { AlertTriangle, CheckCircle2, Lock, Ruler, ShieldCheck, Unlock, XCircle } from 'lucide-react'
@@ -17,8 +17,8 @@ type Props = {
   instrumentOptions?: Array<{ codigo: string; descricao: string; status: string; proxima_calibracao: string | null }>
 }
 
-const fieldClass = 'h-8 w-full rounded-sm border border-slate-700 bg-slate-950 px-2 text-xs font-mono text-slate-100 outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-500/30 disabled:opacity-60'
-const labelClass = 'block space-y-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400'
+const fieldClass = 'h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-medium text-slate-900 outline-none focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 disabled:opacity-60'
+const labelClass = 'block space-y-1 text-[10px] font-bold uppercase tracking-wider text-slate-600'
 
 export default function DigitalCaliper({ instrumentOptions = [] }: Props) {
   const [rawValue, setRawValue] = useState(50)
@@ -82,8 +82,9 @@ export default function DigitalCaliper({ instrumentOptions = [] }: Props) {
 
   useEffect(() => { void loadHistory() }, [])
 
-  const todayISO = new Date().toISOString().slice(0, 10)
-  const blockedInstrument = !!selectedInstrument && (/BLOQUEADO|VENCIDO|INATIVO|REPROVADO/i.test(selectedInstrument.status) || (!selectedInstrument.proxima_calibracao || selectedInstrument.proxima_calibracao < todayISO))
+  const now = new Date()
+  const todayISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  const blockedInstrument = !!selectedInstrument && (selectedInstrument.status.trim().toUpperCase() !== 'APROVADO' || !selectedInstrument.proxima_calibracao || selectedInstrument.proxima_calibracao < todayISO)
 
   function toggleUnit() {
     if (isLocked) return
@@ -170,14 +171,14 @@ export default function DigitalCaliper({ instrumentOptions = [] }: Props) {
   }
 
   return (
-    <section className="grid w-full grid-cols-1 gap-3 xl:grid-cols-4">
-      <article className="border border-slate-700 bg-slate-900 text-slate-100 shadow-xl xl:col-span-1">
-        <header className="flex items-center justify-between border-b border-slate-800 px-3 py-3">
+    <section className="quality-metrology-caliper grid w-full grid-cols-1 gap-4 xl:grid-cols-4">
+      <article className="rounded-xl border border-slate-200 bg-white text-slate-900 shadow-sm xl:col-span-1">
+        <header className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[.18em] text-sky-400">SYSNQRA • METROLOGIA</p>
-            <p className="mt-1 text-[10px] text-slate-400">Rastreabilidade ISO 9001 / IATF 16949</p>
+            <p className="text-[10px] font-black uppercase tracking-[.18em] text-blue-700">SYSNQRA • METROLOGIA</p>
+            <p className="mt-1 text-[10px] text-slate-500">Rastreabilidade ISO 9001 / IATF 16949</p>
           </div>
-          <ShieldCheck size={18} className="text-sky-400" />
+          <ShieldCheck size={18} className="text-blue-600" />
         </header>
         <div className="space-y-4 p-3">
           <label className={labelClass}>TAG do instrumento
@@ -188,13 +189,13 @@ export default function DigitalCaliper({ instrumentOptions = [] }: Props) {
               </select>
             ) : <input className={fieldClass} value={instrumentTag} disabled={isLocked} onChange={event => setInstrumentTag(event.target.value)} placeholder="TAG cadastrada no ERP" />}
           </label>
-          {selectedInstrument && <p className={`text-[10px] ${blockedInstrument ? 'text-rose-400' : 'text-emerald-400'}`}>Status cadastral: {selectedInstrument.status}</p>}
+          {selectedInstrument && <p className={`text-[10px] font-semibold ${blockedInstrument ? 'text-red-700' : 'text-emerald-700'}`}>Status cadastral: {selectedInstrument.status}</p>}
           <label className={labelClass}>ID da peça / lote
             <input className={fieldClass} value={partNumber} onChange={event => setPartNumber(event.target.value)} placeholder="Ex.: lote ou ordem" />
           </label>
-          <div className="flex items-center justify-between border-t border-slate-800 pt-3">
-            <span className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Parâmetros de medição</span>
-            <button type="button" onClick={() => setIsLocked(value => !value)} className={`inline-flex h-7 items-center gap-1 rounded-sm border px-2 text-[10px] font-bold ${isLocked ? 'border-amber-500/50 text-amber-300' : 'border-slate-700 text-slate-400'}`} title={isLocked ? 'Desbloquear parâmetros' : 'Bloquear parâmetros'}>
+          <div className="flex items-center justify-between border-t border-slate-200 pt-3">
+            <span className="text-[10px] font-bold uppercase tracking-wide text-slate-600">Parâmetros de medição</span>
+            <button type="button" onClick={() => setIsLocked(value => !value)} className={`inline-flex h-8 items-center gap-1 rounded-lg border px-2.5 text-[10px] font-bold ${isLocked ? 'border-amber-300 bg-amber-50 text-amber-800' : 'border-slate-300 bg-white text-slate-600'}`} title={isLocked ? 'Desbloquear parâmetros' : 'Bloquear parâmetros'}>
               {isLocked ? <Lock size={12} /> : <Unlock size={12} />}{isLocked ? 'Bloqueado' : 'Travar'}
             </button>
           </div>
@@ -204,19 +205,19 @@ export default function DigitalCaliper({ instrumentOptions = [] }: Props) {
           <label className={labelClass}>Tolerância de engenharia (±)
             <input type="number" min="0" step="any" className={fieldClass} disabled={isLocked} value={tolerance} onChange={event => setTolerance(event.target.value)} />
           </label>
-          {hasTargetSet && <div className="space-y-1 border border-slate-800 bg-slate-950/70 p-2 font-mono text-[10px] text-slate-400"><p className="font-sans text-[9px] font-bold uppercase tracking-wider text-slate-500">Limites de engenharia</p><p>Mín.: {minAllowed.toFixed(unit === 'mm' ? 2 : 3)} {unit}</p><p>Máx.: {maxAllowed.toFixed(unit === 'mm' ? 2 : 3)} {unit}</p></div>}
+          {hasTargetSet && <div className="space-y-1 rounded-lg border border-slate-200 bg-slate-50 p-3 font-mono text-[10px] text-slate-700"><p className="font-sans text-[9px] font-bold uppercase tracking-wider text-slate-500">Limites de engenharia</p><p>Mín.: {minAllowed.toFixed(unit === 'mm' ? 2 : 3)} {unit}</p><p>Máx.: {maxAllowed.toFixed(unit === 'mm' ? 2 : 3)} {unit}</p></div>}
         </div>
       </article>
 
-      <article className={`flex flex-col justify-between border bg-slate-900 text-slate-100 shadow-xl transition-colors xl:col-span-3 ${isOutOfTolerance ? 'border-rose-600 ring-1 ring-rose-600/60' : 'border-slate-700'}`}>
-        <header className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 px-4 py-3">
-          <h2 className="flex items-center gap-2 text-xs font-bold"><Ruler size={16} className="text-sky-400" /> Leitura ativa do paquímetro digital</h2>
+      <article className={`flex flex-col justify-between rounded-xl border bg-white text-slate-900 shadow-sm transition-colors xl:col-span-3 ${isOutOfTolerance ? 'border-rose-300 ring-1 ring-rose-200' : 'border-slate-200'}`}>
+        <header className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-4 py-3">
+          <h2 className="flex items-center gap-2 text-xs font-extrabold text-slate-900"><Ruler size={16} className="text-blue-700" /> Leitura ativa do paquímetro digital</h2>
           {hasTargetSet && (isOutOfTolerance
-            ? <span className="inline-flex items-center gap-1 border border-rose-500/40 bg-rose-500/10 px-2 py-1 text-[9px] font-black tracking-wide text-rose-300"><XCircle size={12}/> FORA DA ESPECIFICAÇÃO</span>
-            : <span className="inline-flex items-center gap-1 border border-emerald-500/40 bg-emerald-500/10 px-2 py-1 text-[9px] font-black tracking-wide text-emerald-300"><CheckCircle2 size={12}/> DIMENSIONAL OK</span>)}
+            ? <span className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-[9px] font-black tracking-wide text-rose-700"><XCircle size={12}/> FORA DA ESPECIFICAÇÃO</span>
+            : <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[9px] font-black tracking-wide text-emerald-700"><CheckCircle2 size={12}/> DIMENSIONAL OK</span>)}
         </header>
         <div className="space-y-5 p-4">
-          <div className="overflow-hidden border border-slate-700 bg-slate-950/70 p-2">
+          <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-2">
             <svg viewBox="0 0 420 130" role="img" aria-label={`Ilustração de paquímetro digital com leitura de ${displayValue} ${unit}`} className="h-auto w-full">
               <defs>
                 <linearGradient id="sysnqra-caliper-steel" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#e2e8f0"/><stop offset="1" stopColor="#64748b"/></linearGradient>
@@ -240,33 +241,33 @@ export default function DigitalCaliper({ instrumentOptions = [] }: Props) {
               </g>
             </svg>
           </div>
-          <div className={`relative flex h-32 flex-col items-end justify-center border p-4 font-mono transition-colors ${isOutOfTolerance ? 'border-rose-500/50 bg-rose-950/40' : 'border-emerald-500/25 bg-emerald-950/20'}`}>
-            <p className={`absolute left-3 top-3 text-[9px] font-bold uppercase tracking-widest ${isOutOfTolerance ? 'text-rose-300' : 'text-slate-500'}`}>{isOutOfTolerance ? 'Alerta: discrepância detectada' : `Instrumento selecionado: ${instrumentTag || 'não informado'}`}</p>
-            <p className={`text-5xl font-black tracking-tight sm:text-6xl ${isOutOfTolerance ? 'text-rose-400' : 'text-emerald-400'}`}>{displayValue}</p>
-            <p className={`mt-1 text-xs font-bold uppercase tracking-widest ${isOutOfTolerance ? 'text-rose-400' : 'text-emerald-500'}`}>{unit}</p>
+          <div className={`relative flex h-32 flex-col items-end justify-center rounded-xl border p-4 font-mono transition-colors ${isOutOfTolerance ? 'border-rose-200 bg-rose-50' : 'border-emerald-200 bg-emerald-50'}`}>
+            <p className={`absolute left-3 top-3 text-[9px] font-bold uppercase tracking-widest ${isOutOfTolerance ? 'text-rose-700' : 'text-slate-500'}`}>{isOutOfTolerance ? 'Alerta: discrepância detectada' : `Instrumento selecionado: ${instrumentTag || 'não informado'}`}</p>
+            <p className={`text-5xl font-black tracking-tight sm:text-6xl ${isOutOfTolerance ? 'text-rose-700' : 'text-emerald-800'}`}>{displayValue}</p>
+            <p className={`mt-1 text-xs font-bold uppercase tracking-widest ${isOutOfTolerance ? 'text-rose-700' : 'text-emerald-700'}`}>{unit}</p>
           </div>
 
           <div className="space-y-2">
-            <div className="flex justify-between gap-2 font-mono text-[10px] text-slate-500"><span>0,00 mm</span><span className="font-bold text-slate-300">Curso simulado: {rawValue.toFixed(2)} mm</span><span>150,00 mm</span></div>
+            <div className="flex justify-between gap-2 font-mono text-[10px] text-slate-500"><span>0,00 mm</span><span className="font-bold text-slate-700">Curso simulado: {rawValue.toFixed(2)} mm</span><span>150,00 mm</span></div>
             <input aria-label="Deslocamento simulado do paquímetro" type="range" min="0" max="150" step="0.01" value={rawValue} disabled={isLocked} onChange={event => setRawValue(Number(event.target.value))} className="w-full cursor-pointer accent-sky-400 disabled:cursor-not-allowed" />
-            <p className="text-[10px] text-amber-300/80">Leitura demonstrativa por controle deslizante; não representa conexão física com sensor.</p>
+            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] text-amber-800">Leitura demonstrativa por controle deslizante; não representa conexão física com sensor.</p>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <button type="button" disabled={isLocked} onClick={() => setUnit(value => value === 'mm' ? 'in' : 'mm')} className="h-8 border border-slate-700 px-3 text-[10px] font-bold uppercase hover:border-sky-400 disabled:opacity-40">Unidade: {unit} · alternar</button>
-            <button type="button" disabled={isLocked} onClick={() => setZeroOffset(rawValue)} className="h-8 border border-slate-700 px-3 text-[10px] font-bold uppercase hover:border-sky-400 disabled:opacity-40">Zero / tara</button>
-            <button type="button" disabled={isLocked} onClick={() => { setZeroOffset(0); setRawValue(0) }} className="h-8 border border-slate-700 px-3 text-[10px] font-bold uppercase hover:border-sky-400 disabled:opacity-40">Resetar</button>
-            <button type="button" onClick={() => void saveMeasurement()} disabled={blockedInstrument || saving} className="ml-auto inline-flex h-8 items-center gap-1.5 border border-sky-500 bg-sky-600 px-3 text-[10px] font-black uppercase text-white hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-40"><CheckCircle2 size={13}/> {saving ? 'Gravando…' : 'Registrar medição'}</button>
+            <button type="button" disabled={isLocked} onClick={toggleUnit} className="inline-flex h-9 items-center rounded-lg border border-slate-300 bg-white px-3 text-[10px] font-bold uppercase text-slate-700 shadow-sm transition hover:border-blue-400 hover:bg-blue-50 disabled:opacity-40">Unidade: {unit} · alternar</button>
+            <button type="button" disabled={isLocked} onClick={() => setZeroOffset(rawValue)} className="inline-flex h-9 items-center rounded-lg border border-slate-300 bg-white px-3 text-[10px] font-bold uppercase text-slate-700 shadow-sm transition hover:border-blue-400 hover:bg-blue-50 disabled:opacity-40">Zero / tara</button>
+            <button type="button" disabled={isLocked} onClick={() => { setZeroOffset(0); setRawValue(0) }} className="inline-flex h-9 items-center rounded-lg border border-slate-300 bg-white px-3 text-[10px] font-bold uppercase text-slate-700 shadow-sm transition hover:border-blue-400 hover:bg-blue-50 disabled:opacity-40">Resetar</button>
+            <button type="button" onClick={() => void saveMeasurement()} disabled={!selectedInstrument || blockedInstrument || saving} className="ml-auto inline-flex h-9 items-center gap-1.5 rounded-lg border border-blue-700 bg-blue-700 px-4 text-[10px] font-black uppercase text-white shadow-sm transition hover:-translate-y-px hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-40"><CheckCircle2 size={13}/> {saving ? 'Gravando…' : 'Registrar medição'}</button>
           </div>
-          {blockedInstrument && <p role="alert" className="flex items-center gap-2 border border-rose-500/40 bg-rose-950/40 p-2 text-[10px] font-bold text-rose-300"><AlertTriangle size={14}/> Instrumento bloqueado: não é permitido registrar medição.</p>}
-          {notice && <p role="status" className="border border-slate-700 bg-slate-950 p-2 text-[10px] text-slate-300">{notice}</p>}
+          {blockedInstrument && <p role="alert" className="flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 p-3 text-[10px] font-bold text-rose-800"><AlertTriangle size={14}/> Instrumento bloqueado: não é permitido registrar medição.</p>}
+          {notice && <p role="status" className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-[10px] text-blue-900">{notice}</p>}
         </div>
-        <div className="border-t border-slate-800 p-4">
-          <div className="mb-2 flex items-center justify-between gap-2"><h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Histórico de medições persistido no ERP</h3><span className="font-mono text-[10px] text-slate-500">{history.length} registro(s)</span></div>
+        <div className="border-t border-slate-200 p-4">
+          <div className="mb-2 flex items-center justify-between gap-2"><h3 className="text-[10px] font-black uppercase tracking-widest text-slate-600">Histórico de medições persistido no ERP</h3><span className="font-mono text-[10px] text-slate-500">{history.length} registro(s)</span></div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[620px] text-left text-[10px]">
-              <thead className="text-[9px] uppercase tracking-wide text-slate-500"><tr>{['Data/hora','TAG','Peça / lote','Leitura','Resultado'].map(label => <th key={label} className="border-b border-slate-800 px-2 py-2">{label}</th>)}</tr></thead>
-              <tbody>{history.map(item => <tr key={item.id} className="border-b border-slate-800/70"><td className="px-2 py-2 text-slate-400">{item.timestamp}</td><td className="px-2 py-2 font-mono">{item.instrumentTag}</td><td className="px-2 py-2">{item.partNumber}</td><td className="px-2 py-2 font-mono">{item.value} {item.unit}</td><td className={`px-2 py-2 font-black ${item.status === 'APROVADO' ? 'text-emerald-400' : 'text-rose-400'}`}>{item.status}</td></tr>)}</tbody>
+              <thead className="bg-slate-50 text-[9px] uppercase tracking-wide text-slate-500"><tr>{['Data/hora','TAG','Peça / lote','Leitura','Resultado'].map(label => <th key={label} className="border-b border-slate-200 px-3 py-2 text-left">{label}</th>)}</tr></thead>
+              <tbody>{history.map(item => <tr key={item.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50"><td className="px-3 py-2 text-slate-600">{item.timestamp}</td><td className="px-3 py-2 font-mono font-bold text-blue-800">{item.instrumentTag}</td><td className="px-3 py-2 text-slate-800">{item.partNumber}</td><td className="px-3 py-2 font-mono text-slate-800">{item.value} {item.unit}</td><td className={`px-3 py-2 font-black ${item.status === 'APROVADO' ? 'text-emerald-700' : 'text-rose-700'}`}>{item.status}</td></tr>)}</tbody>
             </table>
           </div>
           {!history.length && <p className="py-4 text-center text-[10px] text-slate-500">{historyLoading ? 'Consultando histórico do ERP…' : 'Nenhuma medição registrada para esta empresa.'}</p>}
@@ -275,3 +276,4 @@ export default function DigitalCaliper({ instrumentOptions = [] }: Props) {
     </section>
   )
 }
+
