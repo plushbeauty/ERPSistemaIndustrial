@@ -7,6 +7,8 @@ import { readFileSync } from 'node:fs'
  * Do not update these hashes as part of ordinary styling/refactor work.
  */
 const approved = [
+  { path: 'src/pages/QualidadePaquimetroDigital.tsx', sha: 'a6cc1e8dcfa69d86c1d40dc283d3e93ac1bd3bbb', label: 'Qualidade / Paquímetro Digital', source: 'código submetido pelo usuário, layout escuro técnico e integração real ao histórico de inspeções; preservar a revisão aplicada' },
+  { path: 'src/components/DigitalCaliper.tsx', sha: 'ae034600e513a95e3dbe83fbee9a690d7f899017', label: 'Qualidade / componente Paquímetro Digital', source: 'componente submetido pelo usuário; mantém validação de calibração e persistência do histórico; leitura física automática não é simulada' },
   { path: 'src/pages/ComprasCentral.tsx', sha: '6d7947a4dcbe1b2f04f10e56a5165d031cedc4f3', label: 'Compras / Central aprovada', source: 'restaurada conforme referência APROV-COMPRAS-2026-10-24-R1; congelar o visual original' },
   { path: 'src/pages/ComprasAbaNativa.tsx', sha: '78a2c82de489b51a02d9e13bb534012354a6803d', label: 'Compras / abas nativas', source: 'parte funcional da Central de Compras aprovada; preservar fluxos reais' },
   { path: 'src/pages/VendasCentral.tsx', sha: '3aa44f48901c8777344a7c7c72f9fd9b81e399a5', label: 'Vendas / Status do pedido', source: 'explicit user-authorized revision APROV-006 — consistent card alignment and visible color legend; frozen after this revision' },
