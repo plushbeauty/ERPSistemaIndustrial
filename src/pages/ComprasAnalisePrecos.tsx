@@ -31,6 +31,7 @@ type Quote = {
   valor_desconto: number
   prazo_entrega_dias: number | null
   condicao_pagamento: string | null
+  origem_portal?: boolean
 }
 type QuoteRow = Quote & { custo: number }
 type Supplier = { id: string; razao_social: string; nome_fantasia: string | null }
@@ -61,14 +62,20 @@ export default function ComprasAnalisePrecos() {
       const company = await supabase.rpc('erp_current_empresa_id')
       if (company.error || !company.data) throw company.error ?? new Error('Empresa da sessão não identificada.')
       const empresaId = String(company.data)
-      const [r, q, s, i] = await Promise.all([
+      const [r, q, portalQuotes, s, i] = await Promise.all([
         fetchAllPages<Rfq>((from, to) => supabase.from('erp_rfq').select('id,numero,status,data_emissao,prazo_resposta,fornecedor_escolhido_id,justificativa_escolha,status_aprovacao,menor_preco_ofertado', { count: 'exact' }).eq('empresa_id', empresaId).order('created_at', { ascending: false }).range(from, to)),
         fetchAllPages<Quote>((from, to) => supabase.from('erp_rfq_fornecedores').select('id,rfq_id,fornecedor_id,status,valor_total,valor_frete,valor_desconto,prazo_entrega_dias,condicao_pagamento', { count: 'exact' }).eq('empresa_id', empresaId).range(from, to)),
+        fetchAllPages<{id:string;rfq_id:string;fornecedor_id:string;valor_total:number;prazo_dias:number|null;condicao_pagamento:string|null}>((from,to)=>supabase.from('erp_rfq_respostas').select('id,rfq_id,fornecedor_id,valor_total,prazo_dias,condicao_pagamento',{count:'exact'}).eq('empresa_id',empresaId).eq('status','ENVIADA').range(from,to)),
         fetchAllPages<Supplier>((from, to) => supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia', { count: 'exact' }).eq('empresa_id', empresaId).eq('ativo', true).order('razao_social').range(from, to)),
         fetchAllPages<RfqItem>((from, to) => supabase.from('erp_rfq_itens').select('rfq_id,codigo,descricao,quantidade,unidade', { count: 'exact' }).eq('empresa_id', empresaId).range(from, to)),
       ])
       setRfqs(r)
-      setQuotes(q)
+      const merged = new Map(q.map(row => [row.rfq_id+':'+row.fornecedor_id,row]))
+      for (const response of portalQuotes) {
+        const key=response.rfq_id+':'+response.fornecedor_id
+        if (!merged.has(key)) merged.set(key,{id:response.id,rfq_id:response.rfq_id,fornecedor_id:response.fornecedor_id,status:'PORTAL_ENVIADA',valor_total:response.valor_total,valor_frete:0,valor_desconto:0,prazo_entrega_dias:response.prazo_dias,condicao_pagamento:response.condicao_pagamento,origem_portal:true})
+      }
+      setQuotes([...merged.values()])
       setSuppliers(s)
       setItems(i)
       setSelected(current => current && r.some(row => row.id === current) ? current : (r[0]?.id ?? null))
@@ -240,7 +247,7 @@ export default function ComprasAnalisePrecos() {
                     const isSelected = selectedSupplier === row.fornecedor_id
                     return <tr key={row.id} className={isSelected ? 'is-selected' : undefined}>
                       <td className="text-center"><input aria-label={`Selecionar ${supplierMap.get(row.fornecedor_id) || 'fornecedor'}`} type="radio" name="fornecedor-escolhido" checked={isSelected} onChange={() => setSelectedSupplier(row.fornecedor_id)} /></td>
-                      <td className="synqra-analysis-supplier">{supplierMap.get(row.fornecedor_id) || 'Fornecedor não localizado'}{isSelected && <span className="synqra-analysis-selected-tag">SELECIONADO</span>}</td>
+                      <td className="synqra-analysis-supplier">{supplierMap.get(row.fornecedor_id) || 'Fornecedor não localizado'}{row.origem_portal&&<span className="synqra-analysis-muted"> · RESPOSTA DO PORTAL</span>}{isSelected && <span className="synqra-analysis-selected-tag">SELECIONADO</span>}</td>
                       <td className="text-right synqra-analysis-number">{money(Number(row.valor_total || 0))}</td>
                       <td className="text-right synqra-analysis-number">{money(Number(row.valor_frete || 0))}</td>
                       <td className="text-right synqra-analysis-number">{money(Number(row.valor_desconto || 0))}</td>

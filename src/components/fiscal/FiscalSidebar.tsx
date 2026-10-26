@@ -1,4 +1,4 @@
-import { FileText, LayoutDashboard, Receipt, Settings, ShoppingCart, Truck } from 'lucide-react'
+import { ClipboardList, FileText, LayoutDashboard, Receipt, Settings, ShoppingCart, Truck } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
 const items = [
@@ -7,6 +7,7 @@ const items = [
   { href: '/fiscal/emissao', label: 'Emissão NF-e', icon: FileText },
   { href: '/fiscal/carteira-nfe', label: 'Carteira NF-e', icon: Receipt },
   { href: '/fiscal/impostos', label: 'Regras tributárias', icon: Settings },
+  { href: '/fiscal/bloco-k', label: 'Bloco K · SPED', icon: ClipboardList },
   { href: '/fiscal/compras', label: 'Fiscal de Compras', icon: ShoppingCart },
 ]
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Warehouse, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X, Ruler, ClipboardCheck, ClipboardList, Gauge } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Warehouse, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X, Ruler, ClipboardCheck, ClipboardList, Gauge, Target, Radio, Globe, Clipboard } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -23,6 +23,7 @@ const menus: MenuItem[] = [
   ] },
   { label: 'Vendas', route: '/vendas', icon: ShoppingCart, children: [
     { label: 'Dashboard comercial', route: '/vendas' },
+    { label: 'CRM industrial · Funil', route: '/vendas/crm', icon: Target },
     { label: 'Status do pedido', route: '/vendas/status' },
     { label: 'Novo pedido', route: '/vendas/novo-pedido' },
     { label: 'PDV / venda rápida', route: '/vendas/pdv' },
@@ -70,7 +71,11 @@ const menus: MenuItem[] = [
     { label: 'Fluxo de caixa', route: '/financeiro/fluxo-caixa' },
     { label: 'Caixa', route: '/financeiro/caixa' },
   ] },
-  { label: 'Fiscal', route: '/fiscal', icon: FileText },
+  { label: 'Fiscal', route: '/fiscal', icon: FileText, children: [
+    { label: 'Central Fiscal', route: '/fiscal', icon: FileText },
+    { label: 'Bloco K · SPED Industrial', route: '/fiscal/bloco-k', icon: Clipboard },
+    { label: 'Carteira de NF-e', route: '/fiscal/carteira-nfe', icon: FileText },
+  ] },
   { label: 'Manufatura / PCP', route: '/pcp', icon: Factory, children: [
     { label: 'Central PCP', route: '/pcp' },
     { label: 'Ordens de produção', route: '/pcp/ordens' },
@@ -86,6 +91,7 @@ const menus: MenuItem[] = [
     { label: 'Planejamento', route: '/pcp/planejamento' },
     { label: 'Fichas de processo', route: '/pcp/fichas-processo' },
     { label: 'Paradas / setup', route: '/pcp/paradas' },
+    { label: 'Coleta MES · IoT', route: '/pcp/iot', icon: Radio },
     { label: 'Auditoria PCP', route: '/pcp/auditoria' },
     { label: 'PCP Tablet', route: '/pcp', action: 'pcpTablet' },
   ] },
@@ -120,6 +126,10 @@ const menus: MenuItem[] = [
     { label: 'Cronograma', route: '/manutencao/cronograma' },
     { label: 'Plano mestre', route: '/manutencao/plano-mestre' },
     { label: 'Indicadores', route: '/manutencao/indicadores' },
+  ] },
+  { label: 'Portais externos', route: '/portal/cliente', icon: Globe, children: [
+    { label: 'Portal do cliente', route: '/portal/cliente', icon: UserRound },
+    { label: 'Portal do fornecedor · RFQ', route: '/portal/fornecedor', icon: Truck },
   ] },
   { label: 'Recursos Humanos', route: '/rh/funcionarios', icon: UserRound, children: [
     { label: 'Funcionários', route: '/rh/funcionarios' },

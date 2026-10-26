@@ -81,6 +81,7 @@ const FiscalPrevisaoCaixa = lazyPage(() => import('./pages/FiscalPrevisaoCaixa')
 const FiscalCarteiraNFe = lazyPage(() => import('./pages/FiscalCarteiraNFe'), 'FiscalCarteiraNFe')
 const FiscalImpostos = lazyPage(() => import('./pages/FiscalImpostos'), 'FiscalImpostos')
 const FiscalPendencias = lazyPage(() => import('./pages/FiscalPendencias'), 'FiscalPendencias')
+const FiscalBlocoKIndustrial = lazyPage(() => import('./pages/FiscalBlocoKIndustrial'), 'default')
 const PainelRazaoGeral = lazyPage(() => import('./features/controladoria/PainelRazaoGeral'), 'default')
 const PainelLucratividade = lazyPage(() => import('./features/controladoria/PainelLucratividade'), 'default')
 const AuditoriaComissoes = lazyPage(() => import('./features/controladoria/AuditoriaComissoes'), 'default')
@@ -132,6 +133,7 @@ const DashboardComercial = lazyPage(() => import('./pages/DashboardComercial'), 
 const VendasCentral = lazyPage(() => import('./pages/VendasCentral'), 'default')
 const VendasCatalogoDigital = lazyPage(() => import('./pages/VendasCatalogoDigital'), 'VendasCatalogoDigital')
 const VendasAnaliseCustos = lazyPage(() => import('./pages/VendasAnaliseCustos'), 'VendasAnaliseCustos')
+const VendasCRMIndustrial = lazyPage(() => import('./pages/VendasCRMIndustrial'), 'default')
 const VendasDashboardGraficos = lazyPage(() => import('./pages/VendasDashboardGraficos'), 'VendasDashboardGraficos')
 const VendasMetas = lazyPage(() => import('./pages/VendasMetas'), 'VendasMetas')
 const VendasRelatorios = lazyPage(() => import('./pages/VendasRelatorios'), 'VendasRelatorios')
@@ -182,6 +184,8 @@ const ExpedicaoPortaria = lazyPage(() => import('./pages/ExpedicaoPortaria'), 'E
 const EngenhariaRevisoesBOM = lazyPage(() => import('./pages/EngenhariaRevisoesBOM'), 'EngenhariaRevisoesBOM')
 const EngenhariaCentral = lazyPage(() => import('./pages/EngenhariaCentral'), 'EngenhariaCentral')
 const PCPDashboardOEE = lazyPage(() => import('./pages/PCPDashboardOEE'), 'PCPDashboardOEE')
+const PCPMESIoT = lazyPage(() => import('./pages/PCPMESIoT'), 'default')
+const PortalExternoIndustrial = lazyPage(() => import('./pages/PortalExternoIndustrial'), 'default')
 const QualidadeAuditoriasPlanta = lazyPage(() => import('./pages/QualidadeAuditoriasPlanta'), 'default')
 const QualidadeRNC = lazyPage(() => import('./pages/QualidadeRNC'), 'QualidadeRNC')
 const QualidadeRPNCCompleta = lazyPage(() => import('./pages/qualidade/QualidadeRPNCCompleta'), 'default')
@@ -363,6 +367,8 @@ export default function AppEntryV2() {
   if (path === '/blog') return <PublicPage><Blog /></PublicPage>
   if (path === '/contato') return <PublicPage><Contato /></PublicPage>
   if (path === '/preview/icones') return <PublicPage><IndustrialVisualShowcase /></PublicPage>
+  if (path === '/portal/cliente') return <PublicPage><PortalExternoIndustrial kind="CLIENTE" /></PublicPage>
+  if (path === '/portal/fornecedor') return <PublicPage><PortalExternoIndustrial kind="FORNECEDOR" /></PublicPage>
   if (path.startsWith('/modulos/')) return <PublicPage><PublicModuleOverview /></PublicPage>
   return <AppIndustrialAuthenticated />
 }
@@ -469,6 +475,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/tablet/home" element={<TabletDashboard />} />
       <Route path="/vendas" element={<DashboardComercial />} />
       <Route path="/vendas/dashboard" element={<DashboardComercial />} />
+      <Route path="/vendas/crm" element={<QualityPlanGate><VendasCRMIndustrial /></QualityPlanGate>} />
       <Route path="/vendas/pedidos" element={<Navigate to="/vendas/status" replace />} />
       <Route path="/vendas/pdv" element={<VendasPDV />} />
       <Route path="/vendas/tablet" element={<VendasTablet />} />
@@ -572,6 +579,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/mrp-ii" element={<QualityPlanGate>{<MRPIndustrial />}</QualityPlanGate>} />
       <Route path="/pcp/execucao-industrial" element={<QualityPlanGate>{<PCPExecucaoIndustrial />}</QualityPlanGate>} />
       <Route path="/pcp/dashboard-oee" element={<QualityPlanGate>{<PCPDashboardOEE />}</QualityPlanGate>} />
+      <Route path="/pcp/iot" element={<QualityPlanGate><PCPMESIoT /></QualityPlanGate>} />
       <Route path="/pcp/tablet-operador" element={<QualityPlanGate>{<PCPTabletOperador />}</QualityPlanGate>} />
       <Route path="/area-funcionario" element={<PCPAreaFuncionario />} />
       <Route path="/pcp/portal-operador" element={<PCPAreaFuncionario />} />
@@ -677,6 +685,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/fiscal/carteira-nfe" element={<QualityPlanGate>{<FiscalCarteiraNFe />}</QualityPlanGate>} />
       <Route path="/fiscal/impostos" element={<QualityPlanGate>{<FiscalImpostos />}</QualityPlanGate>} />
       <Route path="/fiscal/pendencias" element={<QualityPlanGate>{<FiscalPendencias />}</QualityPlanGate>} />
+      <Route path="/fiscal/bloco-k" element={<QualityPlanGate><FiscalBlocoKIndustrial /></QualityPlanGate>} />
       <Route path="/controladoria/razao-geral" element={<QualityPlanGate>{<PainelRazaoGeral />}</QualityPlanGate>} />
       <Route path="/controladoria/lucratividade" element={<QualityPlanGate>{<PainelLucratividade />}</QualityPlanGate>} />
       <Route path="/controladoria/auditoria-comissoes" element={<QualityPlanGate>{<AuditoriaComissoes />}</QualityPlanGate>} />

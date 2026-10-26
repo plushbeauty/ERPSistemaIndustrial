@@ -19,6 +19,7 @@ type Ordem = {
   tempo_estimado_horas: number
 }
 type Dia = { dia: string; disponibilidade: number; performance: number; qualidade: number; oee: number }
+type SensorEvent={id:string;maquina_id:string;estado:string;contador_ciclos:number;pecas_boas:number;pecas_refugo:number;emitido_em:string}
 
 const pct = (value: number) => `${value.toFixed(1)}%`
 const clamp = (value: number) => Math.max(0, Math.min(100, value))
@@ -27,6 +28,7 @@ export default function PCPDashboardOEE() {
   const [period, setPeriod] = useState('30')
   const [rows, setRows] = useState<Apontamento[]>([])
   const [ordens, setOrdens] = useState<Ordem[]>([])
+  const [sensorEvents,setSensorEvents]=useState<SensorEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -34,22 +36,29 @@ export default function PCPDashboardOEE() {
     setLoading(true)
     setError('')
     const since = new Date(Date.now() - Number(period) * 86400000).toISOString()
-    const [a, o] = await Promise.all([
-      supabase.from('erp_producao_apontamentos').select('ordem_producao_id,quantidade_boa,quantidade_refugo,setup_min,paradas_min,inicio,fim').gte('inicio', since).limit(10000),
-      supabase.from('erp_ordens_producao').select('id,quantidade_planejada,velocidade_nominal_hora,tempo_estimado_horas').limit(10000),
+    const tenant=await supabase.rpc('erp_current_empresa_id')
+    if(tenant.error||!tenant.data){setError(tenant.error?.message??'Empresa ativa não identificada.');setLoading(false);return}
+    const companyId=String(tenant.data)
+    const [a, o, sensors] = await Promise.all([
+      supabase.from('erp_producao_apontamentos').select('ordem_producao_id,quantidade_boa,quantidade_refugo,setup_min,paradas_min,inicio,fim').eq('empresa_id',companyId).gte('inicio', since).limit(10000),
+      supabase.from('erp_ordens_producao').select('id,quantidade_planejada,velocidade_nominal_hora,tempo_estimado_horas').eq('empresa_id',companyId).limit(10000),
+      supabase.from('erp_iot_eventos').select('id,maquina_id,estado,contador_ciclos,pecas_boas,pecas_refugo,emitido_em').eq('empresa_id',companyId).gte('emitido_em',since).order('emitido_em',{ascending:false}).limit(2000),
     ])
     if (a.error || o.error) {
       setError(a.error?.message ?? o.error?.message ?? 'Falha ao carregar o OEE.')
       setRows([])
       setOrdens([])
+      setSensorEvents([])
     } else {
       setRows((a.data ?? []) as Apontamento[])
       setOrdens((o.data ?? []) as Ordem[])
+      setSensorEvents((sensors.error?[]:sensors.data??[]) as SensorEvent[])
     }
     setLoading(false)
   }
 
   useEffect(() => { void load() }, [period])
+  const latestSensors=useMemo(()=>{const seen=new Set<string>();return sensorEvents.filter(event=>{if(seen.has(event.maquina_id))return false;seen.add(event.maquina_id);return true})},[sensorEvents])
 
   const metrics = useMemo(() => {
     const byOrder = new Map(ordens.map((x) => [x.id, x]))
@@ -130,6 +139,7 @@ export default function PCPDashboardOEE() {
 
       <div className="mx-auto max-w-[1800px] space-y-5 p-5">
         {error && <div className="rounded-[2px] border border-rose-200 bg-rose-50 p-4 font-bold text-rose-900">{error}</div>}
+        <section className="rounded-[2px] border border-slate-200 bg-white p-4 shadow-sm"><div className="mb-2 flex items-center gap-2"><Activity className="text-sky-700" size={18}/><div><h2 className="font-black">Telemetria IoT recente</h2><p className="text-xs font-semibold text-slate-500">Sinais reais recebidos no período. Os índices OEE abaixo continuam calculados pelos apontamentos vinculados às OPs.</p></div></div><div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">{latestSensors.slice(0,12).map(event=><article key={event.id} className="border p-2 text-xs"><b>Máquina {event.maquina_id.slice(0,8)}</b><div className={event.estado==='ALARME'?'font-bold text-rose-700':event.estado==='RODANDO'?'font-bold text-emerald-700':'text-amber-700'}>{event.estado}</div><div>{Number(event.contador_ciclos).toLocaleString('pt-BR')} ciclos · {Number(event.pecas_boas).toLocaleString('pt-BR')} boas · {Number(event.pecas_refugo).toLocaleString('pt-BR')} refugo</div><small className="text-slate-500">{new Date(event.emitido_em).toLocaleString('pt-BR')}</small></article>)}{!latestSensors.length&&<p className="text-xs text-slate-500">Sem sinais IoT recebidos no período selecionado.</p>}</div></section>
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
             { label: 'OEE GLOBAL', value: pct(metrics.oee), icon: Gauge, note: 'Índice composto' },
