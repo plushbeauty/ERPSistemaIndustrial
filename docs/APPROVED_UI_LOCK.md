@@ -33,7 +33,8 @@
 ## Registro da revisão APROV-014 — 2026-10-26
 
 - Removida a centralização antiga em Tablet da Qualidade; `/qualidade` encaminha para Inspeções e os módulos SGQ ficam acessíveis diretamente pelo menu global.
-- Incluído o atalho com ícone **Paquímetro Digital / Metrologia** em `/qualidade/paquimetro-digital`.
+- Incluído o atalho com ícone **Paquímetro Digital / Metrologia** em `/qualidade/paquimetro-digital`, conectado à tela `QualidadePaquimetroDigital.tsx` e ao componente `DigitalCaliper.tsx` recuperados do código enviado pelo usuário.
+- O componente valida a calibração e persiste o histórico em `erp_inspecoes`; o cursor da interface é demonstrativo e não representa leitura automática de sensor físico.
 - O menu Compras abre a Central aprovada em `/compras`.
 
 ## Como funciona o bloqueio
