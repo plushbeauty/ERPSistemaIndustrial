@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   Activity, ArrowRight, BarChart3, Building2, DatabaseBackup,
-  FileClock, KeyRound, LayoutDashboard, LockKeyhole, Network, Search,
+  FileClock, HardDrive, KeyRound, LayoutDashboard, LockKeyhole, Network, Search,
   Settings, ShieldCheck, UsersRound,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -43,6 +43,7 @@ const groups: Group[] = [
   { label: 'PLATAFORMA', items: [
     { path: '/configuracoes-adm/integracoes', label: 'Integrações', description: 'Serviços conectados', icon: Network },
     { path: '/configuracoes-adm/sistema', label: 'Parâmetros do sistema', description: 'Preferências disponíveis', icon: Settings },
+    { path: '/configuracoes-adm/instalacao', label: 'Instalação do sistema', description: 'Configurar PC ou servidor de arquivos', icon: HardDrive },
   ] },
 ]
 const allItems = groups.flatMap(group => group.items)
@@ -132,6 +133,7 @@ function SectionContent({ item, navigate }: { item: Item; navigate: ReturnType<t
   if (item.path === '/configuracoes-adm/usuarios') return <UsuariosAdmin />
   if (item.path === '/configuracoes-adm/integracoes') return <ConfiguracaoIntegracoes />
   if (item.path === '/configuracoes-adm/sistema') return <ConfiguracaoSistema />
+  if (item.path === '/configuracoes-adm/instalacao') return <ConfiguracaoSistema initialShowInstaller />
   return <UnavailableSection item={item} />
 }
 
