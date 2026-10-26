@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 
 const page = readFileSync('src/pages/ComprasRFQ.tsx', 'utf8')
+const analysisPage = readFileSync('src/pages/ComprasAnalisePrecos.tsx', 'utf8')
 const styles = readFileSync('src/styles/synqra-workspace.css', 'utf8')
 const purchaseOrder = readFileSync('src/pages/ComprasPedidoCompra.tsx', 'utf8')
 const legacyPurchaseOrder = readFileSync('src/pages/PedidoCompra.tsx', 'utf8')
@@ -16,6 +17,17 @@ const requiredPageMarkers = [
   ".from('erp_rfq')",
   ".from('erp_rfq_fornecedores')",
   ".from('erp_rfq_itens')",
+]
+const requiredAnalysisMarkers = [
+  '@DATA_REVISAO_APROVACAO 2026-10-26',
+  '@STATUS_APROVACAO REV-COMPRAS-ANALISE-PREMIUM-001',
+  'synqra-analysis-page',
+  'CircleDollarSign',
+  'ClipboardCheck',
+  'RefreshCw',
+  'supabase.rpc(\'erp_current_empresa_id\')',
+  ".from('erp_rfq')",
+  'Finalizar análise e enviar para aprovação',
 ]
 const requiredStyleMarkers = [
   '.synqra-rfq-page',
@@ -37,6 +49,7 @@ const requiredPurchaseOrderMarkers = [
 const missing = [
   ...requiredPageMarkers.filter(marker => !page.includes(marker)).map(marker => `RFQ: marcador ausente — ${marker}`),
   ...requiredStyleMarkers.filter(marker => !styles.includes(marker)).map(marker => `CSS RFQ: seletor ausente — ${marker}`),
+  ...requiredAnalysisMarkers.filter(marker => !analysisPage.includes(marker)).map(marker => `Análise de preços: marcador ausente — ${marker}`),
   ...requiredPurchaseOrderMarkers.filter(marker => !purchaseOrder.includes(marker)).map(marker => `Pedido de compra: marcador ausente — ${marker}`),
 ]
 
