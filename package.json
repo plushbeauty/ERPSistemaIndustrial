@@ -41,6 +41,7 @@
     "verify:auth-master-contract": "node scripts/verify-auth-master-contract.mjs",
     "verify:approved-ui-contract": "node scripts/verify-approved-ui-contract.mjs",
     "verify:approved-ui-lock": "node scripts/verify-approved-ui-lock.mjs",
+    "verify:compras-rfq-premium-lock": "node scripts/verify-compras-rfq-premium-lock.mjs",
     "audit:ui-standardization": "node scripts/audit-erp-ui-standardization.mjs"
   },
   "dependencies": {
