@@ -192,7 +192,7 @@
 .rfq-action-secondary:hover{background:#f1f5f9}
 @media(max-width:1100px){.rfq-main-grid{grid-template-columns:minmax(210px,250px) minmax(0,1fr)}.rfq-fields-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.rfq-heading-metrics>div{min-width:60px}}
 @media(max-width:760px){.rfq-main-grid{grid-template-columns:minmax(0,1fr)}.rfq-page-heading{align-items:flex-start;flex-direction:column}.rfq-heading-metrics{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.rfq-fields-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.rfq-add-item-grid{grid-template-columns:minmax(0,1fr) 90px}.rfq-add-item-grid>button{grid-column:1/-1}.rfq-save-bar{align-items:flex-start;flex-direction:column}.rfq-save-button{width:100%}}
-@media(max-width:420px){.rfq-fields-grid{grid-template-columns:minmax(0,1fr)}.rfq-panel{padding:9px}.rfq-page-heading{padding:10px}}.rfq-panel{padding:9px}.rfq-page-heading{padding:10px}}
+@media(max-width:420px){.rfq-fields-grid{grid-template-columns:minmax(0,1fr)}.rfq-panel{padding:9px}.rfq-page-heading{padding:10px}}
 
 /* @DATA_REVISAO_APROVACAO 2026-10-26 — Análise de Preços premium, escopo isolado. */
 .synqra-analysis-page{min-height:calc(100vh - 100px);padding:12px;background:#080f1c;color:#dbe7f4;font-size:12px;font-family:Inter,ui-sans-serif,system-ui,sans-serif}
