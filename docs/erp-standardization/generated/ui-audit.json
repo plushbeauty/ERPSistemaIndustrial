@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-10-26T17:36:55.056Z",
+  "generatedAt": "2026-10-26T17:41:51.756Z",
   "revision": "UI-AUDIT-R1",
   "mode": "static-analysis-only",
   "summary": {
     "sourceFilesScanned": 278,
     "routeDeclarationsDetected": 278,
     "filesUsingSharedFormTokens": 2,
-    "filesWithLocalStyleHints": 104,
+    "filesWithLocalStyleHints": 105,
     "filesWithControlsWithoutDetectedStaticHeight": 226
   },
   "routes": {
@@ -11464,7 +11464,7 @@
     },
     {
       "file": "src/pages/FiscalPrevisaoCaixa.tsx",
-      "lines": 249,
+      "lines": 222,
       "controlsDetected": 6,
       "tags": {
         "input": 1,
@@ -11473,21 +11473,20 @@
         "button": 5,
         "forms": 0,
         "tables": 1,
-        "grids": 3,
-        "roundedClasses": 13,
+        "grids": 0,
+        "roundedClasses": 0,
         "lookupHints": 0,
         "printHints": 0
       },
       "sharedFormTokensImported": false,
-      "localStyleHints": false,
+      "localStyleHints": true,
       "heightSummary": {
-        "2": 1,
-        "not-detected-static": 5
+        "not-detected-static": 6
       },
       "controls": [
         {
           "tag": "button",
-          "line": 141,
+          "line": 160,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11495,7 +11494,7 @@
         },
         {
           "tag": "button",
-          "line": 154,
+          "line": 167,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11503,7 +11502,15 @@
         },
         {
           "tag": "button",
-          "line": 165,
+          "line": 172,
+          "heightClasses": [],
+          "widthClasses": [],
+          "maxLength": null,
+          "classNameStaticDetected": false
+        },
+        {
+          "tag": "button",
+          "line": 185,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11511,19 +11518,7 @@
         },
         {
           "tag": "input",
-          "line": 185,
-          "heightClasses": [
-            "2"
-          ],
-          "widthClasses": [
-            "full"
-          ],
-          "maxLength": null,
-          "classNameStaticDetected": true
-        },
-        {
-          "tag": "button",
-          "line": 195,
+          "line": 188,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -11531,7 +11526,7 @@
         },
         {
           "tag": "button",
-          "line": 223,
+          "line": 201,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
