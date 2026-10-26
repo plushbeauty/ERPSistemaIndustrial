@@ -91,6 +91,7 @@ const menus: MenuItem[] = [
     { label: 'Inspeções de lotes', route: '/qualidade/inspecoes' },
     { label: 'Inspeção em processo', route: '/qualidade/inspecao-processo' },
     { label: 'Especificações técnicas', route: '/qualidade/especificacoes' },
+    { label: 'Cadastro de instrumentos de medição', route: '/qualidade/instrumentos', icon: Ruler },
     { label: 'Liberação de lotes', route: '/qualidade/liberacao-lote' },
     { label: 'Quarentena de lotes', route: '/qualidade/quarentena' },
     { label: 'Genealogia de lotes', route: '/qualidade/genealogia-lote' },
