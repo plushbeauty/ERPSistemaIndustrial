@@ -20,8 +20,8 @@ A lista executável de arquivos e hashes fica em `scripts/verify-approved-ui-loc
 2. `src/pages/NovoPedido.tsx` — Vendas / Novo Pedido
 3. `src/pages/ProdutosVendasIndustrial.tsx` — Cadastros / Produtos
 4. `src/styles/industrial-login.css` — Login institucional
-5. `src/pages/QualidadeCentralTablet.tsx` — Qualidade / Tablet SGQ
-6. `src/components/TabletMenuModal.tsx` — Qualidade / Modal Tablet
+5. `src/pages/QualidadePaquimetroDigital.tsx` — Qualidade / Paquímetro Digital
+6. `src/components/DigitalCaliper.tsx` — Qualidade / componente de medição digital
 7. `src/pages/PCPTabletOperador.tsx` — PCP / Tablet do operador
 8. `src/components/PCPTabletMenuModal.tsx` — PCP / Menu Tablet
 9. `src/components/layout/ERPHorizontalShell.tsx` — Shell horizontal
