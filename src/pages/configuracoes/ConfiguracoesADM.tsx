@@ -207,6 +207,28 @@ export default function ConfiguracoesADM() {
       @media(max-width:1100px){.adm-navigation{grid-template-columns:repeat(2,minmax(0,1fr))}.adm-scope{display:none}}
       @media(max-width:700px){.adm-topbar{flex-wrap:wrap}.adm-brand{min-width:0}.adm-brand strong{font-size:12px}.adm-search{width:min(300px,48vw)}.adm-navigation{grid-template-columns:1fr;padding:7px}.adm-main{padding:8px}.adm-page-heading{align-items:flex-start}.adm-back-button{font-size:8px}.adm-overview-grid{grid-template-columns:1fr}}
       @media(max-width:430px){.adm-brand span{font-size:8px}.adm-brand strong{font-size:11px}.adm-search{width:100%}.adm-page-heading h1{font-size:15px}}
+      /* Administration workspace refreshed to the shared industrial ERP standard. */
+      .adm-root{background:#f3f7fa;color:#123B50;font-size:12px}
+      .adm-topbar{min-height:62px;padding:10px clamp(14px,2vw,28px);gap:16px;border-color:#d8e4ea;box-shadow:0 2px 8px rgba(18,59,80,.04)}
+      .adm-brand{min-width:230px}.adm-brand span{font-size:9px;color:#2D8DB8}.adm-brand strong{font-size:16px;font-weight:850}
+      .adm-search{height:36px;width:min(420px,34vw);padding-inline:10px;border-radius:7px;background:#f8fbfc}.adm-search input{height:34px;font-size:12px}
+      .adm-scope{padding:8px 10px;border:1px solid #d8e4ea;border-radius:7px;background:#f8fbfc;font-size:9px}
+      .adm-navigation{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px clamp(14px,2vw,28px);background:transparent;border-bottom:0}
+      .adm-nav-group{padding:10px;border:1px solid #d8e4ea;border-radius:8px;box-shadow:0 3px 10px rgba(18,59,80,.04)}
+      .adm-group-title{margin-bottom:8px;font-size:9px;color:#526d79}
+      .adm-nav-items{gap:6px}.adm-nav-link{min-height:34px;gap:7px;padding:0 9px;border-color:#d8e4ea;border-radius:6px;font-size:10px;font-weight:750;transition:background .15s,border-color .15s}
+      .adm-nav-link.is-active{box-shadow:0 3px 8px rgba(18,59,80,.14)}
+      .adm-main{padding:12px clamp(14px,2vw,28px) 20px;max-width:1800px}
+      .adm-page-heading{margin-bottom:14px;padding:4px 0 13px;border-color:#d8e4ea}
+      .adm-page-heading h1{font-size:21px;font-weight:850}.adm-page-heading p{font-size:12px}
+      .adm-back-button{height:36px;padding:0 12px;border-radius:7px;font-size:10px;font-weight:850}
+      .adm-overview-grid{gap:10px}.adm-overview-item{min-height:76px;gap:10px;padding:11px;border-color:#d8e4ea;border-radius:8px;box-shadow:0 3px 10px rgba(18,59,80,.04);transition:transform .15s,border-color .15s,box-shadow .15s}
+      .adm-overview-item:hover{transform:translateY(-1px);box-shadow:0 7px 16px rgba(18,59,80,.08)}.adm-overview-icon{width:34px;height:34px;border-radius:7px}
+      .adm-overview-copy strong{font-size:11px}.adm-overview-copy small{font-size:10px;line-height:1.4}
+      .adm-root input:not([type=checkbox]):not([type=radio]):not([type=file]),.adm-root select{border-radius:6px}
+      .adm-root table{font-size:11px}.adm-root thead th{font-size:10px}
+      @media(max-width:1100px){.adm-navigation{grid-template-columns:repeat(2,minmax(0,1fr))}}
+      @media(max-width:700px){.adm-topbar{gap:8px}.adm-brand{min-width:0}.adm-brand strong{font-size:14px}.adm-search{width:100%}.adm-navigation{grid-template-columns:1fr}.adm-main{padding:8px 10px}.adm-page-heading h1{font-size:18px}.adm-overview-grid{grid-template-columns:1fr}}
     `}</style>
   </div>
 }

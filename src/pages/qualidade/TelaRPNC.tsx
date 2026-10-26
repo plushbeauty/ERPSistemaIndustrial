@@ -4,11 +4,12 @@ import {
   ImagePlus, Plus, Printer, RefreshCw, Save, Search, ShieldAlert, X,
 } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
+import { fetchAllPages } from '../../lib/supabasePagination'
 import '../../styles/rpnc-tokens.css'
 
 type TabId = 'relato' | 'causas' | 'acoes' | 'eficacia' | 'anexos'
 type ActionStatus = 'PENDENTE' | 'EM_ANDAMENTO' | 'CONCLUIDO'
-type Destination = 'FORNECEDOR' | 'CLIENTE' | 'AUDITORIA_INTERNA' | 'AUDITORIA_EXTERNA' | 'PROCESSO' | 'PROCEDIMENTO'
+type Destination = 'INTERNO' | 'EXTERNO' | 'RECLAMACAO_CLIENTE' | 'PROCESSO_INTERNO' | 'AUDITORIA_INTERNA' | 'AUDITORIA_EXTERNA' | 'PROCEDIMENTO'
 type CauseKind = 'MATERIA_PRIMA' | 'METODO' | 'MATRIZ_RISCO'
 type LotLine = { rowId: string; code: string; quantity: string }
 type TeamMember = { rowId: string; name: string; role: string; sector: string }
@@ -68,12 +69,13 @@ type RPNC = {
 type Attachment = { id: string; nome_arquivo: string; storage_path: string; mime_type: string | null; tamanho_bytes: number | null; created_at: string; url: string }
 
 const DESTINATIONS: { value: Destination; label: string; dbType: string; dbOrigin: string }[] = [
-  { value: 'FORNECEDOR', label: 'Fornecedor', dbType: 'INTERNO', dbOrigin: 'fornecedor' },
-  { value: 'CLIENTE', label: 'Cliente', dbType: 'RPNC_CLIENTE', dbOrigin: 'cliente' },
+  { value: 'INTERNO', label: 'Interno · área / setor', dbType: 'INTERNO', dbOrigin: 'interna' },
+  { value: 'EXTERNO', label: 'Externo · fornecedor', dbType: 'EXTERNO', dbOrigin: 'fornecedor' },
+  { value: 'RECLAMACAO_CLIENTE', label: 'Reclamação de cliente', dbType: 'RPNC_CLIENTE', dbOrigin: 'cliente' },
+  { value: 'PROCESSO_INTERNO', label: 'Processo interno', dbType: 'RPNC_PROCESSO', dbOrigin: 'processo' },
   { value: 'AUDITORIA_INTERNA', label: 'Auditoria interna', dbType: 'AUDITORIA_INTERNA', dbOrigin: 'auditoria interna' },
   { value: 'AUDITORIA_EXTERNA', label: 'Auditoria externa', dbType: 'AUDITORIA_EXTERNA', dbOrigin: 'auditoria externa' },
-  { value: 'PROCESSO', label: 'Processo', dbType: 'RPNC_PROCESSO', dbOrigin: 'processo' },
-  { value: 'PROCEDIMENTO', label: 'Procedimento', dbType: 'RPNC_PROCESSO', dbOrigin: 'procedimento' },
+  { value: 'PROCEDIMENTO', label: 'Procedimento / documentação', dbType: 'RPNC_PROCESSO', dbOrigin: 'procedimento' },
 ]
 const TABS: { id: TabId; label: string }[] = [
   { id: 'relato', label: '1 · Relato do problema' },
@@ -90,6 +92,7 @@ const CAUSE_KINDS: { value: CauseKind; label: string }[] = [
 ]
 const ACTION_STATUSES: ActionStatus[] = ['PENDENTE', 'EM_ANDAMENTO', 'CONCLUIDO']
 const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024
+const GRID_PAGE_SIZE = 25
 const ACCEPTED_EXTENSIONS = new Set(['pdf', 'png', 'jpg', 'jpeg', 'webp', 'doc', 'docx', 'xls', 'xlsx', 'txt'])
 const tableName = 'erp_documentos_anexos'
 
@@ -117,14 +120,14 @@ const blankReport = (): ReportData => ({
 })
 
 const blankForm = (): FormData => ({
-  number: makeRpnNumber(), destination: 'FORNECEDOR', recipient: '', date: localDate(), severity: 'Menor',
+  number: makeRpnNumber(), destination: 'INTERNO', recipient: '', date: localDate(), severity: 'Menor',
   description: '', clientId: '', report: blankReport(),
 })
 
 const referenceForm = (): FormData => {
   const form = blankForm()
   form.number = '06-26'
-  form.destination = 'CLIENTE'
+  form.destination = 'RECLAMACAO_CLIENTE'
   form.recipient = 'Moura'
   form.date = '2026-10-08'
   form.severity = 'Maior'
@@ -232,6 +235,18 @@ function rowStatus(row: RPNC): string {
   return 'ABERTO'
 }
 
+function destinationFromRow(row: RPNC): Destination {
+  const origin = (row.origem || '').toLowerCase()
+  const savedType = row.sgq_tipo_registro
+  if (savedType === 'EXTERNO' || origin.includes('fornecedor')) return 'EXTERNO'
+  if (savedType === 'RPNC_CLIENTE' || origin.includes('cliente')) return 'RECLAMACAO_CLIENTE'
+  if (savedType === 'AUDITORIA_EXTERNA' || origin.includes('auditoria externa')) return 'AUDITORIA_EXTERNA'
+  if (savedType === 'AUDITORIA_INTERNA' || origin.includes('auditoria interna')) return 'AUDITORIA_INTERNA'
+  if (origin.includes('procedimento')) return 'PROCEDIMENTO'
+  if (savedType === 'RPNC_PROCESSO' || origin.includes('processo')) return 'PROCESSO_INTERNO'
+  return 'INTERNO'
+}
+
 function durationMinutes(start: string, end: string): number | null {
   if (!start || !end) return null
   const [startHours, startMinutes] = start.split(':').map(Number)
@@ -256,13 +271,7 @@ function formFromRow(row: RPNC): FormData {
   const stored = row.sgq_tratamento_anomalia && typeof row.sgq_tratamento_anomalia === 'object'
     ? row.sgq_tratamento_anomalia
     : null
-  const origin = (row.origem || '').toLowerCase()
-  const destination = origin.includes('cliente') ? 'CLIENTE'
-    : origin.includes('fornecedor') ? 'FORNECEDOR'
-      : origin.includes('auditoria externa') ? 'AUDITORIA_EXTERNA'
-        : origin.includes('auditoria interna') ? 'AUDITORIA_INTERNA'
-          : origin.includes('procedimento') ? 'PROCEDIMENTO'
-            : origin.includes('processo') ? 'PROCESSO' : 'FORNECEDOR'
+  const destination = destinationFromRow(row)
   const report = stored ? {
     ...base.report,
     ...stored,
@@ -324,6 +333,8 @@ export default function TelaRPNC({ companyName = 'SYSNQRA', logoUrl }: { company
   const [tab, setTab] = useState<TabId>('relato')
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('TODOS')
+  const [categoryFilter, setCategoryFilter] = useState('TODAS')
+  const [gridPage, setGridPage] = useState(0)
   const [attachments, setAttachments] = useState<Attachment[]>([])
   const [companyId, setCompanyId] = useState('')
   const [erpUserId, setErpUserId] = useState('')
@@ -347,11 +358,11 @@ export default function TelaRPNC({ companyName = 'SYSNQRA', logoUrl }: { company
       if (auth.error) throw auth.error
       if (!auth.data.user) throw new Error('Entre com uma conta autorizada para consultar o SGQ.')
       const [records, profile] = await Promise.all([
-        supabase.from('erp_rpnc')
-          .select('id,numero_rpnc,descricao_nao_conformidade,origem,gravidade,status,criado_em,lote_producao,bloqueia_lote,sgq_tipo_registro,sgq_cliente_id,sgq_data_ocorrencia,sgq_lote,quantidade_segregada,sgq_responsavel_id,sgq_contencao,investigacao,acao_corretiva,sgq_acao_preventiva,sgq_verificacao_eficacia,sgq_data_prazo,sgq_tratamento_anomalia')
+        fetchAllPages<RPNC>((from, to) => supabase.from('erp_rpnc')
+          .select('id,numero_rpnc,descricao_nao_conformidade,origem,gravidade,status,criado_em,lote_producao,bloqueia_lote,sgq_tipo_registro,sgq_cliente_id,sgq_data_ocorrencia,sgq_lote,quantidade_segregada,sgq_responsavel_id,sgq_contencao,investigacao,acao_corretiva,sgq_acao_preventiva,sgq_verificacao_eficacia,sgq_data_prazo,sgq_tratamento_anomalia', { count: 'exact' })
           .eq('empresa_id', currentCompany)
           .order('criado_em', { ascending: false })
-          .limit(500),
+          .range(from, to)),
         supabase.from('erp_usuarios')
           .select('id,nome,email')
           .eq('auth_user_id', auth.data.user.id)
@@ -360,10 +371,9 @@ export default function TelaRPNC({ companyName = 'SYSNQRA', logoUrl }: { company
           .is('deleted_at', null)
           .maybeSingle(),
       ])
-      if (records.error) throw records.error
       if (profile.error) throw profile.error
       setErpUserId(profile.data?.id ? String(profile.data.id) : '')
-      const nextRows = (records.data ?? []) as RPNC[]
+      const nextRows = records
       setRows(nextRows)
       setSelected(current => current ? nextRows.find(row => row.id === current.id) ?? current : current)
     } catch (cause) {
@@ -380,14 +390,31 @@ export default function TelaRPNC({ companyName = 'SYSNQRA', logoUrl }: { company
     const term = query.trim().toLocaleLowerCase('pt-BR')
     const searchValues = [row.numero_rpnc, row.descricao_nao_conformidade, row.origem, row.sgq_lote, report?.recipient, report?.itemCode, report?.itemDescription, ...(report?.lots ?? []).map(item => item.code)]
     const matchesTerm = !term || searchValues.some(value => String(value ?? '').toLocaleLowerCase('pt-BR').includes(term))
-    return matchesTerm && (statusFilter === 'TODOS' || rowStatus(row) === statusFilter)
-  }), [rows, query, statusFilter])
+    return matchesTerm
+      && (statusFilter === 'TODOS' || rowStatus(row) === statusFilter)
+      && (categoryFilter === 'TODAS' || destinationFromRow(row) === categoryFilter)
+  }), [rows, query, statusFilter, categoryFilter])
+  const gridPageCount = Math.max(1, Math.ceil(visible.length / GRID_PAGE_SIZE))
+  const pageRows = visible.slice(gridPage * GRID_PAGE_SIZE, (gridPage + 1) * GRID_PAGE_SIZE)
+  useEffect(() => { setGridPage(0) }, [query, statusFilter, categoryFilter])
+  useEffect(() => { if (gridPage >= gridPageCount) setGridPage(gridPageCount - 1) }, [gridPage, gridPageCount])
 
   const totals = useMemo(() => ({
     open: rows.filter(row => rowStatus(row) === 'ABERTO').length,
     quarantined: rows.filter(row => rowStatus(row) === 'EM_QUARENTENA').length,
     closed: rows.filter(row => rowStatus(row) === 'CONCLUIDO').length,
   }), [rows])
+
+  const categoryTotals = useMemo(() => DESTINATIONS
+    .map(item => ({ ...item, count: rows.filter(row => destinationFromRow(row) === item.value).length }))
+    .filter(item => item.count > 0), [rows])
+  const maxCategoryCount = Math.max(1, ...categoryTotals.map(item => item.count))
+  const statusTotals = [
+    { key: 'ABERTO', label: 'Abertas', count: totals.open, color: '#b54708' },
+    { key: 'EM_QUARENTENA', label: 'Em quarentena', count: totals.quarantined, color: '#b42318' },
+    { key: 'CONCLUIDO', label: 'Fechadas', count: totals.closed, color: '#067647' },
+  ]
+  const maxStatusCount = Math.max(1, ...statusTotals.map(item => item.count))
 
   const currentLotTotal = form.report.lots.reduce((sum, lot) => sum + Math.max(0, Number(lot.quantity) || 0), 0)
   const computedDuration = durationMinutes(form.report.occurrenceTime, form.report.restorationTime)
@@ -681,18 +708,35 @@ export default function TelaRPNC({ companyName = 'SYSNQRA', logoUrl }: { company
           ].map(card => <article key={card.label} className="border border-[#d5e2e7] bg-white px-3 py-2"><p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wide text-[#617783]">{card.icon}{card.label}</p><strong className={`mt-1 block font-mono text-2xl ${card.color}`}>{loading ? '—' : card.value}</strong></article>)}
         </section>
 
-        <section className={`${styles.panel} grid grid-cols-1 gap-2 md:grid-cols-[minmax(220px,1fr)_220px]`}>
+        <section className="grid grid-cols-1 gap-2 lg:grid-cols-2" aria-label="Gráficos de não conformidades">
+          <article className={`${styles.panel} space-y-2`}>
+            <div><h2 className="text-[11px] font-black uppercase tracking-wide">RPNC por origem / setor</h2><p className="text-[9px] text-[#617783]">Contagem dos registros carregados nesta empresa.</p></div>
+            {categoryTotals.length ? categoryTotals.map(item => <div key={item.dbType} className="grid grid-cols-[minmax(120px,1fr)_3fr_36px] items-center gap-2 text-[10px]">
+              <span className="truncate">{item.label}</span><span className="h-2 overflow-hidden rounded bg-slate-100"><span className="block h-full rounded bg-[#2D8DB8]" style={{ width: `${item.count / maxCategoryCount * 100}%` }} /></span><strong className="text-right tabular-nums">{item.count}</strong>
+            </div>) : <p className="py-3 text-center text-[10px] text-slate-500">Sem RPNC classificadas.</p>}
+          </article>
+          <article className={`${styles.panel} space-y-2`}>
+            <div><h2 className="text-[11px] font-black uppercase tracking-wide">Abertas × em quarentena × fechadas</h2><p className="text-[9px] text-[#617783]">Atualizado a partir do status e bloqueio dos registros da grade.</p></div>
+            {statusTotals.map(item => <div key={item.key} className="grid grid-cols-[100px_3fr_36px] items-center gap-2 text-[10px]">
+              <span>{item.label}</span><span className="h-2 overflow-hidden rounded bg-slate-100"><span className="block h-full rounded" style={{ width: `${item.count / maxStatusCount * 100}%`, backgroundColor: item.color }} /></span><strong className="text-right tabular-nums">{loading ? '—' : item.count}</strong>
+            </div>)}
+          </article>
+        </section>
+
+        <section className={`${styles.panel} grid grid-cols-1 gap-2 md:grid-cols-[minmax(220px,1fr)_190px_230px]`}>
           <label className="relative block"><Search size={14} className="absolute left-2.5 top-[11px] text-slate-400" /><input className="rpnc-control pl-8" value={query} onChange={event => setQuery(event.target.value)} placeholder="Buscar RNC, item, destinatário ou lote…" aria-label="Pesquisar RPNC" /></label>
           <select className="rpnc-control" value={statusFilter} onChange={event => setStatusFilter(event.target.value)} aria-label="Filtrar status"><option value="TODOS">Todos os status</option><option value="ABERTO">Aberto</option><option value="EM_QUARENTENA">Em quarentena</option><option value="CONCLUIDO">Concluído</option></select>
+          <select className="rpnc-control" value={categoryFilter} onChange={event => setCategoryFilter(event.target.value)} aria-label="Filtrar origem ou setor"><option value="TODAS">Todas as origens / setores</option>{DESTINATIONS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select>
         </section>
 
         <section className="overflow-x-auto border border-[#d5e2e7] bg-white">
-          <table className="rpnc-table min-w-[920px]"><thead><tr><th>RNC</th><th>Item de controle</th><th>Destinatário</th><th>Data</th><th className="text-right">Lotes / peças</th><th>Status</th><th>Ações</th></tr></thead><tbody>
-            {visible.map(row => {
+          <table className="rpnc-table min-w-[1060px]"><thead><tr><th>RPNC</th><th>Origem / setor</th><th>Item de controle</th><th>Destinatário</th><th>Data</th><th className="text-right">Lotes / peças</th><th>Status</th><th>Ações</th></tr></thead><tbody>
+            {pageRows.map(row => {
               const report = row.sgq_tratamento_anomalia
               const lotCount = report?.lots?.filter(lot => lot.code).length ?? (row.sgq_lote ? 1 : 0)
               return <tr key={row.id} className={selected?.id === row.id ? 'bg-[#f0f8fa]' : ''}>
                 <td className="font-mono font-bold">{row.numero_rpnc || row.id.slice(0, 8)}</td>
+                <td>{DESTINATIONS.find(item => item.value === destinationFromRow(row))?.label || 'Interno · área / setor'}</td>
                 <td>{report?.itemCode ? `${report.itemCode} · ${report.itemDescription}` : row.descricao_nao_conformidade || '—'}</td>
                 <td>{report?.recipient || noteRecipient(row.investigacao) || '—'}</td>
                 <td className="whitespace-nowrap">{formatDate(row.sgq_data_ocorrencia || row.criado_em)}</td>
@@ -701,9 +745,13 @@ export default function TelaRPNC({ companyName = 'SYSNQRA', logoUrl }: { company
                 <td className="whitespace-nowrap"><button type="button" className={`${styles.button} min-h-8 px-2`} onClick={() => openRecord(row)}><FileText size={12} />Consultar / editar</button><button type="button" className={`${styles.button} ml-1 min-h-8 px-2`} aria-label={`Imprimir ${row.numero_rpnc || 'RPNC'}`} onClick={() => printReport(row)}><Printer size={12} /></button></td>
               </tr>
             })}
-            {!visible.length && <tr><td colSpan={7} className="p-8 text-center text-[11px] text-slate-500">{loading ? 'Consultando registros do ERP…' : 'Nenhuma RPNC encontrada para esta pesquisa.'}</td></tr>}
+            {!visible.length && <tr><td colSpan={8} className="p-8 text-center text-[11px] text-slate-500">{loading ? 'Consultando registros do ERP…' : 'Nenhuma RPNC encontrada para esta pesquisa.'}</td></tr>}
           </tbody></table>
         </section>
+        <nav aria-label="Paginação das RPNCs" className="flex flex-wrap items-center justify-between gap-2 border border-[#d5e2e7] bg-white px-3 py-2 text-[10px]">
+          <span className="text-[#617783]">{visible.length ? `${gridPage * GRID_PAGE_SIZE + 1}–${Math.min((gridPage + 1) * GRID_PAGE_SIZE, visible.length)} de ${visible.length} registros` : '0 registros'} · {rows.length} carregados</span>
+          <div className="flex gap-1"><button type="button" className={styles.button} disabled={gridPage === 0} onClick={() => setGridPage(page => Math.max(0, page - 1))}>Anterior</button><span className="flex min-h-9 items-center px-2 font-mono">{gridPage + 1} / {gridPageCount}</span><button type="button" className={styles.button} disabled={gridPage + 1 >= gridPageCount} onClick={() => setGridPage(page => Math.min(gridPageCount - 1, page + 1))}>Próxima</button></div>
+        </nav>
 
         <footer className="flex items-start gap-2 px-1 text-[10px] leading-relaxed text-[#617783]"><ClipboardCheck size={13} className="mt-0.5 shrink-0" /><span>Os registros são carregados e gravados na empresa da sessão. O bloqueio de estoque só é confirmado quando o RPC transacional de quarentena aceita todos os lotes vinculados.</span></footer>
       </div>
