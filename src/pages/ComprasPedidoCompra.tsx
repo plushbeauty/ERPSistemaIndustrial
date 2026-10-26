@@ -127,6 +127,9 @@ export default function ComprasPedidoCompra() {
         .eq('ativo', true).is('deleted_at', null).maybeSingle()
       if (profile.error || !profile.data) throw profile.error ?? new Error('Perfil ERP ativo não localizado na empresa atual.')
       if (!suppliers.some(entry => entry.id === supplier)) throw new Error('O fornecedor selecionado não pertence à carteira carregada desta empresa.')
+      const fiscalSchema = await supabase.from('erp_pedidos_compra_itens')
+        .select('aliquota_ipi,aliquota_icms,centro_custo').eq('empresa_id', companyId).limit(1)
+      if (fiscalSchema.error) throw new Error('A estrutura fiscal do pedido ainda não está aplicada no Supabase. Aplicar a migration 20261026120000_erp_compras_pedido_fiscal_items.sql antes de gravar pedidos com IPI, ICMS e centro de custo.')
       const result = await supabase.rpc('erp_compras_salvar_pedido', {
         p_pedido_id: null,
         p_fornecedor_id: supplier,
@@ -148,7 +151,7 @@ export default function ComprasPedidoCompra() {
       if (result.error) throw result.error
       const saved = Array.isArray(result.data) ? result.data[0] : result.data
       if (!saved || typeof saved !== 'object' || !('id' in saved)) throw new Error('O banco não retornou o pedido criado.')
-      setMessage(`Pedido de compra #${'numero' in saved ? String(saved.numero) : String(saved.id)} enviado para aprovação. Confirme os campos fiscais na rotina de aprovação.`)
+      setMessage(`Pedido de compra #${'numero' in saved ? String(saved.numero) : String(saved.id)} enviado para aprovação com dados fiscais por item.`)
       setItems([])
       setNotes('')
     } catch (cause) {
