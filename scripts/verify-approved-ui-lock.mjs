@@ -2,8 +2,9 @@ import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 
 /**
- * Approved UI lock — reviewed 2026-10-19, approval revision APROV-008 (compact edit sizing and removal of duplicated zone controls explicitly authorized by user). Explicitly authorized revisions APROV-005 (Novo Pedido), APROV-006 (Vendas / Status), and APROV-011 (single top Windows 11 navigation with visible Menu control) are frozen alongside the restored screens.
+ * Approved UI lock — reviewed 2026-10-26, approval revision APROV-008 (compact edit sizing and removal of duplicated zone controls explicitly authorized by user). Explicitly authorized revisions APROV-005 (Novo Pedido), APROV-006 (Vendas / Status), and APROV-011 (single top Windows 11 navigation with visible Menu control) are frozen alongside the restored screens.
  * Explicit user authorization on 2026-10-23 permits PCPFichasProcesso.tsx REV-FICHA-010: standardize the SGQ/IT-PCP-001 header and light document cards, and highlight the Nova Ficha action with a violet icon/button. Other frozen files remain unchanged.
+ * Explicit user-authorized revision on 2026-10-26: add the Quality / Metrology digital-caliper menu route only; shell geometry and visual styles remain unchanged.
  * Do not update these hashes as part of ordinary styling/refactor work.
  */
 const approved = [
@@ -15,7 +16,7 @@ const approved = [
   { path: 'src/components/TabletMenuModal.tsx', sha: '5a416adfe3154227f7b4a652543584dca88e58d0', label: 'Qualidade / Modal Tablet padrão (22 módulos)', source: 'approved modal design — keep unchanged unless explicitly authorized' },
   { path: 'src/pages/PCPTabletOperador.tsx', sha: 'e7c407a6a21df06081f374b06805c39d69086597', label: 'PCP / Tablet do operador', source: 'revisão explicitamente autorizada pelo usuário em 2026-10-21 — consolidar o código do tablet PCP enviado em 19–21/10; preservar e congelar esta versão' },
   { path: 'src/components/PCPTabletMenuModal.tsx', sha: '60bf035ae3bd3e89be45577ca62714058f56b1bc', label: 'PCP / Menu Tablet e Chão de Fábrica', source: 'revisão explicitamente autorizada pelo usuário em 2026-10-23 — incluir atalho Chão de Fábrica / Portal do Funcionário; preservar módulos anteriores' },
-  { path: 'src/components/layout/ERPHorizontalShell.tsx', sha: '15938fa579f6fcdb3238924755195aa7a3eb4f64', label: 'Shell global / menu superior único Windows 11', source: 'revisão explicitamente autorizada pelo usuário em 2026-10-23 — incluir Chão de Fábrica no submenu Manufatura / PCP; preservar shell e demais rotas aprovadas' },
+  { path: 'src/components/layout/ERPHorizontalShell.tsx', sha: '9d7022f91bdb45cb0298c0545e22317076f3aac6', label: 'Shell global / menu superior único Windows 11', source: 'revisão explicitamente autorizada em 2026-10-26 — adicionar acesso ao controle dimensional de Metrologia; geometria e estilos preservados' },
   { path: 'src/components/IndustrialCommandDashboard.tsx', sha: '821b2cb2add9ec0a31d0c81e906a2c1f6e84118b', label: 'Dashboard principal industrial', source: 'restored from user-provided archive 2026-10-18; freeze unless explicitly authorized' },
   { path: 'src/pages/PCPFichasProcesso.tsx', sha: 'eed2c198fb8628719a909cbf5eb1b613025c0e14', label: 'PCP / Fichas de Processo (Prensados, Injetados, Estamparia, Montagem)', source: 'explicit user-authorized UI revision REV-FICHA-010 on 2026-10-23 — standardized SYSNQRA SGQ/IT-PCP-001 header, light document status cards, violet Nova Ficha icon/action; freeze after this revision' },
   { path: 'src/pages/QualidadeInspecoesIndustrial.tsx', sha: 'ebb5bd1e523f38a2ab6169bda4e7a9855ee3e65a', label: 'Qualidade / Inspeções de Lotes', source: 'explicit user-provided approval directive 2026-10-19 — Steel Blue split-screen, compact h-8 controls and dense inspection grid; frozen after revision' },
