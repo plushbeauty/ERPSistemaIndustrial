@@ -305,6 +305,37 @@ Esta rodada ampliou a leitura dos componentes de Fornecedores, Clientes, Compras
 | `src/pages/QualidadePaquimetroDigital.tsx` | `3c355adb13c28893e66c54556fd9123700e6956097` | APROVADA / CONGELADA — hash íntegro | Amostra atual mostra controles compactos; classes genéricas também existem. Preservar arquivo e conferir produção. |
 | `src/pages/QualidadePFMEA.tsx` | `28314f7d3787429438ae6ebb689105c5d654e6f4` | PADRÃO NOVO — triagem | Controles compactos e paleta institucional. |
 
+
+## Décima segunda passada — páginas restantes e aliases (26/10/2026)
+
+| Arquivo | Hash verificado | Triagem estática | Observação |
+|---|---|---|---|
+| `src/pages/CadastroMestreIndustrial.tsx` | `a8abd0e55f4c0396ee3a8a375792e12475a62265` | ALERTA DE ESTILO MISTO | Controles compactos, mas cards genéricos; conferir tela ativa. |
+| `src/pages/DiretoriaDashboard.tsx` | `e129715222b2337c13e8f3ad94d1810b19c7eff7` | POSSÍVEL MODELO ANTIGO | Cards genéricos sem sinais locais claros de paleta/controles compactos. |
+| `src/pages/FMEAIndustrial.tsx` | `896c275ceae9a13bde79db65735add0807b703ea` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes. |
+| `src/pages/FMEAIndustrialPage.tsx` | `f02b0355dfa258bcf753cb80e5eb429293511c36` | REVISÃO VISUAL PENDENTE | Sem sinais locais suficientes. |
+| `src/pages/HelpPCPFichas.tsx` | `540ae8647bc1c3b6cb231b0874e8248fe2dbaaa9` | PADRÃO NOVO — triagem | Data de aprovação 18/10/2026, paleta e controles compactos. |
+| `src/pages/PublicIndustrialHome.tsx` | `98280f506ba5a69cb2c4e727e870d7e769eed284` | ALIAS / CONGELADA | Exporta a home aprovada de `src/PublicIndustrialHome.tsx`; não alterar este alias. |
+| `src/pages/QualidadeListaMestre.tsx` | `30e2e0cc212a351b558ebc18fe60d51ba2980afd` | ALERTA DE ESTILO MISTO | Controles compactos e card genérico; confirmar layout. |
+| `src/pages/QualidadeMetodologia8D.tsx` | `0791761983b954ac4d3f0ee4ec54ac5e0652b3df` | PARCIAL — triagem | Paleta institucional, sem sinais locais de controles compactos. |
+| `src/pages/VendasLayout.tsx` | `433c41e593cf823271c4fab3a7db1fee239584d3` | APROVADA / CONGELADA | Revisão registrada em 26/10/2026; preservar layout global aprovado. |
+| `src/pages/cadastro-produtos/HelpFichaTecnica.tsx` | `c3b8bbee877635842f0ceeebfb4dc120bddd2791` | PADRÃO NOVO — triagem | Revisão 18/10/2026, controles compactos e paleta. |
+| `src/pages/cadastro-produtos/HelpListagemProdutos.tsx` | `2154920d1837ee041574bae718e40db0fd6ecc49` | PADRÃO NOVO — triagem | Revisão 19/10/2026 e controles compactos. |
+| `src/pages/cadastro-produtos/HelpParametrosCodigo.tsx` | `9f01295a6a775094f4f30ae0c1aeab48ccc31df8` | PADRÃO NOVO — triagem | Revisão 18/10/2026, controles compactos e paleta. |
+| `src/pages/cadastro-produtos/ImpressaoEtiquetas.tsx` | `c8024ad6e038a1c9163df0093da8c3c5952814de` | ALERTA DE ESTILO MISTO | Poucos controles compactos e vários cards genéricos. |
+| `src/pages/estoque/EstoqueRecebimentoLotes.tsx` | `8ff3ddca2225738c8b7cd2ac1613f9f2bcad7178` | PADRÃO NOVO — triagem | Revisão 18/10/2026, controles compactos e layout compartilhado. |
+| `src/pages/estoque/HelpEstoqueRecebimento.tsx` | `9421bd98bbf46cfb2edd402935e8057b600212e6` | PADRÃO NOVO — triagem | Revisão 18/10/2026, controles compactos. |
+| `src/pages/estoque/InventarioValidade.tsx` | `8822718fc5b6872a26d1d254856417d3881d7f7d` | PADRÃO NOVO — triagem | Revisão de código 20/10/2026 e muitos controles compactos. |
+| `src/pages/financeiro/BankClearanceSummary.tsx` | `0f06ef6451e2ca6fd1b12cf1c2658227b56c7fb0` | REVISÃO VISUAL PENDENTE | Componente pequeno; conferir se rota ativa o utiliza. |
+| `src/pages/financeiro/BankRecWorkspace.tsx` | `a67f25e5eadb619e1fdcd066cc89e2873f34467a` | REVISÃO VISUAL PENDENTE | Componente curto; verificar composição e rota efetiva. |
+| `src/pages/financeiro/BankReconciliation.tsx` | `c3a0ff0c87fe418fda6db0d165c32b035267a144` | REVISÃO VISUAL PENDENTE | Componente curto; verificar se delega para outra tela. |
+| `src/pages/financeiro/BankReconciliationStatement.tsx` | `36d83fe93b5b8bcf3ea04850efd8b26140be3313` | REVISÃO VISUAL PENDENTE | Componente curto; verificar rota e componente pai. |
+| `src/pages/financeiro/BankStatementImporter.tsx` | `4e282cd2f322c97a265bc7b6da0e5e89113b5551` | REVISÃO VISUAL PENDENTE | Componente curto; confirmar layout da rota efetiva. |
+| `src/pages/financeiro/BankTransactionList.tsx` | `5cf96ae1d2661b6fcd6ecc100a6f7bfc0d10cb75` | REVISÃO VISUAL PENDENTE | Componente curto; verificar uso na tela publicada. |
+| `src/pages/financeiro/IncorrectlyClearedEntries.tsx` | `d16432d9dc2d85dc86940791f736f6bde38de5dc` | REVISÃO VISUAL PENDENTE | Componente curto; verificar uso na tela publicada. |
+| `src/pages/layout/ModuloMestreIndustrial.tsx` | `089f3dc4fc2a639b3f04ba22f9ac3adcb68edde8` | ALERTA DE ESTILO MISTO | Controles compactos com um card genérico; confirmar aparência. |
+| `src/pages/pcp/PCPAuditoria.tsx` | `b9c22fd03e57ce86ebd715e795942378906babdb` | ALERTA DE ESTILO MISTO | Paleta e controles compactos, mas dois cards genéricos. |
+
 ## Próxima etapa da auditoria
 
 Continuar o inventário por módulo — Cadastros, Compras, Vendas, Financeiro, PCP, Qualidade/SGQ, Estoque, Fiscal, RH, Engenharia, Manutenção, Logística e Administração — registrando cada rota, componente, hash, estado visual e pendência. Só marcar **VERIFICADA VISUALMENTE** depois de comparar a tela renderizada com a referência aprovada.
