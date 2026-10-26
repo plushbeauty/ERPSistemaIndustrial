@@ -10,10 +10,8 @@
 | Vendas → Status do pedido — `src/pages/VendasCentral.tsx` | APROV-006, alinhamento dos cards e legenda visível; revisão autorizada em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | Cadastro de Produtos — `src/pages/ProdutosVendasIndustrial.tsx` | Referência aprovada anterior | Hash Git do arquivo verificado no CI |
 | Login institucional — `src/styles/industrial-login.css` | APROV-005, texto institucional branco com contorno escuro | Hash Git do arquivo verificado no CI |
-| Qualidade Tablet — `src/pages/QualidadeCentralTablet.tsx` | Tablet aprovado pelo usuário | Hash Git do arquivo verificado no CI |
-| Qualidade Tablet padrão — `src/components/TabletMenuModal.tsx` | Modal central, 22 módulos; visual aprovado preservado | Hash Git do arquivo verificado no CI |
 | PCP → Submenu de fichas — `src/components/PCPTabletMenuModal.tsx` | Submenu de fichas aprovado em 2026-10-18 | Hash Git do arquivo verificado no CI |
-| Shell horizontal — `src/components/layout/ERPHorizontalShell.tsx` | APROV-007: Qualidade abre o tablet; seta mantém acesso ao submenu | Hash Git do arquivo verificado no CI |
+| Shell horizontal — `src/components/layout/ERPHorizontalShell.tsx` | APROV-014: menu SGQ direto e Paquímetro Digital visível; Central de Compras abre em `/compras` | Hash Git do arquivo verificado no CI |
 | Dashboard industrial — `src/components/IndustrialCommandDashboard.tsx` | Restaurado da referência aprovada em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | PCP → Fichas de Processo — `src/pages/PCPFichasProcesso.tsx` | Restaurada da referência aprovada em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | Página pública — `src/PublicIndustrialHome.tsx` | Carrossel acessível e planos da referência aprovada | Hash Git do arquivo verificado no CI |
@@ -26,6 +24,17 @@
 - Qualidade Tablet: mantido o componente aprovado, sem alterações visuais ou funcionais.
 - PCP Tablet do operador: mantido o componente aprovado, sem alterações visuais ou funcionais.
 - Proteção: hashes dos dois componentes Tablet adicionados ao verificador para falhar o CI se houver alteração sem autorização explícita.
+
+## Registro da revisão APROV-COMPRAS-2026-10-24-R1 — 2026-10-24
+
+- Central de Compras restaurada em `/compras` a partir da referência aprovada; cards, dimensões, espaçamentos, cores, tipografia, cabeçalho e abas preservados.
+- A tela foi congelada no verificador de hashes.
+
+## Registro da revisão APROV-014 — 2026-10-26
+
+- Removida a centralização antiga em Tablet da Qualidade; `/qualidade` encaminha para Inspeções e os módulos SGQ ficam acessíveis diretamente pelo menu global.
+- Incluído o atalho com ícone **Paquímetro Digital / Metrologia** em `/qualidade/paquimetro-digital`.
+- O menu Compras abre a Central aprovada em `/compras`.
 
 ## Como funciona o bloqueio
 
