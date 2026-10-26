@@ -1,12 +1,12 @@
 /**
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
- * Data/Hora: 24/09/2026 - 13:00 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
- * ID da Revisão: REV-059
- * Data da revisão autorizada: 2026-10-22
- * Revisão: REV-PRODUTO-UI-012 — correção do estado inicial da aba tipada
- * Status: consolidação visual preservando CRUD, segurança por empresa, estoque derivado, engenharia e fiscal.
+ * Data da revisão: 2026-10-26
+ * Desenvolvedor responsável: Fernando
+ * ID da Revisão: REV-PRODUTO-UI-013
+ * Status: APROVADO-IMUTAVEL — CSS visual congelado após autorização explícita do usuário.
+ * Escopo: substituição exclusiva do CSS; preservar JSX, CRUD, Supabase, segurança por empresa, estoque, engenharia e fiscal.
+ * Regra: não alterar o visual aprovado sem nova autorização explícita de Fernando.
  * Alterações: Ficha Técnica Mestre reúne dados gerais, estoque, produção, qualidade e documentos; fiscal permanece isolado.
  * Dados demonstrativos/fallbacks não são adicionados; falhas de consulta permanecem explícitas.
  * Status do Build Local: Não executado — validação será feita pelo gate remoto.
