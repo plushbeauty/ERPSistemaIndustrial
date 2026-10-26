@@ -13,6 +13,7 @@ if(config.outputDirectory!=='dist') failures.push('outputDirectory deve ser dist
 if(config.buildCommand!=='npm run build:vercel') failures.push('buildCommand deve ser exatamente npm run build:vercel')
 if(pkg.scripts?.['build:vercel']!=='npm run verify:production') failures.push('build:vercel deve executar exatamente npm run verify:production')
 if(config.installCommand!=='npm ci --legacy-peer-deps --no-audit --no-fund') failures.push('installCommand deve ser exatamente npm ci --legacy-peer-deps --no-audit --no-fund')
+if(config.ignoreCommand!=="if git diff --quiet HEAD^ HEAD -- . ':(exclude)docs/auditoria/**'; then exit 0; else exit 1; fi") failures.push('ignoreCommand deve ignorar apenas mudanças exclusivas em docs/auditoria e continuar o build em caso de diferença ou erro')
 if(pkg.engines?.node!=='24.x') failures.push('package.json deve fixar Node 24.x')
 if(!Array.isArray(config.rewrites)||!config.rewrites.some(item=>item.destination==='/index.html'&&typeof item.source==='string'&&item.source.includes('.*')&&!item.source.includes('/assets/'))) failures.push('rewrite SPA catch-all para /index.html ausente ou interceptando /assets/')
 if(config.builds) failures.push('configuração legada "builds" não permitida')
