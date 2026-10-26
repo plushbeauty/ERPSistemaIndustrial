@@ -1,3 +1,4 @@
+/** REVISÃO: CONTROLE-EQUIPAMENTOS-MEDICAO-2026-10-26-R1 | Inclusão exclusiva do acesso ao controle dimensional; preservar layout aprovado. */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Warehouse, Wallet, FileText, Factory, Wrench, Ruler, BarChart3, Settings, LogOut, Search, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
