@@ -83,7 +83,7 @@ export default function DigitalCaliper({ instrumentOptions = [] }: Props) {
   useEffect(() => { void loadHistory() }, [])
 
   const todayISO = new Date().toISOString().slice(0, 10)
-  const blockedInstrument = !!selectedInstrument && (/BLOQUEADO|VENCIDO|INATIVO|REPROVADO/i.test(selectedInstrument.status) || (!!selectedInstrument.proxima_calibracao && selectedInstrument.proxima_calibracao < todayISO))
+  const blockedInstrument = !!selectedInstrument && (/BLOQUEADO|VENCIDO|INATIVO|REPROVADO/i.test(selectedInstrument.status) || (!selectedInstrument.proxima_calibracao || selectedInstrument.proxima_calibracao < todayISO))
 
   function toggleUnit() {
     if (isLocked) return
