@@ -14,7 +14,7 @@ const requiredPageMarkers = [
   "supabase.rpc('erp_current_empresa_id')",
   ".from('erp_rfq')",
   ".from('erp_rfq_fornecedores')",
-  ".from('erp_rfq_itens')',
+  ".from('erp_rfq_itens')",
 ]
 const requiredStyleMarkers = [
   '.synqra-rfq-page',
@@ -50,8 +50,8 @@ if (
 }
 
 if (missing.length > 0) {
-  process.stderr.write(`FAIL — trava de regressão Compras premium: ${missing.join('; ')}\\n`)
+  process.stderr.write(`FAIL — trava de regressão Compras premium: ${missing.join('; ')}\n`)
   process.exit(1)
 }
 
-process.stdout.write('PASS — RFQ e Pedido de Compra premium presentes; implementações antigas bloqueadas.\\n')
+process.stdout.write('PASS — RFQ e Pedido de Compra premium presentes; implementações antigas bloqueadas.\n')
