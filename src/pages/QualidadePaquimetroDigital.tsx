@@ -38,7 +38,7 @@ export default function QualidadePaquimetroDigital() {
   useEffect(() => { void loadInstruments() }, [])
 
   const today = new Date().toISOString().slice(0, 10)
-  const blocked = instruments.filter(item => /BLOQUEADO|VENCIDO|INATIVO|REPROVADO/i.test(item.status) || (!!item.proxima_calibracao && item.proxima_calibracao < today)).length
+  const blocked = instruments.filter(item => /BLOQUEADO|VENCIDO|INATIVO|REPROVADO/i.test(item.status) || (!item.proxima_calibracao || item.proxima_calibracao < today)).length
   return (
     <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900 md:p-4">
       <div className="mx-auto max-w-[1680px] space-y-3">
