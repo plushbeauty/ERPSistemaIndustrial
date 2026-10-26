@@ -68,10 +68,10 @@ const empty=():FormData=>({
 const money=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0)
 const n=(v:unknown)=>Number(v??0)||0
 const fmt=(v:unknown)=>n(v).toLocaleString('pt-BR',{maximumFractionDigits:3})
-const panel:CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:2,boxShadow:'0 2px 7px rgba(18,59,80,.07),0 1px 2px rgba(16,24,40,.04)'}
-const input:CSSProperties={width:'100%',height:30,border:'1px solid #c4ced9',borderRadius:2,padding:'0 8px',fontSize:11,background:'#fff',boxSizing:'border-box',minWidth:0}
-const label:CSSProperties={display:'grid',gap:3,minWidth:0,fontSize:9,lineHeight:'11px',fontWeight:500,color:'#344054',textTransform:'uppercase',overflowWrap:'anywhere'}
-const btn=(kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,height:30,padding:'0 10px',borderRadius:2,border:'1px solid '+(kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#B8CDD5'),background:kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#F4FBFD',color:kind==='primary'||kind==='danger'?'#fff':'#123B50',fontSize:11,fontWeight:600,textTransform:'uppercase',cursor:'pointer',whiteSpace:'nowrap'})
+const panel:CSSProperties={background:'#fff',border:'1px solid #e2e8f0',borderRadius:12,boxShadow:'0 2px 8px rgba(15,23,42,.06)'}
+const input:CSSProperties={width:'100%',height:36,border:'1px solid #cbd5e1',borderRadius:8,padding:'0 12px',fontSize:12,background:'#f8fafc',boxSizing:'border-box',minWidth:0}
+const label:CSSProperties={display:'grid',gap:4,minWidth:0,fontSize:10,lineHeight:'13px',fontWeight:700,color:'#475569',textTransform:'uppercase',overflowWrap:'anywhere'}
+const btn=(kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,height:36,padding:'0 12px',borderRadius:8,border:'1px solid '+(kind==='danger'?'#fecaca':kind==='primary'?'#1d4ed8':'#cbd5e1'),background:kind==='danger'?'#fef2f2':kind==='primary'?'#2563eb':'#fff',color:kind==='primary'?'#fff':kind==='danger'?'#b91c1c':'#334155',fontSize:11,fontWeight:700,textTransform:'uppercase',cursor:'pointer',whiteSpace:'nowrap',boxShadow:'0 1px 2px rgba(15,23,42,.08)'})
 const emptyRow=(text:string,col=7)=><tr><td colSpan={col} style={{padding:22,textAlign:'center',color:'#667085'}}>{text}</td></tr>
 
 export default function ProdutosVendasIndustrial(){
@@ -374,7 +374,7 @@ export default function ProdutosVendasIndustrial(){
       @media print{body *{visibility:hidden!important}.product-master-screen,.product-master-screen *{visibility:visible!important}.product-master-screen{position:absolute!important;inset:0!important;width:100%!important;max-width:none!important;background:#fff!important}.product-master-screen .product-workspace{display:block!important;margin:0!important}.product-master-screen .product-list-panel,.product-master-screen header button,.product-master-screen input[type=file],.product-master-screen .product-screen-footer button{display:none!important}.product-master-screen .product-editor-panel{border:0!important}.product-master-screen .product-form-section{break-inside:avoid}.product-master-screen .product-tabs{display:none!important}}
       .product-master-screen button:focus-visible{outline:2px solid #2D8DB8;outline-offset:1px}
       .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{max-width:100%;box-sizing:border-box}
-      .product-master-screen .product-form-section{margin:0 0 8px;padding:8px;background:#fff;border:1px solid #d5dde7;border-radius:2px;box-shadow:0 2px 6px rgba(18,59,80,.055),0 1px 2px rgba(16,24,40,.035);min-width:0}
+      .product-master-screen .product-form-section{margin:0 0 8px;padding:12px;background:#fff;border:1px solid #d5dde7;border-radius:12px;box-shadow:0 2px 6px rgba(18,59,80,.055),0 1px 2px rgba(16,24,40,.035);min-width:0}
       .product-master-screen .product-form-section:last-child{margin-bottom:0}
       .product-master-screen .product-form-section-title{margin:-1px 0 8px;padding:6px 8px;background:linear-gradient(180deg,#f0f8fb 0%,#e7f2f7 100%);border-left:3px solid #2D8DB8;color:#123B50;font-size:10px;line-height:14px;font-weight:700;letter-spacing:.04em}
       /* Grid de 12 colunas: campos curtos ocupam 3, campos longos podem ocupar 6 ou 12. */
@@ -383,12 +383,12 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen .product-form-grid>*{grid-column:span 3;min-width:0;align-self:start}
       .product-master-screen .product-form-grid .product-unit-row{grid-column:span 9}
       .product-master-screen .product-general-row>*:nth-child(3),.product-master-screen .product-general-row>*:nth-child(4){grid-column:span 6!important}
-      .product-master-screen .product-form-grid label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(12px,auto) 30px;align-content:start;gap:2px;min-width:0}
-      .product-master-screen .product-form-grid label>input,.product-master-screen .product-form-grid label>select,.product-master-screen .product-form-grid label>textarea{min-width:0;width:100%;height:30px;box-sizing:border-box;max-width:100%}
-      .product-master-screen .product-form-grid label>span{display:flex;align-items:center;max-width:100%;min-height:12px;line-height:11px;white-space:normal;overflow-wrap:anywhere;word-break:normal}
+      .product-master-screen .product-form-grid label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(14px,auto) 36px;align-content:start;gap:4px;min-width:0}
+      .product-master-screen .product-form-grid label>input,.product-master-screen .product-form-grid label>select,.product-master-screen .product-form-grid label>textarea{min-width:0;width:100%;height:36px;box-sizing:border-box;max-width:100%}
+      .product-master-screen .product-form-grid label>span{display:flex;align-items:center;max-width:100%;min-height:14px;line-height:13px;white-space:normal;overflow-wrap:anywhere;word-break:normal}
       .product-master-screen .product-cost-stack{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;min-width:0}
-      .product-master-screen .product-cost-stack label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(12px,auto) 30px;gap:2px;align-content:start;min-width:0}
-      .product-master-screen .product-status-field{display:flex;align-items:center;align-self:end;gap:8px;min-height:30px;flex-wrap:wrap;border:1px solid #d5dde7;padding:5px 6px;background:#f8fbfd;box-sizing:border-box;min-width:0}
+      .product-master-screen .product-cost-stack label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(14px,auto) 36px;gap:4px;align-content:start;min-width:0}
+      .product-master-screen .product-status-field{display:flex;align-items:center;align-self:end;gap:8px;min-height:36px;flex-wrap:wrap;border:1px solid #d5dde7;padding:5px 8px;background:#f8fbfd;border-radius:8px;box-sizing:border-box;min-width:0}
       .product-master-screen .product-status-field>span{font-size:9px;font-weight:600;color:#344054;text-transform:uppercase}
       .product-master-screen .product-status-field label{display:flex;align-items:center;gap:4px;white-space:normal;font-size:9px;min-width:0}
       .product-master-screen .product-workspace{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"editor" "list";gap:10px;margin:10px auto;max-width:1500px;padding:0 8px;align-items:start}
@@ -401,30 +401,28 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen .product-tabs button{flex:0 0 auto;min-height:34px}
       .product-master-screen .product-responsive-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;align-items:start}
       .product-master-screen .product-responsive-grid>*{min-width:0}
-      .product-master-screen .product-responsive-grid label{align-content:start;grid-template-rows:minmax(12px,auto) 30px;gap:2px}
+      .product-master-screen .product-responsive-grid label{align-content:start;grid-template-rows:minmax(14px,auto) 36px;gap:4px}
       .product-master-screen .product-responsive-grid label>input,.product-master-screen .product-responsive-grid label>select{width:100%;min-width:0}      @media(max-width:1250px){.product-master-screen .product-workspace{grid-template-columns:minmax(0,1fr);gap:8px;margin:8px auto;padding:0 6px}}
       @media(max-width:1050px){.product-master-screen .product-workspace{grid-template-columns:minmax(0,1fr);grid-template-areas:"editor" "list"}.product-master-screen .product-list-panel{position:static}}
       @media(min-width:1051px){.product-master-screen .product-list-panel>div:last-child{max-height:360px;overflow:auto}}
       @media(max-width:1150px){.product-master-screen .product-form-grid{grid-template-columns:repeat(12,minmax(0,1fr))}.product-master-screen .product-form-grid>*{grid-column:span 4}.product-master-screen .product-form-grid .product-unit-row{grid-column:span 12}.product-master-screen .product-general-row>*:nth-child(3),.product-master-screen .product-general-row>*:nth-child(4){grid-column:span 8!important}.product-master-screen .product-responsive-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
-      .product-master-screen .product-unit-row{grid-column:span 3;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;align-items:center;min-width:0}.product-master-screen .product-unit-row label{display:grid;grid-template-columns:82px minmax(0,1fr);grid-template-rows:30px;align-items:center;gap:5px}.product-master-screen .product-unit-row label>span{min-height:0;line-height:11px}.product-master-screen .product-unit-row label>select{width:100%;min-width:0}.product-master-screen .product-photo-card{cursor:pointer;transition:border-color .12s,background .12s}.product-master-screen .product-photo-card:hover{border-color:#2D8DB8!important;background:#edf7fb!important}.product-master-screen .product-combo-wrap{display:grid;grid-template-columns:minmax(0,1fr) 30px;gap:4px;align-items:end;min-width:0}
-      .product-master-screen .product-plus-button{height:30px;width:30px;border:1px solid #2D8DB8;background:#eaf4f8;color:#123B50;display:inline-flex;align-items:center;justify-content:center;border-radius:2px;cursor:pointer}
+      .product-master-screen .product-unit-row{grid-column:span 3;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:center;min-width:0}.product-master-screen .product-unit-row label{display:grid;grid-template-columns:82px minmax(0,1fr);grid-template-rows:36px;align-items:center;gap:5px}.product-master-screen .product-unit-row label>span{min-height:0;line-height:13px}.product-master-screen .product-unit-row label>select{width:100%;min-width:0}.product-master-screen .product-photo-card{cursor:pointer;transition:border-color .12s,background .12s}.product-master-screen .product-photo-card:hover{border-color:#2563eb!important;background:#eff6ff!important}.product-master-screen .product-combo-wrap{display:grid;grid-template-columns:minmax(0,1fr) 36px;gap:6px;align-items:end;min-width:0}
+      .product-master-screen .product-plus-button{height:36px;width:36px;border:1px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;cursor:pointer}
       .product-master-screen .product-inline-create{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) auto;gap:5px;padding:7px;margin-top:5px;background:#f4fbfd;border:1px solid #c8dfe8;align-items:end}
-      @media(max-width:700px){.product-master-screen .product-form-grid{grid-template-columns:repeat(12,minmax(0,1fr))}.product-master-screen .product-form-grid>*{grid-column:span 6!important}.product-master-screen .product-form-grid .product-unit-row{grid-column:span 12!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.product-master-screen .product-unit-row label{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(12px,auto) 30px;gap:2px}.product-master-screen .product-general-row>*:nth-child(3),.product-master-screen .product-general-row>*:nth-child(4){grid-column:span 12!important}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 12!important}.product-master-screen .product-responsive-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-responsive-grid{row-gap:9px}.product-master-screen .product-tabs button{padding:7px 8px!important;font-size:9px!important}.product-master-screen .product-responsive-grid>*{grid-column:span 1!important}.product-master-screen .product-inline-create{grid-template-columns:1fr}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 1!important}}
+      @media(max-width:700px){.product-master-screen .product-form-grid{grid-template-columns:repeat(12,minmax(0,1fr))}.product-master-screen .product-form-grid>*{grid-column:span 6!important}.product-master-screen .product-form-grid .product-unit-row{grid-column:span 12!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.product-master-screen .product-unit-row label{grid-template-columns:minmax(0,1fr);grid-template-rows:36px;gap:4px}.product-master-screen .product-general-row>*:nth-child(3),.product-master-screen .product-general-row>*:nth-child(4){grid-column:span 12!important}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 12!important}.product-master-screen .product-responsive-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-responsive-grid{row-gap:9px}.product-master-screen .product-tabs button{padding:7px 8px!important;font-size:10px!important}.product-master-screen .product-responsive-grid>*{grid-column:span 1!important}.product-master-screen .product-inline-create{grid-template-columns:1fr}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 1!important}}
     `}</style>
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
       <div><div style={{fontSize:11,fontWeight:800,color:'#2D8DB8'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
       <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
-        <button type="button" onClick={newProduct} style={btn('primary')}><Plus size={16}/>Novo</button>
+        {!editing&&<button type="button" onClick={newProduct} style={btn('primary')}><Plus size={16}/>Novo</button>}
         <input ref={importRef} type="file" accept=".xlsx,.xls,.csv" onChange={importExcel} style={{display:'none'}} />
         <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>choosePhoto(e)} style={{display:'none'}} />
         <button type="button" onClick={()=>importRef.current?.click()} disabled={busy} style={btn('normal')}><FileSpreadsheet size={13}/>Importar Excel</button>
 
-        <button type="button" className="erp-edit-button" onClick={()=>setEditing(true)} disabled={!selectedId} style={btn('normal')}><Edit3 size={16}/>Editar</button>
-        <button type="button" onClick={()=>void save()} disabled={!editing||busy} style={btn('primary')}><Save size={16}/>Salvar</button>
-        <button type="button" onClick={cancelEdit} style={btn('normal')}><RotateCcw size={16}/>Cancelar</button>
-        {!editing&&selectedId&&<button type="button" onClick={openTechnicalPrint} disabled={busy} style={btn('normal')}><Printer size={16}/>Imprimir</button>}
-        <button type="button" onClick={()=>void deactivate()} disabled={!selectedId||busy} style={btn('danger')}><Trash2 size={16}/>Inativar</button>
-        <button type="button" onClick={()=>{setSelectedId(null);setEditing(false);setForm(empty())}} style={btn('normal')}><X size={16}/>Fechar</button>
+        {!editing&&<button type="button" className="erp-edit-button" onClick={()=>setEditing(true)} disabled={!selectedId} style={btn('normal')}><Edit3 size={16}/>Editar</button>}
+        {editing&&<><button type="button" onClick={()=>void save()} disabled={busy} style={btn('primary')}><Save size={16}/>Salvar</button><button type="button" onClick={cancelEdit} style={btn('normal')}><RotateCcw size={16}/>Cancelar</button></>}
+        {!editing&&selectedId&&<button type="button" onClick={openTechnicalPrint} disabled={busy} style={btn('normal')}><Printer size={16}/>Imprimir ficha</button>}
+        {!editing&&selectedId&&<button type="button" onClick={()=>void deactivate()} disabled={busy} style={btn('danger')}><Trash2 size={16}/>Inativar</button>}
       </div>
     </header>
 
@@ -638,6 +636,6 @@ export default function ProdutosVendasIndustrial(){
           {!audits.length&&<span style={{fontSize:9,color:'#667085'}}>Nenhum evento registrado.</span>}
         </div>
       </section>
-    ) : null}    <footer className="product-screen-footer" style={{padding:'7px 12px 16px',fontSize:10,color:'#667085',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8}}><span>SYSNQRA ERP & SGQ INDUSTRIAL • Cadastro Mestre de Produtos</span><span>© FernandoSch_System — Todos os direitos reservados</span><button type="button" onClick={()=>window.print()} style={btn('normal')}><Printer size={13}/>IMPRIMIR TELA</button></footer>
+    ) : null}    <footer className="product-screen-footer" style={{padding:'7px 12px 16px',fontSize:10,color:'#667085',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8}}><span>SYSNQRA ERP & SGQ INDUSTRIAL • Cadastro Mestre de Produtos</span><span>Dados reais vinculados à empresa ativa.</span></footer>
   </main></>
 }

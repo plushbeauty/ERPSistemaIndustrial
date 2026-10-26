@@ -18,11 +18,10 @@ import MoldesFerramentaria from './pages/MoldesFerramentaria'
 import ComercialSuprimentos from './pages/ComercialSuprimentos'
 import ConfiguracoesADM from './pages/configuracoes/ConfiguracoesADM'
 import CalibracaoIndustrial from './pages/CalibracaoIndustrial'
-import VendasClientesPage from './pages/VendasClientes'
+import CadastroMestreIndustrial from './pages/CadastroMestreIndustrial'
 import FinanceiroCustoPadrao from './pages/FinanceiroCustoPadrao'
 import AdminLogs from './pages/AdminLogs'
 import OutlookConfiguracao from './pages/OutlookConfiguracao'
-import FornecedoresIndustrial from './pages/FornecedoresIndustrial'
 import { useNavigate } from 'react-router-dom'
 
 type Field = { key: string; label: string; type?: 'text' | 'number' | 'date' | 'email'; required?: boolean }
@@ -161,7 +160,7 @@ export default function AppIndustrialV7() {
             <AnimatePresence mode="wait" initial={false}>
               <motion.div key={specialPath + active} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: .2 }}>
                 {specialPath === '/vendas/clientes'
-                  ? <VendasClientesPage />
+                  ? <CadastroMestreIndustrial defaultTab="clientes" />
                   : specialPath === '/financeiro/custo-padrao'
                     ? <FinanceiroCustoPadrao />
                     : specialPath === '/admin/logs'
@@ -169,7 +168,7 @@ export default function AppIndustrialV7() {
                       : specialPath === '/outlook/configuracao'
                         ? <OutlookConfiguracao />
                         : specialPath === '/compras/fornecedores'
-                          ? <FornecedoresIndustrial />
+                          ? <CadastroMestreIndustrial defaultTab="fornecedores" />
                           : specialPath.startsWith('/configuracoes-adm')
                             ? <ConfiguracoesADM />
                             : active === 'Dashboard'
