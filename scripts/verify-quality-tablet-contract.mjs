@@ -1,18 +1,14 @@
 import { readFileSync } from 'node:fs'
 
-const read = (path) => readFileSync(new URL(path, import.meta.url), 'utf8')
-const shell = read('../src/components/layout/ERPHorizontalShell.tsx')
-const routes = read('../src/AppEntryV2.tsx')
-
+const shell = readFileSync('src/components/layout/ERPHorizontalShell.tsx', 'utf8')
+const app = readFileSync('src/AppEntryV2.tsx', 'utf8')
 const checks = [
-  [!shell.includes("import TabletMenuModal from '../TabletMenuModal'"), 'O shell não deve importar o modal legado de Qualidade Tablet.'],
-  [!shell.includes('qualityTablet') && !shell.includes('Qualidade Tablet'), 'O menu global não deve oferecer o módulo Qualidade Tablet.'],
-  [routes.includes('path="/qualidade/tablet" element={<Navigate to="/qualidade/inspecoes" replace />} />'), 'A rota legada do tablet deve abrir diretamente Inspeções no menu SGQ.'],
-  [routes.includes('path="/qualidade/paquimetro-digital" element={<QualityPlanGate><QualidadePaquimetroDigital /></QualityPlanGate>} />'), 'A rota do Paquímetro Digital deve estar registrada.'],
-  [routes.includes('path="/qualidade" element={<Navigate to="/qualidade/inspecoes" replace />} />'), 'A rota /qualidade não deve voltar ao painel antigo.'],
-  [shell.includes("const menus: MenuItem[] = []") || shell.includes("label: 'Paquímetro Digital / Metrologia', route: '/qualidade/paquimetro-digital', icon: Ruler'), 'Durante a reconstrução, o menu pode ficar sem rotas antigas; fora do reset, deve exibir o ícone de Paquímetro Digital.'],
+  [shell.includes('const menus: MenuItem[] = []'), 'O menu de módulos antigos deve permanecer vazio durante o reset.'],
+  [shell.includes('BarraWindows11'), 'A barra estilo Windows 11 deve permanecer.'],
+  [app.includes('path="/erp-industrial"'), 'O dashboard principal deve permanecer acessível.'],
+  [app.includes('path="/fiscal"'), 'A Fiscal aprovada deve permanecer acessível como referência.'],
+  [!app.includes('path="/qualidade/tablet"') && !app.includes('path="/qualidade/paquimetro-digital"'), 'Rotas operacionais antigas devem ficar fora da navegação durante o reset.'],
 ]
-
 let failed = false
 for (const [ok, message] of checks) {
   console.log(`${ok ? 'PASS' : 'FAIL'}: ${message}`)
