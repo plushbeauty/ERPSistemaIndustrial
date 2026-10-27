@@ -1,1 +1,13 @@
-.rh-page{--rh-blue:#2D8DB8;--rh-industrial-dark:#1E293B;--rh-industrial-gray:#64748B;--rh-bg-panel:#F8FAFC;border-radius:0!important}.rh-page .rh-tab.active{background:#2D8DB8!important;color:#fff!important}
+/* RH Industrial — revisão autorizada 27/10/2026; escopo restrito à tela RH. */
+.rh-page{--rh-blue:#2D8DB8;--rh-industrial-dark:#1E293B;--rh-industrial-gray:#64748B;--rh-bg-panel:#F8FAFC;color:var(--rh-industrial-dark);background:var(--rh-bg-panel)}
+.rh-page .rh-card,.rh-page .rh-kpi,.rh-page .rh-modal,.rh-page .rh-btn,.rh-page .rh-icon,.rh-page .rh-search,.rh-page .rh-input,.rh-page .rh-tab,.rh-page .rh-table-wrap{border-radius:0!important}
+.rh-page .rh-tabs,.rh-page .rh-tab{background:#F8FAFC!important;border-color:#CBD5E1!important;border-radius:0!important}
+.rh-page .rh-tab{color:#64748B!important}
+.rh-page .rh-tab.active{background:#2D8DB8!important;color:#fff!important;border-bottom-color:#1E293B!important}
+.rh-page .rh-card-head,.rh-page .rh-table th{background:#F1F5F9!important;color:#1E293B!important}
+.rh-page .rh-btn.primary{background:#2D8DB8!important;border-color:#24789D!important;color:#fff!important}
+.rh-page .rh-head h1{color:#1E293B!important}
+.rh-page .rh-label,.rh-page .rh-field>span{color:#64748B!important}
+body:has(.rh-page) .synqra-sidebar-link.is-active{background:#F59E0B!important;color:#fff!important;border-left-color:#D97706!important}
+body:has(.rh-page) .erp-horizontal-menu button,body:has(.rh-page) button[aria-label*="Menu"],body:has(.rh-page) button[title*="Menu"]{background:#F59E0B!important;border-color:#D97706!important;color:#fff!important}
+@media(max-width:760px){.rh-page .rh-head{align-items:flex-start;flex-direction:column;gap:8px}.rh-page .rh-tabs{max-width:100%}}
