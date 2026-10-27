@@ -8,7 +8,9 @@ import './styles/forms-premium.css'
 import './styles/erp-design-system-2026.css'
 import './styles/synqra-app-shell.css'
 
+const PagePrincipal = lazy(() => import('./pages/PagePrincipal'))
 const AppIndustrial = lazy(() => import('./AppIndustrialV7'))
+const CadastroMestreIndustrial = lazy(() => import('./pages/CadastroMestreIndustrial'))
 const Fiscal = lazy(() => import('./pages/Fiscal'))
 
 function LoadingWorkspace() {
@@ -21,9 +23,14 @@ export default function AppEntryV2() {
       <div className="erp-global-surface">
         <ERPHorizontalShell>
           <Routes>
-            <Route path="/erp-industrial" element={<AppIndustrial />} />
+            <Route path="/pageprincipal" element={<PagePrincipal />}>
+              <Route index element={<AppIndustrial />} />
+              <Route path="cadastros" element={<CadastroMestreIndustrial />} />
+            </Route>
+            <Route path="/erp-industrial" element={<Navigate to="/pageprincipal" replace />} />
+            <Route path="/cadastros" element={<Navigate to="/pageprincipal/cadastros" replace />} />
             <Route path="/fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />
-            <Route path="*" element={<Navigate to="/erp-industrial" replace />} />
+            <Route path="*" element={<Navigate to="/pageprincipal" replace />} />
           </Routes>
         </ERPHorizontalShell>
       </div>
