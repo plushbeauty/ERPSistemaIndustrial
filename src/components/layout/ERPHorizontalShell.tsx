@@ -226,17 +226,10 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       <BarraWindows11
         ativo={pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/estoque') ? 'est' : pathname.startsWith('/manutencao') ? 'man' : pathname.startsWith('/usuarios') ? 'usu' : pathname.startsWith('/configuracoes') ? 'cfg' : ''}
         onAbrir={(id) => {
-          const routes: Record<string, string> = {
-            pcp: '/pcp/programacao-gantt',
-            maq: '/pcp/agenda-maquinas',
-            est: '/estoque/saldos',
-            op: '/pcp/ordens',
-            man: '/manutencao',
-            ind: '/pcp/capacidade',
-            usu: '/usuarios',
-            cfg: '/configuracoes-adm',
-          }
-          go(routes[id] ?? '/erp-industrial')
+          // Durante o reset, os atalhos visuais permanecem, mas não apontam
+          // para rotas antigas. Cada módulo ganhará um destino ao ser reconstruído.
+          void id
+          go('/erp-industrial')
         }}
       />
 
