@@ -22,9 +22,9 @@ export default function PagePrincipal() {
             <div>
               <p className="text-[10px] font-extrabold uppercase tracking-[.2em] text-cyan-200">SYSNQRA ERP INDUSTRIAL</p>
               <h1 className="mt-1 text-xl font-extrabold tracking-tight md:text-2xl">Page Principal</h1>
-              <p className="mt-1 text-xs text-slate-200">Ambiente centralizado para abrir e organizar as telas do ERP.</p>
+              <p className="mt-1 text-xs font-semibold text-[#D6B15D]">Ambiente centralizado para abrir e organizar as telas do ERP.</p>
             </div>
-            <span className="inline-flex w-fit items-center rounded-md border border-amber-300/40 bg-amber-400/15 px-3 py-2 text-[10px] font-bold text-amber-200">Atualizado · Padrão Premium · 27/10/2026</span>
+            <span className="inline-flex w-fit items-center rounded-md border border-amber-300/40 bg-amber-400/15 px-3 py-2 text-[10px] font-bold text-amber-200">Módulo 1.2</span>
           </div>
         </header>
         <nav aria-label="Navegação principal do ERP" className="grid grid-cols-1 gap-3 sm:grid-cols-3">
