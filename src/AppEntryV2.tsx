@@ -26,10 +26,11 @@ export default function AppEntryV2() {
             <Route path="/pageprincipal" element={<PagePrincipal />}>
               <Route index element={<AppIndustrial />} />
               <Route path="cadastros" element={<CadastroMestreIndustrial />} />
+              <Route path="fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />
             </Route>
             <Route path="/erp-industrial" element={<Navigate to="/pageprincipal" replace />} />
             <Route path="/cadastros" element={<Navigate to="/pageprincipal/cadastros" replace />} />
-            <Route path="/fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />
+            <Route path="/fiscal" element={<Navigate to="/pageprincipal/fiscal" replace />} />
             <Route path="*" element={<Navigate to="/pageprincipal" replace />} />
           </Routes>
         </ERPHorizontalShell>
