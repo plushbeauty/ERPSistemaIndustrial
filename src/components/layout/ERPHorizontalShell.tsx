@@ -11,6 +11,7 @@ type MenuItem = {
   route: string
   icon?: LucideIcon
   isNew?: boolean
+  isUpdated?: boolean
   action?: 'pcpTablet'
   children?: MenuItem[]
 }
@@ -37,7 +38,8 @@ const menus: MenuItem[] = [
   ] },
   { label: 'Compras', route: '/compras', icon: Truck, children: [
     { label: 'Central de Compras aprovada', route: '/compras' },
-    { label: 'Requisições de compra', route: '/compras/requisicoes' },
+    { label: 'Requisições de compra · ATUALIZADA', route: '/compras/requisicoes', isUpdated: true },
+    { label: 'Solicitação de compra · ATUALIZADA', route: '/compras-solicitacao', isUpdated: true },
     { label: 'Cotações / RFQ', route: '/compras/rfq' },
     { label: 'Análise de preços', route: '/compras/analise-precos' },
     { label: 'Pedidos de compra', route: '/compras/pedido' },
@@ -314,7 +316,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
                     {hasChildren && <button type="button" className="erp-windows-menu-expand" aria-label={`Expandir ${menu.label}`} aria-expanded={expanded} onClick={() => { setOpenMenu(value => value === menu.label ? null : menu.label);  }}>{expanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}</button>}
                   </div>
                   {hasChildren && expanded && <div className="erp-windows-menu-children">
-                    {menu.children?.filter(child => !normalizedSearch || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(child => { const ChildIcon = child.icon; const active = pathname === child.route; return <button type="button" key={child.label + child.route} className={`${active ? (child.route === '/compras/rfq' ? 'is-active is-rfq-active' : 'is-active') : ''}${child.isNew ? ' is-new' : ''}`} onClick={() => { setStartMenuOpen(false); if (child.action) openMenuItem(child); else go(child.route) }} title={child.isNew ? 'Tela nova' : undefined}>{ChildIcon && <ChildIcon size={14} className={child.isNew ? 'is-new-icon' : undefined} />}<span>{child.label}</span></button> })}
+                    {menu.children?.filter(child => !normalizedSearch || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(child => { const ChildIcon = child.icon; const active = pathname === child.route; return <button type="button" key={child.label + child.route} className={`${active ? (child.route === '/compras/rfq' ? 'is-active is-rfq-active' : 'is-active') : ''}${child.isNew ? ' is-new' : ''}${child.isUpdated ? ' is-updated-orange' : ''}`} onClick={() => { setStartMenuOpen(false); if (child.action) openMenuItem(child); else go(child.route) }} title={child.isNew ? 'Tela nova' : undefined}>{ChildIcon && <ChildIcon size={14} className={child.isNew ? 'is-new-icon' : undefined} />}<span>{child.label}</span></button> })}
                   </div>}
                 </div>
               })}
@@ -403,7 +405,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-windows-menu-children button{display:flex;align-items:center;gap:8px;width:100%;min-height:29px;padding:5px 8px;border:0;background:#fff;text-align:left;color:#334155;font-size:10px;cursor:pointer}
         .erp-windows-menu-children button>svg{flex:0 0 auto}.erp-windows-menu-children button>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .erp-windows-menu-children button:hover,.erp-windows-menu-children button.is-active{background:#eaf5f8;color:#123b50}
-        .erp-windows-menu-children button.is-rfq-active{background:#1d5fd1!important;border-color:#1d5fd1!important;color:#fff!important;font-weight:800;box-shadow:inset 3px 0 #0b2545}
+        .erp-windows-menu-children button.is-rfq-active{background:#1d5fd1!important;border-color:#1d5fd1!important;color:#fff!important;font-weight:800;box-shadow:inset 3px 0 #0b2545}\n        .erp-windows-menu-children button.is-updated-orange{background:#f97316!important;border:1px solid #ea580c!important;color:#fff!important;font-weight:900;box-shadow:inset 4px 0 #9a3412}\n        .erp-windows-menu-children button.is-updated-orange:hover,.erp-windows-menu-children button.is-updated-orange.is-active{background:#ea580c!important;border-color:#c2410c!important;color:#fff!important}
         .erp-windows-no-results{margin:12px 8px;font-size:10px;color:#64748b}
         .erp-windows-start-footer{min-height:38px;display:flex;align-items:center;gap:6px;padding:0 10px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:10px;color:#334155}
         .erp-windows-start-footer span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
