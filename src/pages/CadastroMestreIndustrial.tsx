@@ -14,8 +14,8 @@ import FornecedoresIndustrial from './FornecedoresIndustrial'
 type Tab = 'produtos' | 'clientes' | 'fornecedores'
 const tabs: Array<{ id: Tab; label: string; description: string; Icon: typeof Boxes }> = [
   { id: 'produtos', label: 'Produtos & Insumos', description: 'Engenharia, NCM, estoque, PCP e matérias-primas', Icon: Boxes },
-  { id: 'clientes', label: 'Clientes', description: 'Vendas, carteira, faturamento e crédito', Icon: Building2 },
-  { id: 'fornecedores', label: 'Fornecedores', description: 'Compras, suprimentos, homologação e insumos', Icon: Truck },
+  { id: 'clientes', label: 'Clientes e Destinatários', description: 'Vendas, carteira, faturamento e crédito', Icon: Building2 },
+  { id: 'fornecedores', label: 'Fornecedores e Emitentes', description: 'Compras, suprimentos, homologação e insumos', Icon: Truck },
 ]
 function tabFromSearch(value: string | null, fallback: Tab): Tab {
   return value === 'clientes' || value === 'fornecedores' ? value : fallback
@@ -37,14 +37,14 @@ export default function CadastroMestreIndustrial({ defaultTab = 'produtos' }: { 
           <div className="pointer-events-none absolute -right-12 -top-28 size-80 rounded-full border-[24px] border-white/5" />
           <div className="relative flex flex-col justify-between gap-3 md:flex-row md:items-center">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[.18em] text-sky-200">SYSNQRA · CADASTRO MESTRE</p>
-              <h1 className="mt-1 flex items-center gap-2 text-xl font-extrabold tracking-tight md:text-2xl"><Layers size={22} /> Cadastro Unificado de Ecossistema</h1>
-              <p className="mt-1 max-w-3xl text-xs text-slate-300">Uma única central para Produtos/Insumos, Clientes e Fornecedores, preservando o cadastro real, as regras fiscais e o isolamento por empresa.</p>
-              <span className="mt-3 inline-flex rounded-md border border-amber-300/40 bg-amber-500/15 px-2.5 py-1 text-[10px] font-bold text-amber-200">Atualizado · Padrão Premium · 27/10/2026</span>
+              <p className="text-[10px] font-bold uppercase tracking-[.18em] text-sky-200">SYSNQRA ERP INDUSTRIAL</p>
+              <h1 className="mt-1 flex items-center gap-2 text-xl font-extrabold tracking-tight md:text-2xl"><Layers size={22} /> Cadastros</h1>
+              <p className="mt-1 max-w-3xl text-xs font-semibold text-[#D6B15D]">Central de cadastros de produtos, insumos, clientes e fornecedores.</p>
+              
             </div>
             <div className="relative flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-[10px] text-slate-200">
               <ShieldCheck size={16} className="text-emerald-300" />
-              <span>Supabase autenticado · RLS · empresa_id</span>
+              <span>Cadastro integrado ao ERP</span>
             </div>
           </div>
         </header>
