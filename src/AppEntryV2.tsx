@@ -54,7 +54,6 @@ function lazyPage<P extends object>(
     return { default: component as ComponentType<P> }
   })
 }
-import PCPPageHelp from './components/industrial/PCPPageHelp'
 import './styles/industrial-login.css'
 import './styles/forms-premium.css'
 import './styles/manual-usuario-2026.css'
@@ -860,7 +859,6 @@ function AppIndustrialAuthenticated() {
         <div className="erp-global-surface">
           <ERPHorizontalShell>
             {rebuildMode ? rebuildRoutes : protectedRoutes}
-            <PCPPageHelp />
           </ERPHorizontalShell>
         </div>
       </Suspense>
