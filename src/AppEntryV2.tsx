@@ -842,12 +842,20 @@ function AppIndustrialAuthenticated() {
     </Routes>
   )
 
+  const rebuildMode = import.meta.env.VITE_ERP_REBUILD_MODE !== 'false'
+  const rebuildRoutes = (
+    <Routes>
+      <Route path="/erp-industrial" element={<EmptyERPRebuildWorkspace />} />
+      <Route path="*" element={<Navigate to="/erp-industrial" replace />} />
+    </Routes>
+  )
+
   const appContent = (
     <Boundary>
       <Suspense fallback={<LoadingSkeleton />}>
         <div className="erp-global-surface">
           <ERPHorizontalShell>
-            {protectedRoutes}
+            {rebuildMode ? rebuildRoutes : protectedRoutes}
             <PCPPageHelp />
           </ERPHorizontalShell>
         </div>
@@ -856,6 +864,18 @@ function AppIndustrialAuthenticated() {
   )
   // O ERP entra diretamente no conteúdo operacional. A navegação lateral global foi removida; o dashboard industrial/Tablet concentra os módulos.
   return appContent
+}
+
+function EmptyERPRebuildWorkspace() {
+  return (
+    <main className="erp-rebuild-workspace" aria-label="Área operacional em reconstrução">
+      <div className="erp-rebuild-brand">SYSNQRA <span>ERP INDUSTRIAL</span></div>
+      <h1>Base operacional</h1>
+      <p>Os módulos antigos foram retirados da navegação enquanto as telas são reconstruídas individualmente.</p>
+      <p className="erp-rebuild-status">Autenticação ativa · Sessão Supabase preservada · Nenhum dado do banco foi removido</p>
+      <style>{`.erp-rebuild-workspace{min-height:calc(100vh - 64px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:28px;text-align:center;background:#f4f7fb;color:#123b50}.erp-rebuild-brand{font-size:clamp(22px,4vw,34px);font-weight:900;letter-spacing:.04em}.erp-rebuild-brand span{display:block;font-size:11px;letter-spacing:.18em;color:#2d8db8}.erp-rebuild-workspace h1{margin:14px 0 0;font-size:20px;font-weight:800}.erp-rebuild-workspace p{max-width:560px;margin:0;font-size:13px;line-height:1.6;color:#526b78}.erp-rebuild-workspace .erp-rebuild-status{margin-top:8px;font-size:11px;color:#16845b}`}</style>
+    </main>
+  )
 }
 
 function PublicHomeWithLogin() {
