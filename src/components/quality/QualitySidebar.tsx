@@ -31,25 +31,23 @@ const modules = [
 
 export default function QualitySidebar({ active }: { active: string }) {
   const navigate = useNavigate()
-  if (active !== '/qualidade') return null
-
   return (
-    <section aria-label="Menu principal da qualidade" className="mb-3 border border-[#B9D6E2] bg-white">
-      <header className="flex min-h-[38px] flex-wrap items-center justify-between gap-2 border-b border-[#C8E3EE] bg-[#2D8DB8] px-3 py-1.5 text-white">
+    <section aria-label="Menu principal da qualidade" className="mb-3 overflow-hidden rounded-xl border border-[#B9D6E2] bg-white shadow-sm">
+      <header className="flex min-h-[42px] flex-wrap items-center justify-between gap-2 border-b border-[#C8E3EE] bg-[#123B50] px-3 py-2 text-white">
         <div>
           <h2 className="text-[10px] font-extrabold uppercase tracking-[.13em]">QUALIDADE · SISTEMA DE GESTÃO DA QUALIDADE</h2>
           <p className="mt-0.5 text-[9px] text-white/85">Acesso direto aos módulos do SGQ · {modules.length} opções</p>
         </div>
         <span className="border border-white/50 bg-white/10 px-2 py-1 text-[9px] font-bold">MENU PRINCIPAL</span>
       </header>
-      <nav aria-label="Módulos da qualidade" className="grid grid-cols-2 gap-1.5 p-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+      <nav aria-label="Menu da qualidade" className="grid grid-cols-1 gap-1.5 p-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
         {modules.map(({ label, route, icon: Icon }) => (
           <button
             key={route}
             type="button"
             onClick={() => navigate(route)}
             aria-current={active === route ? 'page' : undefined}
-            className={'group flex min-h-[48px] min-w-0 items-center gap-2 border px-2 py-1.5 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2D8DB8] ' + (active === route ? 'border-[#2D8DB8] bg-[#E5F3F8]' : 'border-slate-200 bg-white hover:border-[#2D8DB8] hover:bg-[#F4FBFD]')}
+            className={'group flex min-h-[42px] min-w-0 items-center gap-2 rounded-lg border px-2 py-1.5 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2D8DB8] ' + (active === route ? 'border-[#2D8DB8] bg-[#E5F3F8]' : 'border-slate-200 bg-white hover:border-[#2D8DB8] hover:bg-[#F4FBFD]')}
             title={label}
           >
             <span className="grid h-[30px] w-[30px] shrink-0 place-items-center border border-[#C8E3EE] bg-[#EAF6FA] text-[#2D8DB8] group-hover:border-[#8CC5E0]">
