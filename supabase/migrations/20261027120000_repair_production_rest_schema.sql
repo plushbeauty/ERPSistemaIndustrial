@@ -5,7 +5,16 @@
 
 -- Campos consultados pelo emissor fiscal e pela validacao fiscal de compras.
 alter table public.erp_empresas
-  add column if not exists inscricao_estadual text;
+  add column if not exists inscricao_estadual text,
+  add column if not exists razao_social text,
+  add column if not exists nome_fantasia text,
+  add column if not exists cnpj text,
+  add column if not exists endereco text,
+  add column if not exists cidade text,
+  add column if not exists uf text,
+  add column if not exists cep text,
+  add column if not exists telefone text,
+  add column if not exists email text;
 
 alter table public.erp_pedidos_compra
   add column if not exists fiscal_status text not null default 'NAO_ANALISADO',
@@ -167,4 +176,48 @@ create index if not exists erp_bloco_k_producao_periodo_idx
   on public.erp_fiscal_bloco_k_producao(empresa_id, periodo_referencia);
 
 -- Atualiza o cache do PostgREST após aplicar a migracao.
+notify pgrst, 'reload schema';
+
+-- RPC consumida pelo Portal do Cliente. Restringe os pedidos ao vínculo ativo
+-- do usuário autenticado, sem confiar em empresa_id enviado pelo navegador.
+create or replace function public.erp_portal_cliente_pedidos()
+returns jsonb
+language plpgsql
+security definer
+set search_path=public,pg_temp
+as $$
+declare
+  v_access public.erp_portal_acessos%rowtype;
+  v_result jsonb;
+begin
+  select * into v_access
+  from public.erp_portal_acessos
+  where auth_user_id=auth.uid() and tipo_portal='CLIENTE' and ativo=true
+  limit 1;
+  if not found then raise exception 'PORTAL_CLIENTE_SEM_ACESSO'; end if;
+
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'numero',p.numero,
+    'pedido_cliente',p.pedido_cliente,
+    'status',p.status,
+    'data_entrega_prometida',p.data_entrega_prometida,
+    'total',p.total,
+    'itens',(select coalesce(jsonb_agg(jsonb_build_object(
+      'descricao',i.descricao,
+      'quantidade',i.quantidade,
+      'data_fabricacao',i.data_fabricacao
+    )),'[]'::jsonb)
+    from public.erp_pedidos_venda_itens i
+    where i.empresa_id=p.empresa_id and i.pedido_id=p.id)
+  ) order by p.created_at desc),'[]'::jsonb)
+  into v_result
+  from public.erp_pedidos_venda p
+  where p.empresa_id=v_access.empresa_id and p.cliente_id=v_access.cliente_id;
+  return v_result;
+end;
+$$;
+revoke all on function public.erp_portal_cliente_pedidos() from public,anon;
+grant execute on function public.erp_portal_cliente_pedidos() to authenticated;
+
+-- Atualiza o cache de schema do PostgREST após a migração.
 notify pgrst, 'reload schema';
