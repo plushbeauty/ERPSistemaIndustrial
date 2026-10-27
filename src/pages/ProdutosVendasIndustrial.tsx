@@ -1,11 +1,11 @@
 /**
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
- * Data da revisão: 2026-10-26
+ * Data da revisão: 2026-10-27
  * Desenvolvedor responsável: Fernando
- * ID da Revisão: REV-PRODUTO-UI-013
- * Status: APROVADO-IMUTAVEL — CSS visual congelado após autorização explícita do usuário.
- * Escopo: substituição exclusiva do CSS; preservar JSX, CRUD, Supabase, segurança por empresa, estoque, engenharia e fiscal.
+ * ID da Revisão: REV-PRODUTO-UI-015
+ * Status: AJUSTE VISUAL AUTORIZADO — revisão geométrica aprovada em 2026-10-27.
+ * Escopo: correção cirúrgica de alinhamento dos campos e remoção do cabeçalho azul duplicado; preservar CRUD, Supabase, segurança por empresa, estoque, engenharia e fiscal.
  * Regra: não alterar o visual aprovado sem nova autorização explícita de Fernando.
  * Alterações: Ficha Técnica Mestre reúne dados gerais, estoque, produção, qualidade e documentos; fiscal permanece isolado.
  * Dados demonstrativos/fallbacks não são adicionados; falhas de consulta permanecem explícitas.
@@ -420,7 +420,16 @@ export default function ProdutosVendasIndustrial(){
   @media(max-width:600px){.product-master-screen{padding:10px!important}.product-master-screen>header{align-items:flex-start!important;padding:16px!important}.product-master-screen>header h1{font-size:20px!important}.product-master-screen>header>div:last-child{width:100%!important}.product-master-screen .product-form-grid,.product-master-screen .product-responsive-grid,.product-master-screen .product-unit-row{grid-template-columns:minmax(0,1fr)!important}.product-master-screen .product-form-section{padding:12px!important}.product-master-screen .product-inline-create{grid-template-columns:minmax(0,1fr)!important}}
   @media print{body *{visibility:hidden!important}.product-master-screen,.product-master-screen *{visibility:visible!important}.product-master-screen{position:absolute!important;inset:0!important;width:100%!important;max-width:none!important;background:#fff!important}.product-master-screen .product-list-panel,.product-master-screen header button,.product-master-screen input[type=file],.product-master-screen .product-screen-footer button,.product-master-screen .product-tabs{display:none!important}.product-master-screen .product-form-section{break-inside:avoid!important}}
 
-    `}</style>
+    
+   /* REV-PRODUTO-UI-015 · 27/10/2026 · correção cirúrgica de geometria, sem alterar CRUD/Supabase */
+   .cadastro-mestre-page .product-master-screen>header{min-height:0!important;margin:0 0 10px!important;padding:10px 14px!important;border:1px solid #e2e8f0!important;border-radius:10px!important;background:#fff!important;color:#0f172a!important;box-shadow:0 1px 4px rgba(15,23,42,.05)!important}
+   .cadastro-mestre-page .product-master-screen>header h1{margin:2px 0 0!important;color:#123b50!important;font-size:16px!important;letter-spacing:0!important}
+   .cadastro-mestre-page .product-master-screen>header>div:first-child>div{color:#2d8db8!important}
+   .cadastro-mestre-page .product-master-screen input[class^="edit-"]{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;justify-self:stretch!important;box-sizing:border-box!important}
+   .cadastro-mestre-page .product-master-screen .product-form-grid,.cadastro-mestre-page .product-master-screen .product-responsive-grid{column-gap:12px!important;row-gap:12px!important}
+   @media(max-width:900px){.cadastro-mestre-page .product-master-screen .product-form-grid,.cadastro-mestre-page .product-master-screen .product-responsive-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+   @media(max-width:600px){.cadastro-mestre-page .product-master-screen input[class^="edit-"]{max-width:100%!important}}
+`}</style>
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
       <div><div style={{fontSize:11,fontWeight:800,color:'#2D8DB8'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
       <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
