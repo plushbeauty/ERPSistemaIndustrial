@@ -64,9 +64,11 @@ for (const item of approved) {
 
 const routeContent = readFileSync('src/AppEntryV2.tsx', 'utf8')
 const requiredRoutes = [
-  ['Dashboard aprovado permanece como rota operacional', '<Route path="/erp-industrial" element={<AppIndustrial />} />'],
+  ['Page Principal contém o dashboard aprovado', '<Route path="/pageprincipal" element={<PagePrincipal />}>'],
+  ['Dashboard aprovado permanece dentro da Page Principal', '<Route index element={<AppIndustrial />} />'],
   ['Fiscal aprovada permanece como referência visual', '<Route path="/fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />'],
-  ['Rotas antigas redirecionam para o dashboard durante o reset', '<Route path="*" element={<Navigate to="/erp-industrial" replace />} />'],
+  ['Cadastro Mestre fica dentro da Page Principal', '<Route path="cadastros" element={<CadastroMestreIndustrial />} />'],
+  ['Rotas antigas redirecionam para a Page Principal', '<Route path="*" element={<Navigate to="/pageprincipal" replace />} />'],
 ]
 for (const [label, route] of requiredRoutes) {
   const ok = routeContent.includes(route)
