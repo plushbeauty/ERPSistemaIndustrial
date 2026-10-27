@@ -845,9 +845,11 @@ function AppIndustrialAuthenticated() {
   const rebuildMode = import.meta.env.VITE_ERP_REBUILD_MODE !== 'false'
   const rebuildRoutes = (
     <Routes>
-      {/* Tela Fiscal aprovada pelo usuário: referência visual preservada durante o reset. */}
-      <Route path="/fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />
-      <Route path="/erp-industrial" element={<EmptyERPRebuildWorkspace />} />
+      {/* REV-RESET-ERP-2026-10-27: somente o dashboard aprovado permanece ativo.
+          As páginas antigas ficam fora da navegação; a tela Fiscal é preservada
+          no código como referência visual, mas não é exposta nesta fase de reset. */}
+      <Route path="/erp-industrial" element={<AppIndustrial />} />
+      <Route path="/comercial" element={<Navigate to="/erp-industrial" replace />} />
       <Route path="*" element={<Navigate to="/erp-industrial" replace />} />
     </Routes>
   )
