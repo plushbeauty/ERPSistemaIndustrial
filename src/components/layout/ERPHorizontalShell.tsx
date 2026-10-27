@@ -39,7 +39,6 @@ const menus: MenuItem[] = [
     { label: 'Cotações / RFQ', route: '/compras/rfq' },
     { label: 'Análise de preços', route: '/compras/analise-precos' },
     { label: 'Pedidos de compra', route: '/compras/pedido' },
-    { label: 'Fornecedores', route: '/compras/fornecedores' },
     { label: 'Recebimentos', route: '/compras/recebimentos' },
     { label: 'Validação fiscal', route: '/fiscal/compras' },
     { label: 'Relatórios', route: '/compras/relatorios' },
