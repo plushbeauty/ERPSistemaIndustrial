@@ -9,3 +9,62 @@ form input:not([type=checkbox]):not([type=radio]):not([type=file]),form select,f
 .erp-form-layout{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px}.erp-form-layout>.field-1{grid-column:span 1}.erp-form-layout>.field-2{grid-column:span 2}.erp-form-layout>.field-3{grid-column:span 3}.erp-form-layout>.field-4{grid-column:span 4}.erp-form-layout>.field-5{grid-column:span 5}.erp-form-layout>.field-6{grid-column:span 6}.erp-form-layout>.field-7{grid-column:span 7}.erp-form-layout>.field-8{grid-column:span 8}.erp-form-layout>.field-9{grid-column:span 9}.erp-form-layout>.field-10{grid-column:span 10}.erp-form-layout>.field-11{grid-column:span 11}.erp-form-layout>.field-12{grid-column:span 12}
 @media(max-width:1000px){.erp-form-layout,.erp-form-grid{grid-template-columns:repeat(6,minmax(0,1fr))}.erp-form-layout>[class*=field-]{grid-column:span 3}.erp-form-layout>.field-6,.erp-form-layout>.field-7,.erp-form-layout>.field-8,.erp-form-layout>.field-9,.erp-form-layout>.field-10,.erp-form-layout>.field-11,.erp-form-layout>.field-12{grid-column:span 6}.erp-w-1,.erp-w-2,.erp-w-3,.erp-w-4,.erp-w-5{grid-column:span 3}.erp-w-6,.erp-w-7,.erp-w-8,.erp-w-9,.erp-w-10,.erp-w-11,.erp-w-12{grid-column:span 6}}
 @media(max-width:640px){.erp-form-layout,.erp-form-grid{grid-template-columns:1fr}.erp-form-layout>[class*=field-],.erp-w-1,.erp-w-2,.erp-w-3,.erp-w-4,.erp-w-5,.erp-w-6,.erp-w-7,.erp-w-8,.erp-w-9,.erp-w-10,.erp-w-11,.erp-w-12{grid-column:1}.erp-form-actions{justify-content:stretch}.erp-form-actions button{flex:1}}
+
+
+/* REV-DESIGN-SYSTEM-CONTAINMENT-001 · 27/10/2026
+   Arquivo carregado por src/main.tsx: proteção global compatível com Tailwind 3. */
+.erp-input {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  min-width: 0;
+  height: 32px;
+  min-height: 32px;
+  box-sizing: border-box;
+  border: 1px solid var(--erp-form-border, #b8cbd3);
+  border-radius: 2px;
+  padding: 0 8px;
+  background: var(--erp-form-surface, #fff);
+  color: var(--erp-form-text, #17333f);
+  font-size: 12px;
+  font-weight: 600;
+  outline: none;
+}
+.erp-input:focus {
+  border-color: var(--erp-form-border-focus, #2d8db8);
+  box-shadow: 0 0 0 2px rgb(45 141 184 / 16%);
+}
+.erp-input::placeholder { color: #64748b; font-weight: 400; }
+.erp-input-full { width: 100%; max-width: 100%; }
+.erp-label {
+  display: block;
+  margin-bottom: 4px;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.erp-form-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; }
+.erp-form-row > * { flex: 0 1 220px; max-width: 100%; min-width: 0; }
+.erp-form-grid,
+.erp-form-layout { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.erp-form-grid > *,
+.erp-form-layout > *,
+.erp-form-field,
+.erp-form-field > * { min-width: 0; }
+.erp-form-field input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.erp-form-field select,
+.erp-form-field textarea { width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; }
+.erp-form-field .erp-input-full { max-width: 100%; }
+@media (max-width: 1000px) {
+  .erp-form-grid, .erp-form-layout { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+  .erp-form-grid, .erp-form-layout { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .erp-form-row > * { flex-basis: min(100%, 240px); }
+}
+@media (max-width: 480px) {
+  .erp-form-grid, .erp-form-layout { grid-template-columns: minmax(0, 1fr); }
+  .erp-form-row > * { flex-basis: 100%; }
+}
