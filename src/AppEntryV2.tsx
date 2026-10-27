@@ -14,6 +14,7 @@ import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 import ERPHorizontalShell from './components/layout/ERPHorizontalShell'
 import { SynqraLayoutProvider } from './layout/SynqraLayoutContext'
 import QualityPlanGate from './components/quality/QualityPlanGate'
+import './styles/rh-industrial-theme.css'
 
 
 
@@ -550,10 +551,10 @@ function AppIndustrialAuthenticated() {
       <Route path="/fiscal/parametros" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
       <Route path="/fiscal/nfe-entradas" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
       <Route path="/fiscal/custos-industriais" element={<QualityPlanGate>{<CentralCustosIndustrial />}</QualityPlanGate>} />
-      <Route path="/rh/funcionarios" element={<Navigate to="/rh?tab=funcionarios" replace />} />
-      <Route path="/rh/turnos" element={<Navigate to="/rh?tab=ponto" replace />} />
-      <Route path="/rh/epis" element={<Navigate to="/rh?tab=documentos" replace />} />
-      <Route path="/rh/epis/entregas" element={<Navigate to="/rh?tab=documentos" replace />} />
+      <Route path="/rh/funcionarios" element={<Navigate to="/rh" replace />} />
+      <Route path="/rh/turnos" element={<Navigate to="/rh" replace />} />
+      <Route path="/rh/epis" element={<Navigate to="/rh" replace />} />
+      <Route path="/rh/epis/entregas" element={<Navigate to="/rh" replace />} />
       <Route path="/pcp/engenharia-bom" element={<QualityPlanGate>{<EngenhariaBOMPCP />}</QualityPlanGate>} />
       <Route path="/pcp/roteiro-operacoes" element={<QualityPlanGate>{<RoteiroOperacoes />}</QualityPlanGate>} />
       <Route path="/pcp/ficha-processo" element={<QualityPlanGate>{<FichaProcesso />}</QualityPlanGate>} />
