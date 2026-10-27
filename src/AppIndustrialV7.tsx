@@ -1,7 +1,6 @@
 /**
- * SYSNQRA ERP INDUSTRIAL — base limpa de reconstrução.
- * Mantém o dashboard industrial aprovado e os indicadores conectados ao Supabase.
- * Todas as telas operacionais antigas foram retiradas da navegação.
+ * SYSNQRA ERP INDUSTRIAL — dashboard principal.
+ * Indicadores permanecem conectados ao Supabase com isolamento por empresa/RLS.
  */
 import { useNavigate } from 'react-router-dom'
 import DashboardPrincipal from './components/IndustrialCommandDashboard'
@@ -9,10 +8,10 @@ import DashboardPrincipal from './components/IndustrialCommandDashboard'
 export default function AppIndustrialV7() {
   const navigate = useNavigate()
   const handleNavigate = (route: string) => {
-    // Somente a referência Fiscal aprovada permanece disponível nesta etapa.
     if (route === '/fiscal') navigate('/fiscal')
-    else navigate('/erp-industrial')
+    else if (route === '/cadastros' || route === '/cadastro' || route === '/cadastro-mestre') navigate('/pageprincipal/cadastros')
+    else if (route === '/pcp/portal-operador') navigate('/pageprincipal/cadastros')
+    else navigate('/pageprincipal')
   }
-
   return <DashboardPrincipal onNavigate={handleNavigate} />
 }
