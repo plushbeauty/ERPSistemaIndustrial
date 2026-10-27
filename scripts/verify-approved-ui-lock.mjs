@@ -64,13 +64,9 @@ for (const item of approved) {
 
 const routeContent = readFileSync('src/AppEntryV2.tsx', 'utf8')
 const requiredRoutes = [
-  ['Financeiro / Fluxo de Caixa usa o painel padronizado', '<Route path="/financeiro/fluxo-caixa" element={<QualityPlanGate>{<FinanceiroDashboardCaixa />}</QualityPlanGate>} />'],
-  ['Financeiro / Caixa usa o painel padronizado', '<Route path="/financeiro/caixa" element={<QualityPlanGate>{<FinanceiroDashboardCaixa />}</QualityPlanGate>} />'],
-  ['Vendas / atalho de Fluxo de Caixa usa o painel padronizado', '<Route path="/vendas/fluxo-caixa" element={<QualityPlanGate>{<FinanceiroDashboardCaixa />}</QualityPlanGate>} />'],
-  ['Qualidade / Calibração mantém a tela com Paquímetro Digital', '<Route path="/qualidade/calibracao" element={<QualityPlanGate><CalibracaoIndustrial /></QualityPlanGate>} />'],
-  ['Cadastro Mestre / tela única de produtos, clientes e fornecedores', '<Route path="/produtos-vendas" element={<CadastroMestreIndustrial />} />'],
-  ['Cadastro de clientes legado redireciona para a aba unificada', '<Route path="/cadastros/clientes" element={<Navigate to="/produtos-vendas?aba=clientes" replace />} />'],
-  ['Cadastro de fornecedores legado redireciona para a aba unificada', '<Route path="/cadastros/fornecedores" element={<Navigate to="/produtos-vendas?aba=fornecedores" replace />} />'],
+  ['Dashboard aprovado permanece como rota operacional', '<Route path="/erp-industrial" element={<AppIndustrial />} />'],
+  ['Fiscal aprovada permanece como referência visual', '<Route path="/fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />'],
+  ['Rotas antigas redirecionam para o dashboard durante o reset', '<Route path="*" element={<Navigate to="/erp-industrial" replace />} />'],
 ]
 for (const [label, route] of requiredRoutes) {
   const ok = routeContent.includes(route)
