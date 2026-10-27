@@ -64,14 +64,31 @@ create table if not exists public.erp_engenharia_bom (
   updated_at timestamptz not null default now(),
   constraint erp_engenharia_bom_versao_uk unique (empresa_id, produto_pai_id, versao)
 );
+create table if not exists public.erp_engenharia_bom_itens (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null,
+  bom_id uuid not null references public.erp_engenharia_bom(id) on delete cascade,
+  componente_id uuid not null references public.erp_produtos(id),
+  quantidade_gasto numeric(18,6) not null check (quantidade_gasto > 0),
+  perda_pct numeric(8,4) not null default 0 check (perda_pct >= 0 and perda_pct <= 100),
+  ordem integer not null default 0,
+  created_at timestamptz not null default now(),
+  constraint erp_engenharia_bom_item_uk unique (bom_id, componente_id)
+);
 create index if not exists erp_engenharia_bom_empresa_produto_idx
   on public.erp_engenharia_bom(empresa_id, produto_pai_id, versao desc);
+create index if not exists erp_engenharia_bom_itens_empresa_bom_idx
+  on public.erp_engenharia_bom_itens(empresa_id, bom_id);
 alter table public.erp_engenharia_bom enable row level security;
 drop policy if exists erp_engenharia_bom_select_tenant on public.erp_engenharia_bom;
 create policy erp_engenharia_bom_select_tenant on public.erp_engenharia_bom
   for select to authenticated
   using (empresa_id = (select public.erp_current_empresa_id()));
-grant select on public.erp_engenharia_bom to authenticated;
+drop policy if exists erp_engenharia_bom_itens_select_tenant on public.erp_engenharia_bom_itens;
+create policy erp_engenharia_bom_itens_select_tenant on public.erp_engenharia_bom_itens
+  for select to authenticated
+  using (empresa_id = (select public.erp_current_empresa_id()));
+grant select on public.erp_engenharia_bom, public.erp_engenharia_bom_itens to authenticated;
 
 -- Regras tributarias consumidas pela tela Fiscal / Impostos.
 create table if not exists public.erp_regras_fiscais (
