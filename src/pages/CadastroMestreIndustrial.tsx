@@ -5,7 +5,6 @@
  * Preserva CRUD, validações, anexos, tabelas reais e isolamento empresa_id nas telas existentes.
  * Não introduz registros de exemplo, tabelas paralelas nem colunas não confirmadas.
  */
-import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Boxes, Building2, Truck, Layers, ArrowRightLeft, ShieldCheck, CheckCircle2 } from 'lucide-react'
 import ProdutosVendasIndustrial from './ProdutosVendasIndustrial'
@@ -24,7 +23,6 @@ function tabFromSearch(value: string | null, fallback: Tab): Tab {
 export default function CadastroMestreIndustrial({ defaultTab = 'produtos' }: { defaultTab?: Tab }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const activeTab = tabFromSearch(searchParams.get('aba'), defaultTab)
-  const [partnerMutual, setPartnerMutual] = useState(false)
   const selectTab = (tab: Tab) => {
     const next = new URLSearchParams(searchParams)
     if (tab === 'produtos') next.delete('aba')
@@ -67,7 +65,6 @@ export default function CadastroMestreIndustrial({ defaultTab = 'produtos' }: { 
             <ArrowRightLeft size={16} className="mt-0.5 shrink-0 text-sky-700"/>
             <div><h2 className="text-xs font-extrabold text-slate-800">Cadastro relacional · {current.label}</h2><p className="mt-0.5 text-[11px] text-slate-500">Use as abas acima para alternar o tipo mestre. Os registros são carregados e gravados nas tabelas operacionais existentes da empresa autenticada.</p></div>
           </div>
-          {activeTab !== 'produtos' && <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-600"><input type="checkbox" checked={partnerMutual} onChange={e => setPartnerMutual(e.target.checked)} className="h-4 w-4 accent-amber-500"/> Parceiro também atua como {activeTab === 'clientes' ? 'fornecedor' : 'cliente'} <span className="text-[10px] font-normal text-slate-400">(marcação de interface)</span></label>}
         </section>
 
         <section aria-label={`Cadastro de ${activeTab}`} className="cadastro-master-body min-w-0">
