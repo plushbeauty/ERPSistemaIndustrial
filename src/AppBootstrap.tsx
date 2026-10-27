@@ -1,7 +1,6 @@
 import { Component, type ComponentType, lazy, Suspense, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import IndustrialLoginDirect from './IndustrialLoginDirect'
-import SetupADMInicial from './pages/SetupADMInicial'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 
 
@@ -25,7 +24,7 @@ import './styles/visual-showcase-2026.css'
 
 const PublicIndustrialHome = lazyPage(() => import('./PublicIndustrialHome'), 'PublicIndustrialHome')
 const AppEntryV2 = lazyPage(() => import('./AppEntryV2'), 'AppEntryV2')
-const publicPaths = new Set(['/','/home','/login','/cadastro-empresa','/contato','/blog','/preview/icones','/configuracao-adm-master','/cadastro-master','/planos','/ativar-acesso'])
+const publicPaths = new Set(['/','/home','/login'])
 
 class BootstrapBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state = { error: null as Error | null }
@@ -68,7 +67,6 @@ function LoginBootstrap() {
   if (!ready) return <Loading label="Preparando acesso seguro…" />
   const params = new URLSearchParams(window.location.search)
   const returnTo = params.get('returnTo') ?? ''
-  if (returnTo === '/cadastro-master' || returnTo.startsWith('/cadastro-master?')) return <SetupADMInicial />
   return <IndustrialLoginDirect returnTo={returnTo || undefined} masterMode={params.get('mode') === 'master'} />
 }
 
