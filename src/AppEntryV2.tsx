@@ -432,7 +432,7 @@ function CentralComercialFiscalFinanceira() {
                 <h2 className="text-xs font-bold">Emissão e acompanhamento fiscal</h2>
                 <button type="button" className="h-8 rounded-[2px] border border-border px-3 text-xs font-semibold" onClick={() => navigate('/fiscal/carteira-nfe')}>Abrir carteira completa</button>
               </div>
-              <NFeEmissao />
+              <QualityPlanGate><NFeEmissao /></QualityPlanGate>
             </div>
           )}
           {visao === 'financeiro' && (
@@ -447,8 +447,8 @@ function CentralComercialFiscalFinanceira() {
                 </div>
               </div>
               {financeiroTipo === 'RECEBER'
-                ? <FinanceiroContasReceber kind="RECEBER" />
-                : <FinanceiroContasPagar kind="PAGAR" />}
+                ? <QualityPlanGate><FinanceiroContasReceber kind="RECEBER" /></QualityPlanGate>
+                : <QualityPlanGate><FinanceiroContasPagar kind="PAGAR" /></QualityPlanGate>}
             </div>
           )}
         </main>
