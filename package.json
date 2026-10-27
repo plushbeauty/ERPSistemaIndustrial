@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build --emptyOutDir",
-    "build:vercel": "npm run verify:production",
+    "build:vercel": "npm run verify:supabase-env && npm run verify:supabase-guard && npm run verify:deploy-integrity && npm run verify:lockfile && npm run verify:vercel-config && npm run verify:ci-policy && npm run verify:reset-contract && npm run type-check && npm run lint:check && npm run verify:lazy-imports && npm run build && npm run verify:build && npm run verify-routes",
     "build:verified": "npm run verify:supabase-env && npm run verify:supabase-guard && npm run verify:deploy-integrity && npm run verify:lockfile && npm run verify:lazy-imports && npm run lint:check && npm run audit:all && npm run build && npm run verify:build",
     "type-check": "tsc --noEmit",
     "verify:supabase-env": "node scripts/verify-supabase-env.mjs",
@@ -42,7 +42,8 @@
     "verify:approved-ui-contract": "node scripts/verify-approved-ui-contract.mjs",
     "verify:approved-ui-lock": "node scripts/verify-approved-ui-lock.mjs",
     "verify:compras-rfq-premium-lock": "node scripts/verify-compras-rfq-premium-lock.mjs",
-    "audit:ui-standardization": "node scripts/audit-erp-ui-standardization.mjs"
+    "audit:ui-standardization": "node scripts/audit-erp-ui-standardization.mjs",
+    "verify:reset-contract": "node scripts/verify-reset-contract.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.14",
