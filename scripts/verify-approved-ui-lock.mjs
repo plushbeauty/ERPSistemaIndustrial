@@ -66,7 +66,8 @@ const routeContent = readFileSync('src/AppEntryV2.tsx', 'utf8')
 const requiredRoutes = [
   ['Page Principal contém o dashboard aprovado', '<Route path="/pageprincipal" element={<PagePrincipal />}>'],
   ['Dashboard aprovado permanece dentro da Page Principal', '<Route index element={<AppIndustrial />} />'],
-  ['Fiscal aprovada permanece como referência visual', '<Route path="/fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />'],
+  ['Fiscal aprovada permanece dentro da Page Principal', '<Route path="fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />'],
+  ['URL fiscal antiga continua compatível', '<Route path="/fiscal" element={<Navigate to="/pageprincipal/fiscal" replace />} />'],
   ['Cadastro Mestre fica dentro da Page Principal', '<Route path="cadastros" element={<CadastroMestreIndustrial />} />'],
   ['Rotas antigas redirecionam para a Page Principal', '<Route path="*" element={<Navigate to="/pageprincipal" replace />} />'],
 ]
