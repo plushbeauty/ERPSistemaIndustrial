@@ -19,7 +19,8 @@ type MenuItem = {
 const menus: MenuItem[] = [
   { label: 'Início', route: '/erp-industrial', icon: Home },
   { label: 'Cadastro Mestre Unificado · ATUALIZADO', route: '/produtos-vendas', icon: Database, isUpdated: true },
-  { label: 'Vendas', route: '/vendas', icon: ShoppingCart, children: [
+  { label: 'Central Comercial · Fiscal · Financeira', route: '/central-comercial-fiscal-financeira', icon: Wallet, isUpdated: true },
+  { label: 'Vendas', route: '/central-comercial-fiscal-financeira', icon: ShoppingCart, children: [
     { label: 'Dashboard comercial', route: '/vendas' },
     { label: 'CRM industrial · Funil', route: '/vendas/crm', icon: Target, isNew: true },
     { label: 'Status do pedido', route: '/vendas/status' },
@@ -63,14 +64,14 @@ const menus: MenuItem[] = [
     { label: 'Revisões BOM', route: '/engenharia/revisoes-bom', icon: ClipboardList, isNew: true },
     { label: 'Fichas de processo', route: '/engenharia/fichas-processo', icon: ClipboardCheck, isNew: true },
   ] },
-  { label: 'Financeiro', route: '/financeiro/custo-padrao', icon: Wallet, children: [
+  { label: 'Financeiro', route: '/central-comercial-fiscal-financeira', icon: Wallet, children: [
     { label: 'Custo padrão', route: '/financeiro/custo-padrao' },
     { label: 'Contas a pagar', route: '/financeiro/contas-pagar' },
     { label: 'Contas a receber', route: '/financeiro/contas-receber' },
     { label: 'Fluxo de caixa', route: '/financeiro/fluxo-caixa' },
     { label: 'Caixa', route: '/financeiro/caixa' },
   ] },
-  { label: 'Fiscal', route: '/fiscal', icon: FileText, children: [
+  { label: 'Fiscal', route: '/central-comercial-fiscal-financeira', icon: FileText, children: [
     { label: 'Central Fiscal', route: '/fiscal', icon: FileText, isNew: true },
     { label: 'Bloco K · SPED Industrial', route: '/fiscal/bloco-k', icon: Clipboard, isNew: true },
     { label: 'Carteira de NF-e', route: '/fiscal/carteira-nfe', icon: FileText, isNew: true },
