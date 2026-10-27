@@ -513,7 +513,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/estoque" element={<EstoqueAlmoxarifado />} />
       <Route path="/vendas/expedicao" element={<ExpedicaoPortaria />} />
       <Route path="/vendas/fiscal" element={<QualityPlanGate>{<NFeEmissao />}</QualityPlanGate>} />
-      <Route path="/vendas/rh" element={<QualityPlanGate>{<RHIndustrial />}</QualityPlanGate>} />
+      <Route path="/vendas/rh" element={<Navigate to="/rh" replace />} />
       <Route path="/vendas/engenharia" element={<QualityPlanGate>{<EngenhariaCentral />}</QualityPlanGate>} />
       <Route path="/vendas/materiais" element={<QualityPlanGate>{<CentraisIndustriais module="materiais" />}</QualityPlanGate>} />
       <Route path="/vendas/mrp" element={<QualityPlanGate>{<MRPIndustrial />}</QualityPlanGate>} />
@@ -550,10 +550,10 @@ function AppIndustrialAuthenticated() {
       <Route path="/fiscal/parametros" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
       <Route path="/fiscal/nfe-entradas" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
       <Route path="/fiscal/custos-industriais" element={<QualityPlanGate>{<CentralCustosIndustrial />}</QualityPlanGate>} />
-      <Route path="/rh/funcionarios" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
-      <Route path="/rh/turnos" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
-      <Route path="/rh/epis" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
-      <Route path="/rh/epis/entregas" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
+      <Route path="/rh/funcionarios" element={<Navigate to="/rh?tab=funcionarios" replace />} />
+      <Route path="/rh/turnos" element={<Navigate to="/rh?tab=ponto" replace />} />
+      <Route path="/rh/epis" element={<Navigate to="/rh?tab=documentos" replace />} />
+      <Route path="/rh/epis/entregas" element={<Navigate to="/rh?tab=documentos" replace />} />
       <Route path="/pcp/engenharia-bom" element={<QualityPlanGate>{<EngenhariaBOMPCP />}</QualityPlanGate>} />
       <Route path="/pcp/roteiro-operacoes" element={<QualityPlanGate>{<RoteiroOperacoes />}</QualityPlanGate>} />
       <Route path="/pcp/ficha-processo" element={<QualityPlanGate>{<FichaProcesso />}</QualityPlanGate>} />
