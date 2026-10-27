@@ -18,11 +18,7 @@ type MenuItem = {
 
 const menus: MenuItem[] = [
   { label: 'Início', route: '/erp-industrial', icon: Home },
-  { label: 'Cadastros', route: '/produtos-vendas', icon: Database, children: [
-    { label: 'Cadastro de Produtos', route: '/produtos-vendas' },
-    { label: 'Cadastro de Clientes', route: '/cadastros/clientes' },
-    { label: 'Cadastro de Fornecedores', route: '/cadastros/fornecedores' },
-  ] },
+  { label: 'Cadastro Mestre Unificado · ATUALIZADO', route: '/produtos-vendas', icon: Database, isUpdated: true },
   { label: 'Vendas', route: '/vendas', icon: ShoppingCart, children: [
     { label: 'Dashboard comercial', route: '/vendas' },
     { label: 'CRM industrial · Funil', route: '/vendas/crm', icon: Target, isNew: true },
