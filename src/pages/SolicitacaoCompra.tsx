@@ -40,6 +40,8 @@ type Item = {
   valor_estimado: string
 }
 
+const money = (value: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
+
 const PAGE_SIZE = 10
 const emptyItem = (): Item => ({
   produto_id: '',
