@@ -42,3 +42,165 @@ body>.v7-shell,body>.app-container,.v7-shell,.app-container{width:100%;max-width
 html[data-sgq-theme='dark'] body{background:#07110e;color:#e8f2ee}html[data-sgq-theme='dark'] #root,html[data-sgq-theme='dark'] .v7-shell,html[data-sgq-theme='dark'] .app-container{background:#07110e;color:#e8f2ee}html[data-sgq-theme='dark'] .v7-header,html[data-sgq-theme='dark'] .v7-main footer{background:#0b1713;border-color:#20352d;color:#e8f2ee}html[data-sgq-theme='dark'] .v7-header p,html[data-sgq-theme='dark'] .v7-user small,html[data-sgq-theme='dark'] .v7-feature p,html[data-sgq-theme='dark'] .v7-crud-head p{color:#9bb0a7}html[data-sgq-theme='dark'] .v7-kpis article,html[data-sgq-theme='dark'] .v7-quick button,html[data-sgq-theme='dark'] .v7-feature,html[data-sgq-theme='dark'] .v7-form,html[data-sgq-theme='dark'] .v7-table,html[data-sgq-theme='dark'] .v7-search{background:#0e1d18;border-color:#294239;color:#e8f2ee}html[data-sgq-theme='dark'] .v7-kpis span,html[data-sgq-theme='dark'] .v7-kpis small,html[data-sgq-theme='dark'] .v7-quick button small,html[data-sgq-theme='dark'] .v7-form label{color:#9bb0a7}html[data-sgq-theme='dark'] .v7-form input,html[data-sgq-theme='dark'] .v7-search input{background:#091610;border-color:#294239;color:#f2f8f5}html[data-sgq-theme='dark'] .v7-table th{background:#14261f;color:#b7c9c1}html[data-sgq-theme='dark'] .v7-table td,html[data-sgq-theme='dark'] .v7-table th{border-color:#20352d}html[data-sgq-theme='dark'] .v7-overlay{background:rgba(1,8,6,.82)}html[data-sgq-theme='dark'] .v7-panel{background:#0b1713;color:#e8f2ee}html[data-sgq-theme='dark'] .v7-panel-head,html[data-sgq-theme='dark'] .v7-segment-list{border-color:#20352d}html[data-sgq-theme='dark'] .v7-segment-list{background:#091510}html[data-sgq-theme='dark'] .v7-segment-list button{color:#aabcb4}html[data-sgq-theme='dark'] .v7-segment-list button.selected{background:#15372b;color:#b9ead4}html[data-sgq-theme='dark'] .v7-segment-hero{background:#0f2019;border-color:#294239}html[data-sgq-theme='dark'] .v7-segment-hero p{color:#9bb0a7}html[data-sgq-theme='dark'] .v7-module-grid button{background:#0e1d18;border-color:#294239;color:#e8f2ee}html[data-sgq-theme='dark'] .v7-module-grid button small{color:#9bb0a7}html[data-sgq-theme='dark'] .v7-module-grid button:hover,html[data-sgq-theme='dark'] .v7-module-grid button.selected{background:#12372a;border-color:#4c9d7a}html[data-sgq-theme='dark'] .sgq-theme-toggle{background:rgba(15,31,25,.95);border-color:#315347;color:#e9f5f0}html[data-sgq-theme='dark'] .v7-nav-tablet-trigger{background:#0f766e;color:#fff}
 .bootstrap-fatal{min-height:100vh;display:grid;place-items:center;padding:24px;background:#f8fafc;font-family:Inter,ui-sans-serif,system-ui,sans-serif;color:#14211e}.bootstrap-fatal section{width:min(620px,100%);background:#fff;border:1px solid #dce6e2;border-radius:20px;padding:36px;box-shadow:0 20px 60px rgba(15,61,52,.1)}.bootstrap-fatal h1{margin:10px 0 8px;font-size:28px}.bootstrap-fatal p{margin:0 0 20px;color:#60716c;line-height:1.6}.bootstrap-fatal button{border:0;border-radius:12px;padding:11px 16px;background:#0f766e;color:#fff;font-weight:800;cursor:pointer}.bootstrap-eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;color:#0f766e}
 @media(max-width:900px){.v7-nav-tablet-trigger span{display:none}.v7-nav-tablet-trigger{padding:9px}}@media(max-width:700px){#root,.v7-shell,.app-container,.public-industrial{width:100%;max-width:100%!important;box-shadow:none}.sgq-theme-toggle{right:12px;top:10px;padding:9px}.sgq-theme-toggle span{display:none}}
+
+
+/*
+ * SYSNQRA ERP INDUSTRIAL — DESIGN SYSTEM COMPATÍVEL COM TAILWIND 3.4
+ * REV-DESIGN-SYSTEM-CONTAINMENT-001 · 27/10/2026
+ * Mantém os imports legados existentes e evita diretivas exclusivas do Tailwind 4.
+ */
+:root {
+  --radius: 2px;
+  --background: #f4f7fb;
+  --foreground: #172033;
+  --card: #ffffff;
+  --card-foreground: #172033;
+  --popover: #ffffff;
+  --popover-foreground: #172033;
+  --primary: #2d8db8;
+  --primary-foreground: #ffffff;
+  --secondary: #eef3f7;
+  --secondary-foreground: #243449;
+  --muted: #eef3f7;
+  --muted-foreground: #64748b;
+  --accent: #e8f3f8;
+  --accent-foreground: #173b50;
+  --destructive: #c74646;
+  --destructive-foreground: #ffffff;
+  --border: #d5e0e8;
+  --input: #d5e0e8;
+  --ring: #2d8db8;
+  --success: #16845b;
+  --warning: #b8791c;
+  --danger: #c74646;
+  --info: #2d8db8;
+  --topbar: #0f172a;
+}
+
+/* Utilitários semânticos: CSS puro para não depender de sintaxe Tailwind v4. */
+.erp-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--card-foreground);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 5%);
+}
+.erp-btn,
+.erp-btn-primary {
+  display: inline-flex;
+  min-width: 0;
+  min-height: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+}
+.erp-btn { background: var(--card); color: var(--foreground); }
+.erp-btn:hover { background: var(--muted); }
+.erp-btn-primary { border-color: var(--primary); background: var(--primary); color: var(--primary-foreground); }
+.erp-btn-primary:hover { filter: brightness(.96); }
+.erp-btn:disabled,
+.erp-btn-primary:disabled { cursor: not-allowed; opacity: .5; }
+
+/* Proteção padrão para campos soltos: largura limitada, sem overflow em grids/flex. */
+.erp-input {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  min-width: 0;
+  height: 32px;
+  min-height: 32px;
+  box-sizing: border-box;
+  border: 1px solid var(--input);
+  border-radius: var(--radius);
+  padding: 0 8px;
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 12px;
+  font-weight: 600;
+  outline: none;
+}
+.erp-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgb(45 141 184 / 16%);
+}
+.erp-input::placeholder { color: var(--muted-foreground); font-weight: 400; }
+.erp-input-full { width: 100%; max-width: 100%; }
+.erp-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--muted-foreground);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.erp-th {
+  height: 32px;
+  border-bottom: 1px solid var(--border);
+  padding: 0 8px;
+  background: var(--secondary);
+  color: var(--muted-foreground);
+  text-align: left;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.erp-tr { border-bottom: 1px solid rgb(213 224 232 / 70%); }
+.erp-tr:nth-child(even) { background: #f7f9fc; }
+.erp-tr:hover { background: rgb(45 141 184 / 6%); }
+.erp-td { height: 40px; padding: 0 8px; color: var(--foreground); font-size: 12px; vertical-align: middle; }
+.erp-tab {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 0 12px;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  font-weight: 700;
+}
+.erp-tab-active { border-bottom-color: var(--primary); color: var(--primary); }
+
+/* Proteção estrutural para formulários responsivos e campos filhos. */
+.erp-form-row,
+.erp-form-grid,
+.erp-form-layout,
+.erp-form-field,
+.erp-form-field > *,
+.erp-form-row > *,
+.erp-form-grid > *,
+.erp-form-layout > * { min-width: 0; }
+.erp-form-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; }
+.erp-form-row > * { flex: 0 1 220px; max-width: 100%; }
+.erp-form-grid,
+.erp-form-layout { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.erp-form-field { display: grid; align-content: start; gap: 5px; }
+.erp-form-field input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.erp-form-field select,
+.erp-form-field textarea { width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; }
+.erp-form-field .erp-input-full { max-width: 100%; }
+@media (max-width: 1000px) {
+  .erp-form-grid, .erp-form-layout { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+  .erp-form-grid, .erp-form-layout { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .erp-form-row > * { flex-basis: min(100%, 240px); }
+}
+@media (max-width: 480px) {
+  .erp-form-grid, .erp-form-layout { grid-template-columns: minmax(0, 1fr); }
+  .erp-form-row > * { flex-basis: 100%; }
+}
