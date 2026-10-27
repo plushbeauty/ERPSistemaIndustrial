@@ -12,6 +12,7 @@ const PagePrincipal = lazy(() => import('./pages/PagePrincipal'))
 const AppIndustrial = lazy(() => import('./AppIndustrialV7'))
 const CadastroMestreIndustrial = lazy(() => import('./pages/CadastroMestreIndustrial'))
 const Fiscal = lazy(() => import('./pages/Fiscal'))
+const SetupADMInicial = lazy(() => import('./pages/SetupADMInicial'))
 
 function LoadingWorkspace() {
   return <main role="status" aria-live="polite" style={{ minHeight: '50vh', display: 'grid', placeItems: 'center', color: '#123b50', fontFamily: 'Inter,system-ui,sans-serif' }}>Carregando SYSNQRA ERP INDUSTRIAL…</main>
@@ -23,6 +24,7 @@ export default function AppEntryV2() {
       <div className="erp-global-surface">
         <ERPHorizontalShell>
           <Routes>
+            <Route path="/cadastro-master" element={<SetupADMInicial />} />
             <Route path="/pageprincipal" element={<PagePrincipal />}>
               <Route index element={<AppIndustrial />} />
               <Route path="cadastros" element={<CadastroMestreIndustrial />} />
