@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertCircle, CheckCircle2, ClipboardList, Printer, RefreshCw, ShoppingCart } from 'lucide-react'
+import { Printer, RefreshCw, ShoppingCart } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import EntityCodeLookup, { type LookupRecord } from '../components/industrial/EntityCodeLookup'
-import KioskConsultaRapida from '../components/KioskConsultaRapida'
 import VendasLayout from './VendasLayout'
 
 interface Requisition {
@@ -51,6 +50,7 @@ interface ProductionOrder {
 const PAGE_SIZE = 25
 const panelClass = 'rounded-[3px] border border-[#D8E4EA] bg-white shadow-[0_2px_8px_rgba(18,59,80,0.04)]'
 const buttonClass = 'inline-flex h-8 items-center justify-center gap-1.5 rounded-[3px] border px-3 text-[11px] font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50'
+const primaryButtonClass = 'inline-flex h-8 items-center justify-center gap-1.5 rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[11px] font-bold text-white transition-colors hover:bg-[#25789d] disabled:cursor-not-allowed disabled:opacity-50'
 const fieldLabelClass = 'mb-1 block text-[9px] font-bold uppercase tracking-[0.08em] text-[#496574]'
 
 function formatDate(value: string): string {
@@ -218,43 +218,28 @@ export default function ComprasRequisicoes() {
   }
 
   return (
-    <VendasLayout title="Requisições de compra" subtitle="PCP • MRP • materiais • cotação" onRefresh={() => void load()}>
-      <main className="min-h-screen bg-[#F4F7F9] p-3 text-[#183746] sm:p-4">
-        <div className="mx-auto max-w-[1800px]">
-          <header className="overflow-hidden rounded-[3px] border border-[#0E1E2F] bg-gradient-to-r from-[#123B50] to-[#0E1E2F] text-[#F4FBFD] shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[3px] border border-white/20 bg-white/10">
-                  <ClipboardList size={19} aria-hidden="true" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#9FD9E5]">Compras / Suprimentos industriais</p>
-                  <h1 className="text-base font-bold leading-tight sm:text-lg">Requisições de compra</h1>
-                  <p className="mt-0.5 text-[10px] text-[#D9EAF0]">Consulta por ordem de produção, itens e encaminhamento para cotação</p>
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <button type="button" onClick={() => void forwardSelected()} disabled={busy || selectedEligibleCount === 0} className={`${buttonClass} border-[#48B7C7] bg-[#2D8DB8] text-white hover:bg-[#24799E]`}>
-                  <ShoppingCart size={14} aria-hidden="true" />Encaminhar ({selectedEligibleCount})
-                </button>
-                <button type="button" onClick={() => void load()} disabled={busy} className={`${buttonClass} border-white/30 bg-white/10 text-white hover:bg-white/20`}>
-                  <RefreshCw size={13} aria-hidden="true" />Atualizar
-                </button>
-                <button type="button" onClick={() => window.print()} className={`${buttonClass} border-white/30 bg-transparent text-white hover:bg-white/10`}>
-                  <Printer size={13} aria-hidden="true" />Imprimir
-                </button>
-              </div>
-            </div>
-          </header>
-
-          <div className="mt-3">
-            <KioskConsultaRapida />
-          </div>
-
+    <VendasLayout
+      title="Requisições de compra"
+      subtitle="Compras • Necessidades do PCP/MRP para cotação"
+      onRefresh={() => void load()}
+      titleActions={
+        <div className="flex items-center gap-2">
+          <button type="button" className={buttonClass} onClick={() => void load()} disabled={busy}>
+            <RefreshCw size={14} /> Atualizar
+          </button>
+          <button type="button" className={buttonClass} onClick={() => window.print()}>
+            <Printer size={14} /> Imprimir
+          </button>
+          <button type="button" className={primaryButtonClass} onClick={() => void forwardSelected()} disabled={busy || selectedEligibleCount === 0}>
+            <ShoppingCart size={14} /> Encaminhar p/ cotação{selectedEligibleCount ? ` (${selectedEligibleCount})` : ''}
+          </button>
+        </div>
+      }
+    >
+      <main className="mx-auto w-full max-w-[1440px] space-y-3 p-3">
           {(error || message) && (
-            <div role={error ? 'alert' : 'status'} className={`mt-3 flex items-start gap-2 rounded-[3px] border px-3 py-2 text-xs font-semibold ${error ? 'border-[#E9B8B8] bg-[#FFF3F2] text-[#9D3030]' : 'border-[#B8DCCB] bg-[#EFF9F3] text-[#226847]'}`}>
-              {error ? <AlertCircle size={15} className="mt-0.5 shrink-0" /> : <CheckCircle2 size={15} className="mt-0.5 shrink-0" />}
-              <span>{error || message}</span>
+            <div role={error ? 'alert' : 'status'} className={`rounded-[2px] border-l-4 px-3 py-2 text-xs font-semibold ${error ? 'border-rose-600 bg-rose-50 text-rose-800' : 'border-emerald-600 bg-emerald-50 text-emerald-800'}`}>
+              {error || message}
             </div>
           )}
 
@@ -338,12 +323,7 @@ export default function ComprasRequisicoes() {
               </nav>
             )}
           </section>
-          <footer className="mt-2 flex flex-wrap items-center justify-between gap-2 px-1 text-[9px] text-[#6B818D]">
-            <span>SYSNQRA ERP &amp; SGQ INDUSTRIAL • Compras • Revisão 20/10/2026</span>
-            <span>Dados filtrados pela empresa da sessão e protegidos pelas políticas RLS/RBAC do banco.</span>
-          </footer>
-        </div>
-      </main>
+        </main>
     </VendasLayout>
   )
 }
