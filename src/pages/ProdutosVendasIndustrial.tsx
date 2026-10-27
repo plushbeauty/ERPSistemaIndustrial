@@ -422,13 +422,14 @@ export default function ProdutosVendasIndustrial(){
 
     
    /* REV-PRODUTO-UI-015 · 27/10/2026 · correção cirúrgica de geometria, sem alterar CRUD/Supabase */
-   .cadastro-mestre-page .product-master-screen>header{min-height:0!important;margin:0 0 10px!important;padding:10px 14px!important;border:1px solid #e2e8f0!important;border-radius:10px!important;background:#fff!important;color:#0f172a!important;box-shadow:0 1px 4px rgba(15,23,42,.05)!important}
-   .cadastro-mestre-page .product-master-screen>header h1{margin:2px 0 0!important;color:#123b50!important;font-size:16px!important;letter-spacing:0!important}
-   .cadastro-mestre-page .product-master-screen>header>div:first-child>div{color:#2d8db8!important}
-   .cadastro-mestre-page .product-master-screen input[class^="edit-"]{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;justify-self:stretch!important;box-sizing:border-box!important}
-   .cadastro-mestre-page .product-master-screen .product-form-grid,.cadastro-mestre-page .product-master-screen .product-responsive-grid{column-gap:12px!important;row-gap:12px!important}
-   @media(max-width:900px){.cadastro-mestre-page .product-master-screen .product-form-grid,.cadastro-mestre-page .product-master-screen .product-responsive-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
-   @media(max-width:600px){.cadastro-mestre-page .product-master-screen input[class^="edit-"]{max-width:100%!important}}
+   .product-master-screen>header{min-height:0!important;margin:0 0 10px!important;padding:10px 14px!important;border:1px solid #e2e8f0!important;border-radius:10px!important;background:#fff!important;color:#0f172a!important;box-shadow:0 1px 4px rgba(15,23,42,.05)!important}
+   .product-master-screen>header h1{margin:2px 0 0!important;color:#123b50!important;font-size:16px!important;letter-spacing:0!important}
+   .product-master-screen>header>div:first-child>div{color:#2d8db8!important}
+   .product-master-screen input[class^="edit-"]{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;justify-self:stretch!important;box-sizing:border-box!important}
+   .product-master-screen .product-combo-wrap input[class^="edit-"]{width:100%!important;max-width:100%!important;min-width:0!important}
+   .product-master-screen .product-form-grid,.product-master-screen .product-responsive-grid{column-gap:12px!important;row-gap:12px!important}
+   @media(max-width:900px){.product-master-screen .product-form-grid,.product-master-screen .product-responsive-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+   @media(max-width:600px){.product-master-screen input[class^="edit-"]{max-width:100%!important}}
 `}</style>
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
       <div><div style={{fontSize:11,fontWeight:800,color:'#2D8DB8'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
