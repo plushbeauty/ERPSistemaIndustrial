@@ -10,7 +10,7 @@ import { Boxes, Gauge, ReceiptText } from 'lucide-react'
 const links = [
   { to: '/pageprincipal', label: 'Painel principal', description: 'Indicadores industriais', Icon: Gauge, end: true },
   { to: '/pageprincipal/cadastros', label: 'Cadastros', description: 'Produtos, clientes e fornecedores', Icon: Boxes, end: false },
-  { to: '/fiscal', label: 'Fiscal', description: 'Central fiscal aprovada', Icon: ReceiptText, end: false },
+  { to: '/pageprincipal/fiscal', label: 'Fiscal', description: 'Central fiscal aprovada', Icon: ReceiptText, end: false },
 ]
 
 export default function PagePrincipal() {
