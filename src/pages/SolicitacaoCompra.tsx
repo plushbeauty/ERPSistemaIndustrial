@@ -265,7 +265,7 @@ export default function SolicitacaoCompra() {
   }
 
   return (
-    <VendasLayout title="Solicitação de compra" subtitle="Necessidade interna • autorização • encaminhamento" onRefresh={() => void load()}>
+    <VendasLayout title="Solicitação de compra" subtitle="Compras • Necessidade interna para autorização" onRefresh={() => void load()} showStatusCards={false} titleActions={<div className="flex items-center gap-2"><button type="button" className="secondary-v2" onClick={() => window.print()}><Printer size={14} /> Imprimir</button><button type="submit" form="form-solicitacao-compra" className="primary" disabled={busy || !empresaId}><ShoppingCart size={14} /> {busy ? 'Salvando…' : 'Registrar'}</button></div>}>
     <main className="pcp-page purchase-request-premium" style={{ padding: 8, maxWidth: 1440, margin: '0 auto' }}>
       <style>{`
 /* Revisão visual Compras — 20/10/2026 — referência premium aplicada somente à Solicitação de Compra. */
@@ -305,35 +305,36 @@ export default function SolicitacaoCompra() {
 .purchase-request-premium nav button:disabled{opacity:.45;cursor:not-allowed}
 @media(max-width:700px){.purchase-request-premium form>div:first-child>label,.purchase-request-premium form>div:first-child>label:first-child,.purchase-request-premium form>div:first-child>label:nth-child(2),.purchase-request-premium form>div:first-child>label:nth-child(3),.purchase-request-premium form>div:first-child>label:nth-child(4){grid-column:span 12}.purchase-request-premium>header h1{font-size:17px!important}.purchase-request-premium>section{padding:8px!important}.purchase-request-premium table{min-width:680px}}
 @media(prefers-reduced-motion:reduce){.purchase-request-premium *{transition:none!important}}
+
+.purchase-request-premium .request-fields{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:8px 12px;padding:12px}
+.purchase-request-premium .request-fields label{grid-column:span 6;display:flex;flex-direction:column;gap:4px;min-width:0;color:#385566;font-size:10px;font-weight:800}
+.purchase-request-premium .request-fields label:nth-child(1){grid-column:span 6}.purchase-request-premium .request-fields label:nth-child(2){grid-column:span 2}.purchase-request-premium .request-fields label:nth-child(3){grid-column:span 4}.purchase-request-premium .request-fields label:nth-child(4),.purchase-request-premium .request-fields label:nth-child(5){grid-column:span 6}
+.purchase-request-premium .request-section-title{display:flex;align-items:center;justify-content:space-between;min-height:38px;padding:7px 12px;border-bottom:1px solid #dfe8ed;background:#f4fbfd}
+.purchase-request-premium .request-section-title h2{margin:0;color:#2d8db8;font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+.purchase-request-premium .request-card{overflow:hidden;border:1px solid #d8e3e9;background:#fff;box-shadow:0 2px 7px #123b5008}
+.purchase-request-premium .request-fields input,.purchase-request-premium .request-fields select,.purchase-request-premium .request-fields textarea{box-sizing:border-box;width:100%;min-width:0;height:32px;min-height:32px;padding:0 8px;border:1px solid #c5d4dc;border-radius:2px;background:#fff;color:#123b50;font:500 11px Inter,Roboto,Arial,sans-serif}
+.purchase-request-premium .request-fields textarea{padding:7px;resize:vertical}
+.purchase-request-premium .crud-table-wrap{width:100%;overflow-x:auto}.purchase-request-premium .crud-table-wrap table{width:100%;table-layout:fixed;border-collapse:collapse}
+.purchase-request-premium .crud-table-wrap th{background:#123b50;color:#f4fbfd;font-size:9px;font-weight:900;white-space:nowrap}
+.purchase-request-premium .crud-table-wrap td{height:36px;padding:5px 8px;border-bottom:1px solid #e7edf1;vertical-align:middle;overflow:hidden}
+.purchase-request-premium .crud-table-wrap td input,.purchase-request-premium .crud-table-wrap td select{width:100%;min-width:0;box-sizing:border-box;height:29px;min-height:29px}
+.purchase-request-premium .request-total{display:flex;justify-content:flex-end;align-items:center;gap:22px;padding:10px 12px;background:#f4fbfd;border-top:1px solid #d8e3e9}
+.purchase-request-premium .request-total span{font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#385566}.purchase-request-premium .request-total strong{font-size:15px;font-weight:900;color:#123b50;font-variant-numeric:tabular-nums}
+.purchase-request-premium .request-alert{margin:0 0 8px;padding:9px 12px;border-left:4px solid;font-size:11px;font-weight:700}.purchase-request-premium .request-alert.error{border-color:#d65b61;background:#fff1f1;color:#922b32}.purchase-request-premium .request-alert.success{border-color:#3a9d78;background:#effaf5;color:#176746}
+.purchase-request-premium .request-badge{display:inline-flex;align-items:center;min-height:22px;padding:2px 7px;border:1px solid;border-radius:2px;font-size:9px;font-weight:900;text-transform:uppercase;white-space:nowrap}
+.purchase-request-premium .tone-normal{border-color:#cbd5e1;background:#f1f5f9;color:#475569}.purchase-request-premium .tone-high,.purchase-request-premium .tone-waiting{border-color:#f3d28a;background:#fff7df;color:#8a5a00}.purchase-request-premium .tone-urgent,.purchase-request-premium .tone-cancelled{border-color:#f2b9bd;background:#fff0f0;color:#b4232c}.purchase-request-premium .tone-authorized{border-color:#a9dcc6;background:#eaf8f0;color:#21754d}.purchase-request-premium .tone-quote{border-color:#a7d7e7;background:#edf9fd;color:#176b8b}
+.purchase-request-premium .request-list{margin-top:12px}.purchase-request-premium .request-pagination{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:8px 12px}
+.purchase-request-premium .primary,.purchase-request-premium .secondary-v2{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;min-height:32px;padding:0 12px;border-radius:2px;font-size:11px;font-weight:800;white-space:nowrap}.purchase-request-premium .primary{background:#2d8db8;border:1px solid #2d8db8;color:#fff}.purchase-request-premium .secondary-v2{background:#fff;border:1px solid #bfcfd8;color:#234b5d}
+@media(max-width:760px){.purchase-request-premium .request-fields label,.purchase-request-premium .request-fields label:nth-child(n){grid-column:span 12}.purchase-request-premium .request-list table{min-width:850px}.purchase-request-premium .request-total{justify-content:space-between}}
+@media print{.purchase-request-premium .request-list,.purchase-request-premium .no-print{display:none!important}}
 `}</style>
-      <header style={{ marginBottom: 22 }}>
-        <span className="v2-eyebrow">COMPRAS • SOLICITAÇÃO INTERNA</span>
-        <h1 style={{ fontSize: 32, margin: '6px 0' }}>Solicitação de compra</h1>
-        <p style={{ color: '#64748b', margin: 0 }}>
-          Registre materiais para autorização e encaminhamento ao setor de Compras.
-        </p>
-      </header>
+      {error && <div role="alert" className="request-alert error">{error}</div>}
+      {message && <div role="status" className="request-alert success">{message}</div>}
 
-      {error && (
-        <p role="alert" style={{ padding: 12, color: '#991b1b', background: '#fef2f2', borderRadius: 8 }}>
-          {error}
-        </p>
-      )}
-      {message && (
-        <p role="status" style={{ padding: 12, color: '#166534', background: '#f0fdf4', borderRadius: 8 }}>
-          {message}
-        </p>
-      )}
-
-      <section style={{ background: '#fff', border: '1px solid #dfe7e4', borderRadius: 14, padding: 20 }}>
-        <form onSubmit={(event) => void save(event)}>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 230px), 1fr))',
-              gap: 14,
-            }}
-          >
+      <section className="request-card">
+        <form id="form-solicitacao-compra" onSubmit={(event) => void save(event)}>
+          <div className="request-section-title"><h2>Dados da solicitação</h2></div>
+          <div className="request-fields">
             <label>
               Motivo da solicitação
               <input
@@ -341,6 +342,24 @@ export default function SolicitacaoCompra() {
                 value={descricao}
                 onChange={(event) => setDescricao(event.target.value)}
                 maxLength={500}
+              />
+            </label>
+            <label>
+              Prioridade
+              <select value={prioridade} onChange={(event) => setPrioridade(event.target.value)}>
+                <option value="normal">Normal</option>
+                <option value="alta">Alta</option>
+                <option value="urgente">Urgente</option>
+              </select>
+            </label>
+            <label>
+              E-mail do setor responsável
+              <input
+                type="email"
+                value={emailDestino}
+                onChange={(event) => setEmailDestino(event.target.value)}
+                maxLength={254}
+                placeholder="compras@empresa.com.br"
               />
             </label>
             <label>
@@ -363,29 +382,16 @@ export default function SolicitacaoCompra() {
               </select>
             </label>
             <label>
-              Prioridade
-              <select value={prioridade} onChange={(event) => setPrioridade(event.target.value)}>
-                <option value="normal">Normal</option>
-                <option value="alta">Alta</option>
-                <option value="urgente">Urgente</option>
-              </select>
+              Observações
+              <textarea value={observacoes} onChange={(event) => setObservacoes(event.target.value)} maxLength={2000} rows={1} />
             </label>
-            <label>
-              E-mail do setor responsável
-              <input
-                type="email"
-                value={emailDestino}
-                onChange={(event) => setEmailDestino(event.target.value)}
-                maxLength={254}
-                placeholder="compras@empresa.com.br"
-              />
-            </label>
+
           </div>
 
-          <div className="industrial-section-head" style={{ marginTop: 22 }}>
+          <div className="request-section-title">
             <div>
               <span>ITENS DA SOLICITAÇÃO</span>
-              <h2>Produtos e materiais</h2>
+              <h2>Itens da solicitação ({items.length})</h2>
             </div>
             <button
               className="secondary-v2"
@@ -400,11 +406,13 @@ export default function SolicitacaoCompra() {
             <table>
               <thead>
                 <tr>
+                  <th style={{width:42,textAlign:"center"}}>#</th>
                   <th>Produto / material</th>
-                  <th>Unidade</th>
-                  <th>Quantidade</th>
-                  <th>Valor estimado unitário</th>
-                  <th>Ação</th>
+                  <th style={{width:66,textAlign:"center"}}>Unidade</th>
+                  <th style={{width:120,textAlign:"right"}}>Quantidade</th>
+                  <th style={{width:145,textAlign:"right"}}>Valor unitário</th>
+                  <th style={{width:135,textAlign:"right"}}>Total por item</th>
+                  <th style={{width:48,textAlign:"center"}}>Ação</th>
                 </tr>
               </thead>
               <tbody>
@@ -431,7 +439,7 @@ export default function SolicitacaoCompra() {
                         ))}
                       </select>
                     </td>
-                    <td>{item.unidade}</td>
+                    <td style={{textAlign:"center",fontWeight:800}}>{item.unidade}</td>
                     <td>
                       <input
                         type="number"
@@ -452,7 +460,10 @@ export default function SolicitacaoCompra() {
                         onChange={(event) => updateItem(index, { valor_estimado: event.target.value })}
                       />
                     </td>
-                    <td>
+                    <td style={{textAlign:"right",fontWeight:800,fontVariantNumeric:"tabular-nums"}}>
+                      {money((Number(item.quantidade) || 0) * (Number(item.valor_estimado) || 0))}
+                    </td>
+                    <td style={{textAlign:"center"}}>
                       <button
                         className="icon-button danger"
                         type="button"
@@ -474,16 +485,7 @@ export default function SolicitacaoCompra() {
             </table>
           </div>
 
-          <label style={{ display: 'block', marginTop: 14 }}>
-            Observações
-            <textarea
-              value={observacoes}
-              onChange={(event) => setObservacoes(event.target.value)}
-              maxLength={2000}
-              rows={3}
-              style={{ width: '100%', marginTop: 6 }}
-            />
-          </label>
+          <div className="request-total"><span>Total estimado da solicitação</span><strong>{money(items.reduce((sum, item) => sum + (Number(item.quantidade) || 0) * (Number(item.valor_estimado) || 0), 0))}</strong></div>
 
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
             <button className="primary" type="submit" disabled={busy || !empresaId}>
@@ -505,7 +507,7 @@ export default function SolicitacaoCompra() {
           padding: 20,
         }}
       >
-        <h2 style={{ marginTop: 0 }}>Solicitações recentes</h2>
+        <div className="request-section-title"><h2>Solicitações recentes ({rows.length})</h2></div>
         <div className="crud-table-wrap">
           <table>
             <thead>
@@ -523,9 +525,9 @@ export default function SolicitacaoCompra() {
                 <tr key={row.id} style={{ background: index % 2 === 1 ? '#f8fafc' : '#fff' }}>
                   <td>#{row.numero}</td>
                   <td>{row.descricao}</td>
-                  <td>{row.prioridade}</td>
+                  <td><span className={"request-badge " + (row.prioridade === 'urgente' ? 'tone-urgent' : row.prioridade === 'alta' ? 'tone-high' : 'tone-normal')}>{row.prioridade === 'urgente' ? 'Urgente' : row.prioridade === 'alta' ? 'Alta' : 'Normal'}</span></td>
                   <td>{supplierById.get(row.fornecedor_id ?? '')?.razao_social ?? '—'}</td>
-                  <td>{row.status}</td>
+                  <td><span className={"request-badge " + (row.status === 'autorizada' ? 'tone-authorized' : row.status === 'cancelada' ? 'tone-cancelled' : row.status === 'em_cotacao' ? 'tone-quote' : 'tone-waiting')}>{row.status === 'aguardando_autorizacao' ? 'Aguardando autorização' : row.status === 'autorizada' ? 'Autorizada' : row.status === 'cancelada' ? 'Cancelada' : row.status === 'em_cotacao' ? 'Em cotação' : row.status.replaceAll('_', ' ')}</span></td>
                   <td>
                     {row.status === 'aguardando_autorizacao' && canApprove ? (
                       <button
@@ -554,10 +556,7 @@ export default function SolicitacaoCompra() {
             </tbody>
           </table>
         </div>
-        <nav
-          aria-label="Paginação das solicitações"
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, marginTop: 12 }}
-        >
+        <nav aria-label="Paginação das solicitações" className="request-pagination">
           <button
             className="secondary-v2"
             type="button"
