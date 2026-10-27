@@ -18,14 +18,27 @@ alter table public.erp_empresas
 
 alter table public.erp_pedidos_compra
   add column if not exists fiscal_status text not null default 'NAO_ANALISADO',
-  add column if not exists fiscal_parecer text;
+  add column if not exists fiscal_parecer text,
+  add column if not exists comprador_nome text,
+  add column if not exists condicao_pagamento text,
+  add column if not exists prazo_entrega date;
 
 -- Campos usados pelo relatorio do Bloco K. data_inicio/data_fim podem ja existir.
 alter table public.erp_ordens_producao
   add column if not exists numero_op text,
+  add column if not exists numero text,
   add column if not exists quantidade_produzida numeric(18,6) not null default 0,
   add column if not exists data_inicio timestamptz,
   add column if not exists data_fim timestamptz;
+
+-- Campos de compatibilidade consumidos pela tela de RFQ/Análise de Preços.
+alter table public.erp_rfq
+  add column if not exists fornecedor_escolhido_id uuid,
+  add column if not exists justificativa_escolha text,
+  add column if not exists status_aprovacao text not null default 'EM_ANALISE',
+  add column if not exists menor_preco_ofertado numeric(18,4),
+  add column if not exists created_at timestamptz not null default now(),
+  add column if not exists updated_at timestamptz not null default now();
 
 -- CRM: tabela consultada pelo funil comercial.
 create table if not exists public.erp_crm_oportunidades (
