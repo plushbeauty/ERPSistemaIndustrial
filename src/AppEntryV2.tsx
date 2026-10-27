@@ -841,7 +841,8 @@ function AppIndustrialAuthenticated() {
     </Routes>
   )
 
-  const rebuildMode = import.meta.env.VITE_ERP_REBUILD_MODE !== 'false'
+  // Reset autorizado em 27/10/2026: não permitir que variável de ambiente reative rotas antigas.
+  const rebuildMode = true
   const rebuildRoutes = (
     <Routes>
       {/* REV-RESET-ERP-2026-10-27: somente o dashboard aprovado permanece ativo.
