@@ -46,10 +46,10 @@ function parseSpecParameters(value: unknown): SpecParameter[] {
   }))
 }
 
-const buttonClass = 'inline-flex h-8 items-center justify-center gap-1 rounded-none border border-[#2E4A62] bg-[#123B50] px-3 text-[10px] font-black uppercase text-white hover:bg-[#18506A] disabled:opacity-50'
-const steelInput = 'h-8 min-w-0 w-full rounded-none border border-[#2E4A62] bg-[#0E1E2F] px-2.5 text-xs font-mono font-bold text-[#F4FBFD] outline-none placeholder:text-white focus:border-[#48B7C7] disabled:cursor-not-allowed disabled:opacity-60'
-const steelLabel = 'mb-1 block text-[9px] font-black uppercase tracking-wider text-white'
-const gridTitleClass = 'mb-2.5 block border-b border-[#2E4A62] pb-1 text-[9px] font-black uppercase tracking-widest text-[#48B7C7]'
+const buttonClass = 'inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-[#1D5FD1] bg-[#1D5FD1] px-3 text-[10px] font-bold uppercase text-white shadow-sm hover:bg-[#174DB0] disabled:opacity-50'
+const steelInput = 'h-9 min-w-0 w-full rounded-lg border border-slate-300 bg-white px-2.5 text-xs font-medium text-slate-800 outline-none placeholder:text-slate-400 focus:border-[#2D8DB8] focus:ring-2 focus:ring-sky-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:opacity-70'
+const steelLabel = 'mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-600'
+const gridTitleClass = 'mb-2.5 block border-b border-slate-200 pb-2 text-[10px] font-extrabold uppercase tracking-widest text-[#2D8DB8]'
 
 export default function QualidadeInspecoesIndustrial() {
   const [companyId, setCompanyId] = useState('')
@@ -268,13 +268,13 @@ export default function QualidadeInspecoesIndustrial() {
   }), [rows])
 
   return (
-    <main className="min-h-full bg-[#0E1E2F] p-3 font-mono text-[#F4FBFD] antialiased"><QualitySidebar active="/qualidade/inspecoes" />
-      <header className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-[#2E4A62] pb-2">
+    <main data-quality-workspace className="min-h-screen bg-[#F4FBFD] p-3 font-sans text-[#123B50] antialiased sm:p-4"><QualitySidebar active="/qualidade/inspecoes" />
+      <header className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
         <div className="flex items-center gap-2">
           <ShieldCheck size={18} className="text-[#48B7C7]" />
           <div>
-            <p className="text-[9px] font-black uppercase tracking-[.18em] text-white">MOLDPLÁS ERP INDUSTRIAL / SGQ</p><h1 className="text-sm font-black text-white">Controle de inspeção de lotes</h1>
-            <p className="text-[10px] text-white">Amostragem, critérios técnicos aprovados, laudos e rastreabilidade</p>
+            <p className="text-[9px] font-extrabold uppercase tracking-[.18em] text-[#2D8DB8]">SYSNQRA ERP INDUSTRIAL / SGQ</p><h1 className="text-xl font-extrabold text-slate-900">Controle de inspeção de lotes</h1>
+            <p className="text-xs text-slate-600">Amostragem, critérios técnicos aprovados, laudos e rastreabilidade</p>
           </div>
         </div>
         <button className={buttonClass} onClick={() => void load()} disabled={loading}><RefreshCw size={13} /> Atualizar</button>
@@ -282,13 +282,13 @@ export default function QualidadeInspecoesIndustrial() {
 
       <section className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
         {[['INSPEÇÕES', counts.total], ['APROVADAS', counts.approved], ['REPROVADAS', counts.rejected]].map(([label, value]) => (
-          <div key={String(label)} className="border border-[#2E4A62] bg-[#0D2638] px-3 py-2">
+          <div key={String(label)} className="rounded-xl border border-slate-200 bg-white shadow-sm px-3 py-2">
             <div className={steelLabel}>{label}</div><div className="text-base font-semibold tabular-nums">{value}</div>
           </div>
         ))}
       </section>
 
-      <div className="grid grid-cols-1 items-start gap-3 xl:grid-cols-12"><section className="mb-3 min-w-0 border border-[#2E4A62] bg-[#0D2638] p-3 xl:col-span-6">
+      <div className="grid grid-cols-1 items-start gap-3 xl:grid-cols-12"><section className="mb-3 min-w-0 rounded-xl border border-slate-200 bg-white shadow-sm p-3 xl:col-span-6">
         <h2 className="mb-2 flex items-center gap-1 text-xs font-semibold"><ClipboardCheck size={14} /> Registrar inspeção</h2>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-12">
           <label className="lg:col-span-3" title="Selecione a etapa de inspeção: recebimento, processo produtivo ou produto final."><span className={steelLabel}>TIPO</span><select className={steelInput} value={tipo} onChange={event => setTipo(event.target.value as InspectionRow['tipo'])}><option value="recebimento">Recebimento</option><option value="processo">Processo</option><option value="produto_final">Produto final</option></select></label>
@@ -302,27 +302,27 @@ export default function QualidadeInspecoesIndustrial() {
           <div className="flex items-end lg:col-span-12"><button className="h-8 w-full rounded-none border border-[#48B7C7] bg-[#12627A] px-3 text-[10px] font-black uppercase text-white hover:bg-[#16758E] disabled:opacity-50" onClick={() => void saveInspection()} disabled={saving || loading}>{saving ? 'Salvando…' : 'Salvar inspeção'}</button></div>
         </div>
         {error && <p role="alert" className="mt-2 flex items-center gap-1 text-[10px] text-red-700"><AlertTriangle size={13} /> {error}</p>}
-        {produtoId && <div className={`mt-3 border p-2 text-[10px] ${selectedSpecification ? 'border-[#2E4A62] bg-[#0B1726] text-white' : 'border-amber-500 bg-amber-950 text-amber-100'}`}>
+        {produtoId && <div className={`mt-3 border p-2 text-[10px] ${selectedSpecification ? 'border-slate-200 bg-[#0B1726] text-white' : 'border-amber-300 bg-amber-50 text-amber-900'}`}>
           {selectedSpecification ? <><strong>Especificação ativa: Rev. {selectedSpecification.revisao}</strong> · vigente desde {selectedSpecification.vigente_desde}{selectedSpecification.vigente_ate ? ' até ' + selectedSpecification.vigente_ate : ''}. Para aprovar, use o critério aprovado desta revisão e mantenha os limites originais.</> : <><strong>Sem especificação técnica ativa e vigente para este produto.</strong> Não aprove o lote sem uma fonte técnica aprovada. Cadastre a revisão em Especificações Técnicas.</>}
           {selectedSpecificationParameter && selectedSpecificationParameter.tipo !== 'numerico' && <p className="mt-1">Este critério é do tipo {selectedSpecificationParameter.tipo}. Registre a evidência observada ou a conferência do certificado neste formulário; não trate este critério como medição dimensional.</p>}
         </div>}
       </section>
 
-      <section className="min-w-0 overflow-hidden border border-[#2E4A62] bg-[#0D2638] xl:col-span-6">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2E4A62] bg-[#0B1726] p-2">
+      <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm xl:col-span-6">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 bg-[#0B1726] p-2">
           <h2 className="text-xs font-black text-white">Histórico de inspeções</h2>
-          <div className="relative w-64 max-w-full"><Search size={13} className="absolute left-2 top-2 text-white" /><input className={steelInput + ' pl-7'} value={search} onChange={event => setSearch(event.target.value)} placeholder="Buscar item, lote ou resultado…" /></div>
+          <div className="relative w-64 max-w-full"><Search size={13} className="absolute left-2 top-2 text-slate-500" /><input className={steelInput + ' pl-7'} value={search} onChange={event => setSearch(event.target.value)} placeholder="Buscar item, lote ou resultado…" /></div>
         </div>
         <div className="overflow-auto">
-          <table className="w-full border-collapse text-left text-[10px] text-white [&_td]:h-8 [&_td]:border-b [&_td]:border-[#2E4A62] [&_td]:px-2 [&_td]:py-1 [&_td]:align-middle [&_td]:font-semibold">
-            <thead className="sticky top-0 bg-[#071522] text-white [&_th]:border-b [&_th]:border-[#2E4A62] [&_th]:px-2 [&_th]:text-[9px] [&_th]:font-black [&_th]:uppercase [&_th]:tracking-wider [&_th]:align-middle"><tr className="h-8">{['Data/hora','Tipo','Item','Lote','Qtd.','Amostra','Resultado','Observações'].map(title => <th key={title} className="h-8 whitespace-nowrap border-b border-[#2E4A62] px-2 text-[10px] font-black uppercase tracking-wider">{title}</th>)}</tr></thead>
+          <table className="w-full border-collapse text-left text-[10px] text-white [&_td]:h-8 [&_td]:border-b [&_td]:border-slate-200 [&_td]:px-2 [&_td]:py-1 [&_td]:align-middle [&_td]:font-semibold">
+            <thead className="sticky top-0 bg-slate-900 text-white [&_th]:border-b [&_th]:border-slate-200 [&_th]:px-2 [&_th]:text-[9px] [&_th]:font-black [&_th]:uppercase [&_th]:tracking-wider [&_th]:align-middle"><tr className="h-8">{['Data/hora','Tipo','Item','Lote','Qtd.','Amostra','Resultado','Observações'].map(title => <th key={title} className="h-8 whitespace-nowrap border-b border-slate-200 px-2 text-[10px] font-black uppercase tracking-wider">{title}</th>)}</tr></thead>
             <tbody>
               {loading ? <tr><td colSpan={8} className="h-16 px-3 text-center text-white">Carregando inspeções do Supabase…</td></tr>
                 : visibleRows.length === 0 ? <tr><td colSpan={8} className="h-16 px-3 text-center text-white">Nenhuma inspeção encontrada.</td></tr>
                 : visibleRows.map(row => {
                   const product = products.find(item => item.id === row.produto_id)
                   const lot = lots.find(item => item.id === row.lote_id)
-                  return <tr key={row.id} className="h-[32px] border-b border-[#2E4A62] hover:bg-[#123B50]">
+                  return <tr key={row.id} className="h-[32px] border-b border-slate-200 hover:bg-[#123B50]">
                     <td className="whitespace-nowrap px-2 tabular-nums">{new Date(row.created_at).toLocaleString('pt-BR')}</td>
                     <td className="px-2">{row.tipo}</td><td className="px-2">{product?.codigo ?? row.produto_id}</td>
                     <td className="px-2">{lot?.numero_lote ?? row.lote_id}</td><td className="px-2 text-right tabular-nums">{row.quantidade_total}</td>
