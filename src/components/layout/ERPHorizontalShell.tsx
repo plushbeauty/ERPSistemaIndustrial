@@ -55,6 +55,7 @@ const menus: MenuItem[] = [
     { label: 'Ajustes', route: '/estoque/ajustes' },
     { label: 'Separação', route: '/estoque/separacao' },
     { label: 'Recebimento de lotes', route: '/estoque/recebimento-lotes' },
+    { label: 'Controle de validade / PEPS · ATUALIZADA', route: '/estoque/validade', isUpdated: true },
   ] },
   { label: 'Almoxarifado', route: '/almoxarifado/inventario-mestre', icon: Warehouse, children: [
     { label: 'Inventário mestre / FIFO e lotes', route: '/almoxarifado/inventario-mestre' },
