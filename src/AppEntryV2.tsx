@@ -180,7 +180,6 @@ const AjusteGlobal = lazyPage(() => import('./pages/AjusteGlobal'), 'default')
 const CatalogoDigital = lazyPage(() => import('./pages/CatalogoDigital'), 'CatalogoDigital')
 const FichasProcesso = lazyPage(() => import('./pages/FichasProcesso'), 'FichasProcesso')
 const AssistenteAjudaERP = lazyPage(() => import('./pages/AssistenteAjudaERP'), 'AssistenteAjudaERP')
-const ComprasSolicitacaoManual = lazyPage(() => import('./pages/ComprasSolicitacaoManual'), 'ComprasSolicitacaoManual')
 const ExpedicaoPortaria = lazyPage(() => import('./pages/ExpedicaoPortaria'), 'ExpedicaoPortaria')
 const EngenhariaRevisoesBOM = lazyPage(() => import('./pages/EngenhariaRevisoesBOM'), 'EngenhariaRevisoesBOM')
 const EngenhariaCentral = lazyPage(() => import('./pages/EngenhariaCentral'), 'EngenhariaCentral')
@@ -668,8 +667,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/compras/pedidos" element={<Navigate to="/compras/pedido" replace />} />
       <Route path="/compras/ordem-compra" element={<ComprasRoute><PedidoCompra /></ComprasRoute>} />
       <Route path="/compras/fornecedores" element={<ComprasRoute><Navigate to="/produtos-vendas?aba=fornecedores" replace /></ComprasRoute>} />
-      <Route path="/compras/solicitacao-manual" element={<ComprasRoute><ComprasSolicitacaoManual /></ComprasRoute>} />
-      <Route path="/solicitacao-compra" element={<ComprasRoute><SolicitacaoCompra /></ComprasRoute>} />
+      <Route path="/compras/solicitacao-manual" element={<Navigate to="/compras-solicitacao" replace />} />
+      <Route path="/solicitacao-compra" element={<Navigate to="/compras-solicitacao" replace />} />
       <Route path="/fornecedores" element={<Navigate to="/produtos-vendas?aba=fornecedores" replace />} />
       <Route path="/clientes" element={<Navigate to="/produtos-vendas?aba=clientes" replace />} />
       <Route path="/tabela-precos" element={<AjusteGlobal />} />
@@ -715,9 +714,9 @@ function AppIndustrialAuthenticated() {
       <Route path="/custos" element={<QualityPlanGate>{<CentralCustosIndustrial />}</QualityPlanGate>} />
       <Route path="/ajuda/assistente" element={<AssistenteAjudaERP />} />
       <Route path="/ajuda" element={<AssistenteAjudaERP />} />
-      <Route path="/compras/solicitacao" element={<ComprasRoute><ComprasSolicitacaoManual /></ComprasRoute>} />
+      <Route path="/compras/solicitacao" element={<Navigate to="/compras-solicitacao" replace />} />
       <Route path="/compras/solicitacoes" element={<Navigate to="/compras/requisicoes" replace />} />
-      <Route path="/compras-solicitacao" element={<ComprasSolicitacaoManual />} />
+      <Route path="/compras-solicitacao" element={<ComprasRoute><SolicitacaoCompra /></ComprasRoute>} />
       <Route path="/manutencao" element={<QualityPlanGate><ManutencaoCentral /></QualityPlanGate>} />
       <Route path="/manutencao/cronograma" element={<QualityPlanGate><ManutencaoCronograma /></QualityPlanGate>} />
       <Route path="/manutencao/plano-mestre" element={<QualityPlanGate><ManutencaoPlanoMestre /></QualityPlanGate>} />
