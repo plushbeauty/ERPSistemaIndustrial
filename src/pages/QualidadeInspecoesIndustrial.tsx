@@ -2,7 +2,7 @@
  * ERPSis — CONTROLE DE REVISÃO VISUAL
  * @DATA_REVISAO_APROVACAO: 2026-10-19
  * @DESENVOLVEDOR: FernandoSch
- * @NOME_SISTEMA: MOLDPLÁS ERP INDUSTRIAL
+ * @NOME_SISTEMA: SYSNQRA ERP INDUSTRIAL
  * @STATUS_APROVACAO: INSPECOES-LOTES-STEEL-BLUE-OK
  * Split-screen, tabela densa, grid de 12 colunas, controles h-8 e cantos retos.
  * Contrato de dados preservado: tabelas existentes, tenant ativo, RLS e RPC transacional.
@@ -299,26 +299,26 @@ export default function QualidadeInspecoesIndustrial() {
           <label className="lg:col-span-3" title="Quantidade total de unidades do lote, em unidade de estoque."><span className={steelLabel}>QUANTIDADE TOTAL</span><input className={steelInput} type="number" min="0.001" step="0.001" value={quantidade} onChange={event => setQuantidade(event.target.value)} /></label>
           <label className="lg:col-span-3" title="Número inteiro de unidades inspecionadas do lote."><span className={steelLabel}>TAMANHO DA AMOSTRA</span><input className={steelInput} type="number" min="1" step="1" value={amostra} onChange={event => setAmostra(event.target.value)} /></label>
           <label className="lg:col-span-6" title="Registre evidências, condição observada e informação necessária para rastreabilidade."><span className={steelLabel}>OBSERVAÇÕES TÉCNICAS</span><input className={steelInput} value={observacoes} onChange={event => setObservacoes(event.target.value)} maxLength={2000} /></label><label className="lg:col-span-3" title="Característica técnica selecionada na especificação ou informada para registrar a não conformidade."><span className={steelLabel}>PARÂMETRO / COTA</span><input className={steelInput} value={parametro} onChange={event => setParametro(event.target.value)} placeholder="Ex.: índice de fluidez, diâmetro" readOnly={Boolean(selectedSpecificationParameter)} /></label>{isNonNumericReview ? <>{isCertificateReview && <><label className="lg:col-span-3" title="Identificação do certificado emitido pelo fornecedor."><span className={steelLabel}>Nº CERTIFICADO</span><input className={steelInput} value={certificadoNumero} onChange={event => setCertificadoNumero(event.target.value)} placeholder="Nº do certificado" /></label><label className="lg:col-span-3" title="Conclusão da conferência do certificado contra a especificação aprovada."><span className={steelLabel}>CONFERÊNCIA DO CERTIFICADO</span><select className={steelInput} value={certificadoConclusao} onChange={event => setCertificadoConclusao(event.target.value === 'conforme' || event.target.value === 'nao_conforme' ? event.target.value : '')}><option value="">Selecionar conclusão…</option><option value="conforme">Conforme</option><option value="nao_conforme">Não conforme</option></select></label></>}<label className="lg:col-span-3" title="Evidência observada na conferência documental ou visual."><span className={steelLabel}>EVIDÊNCIA / OBSERVAÇÃO</span><input className={steelInput} value={evidenciaTexto} onChange={event => setEvidenciaTexto(event.target.value)} placeholder={isCertificateReview ? 'Conferência contra critério aprovado' : 'Descreva o observado'} /></label></> : <><label className="lg:col-span-3" title="Valor de referência da especificação, na unidade da característica medida."><span className={steelLabel}>VALOR NOMINAL</span><input className={steelInput} type="number" step="any" value={nominal} onChange={event => setNominal(event.target.value)} /></label><label className="lg:col-span-3" title="Desvio positivo permitido acima do valor nominal, na mesma unidade da cota."><span className={steelLabel}>TOLERÂNCIA +</span><input className={steelInput} type="number" min="0" step="any" value={tolMais} onChange={event => setTolMais(event.target.value)} /></label><label className="lg:col-span-3" title="Desvio absoluto permitido abaixo do valor nominal, na mesma unidade da cota."><span className={steelLabel}>TOLERÂNCIA −</span><input className={steelInput} type="number" min="0" step="any" value={tolMenos} onChange={event => setTolMenos(event.target.value)} /></label><label className="lg:col-span-3" title="Valor lido no instrumento calibrado, na mesma unidade do nominal e das tolerâncias."><span className={steelLabel}>VALOR MEDIDO</span><input className={steelInput} type="number" step="any" value={medido} onChange={event => setMedido(event.target.value)} /></label></>}
-          <div className="flex items-end lg:col-span-12"><button className="h-8 w-full rounded-none border border-[#48B7C7] bg-[#12627A] px-3 text-[10px] font-black uppercase text-white hover:bg-[#16758E] disabled:opacity-50" onClick={() => void saveInspection()} disabled={saving || loading}>{saving ? 'Salvando…' : 'Salvar inspeção'}</button></div>
+          <div className="flex items-end lg:col-span-12"><button className="h-9 w-full rounded-lg border border-[#1D5FD1] bg-[#1D5FD1] px-3 text-[10px] font-bold uppercase text-white shadow-sm hover:bg-[#174DB0] disabled:opacity-50" onClick={() => void saveInspection()} disabled={saving || loading}>{saving ? 'Salvando…' : 'Salvar inspeção'}</button></div>
         </div>
         {error && <p role="alert" className="mt-2 flex items-center gap-1 text-[10px] text-red-700"><AlertTriangle size={13} /> {error}</p>}
-        {produtoId && <div className={`mt-3 border p-2 text-[10px] ${selectedSpecification ? 'border-slate-200 bg-[#0B1726] text-white' : 'border-amber-300 bg-amber-50 text-amber-900'}`}>
+        {produtoId && <div className={`mt-3 border p-2 text-[10px] ${selectedSpecification ? 'border-sky-200 bg-sky-50 text-slate-800' : 'border-amber-300 bg-amber-50 text-amber-900'}`}>
           {selectedSpecification ? <><strong>Especificação ativa: Rev. {selectedSpecification.revisao}</strong> · vigente desde {selectedSpecification.vigente_desde}{selectedSpecification.vigente_ate ? ' até ' + selectedSpecification.vigente_ate : ''}. Para aprovar, use o critério aprovado desta revisão e mantenha os limites originais.</> : <><strong>Sem especificação técnica ativa e vigente para este produto.</strong> Não aprove o lote sem uma fonte técnica aprovada. Cadastre a revisão em Especificações Técnicas.</>}
           {selectedSpecificationParameter && selectedSpecificationParameter.tipo !== 'numerico' && <p className="mt-1">Este critério é do tipo {selectedSpecificationParameter.tipo}. Registre a evidência observada ou a conferência do certificado neste formulário; não trate este critério como medição dimensional.</p>}
         </div>}
       </section>
 
       <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm xl:col-span-6">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 bg-[#0B1726] p-2">
-          <h2 className="text-xs font-black text-white">Histórico de inspeções</h2>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 bg-slate-50 p-2">
+          <h2 className="text-sm font-extrabold text-slate-900">Histórico de inspeções</h2>
           <div className="relative w-64 max-w-full"><Search size={13} className="absolute left-2 top-2 text-slate-500" /><input className={steelInput + ' pl-7'} value={search} onChange={event => setSearch(event.target.value)} placeholder="Buscar item, lote ou resultado…" /></div>
         </div>
         <div className="overflow-auto">
-          <table className="w-full border-collapse text-left text-[10px] text-white [&_td]:h-8 [&_td]:border-b [&_td]:border-slate-200 [&_td]:px-2 [&_td]:py-1 [&_td]:align-middle [&_td]:font-semibold">
+          <table className="w-full border-collapse text-left text-[10px] text-slate-700 [&_td]:h-8 [&_td]:border-b [&_td]:border-slate-200 [&_td]:px-2 [&_td]:py-1 [&_td]:align-middle [&_td]:font-semibold">
             <thead className="sticky top-0 bg-slate-900 text-white [&_th]:border-b [&_th]:border-slate-200 [&_th]:px-2 [&_th]:text-[9px] [&_th]:font-black [&_th]:uppercase [&_th]:tracking-wider [&_th]:align-middle"><tr className="h-8">{['Data/hora','Tipo','Item','Lote','Qtd.','Amostra','Resultado','Observações'].map(title => <th key={title} className="h-8 whitespace-nowrap border-b border-slate-200 px-2 text-[10px] font-black uppercase tracking-wider">{title}</th>)}</tr></thead>
             <tbody>
-              {loading ? <tr><td colSpan={8} className="h-16 px-3 text-center text-white">Carregando inspeções do Supabase…</td></tr>
-                : visibleRows.length === 0 ? <tr><td colSpan={8} className="h-16 px-3 text-center text-white">Nenhuma inspeção encontrada.</td></tr>
+              {loading ? <tr><td colSpan={8} className="h-16 px-3 text-center text-slate-500">Carregando inspeções do Supabase…</td></tr>
+                : visibleRows.length === 0 ? <tr><td colSpan={8} className="h-16 px-3 text-center text-slate-500">Nenhuma inspeção encontrada.</td></tr>
                 : visibleRows.map(row => {
                   const product = products.find(item => item.id === row.produto_id)
                   const lot = lots.find(item => item.id === row.lote_id)
@@ -335,7 +335,7 @@ export default function QualidadeInspecoesIndustrial() {
           </table>
         </div>
       </section>
-      </div><p className="mt-2 text-[9px] text-white">A reprovação aciona a transação SQL de quarentena e a abertura automática de RNC configuradas na migração do SGQ.</p>
+      </div><p className="mt-2 text-[10px] text-slate-600">A reprovação aciona a transação SQL de quarentena e a abertura automática de RNC configuradas na migração do SGQ.</p>
     </main>
   )
 }
