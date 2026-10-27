@@ -487,14 +487,6 @@ export default function SolicitacaoCompra() {
 
           <div className="request-total"><span>Total estimado da solicitação</span><strong>{money(items.reduce((sum, item) => sum + (Number(item.quantidade) || 0) * (Number(item.valor_estimado) || 0), 0))}</strong></div>
 
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
-            <button className="primary" type="submit" disabled={busy || !empresaId}>
-              <ShoppingCart size={18} /> {busy ? 'Salvando…' : 'Registrar solicitação'}
-            </button>
-            <button className="secondary-v2" type="button" onClick={() => window.print()}>
-              <Printer size={18} /> Imprimir / Salvar PDF
-            </button>
-          </div>
         </form>
       </section>
 
