@@ -1,10 +1,14 @@
 # Contrato de aprovação visual do SYSNQRA ERP & SGQ INDUSTRIAL
 
-- Revisão: UI-CONTRACT-001
-- Data: 2026-10-20
+- Revisão: UI-CONTRACT-002
+- Data: 2026-10-27
 - Branch de referência: main
 - Verificador obrigatório existente: `npm run verify:approved-ui-lock`
 - Fonte executável: `scripts/verify-approved-ui-lock.mjs`
+
+## Revisão autorizada — Cadastro Mestre de Produtos (2026-10-27)
+
+O usuário autorizou explicitamente substituir a revisão visual anterior de `src/pages/ProdutosVendasIndustrial.tsx` pelo código atualizado já presente em `main` no commit `280d4e112a78574cdaa446c172c89d0729ddd236`. A revisão `REV-PRODUTO-UI-014` mantém os ajustes de campos compactos, limites de caracteres e descrições da lista limitadas a três linhas. A entrada correspondente no verificador foi atualizada deliberadamente para o hash Git do arquivo aprovado `dcc017c76f5664ebbf7f32540e74836afc5e65ff`. A aprovação é restrita a essa tela e não libera alterações em outros arquivos congelados. Type-check, lint, build e deployment continuam sujeitos a validação após a alteração.
 
 ## Regra de proteção
 
