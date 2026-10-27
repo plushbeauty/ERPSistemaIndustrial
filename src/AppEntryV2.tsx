@@ -8,7 +8,7 @@
  */
 
 import { Component, type ComponentType, type ReactNode, lazy, Suspense, useEffect, useState } from 'react'
-import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom'
 import type { Session } from '@supabase/supabase-js'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 import ERPHorizontalShell from './components/layout/ERPHorizontalShell'
@@ -387,6 +387,103 @@ function PublicModuleOverview() {
   return <ModuleOverviewIndustrial module={module} />
 }
 
+type CentralOperacionalVisao = 'pedidos' | 'nfe' | 'financeiro'
+
+function CentralComercialFiscalFinanceira() {
+  const [visao, setVisao] = useState<CentralOperacionalVisao>('pedidos')
+  const [financeiroTipo, setFinanceiroTipo] = useState<'RECEBER' | 'PAGAR'>('RECEBER')
+  const navigate = useNavigate()
+
+  const tabs: Array<{ id: CentralOperacionalVisao; label: string }> = [
+    { id: 'pedidos', label: 'Carteira de pedidos' },
+    { id: 'nfe', label: 'Monitor de NF-e' },
+    { id: 'financeiro', label: 'Carteira de títulos' },
+  ]
+
+  return (
+    <section className="central-comercial-fiscal-financeira space-y-3 p-3 sm:p-4">
+      <header className="flex flex-col gap-2 border-b border-border pb-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-base font-black tracking-tight text-foreground">Central Comercial, Fiscal e Financeira</h1>
+          <p className="text-[10px] text-muted-foreground">Cockpit operacional integrado · Dados dos módulos ERP existentes · Atualizado · Padrão Premium · 27/10/2026</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className="h-8 rounded-[2px] border border-border px-3 text-xs font-semibold" onClick={() => navigate('/vendas/configuracoes')}>Configurações</button>
+          <button type="button" className="h-8 rounded-[2px] bg-primary px-3 text-xs font-bold text-primary-foreground" onClick={() => navigate('/vendas/novo-pedido')}>Novo pedido</button>
+        </div>
+      </header>
+
+      <nav aria-label="Visões da central operacional" className="flex flex-wrap gap-1 border-b border-border pb-2">
+        {tabs.map((tab) => (
+          <button key={tab.id} type="button" onClick={() => setVisao(tab.id)}
+            aria-pressed={visao === tab.id}
+            className={`h-8 rounded-[2px] border px-3 text-xs font-semibold transition-colors ${visao === tab.id ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-foreground hover:bg-muted'}`}>
+            {tab.label}
+          </button>
+        ))}
+      </nav>
+
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_220px]">
+        <main className="min-w-0 rounded-[2px] border border-border bg-card p-2 sm:p-3">
+          {visao === 'pedidos' && <VendasCentral />}
+          {visao === 'nfe' && (
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
+                <h2 className="text-xs font-bold">Emissão e acompanhamento fiscal</h2>
+                <button type="button" className="h-8 rounded-[2px] border border-border px-3 text-xs font-semibold" onClick={() => navigate('/fiscal/carteira-nfe')}>Abrir carteira completa</button>
+              </div>
+              <NFeEmissao />
+            </div>
+          )}
+          {visao === 'financeiro' && (
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
+                <h2 className="text-xs font-bold">Gestão de títulos e baixas</h2>
+                <div className="flex gap-1">
+                  <button type="button" aria-pressed={financeiroTipo === 'RECEBER'} onClick={() => setFinanceiroTipo('RECEBER')}
+                    className={`h-8 rounded-[2px] border px-3 text-xs font-semibold ${financeiroTipo === 'RECEBER' ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card'}`}>A receber</button>
+                  <button type="button" aria-pressed={financeiroTipo === 'PAGAR'} onClick={() => setFinanceiroTipo('PAGAR')}
+                    className={`h-8 rounded-[2px] border px-3 text-xs font-semibold ${financeiroTipo === 'PAGAR' ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card'}`}>A pagar</button>
+                </div>
+              </div>
+              {financeiroTipo === 'RECEBER'
+                ? <FinanceiroContasReceber kind="RECEBER" />
+                : <FinanceiroContasPagar kind="PAGAR" />}
+            </div>
+          )}
+        </main>
+
+        <aside className="space-y-2">
+          <section className="rounded-[2px] border border-border bg-card p-3">
+            <h2 className="text-xs font-bold">Acesso operacional</h2>
+            <div className="mt-2 grid gap-1">
+              <button type="button" className="h-8 rounded-[2px] border border-border px-2 text-left text-xs hover:bg-muted" onClick={() => navigate('/vendas/status')}>Status de pedidos</button>
+              <button type="button" className="h-8 rounded-[2px] border border-border px-2 text-left text-xs hover:bg-muted" onClick={() => navigate('/fiscal/carteira-nfe')}>Carteira de NF-e</button>
+              <button type="button" className="h-8 rounded-[2px] border border-border px-2 text-left text-xs hover:bg-muted" onClick={() => navigate('/financeiro/fluxo-caixa')}>Fluxo de caixa</button>
+              <button type="button" className="h-8 rounded-[2px] border border-border px-2 text-left text-xs hover:bg-muted" onClick={() => navigate('/financeiro/contas-receber')}>Contas a receber</button>
+            </div>
+          </section>
+          <p className="text-[10px] leading-relaxed text-muted-foreground">Os indicadores e registros são carregados pelos módulos conectados ao ERP. Nenhum valor demonstrativo é inventado nesta central.</p>
+        </aside>
+      </div>
+      <style>{`
+        .central-comercial-fiscal-financeira input:not([type="checkbox"]):not([type="radio"]),
+        .central-comercial-fiscal-financeira select,
+        .central-comercial-fiscal-financeira textarea {
+          min-height: 2rem !important;
+          height: 2rem;
+          border-radius: 2px !important;
+          font-size: 12px !important;
+          padding-top: 0.25rem !important;
+          padding-bottom: 0.25rem !important;
+        }
+        .central-comercial-fiscal-financeira label { font-size: 10px !important; }
+        .central-comercial-fiscal-financeira button { border-radius: 2px; }
+      `}</style>
+    </section>
+  )
+}
+
 function AppIndustrialAuthenticated() {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
@@ -471,6 +568,7 @@ function AppIndustrialAuthenticated() {
     <Routes>
       <Route path="/comercial" element={<AppIndustrial />} />
       <Route path="/erp-industrial" element={<AppIndustrial />} />
+      <Route path="/central-comercial-fiscal-financeira" element={<CentralComercialFiscalFinanceira />} />
       <Route path="/tablet/dashboard" element={<TabletDashboard />} />
       <Route path="/tablet" element={<Navigate to="/tablet/dashboard" replace />} />
       <Route path="/tablet/home" element={<TabletDashboard />} />
