@@ -1,25 +1,17 @@
 import { readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
 
-const appPath = fileURLToPath(new URL('../src/AppEntryV2.tsx', import.meta.url))
-const source = readFileSync(appPath, 'utf8').replace(/\r\n/g, '\n')
-const layoutPath = fileURLToPath(new URL('../src/pages/VendasLayout.tsx', import.meta.url))
-const vendasLayout = readFileSync(layoutPath, 'utf8').replace(/\r\n/g, '\n')
-const pcpAgendaPath = fileURLToPath(new URL('../src/pages/PCPAgendaMaquinas.tsx', import.meta.url))
-const pcpAgenda = readFileSync(pcpAgendaPath, 'utf8').replace(/\r\n/g, '\n')
+const app = readFileSync('src/AppEntryV2.tsx', 'utf8').replace(/\r\n/g, '\n')
+const shell = readFileSync('src/components/layout/ERPHorizontalShell.tsx', 'utf8')
+const bootstrap = readFileSync('src/AppBootstrap.tsx', 'utf8')
 const checks = [
-  [source.includes("import ERPHorizontalShell from './components/layout/ERPHorizontalShell'"), 'Shared horizontal shell import must remain'],
-  [/<ERPHorizontalShell>\n\s*\{protectedRoutes\}/.test(source), 'Authenticated routes must be wrapped in the shared horizontal shell'],
-  [!source.includes('<ERPHorizontalShell><SynqraLayoutProvider><PCPIndustrial />'), 'The PCP route must not mount a duplicate nested shell'],
-  [source.indexOf('if (!session)') >= 0 && source.indexOf('if (!session)') < source.indexOf('const appContent'), 'Public routes must return before the authenticated shell is rendered'],
-  [['Concluída / liberada', 'Em execução', 'Planejada / pendente', 'Bloqueada / cancelada'].every(label => pcpAgenda.includes(label)), 'The machine-agenda status legend must be preserved in its page'],
-  [!vendasLayout.includes("import ERPHorizontalShell") && !vendasLayout.includes('<ERPHorizontalShell>'), 'VendasLayout must not create a nested horizontal shell'],
-  [(source.match(/<ERPHorizontalShell>/g) ?? []).length === 1, 'Exactly one shared shell must wrap authenticated routes'],
+  [app.includes("import ERPHorizontalShell from './components/layout/ERPHorizontalShell'"), 'A shell horizontal compartilhada deve permanecer importada.'],
+  [/<ERPHorizontalShell>[\s\S]*?<Routes>[\s\S]*?<\/Routes>[\s\S]*?<\/ERPHorizontalShell>/.test(app), 'As rotas operacionais mantidas devem estar dentro da shell compartilhada.'],
+  [(app.match(/<ERPHorizontalShell>/g) ?? []).length === 1, 'Deve existir exatamente uma shell global.'],
+  [app.includes('path="/erp-industrial"') && app.includes('path="/fiscal"'), 'Dashboard e Fiscal devem ser as únicas telas operacionais mantidas.'],
+  [shell.includes('const menus: MenuItem[] = []') && shell.includes('BarraWindows11'), 'A navegação antiga deve estar vazia e a barra Windows 11 preservada.'],
+  [bootstrap.includes('function AccessGate') && bootstrap.includes('supabase.auth.getSession()'), 'O gate de autenticação real deve permanecer no bootstrap.'],
 ]
-const failures = checks.filter(([passed]) => !passed).map(([, message]) => message)
-if (failures.length) {
-  console.error('Global horizontal shell contract failed:')
-  for (const failure of failures) console.error(`- ${failure}`)
-  process.exit(1)
-}
-console.log('Global horizontal shell contract passed.')
+const failures = checks.filter(([ok]) => !ok)
+for (const [ok, message] of checks) console.log(`${ok ? 'PASS' : 'FAIL'} — ${message}`)
+if (failures.length) process.exit(1)
+console.log('Global horizontal shell reset contract passed.')
