@@ -7,8 +7,8 @@ const checks = [
   [app.includes("import ERPHorizontalShell from './components/layout/ERPHorizontalShell'"), 'A shell horizontal compartilhada deve permanecer importada.'],
   [/<ERPHorizontalShell>[\s\S]*?<Routes>[\s\S]*?<\/Routes>[\s\S]*?<\/ERPHorizontalShell>/.test(app), 'As rotas operacionais mantidas devem estar dentro da shell compartilhada.'],
   [(app.match(/<ERPHorizontalShell>/g) ?? []).length === 1, 'Deve existir exatamente uma shell global.'],
-  [app.includes('path="/erp-industrial"') && app.includes('path="/fiscal"'), 'Dashboard e Fiscal devem ser as únicas telas operacionais mantidas.'],
-  [shell.includes('const menus: MenuItem[] = []') && shell.includes('BarraWindows11'), 'A navegação antiga deve estar vazia e a barra Windows 11 preservada.'],
+  [app.includes('path="/erp-industrial"') && app.includes('path="/fiscal"') && app.includes('path="pcp"') && app.includes('path="paquimetro"'), 'Dashboard, Fiscal, PCP e Paquímetro devem permanecer acessíveis na área de trabalho.'],
+  [shell.includes("label: 'Principal'") && shell.includes("label: 'Engenharia e PCP'") && shell.includes("label: 'Qualidade / Paquímetro'") && shell.includes("label: 'Fiscal'") && !shell.includes("label: 'Compras'") && !shell.includes("label: 'Vendas'") && shell.includes('BarraWindows11'), 'O menu Windows 11 deve conter apenas os módulos autorizados na Fase 1.'],
   [bootstrap.includes('function AccessGate') && bootstrap.includes('supabase.auth.getSession()'), 'O gate de autenticação real deve permanecer no bootstrap.'],
 ]
 const failures = checks.filter(([ok]) => !ok)
