@@ -1,0 +1,164 @@
+/*
+ * SYSNQRA ERP INDUSTRIAL — padrão visual compartilhado para telas novas.
+ * Revisão: 28/10/2026.
+ * Não altera as telas aprovadas até que adotem explicitamente estas classes.
+ */
+.synqra-module-shell {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  color: #0f172a;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+.synqra-module-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  border: 1px solid #123b50;
+  border-radius: 10px;
+  background: #123b50;
+  color: #fff;
+}
+.synqra-module-header h1,
+.synqra-module-header h2 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.35;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.synqra-module-header p {
+  margin: 3px 0 0;
+  color: #cbd5e1;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.synqra-module-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+}
+.synqra-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.synqra-form-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.synqra-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.synqra-field label {
+  color: #475569;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: .045em;
+}
+.synqra-field input,
+.synqra-field select,
+.synqra-field textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+  padding: 7px 9px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  color: #0f172a;
+  font: inherit;
+  font-size: 12px;
+}
+.synqra-field textarea {
+  min-height: 72px;
+  resize: vertical;
+}
+.synqra-field input:focus,
+.synqra-field select:focus,
+.synqra-field textarea:focus {
+  outline: 2px solid #2d8db8;
+  outline-offset: 1px;
+  border-color: #2d8db8;
+}
+.synqra-table-wrap {
+  width: 100%;
+  min-width: 0;
+  overflow: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+}
+.synqra-table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+  text-align: left;
+  font-size: 11px;
+}
+.synqra-table thead {
+  background: #f1f5f9;
+  color: #334155;
+}
+.synqra-table th {
+  padding: 9px 10px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.synqra-table td {
+  padding: 9px 10px;
+  border-top: 1px solid #e2e8f0;
+  color: #334155;
+}
+.synqra-button {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  color: #334155;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.synqra-button-primary {
+  border-color: #123b50;
+  background: #123b50;
+  color: #fff;
+}
+.synqra-button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+@media (max-width: 720px) {
+  .synqra-form-grid,
+  .synqra-form-grid-3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .synqra-module-header {
+    align-items: flex-start;
+    padding: 11px 12px;
+  }
+}
