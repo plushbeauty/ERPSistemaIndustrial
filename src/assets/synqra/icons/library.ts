@@ -38,7 +38,6 @@ import {
   FolderOpen,
   FolderTree,
   HardDrive,
-  Image,
   Images,
   Laptop,
   Loader2,
