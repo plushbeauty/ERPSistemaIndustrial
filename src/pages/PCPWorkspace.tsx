@@ -22,11 +22,6 @@ export default function PCPWorkspace() {
   const [tab, setTab] = useState<Tab>('ordens')
   return (
     <div className="min-w-0 space-y-3">
-      <header className="rounded-xl bg-[#123b50] px-4 py-3 text-white shadow-sm">
-        <p className="text-[10px] font-extrabold uppercase tracking-[.18em] text-cyan-200">SYSNQRA ERP INDUSTRIAL</p>
-        <h1 className="mt-1 text-lg font-extrabold">PCP · Planejamento e Controle da Produção</h1>
-        <p className="mt-1 text-xs text-slate-300">Ordens, processos, estrutura de produto e apontamento industrial.</p>
-      </header>
       <nav aria-label="Rotinas do PCP" className="flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-white p-2">
         {tabs.map(({ id, label, Icon }) => (
           <button key={id} type="button" onClick={() => setTab(id)} aria-pressed={tab === id}
