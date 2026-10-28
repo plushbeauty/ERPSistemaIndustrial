@@ -7,6 +7,7 @@ import './styles/industrial-login.css'
 import './styles/forms-premium.css'
 import './styles/erp-design-system-2026.css'
 import './styles/synqra-app-shell.css'
+import './styles/synqra-workspace-standard.css'
 
 const PagePrincipal = lazy(() => import('./pages/PagePrincipal'))
 const AppIndustrial = lazy(() => import('./AppIndustrialV7'))
