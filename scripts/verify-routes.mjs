@@ -49,7 +49,7 @@ for (const [, route, component] of routeMatches) {
 const declaredRoutes = new Set(routeMatches.map(([, route]) => route))
 const newMenuEntries = [...moduleMenu.matchAll(/\{\s*label:\s*'[^']+'\s*,\s*route:\s*'([^']+)'[^}]*isNew:\s*true[^}]*\}/g)]
 for (const [entry, route] of newMenuEntries) {
-  const handledByPathResolver = new RegExp(`path\\s*===\\s*['"]${route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`).test(app)
+  const handledByPathResolver = new RegExp(`path\\s*===\\s*['"]${route.replace(/[.*+?^${}()|[\]\\]/g, '\\  const handledByPathResolver = new RegExp(`path\\s*===\\s*['"]${route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`).test(app)')}['"]`).test(app) || (route.startsWith('/pageprincipal/') && declaredRoutes.has(route.slice('/pageprincipal/'.length)) && /<Route\\s+path=["']\\/pageprincipal["']/.test(app))
   if (!declaredRoutes.has(route) && !handledByPathResolver) failures.push(`New menu entry ${route} has no matching application route.`)
   if (!/\bicon:\s*[A-Z][A-Za-z0-9]*/.test(entry)) failures.push(`New menu entry ${route} needs an icon.`)
 }
