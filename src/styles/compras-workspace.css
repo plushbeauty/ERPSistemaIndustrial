@@ -1,9 +1,9 @@
 /* SYSNQRA ERP INDUSTRIAL — Compras Workspace | revisão visual inicial 28/10/2026 */
 .compras-page{box-sizing:border-box;display:flex;flex-direction:column;gap:12px;width:100%;min-width:0;color:#17212b;font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-size:12px}
 .compras-page *{box-sizing:border-box}
-.compras-header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;min-width:0;padding:16px 18px;border:1px solid #123b50;border-radius:10px;background:#123b50;color:#fff}
+ .compras-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;min-width:0;padding:9px 16px;border:1px solid #123b50;border-radius:10px;background:#123b50;color:#fff}
 .compras-header>div:first-child{min-width:0}.compras-eyebrow{font-size:9px;font-weight:800;letter-spacing:.13em;color:#9dd9e8;text-transform:uppercase}
-.compras-header h1{margin:5px 0 3px;font-size:20px;line-height:1.25;font-weight:800;letter-spacing:-.025em}.compras-header p{margin:0;color:#d3e2e8;font-size:11px;line-height:1.5}
+.compras-header h1{margin:0 0 2px;color:#fff;font-size:18px;line-height:1.2;font-weight:800;letter-spacing:-.025em}.compras-header p{margin:0;color:#f3c969;font-size:10px;line-height:1.4;font-weight:700}
 .compras-header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.compras-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:34px;padding:0 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}.compras-button:disabled{opacity:.55;cursor:wait}
 .compras-button--light{background:#fff;color:#123b50;border-color:#dbe4e9}.compras-button--primary{background:#f97316;color:#fff;border-color:#ea580c}.compras-button--primary:hover{background:#ea580c}
 .compras-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.compras-kpi{display:flex;flex-direction:column;gap:5px;min-width:0;padding:12px 14px;border:1px solid #dbe4e9;border-radius:8px;background:#fff;box-shadow:0 1px 2px #0f172a08}.compras-kpi span{color:#526373;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.compras-kpi strong{font-size:23px;line-height:1.1;font-weight:800;color:#123b50;font-variant-numeric:tabular-nums}.compras-kpi small{color:#64748b;font-size:10px}
@@ -20,3 +20,21 @@
 .compras-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:4px 2px;color:#94a3b8;font-size:9px;letter-spacing:.02em}
 @media(max-width:900px){.compras-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.compras-overview-grid{grid-template-columns:minmax(0,1fr)}.compras-field{grid-column:span 6}}
 @media(max-width:600px){.compras-page{gap:9px}.compras-header{padding:13px}.compras-header h1{font-size:18px}.compras-header-actions{width:100%}.compras-header-actions .compras-button{flex:1}.compras-kpis{gap:7px}.compras-kpi{padding:10px}.compras-kpi strong{font-size:20px}.compras-panel{padding:10px}.compras-field,.compras-field--wide{grid-column:1/-1}.compras-form-footer{align-items:stretch}.compras-form-footer .compras-button{width:100%}.compras-footer{flex-direction:column;align-items:flex-start}}
+
+/* Pedido de compra: grade industrial compacta, sem duplicação de cartões. */
+.compras-items-editor{grid-column:1/-1;min-width:0;padding-top:4px}
+.compras-items-editor .compras-panel-heading{margin-bottom:8px}
+.compras-order-editor{border-top:3px solid #f97316}
+.compras-grid-input{min-height:30px;width:100%;padding:4px 5px;border:1px solid #cbd5e1;border-radius:4px;background:#fff;color:#0f172a;font:inherit;font-size:10px}
+.compras-grid-number{min-width:74px;text-align:right;font-variant-numeric:tabular-nums}
+.compras-grid-unit{min-width:48px}
+.compras-grid-date{min-width:132px}
+.compras-grid-text{min-width:100px}
+.compras-product-select{min-width:220px;max-width:300px}
+.compras-remove-item{display:inline-grid;place-items:center;width:28px;height:28px;border:1px solid #fecaca;border-radius:5px;background:#fff7f7;color:#b91c1c;cursor:pointer}
+.compras-remove-item:disabled{opacity:.4;cursor:not-allowed}
+.compras-order-totals{display:flex;grid-column:1/-1;justify-content:flex-end;gap:18px;flex-wrap:wrap;padding:12px;background:#f8fafc;border:1px solid #dbe4e9;border-radius:6px}
+.compras-order-totals span{display:flex;flex-direction:column;gap:4px;color:#64748b;font-size:9px;text-transform:uppercase;font-weight:700}
+.compras-order-totals strong{color:#123b50;font-size:13px;font-variant-numeric:tabular-nums}
+.compras-order-editor .compras-table-scroll{max-width:100%;overflow-x:auto}
+@media(max-width:900px){.compras-order-totals{justify-content:flex-start;gap:12px}}
