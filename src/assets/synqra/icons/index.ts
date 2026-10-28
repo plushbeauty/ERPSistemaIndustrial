@@ -99,3 +99,7 @@ const _synqraIconIntegrity: LucideIcon[] = [
   Cpu, FileCheck2, FileText, Factory, Gauge, Handshake, Headphones, Home, Landmark, Leaf,
   PackageSearch, Settings, ShieldCheck, ShoppingCart, Truck, UserCircle, Users, Wrench,
 ]
+
+// Biblioteca reutilizável de ícones premium para novas telas e módulos.
+export { SYNQRA_ALL_ICONS, SYNQRA_ICON_LIBRARY } from './library'
+export type { SynqraIconCategory, SynqraIconCategoryKey, SynqraIconItem, SynqraIconKey } from './library'
