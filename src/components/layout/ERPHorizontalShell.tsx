@@ -16,7 +16,17 @@ type MenuItem = {
   children?: MenuItem[]
 }
 
-const menus: MenuItem[] = []
+const menus: MenuItem[] = [
+  { label: 'Principal', route: '/pageprincipal', icon: Home },
+  { label: 'Cadastros Mestres', route: '/pageprincipal/cadastros', icon: Database },
+  { label: 'Engenharia e PCP', route: '/pageprincipal/pcp', icon: Factory, children: [
+    { label: 'Central PCP', route: '/pageprincipal/pcp', icon: ClipboardList },
+  ] },
+  { label: 'Qualidade / Paquímetro', route: '/pageprincipal/paquimetro', icon: Ruler, children: [
+    { label: 'Paquímetro Digital', route: '/pageprincipal/paquimetro', icon: Ruler },
+  ] },
+  { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText },
+]
 
 export default function ERPHorizontalShell({ children, operatorName = 'Usuário ERP' }: { children: ReactNode; operatorName?: string }) {
   const navigate = useNavigate()
@@ -76,18 +86,10 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     }
   }, [])
 
-  const moduleLabel = pathname.startsWith('/cadastros') || pathname.startsWith('/cadastro-produtos') || pathname.startsWith('/produtos-vendas') ? 'Cadastros'
-    : pathname.startsWith('/vendas') ? 'Vendas'
-    : pathname.startsWith('/compras') ? 'Compras'
-    : pathname.startsWith('/qualidade') || pathname.startsWith('/sgq') ? 'Qualidade'
-    : pathname.startsWith('/almoxarifado') ? 'Almoxarifado'
-    : pathname.startsWith('/estoque') || pathname.startsWith('/inventario') ? 'Estoque'
-    : pathname.startsWith('/financeiro') ? 'Financeiro'
-    : pathname.startsWith('/fiscal') ? 'Fiscal'
-    : pathname.startsWith('/pcp') ? 'Manufatura / PCP'
-    : pathname.startsWith('/manutencao') ? 'Manutenção'
-    : pathname.startsWith('/produtos-vendas') || pathname.startsWith('/cadastros') ? 'Cadastros'
-    : pathname.startsWith('/configuracoes') ? 'Configuração'
+  const moduleLabel = pathname.startsWith('/pageprincipal/cadastros') || pathname.startsWith('/cadastros') || pathname.startsWith('/cadastro-produtos') || pathname.startsWith('/produtos-vendas') ? 'Cadastros Mestres'
+    : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
+    : pathname.startsWith('/pageprincipal/paquimetro') ? 'Qualidade / Paquímetro'
+    : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'Fiscal'
     : null
   const currentModuleMenu = moduleLabel
     ? menus.find(menu => menu.label === moduleLabel) ?? { label: moduleLabel, route: '/' + pathname.split('/')[1], icon: Home }
@@ -224,12 +226,17 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       </main>
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
       <BarraWindows11
-        ativo={pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/estoque') ? 'est' : pathname.startsWith('/manutencao') ? 'man' : pathname.startsWith('/usuarios') ? 'usu' : pathname.startsWith('/configuracoes') ? 'cfg' : ''}
+        ativo={pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/pageprincipal/paquimetro') ? 'paq' : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'fiscal' : pathname.startsWith('/pageprincipal') ? 'home' : ''}
         onAbrir={(id) => {
-          // Durante o reset, os atalhos visuais permanecem, mas não apontam
-          // para rotas antigas. Cada módulo ganhará um destino ao ser reconstruído.
-          void id
-          go('/erp-industrial')
+          const destinations: Record<string, string> = {
+            home: '/pageprincipal',
+            pcp: '/pageprincipal/pcp',
+            maq: '/pageprincipal/pcp',
+            op: '/pageprincipal/pcp',
+            paq: '/pageprincipal/paquimetro',
+            fiscal: '/pageprincipal/fiscal',
+          }
+          go(destinations[id] ?? '/pageprincipal')
         }}
       />
 
