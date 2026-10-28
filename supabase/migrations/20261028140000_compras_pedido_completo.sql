@@ -1,5 +1,13 @@
 -- SYSNQRA ERP INDUSTRIAL — Pedido de compras completo baseado no formulário NewPurchaseOrder.
 -- A alteração preserva pedidos existentes e mantém gravação atômica via RPC autenticada.
+alter table public.erp_pedidos_compra
+  add column if not exists modalidade_frete text,
+  add column if not exists transportadora text,
+  add column if not exists valor_frete numeric(18,2) not null default 0,
+  add column if not exists valor_desconto numeric(18,2) not null default 0,
+  add column if not exists numero_contrato text,
+  add column if not exists observacoes_recebimento text;
+
 alter table public.erp_pedidos_compra_itens
   add column if not exists ncm text,
   add column if not exists data_entrega_prometida date,
@@ -89,6 +97,10 @@ begin
   v_numero_contrato := nullif(btrim(p_dados_comerciais->>'numero_contrato'), '');
   v_observacoes_recebimento := nullif(btrim(p_dados_comerciais->>'observacoes_recebimento'), '');
   if v_valor_frete < 0 or v_valor_desconto < 0 then raise exception 'Frete e desconto não podem ser negativos.'; end if;
+  if nullif(p_dados_comerciais->>'requisicao_id', '') is not null and not exists (
+    select 1 from public.erp_requisicoes_compra r
+     where r.id = (p_dados_comerciais->>'requisicao_id')::uuid and r.empresa_id = v_empresa_id
+  ) then raise exception 'A requisição selecionada não pertence à empresa ativa.'; end if;
 
   if p_pedido_id is null then
     if not public.erp_has_permission('compras', 'criar') then
