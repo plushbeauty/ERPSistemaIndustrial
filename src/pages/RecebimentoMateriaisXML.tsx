@@ -1,5 +1,5 @@
 import { useEffect, useState, type ChangeEvent } from 'react'
-import { AlertTriangle, CheckCircle2, FileCode2, RefreshCw, Upload, Warehouse } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, FileCode2, RefreshCw, ShieldCheck, Upload, Warehouse } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 
