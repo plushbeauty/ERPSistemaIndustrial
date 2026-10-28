@@ -18,6 +18,7 @@ export default function ComprasPedidoForm({ onCancel, onSaved }: { onCancel: () 
   const [products, setProducts] = useState<Row[]>([])
   const [requisitions, setRequisitions] = useState<Row[]>([])
   const [productionOrders, setProductionOrders] = useState<Row[]>([])
+  const [productionOrders, setProductionOrders] = useState<Row[]>([])
   const [loadingRefs, setLoadingRefs] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -36,6 +37,7 @@ export default function ComprasPedidoForm({ onCancel, onSaved }: { onCancel: () 
         supabase.from('erp_produtos').select('id,codigo,nome,ativo').eq('empresa_id', empresaId).eq('ativo', true).order('codigo'),
         supabase.from('erp_requisicoes_compra').select('id,codigo,status').eq('empresa_id', empresaId).order('created_at', { ascending: false }).limit(200),
         supabase.from('erp_ordens_producao').select('id,numero_op,status').eq('empresa_id', empresaId).order('numero_op', { ascending: false }).limit(300),
+        supabase.from('erp_ordens_producao').select('id,numero_op,status').eq('empresa_id', empresaId).order('numero_op', { ascending: false }).limit(300),
       ])
       if (!active) return
       const refErrors = [supplierResult.error, productResult.error, requisitionResult.error, productionOrderResult.error].filter(Boolean)
@@ -43,6 +45,7 @@ export default function ComprasPedidoForm({ onCancel, onSaved }: { onCancel: () 
       setSuppliers((supplierResult.data ?? []) as Row[])
       setProducts((productResult.data ?? []) as Row[])
       setRequisitions((requisitionResult.data ?? []) as Row[])
+      setProductionOrders((productionOrderResult.data ?? []) as Row[])
       setProductionOrders((productionOrderResult.data ?? []) as Row[])
       setLoadingRefs(false)
     }
