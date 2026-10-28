@@ -119,7 +119,7 @@ export default function ComprasPedidoForm({ onCancel, onSaved }: { onCancel: () 
       {field('Comprador responsável', 'comprador', { placeholder: 'Preenchido com o usuário se ficar vazio' })}
       <label className="compras-field"><span>Data de emissão</span><input value={new Date().toLocaleDateString('pt-BR')} readOnly/></label>
       {field('Entrega prevista', 'entrega', {type:'date'})}
-      {field('Condição de pagamento', 'condicao', {placeholder:'Ex.: 30/60 dias, boleto, PIX'})}
+      {field('Condição de pagamento', 'condicao', {required:true, placeholder:'Ex.: 30/60 dias, boleto, PIX'})}
       <label className="compras-field"><span>Status inicial</span><select value={header.status} onChange={event => setHeader(current => ({...current,status:event.target.value as Header['status']}))}><option value="RASCUNHO">Rascunho</option><option value="PENDENTE_APROVACAO">Enviar para aprovação</option></select></label>
       {field('Centro de custo', 'centroCusto', {placeholder:'Setor / linha de produção'})}
       {field('Local de entrega', 'localEntrega', {placeholder:'Unidade / doca'})}
