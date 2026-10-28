@@ -16,7 +16,7 @@ const lazyImports = new Map(
   [...app.matchAll(/(?:const|let|var)\s+([A-Za-z0-9_]+)\s*=\s*lazyPage\(\(\)\s*=>\s*import\(["']([^"']+)["']\)/g)]
     .map(([, name, importPath]) => [name, importPath]),
 )
-const allowedLocal = new Set(['Navigate', 'MasterOnly', 'AppIndustrial', 'IndustrialLoginDirect', 'PublicIndustrialHome', 'PublicHomeWithLogin', 'ComprasRoute', 'QualityPlanGate', 'ERPHorizontalShell', 'CentralComercialFiscalFinanceira', 'PagePrincipal', 'PCPWorkspace', 'Paquimetro', 'Fiscal', 'SetupADMInicial'])
+const allowedLocal = new Set(['Navigate', 'MasterOnly', 'AppIndustrial', 'IndustrialLoginDirect', 'PublicIndustrialHome', 'PublicHomeWithLogin', 'ComprasRoute', 'QualityPlanGate', 'ERPHorizontalShell', 'CentralComercialFiscalFinanceira', 'PagePrincipal', 'PCPWorkspace', 'Paquimetro', 'Fiscal', 'NFeEmissao', 'SetupADMInicial'])
 const failures = []
 
 for (const [groupIndex, [, routeGroup]] of [...app.matchAll(/<Routes>([\s\S]*?)<\/Routes>/g)].entries()) {

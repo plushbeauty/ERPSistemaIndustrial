@@ -12,6 +12,7 @@ import './styles/synqra-workspace-standard.css'
 const PagePrincipal = lazy(() => import('./pages/PagePrincipal'))
 const AppIndustrial = lazy(() => import('./AppIndustrialV7'))
 const Fiscal = lazy(() => import('./pages/Fiscal'))
+const NFeEmissao = lazy(() => import('./pages/NFeEmissao'))
 const SetupADMInicial = lazy(() => import('./pages/SetupADMInicial'))
 const PCPWorkspace = lazy(() => import('./pages/PCPWorkspace'))
 const Paquimetro = lazy(() => import('./pages/QualidadePaquimetroDigital'))
@@ -30,12 +31,14 @@ export default function AppEntryV2() {
             <Route path="/pageprincipal" element={<PagePrincipal />}>
               <Route index element={<AppIndustrial />} />
               <Route path="fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />
+              <Route path="fiscal/emissao" element={<QualityPlanGate><NFeEmissao /></QualityPlanGate>} />
               <Route path="pcp" element={<PCPWorkspace />} />
               <Route path="paquimetro" element={<QualityPlanGate><Paquimetro /></QualityPlanGate>} />
             </Route>
             <Route path="/erp-industrial" element={<Navigate to="/pageprincipal" replace />} />
             <Route path="/cadastros" element={<Navigate to="/pageprincipal" replace />} />
             <Route path="/fiscal" element={<Navigate to="/pageprincipal/fiscal" replace />} />
+            <Route path="/fiscal/emissao" element={<Navigate to="/pageprincipal/fiscal/emissao" replace />} />
             <Route path="/pcp" element={<Navigate to="/pageprincipal/pcp" replace />} />
             <Route path="/paquimetro" element={<Navigate to="/pageprincipal/paquimetro" replace />} />
             <Route path="/qualidade/paquimetro" element={<Navigate to="/pageprincipal/paquimetro" replace />} />
