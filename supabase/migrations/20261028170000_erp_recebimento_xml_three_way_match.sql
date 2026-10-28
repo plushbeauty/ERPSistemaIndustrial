@@ -7,11 +7,17 @@ create index if not exists ix_erp_recebimento_notas_pedido_tenant on public.erp_
 create or replace function public.erp_confirmar_recebimento_nfe_com_pedido(p_header jsonb,p_items jsonb,p_lotes jsonb,p_pedido_id uuid)
 returns uuid language plpgsql security definer set search_path=pg_catalog,public
 as $fn$
-declare v_empresa uuid:=public.erp_current_empresa_id(); v_recebimento uuid; v_item jsonb; v_pi public.erp_pedidos_compra_itens%rowtype; v_prod public.erp_produtos%rowtype; v_item_id uuid; v_qtd numeric; v_preco numeric; v_recebido numeric; v_qtd_xml numeric;
+declare v_empresa uuid:=public.erp_current_empresa_id(); v_recebimento uuid; v_item jsonb; v_pi public.erp_pedidos_compra_itens%rowtype; v_prod public.erp_produtos%rowtype; v_item_id uuid; v_qtd numeric; v_preco numeric; v_recebido numeric; v_qtd_xml numeric; v_fornecedor_id uuid; v_cnpj_pedido text; v_cnpj_xml text; v_status_pedido text;
 begin
  if auth.uid() is null or v_empresa is null then raise exception 'Sessão ou empresa não identificada.' using errcode='42501'; end if;
  if not public.erp_has_permission('estoque','criar') then raise exception 'Sem permissão para receber materiais.' using errcode='42501'; end if;
- if p_pedido_id is null or not exists(select 1 from public.erp_pedidos_compra where id=p_pedido_id and empresa_id=v_empresa) then raise exception 'Pedido não pertence à empresa ativa.' using errcode='42501'; end if;
+ if p_pedido_id is null then raise exception 'Pedido de compra obrigatório.' using errcode='22023'; end if;
+ select fornecedor_id,status into v_fornecedor_id,v_status_pedido from public.erp_pedidos_compra where id=p_pedido_id and empresa_id=v_empresa for update;
+ if not found then raise exception 'Pedido não pertence à empresa ativa.' using errcode='42501'; end if;
+ if upper(coalesce(v_status_pedido,'')) in ('CANCELADO','CANCELADA','RASCUNHO','PENDENTE_APROVACAO','REJEITADO','REJEITADA') then raise exception 'O status atual do pedido não permite recebimento.' using errcode='22023'; end if;
+ select regexp_replace(coalesce(documento,''),'[^0-9]','','g') into v_cnpj_pedido from public.erp_fornecedores where id=v_fornecedor_id and empresa_id=v_empresa and coalesce(ativo,true)=true;
+ v_cnpj_xml:=regexp_replace(coalesce(p_header->>'cnpj_fornecedor',''),'[^0-9]','','g');
+ if v_cnpj_pedido is null or v_cnpj_pedido='' or v_cnpj_xml='' or v_cnpj_pedido<>v_cnpj_xml then raise exception 'CNPJ da NF-e não corresponde ao fornecedor do pedido.' using errcode='23503'; end if;
  if jsonb_typeof(p_items) is distinct from 'array' or jsonb_array_length(p_items)=0 then raise exception 'NF-e sem itens.' using errcode='22023'; end if;
  for v_item in select value from jsonb_array_elements(p_items) loop
   v_item_id:=nullif(v_item->>'pedido_item_id','')::uuid; v_qtd:=nullif(v_item->>'quantidade_total','')::numeric; v_preco:=nullif(v_item->>'valor_unitario','')::numeric;
