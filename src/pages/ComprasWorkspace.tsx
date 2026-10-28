@@ -73,10 +73,9 @@ function DataTable({ rows, kind }: { rows: DbRow[]; kind: 'requisicoes' | 'cotac
       { label: 'Status', keys: ['status'], format: 'status' },
     ],
     recebimentos: [
-      { label: 'Documento', keys: ['numero', 'numero_documento', 'chave_acesso', 'id'] },
-      { label: 'Pedido', keys: ['pedido_compra_id', 'pedido_id'] },
+      { label: 'Pedido', keys: ['numero', 'id'] },
       { label: 'Fornecedor', keys: ['fornecedor_nome', 'fornecedor_id'] },
-      { label: 'Data', keys: ['data_recebimento', 'created_at'], format: 'date' },
+      { label: 'Data do pedido', keys: ['data_pedido', 'created_at'], format: 'date' },
       { label: 'Status', keys: ['status'], format: 'status' },
     ],
   }
@@ -111,7 +110,12 @@ export default function ComprasWorkspace() {
       loadTable('erp_rfq', setRfqs, 'created_at'),
       loadTable('erp_requisicoes_compra', setRequisitions, 'created_at'),
       loadTable('erp_pedidos_compra', setOrders, 'created_at'),
-      loadTable('erp_recebimentos_compra', setReceipts, 'created_at'),
+      (async () => {
+        setReceipts({ rows: [], loading: true, error: null })
+        const { data, error } = await supabase.from('erp_pedidos_compra').select('*').in('status', ['RECEBIMENTO_PARCIAL', 'RECEBIDO']).order('created_at', { ascending: false }).limit(100)
+        if (error) setReceipts({ rows: [], loading: false, error: error.message })
+        else setReceipts({ rows: (data ?? []) as DbRow[], loading: false, error: null })
+      })(),
     ])
   }, [])
 
