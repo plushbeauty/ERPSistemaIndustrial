@@ -18,7 +18,6 @@ type MenuItem = {
 
 const menus: MenuItem[] = [
   { label: 'Principal', route: '/pageprincipal', icon: Home },
-  { label: 'Cadastros Mestres', route: '/pageprincipal/cadastros', icon: Database },
   { label: 'Engenharia e PCP', route: '/pageprincipal/pcp', icon: Factory, children: [
     { label: 'Central PCP', route: '/pageprincipal/pcp', icon: ClipboardList },
   ] },
@@ -86,8 +85,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     }
   }, [])
 
-  const moduleLabel = pathname.startsWith('/pageprincipal/cadastros') || pathname.startsWith('/cadastros') || pathname.startsWith('/cadastro-produtos') || pathname.startsWith('/produtos-vendas') ? 'Cadastros Mestres'
-    : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
+  const moduleLabel = pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
     : pathname.startsWith('/pageprincipal/paquimetro') ? 'Qualidade / Paquímetro'
     : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'Fiscal'
     : null
