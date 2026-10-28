@@ -215,8 +215,10 @@ begin
       or v_aliquota_icms < 0 or v_aliquota_icms > 100
       or v_aliquota_ipi::text in ('NaN', 'Infinity', '-Infinity')
       or v_aliquota_icms::text in ('NaN', 'Infinity', '-Infinity')
+      or v_ncm is null or length(regexp_replace(v_ncm, '[^0-9]', '', 'g')) not in (8)
+      or v_data_entrega is null
     then
-      raise exception 'Item ou quantidade/preço inválido no pedido.';
+      raise exception 'Item inválido: confira produto, quantidade, preço, NCM com 8 dígitos e data de entrega.';
     end if;
 
     select p.id, p.codigo, p.nome
