@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Warehouse, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X, Ruler, ClipboardCheck, ClipboardList, Gauge, Target, Radio, Globe, Clipboard, CalendarDays } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -16,7 +16,16 @@ type MenuItem = {
   children?: MenuItem[]
 }
 
-const menus: MenuItem[] = []
+const menus: MenuItem[] = [
+  { label: 'Principal', route: '/pageprincipal', icon: Home },
+  { label: 'Engenharia e PCP', route: '/pageprincipal/pcp', icon: Factory, children: [
+    { label: 'Central PCP', route: '/pageprincipal/pcp', icon: ClipboardList },
+  ] },
+  { label: 'Qualidade / Paquímetro', route: '/pageprincipal/paquimetro', icon: Ruler, children: [
+    { label: 'Paquímetro Digital', route: '/pageprincipal/paquimetro', icon: Ruler },
+  ] },
+  { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText },
+]
 
 export default function ERPHorizontalShell({ children, operatorName = 'Usuário ERP' }: { children: ReactNode; operatorName?: string }) {
   const navigate = useNavigate()
@@ -76,18 +85,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     }
   }, [])
 
-  const moduleLabel = pathname.startsWith('/cadastros') || pathname.startsWith('/cadastro-produtos') || pathname.startsWith('/produtos-vendas') ? 'Cadastros'
-    : pathname.startsWith('/vendas') ? 'Vendas'
-    : pathname.startsWith('/compras') ? 'Compras'
-    : pathname.startsWith('/qualidade') || pathname.startsWith('/sgq') ? 'Qualidade'
-    : pathname.startsWith('/almoxarifado') ? 'Almoxarifado'
-    : pathname.startsWith('/estoque') || pathname.startsWith('/inventario') ? 'Estoque'
-    : pathname.startsWith('/financeiro') ? 'Financeiro'
-    : pathname.startsWith('/fiscal') ? 'Fiscal'
-    : pathname.startsWith('/pcp') ? 'Manufatura / PCP'
-    : pathname.startsWith('/manutencao') ? 'Manutenção'
-    : pathname.startsWith('/produtos-vendas') || pathname.startsWith('/cadastros') ? 'Cadastros'
-    : pathname.startsWith('/configuracoes') ? 'Configuração'
+  const moduleLabel = pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
+    : pathname.startsWith('/pageprincipal/paquimetro') ? 'Qualidade / Paquímetro'
+    : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'Fiscal'
     : null
   const currentModuleMenu = moduleLabel
     ? menus.find(menu => menu.label === moduleLabel) ?? { label: moduleLabel, route: '/' + pathname.split('/')[1], icon: Home }
@@ -107,22 +107,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     }
     go(item.route)
   }
-
-  const moduleHeader = pathname.startsWith('/vendas')
-    ? (pathname === '/vendas' ? { title: 'Dashboard Comercial', subtitle: 'Indicadores reais do módulo de vendas' } : { title: 'Módulo Vendas', subtitle: 'Pedidos, clientes e acompanhamento comercial' })
-    : pathname.startsWith('/compras') ? { title: 'Gestão de Compras', subtitle: 'Solicitações, cotações, pedidos e recebimentos' }
-    : pathname.startsWith('/qualidade') || pathname.startsWith('/sgq') ? { title: 'Painel de Gestão da Qualidade', subtitle: 'Indicadores calculados a partir dos registros da empresa autenticada.' }
-    : pathname.startsWith('/almoxarifado') ? { title: 'Almoxarifado', subtitle: 'Inventário mestre, FIFO e rastreabilidade de lotes' }
-    : pathname.startsWith('/estoque') || pathname.startsWith('/inventario') ? { title: 'Gestão de Estoque', subtitle: 'Saldos, movimentações e rastreabilidade de materiais' }
-    : pathname.startsWith('/fiscal') || pathname.includes('nota-fiscal') ? { title: 'Gestão Fiscal', subtitle: 'Documentos fiscais e controles do módulo fiscal' }
-    : pathname.startsWith('/pcp') ? { title: 'Planejamento e Controle da Produção', subtitle: 'Ordens, capacidade e acompanhamento da produção' }
-    : pathname.startsWith('/financeiro') ? { title: 'Gestão Financeira', subtitle: 'Títulos, custos e indicadores financeiros' }
-    : pathname.startsWith('/engenharia') ? { title: 'Engenharia Industrial', subtitle: 'Produtos, estruturas e dados de engenharia' }
-    : pathname.startsWith('/manutencao') ? { title: 'Gestão da Manutenção', subtitle: 'Equipamentos, ordens e planos de manutenção' }
-    : pathname.startsWith('/rh') ? { title: 'Recursos Humanos', subtitle: 'Cadastros e rotinas de recursos humanos' }
-    : pathname.startsWith('/produtos-vendas') || pathname.startsWith('/cadastros') ? { title: 'Cadastros Mestres', subtitle: 'Dados mestres utilizados pelos módulos do ERP' }
-    : pathname.startsWith('/configuracoes') ? { title: 'Configurações do ERP', subtitle: 'Parâmetros e administração do ambiente' }
-    : { title: 'SYSNQRA ERP & SGQ INDUSTRIAL', subtitle: 'Gestão integrada da operação industrial' }
 
   const contextualHelp = pathname.startsWith('/pcp/mrp-ii')
     ? { title: 'MRP II — Planejamento de materiais', purpose: 'Calcular necessidades de materiais a partir da demanda, estrutura dos produtos, estoque e ordens existentes. Esta tela não é a agenda de máquinas.', steps: ['Confirme que produtos, fichas técnicas/estruturas e saldos de estoque estão atualizados.', 'Execute o cálculo MRP e confira as necessidades líquidas por componente.', 'Revise as sugestões de comprar ou produzir antes de gerar ordens planejadas.'], fields: ['Produto/demanda: item acabado e quantidade a planejar.', 'Horizonte/data: período considerado no planejamento.', 'Necessidade líquida: quantidade que falta após estoque e reservas.', 'Sugestão: comprar ou produzir; confira antes de confirmar.'] }
@@ -224,12 +208,17 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       </main>
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
       <BarraWindows11
-        ativo={pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/estoque') ? 'est' : pathname.startsWith('/manutencao') ? 'man' : pathname.startsWith('/usuarios') ? 'usu' : pathname.startsWith('/configuracoes') ? 'cfg' : ''}
+        ativo={pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/pageprincipal/paquimetro') ? 'paq' : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'fiscal' : pathname.startsWith('/pageprincipal') ? 'home' : ''}
         onAbrir={(id) => {
-          // Durante o reset, os atalhos visuais permanecem, mas não apontam
-          // para rotas antigas. Cada módulo ganhará um destino ao ser reconstruído.
-          void id
-          go('/erp-industrial')
+          const destinations: Record<string, string> = {
+            home: '/pageprincipal',
+            pcp: '/pageprincipal/pcp',
+            maq: '/pageprincipal/pcp',
+            op: '/pageprincipal/pcp',
+            paq: '/pageprincipal/paquimetro',
+            fiscal: '/pageprincipal/fiscal',
+          }
+          go(destinations[id] ?? '/pageprincipal')
         }}
       />
 

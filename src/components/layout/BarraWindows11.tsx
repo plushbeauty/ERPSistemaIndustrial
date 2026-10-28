@@ -1,22 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import type { LucideIcon } from "lucide-react";
-import {
-  LayoutGrid, Search, CalendarClock, Factory, Package, ClipboardList, Wrench,
-  BarChart3, Power, User,
-} from "lucide-react";
+import { LayoutGrid, Search, CalendarClock, Power, User, Ruler, FileText, Home } from "lucide-react";
 
 type App = { id: string; nome: string; icone: LucideIcon; cor: string };
 
 const APPS: App[] = [
-  { id: "pcp", nome: "Programação", icone: CalendarClock, cor: "#0078d4" },
-  { id: "maq", nome: "Máquinas", icone: Factory, cor: "#16a34a" },
-  { id: "est", nome: "Estoque", icone: Package, cor: "#d97706" },
-  { id: "op", nome: "Ordens", icone: ClipboardList, cor: "#7c3aed" },
-  { id: "man", nome: "Manutenção", icone: Wrench, cor: "#dc2626" },
-  { id: "ind", nome: "Indicadores", icone: BarChart3, cor: "#0891b2" },
+  { id: "home", nome: "Página principal", icone: Home, cor: "#123b50" },
+  { id: "pcp", nome: "PCP", icone: CalendarClock, cor: "#0078d4" },
+  { id: "paq", nome: "Paquímetro", icone: Ruler, cor: "#111827" },
+  { id: "fiscal", nome: "Fiscal", icone: FileText, cor: "#d97706" },
 ];
 
-export function BarraWindows11({ ativo = "pcp", onAbrir, onDesligar }: { ativo?: string; onAbrir?: (id: string) => void; onDesligar?: () => void | Promise<void> }) {
+export function BarraWindows11({ ativo = "home", onAbrir, onDesligar }: { ativo?: string; onAbrir?: (id: string) => void; onDesligar?: () => void | Promise<void> }) {
   const [menu, setMenu] = useState(false);
   const [busca, setBusca] = useState("");
   const ref = useRef<HTMLDivElement>(null);

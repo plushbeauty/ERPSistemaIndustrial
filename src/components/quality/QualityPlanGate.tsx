@@ -18,6 +18,7 @@ function normalizePlan(value: unknown): Plan | null {
 
 function requiredPlan(path: string): Plan {
   path = path.replace(/\/+$/, '') || '/'
+  if (path.startsWith('/pageprincipal/')) path = path.slice('/pageprincipal'.length) || '/'
   if (path === '/qualidade/inspecoes') return 'BASICO'
 
   const goldRoutes = [
@@ -33,6 +34,7 @@ function requiredPlan(path: string): Plan {
   if (
     path.startsWith('/qualidade/') ||
     path === '/qualidade' ||
+    path === '/paquimetro' ||
     path.startsWith('/pcp') ||
     path.startsWith('/engenharia') ||
     path.startsWith('/fiscal') ||
