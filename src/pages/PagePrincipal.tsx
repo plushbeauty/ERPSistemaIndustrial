@@ -8,7 +8,7 @@ import { Outlet } from 'react-router-dom'
 
 export default function PagePrincipal() {
   return (
-    <section aria-label="Área de trabalho SYSNQRA" className="w-full min-w-0">
+    <section aria-label="Área de trabalho SYSNQRA" className="synqra-module-shell w-full min-w-0">
       <Outlet />
     </section>
   )
