@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, Users } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -25,6 +25,9 @@ const menus: MenuItem[] = [
     { label: 'Paquímetro Digital', route: '/pageprincipal/paquimetro', icon: Ruler },
   ] },
   { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText },
+  { label: 'RH e Departamento Pessoal', route: '/pageprincipal/rh', icon: Users, children: [
+    { label: 'Cadastro de Colaboradores', route: '/pageprincipal/rh', icon: Users, isUpdated: true },
+  ] },
 ]
 
 export default function ERPHorizontalShell({ children, operatorName = 'Usuário ERP' }: { children: ReactNode; operatorName?: string }) {
@@ -85,7 +88,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     }
   }, [])
 
-  const moduleLabel = pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
+  const moduleLabel = pathname.startsWith('/pageprincipal/rh') || pathname === '/rh' ? 'RH e Departamento Pessoal'
+    : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
     : pathname.startsWith('/pageprincipal/paquimetro') ? 'Qualidade / Paquímetro'
     : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'Fiscal'
     : null
