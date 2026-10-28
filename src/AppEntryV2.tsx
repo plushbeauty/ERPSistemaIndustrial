@@ -19,6 +19,7 @@ const Paquimetro = lazy(() => import('./pages/QualidadePaquimetroDigital'))
 const ComprasWorkspace = lazy(() => import('./pages/ComprasWorkspace'))
 const CadastroProdutosIndustrial = lazy(() => import('./pages/CadastroProdutosIndustrial'))
 const AdministracaoConfiguracoesGlobais = lazy(() => import('./pages/AdministracaoConfiguracoesGlobais'))
+const BibliotecaIconesSYSNQRA = lazy(() => import('./pages/BibliotecaIconesSYSNQRA'))
 
 function LoadingWorkspace() {
   return <main role="status" aria-live="polite" style={{ minHeight: '50vh', display: 'grid', placeItems: 'center', color: '#123b50', fontFamily: 'Inter,system-ui,sans-serif' }}>Carregando SYSNQRA ERP INDUSTRIAL…</main>
@@ -36,6 +37,7 @@ export default function AppEntryV2() {
               <Route path="compras" element={<ComprasWorkspace />} />
               <Route path="produtos" element={<CadastroProdutosIndustrial />} />
               <Route path="administracao-configuracoes" element={<AdministracaoConfiguracoesGlobais />} />
+              <Route path="biblioteca-icones" element={<BibliotecaIconesSYSNQRA />} />
               <Route path="fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />
               <Route path="pcp" element={<PCPWorkspace />} />
               <Route path="paquimetro" element={<QualityPlanGate><Paquimetro /></QualityPlanGate>} />
@@ -43,6 +45,7 @@ export default function AppEntryV2() {
             <Route path="/compras" element={<Navigate to="/pageprincipal/compras" replace />} />
             <Route path="/produtos" element={<Navigate to="/pageprincipal/produtos" replace />} />
             <Route path="/administracao-configuracoes" element={<Navigate to="/pageprincipal/administracao-configuracoes" replace />} />
+            <Route path="/biblioteca-icones" element={<Navigate to="/pageprincipal/biblioteca-icones" replace />} />
             <Route path="/erp-industrial" element={<Navigate to="/pageprincipal" replace />} />
             <Route path="/cadastros" element={<Navigate to="/pageprincipal" replace />} />
             <Route path="/fiscal" element={<Navigate to="/pageprincipal/fiscal" replace />} />
