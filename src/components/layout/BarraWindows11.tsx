@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { LucideIcon } from "lucide-react";
-import { Search, CalendarClock, Ruler, FileText, Home } from "lucide-react";
+import { LayoutGrid, Search, CalendarClock, Power, User, Ruler, FileText, Home } from "lucide-react";
 
 type App = { id: string; nome: string; icone: LucideIcon; cor: string };
 
