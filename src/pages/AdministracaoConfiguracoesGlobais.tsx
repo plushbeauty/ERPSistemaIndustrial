@@ -6,7 +6,7 @@
  * Não cria usuários Auth diretamente nem simula instalação de módulos.
  */
 import { useCallback, useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
-import { Building2, ShieldCheck, Users, Puzzle, ScrollText, Save, RefreshCw, Upload, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { Building2, ShieldCheck, Users, Puzzle, ScrollText, Save, RefreshCw, CheckCircle2, AlertTriangle } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type Section = 'empresa' | 'usuarios' | 'modulos' | 'logs'
