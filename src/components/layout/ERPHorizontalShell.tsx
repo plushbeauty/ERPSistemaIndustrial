@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, Boxes } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -25,6 +25,7 @@ const menus: MenuItem[] = [
     { label: 'Paquímetro Digital', route: '/pageprincipal/paquimetro', icon: Ruler },
   ] },
   { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText },
+  { label: 'Recebimento XML / Estoque', route: '/pageprincipal/recebimento-nfe', icon: Boxes, isNew: true },
 ]
 
 export default function ERPHorizontalShell({ children, operatorName = 'Usuário ERP' }: { children: ReactNode; operatorName?: string }) {
