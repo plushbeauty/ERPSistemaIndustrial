@@ -21,7 +21,7 @@ const tabs: Array<{ id: Tab; label: string; Icon: typeof Factory }> = [
 export default function PCPWorkspace() {
   const [tab, setTab] = useState<Tab>('ordens')
   return (
-    <div className="min-w-0 space-y-3">
+    <div className="synqra-module-shell min-w-0 space-y-3">
       <nav aria-label="Rotinas do PCP" className="flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-white p-2">
         {tabs.map(({ id, label, Icon }) => (
           <button key={id} type="button" onClick={() => setTab(id)} aria-pressed={tab === id}
