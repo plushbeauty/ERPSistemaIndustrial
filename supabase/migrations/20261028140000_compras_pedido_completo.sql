@@ -47,6 +47,7 @@ declare
   v_valor_desconto numeric;
   v_numero_contrato text;
   v_observacoes_recebimento text;
+  v_total_final numeric(18,2);
 begin
   if v_empresa_id is null then
     raise exception 'Empresa da sessão não identificada.';
@@ -250,10 +251,18 @@ begin
     );
   end loop;
 
+  select coalesce(sum(i.total + round(i.total * (i.aliquota_ipi + i.aliquota_icms) / 100, 2)), 0)
+    into v_total_final
+    from public.erp_pedidos_compra_itens i
+   where i.pedido_id = v_pedido_id and i.empresa_id = v_empresa_id;
+  update public.erp_pedidos_compra p
+     set total = greatest(0, v_total_final + v_valor_frete - v_valor_desconto), updated_at = now()
+   where p.id = v_pedido_id and p.empresa_id = v_empresa_id;
+
   return query select v_pedido_id, v_numero;
 end;
 $$;
 
 
-revoke all on function public.erp_compras_salvar_pedido_completo(uuid, uuid, text, text, date, text, text, jsonb) from public;
-grant execute on function public.erp_compras_salvar_pedido_completo(uuid, uuid, text, text, date, text, text, jsonb) to authenticated;
+revoke all on function public.erp_compras_salvar_pedido_completo(uuid, uuid, text, text, date, text, text, jsonb, jsonb) from public, anon;
+grant execute on function public.erp_compras_salvar_pedido_completo(uuid, uuid, text, text, date, text, text, jsonb, jsonb) to authenticated;
