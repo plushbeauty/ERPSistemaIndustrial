@@ -79,3 +79,17 @@
 .admin-global-log-search{display:flex;flex-direction:column;gap:5px;max-width:420px;margin-bottom:12px}
 @media(max-width:900px){.admin-global-layout{grid-template-columns:1fr}.admin-global-sidebar{position:static;min-height:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.admin-global-sidebar-title,.admin-global-sidebar-foot{grid-column:1/-1}.admin-global-module-grid{grid-template-columns:1fr}}
 @media(max-width:560px){.admin-global-sidebar{grid-template-columns:1fr}.admin-global-fields{grid-template-columns:1fr}.admin-global-fields label{grid-column:1/-1}.admin-global-logo-row{align-items:flex-start}.admin-global-panel{padding:10px}}
+
+
+/* Cadastro de produtos — padrão compacto de inputs, isolado até validação visual. */
+.produtos-cadastro-page .produto-field--span-2{grid-column:span 2 / span 2}
+.produtos-cadastro-page .produto-field--span-3{grid-column:span 3 / span 3}
+.produtos-cadastro-page .produto-field--span-4{grid-column:span 4 / span 4}
+.produtos-cadastro-page .produto-field--full{grid-column:1 / -1}
+.produtos-cadastro-page .compras-field input,
+.produtos-cadastro-page .compras-field select{height:36px;min-height:36px;padding:0 9px;border-radius:5px;font-size:11px}
+.produtos-cadastro-page .produto-origem-opcoes{display:flex;flex-wrap:wrap;gap:8px;padding-top:2px}
+.produtos-cadastro-page .produto-origem-opcoes label{display:flex;align-items:center;gap:6px;min-height:36px;padding:0 10px;border:1px solid #cbd5e1;border-radius:5px;background:#fff;color:#334155;font-size:11px;font-weight:700}
+.produtos-cadastro-page .produto-origem-opcoes input{width:14px;height:14px;min-height:0}
+@media(max-width:900px){.produtos-cadastro-page .produto-field--span-2,.produtos-cadastro-page .produto-field--span-3,.produtos-cadastro-page .produto-field--span-4{grid-column:span 6 / span 6}}
+@media(max-width:600px){.produtos-cadastro-page .produto-field--span-2,.produtos-cadastro-page .produto-field--span-3,.produtos-cadastro-page .produto-field--span-4{grid-column:1 / -1}}
