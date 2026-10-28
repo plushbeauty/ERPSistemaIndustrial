@@ -149,14 +149,14 @@ export default function CadastroProdutosIndustrial() {
     } finally { setSaving(false) }
   }
 
-  const labelInput = (label: string, key: keyof ProductForm, options: { required?: boolean; type?: string; maxLength?: number; placeholder?: string; min?: string; step?: string } = {}) => (
-    <label className={fieldClass} key={key}>
+  const labelInput = (label: string, key: keyof ProductForm, options: { required?: boolean; type?: string; maxLength?: number; placeholder?: string; min?: string; step?: string; span?: 2 | 3 | 4 } = {}) => (
+    <label className={`${fieldClass} produto-field--span-${options.span ?? 3}`} key={key}>
       <span>{label}{options.required ? ' *' : ''}</span>
       <input className={inputClass} type={options.type ?? 'text'} required={options.required} maxLength={options.maxLength} placeholder={options.placeholder} min={options.min} step={options.step} value={String(form[key])} onChange={event => setValue(key, (options.type === 'number' ? event.target.value : event.target.value) as ProductForm[typeof key])} />
     </label>
   )
 
-  return <main className="compras-page" aria-label="Cadastro de Produtos Industrial">
+  return <main className="compras-page produtos-cadastro-page" aria-label="Cadastro de Produtos Industrial">
     <header className="compras-header">
       <div><h1>Cadastro de Produtos Industrial</h1><p>Dados gerais, manufatura, custos e parâmetros fiscais em um único cadastro.</p></div>
     </header>
@@ -177,33 +177,33 @@ export default function CadastroProdutosIndustrial() {
       </nav>
       <form className="compras-form-grid" onSubmit={save}>
         {activeTab === 'gerais' && <>
-          {labelInput('Código do produto', 'codigo', { required: true, maxLength: 80, placeholder: 'Código único da empresa' })}
-          {labelInput('Unidade de medida', 'unidade', { required: true, maxLength: 8, placeholder: 'UN' })}
-          {labelInput('NCM', 'ncm', { maxLength: 8, placeholder: 'Classificação fiscal' })}
-          {labelInput('Ponto de reposição / estoque mínimo', 'ponto_reposicao', { type: 'number', min: '0', step: '0.001' })}
-          {labelInput('Estoque máximo', 'estoque_maximo', { type: 'number', min: '0', step: '0.001' })}
-          <label className={fieldClass + ' compras-field--full'}><span>Descrição do produto *</span><input required maxLength={240} value={form.nome} onChange={event => setValue('nome', event.target.value)} placeholder="Descrição completa usada em estoque, compras e PCP"/></label>
-          <label className={fieldClass + ' compras-field--full'}><span>Descrição resumida</span><input maxLength={160} value={form.descricao_resumida} onChange={event => setValue('descricao_resumida', event.target.value)} placeholder="Descrição curta para listagens e documentos"/></label>
+          {labelInput('Código do produto', 'codigo', { required: true, maxLength: 80, placeholder: 'Código único da empresa', span: 3 })}
+          {labelInput('Unidade de medida', 'unidade', { required: true, maxLength: 8, placeholder: 'UN', span: 2 })}
+          {labelInput('NCM', 'ncm', { maxLength: 8, placeholder: 'Classificação fiscal', span: 3 })}
+          {labelInput('Ponto de reposição / estoque mínimo', 'ponto_reposicao', { type: 'number', min: '0', step: '0.001', span: 2 })}
+          {labelInput('Estoque máximo', 'estoque_maximo', { type: 'number', min: '0', step: '0.001', span: 2 })}
+          <label className={fieldClass + ' compras-field--full produto-field--full'}><span>Descrição do produto *</span><input required maxLength={240} value={form.nome} onChange={event => setValue('nome', event.target.value)} placeholder="Descrição completa usada em estoque, compras e PCP"/></label>
+          <label className={fieldClass + ' compras-field--full produto-field--full'}><span>Descrição resumida</span><input maxLength={160} value={form.descricao_resumida} onChange={event => setValue('descricao_resumida', event.target.value)} placeholder="Descrição curta para listagens e documentos"/></label>
         </>}
         {activeTab === 'manufatura' && <>
-          <div className="compras-field compras-field--full"><span>Origem do suprimento *</span><div className="flex flex-wrap gap-4 pt-2">
+          <div className="compras-field produto-field--span-4"><span>Origem do suprimento *</span><div className="produto-origem-opcoes">
             <label className="inline-flex items-center gap-2"><input type="checkbox" checked={form.fabricado} onChange={event => setValue('fabricado', event.target.checked)}/> Fabricado internamente</label>
             <label className="inline-flex items-center gap-2"><input type="checkbox" checked={form.comprado} onChange={event => setValue('comprado', event.target.checked)}/> Comprado de fornecedor</label>
           </div></div>
-          {labelInput('Prazo de compra (dias)', 'prazo_compra_dias', { type: 'number', min: '0', step: '1' })}
-          {labelInput('Prazo de produção (dias)', 'prazo_producao_dias', { type: 'number', min: '0', step: '1' })}
-          <div className="compras-field compras-field--full"><span>Engenharia / estrutura de materiais</span><p className="m-0 text-[11px] text-slate-600">A estrutura BOM e a ficha de processo permanecem nos módulos de Engenharia e PCP vinculados ao produto cadastrado; não são duplicadas neste formulário.</p></div>
+          {labelInput('Prazo de compra (dias)', 'prazo_compra_dias', { type: 'number', min: '0', step: '1', span: 4 })}
+          {labelInput('Prazo de produção (dias)', 'prazo_producao_dias', { type: 'number', min: '0', step: '1', span: 4 })}
+          <div className="compras-field compras-field--full produto-field--full"><span>Engenharia / estrutura de materiais</span><p className="m-0 text-[11px] text-slate-600">A estrutura BOM e a ficha de processo permanecem nos módulos de Engenharia e PCP vinculados ao produto cadastrado; não são duplicadas neste formulário.</p></div>
         </>}
         {activeTab === 'custos' && <>
-          {labelInput('Custo médio (R$)', 'custo_medio', { type: 'number', min: '0', step: '0.0001' })}
-          {labelInput('Custo de fabricação (R$)', 'custo_fabricacao', { type: 'number', min: '0', step: '0.0001' })}
-          {labelInput('Preço de venda (R$)', 'preco_venda', { type: 'number', min: '0', step: '0.0001' })}
+          {labelInput('Custo médio (R$)', 'custo_medio', { type: 'number', min: '0', step: '0.0001', span: 4 })}
+          {labelInput('Custo de fabricação (R$)', 'custo_fabricacao', { type: 'number', min: '0', step: '0.0001', span: 4 })}
+          {labelInput('Preço de venda (R$)', 'preco_venda', { type: 'number', min: '0', step: '0.0001', span: 4 })}
           {labelInput('ICMS (%)', 'aliquota_icms', { type: 'number', min: '0', step: '0.0001' })}
           {labelInput('IPI (%)', 'aliquota_ipi', { type: 'number', min: '0', step: '0.0001' })}
           {labelInput('PIS (%)', 'aliquota_pis', { type: 'number', min: '0', step: '0.0001' })}
           {labelInput('COFINS (%)', 'aliquota_cofins', { type: 'number', min: '0', step: '0.0001' })}
-          <label className={fieldClass}><span>Status do cadastro</span><select value={form.ativo ? 'true' : 'false'} onChange={event => setValue('ativo', event.target.value === 'true')}><option value="true">Ativo</option><option value="false">Inativo</option></select></label>
-          <div className="compras-field"><span>Preço / custo</span><strong className="text-[13px] text-slate-800">{money(Number(form.preco_venda) - Number(form.custo_medio))} de diferença</strong></div>
+          <label className={`${fieldClass} produto-field--span-4`}><span>Status do cadastro</span><select value={form.ativo ? 'true' : 'false'} onChange={event => setValue('ativo', event.target.value === 'true')}><option value="true">Ativo</option><option value="false">Inativo</option></select></label>
+          <div className="compras-field produto-field--span-4"><span>Preço / custo</span><strong className="text-[13px] text-slate-800">{money(Number(form.preco_venda) - Number(form.custo_medio))} de diferença</strong></div>
         </>}
         <div className="compras-form-footer">
           <span>Campos obrigatórios marcados com *. A gravação respeita a sessão e o RLS do Supabase.</span>
