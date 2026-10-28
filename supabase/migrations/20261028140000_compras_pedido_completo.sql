@@ -217,8 +217,9 @@ begin
       or v_aliquota_icms::text in ('NaN', 'Infinity', '-Infinity')
       or v_ncm is null or length(regexp_replace(v_ncm, '[^0-9]', '', 'g')) not in (8)
       or v_data_entrega is null
+      or (v_ordem_producao is not null and not exists (select 1 from public.erp_ordens_producao op where op.id = v_ordem_producao and op.empresa_id = v_empresa_id))
     then
-      raise exception 'Item inválido: confira produto, quantidade, preço, NCM com 8 dígitos e data de entrega.';
+      raise exception 'Item inválido: confira produto, quantidade, preço, NCM com 8 dígitos, data de entrega e OP da empresa.';
     end if;
 
     select p.id, p.codigo, p.nome
