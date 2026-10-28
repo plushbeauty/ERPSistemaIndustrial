@@ -51,8 +51,8 @@ export default function ComprasPedidoForm({ onCancel, onSaved }: { onCancel: () 
   }, [])
 
   const subtotal = useMemo(() => items.reduce((sum, item) => sum + Math.max(0, Number(item.quantidade) || 0) * Math.max(0, Number(item.preco) || 0), 0), [items])
-  const ipiTotal = useMemo(() => items.reduce((sum, item) => sum + (Math.max(0, Number(item.quantidade) || 0) * Math.max(0, Number(item.preco) || 0) * Math.min(100, Math.max(0, Number(item.ipi) || 0) / 100), 0), [items])
-  const icmsTotal = useMemo(() => items.reduce((sum, item) => sum + (Math.max(0, Number(item.quantidade) || 0) * Math.max(0, Number(item.preco) || 0) * Math.min(100, Math.max(0, Number(item.icms) || 0) / 100), 0), [items])
+  const ipiTotal = useMemo(() => items.reduce((sum, item) => sum + (Math.max(0, Number(item.quantidade) || 0) * Math.max(0, Number(item.preco) || 0) * Math.min(100, Math.max(0, Number(item.ipi) || 0)) / 100), 0), [items])
+  const icmsTotal = useMemo(() => items.reduce((sum, item) => sum + (Math.max(0, Number(item.quantidade) || 0) * Math.max(0, Number(item.preco) || 0) * Math.min(100, Math.max(0, Number(item.icms) || 0)) / 100), 0), [items])
   const total = Math.max(0, subtotal + ipiTotal + icmsTotal + (Number(header.frete) || 0) - (Number(header.desconto) || 0))
 
   const updateItem = (key: string, field: keyof Item, value: string) => setItems(current => current.map(item => item.key === key ? { ...item, [field]: value } : item))
