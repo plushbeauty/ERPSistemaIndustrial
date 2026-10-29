@@ -21,7 +21,6 @@ const panel = 'rounded-xl border border-slate-700 bg-[#111827] p-4 text-slate-10
 const field = 'min-h-9 w-full rounded-xl border border-slate-600 bg-[#0b0f19] px-3 py-2 text-xs text-slate-100 outline-none focus:border-orange-500'
 const label = 'mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-400'
 const primary = 'inline-flex min-h-9 items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white hover:bg-orange-500 disabled:cursor-not-allowed disabled:opacity-50'
-const secondary = 'inline-flex min-h-9 items-center justify-center gap-2 rounded-xl border border-slate-600 bg-slate-800 px-3 py-2 text-xs font-bold text-slate-200 hover:bg-slate-700'
 
 function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : 'Não foi possível concluir a operação.'
