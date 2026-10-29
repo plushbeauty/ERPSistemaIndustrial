@@ -27,7 +27,7 @@ export default function ConfiguracaoPerfis() {
       if (authError) throw authError
       if (!authData.user) throw new Error('Entre no sistema para consultar os perfis.')
       const [actorResult, companyResult, permissionResult] = await Promise.all([
-        supabase.from('erp_usuarios').select('empresa_id,ativo,deleted_at').eq('auth_user_id', authData.user.id).maybeSingle(),
+        supabase.from('erp_usuarios').select('empresa_id,ativo').eq('auth_user_id', authData.user.id).maybeSingle(),
         supabase.rpc('erp_current_empresa_id'),
         supabase.rpc('erp_has_permission', { p_code: 'users.update' }),
       ])
