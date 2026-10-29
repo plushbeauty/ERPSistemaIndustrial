@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { AlertCircle, CheckCircle2, ClipboardCheck, RefreshCw, Save, ShieldCheck } from 'lucide-react'
 import DragDropEvidencias from '../components/qualidade/DragDropEvidencias'
+import QualidadeRPNCTratamento from './QualidadeRPNCTratamento'
 import { supabase } from '../lib/supabaseClient'
 
 type Sector = { id: string; nome: string; codigo: string | null }
@@ -72,6 +73,7 @@ export default function QualidadeRPNC() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+  const [selectedForInvestigation, setSelectedForInvestigation] = useState<RPNCRecord | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -237,9 +239,10 @@ export default function QualidadeRPNC() {
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <header className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2"><h2 className="text-xs font-extrabold">RPNC recentes</h2><span className="text-[10px] text-slate-500">{records.length} registros · dados do banco</span></header>
         {loading ? <p className="p-4 text-xs text-slate-500">Consultando o Supabase…</p> : records.length ? (
-          <div className="overflow-x-auto"><table className="w-full text-left text-xs"><thead className="bg-slate-800 text-white"><tr><th className="p-2.5">Protocolo</th><th className="p-2.5">Descrição</th><th className="p-2.5">Origem</th><th className="p-2.5">Severidade</th><th className="p-2.5">Status</th><th className="p-2.5">Abertura</th></tr></thead><tbody>{records.map((record) => <tr key={record.id} className="border-t border-slate-100 even:bg-slate-50"><td className="whitespace-nowrap p-2.5 font-mono font-bold">{record.numero_rpnc}</td><td className="min-w-64 max-w-xl p-2.5">{record.descricao_nao_conformidade}</td><td className="p-2.5">{record.sgq_origem ?? '—'}</td><td className="p-2.5">{record.sgq_severidade ?? '—'}</td><td className="p-2.5">{record.status}</td><td className="whitespace-nowrap p-2.5">{new Date(record.criado_em).toLocaleString('pt-BR')}</td></tr>)}</tbody></table></div>
+          <div className="overflow-x-auto"><table className="w-full text-left text-xs"><thead className="bg-slate-800 text-white"><tr><th className="p-2.5">Protocolo</th><th className="p-2.5">Descrição</th><th className="p-2.5">Origem</th><th className="p-2.5">Severidade</th><th className="p-2.5">Status</th><th className="p-2.5">Abertura</th><th className="p-2.5">Ações</th></tr></thead><tbody>{records.map((record) => <tr key={record.id} className="border-t border-slate-100 even:bg-slate-50"><td className="whitespace-nowrap p-2.5 font-mono font-bold">{record.numero_rpnc}</td><td className="min-w-64 max-w-xl p-2.5">{record.descricao_nao_conformidade}</td><td className="p-2.5">{record.sgq_origem ?? '—'}</td><td className="p-2.5">{record.sgq_severidade ?? '—'}</td><td className="p-2.5">{record.status}</td><td className="whitespace-nowrap p-2.5">{new Date(record.criado_em).toLocaleString('pt-BR')}</td><td className="whitespace-nowrap p-2.5"><button type="button" onClick={() => setSelectedForInvestigation(record)} className={buttonClass}>Investigar / eficácia</button></td></tr>)}</tbody></table></div>
         ) : <p className="p-4 text-xs text-slate-500">Nenhuma RPNC encontrada para esta empresa ou o usuário não possui acesso de leitura.</p>}
       </section>
+      {selectedForInvestigation && <QualidadeRPNCTratamento companyId={companyId} record={selectedForInvestigation} onClose={() => setSelectedForInvestigation(null)} onSaved={() => { void load() }} />}
     </main>
   )
 }
