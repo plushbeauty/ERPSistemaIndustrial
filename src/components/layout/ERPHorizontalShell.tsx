@@ -256,6 +256,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-windows-menu-row{min-height:34px;display:flex;align-items:center;border:1px solid transparent}
         .erp-windows-menu-row.is-active{background:#edf6fa;border-color:#d5e8ef}
         .erp-windows-menu-main>svg.is-new-icon,.erp-windows-menu-children button.is-new>svg.is-new-icon{color:#C65D00!important}
+        .erp-windows-menu-row.is-updated-orange{border-left:3px solid #f97316;background:#fff7ed!important}
+        .erp-windows-menu-row.is-updated-orange .erp-windows-menu-main{color:#c2410c!important;font-weight:800}
+        .erp-windows-menu-row.is-updated-orange .is-updated-orange-icon{color:#f97316!important}
         .erp-windows-menu-main{flex:1;min-width:0;min-height:32px;display:flex;align-items:center;gap:9px;padding:0 8px;border:0;background:transparent;text-align:left;color:#1e293b;font-size:11px;cursor:pointer}
         .erp-windows-menu-main span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .erp-windows-menu-main:hover,.erp-windows-menu-expand:hover{background:#f1f5f9}
