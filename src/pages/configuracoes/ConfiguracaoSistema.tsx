@@ -9,15 +9,15 @@ import { Activity, Building2, Code2, DatabaseBackup, FileClock, KeyRound, Networ
 import { supabase } from '../../lib/supabaseClient'
 
 const destinations = [
-  { to: '/configuracoes-adm/empresa', label: 'Empresa e identidade', detail: 'Dados cadastrais da empresa', icon: Building2 },
-  { to: '/configuracoes-adm/codificacao', label: 'Codificação e áreas', detail: 'Padrões e setores existentes', icon: Code2 },
-  { to: '/configuracoes-adm/perfis', label: 'Perfis de usuários', detail: 'Perfis e níveis de acesso', icon: UsersRound },
-  { to: '/configuracoes-adm/permissoes', label: 'Permissões RBAC', detail: 'Permissões por código e perfil', icon: ShieldCheck },
-  { to: '/configuracoes-adm/usuarios', label: 'Usuários', detail: 'Contas e situação de acesso', icon: KeyRound },
-  { to: '/configuracoes-adm/seguranca', label: 'Segurança e sessões', detail: 'Senha, MFA e sessão atual', icon: Activity },
-  { to: '/configuracoes-adm/logs', label: 'Logs e auditoria', detail: 'Eventos de rastreabilidade', icon: FileClock },
-  { to: '/configuracoes-adm/backups', label: 'Backups e recuperação', detail: 'Política e evidência de recuperação', icon: DatabaseBackup },
-  { to: '/configuracoes-adm/integracoes', label: 'Integrações', detail: 'Serviços conectados', icon: Network },
+  { to: '/pageprincipal/administracao-configuracoes/empresa', label: 'Empresa e identidade', detail: 'Dados cadastrais da empresa', icon: Building2 },
+  { to: '/pageprincipal/administracao-configuracoes/codificacao', label: 'Codificação e áreas', detail: 'Padrões e setores existentes', icon: Code2 },
+  { to: '/pageprincipal/administracao-configuracoes/perfis', label: 'Perfis de usuários', detail: 'Perfis e níveis de acesso', icon: UsersRound },
+  { to: '/pageprincipal/administracao-configuracoes/permissoes', label: 'Permissões RBAC', detail: 'Permissões por código e perfil', icon: ShieldCheck },
+  { to: '/pageprincipal/administracao-configuracoes/usuarios', label: 'Usuários', detail: 'Contas e situação de acesso', icon: KeyRound },
+  { to: '/pageprincipal/administracao-configuracoes/seguranca', label: 'Segurança e sessões', detail: 'Senha, MFA e sessão atual', icon: Activity },
+  { to: '/pageprincipal/administracao-configuracoes/logs', label: 'Logs e auditoria', detail: 'Eventos de rastreabilidade', icon: FileClock },
+  { to: '/pageprincipal/administracao-configuracoes/backups', label: 'Backups e recuperação', detail: 'Política e evidência de recuperação', icon: DatabaseBackup },
+  { to: '/pageprincipal/administracao-configuracoes/integracoes', label: 'Integrações', detail: 'Serviços conectados', icon: Network },
 ]
 
 export default function ConfiguracaoSistema() {
