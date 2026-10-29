@@ -55,6 +55,20 @@ export default function QualidadeRPNCTratamento({companyId,record,onClose,onSave
    setNotice('Investigação salva no Supabase.'); await load(); onSaved()
   } catch(e) {setError(message(e))} finally {setSaving(false)}
  }
+ const stageTarget = row?.status === 'em análise' ? 'em tratamento' : row?.status === 'em tratamento' ? 'aguardando eficácia' : null
+ const advanceStage = async () => {
+  if (!stageTarget) return
+  setSaving(true); setError(''); setNotice('')
+  try {
+   const auth = await supabase.auth.getUser()
+   if (auth.error) throw auth.error
+   if (!auth.data.user) throw new Error('Sessão expirada.')
+   const result = await supabase.rpc('erp_sgq_transicionar_rpnc', { p_rpnc_id: record.id, p_status: stageTarget })
+   if (result.error) throw result.error
+   setNotice('Etapa da RPNC atualizada no workflow.')
+   await load(); onSaved()
+  } catch (e) { setError(message(e)) } finally { setSaving(false) }
+ }
  const saveEfficacy = async (event: FormEvent<HTMLFormElement>) => {
   event.preventDefault(); setSaving(true); setError(''); setNotice('')
   try {
@@ -66,7 +80,7 @@ export default function QualidadeRPNCTratamento({companyId,record,onClose,onSave
   } catch(e) {setError(message(e))} finally {setSaving(false)}
  }
  const dueDate=row?.data_verificacao_eficacia ?? ''
- const canVerify=Boolean(dueDate && new Date().toISOString().slice(0,10)>=dueDate && row?.prazo_eficacia_dias && row?.status!=='encerrada')
+ const canVerify=Boolean(dueDate && new Date().toISOString().slice(0,10)>=dueDate && row?.prazo_eficacia_dias && row?.status==='aguardando eficácia')
  return <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm" aria-busy={loading||saving}>
   <header className="flex flex-wrap items-center gap-2 border-b border-slate-100 pb-2"><div className="min-w-0 flex-1"><h2 className="text-xs font-extrabold">Investigação e eficácia · {record.numero_rpnc}</h2><p className="text-[11px] text-slate-500">{record.descricao_nao_conformidade}</p></div><button type="button" className={buttonClass} onClick={onClose}><X size={13}/> Fechar</button></header>
   {error && <div role="alert" className="flex gap-2 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800"><AlertCircle size={14}/>{error}</div>}
@@ -76,7 +90,7 @@ export default function QualidadeRPNCTratamento({companyId,record,onClose,onSave
     <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-xs font-extrabold">Tela B · Ishikawa 6M e 5 Porquês</h3><label className={labelClass}>Carência de eficácia<select className={inputClass} value={days} onChange={event=>setDays(Number(event.target.value) as 30|60)}><option value={30}>30 dias</option><option value={60}>60 dias</option></select></label></div>
     <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">{groups.map(group=><CauseEditor key={group.key} label={group.label} values={fishbone[group.key]} disabled={saving} onAdd={value=>addCause(group.key,value)} onRemove={index=>setFishbone(old=>({...old,[group.key]:old[group.key].filter((_,i)=>i!==index)}))}/>)}</div>
     <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">{whys.map((why,index)=><label key={index} className={labelClass}>Por quê {index+1}{index===4?' · causa raiz':''}<textarea className="min-h-20 w-full rounded-lg border border-slate-200 p-2 text-xs font-normal normal-case text-slate-800" value={why} onChange={event=>setWhys(old=>old.map((v,i)=>i===index?event.target.value:v))} minLength={3} required disabled={saving} placeholder={index===0?'Por que o desvio ocorreu?':'Por que a resposta anterior aconteceu?'}/></label>)}</div>
-    <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3"><p className="text-[10px] text-slate-500">Cinco respostas obrigatórias; o PostgreSQL valida empresa, permissão, status e JSONB.</p><button type="submit" disabled={saving||whys.some(v=>v.trim().length<3)} className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#123B50] px-4 text-xs font-extrabold text-white disabled:opacity-50"><Save size={14}/>Salvar investigação</button></footer>
+    <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3"><p className="text-[10px] text-slate-500">Cinco respostas obrigatórias; o PostgreSQL valida empresa, permissão, status e JSONB.</p><div className="flex flex-wrap gap-2">{stageTarget && <button type="button" onClick={() => void advanceStage()} disabled={saving} className={buttonClass}>Avançar para {stageTarget}</button>}<button type="submit" disabled={saving||whys.some(v=>v.trim().length<3)} className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#123B50] px-4 text-xs font-extrabold text-white disabled:opacity-50"><Save size={14}/>Salvar investigação</button></div></footer>
    </form>
    <form onSubmit={event=>void saveEfficacy(event)} className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
     <div className="flex flex-wrap items-start justify-between gap-2"><div><h3 className="text-xs font-extrabold">Tela C · Verificação de eficácia</h3><p className="text-[11px] text-slate-500">Abertura: {new Date(row.criado_em).toLocaleDateString('pt-BR')} · Data mínima: {dueDate?new Date(dueDate+'T12:00:00').toLocaleDateString('pt-BR'):'salve a investigação'}</p></div><span className={'rounded-md px-2 py-1 text-[10px] font-bold '+(canVerify?'bg-emerald-100 text-emerald-800':'bg-amber-100 text-amber-800')}>{canVerify?'Prazo cumprido':'Em carência'}</span></div>
