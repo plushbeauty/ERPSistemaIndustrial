@@ -67,6 +67,8 @@ on conflict (singleton) do nothing;
 alter table public.erp_sistema_politica_senha enable row level security;
 revoke all on public.erp_sistema_politica_senha from anon, public;
 grant select, update on public.erp_sistema_politica_senha to authenticated;
+-- A Edge Function de cadastro usa service_role somente para leitura da política; o navegador não recebe essa chave.
+grant select on public.erp_sistema_politica_senha to service_role;
 drop policy if exists erp_sistema_politica_senha_master_select on public.erp_sistema_politica_senha;
 create policy erp_sistema_politica_senha_master_select on public.erp_sistema_politica_senha
 for select to authenticated using (public.erp_is_master());
