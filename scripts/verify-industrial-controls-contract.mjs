@@ -31,7 +31,7 @@ requireMatch(migration, /erp_pcp_bom_itens[\s\S]*quantidade_disponivel/i, 'Reser
 requireMatch(panels, /erp_pcp_emitir_op_com_lotes/, 'Tela de emissão não chama RPC transacional de OP/lotes.')
 requireMatch(panels, /erp_synqra_discuss_message/, 'Painel não grava o histórico de auditoria.')
 requireMatch(panels, /erp_synqra_rating/, 'Painel não grava avaliação de conformidade.')
-requireMatch(panels, /is_master\s*===\s*true[\s\S]*nivel_admin[\s\S]*empresa_id\s*===\s*null/, 'Painel de senha não aplica o contrato de identidade Master.')
+requireMatch(panels, /supabase\.rpc\('erp_is_master'\)/, 'Painel de senha não usa a verificação canônica de identidade Master.')
 requireMatch(pcp, /OpEmissionScreen/i, 'Central PCP não integra emissão de OP.')
 requireMatch(pcp, /SynqraAuditoriaModulo/i, 'Central PCP não integra histórico de auditoria.')
 requireMatch(pcp, /PasswordPolicyPanel/i, 'Central PCP não integra política de senha.')
