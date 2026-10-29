@@ -43,8 +43,8 @@ export default function PCPProgramacaoGantt() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const start = week
-  const end = new Date(week.getTime() + 7 * dayMs)
+  const start = useMemo(() => new Date(week), [week])
+  const end = useMemo(() => new Date(week.getTime() + 7 * dayMs), [week])
   const load = useCallback(async () => {
     setLoading(true)
     setError('')
