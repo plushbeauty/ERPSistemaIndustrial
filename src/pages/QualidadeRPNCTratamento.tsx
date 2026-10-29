@@ -75,7 +75,7 @@ export default function QualidadeRPNCTratamento({companyId,record,onClose,onSave
    const auth=await supabase.auth.getUser(); if(auth.error) throw auth.error; if(!auth.data.user) throw new Error('Sessão expirada.')
    const result=await supabase.rpc('erp_sgq_registrar_eficacia_rpnc',{p_rpnc_id:record.id,p_parecer:parecer.trim(),p_eficaz:eficaz})
    if(result.error) throw result.error
-   setNotice(eficaz?'Eficácia aprovada; RPNC encerrada.':'Eficácia não comprovada; RPNC retornou à análise.')
+   setNotice(eficaz?'Resultado de eficácia registrado como eficaz. O encerramento depende da validação de todas as ações CAPA.':'Eficácia não comprovada; RPNC retornou à análise.')
    await load(); onSaved()
   } catch(e) {setError(message(e))} finally {setSaving(false)}
  }
