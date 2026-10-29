@@ -167,7 +167,7 @@ export default function CentralMonitoramentoIA() {
               {chartData.some(x => x.temperatura !== null) && <Area yAxisId="temperature" type="monotone" dataKey="temperatura" name="Temperatura (unidade do payload)" stroke="#2D8DB8" strokeWidth={2.5} fill="url(#temperatureFill)" activeDot={{ r: 4, strokeWidth: 0 }} dot={false} connectNulls={false} />}
             </AreaChart>
           </ResponsiveContainer>
-        </div></div> : <div className="grid min-h-40 place-items-center rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 text-center"><div><Thermometer size={22} className="mx-auto mb-2 text-slate-400"/><p className="text-xs font-bold text-slate-600">Sem sinais térmicos ou de pressão no payload</p><p className="mt-1 max-w-md text-[10px] text-slate-500">A coleta atual já registra ciclos, peças boas e refugo. Para desenhar as curvas, o CLP precisa enviar os nomes de sensores usados pelo equipamento.</p></div></div>}
+        </div> : <div className="grid min-h-40 place-items-center rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 text-center"><div><Thermometer size={22} className="mx-auto mb-2 text-slate-400"/><p className="text-xs font-bold text-slate-600">Sem sinais térmicos ou de pressão no payload</p><p className="mt-1 max-w-md text-[10px] text-slate-500">A coleta atual já registra ciclos, peças boas e refugo. Para desenhar as curvas, o CLP precisa enviar os nomes de sensores usados pelo equipamento.</p></div></div>}
       </div>
       <div className={panel}>
         <div className="mb-2 flex items-center gap-2"><Gauge size={15} className="text-orange-600"/><h3 className="text-xs font-extrabold text-[#123B50]">LIMIAR DE ALERTA PREDITIVO</h3></div>
