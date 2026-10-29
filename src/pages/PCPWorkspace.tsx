@@ -5,20 +5,22 @@
  */
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { CalendarDays, ClipboardList, Factory, Layers3, ScanLine } from 'lucide-react'
+import { CalendarDays, ClipboardList, Factory, Layers3, ScanLine, Shuffle } from 'lucide-react'
 import PainelOrdensProducao from '../features/pcp/PainelOrdensProducao'
 import PCPFichasProcesso from './PCPFichasProcesso'
 import EngenhariaBOM from '../features/pcp/EngenhariaBOM'
 import ApuracaoTurno from '../features/pcp/ApuracaoTurno'
 import PCPProgramacaoGantt from '../features/pcp/PCPProgramacaoGantt'
+import PCPSequenciamento from '../features/pcp/PCPSequenciamento'
 
-type Tab = 'ordens' | 'processo' | 'estrutura' | 'turno' | 'gantt'
+type Tab = 'ordens' | 'processo' | 'estrutura' | 'turno' | 'gantt' | 'sequenciamento'
 const tabs: Array<{ id: Tab; label: string; Icon: typeof Factory }> = [
   { id: 'ordens', label: 'Ordens de produção', Icon: ClipboardList },
   { id: 'processo', label: 'Ficha de processo', Icon: Factory },
   { id: 'estrutura', label: 'Estrutura / BOM', Icon: Layers3 },
   { id: 'turno', label: 'Apontamento de turno', Icon: ScanLine },
   { id: 'gantt', label: 'Programação Gantt', Icon: CalendarDays },
+  { id: 'sequenciamento', label: 'Sequenciamento', Icon: Shuffle },
 ]
 
 export default function PCPWorkspace() {
@@ -41,6 +43,7 @@ export default function PCPWorkspace() {
         {tab === 'estrutura' && <EngenhariaBOM />}
         {tab === 'turno' && <ApuracaoTurno />}
         {tab === 'gantt' && <PCPProgramacaoGantt />}
+        {tab === 'sequenciamento' && <PCPSequenciamento />}
       </div>
     </div>
   )
