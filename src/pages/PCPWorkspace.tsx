@@ -22,8 +22,8 @@ const tabs: Array<{ id: Tab; label: string; Icon: typeof Factory }> = [
   { id: 'senha', label: 'Política de Senha', Icon: LockKeyhole },
 ]
 
-export default function PCPWorkspace() {
-  const [tab, setTab] = useState<Tab>('ordens')
+export default function PCPWorkspace({ initialTab = 'ordens' }: { initialTab?: Tab }) {
+  const [tab, setTab] = useState<Tab>(initialTab)
   return (
     <div className="synqra-module-shell min-w-0 space-y-3">
       <nav aria-label="Rotinas do PCP" className="flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-white p-2">
