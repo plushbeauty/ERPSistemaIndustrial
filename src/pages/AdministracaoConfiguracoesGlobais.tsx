@@ -147,7 +147,7 @@ export default function AdministracaoConfiguracoesGlobais() {
     }
     setBusyUser(user.id); setError(''); setMessage('')
     try {
-      const { error: updateError } = await supabase.from('erp_usuarios').update({ ativo: event.target.checked }).eq('id', user.id).eq('empresa_id', tenantId).is('deleted_at', null)
+      const { error: updateError } = await supabase.from('erp_usuarios').update({ ativo: event.target.checked }).eq('id', user.id).eq('empresa_id', tenantId)
       if (updateError) throw updateError
       setMessage('Status do usuário atualizado.')
       await load()
