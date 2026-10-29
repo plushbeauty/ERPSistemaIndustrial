@@ -32,15 +32,15 @@ begin
   if v_empresa is null then raise exception 'Empresa da sessão não identificada.'; end if;
   if not public.erp_has_permission('qualidade','editar') then raise exception 'Sem permissão para investigar RPNC.'; end if;
   if p_prazo_dias not in (30,60) then raise exception 'O prazo de eficácia deve ser 30 ou 60 dias.'; end if;
-  if jsonb_typeof(p_ishikawa) <> 'object' then raise exception 'Ishikawa deve ser um objeto JSON.'; end if;
+  if jsonb_typeof(p_ishikawa) is distinct from 'object' then raise exception 'Ishikawa deve ser um objeto JSON.'; end if;
   foreach v_key in array array['Metodo','Maquina','Medida','MeioAmbiente','MaoDeObra','Material'] loop
     v_value := p_ishikawa -> v_key;
-    if jsonb_typeof(v_value) <> 'array' then raise exception 'Grupo Ishikawa inválido: %.', v_key; end if;
-    if exists (select 1 from jsonb_array_elements(v_value) e where jsonb_typeof(e) <> 'string') then
+    if jsonb_typeof(v_value) is distinct from 'array' then raise exception 'Grupo Ishikawa inválido: %.', v_key; end if;
+    if exists (select 1 from jsonb_array_elements(v_value) as item(value) where jsonb_typeof(item.value) <> 'string') then
       raise exception 'As causas do grupo % devem ser textos.', v_key;
     end if;
   end loop;
-  if jsonb_typeof(p_cinco_porques) <> 'array' or jsonb_array_length(p_cinco_porques) <> 5 then
+  if jsonb_typeof(p_cinco_porques) is distinct from 'array' or jsonb_array_length(p_cinco_porques) <> 5 then
     raise exception 'É obrigatório informar as cinco perguntas de causa raiz.';
   end if;
   for v_why in select value from jsonb_array_elements(p_cinco_porques) loop
