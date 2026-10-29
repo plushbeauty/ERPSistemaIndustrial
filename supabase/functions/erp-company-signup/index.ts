@@ -9,6 +9,10 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 const clean = (v: unknown) => String(v ?? '').trim()
 const normalize = (v: unknown) => clean(v).replace(/\D/g, '')
 const emailNorm = (v: unknown) => clean(v).toLowerCase()
+async function sha256(value: string) {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))
+  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('')
+}
 
 async function authUserExistsByEmail(admin: ReturnType<typeof createClient>, email: string) {
   for (let page = 1; page <= 100; page++) {
@@ -24,6 +28,7 @@ async function authUserExistsByEmail(admin: ReturnType<typeof createClient>, ema
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors })
   if (req.method !== 'POST') return json({ error: 'Método não permitido.' }, 405)
+  if (req.headers.get('origin') !== cors['Access-Control-Allow-Origin']) return json({ error: 'Origem não autorizada para cadastro empresarial.' }, 403)
 
   const admin = createClient(
     Deno.env.get('SUPABASE_URL')!,
@@ -41,6 +46,24 @@ Deno.serve(async (req) => {
     const documento = normalize(body.documento ?? body.cnpj)
     const tipoDocumento = clean(body.tipo_documento || (clean(body.cnpj) ? 'CNPJ' : ''))
     const email = emailNorm(body.email)
+    const ip = clean(req.headers.get('cf-connecting-ip') ?? req.headers.get('x-forwarded-for')?.split(',')[0] ?? 'unknown')
+    const [ipHash, emailHash] = await Promise.all([
+      sha256(ip || 'unknown'),
+      sha256(email || 'missing-email'),
+    ])
+    const windowStart = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+    const [ipAttempts, emailAttempts] = await Promise.all([
+      admin.from('erp_company_signup_attempts').select('id', { count: 'exact', head: true }).eq('ip_hash', ipHash).gte('attempted_at', windowStart),
+      admin.from('erp_company_signup_attempts').select('id', { count: 'exact', head: true }).eq('email_hash', emailHash).gte('attempted_at', windowStart),
+    ])
+    if (ipAttempts.error) throw ipAttempts.error
+    if (emailAttempts.error) throw emailAttempts.error
+    if ((ipAttempts.count ?? 0) >= 5 || (emailAttempts.count ?? 0) >= 3) {
+      return json({ error: 'Limite temporário de tentativas atingido. Aguarde uma hora antes de tentar novamente.' }, 429)
+    }
+    const { error: attemptError } = await admin.from('erp_company_signup_attempts').insert({ ip_hash: ipHash, email_hash: emailHash })
+    if (attemptError) throw attemptError
+
     const nomeAdmin = clean(body.nome_admin)
     const senha = clean(body.senha)
     const nomeAcesso = clean(body.nome_acesso) || fantasia.split(/\s+/)[0]
