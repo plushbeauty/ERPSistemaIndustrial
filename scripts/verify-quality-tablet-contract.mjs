@@ -15,7 +15,8 @@ const checks = [
   ],
   [
     app.includes('path="compras" element={<ComprasWorkspace />') &&
-      app.includes('path="administracao-configuracoes" element={<AdministracaoConfiguracoesGlobais />'),
+      app.includes('path="administracao-configuracoes" element={<ConfiguracoesADM />') &&
+      app.includes('path="administracao-configuracoes/:section" element={<ConfiguracoesADM />'),
     'Compras e Configurações devem continuar conectadas aos workspaces reais.',
   ],
   [
