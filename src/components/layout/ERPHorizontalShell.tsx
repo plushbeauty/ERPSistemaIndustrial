@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, Package, Users } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -26,7 +26,14 @@ const menus: MenuItem[] = [
   ] },
   { label: 'Compras', route: '/pageprincipal/compras', icon: ShoppingCart, isUpdated: true },
   { label: 'Configurações', route: '/pageprincipal/administracao-configuracoes', icon: Settings },
-  { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText },
+  { label: 'Estoque', route: '/pageprincipal/estoque/balanco', icon: Package, isUpdated: true, children: [
+    { label: 'Balanço de Estoque', route: '/pageprincipal/estoque/balanco', icon: Package },
+  ] },
+  { label: 'RH / DP', route: '/pageprincipal/rh', icon: Users, isUpdated: true },
+  { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText, children: [
+    { label: 'Central Fiscal', route: '/pageprincipal/fiscal', icon: FileText },
+    { label: 'Emissão NF-e', route: '/pageprincipal/fiscal/emissao', icon: FileText },
+  ] },
 ]
 
 export default function ERPHorizontalShell({ children, operatorName = 'Usuário ERP' }: { children: ReactNode; operatorName?: string }) {
@@ -91,6 +98,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     : pathname.startsWith('/pageprincipal/paquimetro') ? 'Qualidade / Paquímetro'
     : pathname.startsWith('/pageprincipal/compras') || pathname.startsWith('/compras') ? 'Compras'
     : pathname.startsWith('/pageprincipal/administracao-configuracoes') || pathname.startsWith('/configuracoes-adm') || pathname.startsWith('/administracao-configuracoes') ? 'Configurações'
+    : pathname.startsWith('/pageprincipal/rh') || pathname.startsWith('/rh') ? 'RH / DP'
+    : pathname.startsWith('/pageprincipal/estoque') || pathname.startsWith('/estoque') ? 'Estoque'
     : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'Fiscal'
     : null
   const currentModuleMenu = moduleLabel
