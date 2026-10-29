@@ -40,7 +40,7 @@ language sql
 stable
 security definer
 set search_path = public, auth, pg_temp
-as $
+as $setup$
   select exists (
     select 1
     from public.erp_usuarios u
@@ -51,7 +51,7 @@ as $
       and upper(coalesce(u.perfil, '')) in ('ADMIN', 'ADMINISTRADOR')
       and coalesce(u.nivel_admin, 0) >= 1
   );
-$;
+$setup$;
 
 revoke all on function public.erp_can_manage_setup() from public;
 grant execute on function public.erp_can_manage_setup() to authenticated;
@@ -73,9 +73,10 @@ create policy erp_setup_configuracao_insert_tenant
 drop policy if exists erp_setup_configuracao_update_tenant on public.erp_setup_configuracao;
 create policy erp_setup_configuracao_update_tenant
   on public.erp_setup_configuracao for update to authenticated
-  using (empresa_id = public.erp_current_empresa_id())
+  using (empresa_id = public.erp_current_empresa_id() and public.erp_can_manage_setup())
   with check (
     empresa_id = public.erp_current_empresa_id()
+    and public.erp_can_manage_setup()
     and (atualizado_por is null or atualizado_por = auth.uid())
   );
 
