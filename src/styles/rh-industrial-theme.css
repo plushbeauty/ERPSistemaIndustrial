@@ -1,7 +1,7 @@
 /* RH Industrial — revisão autorizada 27/10/2026; escopo restrito à tela RH. */
 .rh-page{--rh-blue:#2D8DB8;--rh-industrial-dark:#1E293B;--rh-industrial-gray:#64748B;--rh-bg-panel:#F8FAFC;color:var(--rh-industrial-dark);background:var(--rh-bg-panel)}
-.rh-page .rh-card,.rh-page .rh-kpi,.rh-page .rh-modal,.rh-page .rh-btn,.rh-page .rh-icon,.rh-page .rh-search,.rh-page .rh-input,.rh-page .rh-tab,.rh-page .rh-table-wrap{border-radius:0!important}
-.rh-page .rh-tabs,.rh-page .rh-tab{background:#F8FAFC!important;border-color:#CBD5E1!important;border-radius:0!important}
+.rh-page .rh-card,.rh-page .rh-kpi,.rh-page .rh-modal,.rh-page .rh-btn,.rh-page .rh-icon,.rh-page .rh-search,.rh-page .rh-input,.rh-page .rh-tab,.rh-page .rh-table-wrap{border-radius:12px!important}
+.rh-page .rh-tabs,.rh-page .rh-tab{background:#F8FAFC!important;border-color:#CBD5E1!important;border-radius:10px!important}
 .rh-page .rh-tab{color:#64748B!important}
 .rh-page .rh-tab.active{background:#2D8DB8!important;color:#fff!important;border-bottom-color:#1E293B!important}
 .rh-page .rh-card-head,.rh-page .rh-table th{background:#F1F5F9!important;color:#1E293B!important}
