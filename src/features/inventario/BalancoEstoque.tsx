@@ -29,10 +29,10 @@ export default function BalancoEstoque(){
   <div className="mx-auto max-w-[1600px] space-y-2">
    <div className="flex items-center gap-2"><button type="button" onClick={()=>navigate('/estoque')} className={button+' border border-gray-200 bg-white text-gray-600'}><ArrowLeft size={12}/>Voltar</button><h1 className="text-[13px] font-bold text-gray-700">VALORAÇÃO CONTÁBIL DE ESTOQUE</h1></div>
    <section aria-label="Indicadores reais de estoque" className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
-    <StatCard label="Produtos ativos" value={totalProducts.toLocaleString('pt-BR')} supportingText="Cadastro ativo da empresa" icon={<Package size={18}/>} tone="navy" loading={loading}/>
-    <StatCard label="Com saldo positivo" value={productsWithStock.toLocaleString('pt-BR')} supportingText="Itens com saldo maior que zero" icon={<PackageCheck size={18}/>} tone="success" loading={loading}/>
-    <StatCard label="Sem saldo" value={productsWithoutStock.toLocaleString('pt-BR')} supportingText="Itens com saldo igual a zero" icon={<PackageX size={18}/>} tone="warning" loading={loading}/>
-    <StatCard label="Saldo negativo" value={productsWithNegativeStock.toLocaleString('pt-BR')} supportingText="Itens para conferência" icon={<AlertTriangle size={18}/>} tone={productsWithNegativeStock > 0 ? "danger" : "cyan"} loading={loading}/>
+    <StatCard label="Produtos ativos" value={totalProducts.toLocaleString('pt-BR')} supportingText="Cadastro ativo da empresa" icon={<Package size={18}/>} tone="navy" loading={loading || Boolean(error)}/>
+    <StatCard label="Com saldo positivo" value={productsWithStock.toLocaleString('pt-BR')} supportingText="Itens com saldo maior que zero" icon={<PackageCheck size={18}/>} tone="success" loading={loading || Boolean(error)}/>
+    <StatCard label="Sem saldo" value={productsWithoutStock.toLocaleString('pt-BR')} supportingText="Itens com saldo igual a zero" icon={<PackageX size={18}/>} tone="warning" loading={loading || Boolean(error)}/>
+    <StatCard label="Saldo negativo" value={productsWithNegativeStock.toLocaleString('pt-BR')} supportingText="Itens para conferência" icon={<AlertTriangle size={18}/>} tone={productsWithNegativeStock > 0 ? "danger" : "cyan"} loading={loading || Boolean(error)}/>
    </section>
    {error&&<div className="border border-red-200 bg-red-50 px-2 py-1 text-[10px] text-red-700">{error}</div>}
    <section className="rounded-md border border-gray-200 bg-white p-2 shadow-sm"><div className="flex items-end gap-2">
