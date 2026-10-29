@@ -95,7 +95,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const moduleLabel = pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
     : pathname.startsWith('/pageprincipal/paquimetro') ? 'Qualidade / Paquímetro'
     : pathname.startsWith('/pageprincipal/compras') || pathname.startsWith('/compras') ? 'Compras'
-    : pathname.startsWith('/pageprincipal/configuracao-inicial') || pathname.startsWith('/setup-inicial') ? 'Setup Wizard'
     : pathname.startsWith('/pageprincipal/recebimento-nfe') || pathname.startsWith('/recebimento-nfe') || pathname.startsWith('/recebimento-materiais') ? 'Recebimento XML / Estoque'
     : pathname.startsWith('/pageprincipal/administracao-configuracoes') || pathname.startsWith('/configuracoes-adm') || pathname.startsWith('/administracao-configuracoes') ? 'Configurações'
     : pathname.startsWith('/pageprincipal/parametros-sistema') || pathname.startsWith('/parametros-sistema') ? 'Configurações'
