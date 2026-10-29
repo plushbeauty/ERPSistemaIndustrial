@@ -34,7 +34,8 @@ export default function AppEntryV2() {
             <Route path="/pageprincipal" element={<PagePrincipal />}>
               <Route index element={<AppIndustrial />} />
               <Route path="compras" element={<ComprasWorkspace />} />
-              <Route path="administracao-configuracoes/*" element={<ConfiguracoesADM />} />
+              <Route path="administracao-configuracoes" element={<ConfiguracoesADM />} />
+              <Route path="administracao-configuracoes/:section" element={<ConfiguracoesADM />} />
               <Route path="pcp/fichas-processo" element={<PCPFichasProcesso />} />
               <Route path="fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />
               <Route path="pcp" element={<PCPWorkspace />} />
