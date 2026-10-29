@@ -4,18 +4,20 @@
  * Utiliza rotinas existentes e conectadas ao Supabase; não cria dados demonstrativos.
  */
 import { useState } from 'react'
-import { ClipboardList, Factory, Layers3, ScanLine } from 'lucide-react'
+import { Activity, ClipboardList, Factory, Layers3, ScanLine } from 'lucide-react'
 import PainelOrdensProducao from '../features/pcp/PainelOrdensProducao'
 import FichaProcesso from '../features/pcp/FichaProcesso'
 import EngenhariaBOM from '../features/pcp/EngenhariaBOM'
 import ApuracaoTurno from '../features/pcp/ApuracaoTurno'
+import CentralMonitoramentoIA from '../features/pcp/CentralMonitoramentoIA'
 
-type Tab = 'ordens' | 'processo' | 'estrutura' | 'turno'
+type Tab = 'ordens' | 'processo' | 'estrutura' | 'turno' | 'monitoramento'
 const tabs: Array<{ id: Tab; label: string; Icon: typeof Factory }> = [
   { id: 'ordens', label: 'Ordens de produção', Icon: ClipboardList },
   { id: 'processo', label: 'Ficha de processo', Icon: Factory },
   { id: 'estrutura', label: 'Estrutura / BOM', Icon: Layers3 },
   { id: 'turno', label: 'Apontamento de turno', Icon: ScanLine },
+  { id: 'monitoramento', label: 'Monitoramento IA', Icon: Activity },
 ]
 
 export default function PCPWorkspace() {
@@ -35,6 +37,7 @@ export default function PCPWorkspace() {
         {tab === 'processo' && <FichaProcesso />}
         {tab === 'estrutura' && <EngenhariaBOM />}
         {tab === 'turno' && <ApuracaoTurno />}
+        {tab === 'monitoramento' && <CentralMonitoramentoIA />}
       </div>
     </div>
   )
