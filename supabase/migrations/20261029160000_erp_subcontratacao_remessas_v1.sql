@@ -54,7 +54,8 @@ create policy erp_subcontratacao_itens_tenant
     (empresa_id = public.erp_current_empresa_id() or public.usuario_e_master())
     and exists (
       select 1 from public.erp_subcontratacao_ordens o
-      where o.id = subcontratacao_id and o.empresa_id = empresa_id
+      where o.id = erp_subcontratacao_itens.subcontratacao_id
+        and o.empresa_id = erp_subcontratacao_itens.empresa_id
     )
   );
 
