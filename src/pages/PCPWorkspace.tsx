@@ -4,6 +4,7 @@
  * Utiliza rotinas existentes e conectadas ao Supabase; não cria dados demonstrativos.
  */
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { ClipboardList, Factory, Layers3, ScanLine } from 'lucide-react'
 import PainelOrdensProducao from '../features/pcp/PainelOrdensProducao'
 import FichaProcesso from '../features/pcp/FichaProcesso'
@@ -19,7 +20,8 @@ const tabs: Array<{ id: Tab; label: string; Icon: typeof Factory }> = [
 ]
 
 export default function PCPWorkspace() {
-  const [tab, setTab] = useState<Tab>('ordens')
+  const [searchParams] = useSearchParams()
+  const [tab, setTab] = useState<Tab>(() => searchParams.get('tab') === 'processo' ? 'processo' : 'ordens')
   return (
     <div className="synqra-module-shell min-w-0 space-y-3">
       <nav aria-label="Rotinas do PCP" className="flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-white p-2">
