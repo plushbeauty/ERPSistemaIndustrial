@@ -168,9 +168,43 @@ begin
   update public.erp_rpnc set
     parecer_eficacia=btrim(p_parecer),
     eficacia_aprovada=p_eficaz,
-    status=case when p_eficaz then 'encerrada' else 'em análise' end,
-    sgq_encerrado_por=case when p_eficaz then v_usuario else null end,
-    sgq_encerrado_em=case when p_eficaz then now() else null end
+    status=case
+      when not p_eficaz then 'em análise'
+      when exists (
+        select 1 from public.erp_sgq_capa_acoes a
+        where a.rpnc_id=v_row.id and a.empresa_id=v_empresa
+          and a.status='Verificada' and a.resultado_eficacia='Eficaz'
+          and nullif(btrim(a.causa_raiz),'') is not null
+      ) and not exists (
+        select 1 from public.erp_sgq_capa_acoes a
+        where a.rpnc_id=v_row.id and a.empresa_id=v_empresa
+          and (a.status <> 'Verificada' or a.resultado_eficacia is distinct from 'Eficaz'
+            or nullif(btrim(a.causa_raiz),'') is null)
+      ) then 'encerrada'
+      else status
+    end,
+    sgq_encerrado_por=case when p_eficaz and exists (
+      select 1 from public.erp_sgq_capa_acoes a
+      where a.rpnc_id=v_row.id and a.empresa_id=v_empresa
+        and a.status='Verificada' and a.resultado_eficacia='Eficaz'
+        and nullif(btrim(a.causa_raiz),'') is not null
+    ) and not exists (
+      select 1 from public.erp_sgq_capa_acoes a
+      where a.rpnc_id=v_row.id and a.empresa_id=v_empresa
+        and (a.status <> 'Verificada' or a.resultado_eficacia is distinct from 'Eficaz'
+          or nullif(btrim(a.causa_raiz),'') is null)
+    ) then v_usuario else null end,
+    sgq_encerrado_em=case when p_eficaz and exists (
+      select 1 from public.erp_sgq_capa_acoes a
+      where a.rpnc_id=v_row.id and a.empresa_id=v_empresa
+        and a.status='Verificada' and a.resultado_eficacia='Eficaz'
+        and nullif(btrim(a.causa_raiz),'') is not null
+    ) and not exists (
+      select 1 from public.erp_sgq_capa_acoes a
+      where a.rpnc_id=v_row.id and a.empresa_id=v_empresa
+        and (a.status <> 'Verificada' or a.resultado_eficacia is distinct from 'Eficaz'
+          or nullif(btrim(a.causa_raiz),'') is null)
+    ) then now() else null end
   where id=p_rpnc_id and empresa_id=v_empresa
   returning * into v_row;
   return v_row;
