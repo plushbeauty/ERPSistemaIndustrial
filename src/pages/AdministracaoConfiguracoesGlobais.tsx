@@ -92,7 +92,15 @@ export default function AdministracaoConfiguracoesGlobais() {
           return { id: String(row.id ?? codigo), codigo, nome, modulo, ativo: typeof row.ativo === 'boolean' ? row.ativo : true }
         })
         .filter(row => row.ativo))
-      setLogs((logsResult.data ?? []) as AuditRow[])
+      setLogs(((logsResult.data ?? []) as Array<Record<string, unknown>>).map(row => ({
+        id: String(row.id ?? ''),
+        action: String(row.action ?? 'Evento'),
+        module: typeof row.module === 'string' ? row.module : null,
+        entity: typeof row.entity === 'string' ? row.entity : typeof row.entity_type === 'string' ? row.entity_type : null,
+        entity_id: typeof row.entity_id === 'string' ? row.entity_id : null,
+        created_at: typeof row.created_at === 'string' ? row.created_at : new Date(0).toISOString(),
+        user_id: typeof row.user_id === 'string' ? row.user_id : typeof row.actor_user_id === 'string' ? row.actor_user_id : null,
+      })))
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível carregar as configurações.')
     } finally { setLoading(false) }
