@@ -4,6 +4,22 @@
 -- It does not grant permissions or enable modules.
 begin;
 
+-- Private rate-limit ledger for the public company registration endpoint.
+-- Stores hashes only; browser roles cannot read or write these records.
+create table if not exists public.erp_company_signup_attempts (
+  id uuid primary key default gen_random_uuid(),
+  ip_hash text not null,
+  email_hash text not null,
+  attempted_at timestamptz not null default now()
+);
+create index if not exists idx_erp_company_signup_attempts_ip_time
+  on public.erp_company_signup_attempts (ip_hash, attempted_at desc);
+create index if not exists idx_erp_company_signup_attempts_email_time
+  on public.erp_company_signup_attempts (email_hash, attempted_at desc);
+alter table public.erp_company_signup_attempts enable row level security;
+revoke all on public.erp_company_signup_attempts from public, anon, authenticated;
+grant select, insert, delete on public.erp_company_signup_attempts to service_role;
+
 create table if not exists public.erp_setup_configuracao (
   id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null unique references public.erp_empresas(id) on delete cascade,
@@ -81,6 +97,8 @@ create policy erp_setup_configuracao_update_tenant
   );
 
 grant select, insert, update on public.erp_setup_configuracao to authenticated;
+
+comment on table public.erp_company_signup_attempts is 'Hashed, private rate-limit events for company onboarding; never contains raw email or IP.';
 
 comment on table public.erp_setup_configuracao is
   'Preferências de onboarding e prioridades de implantação por empresa. Não ativa módulos nem substitui permissões RBAC.';
