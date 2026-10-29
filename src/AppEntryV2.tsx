@@ -37,9 +37,15 @@ export default function AppEntryV2() {
             <Route path="/pageprincipal" element={<PagePrincipal />}>
               <Route index element={<AppIndustrial />} />
               <Route path="compras" element={<ComprasWorkspace />} />
+              <Route path="compras/pedidos" element={<ComprasWorkspace initialTab="pedidos" />} />
               <Route path="administracao-configuracoes" element={<AdministracaoConfiguracoesGlobais />} />
+              <Route path="configuracoes/usuarios" element={<AdministracaoConfiguracoesGlobais initialSection="usuarios" />} />
               <Route path="configuracao-inicial" element={<SetupWizardScreen />} />
               <Route path="recebimento-nfe" element={<RecebimentoMateriaisXML />} />
+              <Route path="estoque/recebimento" element={<RecebimentoMateriaisXML />} />
+              <Route path="producao/op" element={<PCPWorkspace initialTab="emissao" />} />
+              <Route path="producao/operador" element={<PCPWorkspace initialTab="turno" />} />
+              <Route path="producao/ficha-processo" element={<PCPWorkspace initialTab="processo" />} />
               <Route path="diarios-contabeis" element={<AccountJournalsScreen />} />
               <Route path="parametros-sistema" element={<SystemParametersScreen />} />
               <Route path="fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />
@@ -47,6 +53,12 @@ export default function AppEntryV2() {
               <Route path="paquimetro" element={<QualityPlanGate><Paquimetro /></QualityPlanGate>} />
             </Route>
             <Route path="/compras" element={<Navigate to="/pageprincipal/compras" replace />} />
+            <Route path="/compras/pedidos" element={<Navigate to="/pageprincipal/compras/pedidos" replace />} />
+            <Route path="/configuracoes/usuarios" element={<Navigate to="/pageprincipal/configuracoes/usuarios" replace />} />
+            <Route path="/estoque/recebimento" element={<Navigate to="/pageprincipal/estoque/recebimento" replace />} />
+            <Route path="/producao/op" element={<Navigate to="/pageprincipal/producao/op" replace />} />
+            <Route path="/producao/operador" element={<Navigate to="/pageprincipal/producao/operador" replace />} />
+            <Route path="/producao/ficha-processo" element={<Navigate to="/pageprincipal/producao/ficha-processo" replace />} />
             <Route path="/configuracoes-adm" element={<Navigate to="/pageprincipal/administracao-configuracoes" replace />} />
             <Route path="/setup-inicial" element={<Navigate to="/pageprincipal/configuracao-inicial" replace />} />
             <Route path="/recebimento-nfe" element={<Navigate to="/pageprincipal/recebimento-nfe" replace />} />
