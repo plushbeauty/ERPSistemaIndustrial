@@ -22,6 +22,8 @@ const BalancoEstoque = lazy(() => import('./features/inventario/BalancoEstoque')
 const RHIndustrial = lazy(() => import('./pages/RHIndustrial'))
 const NFeEmissao = lazy(() => import('./pages/NFeEmissao'))
 const FileTreeGED = lazy(() => import('./pages/FileTreeGED'))
+const ChaoDeFabrica = lazy(() => import('./pages/ChaoDeFabrica'))
+const FinanceiroContasPagar = lazy(() => import('./pages/FinanceiroContasPagar'))
 
 function LoadingWorkspace() {
   return <main role="status" aria-live="polite" style={{ minHeight: '50vh', display: 'grid', placeItems: 'center', color: '#123b50', fontFamily: 'Inter,system-ui,sans-serif' }}>Carregando SYSNQRA ERP INDUSTRIAL…</main>
@@ -43,6 +45,8 @@ export default function AppEntryV2() {
               <Route path="rh" element={<RHIndustrial />} />
               <Route path="estoque/balanco" element={<BalancoEstoque />} />
               <Route path="pcp" element={<PCPWorkspace />} />
+              <Route path="chao-de-fabrica" element={<ChaoDeFabrica />} />
+              <Route path="financeiro/contas-pagar" element={<FinanceiroContasPagar />} />
               <Route path="paquimetro" element={<QualityPlanGate><Paquimetro /></QualityPlanGate>} />
               <Route path="qualidade/ged-documentos" element={<QualityPlanGate><FileTreeGED /></QualityPlanGate>} />
             </Route>
@@ -56,6 +60,8 @@ export default function AppEntryV2() {
             <Route path="/rh" element={<Navigate to="/pageprincipal/rh" replace />} />
             <Route path="/estoque/balanco" element={<Navigate to="/pageprincipal/estoque/balanco" replace />} />
             <Route path="/pcp" element={<Navigate to="/pageprincipal/pcp" replace />} />
+            <Route path="/chao-de-fabrica" element={<Navigate to="/pageprincipal/chao-de-fabrica" replace />} />
+            <Route path="/financeiro/contas-pagar" element={<Navigate to="/pageprincipal/financeiro/contas-pagar" replace />} />
             <Route path="/paquimetro" element={<Navigate to="/pageprincipal/paquimetro" replace />} />
             <Route path="/qualidade/paquimetro" element={<Navigate to="/pageprincipal/paquimetro" replace />} />
             <Route path="/qualidade/ged-documentos" element={<Navigate to="/pageprincipal/qualidade/ged-documentos" replace />} />
