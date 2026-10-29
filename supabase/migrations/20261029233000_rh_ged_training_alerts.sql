@@ -5,6 +5,8 @@ begin;
 alter table public.erp_funcionarios add column if not exists foto_url text;
 alter table public.erp_funcionarios add column if not exists dados_pessoais jsonb not null default '{}'::jsonb;
 
+create unique index if not exists uq_erp_funcionarios_empresa_id_id on public.erp_funcionarios (empresa_id, id);
+
 create table if not exists public.rh_treinamentos (
   id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null default public.erp_current_empresa_id(),
@@ -18,9 +20,6 @@ create table if not exists public.rh_treinamentos (
   constraint rh_treinamentos_empresa_funcionario_fk foreign key (empresa_id, funcionario_id)
     references public.erp_funcionarios(empresa_id, id) deferrable initially immediate
 );
-
--- PostgreSQL requires a unique target key for the composite tenant FK; create it without changing employee IDs.
-create unique index if not exists uq_erp_funcionarios_empresa_id_id on public.erp_funcionarios (empresa_id, id);
 
 create table if not exists public.rh_documentos_colaborador (
   id uuid primary key default gen_random_uuid(),
