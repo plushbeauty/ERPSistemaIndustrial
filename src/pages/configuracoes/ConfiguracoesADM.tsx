@@ -83,10 +83,9 @@ function Empresa() {
         if (authError) throw authError
         if (!authData.user) throw new Error('É necessário estar autenticado para carregar a empresa.')
         const { data, error: profileError } = await supabase.from('erp_usuarios')
-          .select('nome,empresa_id,is_master')
+          .select('nome,empresa_id,nivel_admin,ativo')
           .eq('auth_user_id', authData.user.id)
           .eq('ativo', true)
-          .is('deleted_at', null)
           .maybeSingle()
         if (profileError) throw profileError
         if (!data) throw new Error('O usuário autenticado não possui perfil ERP ativo.')
@@ -94,7 +93,7 @@ function Empresa() {
         const { data: permitted, error: permissionError } = await supabase.rpc('erp_has_permission', { p_modulo: 'empresas', p_acao: 'editar' })
         if (permissionError) throw permissionError
         if (permitted !== true) throw new Error('Seu perfil não possui a permissão empresas.editar.')
-        if (alive) setProfile({ nome: data.nome, empresa_id: data.empresa_id, is_master: Boolean(data.is_master) })
+        if (alive) setProfile({ nome: data.nome, empresa_id: data.empresa_id, is_master: Number(data.nivel_admin) === 100 })
       } catch (cause) {
         if (alive) setError(cause instanceof Error ? cause.message : 'Não foi possível carregar o perfil.')
       } finally {
