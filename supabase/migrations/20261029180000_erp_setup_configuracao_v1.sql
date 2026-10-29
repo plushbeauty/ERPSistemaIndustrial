@@ -31,16 +31,42 @@ create index if not exists idx_erp_setup_configuracao_empresa
 
 alter table public.erp_setup_configuracao enable row level security;
 
+-- Somente administrador ativo da empresa pode ler ou alterar o onboarding.
+-- SECURITY DEFINER evita depender das policies de leitura da tabela de usuários,
+-- mas a função só consulta a identidade atual e o tenant resolvido pelo helper canônico.
+create or replace function public.erp_can_manage_setup()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, auth, pg_temp
+as $
+  select exists (
+    select 1
+    from public.erp_usuarios u
+    where u.auth_user_id = auth.uid()
+      and u.empresa_id = public.erp_current_empresa_id()
+      and u.ativo is true
+      and u.deleted_at is null
+      and upper(coalesce(u.perfil, '')) in ('ADMIN', 'ADMINISTRADOR')
+      and coalesce(u.nivel_admin, 0) >= 1
+  );
+$;
+
+revoke all on function public.erp_can_manage_setup() from public;
+grant execute on function public.erp_can_manage_setup() to authenticated;
+
 drop policy if exists erp_setup_configuracao_select_tenant on public.erp_setup_configuracao;
 create policy erp_setup_configuracao_select_tenant
   on public.erp_setup_configuracao for select to authenticated
-  using (empresa_id = public.erp_current_empresa_id());
+  using (empresa_id = public.erp_current_empresa_id() and public.erp_can_manage_setup());
 
 drop policy if exists erp_setup_configuracao_insert_tenant on public.erp_setup_configuracao;
 create policy erp_setup_configuracao_insert_tenant
   on public.erp_setup_configuracao for insert to authenticated
   with check (
     empresa_id = public.erp_current_empresa_id()
+    and public.erp_can_manage_setup()
     and (atualizado_por is null or atualizado_por = auth.uid())
   );
 
