@@ -22,6 +22,7 @@ const BalancoEstoque = lazy(() => import('./features/inventario/BalancoEstoque')
 const RHIndustrial = lazy(() => import('./pages/RHIndustrial'))
 const NFeEmissao = lazy(() => import('./pages/NFeEmissao'))
 const FileTreeGED = lazy(() => import('./pages/FileTreeGED'))
+const QualidadeRPNC = lazy(() => import('./pages/QualidadeRPNC'))
 const ChaoDeFabrica = lazy(() => import('./pages/ChaoDeFabrica'))
 const FinanceiroContasPagar = lazy(() => import('./pages/FinanceiroContasPagar'))
 
@@ -49,6 +50,7 @@ export default function AppEntryV2() {
               <Route path="financeiro/contas-pagar" element={<FinanceiroContasPagar />} />
               <Route path="paquimetro" element={<QualityPlanGate><Paquimetro /></QualityPlanGate>} />
               <Route path="qualidade/ged-documentos" element={<QualityPlanGate><FileTreeGED /></QualityPlanGate>} />
+              <Route path="qualidade/rpnc" element={<QualityPlanGate><QualidadeRPNC /></QualityPlanGate>} />
             </Route>
             <Route path="/compras" element={<Navigate to="/pageprincipal/compras" replace />} />
             <Route path="/configuracoes-adm" element={<Navigate to="/pageprincipal/administracao-configuracoes" replace />} />
@@ -65,6 +67,7 @@ export default function AppEntryV2() {
             <Route path="/paquimetro" element={<Navigate to="/pageprincipal/paquimetro" replace />} />
             <Route path="/qualidade/paquimetro" element={<Navigate to="/pageprincipal/paquimetro" replace />} />
             <Route path="/qualidade/ged-documentos" element={<Navigate to="/pageprincipal/qualidade/ged-documentos" replace />} />
+            <Route path="/qualidade/rpnc" element={<Navigate to="/pageprincipal/qualidade/rpnc" replace />} />
             <Route path="*" element={<Navigate to="/pageprincipal" replace />} />
           </Routes>
         </ERPHorizontalShell>
