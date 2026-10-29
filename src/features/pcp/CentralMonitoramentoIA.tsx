@@ -105,9 +105,11 @@ export default function CentralMonitoramentoIA() {
   }, [empresaId, load])
 
   const latest = events[0]
-  const liveCount = events.filter(e => e.estado === 'RODANDO').length
-  const machineCount = new Set(events.map(e => e.maquina_id)).size
-  const scrapTotal = events.reduce((sum, e) => sum + (Number(e.pecas_refugo) || 0), 0)
+  const latestByMachine = new Map<string, IoTEvent>()
+  for (const event of events) if (!latestByMachine.has(event.maquina_id)) latestByMachine.set(event.maquina_id, event)
+  const liveCount = [...latestByMachine.values()].filter(e => e.estado === 'RODANDO').length
+  const machineCount = latestByMachine.size
+  const scrapTotal = [...latestByMachine.values()].reduce((sum, e) => sum + (Number(e.pecas_refugo) || 0), 0)
   const predicted = useMemo(() => events.map(e => ({ event: e, p: probability(e) })).filter((x): x is { event: IoTEvent; p: number } => x.p !== null), [events])
   const riskEvents = predicted.filter(x => x.p >= threshold)
   const chartData = useMemo(() => [...events].slice(0, 20).reverse().map(e => ({
@@ -131,8 +133,8 @@ export default function CentralMonitoramentoIA() {
 
     <section className="grid grid-cols-2 gap-2 xl:grid-cols-4">
       <div className={panel}><div className="flex items-center justify-between"><span className={label}>Eventos recebidos</span><RadioTower size={15} className="text-[#2D8DB8]"/></div><p className="mt-1 text-xl font-extrabold tabular-nums">{events.length}</p><p className="text-[10px] text-slate-500">Últimos 100 eventos reais</p></div>
-      <div className={panel}><div className="flex items-center justify-between"><span className={label}>Máquinas com telemetria</span><Activity size={15} className="text-[#2D8DB8]"/></div><p className="mt-1 text-xl font-extrabold tabular-nums">{machineCount}</p><p className="text-[10px] text-slate-500">{liveCount} eventos em estado RODANDO</p></div>
-      <div className={panel}><div className="flex items-center justify-between"><span className={label}>Peças refugadas</span><AlertTriangle size={15} className="text-orange-600"/></div><p className="mt-1 text-xl font-extrabold tabular-nums">{scrapTotal.toLocaleString('pt-BR')}</p><p className="text-[10px] text-slate-500">Soma dos contadores dos eventos carregados</p></div>
+      <div className={panel}><div className="flex items-center justify-between"><span className={label}>Máquinas com telemetria</span><Activity size={15} className="text-[#2D8DB8]"/></div><p className="mt-1 text-xl font-extrabold tabular-nums">{machineCount}</p><p className="text-[10px] text-slate-500">{liveCount} máquina(s) em estado RODANDO</p></div>
+      <div className={panel}><div className="flex items-center justify-between"><span className={label}>Refugo · contadores atuais</span><AlertTriangle size={15} className="text-orange-600"/></div><p className="mt-1 text-xl font-extrabold tabular-nums">{scrapTotal.toLocaleString('pt-BR')}</p><p className="text-[10px] text-slate-500">Último contador conhecido de cada máquina</p></div>
       <div className={panel}><div className="flex items-center justify-between"><span className={label}>Último evento</span><Clock3 size={15} className="text-[#2D8DB8]"/></div><p className="mt-1 text-xl font-extrabold tabular-nums">{latestAge === null ? '—' : latestAge < 1 ? 'Agora' : `${latestAge} min`}</p><p className="text-[10px] text-slate-500">{latest ? new Date(latest.emitido_em).toLocaleString('pt-BR') : 'Nenhum evento recebido'}</p></div>
     </section>
 
