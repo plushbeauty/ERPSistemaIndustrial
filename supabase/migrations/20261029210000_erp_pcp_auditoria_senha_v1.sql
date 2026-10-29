@@ -5,7 +5,7 @@ begin;
 create table if not exists public.erp_synqra_discuss_message (
   id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references public.erp_empresas(id) on delete cascade,
-  res_model text not null check (res_model in ('erp_ordens_producao','erp_estoque_lotes_rastreabilidade','erp_recebimento_notas','erp_pcp_bom_itens')),
+  res_model text not null check (res_model in ('erp_ordens_producao','erp_rastreabilidade','erp_recebimento_notas','erp_pcp_bom_itens')),
   res_id uuid not null,
   autor_auth_id uuid not null references auth.users(id) on delete restrict,
   corpo text not null check (length(btrim(corpo)) between 1 and 10000),
@@ -18,7 +18,7 @@ create index if not exists idx_erp_synqra_discuss_documento
 create table if not exists public.erp_synqra_rating (
   id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references public.erp_empresas(id) on delete cascade,
-  res_model text not null check (res_model in ('erp_ordens_producao','erp_estoque_lotes_rastreabilidade','erp_recebimento_notas','erp_pcp_bom_itens')),
+  res_model text not null check (res_model in ('erp_ordens_producao','erp_rastreabilidade','erp_recebimento_notas','erp_pcp_bom_itens')),
   res_id uuid not null,
   nota smallint not null check (nota between 1 and 5),
   comentario text check (comentario is null or length(comentario) <= 5000),
