@@ -114,9 +114,9 @@ export default function UsuariosAdmin() {
         fetchAllPages<User>((from, to) => usersQuery.range(from, to)).then(rows => rows.filter(row => !row.deleted_at)),
         fetchAllPages<Company>((from, to) => supabase.from('erp_empresas').select('id,razao_social,nome_fantasia,codigo,ativo,plano,plano_status', { count: 'exact' }).order('nome_fantasia').range(from, to)),
         fetchAllPages<Role>((from, to) => supabase.from('erp_roles').select('id,codigo,nome,nivel,empresa_id', { count: 'exact' }).eq('ativo', true).order('nivel', { ascending: false }).range(from, to)),
-        supabase.rpc('erp_has_permission', { p_code: 'users.update' }),
-        supabase.rpc('erp_has_permission', { p_code: 'users.create' }),
-        supabase.rpc('erp_has_permission', { p_code: 'users.delete' }),
+        supabase.rpc('erp_has_permission', { p_modulo: 'users', p_acao: 'update' }),
+        supabase.rpc('erp_has_permission', { p_modulo: 'users', p_acao: 'create' }),
+        supabase.rpc('erp_has_permission', { p_modulo: 'users', p_acao: 'delete' }),
       ])
       setUsers(usersResult)
       setCompanies(companiesResult)
