@@ -36,7 +36,6 @@ create policy erp_configuracoes_sistema_insert_admin
       where u.auth_user_id = auth.uid()
         and u.empresa_id = public.erp_current_empresa_id()
         and u.ativo = true
-        and u.deleted_at is null
         and coalesce(u.nivel_admin, 0) >= 9
     )
   );
@@ -51,7 +50,6 @@ create policy erp_configuracoes_sistema_update_admin
       where u.auth_user_id = auth.uid()
         and u.empresa_id = public.erp_current_empresa_id()
         and u.ativo = true
-        and u.deleted_at is null
         and coalesce(u.nivel_admin, 0) >= 9
     )
   )
@@ -62,7 +60,6 @@ create policy erp_configuracoes_sistema_update_admin
       where u.auth_user_id = auth.uid()
         and u.empresa_id = public.erp_current_empresa_id()
         and u.ativo = true
-        and u.deleted_at is null
         and coalesce(u.nivel_admin, 0) >= 9
     )
   );
