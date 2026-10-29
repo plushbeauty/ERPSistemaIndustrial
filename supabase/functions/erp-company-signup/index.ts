@@ -73,7 +73,25 @@ Deno.serve(async (req) => {
     if (tipoDocumento.toUpperCase() === 'CNPJ' && documento.length !== 14) return json({ error: 'Informe um CNPJ válido com 14 dígitos.' }, 400)
     if (tipoDocumento.toUpperCase() === 'CPF' && documento.length !== 11) return json({ error: 'Informe um CPF válido com 11 dígitos.' }, 400)
     if (!/^\S+@\S+\.\S+$/.test(email)) return json({ error: 'Informe um e-mail válido.' }, 400)
-    if (senha.length < 8) return json({ error: 'A senha deve possuir pelo menos 8 caracteres.' }, 400)
+    const { data: passwordPolicy, error: passwordPolicyError } = await admin
+      .from('erp_sistema_politica_senha')
+      .select('comprimento_minimo, exigir_maiuscula, exigir_numero')
+      .eq('singleton', true)
+      .maybeSingle()
+    if (passwordPolicyError || !passwordPolicy) {
+      console.error('[erp-company-signup] Política de senha indisponível.')
+      return json({ error: 'A política de senha do sistema não está disponível. Tente novamente mais tarde.' }, 503)
+    }
+    const minLength = Number(passwordPolicy.comprimento_minimo)
+    if (senha.length < minLength) {
+      return json({ error: `A senha deve possuir pelo menos ${minLength} caracteres.` }, 400)
+    }
+    if (passwordPolicy.exigir_maiuscula && !/[A-ZÀ-ÖØ-Þ]/.test(senha)) {
+      return json({ error: 'A senha deve conter pelo menos uma letra maiúscula.' }, 400)
+    }
+    if (passwordPolicy.exigir_numero && !/\\d/.test(senha)) {
+      return json({ error: 'A senha deve conter pelo menos um número.' }, 400)
+    }
 
     const { data: duplicate, error:duplicateError } = await admin.from('erp_empresas').select('id').eq('cnpj', documento).limit(1)
     if (duplicateError) throw duplicateError
