@@ -17,7 +17,6 @@ const SetupADMInicial = lazy(() => import('./pages/SetupADMInicial'))
 const PCPWorkspace = lazy(() => import('./pages/PCPWorkspace'))
 const Paquimetro = lazy(() => import('./pages/QualidadePaquimetroDigital'))
 const ComprasWorkspace = lazy(() => import('./pages/ComprasWorkspace'))
-const AdministracaoConfiguracoesGlobais = lazy(() => import('./pages/AdministracaoConfiguracoesGlobais'))
 const ConfiguracoesADM = lazy(() => import('./pages/configuracoes/ConfiguracoesADM'))
 const PCPFichasProcesso = lazy(() => import('./pages/PCPFichasProcesso'))
 
