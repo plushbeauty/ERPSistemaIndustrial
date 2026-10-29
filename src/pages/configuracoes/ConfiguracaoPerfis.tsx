@@ -29,7 +29,7 @@ export default function ConfiguracaoPerfis() {
       const [actorResult, companyResult, permissionResult] = await Promise.all([
         supabase.from('erp_usuarios').select('empresa_id,ativo').eq('auth_user_id', authData.user.id).maybeSingle(),
         supabase.rpc('erp_current_empresa_id'),
-        supabase.rpc('erp_has_permission', { p_code: 'users.update' }),
+        supabase.rpc('erp_has_permission', { p_modulo: 'users', p_acao: 'update' }),
       ])
       if (actorResult.error) throw actorResult.error
       if (companyResult.error) throw companyResult.error
