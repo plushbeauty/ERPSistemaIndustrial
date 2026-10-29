@@ -59,6 +59,18 @@ const checks = [
       !app.includes('path="/qualidade/paquimetro-digital"'),
     'As rotas operacionais antigas retiradas do menu não devem reaparecer.',
   ],
+  [
+    existsSync('src/pages/PCPFichasProcesso.tsx') &&
+      app.includes('path="pcp/fichas-processo" element={<PCPFichasProcesso />'),
+    'A Ficha de Processo PCP aprovada deve existir e ter rota direta dentro da área autenticada.',
+  ],
+  [
+    existsSync('src/pages/configuracoes/ConfiguracoesADM.tsx') &&
+      app.includes('path="administracao-configuracoes" element={<ConfiguracoesADM />') &&
+      existsSync('src/pages/configuracoes/ConfiguracaoSistema.tsx') &&
+      existsSync('supabase/migrations/20261029120000_erp_configuracoes_sistema.sql'),
+    'Configurações deve abrir a central administrativa com ícones, seções e migração dos parâmetros globais.',
+  ],
 ]
 
 let failed = false
