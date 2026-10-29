@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { AlertCircle, BadgeCheck, BriefcaseBusiness, Factory, FolderOpen, Pencil, RefreshCw, RotateCcw, Save, Search, Users, UserRound, X } from 'lucide-react'
 import GedAbasColaborador from '../components/rh/GedAbasColaborador'
+import TreinamentosColaborador from '../components/rh/TreinamentosColaborador'
 import { supabase } from '../lib/supabaseClient'
 
 type Tab = 'pessoais' | 'contratuais' | 'fabrica'
@@ -232,6 +233,7 @@ export default function RHIndustrial() {
       <p className="mt-2 text-[10px] text-slate-500">Consulta limitada aos 1.000 colaboradores mais recentes por nome. RLS e empresa_id são obrigatórios; registros não são excluídos fisicamente.</p>
     </Panel>
     {gedFuncionarioId && <Panel title={`Pasta GED do colaborador · ${rows.find(r => r.id === gedFuncionarioId)?.nome_completo ?? 'Colaborador'}`} right={<button type="button" onClick={() => setGedFuncionarioId(null)} className="synqra-button h-8"><X size={12}/>Fechar GED</button>}><GedAbasColaborador funcionarioId={gedFuncionarioId}/></Panel>}
+    {gedFuncionarioId && <Panel title={`Treinamentos e NRs · ${rows.find(r => r.id === gedFuncionarioId)?.nome_completo ?? 'Colaborador'}`}><TreinamentosColaborador funcionarioId={gedFuncionarioId}/></Panel>}
     <footer className="flex flex-wrap items-center justify-between gap-2 text-[10px] text-slate-500"><span>Atualizado · Padrão Premium · 28/10/2026</span><span>Os dados exibidos vêm do Supabase autenticado; sem registros demonstrativos.</span></footer>
   </main>
 }
