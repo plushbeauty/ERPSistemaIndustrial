@@ -14,8 +14,9 @@ import PCPProgramacaoGantt from '../features/pcp/PCPProgramacaoGantt'
 import PCPSequenciamento from '../features/pcp/PCPSequenciamento'
 import PCPParadas from '../features/pcp/PCPParadas'
 import PCPPlanejamento from '../features/pcp/PCPPlanejamento'
+import PCPTabletOperador from './PCPTabletOperador'
 
-type Tab = 'ordens' | 'processo' | 'estrutura' | 'turno' | 'gantt' | 'sequenciamento' | 'paradas' | 'planejamento'
+type Tab = 'ordens' | 'processo' | 'estrutura' | 'turno' | 'gantt' | 'sequenciamento' | 'paradas' | 'planejamento' | 'tablet'
 const tabs: Array<{ id: Tab; label: string; Icon: typeof Factory }> = [
   { id: 'ordens', label: 'Ordens de produção', Icon: ClipboardList },
   { id: 'processo', label: 'Ficha de processo', Icon: Factory },
@@ -25,6 +26,7 @@ const tabs: Array<{ id: Tab; label: string; Icon: typeof Factory }> = [
   { id: 'sequenciamento', label: 'Sequenciamento', Icon: Shuffle },
   { id: 'paradas', label: 'Paradas / Setup', Icon: Wrench },
   { id: 'planejamento', label: 'Planejamento MPS', Icon: Target },
+  { id: 'tablet', label: 'Terminal do operador', Icon: ScanLine },
 ]
 
 export default function PCPWorkspace() {
@@ -50,6 +52,7 @@ export default function PCPWorkspace() {
         {tab === 'sequenciamento' && <PCPSequenciamento />}
         {tab === 'paradas' && <PCPParadas />}
         {tab === 'planejamento' && <PCPPlanejamento />}
+        {tab === 'tablet' && <PCPTabletOperador />}
       </div>
     </div>
   )
