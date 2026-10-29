@@ -14,6 +14,69 @@ alter table public.erp_rpnc
   add constraint erp_rpnc_prazo_eficacia_dias_check
   check (prazo_eficacia_dias is null or prazo_eficacia_dias in (30, 60));
 
+create or replace function public.erp_sgq_validar_transicao_rpnc()
+returns trigger language plpgsql set search_path = pg_catalog, public as $
+declare
+  v_actor uuid;
+  v_ineficaz boolean := coalesce(current_setting('app.sgq_eficacia_ineficaz', true), '') = 'true';
+begin
+  if old.sgq_origem is null and new.sgq_origem is null then return new; end if;
+  if new.id is distinct from old.id or new.criado_em is distinct from old.criado_em
+    or new.numero_rpnc is distinct from old.numero_rpnc
+    or new.descricao_nao_conformidade is distinct from old.descricao_nao_conformidade
+    or new.acao_corretiva is distinct from old.acao_corretiva
+    or new.sgq_origem is distinct from old.sgq_origem
+    or new.sgq_severidade is distinct from old.sgq_severidade
+    or new.setor_id is distinct from old.setor_id
+    or new.sgq_vinculo_tipo is distinct from old.sgq_vinculo_tipo
+    or new.sgq_vinculo_id is distinct from old.sgq_vinculo_id
+    or new.sgq_aberto_por is distinct from old.sgq_aberto_por
+    or new.empresa_id is distinct from old.empresa_id then
+    raise exception 'Os dados de abertura da RPNC são imutáveis; registre a alteração em uma tratativa.';
+  end if;
+  if (new.status is not distinct from old.status or new.status not in ('encerrada','Encerrada'))
+    and (new.sgq_encerrado_por is distinct from old.sgq_encerrado_por
+      or new.sgq_encerrado_em is distinct from old.sgq_encerrado_em) then
+    raise exception 'Os dados de encerramento só podem ser definidos ao encerrar a RPNC.';
+  end if;
+  if new.status is distinct from old.status then
+    if not public.erp_has_permission('qualidade','editar') then raise exception 'Sem permissão para atualizar RPNC.'; end if;
+    if not (
+      (old.status in ('aberta','Aberta') and new.status in ('em análise','Investigacao'))
+      or (old.status in ('em análise','Investigacao') and new.status in ('em tratamento','Acao corretiva'))
+      or (old.status in ('em tratamento','Acao corretiva') and new.status in ('aguardando eficácia','Aguardando aprovacao'))
+      or (old.status in ('aguardando eficácia','Aguardando aprovacao') and new.status in ('encerrada','Encerrada'))
+      or (v_ineficaz and old.status in ('aguardando eficácia','Aguardando aprovacao') and new.status in ('em análise','Investigacao'))
+    ) then raise exception 'Transição de RPNC não permitida.'; end if;
+    if new.status in ('encerrada','Encerrada') and (
+      not exists (
+        select 1 from public.erp_sgq_capa_acoes a
+        where a.rpnc_id=new.id and a.empresa_id=new.empresa_id
+          and a.status='Verificada' and a.resultado_eficacia='Eficaz'
+          and nullif(btrim(a.causa_raiz),'') is not null
+      )
+      or exists (
+        select 1 from public.erp_sgq_capa_acoes a
+        where a.rpnc_id=new.id and a.empresa_id=new.empresa_id
+          and (a.status <> 'Verificada' or a.resultado_eficacia is distinct from 'Eficaz'
+            or nullif(btrim(a.causa_raiz),'') is null)
+      )
+    ) then raise exception 'A RPNC exige ação aprovada, causa raiz e eficácia CAPA verificada como eficaz.'; end if;
+    if new.status in ('encerrada','Encerrada') then
+      select u.id into v_actor from public.erp_usuarios u
+        where u.auth_user_id=auth.uid() and u.empresa_id=new.empresa_id and u.ativo=true and u.deleted_at is null limit 1;
+      if v_actor is null then raise exception 'Usuário ERP ativo não identificado para o encerramento.'; end if;
+      new.sgq_encerrado_por := v_actor;
+      new.sgq_encerrado_em := now();
+    elsif v_ineficaz then
+      new.sgq_encerrado_por := null;
+      new.sgq_encerrado_em := null;
+    end if;
+  end if;
+  return new;
+end
+$;
+
 create or replace function public.erp_sgq_salvar_analise_rpnc(
   p_rpnc_id uuid,
   p_ishikawa jsonb,
@@ -101,6 +164,7 @@ begin
   if v_row.status not in ('aguardando eficácia','em tratamento','em análise') then
     raise exception 'A RPNC não está apta para verificação de eficácia.';
   end if;
+  if not p_eficaz then perform set_config('app.sgq_eficacia_ineficaz','true',true); end if;
   update public.erp_rpnc set
     parecer_eficacia=btrim(p_parecer),
     eficacia_aprovada=p_eficaz,
