@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, Package, Users } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, FolderOpen, ShoppingCart, Settings, Package, Users } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -23,6 +23,7 @@ const menus: MenuItem[] = [
   ] },
   { label: 'Qualidade / Paquímetro', route: '/pageprincipal/paquimetro', icon: Ruler, children: [
     { label: 'Paquímetro Digital', route: '/pageprincipal/paquimetro', icon: Ruler },
+    { label: 'Documentos / GED', route: '/pageprincipal/qualidade/ged-documentos', icon: FolderOpen, isUpdated: true },
   ] },
   { label: 'Compras', route: '/pageprincipal/compras', icon: ShoppingCart, isUpdated: true },
   { label: 'Configurações', route: '/pageprincipal/administracao-configuracoes', icon: Settings },
@@ -95,7 +96,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   }, [])
 
   const moduleLabel = pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
-    : pathname.startsWith('/pageprincipal/paquimetro') ? 'Qualidade / Paquímetro'
+    : pathname.startsWith('/pageprincipal/paquimetro') || pathname.startsWith('/pageprincipal/qualidade') || pathname.startsWith('/qualidade') ? 'Qualidade / Paquímetro'
     : pathname.startsWith('/pageprincipal/compras') || pathname.startsWith('/compras') ? 'Compras'
     : pathname.startsWith('/pageprincipal/administracao-configuracoes') || pathname.startsWith('/configuracoes-adm') || pathname.startsWith('/administracao-configuracoes') ? 'Configurações'
     : pathname.startsWith('/pageprincipal/rh') || pathname.startsWith('/rh') ? 'RH / DP'
