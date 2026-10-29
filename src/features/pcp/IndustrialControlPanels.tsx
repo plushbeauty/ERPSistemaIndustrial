@@ -4,7 +4,7 @@
  * Integrações usam sessão Supabase, empresa corrente e RPCs reais.
  */
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { AlertTriangle, CheckCircle2, ClipboardCheck, Factory, LockKeyhole, MessageSquareText, Send, ShieldCheck, Star } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, ClipboardCheck, Factory, LockKeyhole, MessageSquareText, Send, ShieldCheck } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 
 type Product = { id: string; codigo: string; nome: string }
