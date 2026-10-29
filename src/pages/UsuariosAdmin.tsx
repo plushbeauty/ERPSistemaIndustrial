@@ -46,6 +46,7 @@ type User = {
   matricula?: string | null
   setor_id?: string | null
   cargo_id?: string | null
+  deleted_at?: string | null
 }
 type Company = {
   id: string
@@ -93,25 +94,24 @@ export default function UsuariosAdmin() {
       if (!auth) throw new Error('Sessão não encontrada.')
       const { data: actorRow, error: actorError } = await supabase
         .from('erp_usuarios')
-        .select('id,auth_user_id,empresa_id,nome,email,role,perfil,is_master,role_id,nivel_admin,ativo,login_nome,created_at,matricula,setor_id,cargo_id')
+        .select('*')
         .eq('auth_user_id', auth.id)
-        .is('deleted_at', null)
         .maybeSingle()
       if (actorError) throw actorError
       if (!actorRow) throw new Error('Usuário autenticado não está vinculado ao ERP.')
       const currentActor = actorRow as User
+      if (currentActor.deleted_at) throw new Error('O usuário autenticado foi desativado no ERP.')
       setActor(currentActor)
 
       let usersQuery = supabase
         .from('erp_usuarios')
-        .select('id,auth_user_id,empresa_id,nome,email,role,perfil,is_master,role_id,nivel_admin,ativo,login_nome,created_at,matricula,setor_id,cargo_id')
-        .is('deleted_at', null)
+        .select('*')
         .order('nome')
       if (masterAccount(currentActor)) usersQuery = usersQuery.not('empresa_id', 'is', null)
       else usersQuery = usersQuery.eq('empresa_id', currentActor.empresa_id)
 
       const [usersResult, companiesResult, rolesResult, editPermission, createPermission, archivePermission] = await Promise.all([
-        fetchAllPages<User>((from, to) => usersQuery.range(from, to)),
+        fetchAllPages<User>((from, to) => usersQuery.range(from, to)).then(rows => rows.filter(row => !row.deleted_at)),
         fetchAllPages<Company>((from, to) => supabase.from('erp_empresas').select('id,razao_social,nome_fantasia,codigo,ativo,plano,plano_status', { count: 'exact' }).order('nome_fantasia').range(from, to)),
         fetchAllPages<Role>((from, to) => supabase.from('erp_roles').select('id,codigo,nome,nivel,empresa_id', { count: 'exact' }).eq('ativo', true).order('nivel', { ascending: false }).range(from, to)),
         supabase.rpc('erp_has_permission', { p_code: 'users.update' }),
