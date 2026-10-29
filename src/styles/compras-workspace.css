@@ -1,0 +1,95 @@
+/* SYSNQRA ERP INDUSTRIAL — Compras Workspace | revisão visual inicial 28/10/2026 */
+.compras-page{box-sizing:border-box;display:flex;flex-direction:column;gap:12px;width:100%;min-width:0;color:#17212b;font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-size:12px}
+.compras-page *{box-sizing:border-box}
+ .compras-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;min-width:0;padding:9px 16px;border:1px solid #123b50;border-radius:10px;background:#123b50;color:#fff}
+.compras-header>div:first-child{min-width:0}.compras-eyebrow{font-size:9px;font-weight:800;letter-spacing:.13em;color:#9dd9e8;text-transform:uppercase}
+.compras-header h1{margin:0 0 2px;color:#fff;font-size:18px;line-height:1.2;font-weight:800;letter-spacing:-.025em}.compras-header p{margin:0;color:#f3c969;font-size:10px;line-height:1.4;font-weight:700}
+.compras-header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.compras-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:34px;padding:0 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}.compras-button:disabled{opacity:.55;cursor:wait}
+.compras-button--light{background:#fff;color:#123b50;border-color:#dbe4e9}.compras-button--primary{background:#f97316;color:#fff;border-color:#ea580c}.compras-button--primary:hover{background:#ea580c}
+.compras-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.compras-kpi{display:flex;flex-direction:column;gap:5px;min-width:0;padding:12px 14px;border:1px solid #dbe4e9;border-radius:8px;background:#fff;box-shadow:0 1px 2px #0f172a08}.compras-kpi span{color:#526373;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.compras-kpi strong{font-size:23px;line-height:1.1;font-weight:800;color:#123b50;font-variant-numeric:tabular-nums}.compras-kpi small{color:#64748b;font-size:10px}
+.compras-tabs{display:flex;gap:4px;align-items:stretch;min-width:0;overflow-x:auto;padding:4px;border:1px solid #dbe4e9;border-radius:8px;background:#f8fafc}.compras-tab{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:0 12px;border:1px solid transparent;border-radius:6px;background:transparent;color:#475569;font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer}.compras-tab span{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:19px;padding:0 5px;border-radius:10px;background:#e2e8f0;color:#334155;font-size:9px}.compras-tab.is-active{border-color:#c8e4eb;background:#fff;color:#123b50;box-shadow:0 1px 2px #0f172a0a}.compras-tab.is-active svg{color:#1684a2}
+.compras-overview-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(300px,.95fr);gap:12px;align-items:start}.compras-panel{min-width:0;padding:14px;border:1px solid #dbe4e9;border-radius:9px;background:#fff;box-shadow:0 1px 2px #0f172a08}.compras-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}.compras-panel-heading>div{min-width:0}.compras-panel-heading h2{margin:0;color:#123b50;font-size:14px;line-height:1.4;font-weight:800}.compras-panel-heading p{margin:3px 0 0;color:#64748b;font-size:10px;line-height:1.5}
+.compras-flow{display:flex;flex-direction:column;gap:6px}.compras-flow-step{display:grid;grid-template-columns:34px minmax(0,1fr) 28px;align-items:center;gap:10px;width:100%;min-height:56px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:7px;background:#fff;text-align:left;cursor:pointer}.compras-flow-step:hover,.compras-quick-actions button:hover{border-color:#9bcbd8;background:#f7fcfd}.compras-flow-icon{display:grid;place-items:center;width:32px;height:32px;border-radius:7px;background:#e8f5f8;color:#167d99}.compras-flow-step>span:nth-child(2){display:flex;flex-direction:column;gap:3px;min-width:0}.compras-flow-step strong,.compras-quick-actions strong{color:#1e293b;font-size:11px;font-weight:800}.compras-flow-step small,.compras-quick-actions small{color:#64748b;font-size:10px}.compras-flow-step>b{color:#94a3b8;font-size:12px;text-align:right}
+.compras-quick-actions{display:flex;flex-direction:column;gap:8px}.compras-quick-actions button{display:flex;align-items:center;gap:10px;min-height:61px;padding:10px;border:1px solid #e2e8f0;border-radius:7px;background:#fff;text-align:left;cursor:pointer;color:#1684a2}.compras-quick-actions button span{display:flex;flex-direction:column;gap:4px;min-width:0}
+.compras-search{display:flex;align-items:center;gap:7px;width:min(280px,100%);height:34px;padding:0 9px;border:1px solid #cbd5e1;border-radius:6px;color:#64748b;background:#fff}.compras-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#0f172a;font:inherit;font-size:11px}
+.compras-table-scroll{width:100%;overflow:auto;border:1px solid #e2e8f0;border-radius:7px}.compras-table{width:100%;border-collapse:collapse;text-align:left;font-size:11px;white-space:nowrap}.compras-table thead{background:#f1f5f9;color:#334155}.compras-table th{padding:10px 11px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}.compras-table td{max-width:300px;padding:10px 11px;border-top:1px solid #e8edf2;color:#334155;font-variant-numeric:tabular-nums}.compras-table tbody tr:hover{background:#f8fbfc}
+.compras-status{display:inline-flex;align-items:center;min-height:22px;padding:2px 7px;border-radius:4px;background:#eef2f7;color:#475569;font-size:9px;font-weight:800;text-transform:uppercase}.compras-status--success{background:#eaf7ef;color:#23764a}.compras-status--warning{background:#fff4df;color:#9a5b08}.compras-status--danger{background:#fff0f0;color:#b4232d}
+.compras-empty,.compras-loading,.compras-error{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;min-height:150px;padding:20px;text-align:center;color:#64748b}.compras-empty svg,.compras-loading svg{color:#1684a2}.compras-empty strong,.compras-error strong{color:#334155;font-size:12px}.compras-empty span,.compras-error span{max-width:520px;font-size:11px;line-height:1.6}.compras-error{color:#b4232d}
+.compras-notice{padding:10px 12px;border:1px solid;border-radius:7px;font-size:11px;line-height:1.5}.compras-notice--success{border-color:#b7e4c7;background:#f0fbf4;color:#23764a}.compras-notice--error{border-color:#fecaca;background:#fff5f5;color:#b4232d}
+.compras-form-panel{border-color:#a7d4df}.compras-form-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px}.compras-field{display:flex;flex-direction:column;gap:5px;grid-column:span 3;min-width:0}.compras-field--wide{grid-column:span 6}.compras-field--full{grid-column:1/-1}.compras-field>span{color:#475569;font-size:9px;font-weight:800;line-height:1.4;text-transform:uppercase;letter-spacing:.045em}.compras-field input,.compras-field select,.compras-field textarea{box-sizing:border-box;width:100%;min-width:0;min-height:34px;padding:7px 9px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;color:#0f172a;font:inherit;font-size:11px}.compras-field input:focus,.compras-field select:focus,.compras-field textarea:focus{outline:2px solid #2d8db8;outline-offset:1px;border-color:#2d8db8}.compras-field input[readonly]{background:#f8fafc;color:#64748b}.compras-field textarea{min-height:76px;resize:vertical}.compras-form-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;grid-column:1/-1;padding-top:12px;border-top:1px solid #e2e8f0}.compras-form-footer>span{color:#64748b;font-size:10px}
+.compras-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:4px 2px;color:#94a3b8;font-size:9px;letter-spacing:.02em}
+@media(max-width:900px){.compras-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.compras-overview-grid{grid-template-columns:minmax(0,1fr)}.compras-field{grid-column:span 6}}
+@media(max-width:600px){.compras-page{gap:9px}.compras-header{padding:13px}.compras-header h1{font-size:18px}.compras-header-actions{width:100%}.compras-header-actions .compras-button{flex:1}.compras-kpis{gap:7px}.compras-kpi{padding:10px}.compras-kpi strong{font-size:20px}.compras-panel{padding:10px}.compras-field,.compras-field--wide{grid-column:1/-1}.compras-form-footer{align-items:stretch}.compras-form-footer .compras-button{width:100%}.compras-footer{flex-direction:column;align-items:flex-start}}
+
+/* Pedido de compra: grade industrial compacta, sem duplicação de cartões. */
+.compras-items-editor{grid-column:1/-1;min-width:0;padding-top:4px}
+.compras-items-editor .compras-panel-heading{margin-bottom:8px}
+.compras-order-editor{border-top:3px solid #f97316}
+.compras-grid-input{min-height:30px;width:100%;padding:4px 5px;border:1px solid #cbd5e1;border-radius:4px;background:#fff;color:#0f172a;font:inherit;font-size:10px}
+.compras-grid-number{min-width:74px;text-align:right;font-variant-numeric:tabular-nums}
+.compras-grid-unit{min-width:48px}
+.compras-grid-date{min-width:132px}
+.compras-grid-text{min-width:100px}
+.compras-product-select{min-width:220px;max-width:300px}
+.compras-remove-item{display:inline-grid;place-items:center;width:28px;height:28px;border:1px solid #fecaca;border-radius:5px;background:#fff7f7;color:#b91c1c;cursor:pointer}
+.compras-remove-item:disabled{opacity:.4;cursor:not-allowed}
+.compras-order-totals{display:flex;grid-column:1/-1;justify-content:flex-end;gap:18px;flex-wrap:wrap;padding:12px;background:#f8fafc;border:1px solid #dbe4e9;border-radius:6px}
+.compras-order-totals span{display:flex;flex-direction:column;gap:4px;color:#64748b;font-size:9px;text-transform:uppercase;font-weight:700}
+.compras-order-totals strong{color:#123b50;font-size:13px;font-variant-numeric:tabular-nums}
+.compras-order-editor .compras-table-scroll{max-width:100%;overflow-x:auto}
+@media(max-width:900px){.compras-order-totals{justify-content:flex-start;gap:12px}}
+
+
+/* Administração global — alinhamento industrial compacto, campos h-10 */
+.admin-global-layout{display:grid;grid-template-columns:248px minmax(0,1fr);gap:14px;align-items:start}
+.admin-global-sidebar{position:sticky;top:12px;display:flex;flex-direction:column;gap:5px;padding:12px;background:#0f172a;border:1px solid #1e293b;border-radius:10px;color:#fff;min-height:390px}
+.admin-global-sidebar-title{padding:8px 8px 14px;margin-bottom:5px;border-bottom:1px solid #334155;font-size:10px;font-weight:900;letter-spacing:.09em;color:#e2e8f0}
+.admin-global-sidebar-title span{display:block;margin-top:5px;font-size:10px;font-weight:500;letter-spacing:0;color:#94a3b8}
+.admin-global-nav{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;padding:8px;border:1px solid transparent;border-radius:6px;background:transparent;color:#cbd5e1;text-align:left;cursor:pointer}
+.admin-global-nav>span{display:flex;flex-direction:column;gap:3px;min-width:0}
+.admin-global-nav strong{font-size:11px;font-weight:800}
+.admin-global-nav small{font-size:9px;color:#94a3b8}
+.admin-global-nav:hover{background:#1e293b;color:#fff}
+.admin-global-nav.is-active{background:#1d5fd1;border-color:#3b82f6;color:#fff}
+.admin-global-nav.is-active small{color:#dbeafe}
+.admin-global-sidebar-foot{display:flex;gap:7px;align-items:flex-start;margin-top:auto;padding:12px 5px 4px;border-top:1px solid #334155;color:#94a3b8;font-size:9px;line-height:1.5}
+.admin-global-content{min-width:0}
+.admin-global-panel{padding:16px;min-width:0}
+.admin-global-logo-row{display:flex;align-items:center;gap:14px;margin:12px 0 18px;padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px}
+.admin-global-logo-preview{display:grid;place-items:center;flex:0 0 76px;width:76px;height:76px;overflow:hidden;background:#fff;border:1px dashed #94a3b8;border-radius:7px;color:#64748b}
+.admin-global-logo-preview img{width:100%;height:100%;object-fit:contain}
+.admin-global-logo-row strong{font-size:12px;color:#123b50}
+.admin-global-logo-row p{margin:5px 0 0;font-size:10px;line-height:1.6;color:#64748b}
+.admin-global-fields{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px}
+.admin-global-fields label{display:flex;flex-direction:column;gap:5px;min-width:0}
+.admin-global-fields label>span,.admin-global-log-search{font-size:10px;font-weight:800;color:#475569}
+.admin-global-fields input,.admin-global-log-search input{width:100%;min-width:0;padding:0 10px;border:1px solid #cbd5e1;border-radius:5px;background:#fff;color:#0f172a;font-size:12px}
+.admin-global-count{white-space:nowrap;padding:5px 8px;border-radius:5px;background:#eff6ff;color:#1d4ed8;font-size:10px;font-weight:800}
+.admin-global-master{display:inline-block;margin-left:6px;padding:2px 5px;border-radius:3px;background:#fef3c7;color:#92400e;font-size:8px;font-weight:900}
+.admin-global-active{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-size:10px}
+.admin-global-note{margin-top:14px;padding:10px 12px;border:1px solid #dbeafe;border-radius:6px;background:#f8fbff;color:#475569;font-size:10px;line-height:1.6}
+.admin-global-module-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.admin-global-module{min-width:0;padding:12px;border:1px solid #dbe4e9;border-radius:7px;background:#fff}
+.admin-global-module>div{display:flex;align-items:center;gap:8px;color:#123b50}
+.admin-global-module>div strong{font-size:11px}
+.admin-global-module>span{display:block;margin:7px 0 9px;color:#64748b;font-size:10px}
+.admin-global-module ul{list-style:none;padding:0;margin:0;border-top:1px solid #e2e8f0}
+.admin-global-module li{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid #f1f5f9;font-size:10px;color:#475569}
+.admin-global-module li code{font-size:9px;color:#64748b;text-align:right;overflow-wrap:anywhere}
+.admin-global-log-search{display:flex;flex-direction:column;gap:5px;max-width:420px;margin-bottom:12px}
+@media(max-width:900px){.admin-global-layout{grid-template-columns:1fr}.admin-global-sidebar{position:static;min-height:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.admin-global-sidebar-title,.admin-global-sidebar-foot{grid-column:1/-1}.admin-global-module-grid{grid-template-columns:1fr}}
+@media(max-width:560px){.admin-global-sidebar{grid-template-columns:1fr}.admin-global-fields{grid-template-columns:1fr}.admin-global-fields label{grid-column:1/-1}.admin-global-logo-row{align-items:flex-start}.admin-global-panel{padding:10px}}
+
+
+/* Cadastro de produtos — padrão compacto de inputs, isolado até validação visual. */
+.produtos-cadastro-page .produto-field--span-2{grid-column:span 2 / span 2}
+.produtos-cadastro-page .produto-field--span-3{grid-column:span 3 / span 3}
+.produtos-cadastro-page .produto-field--span-4{grid-column:span 4 / span 4}
+.produtos-cadastro-page .produto-field--full{grid-column:1 / -1}
+.produtos-cadastro-page .compras-field input,
+.produtos-cadastro-page .compras-field select{height:36px;min-height:36px;padding:0 9px;border-radius:5px;font-size:11px}
+.produtos-cadastro-page .produto-origem-opcoes{display:flex;flex-wrap:wrap;gap:8px;padding-top:2px}
+.produtos-cadastro-page .produto-origem-opcoes label{display:flex;align-items:center;gap:6px;min-height:36px;padding:0 10px;border:1px solid #cbd5e1;border-radius:5px;background:#fff;color:#334155;font-size:11px;font-weight:700}
+.produtos-cadastro-page .produto-origem-opcoes input{width:14px;height:14px;min-height:0}
+@media(max-width:900px){.produtos-cadastro-page .produto-field--span-2,.produtos-cadastro-page .produto-field--span-3,.produtos-cadastro-page .produto-field--span-4{grid-column:span 6 / span 6}}
+@media(max-width:600px){.produtos-cadastro-page .produto-field--span-2,.produtos-cadastro-page .produto-field--span-3,.produtos-cadastro-page .produto-field--span-4{grid-column:1 / -1}}
