@@ -87,6 +87,9 @@ jobs:
       - name: Industrial controls contract
         run: npm run verify:industrial-controls
 
+      - name: Accounting journals contract
+        run: npm run verify:account-journals
+
       - name: Quality tablet regression contract
         run: npm run verify:quality-tablet-contract
       - name: Global horizontal shell regression contract
