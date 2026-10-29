@@ -66,8 +66,9 @@ create policy rh_documentos_tenant_insert on public.rh_documentos_colaborador fo
     and exists (select 1 from public.erp_funcionarios f where f.id = funcionario_id and f.empresa_id = rh_documentos_colaborador.empresa_id));
 create policy rh_documentos_tenant_update on public.rh_documentos_colaborador for update to authenticated
   using (empresa_id = public.erp_current_empresa_id())
-  with check (empresa_id = public.erp_current_empresa_id() and exists (
-    select 1 from public.erp_funcionarios f where f.id = funcionario_id and f.empresa_id = rh_documentos_colaborador.empresa_id));
+  with check (empresa_id = public.erp_current_empresa_id()
+    and path_storage like ('rh/funcionarios/' || funcionario_id::text || '/%')
+    and exists (select 1 from public.erp_funcionarios f where f.id = funcionario_id and f.empresa_id = rh_documentos_colaborador.empresa_id));
 create policy rh_documentos_tenant_delete on public.rh_documentos_colaborador for delete to authenticated
   using (empresa_id = public.erp_current_empresa_id());
 
