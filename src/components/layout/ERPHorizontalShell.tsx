@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, ClipboardCheck, Boxes, BookOpen, SlidersHorizontal } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, Boxes, BookOpen, SlidersHorizontal } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -27,7 +27,7 @@ const menus: MenuItem[] = [
   { label: 'Configurações', route: '/pageprincipal/administracao-configuracoes', icon: Settings, children: [
     { label: 'Parâmetros do Sistema', route: '/parametros-sistema', icon: SlidersHorizontal, isUpdated: true },
   ] },
-  { label: 'Setup Wizard', route: '/pageprincipal/configuracao-inicial', icon: ClipboardCheck, isUpdated: true },
+
   { label: 'Recebimento XML / Estoque', route: '/recebimento-nfe', icon: Boxes, isNew: true },
   { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText, children: [
     { label: 'Diários Contábeis', route: '/diarios-contabeis', icon: BookOpen, isUpdated: true },
