@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { ClipboardList, FileText, PackageCheck, Plus, RefreshCw, Search, ShoppingCart, Truck } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
 import ComprasPedidoForm from './ComprasPedidoForm'
 import XmlInvoiceReceiptScreen from './XmlInvoiceReceiptScreen'
 import { supabase } from '../lib/supabaseClient'
@@ -90,7 +91,9 @@ function DataTable({ rows, kind }: { rows: DbRow[]; kind: 'requisicoes' | 'cotac
 }
 
 export default function ComprasWorkspace() {
-  const [activeTab, setActiveTab] = useState<TabKey>('visao-geral')
+  const [searchParams] = useSearchParams()
+  const [activeTab, setActiveTab] = useState<TabKey>(() => searchParams.get('aba') === 'xml' ? 'xml' : 'visao-geral')
+  useEffect(() => { setActiveTab(searchParams.get('aba') === 'xml' ? 'xml' : 'visao-geral') }, [searchParams])
   const [search, setSearch] = useState('')
   const [showRfqForm, setShowRfqForm] = useState(false)
   const [showOrderForm, setShowOrderForm] = useState(false)
