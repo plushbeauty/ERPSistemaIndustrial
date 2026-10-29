@@ -213,7 +213,7 @@ export function PasswordPolicyPanel() {
       if (!auth.user) throw new Error('Sessão expirada.')
       const { error: updateError } = await supabase.from('erp_sistema_politica_senha').update({ comprimento_minimo: minimum, exigir_maiuscula: uppercase, exigir_numero: number, atualizado_por: auth.user.id, atualizado_em: new Date().toISOString() }).eq('id', policy.id)
       if (updateError) throw updateError
-      setNotice('Política global de senha atualizada. A função de cadastro aplica estas regras após a migration ser aplicada e a função publicada.')
+      setNotice('Política global de senha atualizada. O cadastro público e os fluxos administrativos usam estas regras após a migration ser aplicada e as Edge Functions serem publicadas.')
     } catch (cause) { setError(messageOf(cause)) } finally { setSaving(false) }
   }
   if (!checked) return <section className={panel}>Validando identidade Master…</section>
