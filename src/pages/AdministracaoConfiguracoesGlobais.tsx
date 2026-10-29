@@ -1,6 +1,6 @@
 /**
  * SYSNQRA ERP INDUSTRIAL — Administração e Configurações Globais
- * @REVISAO 28/10/2026
+ * @REVISAO 29/10/2026
  * Usa entidades existentes: erp_empresas, erp_usuarios, erp_roles,
  * erp_permissions, erp_role_permissions e erp_audit_logs.
  * Não cria usuários Auth diretamente nem simula instalação de módulos.
@@ -60,17 +60,38 @@ export default function AdministracaoConfiguracoesGlobais() {
       setTenantId(tenant)
       const [companyResult, usersResult, rolesResult, permissionsResult, logsResult] = await Promise.all([
         supabase.from('erp_empresas').select('*').eq('id', tenant).maybeSingle(),
-        supabase.from('erp_usuarios').select('id,nome,email,login_nome,perfil,nivel_admin,ativo,role_id,is_master,deleted_at,empresa_id,auth_user_id').eq('empresa_id', tenant).is('deleted_at', null).order('nome').limit(500),
+        supabase.from('erp_usuarios').select('*').eq('empresa_id', tenant).order('nome').limit(500),
         supabase.from('erp_roles').select('id,codigo,nome,nivel,ativo').eq('ativo', true).order('nivel', { ascending: false }),
-        supabase.from('erp_permissions').select('id,codigo,nome,modulo,ativo').eq('ativo', true).order('modulo').order('codigo').limit(1000),
+        supabase.from('erp_permissions').select('*').limit(1000),
         supabase.from('erp_audit_logs').select('id,action,module,entity,entity_id,created_at,user_id').eq('company_id', tenant).order('created_at', { ascending: false }).limit(200),
       ])
       const firstError = companyResult.error || usersResult.error || rolesResult.error || permissionsResult.error || logsResult.error
       if (firstError) throw firstError
       setCompany((companyResult.data as CompanyRow | null) ?? null)
-      setUsers((usersResult.data ?? []) as UserRow[])
+      setUsers(((usersResult.data ?? []) as Array<Record<string, unknown>>)
+        .filter(row => row.deleted_at == null)
+        .map(row => ({
+          id: String(row.id ?? ''), nome: typeof row.nome === 'string' ? row.nome : null,
+          email: typeof row.email === 'string' ? row.email : null,
+          login_nome: typeof row.login_nome === 'string' ? row.login_nome : null,
+          perfil: typeof row.perfil === 'string' ? row.perfil : null,
+          nivel_admin: typeof row.nivel_admin === 'number' ? row.nivel_admin : null,
+          ativo: typeof row.ativo === 'boolean' ? row.ativo : false,
+          role_id: typeof row.role_id === 'string' ? row.role_id : null,
+          is_master: row.is_master === true || row.nivel_admin === 100,
+          deleted_at: typeof row.deleted_at === 'string' ? row.deleted_at : null,
+          empresa_id: typeof row.empresa_id === 'string' ? row.empresa_id : null,
+          auth_user_id: typeof row.auth_user_id === 'string' ? row.auth_user_id : null,
+        })))
       setRoles((rolesResult.data ?? []) as RoleRow[])
-      setPermissions((permissionsResult.data ?? []) as PermissionRow[])
+      setPermissions(((permissionsResult.data ?? []) as Array<Record<string, unknown>>)
+        .map(row => {
+          const codigo = typeof row.codigo === 'string' ? row.codigo : typeof row.code === 'string' ? row.code : ''
+          const nome = typeof row.nome === 'string' ? row.nome : typeof row.name === 'string' ? row.name : codigo
+          const modulo = typeof row.modulo === 'string' ? row.modulo : codigo.includes('.') ? codigo.split('.')[0] : 'geral'
+          return { id: String(row.id ?? codigo), codigo, nome, modulo, ativo: typeof row.ativo === 'boolean' ? row.ativo : true }
+        })
+        .filter(row => row.ativo))
       setLogs((logsResult.data ?? []) as AuditRow[])
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível carregar as configurações.')
@@ -102,11 +123,15 @@ export default function AdministracaoConfiguracoesGlobais() {
       setError('A identidade Master não pode ser alterada por esta tela.')
       return
     }
+    if (user.role_id === null) {
+      setError('O schema remoto não disponibiliza role_id. Aplique a migration RBAC antes de alterar perfis.')
+      return
+    }
     const role = roles.find(item => item.id === roleId)
     if (!role) return
     setBusyUser(user.id); setError(''); setMessage('')
     try {
-      const { error: updateError } = await supabase.from('erp_usuarios').update({ role_id: role.id }).eq('id', user.id).eq('empresa_id', tenantId).is('deleted_at', null)
+      const { error: updateError } = await supabase.from('erp_usuarios').update({ role_id: role.id }).eq('id', user.id).eq('empresa_id', tenantId)
       if (updateError) throw updateError
       setMessage('Perfil solicitado atualizado. O banco validará a permissão do administrador e o nível do perfil.')
       await load()
@@ -130,7 +155,7 @@ export default function AdministracaoConfiguracoesGlobais() {
     finally { setBusyUser(null) }
   }
 
-  const modules = Array.from(new Set(permissions.map(item => item.modulo))).sort()
+  const modules = Array.from(new Set(permissions.map(item => item.modulo || 'geral'))).sort()
   const filteredLogs = logs.filter(row => [row.action, row.module, row.entity, row.entity_id, row.user_id].some(value => String(value ?? '').toLocaleLowerCase('pt-BR').includes(logSearch.trim().toLocaleLowerCase('pt-BR'))))
 
   return <main className="compras-page" aria-label="Administração e Configurações Globais">
@@ -155,7 +180,7 @@ export default function AdministracaoConfiguracoesGlobais() {
           </form>}
           {section === 'usuarios' && <section className="compras-panel admin-global-panel">
             <div className="compras-panel-heading"><div><h2>Controle de usuários e níveis de acesso</h2><p>Usuários existentes em erp_usuarios; convite e criação de credenciais Auth exigem o fluxo seguro de convite do servidor.</p></div><span className="admin-global-count">{users.length} usuários</span></div>
-            <div className="compras-table-scroll"><table className="compras-table"><thead><tr><th>Nome / login</th><th>E-mail</th><th>Perfil RBAC</th><th>Nível</th><th>Status</th></tr></thead><tbody>{users.map(user => <tr key={user.id}><td><strong>{user.nome || user.login_nome || 'Usuário sem nome'}</strong>{user.is_master && <small className="admin-global-master">MASTER</small>}</td><td>{user.email || '—'}</td><td>{user.is_master || user.nivel_admin === 100 ? <span>Master (protegido)</span> : <select className="h-10" value={user.role_id ?? ''} disabled={busyUser === user.id} onChange={event => void changeRole(user, event.target.value)}><option value="" disabled>Perfil não definido</option>{roles.filter(role => role.nivel < 100).map(role => <option key={role.id} value={role.id}>{role.nome} ({role.codigo})</option>)}</select>}</td><td>{user.nivel_admin ?? '—'}</td><td><label className="admin-global-active"><input type="checkbox" checked={Boolean(user.ativo)} disabled={busyUser === user.id || Boolean(user.is_master) || user.nivel_admin === 100} onChange={event => void toggleUser(user, event)}/>{user.ativo ? 'Ativo' : 'Inativo'}</label></td></tr>)}</tbody></table></div>
+            <div className="compras-table-scroll"><table className="compras-table"><thead><tr><th>Nome / login</th><th>E-mail</th><th>Perfil RBAC</th><th>Nível</th><th>Status</th></tr></thead><tbody>{users.map(user => <tr key={user.id}><td><strong>{user.nome || user.login_nome || 'Usuário sem nome'}</strong>{(user.is_master || user.nivel_admin === 100) && <small className="admin-global-master">MASTER</small>}</td><td>{user.email || '—'}</td><td>{user.is_master || user.nivel_admin === 100 ? <span>Master (protegido)</span> : user.role_id !== null ? <select className="h-10" value={user.role_id} disabled={busyUser === user.id} onChange={event => void changeRole(user, event.target.value)}><option value="" disabled>Perfil não definido</option>{roles.filter(role => role.nivel < 100).map(role => <option key={role.id} value={role.id}>{role.nome} ({role.codigo})</option>)}</select> : <span title="A coluna role_id não está disponível no schema remoto">RBAC indisponível</span>}</td><td>{user.nivel_admin ?? '—'}</td><td><label className="admin-global-active"><input type="checkbox" checked={Boolean(user.ativo)} disabled={busyUser === user.id || Boolean(user.is_master) || user.nivel_admin === 100} onChange={event => void toggleUser(user, event)}/>{user.ativo ? 'Ativo' : 'Inativo'}</label></td></tr>)}</tbody></table></div>
             <p className="admin-global-note">A matriz de permissões é definida em <code>erp_permissions</code> e <code>erp_role_permissions</code>. Alterações respeitam as regras RBAC e o nível do administrador no banco.</p>
           </section>}
           {section === 'modulos' && <section className="compras-panel admin-global-panel">
