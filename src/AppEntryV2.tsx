@@ -19,6 +19,7 @@ const Paquimetro = lazy(() => import('./pages/QualidadePaquimetroDigital'))
 const ComprasWorkspace = lazy(() => import('./pages/ComprasWorkspace'))
 const ConfiguracoesADM = lazy(() => import('./pages/configuracoes/ConfiguracoesADM'))
 const PCPFichasProcesso = lazy(() => import('./pages/PCPFichasProcesso'))
+const SubcontractingScreen = lazy(() => import('./pages/SubcontractingScreen'))
 
 function LoadingWorkspace() {
   return <main role="status" aria-live="polite" style={{ minHeight: '50vh', display: 'grid', placeItems: 'center', color: '#123b50', fontFamily: 'Inter,system-ui,sans-serif' }}>Carregando SYSNQRA ERP INDUSTRIAL…</main>
@@ -37,6 +38,7 @@ export default function AppEntryV2() {
               <Route path="administracao-configuracoes" element={<ConfiguracoesADM />} />
               <Route path="administracao-configuracoes/:section" element={<ConfiguracoesADM />} />
               <Route path="pcp/fichas-processo" element={<PCPFichasProcesso />} />
+              <Route path="subcontratacao" element={<SubcontractingScreen />} />
               <Route path="fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />
               <Route path="pcp" element={<PCPWorkspace />} />
               <Route path="paquimetro" element={<QualityPlanGate><Paquimetro /></QualityPlanGate>} />
@@ -49,6 +51,7 @@ export default function AppEntryV2() {
             <Route path="/cadastros" element={<Navigate to="/pageprincipal" replace />} />
             <Route path="/fiscal" element={<Navigate to="/pageprincipal/fiscal" replace />} />
             <Route path="/pcp/fichas-processo" element={<Navigate to="/pageprincipal/pcp/fichas-processo" replace />} />
+            <Route path="/producao/subcontratacao" element={<Navigate to="/pageprincipal/subcontratacao" replace />} />
             <Route path="/pcp" element={<Navigate to="/pageprincipal/pcp" replace />} />
             <Route path="/paquimetro" element={<Navigate to="/pageprincipal/paquimetro" replace />} />
             <Route path="/qualidade/paquimetro" element={<Navigate to="/pageprincipal/paquimetro" replace />} />
