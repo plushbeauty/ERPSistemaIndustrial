@@ -18,6 +18,7 @@ const PCPWorkspace = lazy(() => import('./pages/PCPWorkspace'))
 const Paquimetro = lazy(() => import('./pages/QualidadePaquimetroDigital'))
 const ComprasWorkspace = lazy(() => import('./pages/ComprasWorkspace'))
 const AdministracaoConfiguracoesGlobais = lazy(() => import('./pages/AdministracaoConfiguracoesGlobais'))
+const RHIndustrial = lazy(() => import('./pages/RHIndustrial'))
 
 function LoadingWorkspace() {
   return <main role="status" aria-live="polite" style={{ minHeight: '50vh', display: 'grid', placeItems: 'center', color: '#123b50', fontFamily: 'Inter,system-ui,sans-serif' }}>Carregando SYSNQRA ERP INDUSTRIAL…</main>
@@ -34,6 +35,7 @@ export default function AppEntryV2() {
               <Route index element={<AppIndustrial />} />
               <Route path="compras" element={<ComprasWorkspace />} />
               <Route path="administracao-configuracoes" element={<AdministracaoConfiguracoesGlobais />} />
+              <Route path="rh" element={<RHIndustrial />} />
               <Route path="fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />
               <Route path="pcp" element={<PCPWorkspace />} />
               <Route path="paquimetro" element={<QualityPlanGate><Paquimetro /></QualityPlanGate>} />
@@ -41,6 +43,7 @@ export default function AppEntryV2() {
             <Route path="/compras" element={<Navigate to="/pageprincipal/compras" replace />} />
             <Route path="/configuracoes-adm" element={<Navigate to="/pageprincipal/administracao-configuracoes" replace />} />
             <Route path="/administracao-configuracoes" element={<Navigate to="/pageprincipal/administracao-configuracoes" replace />} />
+            <Route path="/rh" element={<Navigate to="/pageprincipal/rh" replace />} />
             <Route path="/erp-industrial" element={<Navigate to="/pageprincipal" replace />} />
             <Route path="/cadastros" element={<Navigate to="/pageprincipal" replace />} />
             <Route path="/fiscal" element={<Navigate to="/pageprincipal/fiscal" replace />} />
