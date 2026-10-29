@@ -35,7 +35,7 @@ async function authUserExistsByEmail(admin: ReturnType<typeof createClient>, ema
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders(req.headers.get('origin')) })
-  if (req.method !== 'POST') return json({ error: 'Método não permitido.' }, 405)
+  if (req.method !== 'POST') return json({ error: 'Método não permitido.' }, 405, req.headers.get('origin'))
   const origin = req.headers.get('origin')
   if (origin !== productionOrigin && !(origin && allowedPreviewOrigin.test(origin))) return json({ error: 'Origem não autorizada para cadastro empresarial.' }, 403, origin)
 
