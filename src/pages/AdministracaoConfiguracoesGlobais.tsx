@@ -63,7 +63,7 @@ export default function AdministracaoConfiguracoesGlobais() {
         supabase.from('erp_usuarios').select('*').eq('empresa_id', tenant).order('nome').limit(500),
         supabase.from('erp_roles').select('id,codigo,nome,nivel,ativo').eq('ativo', true).order('nivel', { ascending: false }),
         supabase.from('erp_permissions').select('*').limit(1000),
-        supabase.from('erp_audit_logs').select('id,action,module,entity,entity_id,created_at,user_id').eq('company_id', tenant).order('created_at', { ascending: false }).limit(200),
+        supabase.from('erp_audit_logs').select('*').eq('empresa_id', tenant).order('created_at', { ascending: false }).limit(200),
       ])
       const firstError = companyResult.error || usersResult.error || rolesResult.error || permissionsResult.error || logsResult.error
       if (firstError) throw firstError
