@@ -36,7 +36,7 @@ export default function ConfiguracaoPerfis() {
       if (permissionResult.error) throw permissionResult.error
       const actor = actorResult.data
       const companyId = typeof companyResult.data === 'string' ? companyResult.data : null
-      if (!actor?.ativo || actor.deleted_at || !companyId || actor.empresa_id !== companyId || permissionResult.data !== true) {
+      if (!actor?.ativo || !companyId || actor.empresa_id !== companyId || permissionResult.data !== true) {
         throw new Error('Seu usuário não tem permissão para consultar a administração de perfis.')
       }
       const { data, error: queryError } = await supabase.from('erp_roles')
