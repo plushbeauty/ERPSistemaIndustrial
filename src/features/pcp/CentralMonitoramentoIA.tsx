@@ -141,7 +141,33 @@ export default function CentralMonitoramentoIA() {
     <section className="grid min-w-0 grid-cols-1 gap-2 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
       <div className={panel}>
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2"><div><h3 className="text-xs font-extrabold text-[#123B50]">SINAIS DO CLP / SENSORES</h3><p className="text-[10px] text-slate-500">Somente valores numéricos presentes no payload real dos eventos.</p></div><span className="inline-flex items-center gap-1 text-[9px] font-bold text-slate-500"><ShieldCheck size={12}/> RLS + sessão autenticada</span></div>
-        {chartData.length ? <div className="h-52 w-full"><ResponsiveContainer width="100%" height="100%"><AreaChart data={chartData} margin={{ top: 4, right: 6, left: -18, bottom: 0 }}><CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0"/><XAxis dataKey="ciclo" tick={{ fontSize: 9 }} stroke="#64748B"/><YAxis tick={{ fontSize: 9 }} stroke="#64748B"/><Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }}/>{chartData.some(x => x.pressao !== null) && <Area type="monotone" dataKey="pressao" name="Pressão (unidade do payload)" stroke="#D97706" fill="#FED7AA" connectNulls={false} />}{chartData.some(x => x.temperatura !== null) && <Area type="monotone" dataKey="temperatura" name="Temperatura (unidade do payload)" stroke="#2D8DB8" fill="#BAE6FD" connectNulls={false}/>}</AreaChart></ResponsiveContainer></div> : <div className="grid min-h-40 place-items-center rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 text-center"><div><Thermometer size={22} className="mx-auto mb-2 text-slate-400"/><p className="text-xs font-bold text-slate-600">Sem sinais térmicos ou de pressão no payload</p><p className="mt-1 max-w-md text-[10px] text-slate-500">A coleta atual já registra ciclos, peças boas e refugo. Para desenhar as curvas, o CLP precisa enviar os nomes de sensores usados pelo equipamento.</p></div></div>}
+        {chartData.length ? <div className="h-64 w-full rounded-lg bg-gradient-to-b from-slate-50/80 to-white p-1 sm:h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData} margin={{ top: 10, right: 8, left: -12, bottom: 2 }}>
+              <defs>
+                <linearGradient id="pressureFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#D97706" stopOpacity={0.28}/>
+                  <stop offset="95%" stopColor="#D97706" stopOpacity={0.015}/>
+                </linearGradient>
+                <linearGradient id="temperatureFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#2D8DB8" stopOpacity={0.24}/>
+                  <stop offset="95%" stopColor="#2D8DB8" stopOpacity={0.015}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid vertical={false} stroke="#E2E8F0" strokeDasharray="3 5"/>
+              <XAxis dataKey="ciclo" tick={{ fontSize: 10, fill: '#64748B' }} tickLine={false} axisLine={{ stroke: '#CBD5E1' }} minTickGap={18} />
+              {chartData.some(x => x.pressao !== null) && <YAxis yAxisId="pressure" tick={{ fontSize: 10, fill: '#B45309' }} tickLine={false} axisLine={false} width={42} />}
+              {chartData.some(x => x.temperatura !== null) && <YAxis yAxisId="temperature" orientation="right" tick={{ fontSize: 10, fill: '#2D8DB8' }} tickLine={false} axisLine={false} width={42} />}
+              <Tooltip
+                contentStyle={{ fontSize: 11, borderRadius: 10, border: '1px solid #E2E8F0', boxShadow: '0 8px 24px rgba(15,23,42,.08)' }}
+                labelStyle={{ color: '#123B50', fontWeight: 800, marginBottom: 4 }}
+                formatter={(value: number | string, name: string) => [typeof value === 'number' ? value.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) : value, name]}
+              />
+              {chartData.some(x => x.pressao !== null) && <Area yAxisId="pressure" type="monotone" dataKey="pressao" name="Pressão (unidade do payload)" stroke="#D97706" strokeWidth={2.5} fill="url(#pressureFill)" activeDot={{ r: 4, strokeWidth: 0 }} dot={false} connectNulls={false} />}
+              {chartData.some(x => x.temperatura !== null) && <Area yAxisId="temperature" type="monotone" dataKey="temperatura" name="Temperatura (unidade do payload)" stroke="#2D8DB8" strokeWidth={2.5} fill="url(#temperatureFill)" activeDot={{ r: 4, strokeWidth: 0 }} dot={false} connectNulls={false} />}
+            </AreaChart>
+          </ResponsiveContainer>
+        </div></div> : <div className="grid min-h-40 place-items-center rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 text-center"><div><Thermometer size={22} className="mx-auto mb-2 text-slate-400"/><p className="text-xs font-bold text-slate-600">Sem sinais térmicos ou de pressão no payload</p><p className="mt-1 max-w-md text-[10px] text-slate-500">A coleta atual já registra ciclos, peças boas e refugo. Para desenhar as curvas, o CLP precisa enviar os nomes de sensores usados pelo equipamento.</p></div></div>}
       </div>
       <div className={panel}>
         <div className="mb-2 flex items-center gap-2"><Gauge size={15} className="text-orange-600"/><h3 className="text-xs font-extrabold text-[#123B50]">LIMIAR DE ALERTA PREDITIVO</h3></div>
