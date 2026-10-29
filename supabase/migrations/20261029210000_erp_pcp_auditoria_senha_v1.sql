@@ -141,7 +141,7 @@ begin
     where u.auth_user_id = v_user and u.empresa_id = v_empresa
       and u.ativo is true and u.deleted_at is null
       and coalesce(u.nivel_admin, 0) >= 1
-  ) and not public.erp_has_permission('pcp.criar') then
+  ) and not coalesce(public.erp_has_permission('pcp.criar'), false) then
     raise exception 'Usuário sem permissão para emitir ordens de produção.' using errcode='42501';
   end if;
   if p_lotes is null or jsonb_typeof(p_lotes) <> 'array' or jsonb_array_length(p_lotes) = 0 then
