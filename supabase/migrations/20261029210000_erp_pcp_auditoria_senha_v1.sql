@@ -136,6 +136,14 @@ begin
   ) then
     raise exception 'Usuário ERP ativo não encontrado na empresa atual.' using errcode='42501';
   end if;
+  if not exists (
+    select 1 from public.erp_usuarios u
+    where u.auth_user_id = v_user and u.empresa_id = v_empresa
+      and u.ativo is true and u.deleted_at is null
+      and coalesce(u.nivel_admin, 0) >= 1
+  ) and not public.erp_has_permission('pcp.criar') then
+    raise exception 'Usuário sem permissão para emitir ordens de produção.' using errcode='42501';
+  end if;
   if p_lotes is null or jsonb_typeof(p_lotes) <> 'array' or jsonb_array_length(p_lotes) = 0 then
     raise exception 'Selecione os lotes reais de matéria-prima antes de emitir a OP.' using errcode='22023';
   end if;
