@@ -7,7 +7,13 @@ import { existsSync, readFileSync } from 'node:fs'
  */
 const shell = readFileSync('src/components/layout/ERPHorizontalShell.tsx', 'utf8')
 const app = readFileSync('src/AppEntryV2.tsx', 'utf8')
+const permissionPage = readFileSync('src/pages/configuracoes/ConfiguracaoPermissoes.tsx', 'utf8')
 const checks = [
+  [
+    permissionPage.includes(".select('nivel_admin,empresa_id,ativo')") &&
+      !permissionPage.includes('actor.deleted_at'),
+    'A consulta de permissões deve validar somente colunas selecionadas e existentes no perfil ERP.',
+  ],
   [
     shell.includes("{ label: 'Compras', route: '/pageprincipal/compras', icon: ShoppingCart, isUpdated: true }") &&
       shell.includes("{ label: 'Configurações', route: '/pageprincipal/administracao-configuracoes', icon: Settings }"),
