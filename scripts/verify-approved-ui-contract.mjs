@@ -8,7 +8,7 @@ const checks = [
   ['Tela pública do logo preservada', existsSync('src/PublicIndustrialHome.tsx') && bootstrap.includes("import('./PublicIndustrialHome')")],
   ['Dashboard industrial aprovado preservado', readFileSync('src/AppIndustrialV7.tsx', 'utf8').includes('IndustrialCommandDashboard')],
   ['Fiscal aprovada preservada', existsSync('src/pages/Fiscal.tsx') && app.includes('path="/fiscal"')],
-  ['Compras e Configurações aprovadas preservadas', existsSync('src/pages/ComprasWorkspace.tsx') && existsSync('src/pages/AdministracaoConfiguracoesGlobais.tsx') && app.includes('path="compras"') && app.includes('path="administracao-configuracoes"') && shell.includes("label: 'Compras'") && shell.includes("label: 'Configurações'")],
+  ['Compras e Configurações aprovadas preservadas', existsSync('src/pages/ComprasWorkspace.tsx') && existsSync('src/pages/AdministracaoConfiguracoesGlobais.tsx') && app.includes('path="compras"') && app.includes('path="administracao-configuracoes"') && app.includes('path="rh"') && shell.includes("label: 'Compras'") && shell.includes("label: 'Configurações'") && shell.includes("label: 'RH e Departamento Pessoal'") && existsSync('src/pages/RHIndustrial.tsx')],
   ['Barra Windows 11 preservada', shell.includes('BarraWindows11') && shell.includes('erp-windows-topbar')],
   ['Rotas antigas abrem a Page Principal padrão', app.includes('path="*"') && app.includes('Navigate to="/pageprincipal"') && app.includes('path="/fiscal"') && app.includes('path="/pcp"') && app.includes('path="/paquimetro"')],
   ['Login nativo Supabase preservado', existsSync('src/IndustrialLoginDirect.tsx') && bootstrap.includes('IndustrialLoginDirect')],
