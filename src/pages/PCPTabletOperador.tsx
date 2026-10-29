@@ -147,7 +147,7 @@ export default function PCPTabletOperador() {
   event.preventDefault();setError('');setNotice('')
   if(busy||!op||found<=0||defects>found||(defects>0&&!reason.trim())||!instrumentValid){setError('Complete a OP, quantidade, motivo de refugo e TAG calibrada antes de gravar.');return}
   const item:Pending={id:crypto.randomUUID(),createdAt:new Date().toISOString(),opId,found,defects,reason:reason.trim(),instrument:instrument.trim().toUpperCase()}
-  if(!navigator.onLine){writeQueue([...readQueue(),item]);setPendingCount(readQueue().length+1);setNotice('OFFLINE: apontamento protegido na fila local.');setFound(0);setDefects(0);setReason('');return}
+  if(!navigator.onLine){writeQueue([...readQueue(),item]);setPendingCount(readQueue().length);setNotice('OFFLINE: apontamento protegido na fila local.');setFound(0);setDefects(0);setReason('');return}
   setBusy(true)
   try {
    const payload=await resolvePayload(item)
@@ -156,7 +156,7 @@ export default function PCPTabletOperador() {
    setNotice(result.error?.code==='23505'?'Apontamento já registrado; duplicidade bloqueada.':'Apontamento gravado no Supabase.')
    setFound(0);setDefects(0);setReason('')
   } catch(e) {
-   if(networkFailure(e)){writeQueue([...readQueue(),item]);setPendingCount(readQueue().length+1);setNotice('Conexão instável: apontamento preservado na fila local.');setFound(0);setDefects(0);setReason('')}
+   if(networkFailure(e)){writeQueue([...readQueue(),item]);setPendingCount(readQueue().length);setNotice('Conexão instável: apontamento preservado na fila local.');setFound(0);setDefects(0);setReason('')}
    else setError(errorText(e))
   } finally {setBusy(false)}
  }
