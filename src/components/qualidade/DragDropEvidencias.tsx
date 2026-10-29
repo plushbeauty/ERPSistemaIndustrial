@@ -7,7 +7,7 @@ interface DragDropEvidenciasProps {
 }
 
 const MAX_FILE_SIZE = 15 * 1024 * 1024
-const ACCEPTED_EXTENSIONS = new Set(['pdf', 'doc', 'docx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg'])
+const ACCEPTED_EXTENSIONS = new Set(['pdf', 'docx', 'xlsx', 'png', 'jpg', 'jpeg', 'webp', 'txt'])
 
 function extensionOf(name: string): string {
   return name.split('.').pop()?.toLocaleLowerCase('pt-BR') ?? ''
@@ -66,7 +66,7 @@ export default function DragDropEvidencias({ onArquivosAlterados, maxFileSizeByt
         onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); fileInputRef.current?.click() } }}
         className={`cursor-pointer rounded-xl border-2 border-dashed p-6 text-center transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-500 ${estaArrastando ? 'border-sky-500 bg-sky-50' : 'border-slate-300 bg-slate-50 hover:border-sky-400'}`}
       >
-        <input ref={fileInputRef} type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" onChange={event => adicionarArquivos(event.target.files)} className="hidden" />
+        <input ref={fileInputRef} type="file" multiple accept=".pdf,.docx,.xlsx,.png,.jpg,.jpeg,.webp,.txt" onChange={event => adicionarArquivos(event.target.files)} className="hidden" />
         <Upload className={`mx-auto mb-2 h-8 w-8 ${estaArrastando ? 'text-sky-600' : 'text-slate-400'}`} />
         <p className="text-sm font-semibold text-slate-800">{estaArrastando ? 'Solte os arquivos aqui' : 'Arraste as evidências ou clique para selecionar'}</p>
         <p className="mt-1 text-xs text-slate-500">PDF, Excel, Word, PNG e JPEG · até {formatarTamanho(maxFileSizeBytes)} por arquivo</p>
