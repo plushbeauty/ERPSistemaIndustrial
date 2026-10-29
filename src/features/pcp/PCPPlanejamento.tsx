@@ -1,4 +1,5 @@
-import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import type { FormEvent } from 'react'
 import { CalendarRange, RefreshCw, Save, Target } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 
