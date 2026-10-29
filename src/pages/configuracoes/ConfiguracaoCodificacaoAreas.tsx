@@ -29,7 +29,7 @@ export default function ConfiguracaoCodificacaoAreas({ profile }: Props) {
     try{
       const auth=(await supabase.auth.getUser()).data.user
       if(!auth) throw new Error('Sessão não encontrada.')
-      const {data:u,error:ue}=await supabase.from('erp_usuarios').select('empresa_id,nome').eq('auth_user_id',auth.id).eq('ativo',true).is('deleted_at',null).maybeSingle()
+      const {data:u,error:ue}=await supabase.from('erp_usuarios').select('empresa_id,nome').eq('auth_user_id',auth.id).eq('ativo',true).maybeSingle()
       if(ue) throw ue
       if(!u?.empresa_id){setEmpresaId('');setConfig(null);setGrupos([]);setAreas([]);setHistorico([]);return}
       setOperatorName(String(u.nome ?? ''))
