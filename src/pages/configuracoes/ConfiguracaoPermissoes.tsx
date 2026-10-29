@@ -58,7 +58,7 @@ export default function ConfiguracaoPermissoes() {
       if (!authData.user) throw new Error('Sessão autenticada necessária para consultar perfis.')
 
       const [actorResult, companyResult, permissionResult, roleRows] = await Promise.all([
-        supabase.from('erp_usuarios').select('nivel_admin,empresa_id,ativo,deleted_at').eq('auth_user_id', authData.user.id).maybeSingle(),
+        supabase.from('erp_usuarios').select('nivel_admin,empresa_id,ativo').eq('auth_user_id', authData.user.id).maybeSingle(),
         supabase.rpc('erp_current_empresa_id'),
         supabase.rpc('erp_has_permission', { p_code: 'users.update' }),
         fetchAllPages<Role>((from, to) => supabase.from('erp_roles')
