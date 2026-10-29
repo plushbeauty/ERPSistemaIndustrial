@@ -21,6 +21,7 @@ const AdministracaoConfiguracoesGlobais = lazy(() => import('./pages/Administrac
 const BalancoEstoque = lazy(() => import('./features/inventario/BalancoEstoque'))
 const RHIndustrial = lazy(() => import('./pages/RHIndustrial'))
 const NFeEmissao = lazy(() => import('./pages/NFeEmissao'))
+const FileTreeGED = lazy(() => import('./pages/FileTreeGED'))
 
 function LoadingWorkspace() {
   return <main role="status" aria-live="polite" style={{ minHeight: '50vh', display: 'grid', placeItems: 'center', color: '#123b50', fontFamily: 'Inter,system-ui,sans-serif' }}>Carregando SYSNQRA ERP INDUSTRIAL…</main>
@@ -43,6 +44,7 @@ export default function AppEntryV2() {
               <Route path="estoque/balanco" element={<BalancoEstoque />} />
               <Route path="pcp" element={<PCPWorkspace />} />
               <Route path="paquimetro" element={<QualityPlanGate><Paquimetro /></QualityPlanGate>} />
+              <Route path="qualidade/ged-documentos" element={<QualityPlanGate><FileTreeGED /></QualityPlanGate>} />
             </Route>
             <Route path="/compras" element={<Navigate to="/pageprincipal/compras" replace />} />
             <Route path="/configuracoes-adm" element={<Navigate to="/pageprincipal/administracao-configuracoes" replace />} />
@@ -56,6 +58,7 @@ export default function AppEntryV2() {
             <Route path="/pcp" element={<Navigate to="/pageprincipal/pcp" replace />} />
             <Route path="/paquimetro" element={<Navigate to="/pageprincipal/paquimetro" replace />} />
             <Route path="/qualidade/paquimetro" element={<Navigate to="/pageprincipal/paquimetro" replace />} />
+            <Route path="/qualidade/ged-documentos" element={<Navigate to="/pageprincipal/qualidade/ged-documentos" replace />} />
             <Route path="*" element={<Navigate to="/pageprincipal" replace />} />
           </Routes>
         </ERPHorizontalShell>
