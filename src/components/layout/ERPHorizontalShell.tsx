@@ -29,7 +29,7 @@ const menus: MenuItem[] = [
   { label: 'Setup Wizard', route: '/pageprincipal/configuracao-inicial', icon: ClipboardCheck, isUpdated: true },
   { label: 'Recebimento XML / Estoque', route: '/recebimento-nfe', icon: Boxes, isNew: true },
   { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText, children: [
-    { label: 'Diários Contábeis', route: '/pageprincipal/diarios-contabeis', icon: BookOpen, isNew: true },
+    { label: 'Diários Contábeis', route: '/diarios-contabeis', icon: BookOpen, isNew: true },
   ] },
 ]
 
