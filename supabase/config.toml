@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.erp-mes-ingest]
 verify_jwt = false
+
+[functions.notificar-vencimento-nrs]
+verify_jwt = false
