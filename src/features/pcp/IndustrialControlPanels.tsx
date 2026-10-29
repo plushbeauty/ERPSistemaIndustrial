@@ -35,7 +35,7 @@ export function OpEmissionScreen() {
   const [reservations, setReservations] = useState<Record<string, Reservation>>({})
   const [productId, setProductId] = useState('')
   const [machineId, setMachineId] = useState('')
-  const [quantity, setQuantity] = useState('1')
+  const [quantity, setQuantity] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -130,7 +130,7 @@ export function OpEmissionScreen() {
       setNotice(row?.numero_op ? 'OP ' + row.numero_op + ' emitida com reserva de lotes confirmada.' : 'OP emitida com reserva de lotes confirmada.')
       setProductId('')
       setMachineId('')
-      setQuantity('1')
+      setQuantity('')
       setBom([])
       setLots([])
       setReservations({})
@@ -236,7 +236,7 @@ export function SynqraAuditoriaModulo() {
   const [messages, setMessages] = useState<MessageRow[]>([])
   const [ratings, setRatings] = useState<RatingRow[]>([])
   const [comment, setComment] = useState('')
-  const [rating, setRating] = useState(5)
+  const [rating, setRating] = useState(0)
   const [ratingComment, setRatingComment] = useState('')
   const [empresaId, setEmpresaId] = useState('')
   const [userId, setUserId] = useState('')
@@ -300,7 +300,7 @@ export function SynqraAuditoriaModulo() {
     <div><label className={label}>Ordem de produção</label><select className={field} value={selectedId} onChange={event => setSelectedId(event.target.value)}><option value="">Selecione OP existente</option>{orders.map(order=><option key={order.id} value={order.id}>OP {order.numero_op} · {order.status}</option>)}</select></div>
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
       <div className="space-y-3"><h3 className="text-xs font-bold uppercase tracking-wide text-slate-300">Conversas · Histórico de Auditoria</h3><div className="max-h-64 min-h-32 space-y-2 overflow-auto rounded-xl border border-slate-700 bg-[#0b0f19] p-3">{messages.map(msg=><article key={msg.id} className="rounded-lg border border-slate-800 bg-slate-900 p-3"><div className="mb-1 flex justify-between gap-2 text-[10px] text-slate-500"><span className="text-orange-300">{msg.autor_auth_id === userId ? 'Você' : 'Usuário autenticado'}</span><time>{new Date(msg.created_at).toLocaleString('pt-BR')}</time></div><p className="whitespace-pre-wrap text-xs leading-5 text-slate-200">{msg.corpo}</p></article>)}{!messages.length&&<p className="text-xs text-slate-500">Nenhuma nota técnica registrada para esta OP.</p>}</div><form onSubmit={sendMessage} className="flex gap-2"><input className={field} value={comment} onChange={event=>setComment(event.target.value)} maxLength={10000} placeholder="Registrar nota técnica…" required/><button className={primary} type="submit" disabled={saving||!selectedId}><Send size={13}/>Registrar</button></form></div>
-      <div className="space-y-3"><h3 className="text-xs font-bold uppercase tracking-wide text-slate-300">Inspeção de Conformidade</h3><form onSubmit={sendRating} className="space-y-3 rounded-xl border border-slate-700 bg-[#0b0f19] p-3"><label className={label}>Nota de 1 a 5</label><select className={field} value={rating} onChange={event=>setRating(Number(event.target.value))}>{[5,4,3,2,1].map(n=><option key={n} value={n}>{'★'.repeat(n)}{'☆'.repeat(5-n)} ({n})</option>)}</select><label className={label}>Comentário técnico</label><textarea className={field} rows={3} maxLength={5000} value={ratingComment} onChange={event=>setRatingComment(event.target.value)} placeholder="Critério, evidência e observação técnica"/><button className={primary} type="submit" disabled={saving||!selectedId}><ClipboardCheck size={14}/>Registrar laudo</button></form><div className="max-h-48 space-y-2 overflow-auto">{ratings.map(item=><article key={item.id} className="rounded-lg border border-slate-700 bg-slate-900 p-3"><div className="flex justify-between gap-2 text-[10px]"><span className="text-amber-300">{'★'.repeat(item.nota)}{'☆'.repeat(5-item.nota)}</span><time className="text-slate-500">{new Date(item.created_at).toLocaleDateString('pt-BR')}</time></div>{item.comentario&&<p className="mt-1 text-xs text-slate-300">{item.comentario}</p>}</article>)}{!ratings.length&&<p className="text-xs text-slate-500">Nenhuma avaliação anterior.</p>}</div></div>
+      <div className="space-y-3"><h3 className="text-xs font-bold uppercase tracking-wide text-slate-300">Inspeção de Conformidade</h3><form onSubmit={sendRating} className="space-y-3 rounded-xl border border-slate-700 bg-[#0b0f19] p-3"><label className={label}>Nota de 1 a 5</label><select className={field} value={rating} onChange={event=>setRating(Number(event.target.value))}><option value={0} disabled>Selecione uma nota</option>{[5,4,3,2,1].map(n=><option key={n} value={n}>{'★'.repeat(n)}{'☆'.repeat(5-n)} ({n})</option>)}</select><label className={label}>Comentário técnico</label><textarea className={field} rows={3} maxLength={5000} value={ratingComment} onChange={event=>setRatingComment(event.target.value)} placeholder="Critério, evidência e observação técnica"/><button className={primary} type="submit" disabled={saving||!selectedId||rating<1}><ClipboardCheck size={14}/>Registrar laudo</button></form><div className="max-h-48 space-y-2 overflow-auto">{ratings.map(item=><article key={item.id} className="rounded-lg border border-slate-700 bg-slate-900 p-3"><div className="flex justify-between gap-2 text-[10px]"><span className="text-amber-300">{'★'.repeat(item.nota)}{'☆'.repeat(5-item.nota)}</span><time className="text-slate-500">{new Date(item.created_at).toLocaleDateString('pt-BR')}</time></div>{item.comentario&&<p className="mt-1 text-xs text-slate-300">{item.comentario}</p>}</article>)}{!ratings.length&&<p className="text-xs text-slate-500">Nenhuma avaliação anterior.</p>}</div></div>
     </div>
   </section>
 }
