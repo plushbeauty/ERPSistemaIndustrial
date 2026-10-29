@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
-import { AlertCircle, BadgeCheck, BriefcaseBusiness, Factory, Pencil, Plus, RefreshCw, RotateCcw, Save, Search, Users, UserRound, X } from 'lucide-react'
+import { AlertCircle, BadgeCheck, BriefcaseBusiness, Factory, FolderOpen, Pencil, RefreshCw, RotateCcw, Save, Search, Users, UserRound, X } from 'lucide-react'
+import GedAbasColaborador from '../components/rh/GedAbasColaborador'
 import { supabase } from '../lib/supabaseClient'
 
 type Tab = 'pessoais' | 'contratuais' | 'fabrica'
@@ -65,6 +66,7 @@ export default function RHIndustrial() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+  const [gedFuncionarioId, setGedFuncionarioId] = useState<string | null>(null)
   const isMaster = profile?.is_master === true && Number(profile.nivel_admin ?? 0) >= 100 && String(profile.perfil ?? '').toUpperCase() === 'MASTER' && profile.empresa_id === null
 
   const load = useCallback(async () => {
@@ -225,10 +227,11 @@ export default function RHIndustrial() {
       <div className="synqra-table-wrap"><table className="synqra-table min-w-[1000px]"><thead><tr>{['Matrícula','Nome completo','Cargo / função','Setor','Turno','Custo/hora','Status','Ações'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>
         {loading && <tr><td colSpan={8} className="py-8 text-center text-slate-500">Consultando registros da empresa…</td></tr>}
         {!loading && filtered.length === 0 && <tr><td colSpan={8} className="py-8 text-center text-slate-500">Nenhum colaborador encontrado nesta empresa.</td></tr>}
-        {!loading && filtered.map(r=><tr key={r.id}><td className="font-mono font-bold">{text(r.matricula) || '—'}</td><td className="font-semibold text-slate-900">{r.nome_completo}</td><td>{r.cargo || '—'}</td><td>{departments.find(d=>d[0]===r.departamento)?.[1] || r.departamento || '—'}</td><td>{shifts.find(s=>s[0]===r.turno_trabalho)?.[1] || r.turno_trabalho || '—'}</td><td className="font-mono">{money(r.custo_hora_homem)}</td><td><span className={`rounded-full border px-2 py-1 text-[10px] font-bold ${r.status_colaborador==='Ativo'?'border-emerald-200 bg-emerald-50 text-emerald-700':r.status_colaborador==='Afastado'?'border-amber-200 bg-amber-50 text-amber-800':'border-rose-200 bg-rose-50 text-rose-700'}`}>{r.status_colaborador.toUpperCase()}</span></td><td><div className="flex gap-1"><button type="button" onClick={()=>edit(r)} title="Editar colaborador" aria-label={`Editar ${r.nome_completo}`} className="inline-flex h-8 items-center gap-1 rounded border border-slate-300 px-2 text-[10px] font-bold hover:bg-slate-50"><Pencil size={12}/>Editar</button><button type="button" onClick={()=>void remove(r)} title="Marcar como desligado" aria-label={`Desligar ${r.nome_completo}`} className="inline-flex h-8 items-center rounded border border-rose-200 px-2 text-[10px] font-bold text-rose-700 hover:bg-rose-50">Desligar</button></div></td></tr>)}
+        {!loading && filtered.map(r=><tr key={r.id}><td className="font-mono font-bold">{text(r.matricula) || '—'}</td><td className="font-semibold text-slate-900">{r.nome_completo}</td><td>{r.cargo || '—'}</td><td>{departments.find(d=>d[0]===r.departamento)?.[1] || r.departamento || '—'}</td><td>{shifts.find(s=>s[0]===r.turno_trabalho)?.[1] || r.turno_trabalho || '—'}</td><td className="font-mono">{money(r.custo_hora_homem)}</td><td><span className={`rounded-full border px-2 py-1 text-[10px] font-bold ${r.status_colaborador==='Ativo'?'border-emerald-200 bg-emerald-50 text-emerald-700':r.status_colaborador==='Afastado'?'border-amber-200 bg-amber-50 text-amber-800':'border-rose-200 bg-rose-50 text-rose-700'}`}>{r.status_colaborador.toUpperCase()}</span></td><td><div className="flex gap-1"><button type="button" onClick={()=>edit(r)} title="Editar colaborador" aria-label={`Editar ${r.nome_completo}`} className="inline-flex h-8 items-center gap-1 rounded border border-slate-300 px-2 text-[10px] font-bold hover:bg-slate-50"><Pencil size={12}/>Editar</button><button type="button" onClick={()=>setGedFuncionarioId(r.id)} title="Abrir GED do colaborador" aria-label={`Abrir GED de ${r.nome_completo}`} className="inline-flex h-8 items-center gap-1 rounded border border-sky-200 px-2 text-[10px] font-bold text-sky-800 hover:bg-sky-50"><FolderOpen size={12}/>GED</button><button type="button" onClick={()=>void remove(r)} title="Marcar como desligado" aria-label={`Desligar ${r.nome_completo}`} className="inline-flex h-8 items-center rounded border border-rose-200 px-2 text-[10px] font-bold text-rose-700 hover:bg-rose-50">Desligar</button></div></td></tr>)}
       </tbody></table></div>
       <p className="mt-2 text-[10px] text-slate-500">Consulta limitada aos 1.000 colaboradores mais recentes por nome. RLS e empresa_id são obrigatórios; registros não são excluídos fisicamente.</p>
     </Panel>
+    {gedFuncionarioId && <Panel title={`Pasta GED do colaborador · ${rows.find(r => r.id === gedFuncionarioId)?.nome_completo ?? 'Colaborador'}`} right={<button type="button" onClick={() => setGedFuncionarioId(null)} className="synqra-button h-8"><X size={12}/>Fechar GED</button>}><GedAbasColaborador funcionarioId={gedFuncionarioId}/></Panel>}
     <footer className="flex flex-wrap items-center justify-between gap-2 text-[10px] text-slate-500"><span>Atualizado · Padrão Premium · 28/10/2026</span><span>Os dados exibidos vêm do Supabase autenticado; sem registros demonstrativos.</span></footer>
   </main>
 }
