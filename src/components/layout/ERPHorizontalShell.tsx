@@ -27,7 +27,7 @@ const menus: MenuItem[] = [
   { label: 'Compras', route: '/pageprincipal/compras', icon: ShoppingCart, isUpdated: true },
   { label: 'Configurações', route: '/pageprincipal/administracao-configuracoes', icon: Settings },
   { label: 'Setup Wizard', route: '/pageprincipal/configuracao-inicial', icon: ClipboardCheck, isUpdated: true },
-  { label: 'Recebimento XML / Estoque', route: '/pageprincipal/recebimento-nfe', icon: Boxes, isNew: true },
+  { label: 'Recebimento XML / Estoque', route: '/recebimento-nfe', icon: Boxes, isNew: true },
   { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText },
 ]
 
