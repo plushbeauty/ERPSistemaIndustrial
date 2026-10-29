@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ClipboardList, Factory, Layers3, ScanLine } from 'lucide-react'
 import PainelOrdensProducao from '../features/pcp/PainelOrdensProducao'
-import FichaProcesso from '../features/pcp/FichaProcesso'
+import PCPFichasProcesso from './PCPFichasProcesso'
 import EngenhariaBOM from '../features/pcp/EngenhariaBOM'
 import ApuracaoTurno from '../features/pcp/ApuracaoTurno'
 
@@ -35,7 +35,7 @@ export default function PCPWorkspace() {
       </nav>
       <div className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
         {tab === 'ordens' && <PainelOrdensProducao />}
-        {tab === 'processo' && <FichaProcesso />}
+        {tab === 'processo' && <PCPFichasProcesso />}
         {tab === 'estrutura' && <EngenhariaBOM />}
         {tab === 'turno' && <ApuracaoTurno />}
       </div>
