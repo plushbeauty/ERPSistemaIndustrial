@@ -26,7 +26,7 @@ create table if not exists public.rh_documentos_colaborador (
   empresa_id uuid not null default public.erp_current_empresa_id(),
   funcionario_id uuid not null references public.erp_funcionarios(id) on delete cascade,
   nome_documento varchar(255) not null,
-  path_storage text not null unique,
+  path_storage text not null unique check (path_storage like ('rh/funcionarios/' || funcionario_id::text || '/%')),
   created_at timestamptz not null default now(),
   constraint rh_documentos_empresa_funcionario_fk foreign key (empresa_id, funcionario_id)
     references public.erp_funcionarios(empresa_id, id) deferrable initially immediate
@@ -61,8 +61,9 @@ drop policy if exists rh_documentos_tenant_delete on public.rh_documentos_colabo
 create policy rh_documentos_tenant_select on public.rh_documentos_colaborador for select to authenticated
   using (public.erp_is_master() or empresa_id = public.erp_current_empresa_id());
 create policy rh_documentos_tenant_insert on public.rh_documentos_colaborador for insert to authenticated
-  with check (empresa_id = public.erp_current_empresa_id() and exists (
-    select 1 from public.erp_funcionarios f where f.id = funcionario_id and f.empresa_id = rh_documentos_colaborador.empresa_id));
+  with check (empresa_id = public.erp_current_empresa_id()
+    and path_storage like ('rh/funcionarios/' || funcionario_id::text || '/%')
+    and exists (select 1 from public.erp_funcionarios f where f.id = funcionario_id and f.empresa_id = rh_documentos_colaborador.empresa_id));
 create policy rh_documentos_tenant_update on public.rh_documentos_colaborador for update to authenticated
   using (empresa_id = public.erp_current_empresa_id())
   with check (empresa_id = public.erp_current_empresa_id() and exists (
