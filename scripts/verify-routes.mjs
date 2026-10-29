@@ -13,7 +13,7 @@ const entry = fs.readFileSync(entryPath, 'utf8')
 
 const routeMatches = [...app.matchAll(/<Route\s+path=["']([^"']+)["'][^>]*element=\{<([A-Za-z0-9_]+)/g)]
 const lazyImports = new Map(
-  [...app.matchAll(/(?:const|let|var)\s+([A-Za-z0-9_]+)\s*=\s*lazyPage\(\(\)\s*=>\s*import\(["']([^"']+)["']\)/g)]
+  [...app.matchAll(/(?:const|let|var)\s+([A-Za-z0-9_]+)\s*=\s*(?:lazy|lazyPage)\(\(\)\s*=>\s*import\(["']([^"']+)["']\)/g)]
     .map(([, name, importPath]) => [name, importPath]),
 )
 const allowedLocal = new Set(['Navigate', 'MasterOnly', 'AppIndustrial', 'IndustrialLoginDirect', 'PublicIndustrialHome', 'PublicHomeWithLogin', 'ComprasRoute', 'QualityPlanGate', 'ERPHorizontalShell', 'CentralComercialFiscalFinanceira', 'PagePrincipal', 'PCPWorkspace', 'Paquimetro', 'Fiscal', 'SetupADMInicial', 'ComprasWorkspace', 'AdministracaoConfiguracoesGlobais'])
