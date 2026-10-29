@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
     if (passwordPolicy.exigir_maiuscula && !/[A-ZÀ-ÖØ-Þ]/.test(senha)) {
       return json({ error: 'A senha deve conter pelo menos uma letra maiúscula.' }, 400)
     }
-    if (passwordPolicy.exigir_numero && !/\\d/.test(senha)) {
+    if (passwordPolicy.exigir_numero && !/\d/.test(senha)) {
       return json({ error: 'A senha deve conter pelo menos um número.' }, 400)
     }
 
