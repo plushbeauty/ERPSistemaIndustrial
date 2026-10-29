@@ -166,13 +166,13 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
                 const hasNewItems = Boolean(menu.isNew || menu.children?.some(child => child.isNew))
                 const expanded = openMenu === menu.label || Boolean(normalizedSearch && menu.children?.length)
                 return <div className="erp-windows-menu-group" key={menu.label}>
-                  <div className={`erp-windows-menu-row ${current?.label === menu.label ? 'is-active' : ''} ${hasNewItems ? 'has-new' : ''}`}>
+                  <div className={`erp-windows-menu-row ${current?.label === menu.label ? 'is-active' : ''} ${hasNewItems ? 'has-new' : ''} ${menu.isUpdated ? 'is-updated-orange' : ''}`}>
                     <button type="button" className="erp-windows-menu-main" title={hasNewItems ? 'Este módulo contém telas novas' : undefined} onClick={() => {
                       if (menu.action === 'pcpTablet') { setStartMenuOpen(false); openMenuItem(menu) }
                       else if (hasChildren) { setOpenMenu(value => value === menu.label ? null : menu.label);  }
                       else { setStartMenuOpen(false); openMenuItem(menu) }
                     }}>
-                      <Icon size={16} className={hasNewItems ? 'is-new-icon' : undefined} /><span>{menu.label}</span>
+                      <Icon size={16} className={menu.isUpdated ? 'is-updated-orange-icon' : hasNewItems ? 'is-new-icon' : undefined} /><span>{menu.label}</span>
                     </button>
                     {hasChildren && <button type="button" className="erp-windows-menu-expand" aria-label={`Expandir ${menu.label}`} aria-expanded={expanded} onClick={() => { setOpenMenu(value => value === menu.label ? null : menu.label);  }}>{expanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}</button>}
                   </div>
