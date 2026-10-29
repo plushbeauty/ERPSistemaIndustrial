@@ -17,6 +17,7 @@ const pcp = read('src/pages/PCPWorkspace.tsx')
 const receipt = read('src/pages/RecebimentoMateriaisXML.tsx')
 const routes = read('src/AppEntryV2.tsx')
 const signup = read('supabase/functions/erp-company-signup/index.ts')
+const userAdmin = read('supabase/functions/erp-user-admin/index.ts')
 
 const requireMatch = (text, pattern, message) => {
   if (!pattern.test(text)) failures.push(message)
@@ -39,6 +40,7 @@ requireMatch(receipt, /erp_confirmar_recebimento_nfe[\s\S]*SHA-256|SHA-256[\s\S]
 requireMatch(receipt, /validNfeKey[\s\S]*cStat[\s\S]*lote_interno/, 'Recebimento XML deve validar chave/protocolo e definir lote interno.')
 requireMatch(routes, /recebimento-nfe[\s\S]*RecebimentoMateriaisXML/, 'Rota de recebimento XML não está registrada.')
 requireMatch(signup, /erp_sistema_politica_senha[\s\S]*exigir_maiuscula[\s\S]*exigir_numero/, 'Cadastro público não consulta política global de senha.')
+requireMatch(userAdmin, /loadPasswordPolicy[\s\S]*erp_sistema_politica_senha[\s\S]*passwordIsStrong/, 'Ciclo administrativo de usuários não aplica a política configurável de senha.')
 if (/ID_FIXO_POLITICA|00000000-0000-0000-0000-000000000000/.test(panels + receipt)) failures.push('Foi encontrado identificador fixo fictício em um painel operacional.')
 
 if (failures.length) {
