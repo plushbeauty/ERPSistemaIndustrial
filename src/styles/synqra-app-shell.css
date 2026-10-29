@@ -17,6 +17,14 @@
 .synqra-sidebar-brand img { width: 100%; max-width: 190px; height: 46px; object-fit: contain; }
 .synqra-sidebar.is-collapsed .synqra-sidebar-brand img { width: 38px; height: 42px; }
 .synqra-sidebar-caption { margin: 10px 10px 5px; color: #64748b; font-size: 9px; font-weight: 800; letter-spacing: .12em; }
+.synqra-sidebar-search { min-height: 30px; display: flex; align-items: center; gap: 6px; margin: 2px 7px 8px; padding: 0 7px; border: 1px solid #dbe4ec; border-radius: 3px; background: #f8fafc; color: #64748b; }
+.synqra-sidebar-search:focus-within { border-color: #2d8db8; box-shadow: 0 0 0 2px rgb(45 141 184 / 12%); }
+.synqra-sidebar-search input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: #123b50; font-size: 10px; }
+.synqra-sidebar-search input::placeholder { color: #94a3b8; }
+.synqra-sidebar-search button { display: grid; place-items: center; border: 0; background: transparent; color: #64748b; cursor: pointer; }
+.synqra-sidebar.is-collapsed .synqra-sidebar-search { justify-content: center; margin: 2px 5px 8px; padding: 0; border-color: transparent; background: transparent; }
+.synqra-sidebar.is-collapsed .synqra-sidebar-search input, .synqra-sidebar.is-collapsed .synqra-sidebar-search button { display: none; }
+.synqra-sidebar-empty { margin: 8px; color: #64748b; font-size: 10px; line-height: 1.4; }
 .synqra-sidebar.is-collapsed .synqra-sidebar-caption { font-size: 0; text-align: center; margin: 8px 0 5px; }
 .synqra-sidebar.is-collapsed .synqra-sidebar-caption::after { content: '•••'; font-size: 9px; }
 .synqra-sidebar-nav { display: flex; min-height: 0; flex: 1; flex-direction: column; gap: 2px; overflow: auto; padding: 0 6px 8px; }
