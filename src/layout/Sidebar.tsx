@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { Search, X } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useSidebar } from '../context/SidebarContext'
 import { SYNQRA_MODULES } from '../assets/synqra/icons'
@@ -7,8 +9,13 @@ export default function Sidebar() {
   const { isExpanded, isMobileOpen, closeMobileSidebar } = useSidebar()
   const location = useLocation()
   const navigate = useNavigate()
-  const submodules: Record<string, { label: string; route: string }[]> = { qualidade: [{label:'Especificações técnicas',route:'/qualidade/especificacoes'},{label:'Inspeções de lotes',route:'/qualidade/inspecoes'},{label:'Matriz FMEA / PFMEA',route:'/qualidade/fmea'},{label:'RNC & planos CAPA',route:'/qualidade/rnc-capa'},{label:'Painel CEP / medições',route:'/qualidade/cep'}], engenharia:[{label:'Catálogo de itens',route:'/engenharia/produtos'},{label:'Estrutura BOM',route:'/engenharia/bom'},{label:'Roteiros de fabricação',route:'/engenharia/roteiros'}], estoque:[{label:'Saldos por lote',route:'/estoque/saldos'},{label:'Endereços físicos',route:'/estoque/enderecos'},{label:'Movimentações',route:'/estoque/movimentacoes'}], pcp:[{label:'Ordens industriais',route:'/pcp/ordens-industriais'},{label:'Apontamentos',route:'/pcp/apontamentos'},{label:'Planejamento MRP',route:'/pcp/planejamento'},{label:'Sequenciamento',route:'/pcp/sequenciamento'}], fiscal:[{label:'Parâmetros tributários',route:'/fiscal/parametros'},{label:'NF-e de entrada',route:'/compras/recebimentos'},{label:'Emissão NF-e',route:'/fiscal/emissao'},{label:'Custos industriais',route:'/fiscal/custos-industriais'}], rh:[] };
-  const activeGroup = location.pathname.startsWith('/qualidade') ? 'qualidade' : location.pathname.startsWith('/engenharia') ? 'engenharia' : location.pathname.startsWith('/estoque') ? 'estoque' : location.pathname.startsWith('/pcp') ? 'pcp' : location.pathname.startsWith('/fiscal') ? 'fiscal' : location.pathname.startsWith('/rh') ? 'rh' : null;
+  const [moduleSearch, setModuleSearch] = useState('')
+  const normalizedSearch = moduleSearch.trim().toLocaleLowerCase('pt-BR')
+  const visibleModules = SYNQRA_MODULES.filter(module =>
+    !normalizedSearch || module.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || (module.route ?? '').toLocaleLowerCase('pt-BR').includes(normalizedSearch)
+  )
+  const submodules: Record<string, { label: string; route: string }[]> = { compras:[{label:'Central de Compras / RFQ',route:'/compras/rfq'},{label:'Pedidos de Compras',route:'/compras/pedidos'}], qualidade: [{label:'Especificações técnicas',route:'/qualidade/especificacoes'},{label:'Inspeções de lotes',route:'/qualidade/inspecoes'},{label:'Matriz FMEA / PFMEA',route:'/qualidade/fmea'},{label:'RNC & planos CAPA',route:'/qualidade/rnc-capa'},{label:'Painel CEP / medições',route:'/qualidade/cep'}], engenharia:[{label:'Catálogo de itens',route:'/engenharia/produtos'},{label:'Estrutura BOM',route:'/engenharia/bom'},{label:'Roteiros de fabricação',route:'/engenharia/roteiros'}], estoque:[{label:'Saldos por lote',route:'/estoque/saldos'},{label:'Endereços físicos',route:'/estoque/enderecos'},{label:'Movimentações',route:'/estoque/movimentacoes'}], pcp:[{label:'Ordens industriais',route:'/pcp/ordens-industriais'},{label:'Apontamentos',route:'/pcp/apontamentos'},{label:'Planejamento MRP',route:'/pcp/planejamento'},{label:'Sequenciamento',route:'/pcp/sequenciamento'}], fiscal:[{label:'Parâmetros tributários',route:'/fiscal/parametros'},{label:'NF-e de entrada',route:'/compras/recebimentos'},{label:'Emissão NF-e',route:'/fiscal/emissao'},{label:'Custos industriais',route:'/fiscal/custos-industriais'}], rh:[] };
+  const activeGroup = location.pathname.startsWith('/compras') ? 'compras' : location.pathname.startsWith('/qualidade') ? 'qualidade' : location.pathname.startsWith('/engenharia') ? 'engenharia' : location.pathname.startsWith('/estoque') ? 'estoque' : location.pathname.startsWith('/pcp') ? 'pcp' : location.pathname.startsWith('/fiscal') ? 'fiscal' : location.pathname.startsWith('/rh') ? 'rh' : null;
   const activeSubmodules = activeGroup ? submodules[activeGroup] : [];
   const current = [...SYNQRA_MODULES]
     .filter(module => module.route)
@@ -33,8 +40,13 @@ export default function Sidebar() {
           <img src={synqraLogo} alt="SYNQRA ERP & SGQ Industrial" />
         </div>
         <p className="synqra-sidebar-caption">MÓDULOS</p>
+        <div className="synqra-sidebar-search" role="search">
+          <Search size={15} aria-hidden="true" />
+          <input value={moduleSearch} onChange={event => setModuleSearch(event.target.value)} placeholder="Pesquisar módulo..." aria-label="Pesquisar módulos e rotinas" />
+          {moduleSearch && <button type="button" onClick={() => setModuleSearch('')} aria-label="Limpar pesquisa"><X size={13} /></button>}
+        </div>
         <nav className="synqra-sidebar-nav" aria-label="Módulos do ERP">
-          {SYNQRA_MODULES.map(({ key, label, route, Icon }) => {
+          {visibleModules.map(({ key, label, route, Icon }) => {
             const active = current?.key === key
             return (
               <button
@@ -56,8 +68,9 @@ export default function Sidebar() {
               </button>
             )
           })}
+          {visibleModules.length === 0 && <p className="synqra-sidebar-empty" role="status">Nenhum módulo encontrado.</p>}
         </nav>
-        {activeSubmodules.length > 0 && <section className="synqra-sidebar-subnav" aria-label="Submódulos"><p className="synqra-sidebar-caption">SUBMÓDULOS</p><nav className="synqra-sidebar-nav" aria-label="Navegação do submódulo">{activeSubmodules.map(item => { const active = location.pathname === item.route; return <button key={item.route} type="button" className={"synqra-sidebar-link synqra-sidebar-sublink" + (active ? " is-active" : "")} aria-current={active ? "page" : undefined} title={item.label} onClick={() => { navigate(item.route); closeMobileSidebar() }}><span className="synqra-sidebar-link-label">{item.label}</span></button> })}</nav></section>}
+        {activeSubmodules.length > 0 && (!normalizedSearch || activeSubmodules.some(item => item.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || item.route.toLocaleLowerCase('pt-BR').includes(normalizedSearch))) && <section className="synqra-sidebar-subnav" aria-label="Submódulos"><p className="synqra-sidebar-caption">SUBMÓDULOS</p><nav className="synqra-sidebar-nav" aria-label="Navegação do submódulo">{activeSubmodules.filter(item => !normalizedSearch || item.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || item.route.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(item => { const active = location.pathname === item.route; return <button key={item.route} type="button" className={"synqra-sidebar-link synqra-sidebar-sublink" + (active ? " is-active" : "")} aria-current={active ? "page" : undefined} title={item.label} onClick={() => { navigate(item.route); closeMobileSidebar() }}><span className="synqra-sidebar-link-label">{item.label}</span></button> })}</nav></section>}
         <div className="synqra-sidebar-footer">
           <span className="synqra-slashes" aria-hidden="true"><i /><i /><i /></span>
           <span className="synqra-sidebar-footer-copy">ERP & SGQ INDUSTRIAL</span>
