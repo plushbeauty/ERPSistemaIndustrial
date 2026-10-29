@@ -24,7 +24,9 @@ const menus: MenuItem[] = [
   { label: 'Qualidade / Paquímetro', route: '/pageprincipal/paquimetro', icon: Ruler, children: [
     { label: 'Paquímetro Digital', route: '/pageprincipal/paquimetro', icon: Ruler },
   ] },
-  { label: 'Compras', route: '/pageprincipal/compras', icon: ShoppingCart, isUpdated: true },
+  { label: 'Compras', route: '/pageprincipal/compras', icon: ShoppingCart, isUpdated: true, children: [
+    { label: 'Recebimento XML', route: '/pageprincipal/compras?aba=xml', icon: FileText, isUpdated: true },
+  ] },
   { label: 'Configurações', route: '/pageprincipal/administracao-configuracoes', icon: Settings },
   { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText },
 ]
