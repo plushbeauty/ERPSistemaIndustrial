@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, ArrowLeftRight } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -20,6 +20,7 @@ const menus: MenuItem[] = [
   { label: 'Principal', route: '/pageprincipal', icon: Home },
   { label: 'Engenharia e PCP', route: '/pageprincipal/pcp', icon: Factory, children: [
     { label: 'Central PCP', route: '/pageprincipal/pcp', icon: ClipboardList },
+    { label: 'Subcontratação industrial', route: '/pageprincipal/subcontratacao', icon: ArrowLeftRight, isUpdated: true },
   ] },
   { label: 'Qualidade / Paquímetro', route: '/pageprincipal/paquimetro', icon: Ruler, children: [
     { label: 'Paquímetro Digital', route: '/pageprincipal/paquimetro', icon: Ruler },
@@ -87,7 +88,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     }
   }, [])
 
-  const moduleLabel = pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
+  const moduleLabel = pathname.startsWith('/pageprincipal/subcontratacao') || pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
     : pathname.startsWith('/pageprincipal/paquimetro') ? 'Qualidade / Paquímetro'
     : pathname.startsWith('/pageprincipal/compras') || pathname.startsWith('/compras') ? 'Compras'
     : pathname.startsWith('/pageprincipal/administracao-configuracoes') || pathname.startsWith('/configuracoes-adm') || pathname.startsWith('/administracao-configuracoes') ? 'Configurações'
@@ -195,6 +196,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           <strong>SYSNQRA ERP & SGQ INDUSTRIAL</strong><span>GESTÃO INTEGRADA · v0.1.7</span>
         </div>
         <div className="erp-windows-session">
+          <button type="button" className="erp-windows-help" title="Acesso rápido: Subcontratação industrial" aria-label="Abrir Subcontratação industrial" onClick={() => go('/pageprincipal/subcontratacao')}><ArrowLeftRight size={15} /></button>
           <time dateTime={now.toISOString()}>{new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(now)} <span>·</span> {new Intl.DateTimeFormat('pt-BR', { timeStyle: 'medium' }).format(now)}</time>
           <div className="erp-windows-user"><UserRound size={14} /><span>{operatorName === 'Usuário ERP' ? sessionOperator : operatorName}</span></div>
           <button type="button" className="erp-windows-help" title="Ajuda da tela atual" aria-expanded={helpOpen} onClick={() => setHelpOpen(value => !value)}><CircleHelp size={15} /></button>
