@@ -18,7 +18,6 @@ const PCPWorkspace = lazy(() => import('./pages/PCPWorkspace'))
 const Paquimetro = lazy(() => import('./pages/QualidadePaquimetroDigital'))
 const ComprasWorkspace = lazy(() => import('./pages/ComprasWorkspace'))
 const AdministracaoConfiguracoesGlobais = lazy(() => import('./pages/AdministracaoConfiguracoesGlobais'))
-const SetupWizardScreen = lazy(() => import('./pages/SetupWizardScreen'))
 const RecebimentoMateriaisXML = lazy(() => import('./pages/RecebimentoMateriaisXML'))
 const AccountJournalsScreen = lazy(() => import('./pages/AccountJournalsScreen'))
 const SystemParametersScreen = lazy(() => import('./pages/SystemParametersScreen'))
@@ -40,7 +39,6 @@ export default function AppEntryV2() {
               <Route path="compras/pedidos" element={<ComprasWorkspace initialTab="pedidos" />} />
               <Route path="administracao-configuracoes" element={<AdministracaoConfiguracoesGlobais />} />
               <Route path="configuracoes/usuarios" element={<AdministracaoConfiguracoesGlobais initialSection="usuarios" />} />
-              <Route path="configuracao-inicial" element={<SetupWizardScreen />} />
               <Route path="recebimento-nfe" element={<RecebimentoMateriaisXML />} />
               <Route path="estoque/recebimento" element={<RecebimentoMateriaisXML />} />
               <Route path="producao/op" element={<PCPWorkspace initialTab="emissao" />} />
