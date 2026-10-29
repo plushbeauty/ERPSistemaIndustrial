@@ -87,8 +87,8 @@ function DataTable({ rows, kind }: { rows: DbRow[]; kind: 'requisicoes' | 'cotac
   })}</tr>)}</tbody></table></div>
 }
 
-export default function ComprasWorkspace() {
-  const [activeTab, setActiveTab] = useState<TabKey>('visao-geral')
+export default function ComprasWorkspace({ initialTab = 'visao-geral' }: { initialTab?: TabKey }) {
+  const [activeTab, setActiveTab] = useState<TabKey>(initialTab)
   const [search, setSearch] = useState('')
   const [showRfqForm, setShowRfqForm] = useState(false)
   const [showOrderForm, setShowOrderForm] = useState(false)
