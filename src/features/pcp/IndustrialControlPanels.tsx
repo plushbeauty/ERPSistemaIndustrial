@@ -113,10 +113,9 @@ export function OpEmissionScreen() {
       const payload = requiredByProduct.map(component => {
         const reservation = reservations[component.id]
         if (!reservation?.loteId) throw new Error('Selecione um lote para cada componente da BOM.')
-        if (Number(reservation.quantidade) !== component.required) throw new Error('A quantidade reservada de cada componente deve corresponder à necessidade calculada pela BOM.')
         const lot = lots.find(item => item.id === reservation.loteId)
         if (!lot || lot.produto_id !== component.id) throw new Error('O lote escolhido não pertence ao componente selecionado.')
-        return { lote_material_id: reservation.loteId, quantidade: Number(reservation.quantidade) }
+        return { lote_material_id: reservation.loteId, quantidade: component.required }
       })
       const result = await supabase.rpc('erp_pcp_emitir_op_com_lotes', {
         p_produto_id: productId,
@@ -186,10 +185,9 @@ export function PasswordPolicyPanel() {
         const { data: auth, error: authError } = await supabase.auth.getUser()
         if (authError) throw authError
         if (!auth.user) throw new Error('Sessão autenticada necessária.')
-        const { data: profile, error: profileError } = await supabase.from('erp_usuarios').select('auth_user_id,empresa_id,ativo,is_master,nivel_admin,perfil,deleted_at').eq('auth_user_id', auth.user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
-        if (profileError) throw profileError
-        const isMaster = profile?.auth_user_id === auth.user.id && profile.is_master === true && Number(profile.nivel_admin) >= 100 && String(profile.perfil ?? '').toUpperCase() === 'MASTER' && profile.empresa_id === null
-        if (!isMaster) throw new Error('A política global de senha é exclusiva do usuário Master autenticado.')
+        const { data: isMaster, error: masterError } = await supabase.rpc('erp_is_master')
+        if (masterError) throw masterError
+        if (isMaster !== true) throw new Error('A política global de senha é exclusiva do usuário Master autenticado.')
         const { data, error: loadError } = await supabase.from('erp_sistema_politica_senha').select('id,comprimento_minimo,exigir_maiuscula,exigir_numero').eq('singleton', true).single()
         if (loadError) throw loadError
         if (!alive) return
