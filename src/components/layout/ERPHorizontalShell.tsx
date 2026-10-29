@@ -20,6 +20,7 @@ const menus: MenuItem[] = [
   { label: 'Principal', route: '/pageprincipal', icon: Home },
   { label: 'Engenharia e PCP', route: '/pageprincipal/pcp', icon: Factory, children: [
     { label: 'Central PCP', route: '/pageprincipal/pcp', icon: ClipboardList },
+    { label: 'Chão de Fábrica', route: '/pageprincipal/chao-de-fabrica', icon: Factory, isUpdated: true },
   ] },
   { label: 'Qualidade / Paquímetro', route: '/pageprincipal/paquimetro', icon: Ruler, children: [
     { label: 'Paquímetro Digital', route: '/pageprincipal/paquimetro', icon: Ruler },
@@ -31,6 +32,9 @@ const menus: MenuItem[] = [
     { label: 'Balanço de Estoque', route: '/pageprincipal/estoque/balanco', icon: Package },
   ] },
   { label: 'RH / DP', route: '/pageprincipal/rh', icon: Users, isUpdated: true },
+  { label: 'Financeiro', route: '/pageprincipal/financeiro/contas-pagar', icon: Landmark, isUpdated: true, children: [
+    { label: 'Contas a Pagar', route: '/pageprincipal/financeiro/contas-pagar', icon: Landmark, isUpdated: true },
+  ] },
   { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText, children: [
     { label: 'Central Fiscal', route: '/pageprincipal/fiscal', icon: FileText },
     { label: 'Emissão NF-e', route: '/pageprincipal/fiscal/emissao', icon: FileText },
@@ -95,7 +99,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     }
   }, [])
 
-  const moduleLabel = pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
+  const moduleLabel = pathname.startsWith('/pageprincipal/financeiro') || pathname.startsWith('/financeiro') ? 'Financeiro'
+    : pathname.startsWith('/pageprincipal/chao-de-fabrica') || pathname.startsWith('/chao-de-fabrica') ? 'Engenharia e PCP'
+    : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
     : pathname.startsWith('/pageprincipal/paquimetro') || pathname.startsWith('/pageprincipal/qualidade') || pathname.startsWith('/qualidade') ? 'Qualidade / Paquímetro'
     : pathname.startsWith('/pageprincipal/compras') || pathname.startsWith('/compras') ? 'Compras'
     : pathname.startsWith('/pageprincipal/administracao-configuracoes') || pathname.startsWith('/configuracoes-adm') || pathname.startsWith('/administracao-configuracoes') ? 'Configurações'
