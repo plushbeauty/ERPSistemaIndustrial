@@ -322,9 +322,9 @@ body{background:var(--ds-bg)}
 /* SYSNQRA INDUSTRIAL DESIGN TOKENS — REV 2026-10-28 */
 /* Tailwind 3-compatible implementation. Do not use Tailwind v4 @theme in this repository. */
 :root {
-  --color-brand-primary: oklch(0.278 0.033 256.848);
-  --color-brand-secondary: oklch(0.141 0.019 256.802);
-  --color-brand-accent: oklch(0.645 0.211 25.135);
+  --color-brand-primary: oklch(0.17 0.024 258.39);
+  --color-brand-secondary: oklch(0.12 0.016 258.39);
+  --color-brand-accent: oklch(0.59 0.166 45.44);
   --color-ui-bg: oklch(0.968 0.007 247.996);
   --color-ui-border: oklch(0.920 0.007 247.996);
   --color-ui-success: oklch(0.723 0.144 144.111);
