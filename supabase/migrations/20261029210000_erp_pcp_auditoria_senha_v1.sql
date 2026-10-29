@@ -195,7 +195,7 @@ begin
     select 1
     from public.erp_pcp_bom_itens b
     where b.empresa_id = v_empresa and b.produto_pai_id = p_produto_id
-    group by b.produto_id, b.qtd
+    group by b.produto_id
     having abs(
       coalesce((select sum(r.quantidade)
         from public.erp_pcp_op_lotes_reservados r
