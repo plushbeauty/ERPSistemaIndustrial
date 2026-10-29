@@ -42,9 +42,6 @@ create table if not exists public.erp_setup_configuracao (
   )
 );
 
-create index if not exists idx_erp_setup_configuracao_empresa
-  on public.erp_setup_configuracao (empresa_id);
-
 alter table public.erp_setup_configuracao enable row level security;
 
 -- Somente administrador ativo da empresa pode ler ou alterar o onboarding.
