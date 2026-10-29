@@ -28,21 +28,21 @@ type Group = { label: string; items: Item[] }
 
 const groups: Group[] = [
   { label: 'ADMINISTRAÇÃO', items: [
-    { path: '/configuracoes-adm', label: 'Visão geral', description: 'Central administrativa', icon: LayoutDashboard },
-    { path: '/configuracoes-adm/empresa', label: 'Empresa e identidade', description: 'Dados da empresa', icon: Building2 },
-    { path: '/configuracoes-adm/codificacao', label: 'Codificação e áreas', description: 'Códigos e setores', icon: BarChart3 },
-    { path: '/configuracoes-adm/perfis', label: 'Perfis de usuários', description: 'Papéis e níveis', icon: UsersRound },
-    { path: '/configuracoes-adm/permissoes', label: 'Permissões RBAC', description: 'Acesso por módulo e ação', icon: ShieldCheck },
+    { path: '/pageprincipal/administracao-configuracoes', label: 'Visão geral', description: 'Central administrativa', icon: LayoutDashboard },
+    { path: '/pageprincipal/administracao-configuracoes/empresa', label: 'Empresa e identidade', description: 'Dados da empresa', icon: Building2 },
+    { path: '/pageprincipal/administracao-configuracoes/codificacao', label: 'Codificação e áreas', description: 'Códigos e setores', icon: BarChart3 },
+    { path: '/pageprincipal/administracao-configuracoes/perfis', label: 'Perfis de usuários', description: 'Papéis e níveis', icon: UsersRound },
+    { path: '/pageprincipal/administracao-configuracoes/permissoes', label: 'Permissões RBAC', description: 'Acesso por módulo e ação', icon: ShieldCheck },
   ] },
   { label: 'SEGURANÇA E CONTROLE', items: [
-    { path: '/configuracoes-adm/usuarios', label: 'Usuários', description: 'Contas e situação', icon: KeyRound },
-    { path: '/configuracoes-adm/seguranca', label: 'Segurança e sessões', description: 'Autenticação e políticas', icon: LockKeyhole },
-    { path: '/configuracoes-adm/logs', label: 'Logs e auditoria', description: 'Rastreabilidade', icon: FileClock },
-    { path: '/configuracoes-adm/backups', label: 'Backups e recuperação', description: 'Continuidade operacional', icon: DatabaseBackup },
+    { path: '/pageprincipal/administracao-configuracoes/usuarios', label: 'Usuários', description: 'Contas e situação', icon: KeyRound },
+    { path: '/pageprincipal/administracao-configuracoes/seguranca', label: 'Segurança e sessões', description: 'Autenticação e políticas', icon: LockKeyhole },
+    { path: '/pageprincipal/administracao-configuracoes/logs', label: 'Logs e auditoria', description: 'Rastreabilidade', icon: FileClock },
+    { path: '/pageprincipal/administracao-configuracoes/backups', label: 'Backups e recuperação', description: 'Continuidade operacional', icon: DatabaseBackup },
   ] },
   { label: 'PLATAFORMA', items: [
-    { path: '/configuracoes-adm/integracoes', label: 'Integrações', description: 'Serviços conectados', icon: Network },
-    { path: '/configuracoes-adm/sistema', label: 'Parâmetros do sistema', description: 'Preferências disponíveis', icon: Settings },
+    { path: '/pageprincipal/administracao-configuracoes/integracoes', label: 'Integrações', description: 'Serviços conectados', icon: Network },
+    { path: '/pageprincipal/administracao-configuracoes/sistema', label: 'Parâmetros do sistema', description: 'Preferências disponíveis', icon: Settings },
   ] },
 ]
 const allItems = groups.flatMap(group => group.items)
@@ -56,7 +56,7 @@ function Panel({ title, children }: { title: string; children: ReactNode }) {
 }
 
 function Overview({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
-  const items = allItems.filter(item => item.path !== '/configuracoes-adm')
+  const items = allItems.filter(item => item.path !== '/pageprincipal/administracao-configuracoes')
   return <Panel title="Áreas administrativas">
     <div className="adm-overview-grid">
       {items.map(item => {
@@ -111,27 +111,27 @@ function Empresa() {
 
 function UnavailableSection({ item }: { item: Item }) {
   const details: Record<string, string> = {
-    '/configuracoes-adm/seguranca': 'A autenticação e o ciclo de sessão são gerenciados pelo Supabase Auth. Revogação administrativa de sessões, MFA e políticas de senha só serão exibidos como disponíveis quando houver contrato e operação autorizados comprovados.',
+    '/pageprincipal/administracao-configuracoes/seguranca': 'A autenticação e o ciclo de sessão são gerenciados pelo Supabase Auth. Revogação administrativa de sessões, MFA e políticas de senha só serão exibidos como disponíveis quando houver contrato e operação autorizados comprovados.',
   }
   return <Panel title={item.label}>
     <div className="adm-notice"><strong>Auditoria necessária</strong><p>{details[item.path] || 'Não foi identificada uma operação administrativa persistida para esta área.'}</p>
-      {item.path === '/configuracoes-adm/seguranca' && <div className="adm-actions"><Link to="/configuracoes-adm/usuarios">USUÁRIOS</Link><Link to="/configuracoes-adm/permissoes">PERMISSÕES RBAC</Link><Link to="/configuracoes-adm/logs">LOGS E AUDITORIA</Link></div>}
+      {item.path === '/pageprincipal/administracao-configuracoes/seguranca' && <div className="adm-actions"><Link to="/pageprincipal/administracao-configuracoes/usuarios">USUÁRIOS</Link><Link to="/pageprincipal/administracao-configuracoes/permissoes">PERMISSÕES RBAC</Link><Link to="/pageprincipal/administracao-configuracoes/logs">LOGS E AUDITORIA</Link></div>}
     </div>
   </Panel>
 }
 
 function SectionContent({ item, navigate }: { item: Item; navigate: ReturnType<typeof useNavigate> }) {
-  if (item.path === '/configuracoes-adm') return <Overview navigate={navigate} />
-  if (item.path === '/configuracoes-adm/empresa') return <Empresa />
-  if (item.path === '/configuracoes-adm/codificacao') return <ConfiguracaoCodificacaoAreas profile={null} />
-  if (item.path === '/configuracoes-adm/perfis') return <ConfiguracaoPerfis />
-  if (item.path === '/configuracoes-adm/permissoes') return <ConfiguracaoPermissoes />
-  if (item.path === '/configuracoes-adm/seguranca') return <ConfiguracaoSeguranca />
-  if (item.path === '/configuracoes-adm/logs') return <ConfiguracaoLogs />
-  if (item.path === '/configuracoes-adm/backups') return <ConfiguracaoBackups />
-  if (item.path === '/configuracoes-adm/usuarios') return <UsuariosAdmin />
-  if (item.path === '/configuracoes-adm/integracoes') return <ConfiguracaoIntegracoes />
-  if (item.path === '/configuracoes-adm/sistema') return <ConfiguracaoSistema />
+  if (item.path === '/pageprincipal/administracao-configuracoes') return <Overview navigate={navigate} />
+  if (item.path === '/pageprincipal/administracao-configuracoes/empresa') return <Empresa />
+  if (item.path === '/pageprincipal/administracao-configuracoes/codificacao') return <ConfiguracaoCodificacaoAreas profile={null} />
+  if (item.path === '/pageprincipal/administracao-configuracoes/perfis') return <ConfiguracaoPerfis />
+  if (item.path === '/pageprincipal/administracao-configuracoes/permissoes') return <ConfiguracaoPermissoes />
+  if (item.path === '/pageprincipal/administracao-configuracoes/seguranca') return <ConfiguracaoSeguranca />
+  if (item.path === '/pageprincipal/administracao-configuracoes/logs') return <ConfiguracaoLogs />
+  if (item.path === '/pageprincipal/administracao-configuracoes/backups') return <ConfiguracaoBackups />
+  if (item.path === '/pageprincipal/administracao-configuracoes/usuarios') return <UsuariosAdmin />
+  if (item.path === '/pageprincipal/administracao-configuracoes/integracoes') return <ConfiguracaoIntegracoes />
+  if (item.path === '/pageprincipal/administracao-configuracoes/sistema') return <ConfiguracaoSistema />
   return <UnavailableSection item={item} />
 }
 
