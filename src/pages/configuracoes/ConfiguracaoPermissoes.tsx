@@ -74,7 +74,6 @@ export default function ConfiguracaoPermissoes() {
       const actor = actorResult.data
       const eligible = Boolean(
         actor?.ativo
-        && !actor.deleted_at
         && actor.empresa_id
         && actor.empresa_id === companyId
         && Number(actor.nivel_admin) >= 8
