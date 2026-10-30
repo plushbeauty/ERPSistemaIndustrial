@@ -4,7 +4,7 @@
  * Usa títulos, parcelas e baixas do schema financeiro versionado; autenticação/RLS via Supabase.
  * Não simula saldos, bancos ou centros de custo que não tenham fonte confirmada.
  */
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { ArrowDownLeft, ArrowUpRight, Banknote, CircleHelp, FilePlus2, RefreshCw, Search, Wallet } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
