@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, Home, FileText, Factory, Landmark, LogOut, Search, X, Ruler, ClipboardList, FolderOpen, ShoppingCart, Settings, Package, Users } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, Home, FileText, Factory, Landmark, LogOut, Search, X, Ruler, ClipboardList, FolderOpen, ShoppingCart, Settings, Package, Users, FilePlus2 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -26,8 +26,13 @@ const menus: MenuItem[] = [
   { label: 'Qualidade / Paquímetro', route: '/pageprincipal/paquimetro', icon: Ruler, children: [
     { label: 'Paquímetro Digital', route: '/pageprincipal/paquimetro', icon: Ruler },
     { label: 'Documentos / GED', route: '/pageprincipal/qualidade/ged-documentos', icon: FolderOpen, isUpdated: true },
+    { label: 'RPNC', route: '/pageprincipal/qualidade/rpnc', icon: ClipboardList, isUpdated: true },
   ] },
-  { label: 'Compras', route: '/pageprincipal/compras', icon: ShoppingCart, isUpdated: true },
+  { label: 'Compras', route: '/pageprincipal/compras', icon: ShoppingCart, isUpdated: true, children: [
+    { label: 'Central de Compras', route: '/pageprincipal/compras', icon: ShoppingCart, isUpdated: true },
+    { label: 'Solicitação de Compra', route: '/pageprincipal/compras/solicitacao', icon: FilePlus2, isUpdated: true },
+    { label: 'Requisições de Compra', route: '/pageprincipal/compras/requisicoes', icon: ClipboardList, isUpdated: true },
+  ] },
   { label: 'Configurações', route: '/pageprincipal/administracao-configuracoes', icon: Settings },
   { label: 'Estoque', route: '/pageprincipal/estoque/balanco', icon: Package, isUpdated: true, children: [
     { label: 'Balanço de Estoque', route: '/pageprincipal/estoque/balanco', icon: Package },
@@ -229,7 +234,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       </main>
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
       <BarraWindows11
-        ativo={pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/pageprincipal/paquimetro') ? 'paq' : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'fiscal' : pathname.startsWith('/pageprincipal') ? 'home' : ''}
+        ativo={pathname.startsWith('/pageprincipal/compras/solicitacao') ? 'solicitacao' : pathname.startsWith('/pageprincipal/compras/requisicoes') ? 'requisicoes' : pathname.startsWith('/pageprincipal/compras') ? 'compras' : pathname.startsWith('/pageprincipal/qualidade/rpnc') ? 'rpnc' : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/pageprincipal/paquimetro') ? 'paq' : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'fiscal' : pathname.startsWith('/pageprincipal') ? 'home' : ''}
         onAbrir={(id) => {
           const destinations: Record<string, string> = {
             home: '/pageprincipal',
@@ -238,6 +243,10 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
             op: '/pageprincipal/pcp',
             paq: '/pageprincipal/paquimetro',
             fiscal: '/pageprincipal/fiscal',
+            compras: '/pageprincipal/compras',
+            solicitacao: '/pageprincipal/compras/solicitacao',
+            requisicoes: '/pageprincipal/compras/requisicoes',
+            rpnc: '/pageprincipal/qualidade/rpnc',
           }
           go(destinations[id] ?? '/pageprincipal')
         }}
