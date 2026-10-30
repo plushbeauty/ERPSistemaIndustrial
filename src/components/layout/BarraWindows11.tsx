@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import type { LucideIcon } from "lucide-react";
-import { LayoutGrid, Search, CalendarClock, Power, User, Ruler, FileText, Home, ShoppingCart, ClipboardList, FilePlus2 } from "lucide-react";
+import { LayoutGrid, Search, CalendarClock, Power, User, Ruler, FileText, Home, ShoppingCart, ClipboardList, FilePlus2, Users } from "lucide-react";
 
 type App = { id: string; nome: string; icone: LucideIcon; cor: string };
 
 const APPS: App[] = [
   { id: "home", nome: "Página principal", icone: Home, cor: "#123b50" },
+  { id: "rh", nome: "RH / Departamento Pessoal", icone: Users, cor: "#f97316" },
+  { id: "fichas", nome: "Fichas de Processo", icone: ClipboardList, cor: "#f97316" },
   { id: "pcp", nome: "PCP", icone: CalendarClock, cor: "#0078d4" },
   { id: "paq", nome: "Paquímetro", icone: Ruler, cor: "#111827" },
   { id: "fiscal", nome: "Fiscal", icone: FileText, cor: "#d97706" },
