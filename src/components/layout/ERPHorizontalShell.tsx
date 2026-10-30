@@ -24,8 +24,9 @@ const menus: MenuItem[] = [
     { label: 'Fichas de Processo', route: '/pageprincipal/pcp/fichas-processo', icon: ClipboardList, isUpdated: true },
     { label: 'Roteiro de Operações', route: '/pageprincipal/pcp/roteiros', icon: Route, isUpdated: true },
   ] },
-  { label: 'Chão de Fábrica', route: '/pageprincipal/chao-de-fabrica/postos', icon: Monitor, isUpdated: true, children: [
-    { label: 'Postos de Trabalho', route: '/pageprincipal/chao-de-fabrica/postos', icon: Monitor, isUpdated: true },
+  { label: 'Chão de Fábrica', route: '/pageprincipal/chao-de-fabrica/portal-operador', icon: Monitor, isUpdated: true, children: [
+    { label: 'Portal do Operador', route: '/pageprincipal/chao-de-fabrica/portal-operador', icon: Monitor, isUpdated: true },
+    { label: 'Postos de Trabalho', route: '/pageprincipal/chao-de-fabrica/postos', icon: ClipboardList, isUpdated: true },
   ] },
   { label: 'Estoque e Almoxarifado', route: '/pageprincipal/estoque/auditoria-saldos', icon: Warehouse, isUpdated: true, children: [
     { label: 'Auditoria de Saldos', route: '/pageprincipal/estoque/auditoria-saldos', icon: Scale, isUpdated: true },

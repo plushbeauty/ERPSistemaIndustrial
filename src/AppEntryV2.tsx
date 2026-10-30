@@ -53,6 +53,7 @@ const CustomerDnList = lazy(() => import('./pages/CustomerDnList'))
 const CustomerDnSettings = lazy(() => import('./pages/CustomerDnSettings'))
 const CustomerDnPod = lazy(() => import('./pages/CustomerDnPod'))
 const Master = lazy(() => import('./pages/Master'))
+const PCPAreaFuncionario = lazy(() => import('./pages/PCPAreaFuncionario'))
 
 function LoadingWorkspace() {
   return <main role="status" aria-live="polite" style={{ minHeight: '50vh', display: 'grid', placeItems: 'center', color: '#123b50', fontFamily: 'Inter,system-ui,sans-serif' }}>Carregando SYSNQRA ERP INDUSTRIAL…</main>
@@ -80,6 +81,7 @@ export default function AppEntryV2() {
               <Route path="pcp" element={<PCPWorkspace />} />
               <Route path="pcp/roteiros" element={<QualityPlanGate><RoteiroOperacoes /></QualityPlanGate>} />
               <Route path="chao-de-fabrica/postos" element={<QualityPlanGate><PostosTrabalho /></QualityPlanGate>} />
+              <Route path="chao-de-fabrica/portal-operador" element={<PCPAreaFuncionario />} />
               <Route path="paquimetro" element={<QualityPlanGate><Paquimetro /></QualityPlanGate>} />
               <Route path="qualidade/ged" element={<QualityPlanGate><FileTreeGED /></QualityPlanGate>} />
               <Route path="estoque/auditoria-saldos" element={<QualityPlanGate><AuditoriaSaldos /></QualityPlanGate>} />
@@ -126,6 +128,8 @@ export default function AppEntryV2() {
             <Route path="/qualidade/documentos" element={<Navigate to="/pageprincipal/qualidade/ged" replace />} />
             <Route path="/documentos-qualidade" element={<Navigate to="/pageprincipal/qualidade/ged" replace />} />
             <Route path="/pcp/roteiros" element={<Navigate to="/pageprincipal/pcp/roteiros" replace />} />
+            <Route path="/pcp/portal-operador" element={<Navigate to="/pageprincipal/chao-de-fabrica/portal-operador" replace />} />
+            <Route path="/area-funcionario" element={<Navigate to="/pageprincipal/chao-de-fabrica/portal-operador" replace />} />
             <Route path="/master" element={<Navigate to="/pageprincipal/master" replace />} />
             <Route path="*" element={<Navigate to="/pageprincipal" replace />} />
           </Routes>
