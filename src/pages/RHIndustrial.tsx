@@ -284,20 +284,21 @@ export default function RHIndustrial() {
     {tab === 'Funcionários' ? <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-200 bg-slate-100 px-4 py-3"><h2 className="font-bold text-slate-900">{editingId ? 'Editar colaborador' : 'Cadastro de colaborador'}</h2><p className="mt-1 text-xs text-slate-500">Campos compactos, medidas conforme especificação; foto 3×4 protegida por empresa.</p></div>
       <form onSubmit={saveEmployee} className="p-4 md:p-5">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
-          <div className="md:col-span-3">
-            <label htmlFor="rh-foto" className="flex aspect-[3/4] max-h-48 w-36 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-slate-50 text-center text-xs text-slate-500 hover:border-sky-500">
+        <div className="mb-4 flex items-start gap-4">
+          <div>
+            <label htmlFor="rh-foto" className="flex aspect-[3/4] max-h-36 w-28 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-slate-50 text-center text-xs text-slate-500 hover:border-sky-500">
               {photo ? <img src={URL.createObjectURL(photo)} alt="Prévia da foto do colaborador" className="h-full w-full object-cover"/> : photoUrl ? <img src={photoUrl} alt="Foto atual do colaborador" className="h-full w-full object-cover"/> : <><Camera size={25} className="mb-2"/><span className="font-semibold">Foto 3×4</span><span className="mt-1 px-2">JPG, PNG ou WebP</span></>}
             </label>
             <input id="rh-foto" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={event => { const file = event.target.files?.[0] ?? null; if (file && file.size > 5 * 1024 * 1024) { setMessage('A foto deve ter no máximo 5 MB.'); return } setPhoto(file); if (file) setPhotoUrl('') }}/>
-            <p className="mt-2 text-[11px] text-slate-500">Imagem privada; acesso conforme permissões do sistema.</p>
+            <p className="mt-2 text-[11px] text-slate-500">Foto 3×4 · máx. 5 MB</p>
           </div>
-          <div className="grid grid-cols-1 content-start gap-4 md:col-span-9 md:grid-cols-12">
-            {employeeFields.map(field => {
-              const span = field.key === 'nome_completo' ? 'md:col-span-9' : field.key === 'data_nascimento' ? 'md:col-span-3' : ['cpf','rg','celular'].includes(field.key) ? 'md:col-span-4' : field.key === 'email' ? 'md:col-span-6' : 'md:col-span-6'
-              return <div key={field.key} className={span}><label htmlFor={field.key} className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-600">{field.label}{field.required ? ' *' : ''}</label>{fieldControl(field)}</div>
-            })}
-          </div>
+          <p className="pt-1 text-xs text-slate-500">Preencha os dados do colaborador. Os campos pessoais respeitam as proporções especificadas e os dados são gravados no banco da empresa selecionada.</p>
+        </div>
+        <div className="grid grid-cols-1 content-start gap-4 md:grid-cols-12">
+          {employeeFields.map(field => {
+            const span = field.key === 'nome_completo' ? 'md:col-span-9' : field.key === 'data_nascimento' ? 'md:col-span-3' : ['cpf','rg','celular'].includes(field.key) ? 'md:col-span-3' : field.key === 'email' ? 'md:col-span-6' : 'md:col-span-6'
+            return <div key={field.key} className={span}><label htmlFor={field.key} className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-600">{field.label}{field.required ? ' *' : ''}</label>{fieldControl(field)}</div>
+          })}
         </div>
         <div className="mt-5 flex flex-wrap justify-end gap-2 border-t border-slate-200 pt-4">
           <button type="button" onClick={startNew} className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-300 px-4 text-sm font-semibold text-slate-700"><X size={15}/> Cancelar</button>
