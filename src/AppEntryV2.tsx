@@ -9,6 +9,7 @@ import './styles/erp-design-system-2026.css'
 import './styles/synqra-app-shell.css'
 import './styles/synqra-workspace-standard.css'
 import './styles/compras-workspace.css'
+import './styles/erp-global-consistency-20261030.css'
 
 const PagePrincipal = lazy(() => import('./pages/PagePrincipal'))
 const AppIndustrial = lazy(() => import('./AppIndustrialV7'))
@@ -19,6 +20,8 @@ const Paquimetro = lazy(() => import('./pages/QualidadePaquimetroDigital'))
 const ComprasWorkspace = lazy(() => import('./pages/ComprasWorkspace'))
 const SolicitacaoCompra = lazy(() => import('./pages/SolicitacaoCompra'))
 const ComprasRequisicoes = lazy(() => import('./pages/ComprasRequisicoes'))
+const RHIndustrial = lazy(() => import('./pages/RHIndustrial'))
+const FichaProcesso = lazy(() => import('./features/pcp/FichaProcesso'))
 const QualidadeRPNC = lazy(() => import('./pages/QualidadeRPNC'))
 const AdministracaoConfiguracoesGlobais = lazy(() => import('./pages/AdministracaoConfiguracoesGlobais'))
 
@@ -38,6 +41,8 @@ export default function AppEntryV2() {
               <Route path="compras" element={<ComprasWorkspace />} />
               <Route path="compras/solicitacao" element={<SolicitacaoCompra />} />
               <Route path="compras/requisicoes" element={<ComprasRequisicoes />} />
+              <Route path="rh" element={<RHIndustrial />} />
+              <Route path="pcp/fichas-processo" element={<FichaProcesso />} />
               <Route path="qualidade/rpnc" element={<QualityPlanGate><QualidadeRPNC /></QualityPlanGate>} />
               <Route path="administracao-configuracoes" element={<AdministracaoConfiguracoesGlobais />} />
               <Route path="fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />
@@ -45,6 +50,8 @@ export default function AppEntryV2() {
               <Route path="paquimetro" element={<QualityPlanGate><Paquimetro /></QualityPlanGate>} />
             </Route>
             <Route path="/compras" element={<Navigate to="/pageprincipal/compras" replace />} />
+            <Route path="/rh" element={<Navigate to="/pageprincipal/rh" replace />} />
+            <Route path="/pcp/fichas-processo" element={<Navigate to="/pageprincipal/pcp/fichas-processo" replace />} />
             <Route path="/compras/solicitacao" element={<Navigate to="/pageprincipal/compras/solicitacao" replace />} />
             <Route path="/compras/requisicoes" element={<Navigate to="/pageprincipal/compras/requisicoes" replace />} />
             <Route path="/qualidade/rpnc" element={<Navigate to="/pageprincipal/qualidade/rpnc" replace />} />
