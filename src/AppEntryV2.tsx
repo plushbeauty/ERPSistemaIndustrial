@@ -119,6 +119,7 @@ const QualidadeIndustrial = lazyPage(() => import('./pages/QualidadeIndustrial')
 const QualidadeInstrumentosCadastro = lazyPage(() => import('./pages/QualidadeInstrumentosCadastro'), 'default')
 const AcompanhamentoNaoConformidade = lazyPage(() => import('./pages/AcompanhamentoNaoConformidade'), 'AcompanhamentoNaoConformidade')
 const QualidadeRPNCMultiorigem = lazyPage(() => import('./pages/QualidadeRPNCMultiorigem'), 'default')
+const DiretoriaDashboard = lazyPage(() => import('./pages/DiretoriaDashboard'), 'default')
 const EstoqueAlmoxarifado = lazyPage(() => import('./pages/EstoqueAlmoxarifadoCompact'), 'default')
 const ProdutosVendasIndustrial = lazyPage(() => import('./pages/ProdutosVendasIndustrial'), 'ProdutosVendasIndustrial')
 const ModuloCadastroProdutos = lazyPage(() => import('./pages/cadastro-produtos/ModuloCadastroProdutos'), 'ModuloCadastroProdutos')
@@ -672,6 +673,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/tabelas-preco" element={<AjusteGlobal />} />
       <Route path="/catalogo" element={<CatalogoDigital />} />
       <Route path="/fiscal" element={<QualityPlanGate>{<Fiscal />}</QualityPlanGate>} />
+      <Route path="/relatorios" element={<DiretoriaDashboard />} />
       <Route path="/fiscal/compras" element={<QualityPlanGate>{<ComprasRoute><FiscalCompras /></ComprasRoute>}</QualityPlanGate>} />
       <Route path="/compras/analise-precos" element={<ComprasRoute><ComprasAnalisePrecos /></ComprasRoute>} />
       <Route path="/compras/relatorios" element={<ComprasRoute><ComprasRelatorios /></ComprasRoute>} />

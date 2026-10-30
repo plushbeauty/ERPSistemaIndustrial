@@ -92,6 +92,7 @@ const menus: MenuItem[] = [
     { label: 'Especificações técnicas', route: '/qualidade/especificacoes' },
     { label: 'FMEA / PFMEA', route: '/qualidade/fmea' },
     { label: 'RNC / CAPA', route: '/qualidade/rnc-capa' },
+    { label: 'Central RPNC multiorigem', route: '/qualidade/rpnc' },
     { label: 'CEP / medições', route: '/qualidade/cep' },
     { label: 'Cadastro de documentos (GED)', route: '/qualidade/ged-documentos' },
     { label: 'Qualidade Tablet', route: '/qualidade', action: 'qualityTablet' },
@@ -109,7 +110,15 @@ const menus: MenuItem[] = [
     { label: 'EPIs', route: '/rh/epis' },
     { label: 'Entregas de EPI', route: '/rh/epis/entregas' },
   ] },
-  { label: 'Relatórios', route: '/relatorios', icon: BarChart3 },
+  { label: 'Relatórios', route: '/relatorios', icon: BarChart3, children: [
+    { label: 'Painel da diretoria', route: '/relatorios' },
+    { label: 'Vendas · gráficos', route: '/vendas/dashboard-graficos' },
+    { label: 'Vendas · relatórios', route: '/vendas/relatorios' },
+    { label: 'Compras · relatórios', route: '/compras/relatorios' },
+    { label: 'PCP · dashboard OEE', route: '/pcp/dashboard-oee' },
+    { label: 'Qualidade · RNC', route: '/qualidade/dashboard-rnc' },
+    { label: 'Manutenção · indicadores', route: '/manutencao/indicadores' },
+  ] },
   { label: 'Configuração', route: '/configuracoes-adm', icon: Settings },
 ]
 
