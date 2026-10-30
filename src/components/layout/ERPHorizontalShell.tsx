@@ -34,6 +34,7 @@ const menus: MenuItem[] = [
   ] },
   { label: 'Configurações', route: '/pageprincipal/administracao-configuracoes', icon: Settings },
   { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText },
+  { label: 'Central de Ajuda', route: '/pageprincipal/ajuda', icon: CircleHelp, isUpdated: true },
 ]
 
 export default function ERPHorizontalShell({ children, operatorName = 'Usuário ERP' }: { children: ReactNode; operatorName?: string }) {
