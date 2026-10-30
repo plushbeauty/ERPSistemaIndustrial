@@ -69,7 +69,7 @@ export default function PCPFichaProcessoTeste() {
             {group:'Fechamento e extração',label:'Cavidades ativas',key:'cavidades_ativas',unit:''},
           ]
           const parameters = defs.flatMap(d => { const v = p[d.key]; return v === null || v === undefined || v === '' ? [] : [{grupo:d.group,label:d.label,valor:formatValue(v,d.unit)}] })
-          return {id:row.id,codigo:row.codigo_ficha,descricao:product ? product.codigo+' · '+product.nome : 'Produto não localizado',maquina:machine ? machine.codigo+' · '+machine.nome : 'Máquina não vinculada',molde:tool ? tool.codigo+' · '+tool.nome : 'Ferramenta não vinculada',cavidades:numeric(p,'cavidades_ativas') ?? 0,resina:String(p.material_polimero ?? p.composto_material ?? p.material_base ?? '—'),status:row.status,categoria:row.categoria_processo,temperaturas, ciclo, parametros:parameters}
+          return {id:row.id,codigo:row.codigo_ficha,descricao:product ? product.codigo+' · '+product.nome : 'Produto não localizado',maquina:machine ? machine.codigo+' · '+machine.nome : 'Máquina não vinculada',molde:tool ? tool.codigo+' · '+tool.nome : 'Ferramenta não vinculada',cavidades:numeric(p,'cavidades_ativas') ?? 0,resina:String(p.material_polimero ?? p.composto_material ?? p.material_base ?? '—'),status:row.status,categoria:row.categoria_processo,temperaturas: temperatures, ciclo: cycle, parametros:parameters}
         })
         if (active) { setFichas(mapped); setSelectedCode(current => mapped.some(x => x.codigo === current) ? current : (mapped[0]?.codigo ?? '')) }
       } catch (e) { if (active) setLoadError(e instanceof Error ? e.message : 'Falha ao carregar fichas reais.') }

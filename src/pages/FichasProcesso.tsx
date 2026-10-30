@@ -236,6 +236,43 @@ const cardClass = 'rounded-[2px] border border-slate-200 bg-white p-3.5 shadow-x
 const btnClass =
   'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] px-3 text-[10px] font-bold tracking-wide uppercase transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer'
 
+const guiaCategoria: Record<string, string[]> = {
+  INJETADOS: [
+    'Peso e curso da rosca: ajustar a dose de injeção deixando colchão de material (buffer) de 15–20%.',
+    'Velocidade de injeção em estágios: lenta na porta (evita mordiscas/jatos) e rápida no meio da cavidade.',
+    'Secagem da resina: PP máx. 0,05% de umidade; demais materiais seguir ponto de orvalho da ficha do fornecedor.',
+    'Resfriamento: mínimo de 1 s por mm de espessura; priorizar controle efetivo da temperatura do molde.',
+    'Validação da primeira peça: visual (rebarba, injeção curta, rechupe) + massa e cota crítica aprovadas pela Qualidade.',
+  ],
+  PRENSADOS: [
+    'Tempo de vulcanização: base ~1 min por mm de espessura da borracha (confirmar por composto).',
+    'Temperatura dos platôs: tolerância ±5 °C; conferir a cada hora com termômetro infravermelho.',
+    'Realizar ciclos de escape (abrir/fechar a prensa) para liberar ar e evitar bolhas internas.',
+    'Controlar espessura da rebarba de corte como critério no plano de inspeção.',
+    'Registrar lote da borracha e % de agente de cura na composição da batelada.',
+  ],
+  ESTAMPARIA: [
+    'Curso, tonelagem e avanço: seguir a folha de setup da prensa e do ferramental.',
+    'Lubrificação da matriz: definir tipo e frequência de aplicação do óleo.',
+    'Limite de rebarba: critério conforme desenho; inspecionar aresta de corte.',
+    'Bobina/chapa: conferir espessura, tipo de liga e lote do material.',
+  ],
+  ACABAMENTO: [
+    'Corte de galhos/rebarbação: usar gabarito e ferramenta especificada; nunca cortar sem batente.',
+    'Peças não podem apresentar arestas cortantes — teste de tato com luva antes da liberação.',
+    'Inspeção visual 100% contra padrão de acabamento superficial (VDI/brilho) e mestre de cor sob luz D65.',
+    'Gravação/datador legíveis e posicionados conforme desenho da peça.',
+    'Transferência quantitativa ao embalador com cartão de apontamento assinado.',
+  ],
+  MONTAGEM_EMBALAGEM: [
+    'Conferir quantidade por saco/blister e torque de montagem (quando aplicável) antes do fechamento.',
+    'Caixa de papelão: resistência/aba especificada (ex.: ECT 30) e tara registrada no padrão de embalagem.',
+    'Etiqueta da caixa: código do produto, quantidade, lote, data de fabricação e código do cliente.',
+    'Lacre com fita e verificação de integridade; ensaio de queda/empilhamento conforme padrão interno.',
+    'Paletização: desenho de empilhamento, altura máxima e peso bruto líquido registrado na etiqueta do palete.',
+  ],
+}
+
 export function FichasProcesso() {
   const [form, setForm] = useState<FormState>(blank)
   const [activeTab, setActiveTab] = useState<ActiveTab>('PROCESSO')
@@ -906,12 +943,13 @@ export function FichasProcesso() {
                         <select
                           value={form.categoria_processo}
                           onChange={e => update('categoria_processo', e.target.value)}
-                          className="h-[24px] rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-bold text-slate-700 outline-none"
+                          className="h-[30px] rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] font-bold text-slate-700 outline-none focus:border-[#2D8DB8]"
                         >
                           <option value="INJETADOS">INJETADOS (TERMOPLÁSTICOS)</option>
                           <option value="PRENSADOS">PRENSADOS (BORRACHA)</option>
                           <option value="ESTAMPARIA">ESTAMPARIA</option>
-                          <option value="MONTAGEM_EMBALAGEM">MONTAGEM / EMBALAGEM</option>
+                          <option value="ACABAMENTO">ACABAMENTO (REBARBAÇÃO / CORTE)</option>
+                          <option value="MONTAGEM_EMBALAGEM">MONTAGEM / EMBALAGEM DE CAIXA</option>
                         </select>
                       </div>
                     </div>
@@ -1078,7 +1116,7 @@ export function FichasProcesso() {
                         <button
                           type="button"
                           onClick={() => fileRef.current?.click()}
-                          className="h-6 px-2 text-[9px] font-bold uppercase rounded border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 flex items-center gap-1"
+                          className="h-7 px-2.5 text-[10px] font-bold uppercase rounded-[2px] border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 flex items-center gap-1 cursor-pointer"
                         >
                           <ImagePlus size={12} />
                           <span>Foto Material/Resina</span>
@@ -1114,7 +1152,7 @@ export function FichasProcesso() {
                                     next[idx].tipo = e.target.value
                                     update('mistura', next)
                                   }}
-                                  className="h-6 w-full rounded border border-slate-300 px-1.5 text-[10px] font-bold"
+                                  className="h-7 w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-[11px] font-bold outline-none focus:border-[#2D8DB8]"
                                 />
                               </td>
                               <td className="p-1.5">
@@ -1126,7 +1164,7 @@ export function FichasProcesso() {
                                     next[idx].descricao = e.target.value
                                     update('mistura', next)
                                   }}
-                                  className="h-6 w-full rounded border border-slate-300 px-1.5 text-[10px]"
+                                  className="h-7 w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-[11px] outline-none focus:border-[#2D8DB8]"
                                 />
                               </td>
                               <td className="p-1.5">
@@ -1138,7 +1176,7 @@ export function FichasProcesso() {
                                     next[idx].codigo = e.target.value
                                     update('mistura', next)
                                   }}
-                                  className="h-6 w-full rounded border border-slate-300 px-1.5 text-[10px] font-mono font-bold"
+                                  className="h-7 w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-[11px] font-mono font-bold outline-none focus:border-[#2D8DB8]"
                                 />
                               </td>
                               <td className="p-1.5">
@@ -1158,7 +1196,7 @@ export function FichasProcesso() {
                                     }
                                     update('mistura', next)
                                   }}
-                                  className="h-6 w-full rounded border border-slate-300 px-1.5 text-[10px] text-right font-mono font-bold text-[#123B50]"
+                                  className="h-7 w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-right text-[11px] font-mono font-bold text-[#123B50] outline-none focus:border-[#2D8DB8]"
                                 />
                               </td>
                               <td className="p-1.5 text-right font-mono font-bold text-slate-700">
@@ -1200,7 +1238,7 @@ export function FichasProcesso() {
                           ]
                           update('mistura', next)
                         }}
-                        className="h-6 px-2 text-[9px] font-bold uppercase rounded border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 flex items-center gap-1"
+                        className="h-7 px-2.5 text-[10px] font-bold uppercase rounded-[2px] border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 flex items-center gap-1 cursor-pointer"
                       >
                         <Plus size={12} />
                         <span>Adicionar Componente à Mistura</span>
@@ -1424,6 +1462,87 @@ export function FichasProcesso() {
                     </section>
                   </div>
 
+                  {/* Bloco 3C: Parâmetros de Pressão & Temperatura de Processamento */}
+                  <section className={cardClass}>
+                    <div className="flex items-center gap-2 border-b border-slate-200 pb-2 mb-3">
+                      <span className="rounded bg-[#123B50] px-1.5 py-0.5 text-[8.5px] font-black text-white uppercase">
+                        SEÇÃO 3C
+                      </span>
+                      <h2 className="text-xs font-black uppercase tracking-wider text-[#123B50]">
+                        PRESSÕES &amp; TEMPERATURA DE PROCESSAMENTO
+                      </h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-5">
+                      <div>
+                        <label className={labelClass}>Injeção (bar)</label>
+                        <input
+                          type="number"
+                          step="any"
+                          min="0"
+                          value={form.pressao_injecao}
+                          onChange={e => update('pressao_injecao', e.target.value)}
+                          placeholder="Ex: 1200"
+                          className={inputClass}
+                        />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Recalque / packing (bar)</label>
+                        <input
+                          type="number"
+                          step="any"
+                          min="0"
+                          value={form.pressao_recalque}
+                          onChange={e => update('pressao_recalque', e.target.value)}
+                          placeholder="Ex: 800"
+                          className={inputClass}
+                        />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Contrapressão (bar)</label>
+                        <input
+                          type="number"
+                          step="any"
+                          min="0"
+                          value={form.contrapressao}
+                          onChange={e => update('contrapressao', e.target.value)}
+                          placeholder="Ex: 50"
+                          className={inputClass}
+                        />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Hidráulica / trabalho (bar)</label>
+                        <input
+                          type="number"
+                          step="any"
+                          min="0"
+                          value={form.pressao_trabalho}
+                          onChange={e => update('pressao_trabalho', e.target.value)}
+                          placeholder="Ex: 140"
+                          className={inputClass}
+                        />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Temperatura de processo (°C)</label>
+                        <input
+                          type="number"
+                          step="any"
+                          min="0"
+                          value={form.temperatura_trabalho}
+                          onChange={e => update('temperatura_trabalho', e.target.value)}
+                          placeholder="Ex: 220"
+                          className={inputClass}
+                        />
+                      </div>
+                    </div>
+
+                    <p className="mt-2 text-[9px] italic text-slate-500">
+                      Pressão de injeção e recalque definem preenchimento e combate a rechupes; a contrapressão
+                      controla homogeneidade da plastificação (ar na massa). Valores fora da janela do material
+                      devem ser comunicados à Engenharia de Processo.
+                    </p>
+                  </section>
+
                   {/* Bloco 4: Aviso Importante & Instruções de Operação (Conforme Modelo do PDF) */}
                   <section className={cardClass}>
                     <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
@@ -1468,6 +1587,32 @@ export function FichasProcesso() {
                       />
                     </div>
                   </section>
+
+                  {/* Bloco 5: Guia Técnico por Categoria de Processo */}
+                  <section className={cardClass}>
+                    <div className="flex items-center gap-2 border-b border-slate-200 pb-2 mb-3">
+                      <span className="rounded bg-[#48B7C7] px-1.5 py-0.5 text-[8.5px] font-black text-white uppercase">
+                        GUIA RÁPIDO
+                      </span>
+                      <h2 className="text-xs font-black uppercase tracking-wider text-[#123B50]">
+                        Pontos técnicos da categoria: {form.categoria_processo}
+                      </h2>
+                    </div>
+
+                    <ol className="grid grid-cols-1 gap-2 lg:grid-cols-2">
+                      {(guiaCategoria[form.categoria_processo] ?? guiaCategoria.INJETADOS).map((g, idx) => (
+                        <li
+                          key={idx}
+                          className="flex items-start gap-2 rounded-[2px] border border-slate-200 bg-slate-50 p-2 text-[11px] leading-snug text-slate-700"
+                        >
+                          <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#123B50] text-[9px] font-black text-white">
+                            {idx + 1}
+                          </span>
+                          <span>{g}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </section>
                 </div>
               )}
 
@@ -1507,12 +1652,12 @@ export function FichasProcesso() {
                     />
 
                     {/* Grid de Fotos Técnicas Sem Repetição */}
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                       
                       {/* Foto Principal da Ficha (se houver) */}
                       {form.imagem_url && (
                         <div className="rounded-[2px] border border-slate-200 bg-white overflow-hidden shadow-xs group relative">
-                          <div className="h-44 bg-slate-100 flex items-center justify-center p-2">
+                          <div className="h-72 bg-slate-100 flex items-center justify-center p-2">
                             <img
                               src={form.imagem_url}
                               alt="Foto Principal"
@@ -1543,7 +1688,7 @@ export function FichasProcesso() {
                           key={foto.id}
                           className="rounded-[2px] border border-slate-200 bg-white overflow-hidden shadow-xs relative group"
                         >
-                          <div className="h-44 bg-slate-100 flex items-center justify-center p-2">
+                          <div className="h-72 bg-slate-100 flex items-center justify-center p-2">
                             <img
                               src={foto.url}
                               alt={foto.titulo}
@@ -1586,7 +1731,7 @@ export function FichasProcesso() {
                                 next[idx].titulo = e.target.value
                                 update('fotos_molde', next)
                               }}
-                              className="mt-1 h-5 w-full text-[10px] font-bold text-slate-800 bg-transparent border-b border-transparent focus:border-[#2D8DB8] outline-none"
+                              className="mt-1 h-6 w-full text-[11px] font-bold text-slate-800 bg-transparent border-b border-transparent focus:border-[#2D8DB8] outline-none"
                             />
                           </div>
                         </div>
@@ -1595,10 +1740,10 @@ export function FichasProcesso() {
                       {/* Card de Adição Rápida */}
                       <div
                         onClick={() => moldPhotoRef.current?.click()}
-                        className="h-56 rounded-[2px] border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-sky-50/50 hover:border-[#2D8DB8] flex flex-col items-center justify-center p-4 cursor-pointer text-center transition-colors"
+                        className="h-72 rounded-[2px] border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-sky-50/50 hover:border-[#2D8DB8] flex flex-col items-center justify-center p-4 cursor-pointer text-center transition-colors"
                       >
-                        <ImagePlus size={28} className="text-[#2D8DB8]" />
-                        <strong className="mt-2 text-[11px] text-slate-800">Enviar Foto do Molde</strong>
+                        <ImagePlus size={34} className="text-[#2D8DB8]" />
+                        <strong className="mt-2 text-[12px] text-slate-800">Enviar Foto do Molde</strong>
                         <span className="text-[9px] text-slate-500 mt-0.5">
                           Cavidade, lado fixo, gavetas ou montagem
                         </span>
@@ -1671,7 +1816,7 @@ export function FichasProcesso() {
                           value={form.desenho_numero}
                           onChange={e => update('desenho_numero', e.target.value)}
                           placeholder="Ex: TPA01201"
-                          className="h-[24px] w-28 rounded border border-slate-300 px-1.5 text-[10px] font-mono font-bold"
+                          className="h-[30px] w-40 rounded-[2px] border border-slate-300 px-2 text-[11px] font-mono font-bold outline-none focus:border-[#2D8DB8]"
                         />
                       </div>
                     </div>
@@ -1746,7 +1891,7 @@ export function FichasProcesso() {
                           }
                           update('inspecoes', [...form.inspecoes, novoItem])
                         }}
-                        className="h-6 px-2 text-[9px] font-bold uppercase rounded border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 flex items-center gap-1"
+                        className="h-7 px-2.5 text-[10px] font-bold uppercase rounded-[2px] border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 flex items-center gap-1 cursor-pointer"
                       >
                         <Plus size={12} />
                         <span>Adicionar Item de Inspeção</span>
@@ -1777,7 +1922,7 @@ export function FichasProcesso() {
                                     next[idx].caracteristica = e.target.value
                                     update('inspecoes', next)
                                   }}
-                                  className="h-6 w-full rounded border border-slate-300 px-1.5 text-[10px] font-semibold"
+                                  className="h-7 w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-[11px] font-semibold outline-none focus:border-[#2D8DB8]"
                                 />
                               </td>
                               <td className="p-1.5">
@@ -1789,7 +1934,7 @@ export function FichasProcesso() {
                                     next[idx].instrumento = e.target.value
                                     update('inspecoes', next)
                                   }}
-                                  className="h-6 w-full rounded border border-slate-300 px-1.5 text-[10px]"
+                                  className="h-7 w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-[11px] outline-none focus:border-[#2D8DB8]"
                                 />
                               </td>
                               <td className="p-1.5">
@@ -1801,7 +1946,7 @@ export function FichasProcesso() {
                                     next[idx].frequencia = e.target.value
                                     update('inspecoes', next)
                                   }}
-                                  className="h-6 w-full rounded border border-slate-300 px-1.5 text-[10px]"
+                                  className="h-7 w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-[11px] outline-none focus:border-[#2D8DB8]"
                                 />
                               </td>
                               <td className="p-1.5">
@@ -1813,7 +1958,7 @@ export function FichasProcesso() {
                                     next[idx].criterio = e.target.value
                                     update('inspecoes', next)
                                   }}
-                                  className="h-6 w-full rounded border border-slate-300 px-1.5 text-[10px]"
+                                  className="h-7 w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-[11px] outline-none focus:border-[#2D8DB8]"
                                 />
                               </td>
                               <td className="p-1.5 text-center">
@@ -1824,7 +1969,7 @@ export function FichasProcesso() {
                                     next[idx].status_aprovacao = e.target.value as 'CONFORME' | 'NAO_CONFORME' | 'EM_ANALISE'
                                     update('inspecoes', next)
                                   }}
-                                  className="h-6 rounded border border-slate-300 px-1 text-[9px] font-black uppercase text-emerald-800 bg-emerald-50"
+                                  className="h-7 w-full min-w-0 rounded-[2px] border border-slate-300 bg-emerald-50 px-1.5 text-[10px] font-black uppercase text-emerald-800 outline-none focus:border-[#2D8DB8]"
                                 >
                                   <option value="CONFORME">Conforme</option>
                                   <option value="NAO_CONFORME">Não Conforme</option>
