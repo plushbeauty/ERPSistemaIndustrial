@@ -75,8 +75,9 @@ export default function ComprasPedidoForm({ onCancel, onSaved }: { onCancel: () 
       const { data: auth, error: authError } = await supabase.auth.getUser()
       if (authError) throw authError
       if (!auth.user) throw new Error('Sua sessão expirou. Entre novamente.')
-      const payload = validItems.map(item => ({ produto_id: item.produtoId, quantidade: Number(item.quantidade), unidade: item.unidade.trim() || 'UN', preco_unitario: Number(item.preco), aliquota_ipi: Number(item.ipi) || 0, aliquota_icms: Number(item.icms) || 0, centro_custo: item.centroCusto.trim() || header.centroCusto.trim() || null, ncm: item.ncm.trim() || null, data_entrega_prometida: item.entrega || null, ordem_producao_id: item.ordemProducaoId.trim() || null }))
-      const { data, error: saveError } = await supabase.rpc('erp_compras_salvar_pedido_completo', {
+      if (header.requisicaoId || items.some(item => item.ncm.trim() || item.entrega || item.ordemProducaoId.trim())) throw new Error('O banco atual ainda não possui colunas/RPC para gravar solicitação vinculada, NCM, entrega por item ou OP. Esses dados não serão descartados. Deixe esses campos vazios até a migration de ampliação ser aplicada.')
+      const payload = validItems.map(item => ({ produto_id: item.produtoId, quantidade: Number(item.quantidade), unidade: item.unidade.trim() || 'UN', preco_unitario: Number(item.preco), aliquota_ipi: Number(item.ipi) || 0, aliquota_icms: Number(item.icms) || 0, centro_custo: item.centroCusto.trim() || header.centroCusto.trim() || null }))
+      const { data, error: saveError } = await supabase.rpc('erp_compras_salvar_pedido', {
         p_pedido_id: null,
         p_fornecedor_id: header.fornecedorId,
         p_comprador_nome: header.comprador.trim() || auth.user.email || '',
@@ -85,18 +86,6 @@ export default function ComprasPedidoForm({ onCancel, onSaved }: { onCancel: () 
         p_observacoes: header.observacoes.trim(),
         p_status: header.status,
         p_itens: payload,
-        p_dados_comerciais: {
-          requisicao_id: header.requisicaoId || null,
-          centro_custo: header.centroCusto.trim() || null,
-          local_entrega: header.localEntrega.trim() || null,
-          referencia_cotacao: header.cotacao.trim() || null,
-          modalidade_frete: header.freteTipo,
-          transportadora: header.transportadora.trim() || null,
-          valor_frete: Math.max(0, Number(header.frete) || 0),
-          valor_desconto: Math.max(0, Number(header.desconto) || 0),
-          numero_contrato: header.contrato.trim() || null,
-          observacoes_recebimento: header.recebimento.trim() || null,
-        },
       })
       if (saveError) throw saveError
       const record = Array.isArray(data) ? data[0] as Row | undefined : data as Row | null
