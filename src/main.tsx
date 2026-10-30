@@ -26,6 +26,7 @@ function lazyPage(loader: () => Promise<LazyModule>, exportName: string) {
   })
 }
 import './styles/index.css'
+import './styles/sysnqra-premium-tokens.css'
 import './styles/erp-reference-ux-2026.css'
 import './styles/industrial-command-center-2026.css'
 import './styles/design-system-2026.css'
