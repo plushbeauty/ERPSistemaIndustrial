@@ -5,9 +5,9 @@
  * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
  * ID da Revisão: REV-059
  * Data da revisão autorizada: 2026-10-22
- * Revisão: REV-PRODUTO-UI-012 — correção do estado inicial da aba tipada
+ * Revisão: REV-PRODUTO-UI-013 — legibilidade do cadastro (campos preenchendo a célula do grid, tipografia e alturas no padrão ERP)
  * Status: consolidação visual preservando CRUD, segurança por empresa, estoque derivado, engenharia e fiscal.
- * Alterações: Ficha Técnica Mestre reúne dados gerais, estoque, produção, qualidade e documentos; fiscal permanece isolado.
+ * Alterações: apenas layout/estilo; nenhum campo, consulta, validação ou gravação foi alterado.
  * Dados demonstrativos/fallbacks não são adicionados; falhas de consulta permanecem explícitas.
  * Status do Build Local: Não executado — validação será feita pelo gate remoto.
  * =========================================================================
@@ -68,10 +68,10 @@ const empty=():FormData=>({
 const money=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0)
 const n=(v:unknown)=>Number(v??0)||0
 const fmt=(v:unknown)=>n(v).toLocaleString('pt-BR',{maximumFractionDigits:3})
-const panel:CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:2,boxShadow:'0 2px 7px rgba(18,59,80,.07),0 1px 2px rgba(16,24,40,.04)'}
-const input:CSSProperties={width:'100%',height:30,border:'1px solid #c4ced9',borderRadius:2,padding:'0 8px',fontSize:11,background:'#fff',boxSizing:'border-box',minWidth:0}
-const label:CSSProperties={display:'grid',gap:3,minWidth:0,fontSize:9,lineHeight:'11px',fontWeight:500,color:'#344054',textTransform:'uppercase',overflowWrap:'anywhere'}
-const btn=(kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,height:30,padding:'0 10px',borderRadius:2,border:'1px solid '+(kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#B8CDD5'),background:kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#F4FBFD',color:kind==='primary'||kind==='danger'?'#fff':'#123B50',fontSize:11,fontWeight:600,textTransform:'uppercase',cursor:'pointer',whiteSpace:'nowrap'})
+const panel:CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:12,boxShadow:'0 2px 7px rgba(18,59,80,.07),0 1px 2px rgba(16,24,40,.04)'}
+const input:CSSProperties={width:'100%',height:40,border:'1px solid #c4ced9',borderRadius:8,padding:'0 12px',fontSize:14,background:'#fff',boxSizing:'border-box',minWidth:0}
+const label:CSSProperties={display:'grid',gap:5,minWidth:0,fontSize:11,lineHeight:'13px',fontWeight:800,color:'#344054',textTransform:'uppercase',overflowWrap:'anywhere'}
+const btn=(kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:7,height:40,padding:'0 14px',borderRadius:8,border:'1px solid '+(kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#B8CDD5'),background:kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#F4FBFD',color:kind==='primary'||kind==='danger'?'#fff':'#123B50',fontSize:13,fontWeight:800,textTransform:'uppercase',cursor:'pointer',whiteSpace:'nowrap'})
 const emptyRow=(text:string,col=7)=><tr><td colSpan={col} style={{padding:22,textAlign:'center',color:'#667085'}}>{text}</td></tr>
 
 export default function ProdutosVendasIndustrial(){
@@ -318,7 +318,7 @@ export default function ProdutosVendasIndustrial(){
     'CEST':'Código de 7 dígitos quando houver enquadramento em substituição tributária. Só preencher quando aplicável à mercadoria e à regra estadual.',
     'Observações':'Informações complementares do cadastro; não substituem a ficha de processo.'
   } as Record<string,string>)[title.replace(' [?]','')]||('Ajuda do campo '+title.replace(' [?]','')+'.');
-  const HelpTip=({text}:{text:string})=>{const [open,setOpen]=useState(false);return <span style={{position:'relative',display:'inline-flex',verticalAlign:'baseline',marginLeft:3}}><span role="button" tabIndex={0} aria-label="Ajuda" onClick={e=>{e.preventDefault();e.stopPropagation();setOpen(v=>!v)}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setOpen(v=>!v)}}} style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:10,height:12,color:'#2D8DB8',fontSize:11,fontWeight:800,lineHeight:1,cursor:'pointer',userSelect:'none'}}>?</span>{open&&<span role="tooltip" style={{position:'absolute',zIndex:1200,left:12,top:14,width:250,padding:'7px 8px',border:'1px solid #b9cbd3',borderRadius:2,background:'#fff',boxShadow:'0 4px 12px rgba(18,59,80,.16)',fontSize:9,fontWeight:400,lineHeight:1.35,color:'#173b4a',textTransform:'none'}}>{text}</span>}</span>}
+  const HelpTip=({text}:{text:string})=>{const [open,setOpen]=useState(false);return <span style={{position:'relative',display:'inline-flex',verticalAlign:'baseline',marginLeft:4}}><span role="button" tabIndex={0} aria-label="Ajuda" onClick={e=>{e.preventDefault();e.stopPropagation();setOpen(v=>!v)}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setOpen(v=>!v)}}} style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:15,height:15,borderRadius:999,background:'#e2f1f7',color:'#123B50',fontSize:11,fontWeight:900,lineHeight:1,cursor:'pointer',userSelect:'none'}}>?</span>{open&&<span role="tooltip" style={{position:'absolute',zIndex:1200,left:16,top:18,width:300,padding:'10px 12px',border:'1px solid #b9cbd3',borderRadius:10,background:'#fff',boxShadow:'0 6px 18px rgba(18,59,80,.18)',fontSize:12,fontWeight:500,lineHeight:1.45,color:'#173b4a',textTransform:'none'}}>{text}</span>}</span>}
   const fieldTitle=(title:string)=><span style={{display:'inline-flex',alignItems:'center',whiteSpace:'nowrap',minWidth:0}}>{title.replace(' [?]','')}{title.includes('[?]')&&<HelpTip text={helpFor(title)}/>}</span>;
   const editClass=(key:keyof FormData)=>{const lengths:Partial<Record<keyof FormData,number>>={codigo:20,codigo_barras:20,unidade:3,unidade_compra:3,unidade_venda:3,ncm:8,cest:8,cfop_entrada:4,cfop_saida:4,cst_icms:2,csosn:3,referencia_interna:20,referencia_cliente:20,codigo_cliente:20,peso_liquido:14,peso_bruto:14,comprimento_mm:12,largura_mm:12,altura_mm:12,estoque_atual:14,ponto_reposicao:14,estoque_maximo:14,lote_validade_dias:4,aliquota_icms:8,aliquota_ipi:8,aliquota_pis:8,aliquota_cofins:8,preco_venda:14,custo_medio:14,custo_ultimo:14,custo_fabricacao:14,prazo_compra_dias:4,prazo_producao_dias:4,tolerancia_percentual:8,tonelagem_minima:8,tonelagem_maxima:8,numero_cavidades:4};const size=lengths[key]??(typeIsLong(key)?120:60);return 'edit-'+size};
   const typeIsLong=(key:keyof FormData)=>['nome','descricao','observacoes','especificacao_interna','dimensional','material_especificado'].includes(String(key));
@@ -326,7 +326,7 @@ export default function ProdutosVendasIndustrial(){
   const field=(title:string,key:keyof FormData,type='text',span=1,locked=false)=><label style={{...label,gridColumn:'span '+(span*3),minWidth:0,alignSelf:'start'}}>{fieldTitle(title)}<input className={editClass(key)} maxLength={type==='number'?undefined:maxLengthFor(key)} type={type} value={String(form[key]??'')} readOnly={locked} disabled={!editing} onChange={e=>update(key,type==='number'?n(e.target.value):e.target.value)} style={{...input,background:locked?'#eaf3f8':editing?'#fff':'#f5f7fa',color:locked?'#17445A':'#172033',fontWeight:locked?700:400,cursor:locked?'not-allowed':'text',textAlign:type==='number'?'right':(['unidade','unidade_compra','unidade_venda','cst_icms','csosn'].includes(String(key))?'center':'left')}}/></label>
   const combo=(title:string,key:keyof FormData,options:Array<{value:string;label:string}>,span=1,maxLength?:number)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<input role="combobox" aria-autocomplete="list" inputMode={maxLength?'numeric':undefined} maxLength={maxLength} list={'combo-'+String(key)} value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} placeholder="Digite o código confirmado na fonte oficial..." autoComplete="off" style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id={'combo-'+String(key)}>{options.map(o=><option key={o.value} value={o.value} label={o.label}/>)}</datalist></label>
   const select=(title:string,key:keyof FormData,options:Array<[string,string]>,span=1)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<select value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} style={{...input,background:editing?'#fff':'#f5f7fa'}}>{options.map(o=><option value={o[0]} key={o[0]}>{o[1]}</option>)}</select></label>
-  const check=(title:string,key:keyof FormData)=><label style={{display:'flex',alignItems:'center',gap:7,fontSize:10,fontWeight:700,color:'#344054'}}><input type="checkbox" checked={Boolean(form[key])} disabled={!editing} onChange={e=>update(key,e.target.checked)}/>{title}</label>
+  const check=(title:string,key:keyof FormData)=><label style={{display:'flex',alignItems:'center',gap:8,fontSize:13,fontWeight:700,color:'#344054',cursor:'pointer'}}><input type="checkbox" style={{width:17,height:17,accentColor:'#2D8DB8'}} checked={Boolean(form[key])} disabled={!editing} onChange={e=>update(key,e.target.checked)}/>{title}</label>
 
   if(printMode&&selectedId){
     return (
@@ -366,107 +366,100 @@ export default function ProdutosVendasIndustrial(){
   return <><main className="product-master-screen" style={{maxWidth:1600,margin:'0 auto',color:'#172033',fontFamily:'Arial,sans-serif',background:'#fff'}}>
     <style>{`
       .product-master-screen label{min-width:0}
-      /* Travas físicas de largura para os campos do cadastro mestre. */
-      /* Tamanhos semânticos: os edits respeitam o tamanho do dado, sem estourar a coluna do formulário. */
-      .product-master-screen input.edit-2,.product-master-screen select.edit-2{display:block!important;width:100%!important;max-width:4ch!important;min-width:0!important;box-sizing:border-box;text-align:center}
-      .product-master-screen input.edit-3,.product-master-screen select.edit-3{display:block!important;width:100%!important;max-width:5ch!important;min-width:0!important;box-sizing:border-box;text-align:center}
-      .product-master-screen input.edit-4,.product-master-screen select.edit-4{display:block!important;width:100%!important;max-width:6ch!important;min-width:0!important;box-sizing:border-box;text-align:right}
-      .product-master-screen input.edit-8,.product-master-screen select.edit-8{display:block!important;width:100%!important;max-width:10ch!important;min-width:0!important;box-sizing:border-box}
-      .product-master-screen input.edit-10,.product-master-screen select.edit-10{display:block!important;width:100%!important;max-width:12ch!important;min-width:0!important;box-sizing:border-box}
-      .product-master-screen input.edit-12,.product-master-screen select.edit-12{display:block!important;width:100%!important;max-width:14ch!important;min-width:0!important;box-sizing:border-box;text-align:right}
-      .product-master-screen input.edit-14,.product-master-screen select.edit-14{display:block!important;width:100%!important;max-width:16ch!important;min-width:0!important;box-sizing:border-box;text-align:right}
-      .product-master-screen input.edit-20,.product-master-screen select.edit-20{display:block!important;width:100%!important;max-width:20ch!important;min-width:0!important;box-sizing:border-box}
-      .product-master-screen input.edit-60,.product-master-screen textarea.edit-60{display:block!important;width:100%!important;max-width:320px!important;min-width:0!important;box-sizing:border-box}
-      .product-master-screen input.edit-120,.product-master-screen textarea.edit-120{display:block!important;width:100%!important;max-width:450px!important;min-width:0!important;box-sizing:border-box}
+      /* Os edits preenchem a célula do grid; o tamanho semântico define apenas o alinhamento do conteúdo. */
+      .product-master-screen input.edit-2,.product-master-screen select.edit-2,.product-master-screen input.edit-3,.product-master-screen select.edit-3{text-align:center}
+      .product-master-screen input.edit-4,.product-master-screen select.edit-4,.product-master-screen input.edit-8,.product-master-screen select.edit-8,.product-master-screen input.edit-10,.product-master-screen select.edit-10,.product-master-screen input.edit-12,.product-master-screen select.edit-12,.product-master-screen input.edit-14,.product-master-screen select.edit-14,.product-master-screen input.edit-20,.product-master-screen select.edit-20{width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box}
+      .product-master-screen input.edit-4,.product-master-screen select.edit-4,.product-master-screen input.edit-12,.product-master-screen select.edit-12,.product-master-screen input.edit-14,.product-master-screen select.edit-14{text-align:right}
+      .product-master-screen input.edit-60,.product-master-screen textarea.edit-60,.product-master-screen input.edit-120,.product-master-screen textarea.edit-120{width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box}
       .product-master-screen input[type="number"]{text-align:right}
       .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{box-sizing:border-box}
       .product-master-screen button:disabled{opacity:.48;cursor:not-allowed}
       @media print{body *{visibility:hidden!important}.product-master-screen,.product-master-screen *{visibility:visible!important}.product-master-screen{position:absolute!important;inset:0!important;width:100%!important;max-width:none!important;background:#fff!important}.product-master-screen .product-workspace{display:block!important;margin:0!important}.product-master-screen .product-list-panel,.product-master-screen header button,.product-master-screen input[type=file],.product-master-screen .product-screen-footer button{display:none!important}.product-master-screen .product-editor-panel{border:0!important}.product-master-screen .product-form-section{break-inside:avoid}.product-master-screen .product-tabs{display:none!important}}
       .product-master-screen button:focus-visible{outline:2px solid #2D8DB8;outline-offset:1px}
       .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{max-width:100%;box-sizing:border-box}
-      .product-master-screen .product-form-section{margin:0 0 8px;padding:8px;background:#fff;border:1px solid #d5dde7;border-radius:2px;box-shadow:0 2px 6px rgba(18,59,80,.055),0 1px 2px rgba(16,24,40,.035);min-width:0}
+      .product-master-screen .product-form-section{margin:0 0 12px;padding:12px;background:#fff;border:1px solid #d5dde7;border-radius:12px;box-shadow:0 2px 6px rgba(18,59,80,.055),0 1px 2px rgba(16,24,40,.035);min-width:0}
       .product-master-screen .product-form-section:last-child{margin-bottom:0}
-      .product-master-screen .product-form-section-title{margin:-1px 0 8px;padding:6px 8px;background:linear-gradient(180deg,#f0f8fb 0%,#e7f2f7 100%);border-left:3px solid #2D8DB8;color:#123B50;font-size:10px;line-height:14px;font-weight:700;letter-spacing:.04em}
+      .product-master-screen .product-form-section-title{margin:-1px -1px 12px;padding:10px 12px;background:linear-gradient(180deg,#f0f8fb 0%,#e7f2f7 100%);border-left:4px solid #2D8DB8;color:#123B50;font-size:13px;line-height:18px;font-weight:900;letter-spacing:.04em}
       /* Grid de 12 colunas: campos curtos ocupam 3, campos longos podem ocupar 6 ou 12. */
-      .product-master-screen .product-editor-panel form{width:100%;max-width:1280px;margin-inline:auto;min-width:0}
-      .product-master-screen .product-form-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px 12px;align-items:start;justify-items:stretch}
+      .product-master-screen .product-editor-panel form{width:100%;max-width:1560px;margin-inline:auto;min-width:0}
+      .product-master-screen .product-form-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px 14px;align-items:start;justify-items:stretch}
       .product-master-screen .product-form-grid>*{grid-column:span 3;min-width:0;align-self:start}
       .product-master-screen .product-form-grid .product-unit-row{grid-column:span 9}
       .product-master-screen .product-general-row>*:nth-child(3),.product-master-screen .product-general-row>*:nth-child(4){grid-column:span 6!important}
-      .product-master-screen .product-form-grid label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(12px,auto) 30px;align-content:start;gap:2px;min-width:0}
-      .product-master-screen .product-form-grid label>input,.product-master-screen .product-form-grid label>select,.product-master-screen .product-form-grid label>textarea{min-width:0;width:100%;height:30px;box-sizing:border-box;max-width:100%}
-      .product-master-screen .product-form-grid label>span{display:flex;align-items:center;max-width:100%;min-height:12px;line-height:11px;white-space:normal;overflow-wrap:anywhere;word-break:normal}
+      .product-master-screen .product-form-grid label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(14px,auto) 40px;align-content:start;gap:5px;min-width:0}
+      .product-master-screen .product-form-grid label>input,.product-master-screen .product-form-grid label>select,.product-master-screen .product-form-grid label>textarea{min-width:0;width:100%;height:40px;box-sizing:border-box;max-width:100%}
+      .product-master-screen .product-form-grid label>span{display:flex;align-items:center;max-width:100%;min-height:14px;line-height:13px;white-space:normal;overflow-wrap:anywhere;word-break:normal}
       .product-master-screen .product-cost-stack{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;min-width:0}
-      .product-master-screen .product-cost-stack label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(12px,auto) 30px;gap:2px;align-content:start;min-width:0}
-      .product-master-screen .product-status-field{display:flex;align-items:center;align-self:end;gap:8px;min-height:30px;flex-wrap:wrap;border:1px solid #d5dde7;padding:5px 6px;background:#f8fbfd;box-sizing:border-box;min-width:0}
-      .product-master-screen .product-status-field>span{font-size:9px;font-weight:600;color:#344054;text-transform:uppercase}
-      .product-master-screen .product-status-field label{display:flex;align-items:center;gap:4px;white-space:normal;font-size:9px;min-width:0}
-      .product-master-screen .product-workspace{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"editor" "list";gap:10px;margin:10px auto;max-width:1500px;padding:0 8px;align-items:start}
+      .product-master-screen .product-cost-stack label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(14px,auto) 40px;gap:5px;align-content:start;min-width:0}
+      .product-master-screen .product-status-field{display:flex;align-items:center;align-self:end;gap:12px;min-height:40px;flex-wrap:wrap;border:1px solid #d5dde7;border-radius:8px;padding:8px 10px;background:#f8fbfd;box-sizing:border-box;min-width:0}
+      .product-master-screen .product-status-field>span{font-size:11px;font-weight:800;color:#344054;text-transform:uppercase}
+      .product-master-screen .product-status-field label{display:flex;align-items:center;gap:6px;white-space:normal;font-size:12px;font-weight:700;min-width:0}
+      .product-master-screen .product-workspace{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"editor" "list";gap:12px;margin:12px auto;max-width:1560px;padding:0 10px;align-items:start}
       .product-master-screen .product-editor-panel{grid-area:editor;margin:0!important;min-width:0}
       .product-master-screen .product-list-panel{grid-area:list;margin:0!important;min-width:0;position:static}
       .product-master-screen .product-list-panel table{min-width:0!important;table-layout:fixed}
       .product-master-screen .product-list-panel th,.product-master-screen .product-list-panel td{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .product-master-screen .product-list-panel tbody tr:hover{background:#edf7fb!important}
-      .product-master-screen .product-tabs{display:flex;align-items:stretch;gap:2px;overflow-x:auto;overscroll-behavior-x:contain}
-      .product-master-screen .product-tabs button{flex:0 0 auto;min-height:34px}
-      .product-master-screen .product-responsive-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;align-items:start}
+      .product-master-screen .product-tabs{display:flex;align-items:stretch;gap:4px;overflow-x:auto;overscroll-behavior-x:contain}
+      .product-master-screen .product-tabs button{flex:0 0 auto;min-height:46px}
+      .product-master-screen .product-responsive-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;align-items:start}
       .product-master-screen .product-responsive-grid>*{min-width:0}
-      .product-master-screen .product-responsive-grid label{align-content:start;grid-template-rows:minmax(12px,auto) 30px;gap:2px}
+      .product-master-screen .product-responsive-grid label{align-content:start;grid-template-rows:minmax(14px,auto) 40px;gap:5px}
       .product-master-screen .product-responsive-grid label>input,.product-master-screen .product-responsive-grid label>select{width:100%;min-width:0}      @media(max-width:1250px){.product-master-screen .product-workspace{grid-template-columns:minmax(0,1fr);gap:8px;margin:8px auto;padding:0 6px}}
       @media(max-width:1050px){.product-master-screen .product-workspace{grid-template-columns:minmax(0,1fr);grid-template-areas:"editor" "list"}.product-master-screen .product-list-panel{position:static}}
-      @media(min-width:1051px){.product-master-screen .product-list-panel>div:last-child{max-height:360px;overflow:auto}}
+      @media(min-width:1051px){.product-master-screen .product-list-panel>div:last-child{max-height:420px;overflow:auto}}
       @media(max-width:1150px){.product-master-screen .product-form-grid{grid-template-columns:repeat(12,minmax(0,1fr))}.product-master-screen .product-form-grid>*{grid-column:span 4}.product-master-screen .product-form-grid .product-unit-row{grid-column:span 12}.product-master-screen .product-general-row>*:nth-child(3),.product-master-screen .product-general-row>*:nth-child(4){grid-column:span 8!important}.product-master-screen .product-responsive-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
-      .product-master-screen .product-unit-row{grid-column:span 3;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;align-items:center;min-width:0}.product-master-screen .product-unit-row label{display:grid;grid-template-columns:82px minmax(0,1fr);grid-template-rows:30px;align-items:center;gap:5px}.product-master-screen .product-unit-row label>span{min-height:0;line-height:11px}.product-master-screen .product-unit-row label>select{width:100%;min-width:0}.product-master-screen .product-photo-card{cursor:pointer;transition:border-color .12s,background .12s}.product-master-screen .product-photo-card:hover{border-color:#2D8DB8!important;background:#edf7fb!important}.product-master-screen .product-combo-wrap{display:grid;grid-template-columns:minmax(0,1fr) 30px;gap:4px;align-items:end;min-width:0}
-      .product-master-screen .product-plus-button{height:30px;width:30px;border:1px solid #2D8DB8;background:#eaf4f8;color:#123B50;display:inline-flex;align-items:center;justify-content:center;border-radius:2px;cursor:pointer}
-      .product-master-screen .product-inline-create{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) auto;gap:5px;padding:7px;margin-top:5px;background:#f4fbfd;border:1px solid #c8dfe8;align-items:end}
-      @media(max-width:700px){.product-master-screen .product-form-grid{grid-template-columns:repeat(12,minmax(0,1fr))}.product-master-screen .product-form-grid>*{grid-column:span 6!important}.product-master-screen .product-form-grid .product-unit-row{grid-column:span 12!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.product-master-screen .product-unit-row label{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(12px,auto) 30px;gap:2px}.product-master-screen .product-general-row>*:nth-child(3),.product-master-screen .product-general-row>*:nth-child(4){grid-column:span 12!important}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 12!important}.product-master-screen .product-responsive-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-responsive-grid{row-gap:9px}.product-master-screen .product-tabs button{padding:7px 8px!important;font-size:9px!important}.product-master-screen .product-responsive-grid>*{grid-column:span 1!important}.product-master-screen .product-inline-create{grid-template-columns:1fr}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 1!important}}
+      .product-master-screen .product-unit-row{grid-column:span 3;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start;min-width:0}.product-master-screen .product-unit-row label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(14px,auto) 40px;align-content:start;gap:5px}.product-master-screen .product-unit-row label>span{min-height:14px;line-height:13px}.product-master-screen .product-unit-row label>select{width:100%;min-width:0}.product-master-screen .product-photo-card{cursor:pointer;transition:border-color .12s,background .12s;border-radius:12px}.product-master-screen .product-photo-card:hover{border-color:#2D8DB8!important;background:#edf7fb!important}.product-master-screen .product-combo-wrap{display:grid;grid-template-columns:minmax(0,1fr) 40px;gap:6px;align-items:end;min-width:0}
+      .product-master-screen .product-plus-button{height:40px;width:40px;border:1px solid #2D8DB8;background:#eaf4f8;color:#123B50;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;cursor:pointer}
+      .product-master-screen .product-inline-create{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) auto;gap:8px;padding:10px;margin-top:6px;background:#f4fbfd;border:1px solid #c8dfe8;border-radius:10px;align-items:end}
+      @media(max-width:700px){.product-master-screen .product-form-grid{grid-template-columns:repeat(12,minmax(0,1fr))}.product-master-screen .product-form-grid>*{grid-column:span 6!important}.product-master-screen .product-form-grid .product-unit-row{grid-column:span 12!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.product-master-screen .product-unit-row label{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(14px,auto) 40px;gap:5px}.product-master-screen .product-general-row>*:nth-child(3),.product-master-screen .product-general-row>*:nth-child(4){grid-column:span 12!important}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 12!important}.product-master-screen .product-responsive-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-responsive-grid{row-gap:12px}.product-master-screen .product-tabs button{padding:10px 12px!important;font-size:12px!important}.product-master-screen .product-responsive-grid>*{grid-column:span 1!important}.product-master-screen .product-inline-create{grid-template-columns:1fr}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 1!important}}
     `}</style>
-    <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
-      <div><div style={{fontSize:11,fontWeight:800,color:'#2D8DB8'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
-      <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
-        <button type="button" onClick={newProduct} style={btn('primary')}><Plus size={16}/>Novo</button>
+    <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,padding:'12px 14px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
+      <div><div style={{fontSize:12,fontWeight:900,letterSpacing:'.06em',color:'#2D8DB8'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'3px 0 0',fontSize:22,fontWeight:900,color:'#123B50'}}>Cadastro de Produtos</h1></div>
+      <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+        <button type="button" onClick={newProduct} style={btn('primary')}><Plus size={17}/>Novo</button>
         <input ref={importRef} type="file" accept=".xlsx,.xls,.csv" onChange={importExcel} style={{display:'none'}} />
         <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>choosePhoto(e)} style={{display:'none'}} />
-        <button type="button" onClick={()=>importRef.current?.click()} disabled={busy} style={btn('normal')}><FileSpreadsheet size={13}/>Importar Excel</button>
+        <button type="button" onClick={()=>importRef.current?.click()} disabled={busy} style={btn('normal')}><FileSpreadsheet size={17}/>Importar Excel</button>
 
-        <button type="button" className="erp-edit-button" onClick={()=>setEditing(true)} disabled={!selectedId} style={btn('normal')}><Edit3 size={16}/>Editar</button>
-        <button type="button" onClick={()=>void save()} disabled={!editing||busy} style={btn('primary')}><Save size={16}/>Salvar</button>
-        <button type="button" onClick={cancelEdit} style={btn('normal')}><RotateCcw size={16}/>Cancelar</button>
-        {!editing&&selectedId&&<button type="button" onClick={openTechnicalPrint} disabled={busy} style={btn('normal')}><Printer size={16}/>Imprimir</button>}
-        <button type="button" onClick={()=>void deactivate()} disabled={!selectedId||busy} style={btn('danger')}><Trash2 size={16}/>Inativar</button>
-        <button type="button" onClick={()=>{setSelectedId(null);setEditing(false);setForm(empty())}} style={btn('normal')}><X size={16}/>Fechar</button>
+        <button type="button" className="erp-edit-button" onClick={()=>setEditing(true)} disabled={!selectedId} style={btn('normal')}><Edit3 size={17}/>Editar</button>
+        <button type="button" onClick={()=>void save()} disabled={!editing||busy} style={btn('primary')}><Save size={17}/>Salvar</button>
+        <button type="button" onClick={cancelEdit} style={btn('normal')}><RotateCcw size={17}/>Cancelar</button>
+        {!editing&&selectedId&&<button type="button" onClick={openTechnicalPrint} disabled={busy} style={btn('normal')}><Printer size={17}/>Imprimir</button>}
+        <button type="button" onClick={()=>void deactivate()} disabled={!selectedId||busy} style={btn('danger')}><Trash2 size={17}/>Inativar</button>
+        <button type="button" onClick={()=>{setSelectedId(null);setEditing(false);setForm(empty())}} style={btn('normal')}><X size={17}/>Fechar</button>
       </div>
     </header>
 
-    {(message||error)&&<div role="alert" style={{margin:10,padding:'9px 12px',borderRadius:6,border:'1px solid '+(error?'#fecaca':'#bbf7d0'),background:error?'#fff1f2':'#f0fdf4',color:error?'#b91c1c':'#166534',fontWeight:800,fontSize:12}}>{error||message}</div>}
+    {(message||error)&&<div role="alert" style={{margin:12,padding:'12px 14px',borderRadius:10,border:'1px solid '+(error?'#fecaca':'#bbf7d0'),background:error?'#fff1f2':'#f0fdf4',color:error?'#b91c1c':'#166534',fontWeight:800,fontSize:14}}>{error||message}</div>}
 
-    {selectedId&&<section style={{...panel,margin:'10px 10px 0',padding:7}}>
-      <div style={{fontSize:9,fontWeight:700,color:'#123B50',marginBottom:5,textTransform:'uppercase'}}>Fotos do produto • catálogo digital</div>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr))',gap:6}}>
+    {selectedId&&<section style={{...panel,margin:'12px 12px 0',padding:12}}>
+      <div style={{fontSize:12,fontWeight:900,color:'#123B50',marginBottom:8,textTransform:'uppercase'}}>Fotos do produto • catálogo digital</div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr))',gap:10}}>
         {[1,2,3,4].map(slot=>{
           const photo=attachments.find(a=>a.mime_type?.startsWith('image/')&&a.nome_arquivo.startsWith('FOTO_'+slot+'_'));
           const url=photo?supabase.storage.from('erp-produtos').getPublicUrl(photo.storage_path).data.publicUrl:(slot===1?form.foto_url:null);
-          return <div key={slot} className="product-photo-card" role={editing?'button':undefined} tabIndex={editing?0:undefined} aria-label={editing?'Selecionar imagem '+slot:'Imagem '+slot} onClick={()=>{if(editing){const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}}} onKeyDown={e=>{if(editing&&(e.key==='Enter'||e.key===' ')){e.preventDefault();const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}}} style={{height:120,minWidth:0,border:'1px solid #cbd5e1',background:'#f8fafc',position:'relative',display:'grid',placeItems:'center',overflow:'hidden',outline:'none'}}>
-            {url?<img src={url} alt={'Foto '+slot+' do produto'} style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'contain',padding:4,boxSizing:'border-box'}}/>:<div style={{fontSize:9,color:'#667085',textAlign:'center',padding:8}}><ImageIcon size={20}/><div>CLIQUE PARA ANEXAR</div><div>IMAGEM {slot}{slot===1?' • PRINCIPAL':''}</div></div>}
-            {editing&&<button type="button" onClick={e=>{e.stopPropagation();const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}} style={{...btn('normal'),position:'absolute',right:4,bottom:4,height:24,padding:'0 7px',fontSize:9}}><Upload size={11}/> {url?'TROCAR':'ANEXAR'}</button>}
+          return <div key={slot} className="product-photo-card" role={editing?'button':undefined} tabIndex={editing?0:undefined} aria-label={editing?'Selecionar imagem '+slot:'Imagem '+slot} onClick={()=>{if(editing){const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}}} onKeyDown={e=>{if(editing&&(e.key==='Enter'||e.key===' ')){e.preventDefault();const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}}} style={{height:170,minWidth:0,border:'1px solid #cbd5e1',background:'#f8fafc',position:'relative',display:'grid',placeItems:'center',overflow:'hidden',outline:'none'}}>
+            {url?<img src={url} alt={'Foto '+slot+' do produto'} style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'contain',padding:6,boxSizing:'border-box'}}/>:<div style={{fontSize:12,fontWeight:700,color:'#667085',textAlign:'center',padding:10}}><ImageIcon size={26}/><div>CLIQUE PARA ANEXAR</div><div>IMAGEM {slot}{slot===1?' • PRINCIPAL':''}</div></div>}
+            {editing&&<button type="button" onClick={e=>{e.stopPropagation();const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}} style={{...btn('normal'),position:'absolute',right:6,bottom:6,height:30,padding:'0 9px',fontSize:11}}><Upload size={13}/> {url?'TROCAR':'ANEXAR'}</button>}
           </div>
         })}
       </div>
-      <div style={{fontSize:8,color:'#667085',marginTop:4}}>A imagem 1 é a principal do cadastro; as quatro imagens podem ser usadas na apresentação do produto no catálogo digital.</div>
+      <div style={{fontSize:12,color:'#667085',marginTop:8}}>A imagem 1 é a principal do cadastro; as quatro imagens podem ser usadas na apresentação do produto no catálogo digital.</div>
     </section>}
-    {selectedId&&<><section style={{...panel,margin:'10px 10px 0',padding:7,display:'grid',gridTemplateColumns:'72px minmax(0,1fr) auto',gap:9,alignItems:'center',background:'#fff'}}>
-      <div style={{width:72,height:60,border:'1px solid #cbd5e1',background:'#f8fafc',display:'grid',placeItems:'center',overflow:'hidden'}}>{form.foto_url?<img src={form.foto_url} alt="Foto do produto" style={{width:'100%',height:'100%',objectFit:'contain'}}/>:<ImageIcon size={22} color="#98a2b3"/>}</div>
-      <div style={{minWidth:0}}><div style={{fontSize:9,fontWeight:700,color:'#667085',textTransform:'uppercase'}}>Produto selecionado</div><div style={{fontSize:13,fontWeight:700,color:'#123B50',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{form.codigo||'AUTOMÁTICO'} • {form.nome||'Sem descrição'}</div><div style={{fontSize:9,color:'#667085',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{form.descricao_resumida||'Sem descrição resumida'} · {form.grupo||'Sem grupo'} · {form.marca||'Sem marca'}</div></div>
-      <div style={{display:'flex',gap:12,alignItems:'center',fontSize:9}}><span><b>ESTOQUE</b> {fmt(form.estoque_atual)} {form.unidade}</span><span><b>STATUS</b> {form.ativo?'ATIVO':'INATIVO'}</span></div>
+    {selectedId&&<><section style={{...panel,margin:'12px 12px 0',padding:12,display:'grid',gridTemplateColumns:'96px minmax(0,1fr) auto',gap:14,alignItems:'center',background:'#fff'}}>
+      <div style={{width:96,height:80,border:'1px solid #cbd5e1',borderRadius:8,background:'#f8fafc',display:'grid',placeItems:'center',overflow:'hidden'}}>{form.foto_url?<img src={form.foto_url} alt="Foto do produto" style={{width:'100%',height:'100%',objectFit:'contain'}}/>:<ImageIcon size={28} color="#98a2b3"/>}</div>
+      <div style={{minWidth:0}}><div style={{fontSize:11,fontWeight:900,color:'#667085',textTransform:'uppercase',letterSpacing:'.05em'}}>Produto selecionado</div><div style={{fontSize:17,fontWeight:900,color:'#123B50',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{form.codigo||'AUTOMÁTICO'} • {form.nome||'Sem descrição'}</div><div style={{fontSize:13,color:'#667085',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{form.descricao_resumida||'Sem descrição resumida'} · {form.grupo||'Sem grupo'} · {form.marca||'Sem marca'}</div></div>
+      <div style={{display:'flex',gap:16,alignItems:'center',fontSize:13,fontWeight:700,color:'#123B50'}}><span><b style={{color:'#667085',fontSize:11}}>ESTOQUE</b> {fmt(form.estoque_atual)} {form.unidade}</span><span><b style={{color:'#667085',fontSize:11}}>STATUS</b> {form.ativo?'ATIVO':'INATIVO'}</span></div>
     </section></>}
 
     <div className="product-workspace" aria-label="Área de trabalho do cadastro mestre de produtos">
     <section className="product-editor-panel" style={{...panel,overflow:'hidden'}}>
       <div className="product-tabs" role="tablist" aria-label="Abas do cadastro do produto" style={{borderBottom:'1px solid #d6dde6',background:'#f7f9fc'}}>
-        {tabItems.map(([id,title,Icon])=><button key={id} type="button" role="tab" aria-selected={tab===id} onClick={()=>{setTab(id);if(selectedId)void loadDetails()}} style={{display:'inline-flex',alignItems:'center',gap:6,padding:'7px 10px',border:0,borderBottom:tab===id?'3px solid #2D8DB8':'3px solid transparent',background:tab===id?'#fff':'transparent',color:tab===id?'#123B50':'#475467',fontWeight:700,fontSize:10,cursor:'pointer',whiteSpace:'nowrap'}}><Icon size={14}/>{title}</button>)}
+        {tabItems.map(([id,title,Icon])=><button key={id} type="button" role="tab" aria-selected={tab===id} onClick={()=>{setTab(id);if(selectedId)void loadDetails()}} style={{display:'inline-flex',alignItems:'center',gap:8,padding:'10px 16px',border:0,borderBottom:tab===id?'3px solid #2D8DB8':'3px solid transparent',background:tab===id?'#fff':'transparent',color:tab===id?'#123B50':'#475467',fontWeight:900,fontSize:13,cursor:'pointer',whiteSpace:'nowrap',letterSpacing:'.03em'}}><Icon size={17}/>{title}</button>)}
       </div>
 
-      {tab==='tecnica'&&<form onSubmit={save} style={{padding:8}}>
+      {tab==='tecnica'&&<form onSubmit={save} style={{padding:14}}>
         <section className="product-form-section" aria-label="Identificação do produto">
           <h3 className="product-form-section-title">IDENTIFICAÇÃO DO PRODUTO</h3>
           <div className="product-form-grid product-general-row">
@@ -475,7 +468,7 @@ export default function ProdutosVendasIndustrial(){
             {field('Descrição *','nome','text',2)}
             {field('Descrição resumida [?]','descricao_resumida','text',2)}
             <div><label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>GRUPO <HelpTip text={helpFor('Grupo')}/></span><div className="product-combo-wrap"><input role="combobox" aria-autocomplete="list" list="product-group-options" value={String(form.grupo||'')} disabled={!editing} onChange={e=>update('grupo',e.target.value||null)} placeholder="Selecione ou digite um grupo..." autoComplete="off" style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id="product-group-options">{groups.map(g=><option key={g.id} value={g.nome} label={g.codigo+' • '+g.nome}/>)}</datalist><button type="button" className="product-plus-button" title="Adicionar o nome digitado como novo grupo" aria-label="Adicionar o nome digitado como novo grupo" disabled={!editing||busy} onClick={()=>void addGroup()}><Plus size={15}/></button></div></label></div>
-            <div><label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>SUBGRUPO <HelpTip text={helpFor('Subgrupo')}/></span><div className="product-combo-wrap"><input list="product-subgroup-options" value={String(form.subgrupo||'')} disabled={!editing} onChange={e=>update('subgrupo',e.target.value||null)} placeholder="Selecione ou digite..." autoComplete="off" style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id="product-subgroup-options">{subgroupCatalog.map(s=><option key={s} value={s}/>)}</datalist><button type="button" className="product-plus-button" title="Adicionar subgrupo às opções" aria-label="Adicionar subgrupo às opções" disabled={!editing} onClick={addSubgroupOption}><Plus size={15}/></button></div></label><div style={{fontSize:8,color:'#667085',marginTop:3}}>Digite um novo nome e clique +; ele entra no catálogo ao salvar o produto.</div></div>
+            <div><label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>SUBGRUPO <HelpTip text={helpFor('Subgrupo')}/></span><div className="product-combo-wrap"><input list="product-subgroup-options" value={String(form.subgrupo||'')} disabled={!editing} onChange={e=>update('subgrupo',e.target.value||null)} placeholder="Selecione ou digite..." autoComplete="off" style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id="product-subgroup-options">{subgroupCatalog.map(s=><option key={s} value={s}/>)}</datalist><button type="button" className="product-plus-button" title="Adicionar subgrupo às opções" aria-label="Adicionar subgrupo às opções" disabled={!editing} onClick={addSubgroupOption}><Plus size={15}/></button></div></label><div style={{fontSize:11,color:'#667085',marginTop:4,lineHeight:1.4}}>Digite um novo nome e clique +; ele entra no catálogo ao salvar o produto.</div></div>
             {field('Marca [?]','marca')}
           </div>
         </section>
@@ -488,8 +481,8 @@ export default function ProdutosVendasIndustrial(){
             {select('Und. compra','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
             {select('Und. venda','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
             </div>
-            {select('Tipo de produto','categoria',[['Produto acabado','Produto acabado'],['MATÉRIA-PRIMA','MATÉRIA-PRIMA'],['PRENSADOS','PRENSADOS'],['INJETADOS','INJETADOS'],['ALMOXARIFADO','ALMOXARIFADO'],['MATERIAL DE ESCRITÓRIO','MATERIAL DE ESCRITÓRIO'],['PRODUTOS DE LIMPEZA','PRODUTOS DE LIMPEZA'],['Componente','Componente'],['Insumo','Insumo']])}
-            <label style={label}>Fornecedor padrão<select value={form.fornecedor_padrao_id||''} disabled={!editing} onChange={e=>update('fornecedor_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{suppliers.map(s=><option value={s.id} key={s.id}>{s.nome_fantasia||s.razao_social}</option>)}</select></label>
+            {select('Tipo de produto','categoria',[['Produto acabado','Produto acabado'],['MATÉRIA-PRIMA','MATÉRIA-PRIMA'],['PRENSADOS','PRENSADOS'],['INJETADOS','INJETADOS'],['ALMOXARIFADO','ALMOXARIFADO'],['MATERIAL DE ESCRITÓRIO','MATERIAL DE ESCRITÓRIO'],['PRODUTOS DE LIMPEZA','PRODUTOS DE LIMPEZA'],['Componente','Componente'],['Insumo','Insumo']],3)}
+            <label style={{...label,gridColumn:'span 3'}}>Fornecedor padrão<select value={form.fornecedor_padrao_id||''} disabled={!editing} onChange={e=>update('fornecedor_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{suppliers.map(s=><option value={s.id} key={s.id}>{s.nome_fantasia||s.razao_social}</option>)}</select></label>
             {field('Peso líquido (kg)','peso_liquido','number')}
             {field('Peso bruto (kg)','peso_bruto','number')}
             {field('Comprimento (mm)','comprimento_mm','number')}
@@ -526,19 +519,19 @@ export default function ProdutosVendasIndustrial(){
             <div className="product-cost-stack">
               {field('Custo médio (calculado)','custo_medio','number',1,true)}
               {field('Último custo (calculado)','custo_ultimo','number',1,true)}
-              <div style={{fontSize:8,lineHeight:1.35,color:'#526a75',padding:'3px 1px'}}>Automático: entradas de estoque/recebimento de NF-e com custo unitário. Não digitar.</div>
+              <div style={{fontSize:12,lineHeight:1.4,color:'#526a75',padding:'4px 2px'}}>Automático: entradas de estoque/recebimento de NF-e com custo unitário. Não digitar.</div>
             </div>
-            <label className="product-observations-field" style={{...label,gridColumn:'span 2'}}><span style={{display:'inline-flex',alignItems:'center'}}>OBSERVAÇÕES <HelpTip text={helpFor('Observações')}/></span><textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} title="Informações complementares do produto; não substitui a ficha de processo." style={{...input,height:58,padding:'5px 7px',resize:'vertical',fontSize:11}}/></label>
+            <label className="product-observations-field" style={{...label,gridColumn:'span 6'}}><span style={{display:'inline-flex',alignItems:'center'}}>OBSERVAÇÕES <HelpTip text={helpFor('Observações')}/></span><textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} title="Informações complementares do produto; não substitui a ficha de processo." style={{...input,height:88,padding:'10px 12px',resize:'vertical',fontSize:14}}/></label>
             {field('Preço venda','preco_venda','number')}
             {field('Ref. interna','referencia_interna')}
             {field('Ref. cliente','referencia_cliente')}
-            <div className="product-status-field"><span>SITUAÇÃO</span>{check('Fabricado','fabricado')}{check('Comprado','comprado')}{check('Revenda','revenda')}</div>
+            <div className="product-status-field" style={{gridColumn:'span 6'}}><span>SITUAÇÃO</span>{check('Fabricado','fabricado')}{check('Comprado','comprado')}{check('Revenda','revenda')}</div>
           </div>
         </section>
 
       </form>}
 
-            {tab==='fiscal'&&<section style={{padding:10}}>
+            {tab==='fiscal'&&<section style={{padding:14}}>
         <div className="product-form-section" aria-label="Classificação fiscal">
           <h3 className="product-form-section-title">CLASSIFICAÇÃO DA MERCADORIA</h3>
           <div className="product-responsive-grid" style={{gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)'}}>
@@ -551,7 +544,7 @@ export default function ProdutosVendasIndustrial(){
             <a href="https://portalunico.siscomex.gov.br/classif/api/publico/nomenclatura/download/json" target="_blank" rel="noreferrer" style={{...btn('normal'),textDecoration:'none'}}>DOWNLOAD OFICIAL NCM (JSON)</a>
             <a href="https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=%2FNJarYc9nus%3D" target="_blank" rel="noreferrer" style={{...btn('normal'),textDecoration:'none'}}>TABELAS OFICIAIS NF-e</a>
           </div>
-          <p style={{margin:'7px 0 0',fontSize:9,color:'#667085',lineHeight:1.45}}>Integridade fiscal: não sugerimos NCM/CEST com base em outros produtos. O catálogo oficial ainda precisa ser importado e versionado; até lá, informe somente códigos confirmados na fonte oficial. NCM vigente, histórico e futuras vigências devem ser conferidos no Sistema Classif.</p>
+          <p style={{margin:'10px 0 0',fontSize:12,color:'#52606d',lineHeight:1.55}}>Integridade fiscal: não sugerimos NCM/CEST com base em outros produtos. O catálogo oficial ainda precisa ser importado e versionado; até lá, informe somente códigos confirmados na fonte oficial. NCM vigente, histórico e futuras vigências devem ser conferidos no Sistema Classif.</p>
         </div>
         <div className="product-form-section" aria-label="Regras tributárias">
           <h3 className="product-form-section-title">CÓDIGOS TRIBUTÁRIOS E OPERAÇÃO</h3>
@@ -566,39 +559,39 @@ export default function ProdutosVendasIndustrial(){
             <a href="https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=%2FNJarYc9nus%3D" target="_blank" rel="noreferrer" style={{...btn('normal'),textDecoration:'none'}}>CONSULTAR TABELA CFOP / NF-e</a>
             <a href="https://www.confaz.fazenda.gov.br/legislacao/convenios/2018/CV142_18" target="_blank" rel="noreferrer" style={{...btn('normal'),textDecoration:'none'}}>CONSULTAR CONVÊNIO CEST / CONFAZ</a>
           </div>
-          <p style={{margin:'7px 0 0',fontSize:9,color:'#667085',lineHeight:1.45}}>Os códigos acima ficam sem sugestões demonstrativas até a integração de tabelas oficiais versionadas. CST e CSOSN não são intercambiáveis; a seleção depende do regime tributário. CFOP depende da operação, origem/destino e finalidade. Este cadastro não calcula sozinho o imposto devido.</p>
+          <p style={{margin:'10px 0 0',fontSize:12,color:'#52606d',lineHeight:1.55}}>Os códigos acima ficam sem sugestões demonstrativas até a integração de tabelas oficiais versionadas. CST e CSOSN não são intercambiáveis; a seleção depende do regime tributário. CFOP depende da operação, origem/destino e finalidade. Este cadastro não calcula sozinho o imposto devido.</p>
         </div>
         <div className="product-form-section" aria-label="Alíquotas tributárias"><h3 className="product-form-section-title">ALÍQUOTAS CADASTRADAS (%)</h3>
-          <p style={{margin:'0 0 7px',fontSize:9,color:'#667085'}}>Valores informativos do cadastro atual; não representam um motor de cálculo tributário. IBS/CBS, FCP, DIFAL e demais regras condicionais não devem ser presumidos sem integração fiscal validada.</p>
+          <p style={{margin:'0 0 10px',fontSize:12,color:'#52606d',lineHeight:1.5}}>Valores informativos do cadastro atual; não representam um motor de cálculo tributário. IBS/CBS, FCP, DIFAL e demais regras condicionais não devem ser presumidos sem integração fiscal validada.</p>
           <div className="product-responsive-grid" style={{gridTemplateColumns:'repeat(4,minmax(0,1fr))'}}>
             {field('ICMS %','aliquota_icms','number')}{field('IPI %','aliquota_ipi','number')}{field('PIS %','aliquota_pis','number')}{field('COFINS %','aliquota_cofins','number')}
           </div>
         </div>
-        <div role="note" style={{marginTop:7,padding:'7px 8px',border:'1px solid #d5dde7',borderLeft:'3px solid #E6A34A',background:'#fffaf0',fontSize:9,color:'#52606d',lineHeight:1.45}}>ATENÇÃO FISCAL: esta tela não consulta nem sugere códigos automaticamente. NCM, CEST, CST/CSOSN e CFOP precisam ser confirmados nas fontes oficiais e conforme o produto, regime tributário e operação. A validação atual verifica somente o formato dos códigos preenchidos; não confirma vigência, enquadramento nem imposto devido. As alíquotas são informativas e não substituem o motor fiscal.</div>
+        <div role="note" style={{marginTop:10,padding:'12px 14px',border:'1px solid #d5dde7',borderLeft:'4px solid #E6A34A',borderRadius:10,background:'#fffaf0',fontSize:12,color:'#52606d',lineHeight:1.55}}>ATENÇÃO FISCAL: esta tela não consulta nem sugere códigos automaticamente. NCM, CEST, CST/CSOSN e CFOP precisam ser confirmados nas fontes oficiais e conforme o produto, regime tributário e operação. A validação atual verifica somente o formato dos códigos preenchidos; não confirma vigência, enquadramento nem imposto devido. As alíquotas são informativas e não substituem o motor fiscal.</div>
       </section>}
 
-            {tab==='tecnica'&&<section style={{padding:10}}>
-        <div className="product-responsive-grid" style={{gridTemplateColumns:'82px 82px 120px 1fr'}}>
-          <label style={label}>ESTOQUE ATUAL <span style={{fontSize:8,color:'#667085'}}>calculado</span><input value={fmt(form.estoque_atual)+' '+form.unidade} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
+            {tab==='tecnica'&&<section style={{padding:14}}>
+        <div className="product-responsive-grid" style={{gridTemplateColumns:'repeat(4,minmax(0,1fr))'}}>
+          <label style={label}>ESTOQUE ATUAL <span style={{fontSize:10,fontWeight:500,color:'#667085'}}>calculado</span><input value={fmt(form.estoque_atual)+' '+form.unidade} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
           <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>PONTO DE REPOSIÇÃO <HelpTip text={helpFor('Ponto de reposição')}/></span><input type="number" value={String(form.ponto_reposicao??0)} disabled={!editing} onChange={e=>update('ponto_reposicao',n(e.target.value))} title="Quantidade que dispara a necessidade de reposição; não é estoque atual." style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
           <label style={label}>ESTOQUE MÁXIMO<input type="number" value={String(form.estoque_maximo??0)} disabled={!editing} onChange={e=>update('estoque_maximo',n(e.target.value))} style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
           <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>LOCALIZAÇÃO PADRÃO <HelpTip text={helpFor('Localização padrão')}/></span><select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione a localização</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
         </div>
-        <div className="product-responsive-grid" style={{gridTemplateColumns:'82px 105px 105px 170px',marginTop:7}}>
+        <div className="product-responsive-grid" style={{gridTemplateColumns:'repeat(4,minmax(0,1fr))',marginTop:12}}>
           {field('VALIDADE LOTE [dias] [?]','lote_validade_dias','number')}{check('Controla lote','controla_lote')}{check('Controla série','controla_serie')}{check('Permite estoque negativo','permite_estoque_negativo')}
         </div>
-        <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>MOVIMENTAÇÕES RECENTES</h2>
-        <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse'}}><thead><tr>{['Data','Tipo','Quantidade','Origem','Documento','Observação'].map(h=><th key={h} style={{textAlign:'left',padding:8,borderBottom:'1px solid #d9e1ea',fontSize:10}}>{h}</th>)}</tr></thead><tbody>{movements.map(m=><tr key={m.id}><td style={{padding:8,fontSize:11}}>{new Date(m.created_at).toLocaleString('pt-BR')}</td><td style={{padding:8,fontSize:11}}>{m.tipo}</td><td style={{padding:8,fontSize:11,fontWeight:900}}>{fmt(m.quantidade)}</td><td style={{padding:8,fontSize:11}}>{m.origem||'—'}</td><td style={{padding:8,fontSize:11}}>{m.documento||'—'}</td><td style={{padding:8,fontSize:11}}>{m.observacao||'—'}</td></tr>)}{!movements.length&&emptyRow('Nenhuma movimentação registrada para este produto.',6)}</tbody></table></div>
+        <h2 style={{fontSize:14,margin:'16px 0 8px',color:'#123B50',fontWeight:900,letterSpacing:'.03em'}}>MOVIMENTAÇÕES RECENTES</h2>
+        <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse'}}><thead><tr>{['Data','Tipo','Quantidade','Origem','Documento','Observação'].map(h=><th key={h} style={{textAlign:'left',padding:'10px 8px',borderBottom:'1px solid #d9e1ea',fontSize:12,fontWeight:800,color:'#344054'}}>{h}</th>)}</tr></thead><tbody>{movements.map(m=><tr key={m.id}><td style={{padding:'10px 8px',fontSize:13}}>{new Date(m.created_at).toLocaleString('pt-BR')}</td><td style={{padding:'10px 8px',fontSize:13}}>{m.tipo}</td><td style={{padding:'10px 8px',fontSize:13,fontWeight:900}}>{fmt(m.quantidade)}</td><td style={{padding:'10px 8px',fontSize:13}}>{m.origem||'—'}</td><td style={{padding:'10px 8px',fontSize:13}}>{m.documento||'—'}</td><td style={{padding:'10px 8px',fontSize:13}}>{m.observacao||'—'}</td></tr>)}{!movements.length&&emptyRow('Nenhuma movimentação registrada para este produto.',6)}</tbody></table></div>
       </section>}
 
-      {tab==='tecnica'&&<section style={{padding:10}}>
-        <div className="product-responsive-grid" style={{gridTemplateColumns:'82px 82px 82px 82px 120px 120px max-content'}}>
+      {tab==='tecnica'&&<section style={{padding:14}}>
+        <div className="product-responsive-grid" style={{gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))'}}>
           {field('PRAZO COMPRA (dias)','prazo_compra_dias','number')}{field('PRAZO PRODUÇÃO (dias)','prazo_producao_dias','number')}{field('Custo fabricação (valor gravado) [?]','custo_fabricacao','number',1,true)}{field('TOLERÂNCIA (%)','tolerancia_percentual','number')}
           <label style={label}>FICHA ATIVA<input value={productionFicha?('REV. '+(productionFicha.revisao||productionFicha.versao)):'Não cadastrada'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
           <label style={label}>RENDIMENTO<input value={productionFicha?fmt(productionFicha.rendimento)+' '+productionFicha.unidade_rendimento:'—'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A'}}/></label>
-          <button type="button" onClick={()=>{window.location.href='/ficha-engenharia?produto='+encodeURIComponent(selectedId||'')}} style={{...btn('normal'),width:'max-content',maxWidth:'100%',whiteSpace:'nowrap',padding:'0 8px',fontSize:10}}>ABRIR FICHA DE PROCESSO</button>
+          <button type="button" onClick={()=>{window.location.href='/ficha-engenharia?produto='+encodeURIComponent(selectedId||'')}} style={{...btn('normal'),width:'max-content',maxWidth:'100%',whiteSpace:'nowrap',height:40,padding:'0 12px',fontSize:12,alignSelf:'end'}}>ABRIR FICHA DE PROCESSO</button>
         </div>
-        <div className="product-responsive-grid" style={{gridTemplateColumns:'repeat(4,minmax(0,1fr))',marginTop:8}}>
+        <div className="product-responsive-grid" style={{gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',marginTop:12}}>
           {select('TIPO DE PROCESSO','tipo_processo',[['NAO_APLICA','Não aplicável'],['PRENSADOS','Prensados'],['INJETADOS','Injetados'],['CORTE_VINCO','Corte e vinco'],['ESTAMPOS','Estampos'],['USINAGEM','Usinagem'],['MONTAGEM','Montagem'],['OUTRO','Outro']])}
           {field('Tipo de máquina','tipo_maquina')}
           {field('Tipo de injetora','tipo_injetora')}
@@ -606,48 +599,48 @@ export default function ProdutosVendasIndustrial(){
           {field('Tonelagem mínima','tonelagem_minima','number')}
           {field('Tonelagem máxima','tonelagem_maxima','number')}
         </div>
-        <div style={{marginTop:8,border:'1px solid #d5dde7',overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr style={{background:'#123B50',color:'#fff'}}>{['Seq.','Operação','Máquina','Setup min','Ciclo s','Qtde/h','Qtde/dia'].map(h=><th key={h} style={{padding:'5px 6px',textAlign:'left',fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{productionOps.map(o=><tr key={o.id} style={{borderBottom:'1px solid #e5e7eb'}}><td style={{padding:'5px 6px'}}>{o.sequencia}</td><td style={{padding:'5px 6px'}}>{o.operacao}</td><td style={{padding:'5px 6px'}}>{o.maquina_codigo?o.maquina_codigo+' • '+(o.maquina_nome||''):'Não definida'}</td><td style={{padding:'5px 6px'}}>{fmt(o.setup_min)}</td><td style={{padding:'5px 6px'}}>{fmt(o.ciclo_seg)}</td><td style={{padding:'5px 6px'}}>{o.capacidade_hora==null?'—':fmt(o.capacidade_hora)}</td><td style={{padding:'5px 6px'}}>{o.capacidade_dia==null?'—':fmt(o.capacidade_dia)}</td></tr>)}{!productionOps.length&&<tr><td colSpan={7} style={{padding:12,textAlign:'center',color:'#667085'}}>Nenhuma operação cadastrada. Abra a ficha de processo para cadastrar máquina/posto, setup, ciclo e instruções.</td></tr>}</tbody></table></div>
-        <div style={{marginTop:7,fontSize:9,color:'#667085'}}>Máquina, setup, ciclo e capacidade vêm da ficha técnica/roteiro real; a ficha completa alimenta o PCP e a Ordem de Produção.</div>
+        <div style={{marginTop:8,border:'1px solid #d5dde7',overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:12}}><thead><tr style={{background:'#123B50',color:'#fff'}}>{['Seq.','Operação','Máquina','Setup min','Ciclo s','Qtde/h','Qtde/dia'].map(h=><th key={h} style={{padding:'9px 8px',textAlign:'left',fontWeight:800,fontSize:12}}>{h}</th>)}</tr></thead><tbody>{productionOps.map(o=><tr key={o.id} style={{borderBottom:'1px solid #e5e7eb'}}><td style={{padding:'8px 8px',fontSize:13}}>{o.sequencia}</td><td style={{padding:'8px 8px',fontSize:13}}>{o.operacao}</td><td style={{padding:'8px 8px',fontSize:13}}>{o.maquina_codigo?o.maquina_codigo+' • '+(o.maquina_nome||''):'Não definida'}</td><td style={{padding:'8px 8px',fontSize:13}}>{fmt(o.setup_min)}</td><td style={{padding:'8px 8px',fontSize:13}}>{fmt(o.ciclo_seg)}</td><td style={{padding:'8px 8px',fontSize:13}}>{o.capacidade_hora==null?'—':fmt(o.capacidade_hora)}</td><td style={{padding:'8px 8px',fontSize:13}}>{o.capacidade_dia==null?'—':fmt(o.capacidade_dia)}</td></tr>)}{!productionOps.length&&<tr><td colSpan={7} style={{padding:12,textAlign:'center',color:'#667085'}}>Nenhuma operação cadastrada. Abra a ficha de processo para cadastrar máquina/posto, setup, ciclo e instruções.</td></tr>}</tbody></table></div>
+        <div style={{marginTop:10,fontSize:12,color:'#52606d',lineHeight:1.5}}>Máquina, setup, ciclo e capacidade vêm da ficha técnica/roteiro real; a ficha completa alimenta o PCP e a Ordem de Produção.</div>
       </section>}
 
-      {tab==='tecnica'&&<section style={{padding:10}}>
-        <div className="product-responsive-grid" style={{gridTemplateColumns:'120px 120px 1fr'}}>{select('INSPEÇÃO OBRIGATÓRIA','inspecao_qualidade_obrigatoria',[['true','Sim'],['false','Não']])}{field('NÍVEL DE QUALIDADE','nivel_qualidade')}<div style={{fontSize:9,color:'#667085',paddingBottom:6}}>Desenhos aprovados, critérios de inspeção e documentos controlados ficam vinculados ao produto.</div></div>
-        <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>DEFEITOS REGISTRADOS</h2>
-        <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr>{['Data','OP','Defeito','Quantidade','Observação'].map(h=><th key={h} style={{textAlign:'left',padding:5,borderBottom:'1px solid #d9e1ea',fontSize:9,fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{defects.map(d=><tr key={d.id}><td style={{padding:5}}>{new Date(d.created_at).toLocaleString('pt-BR')}</td><td style={{padding:5}}>{d.ordem_producao_id}</td><td style={{padding:5}}>{d.defeito}</td><td style={{padding:5}}>{fmt(d.quantidade)}</td><td style={{padding:5}}>{d.observacao||'—'}</td></tr>)}{!defects.length&&emptyRow('Nenhum defeito registrado para este produto.',5)}</tbody></table></div>
-        <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>DOCUMENTOS / DESENHOS VINCULADOS</h2>
-        <div style={{display:'grid',gap:4}}>{attachments.map(a=><div key={a.id} style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 120px 150px',gap:7,padding:'5px 6px',border:'1px solid #e4e7ec',fontSize:9}}><b>{a.nome_arquivo}</b><span>{a.mime_type||'arquivo'}</span><span>{a.tamanho_bytes?Math.round(a.tamanho_bytes/1024)+' KB':'—'} · {new Date(a.created_at).toLocaleDateString('pt-BR')}</span></div>)}{!attachments.length&&<div style={{padding:10,textAlign:'center',color:'#667085',border:'1px dashed #cbd5e1',fontSize:9}}>Nenhum desenho/documento vinculado.</div>}</div>
+      {tab==='tecnica'&&<section style={{padding:14}}>
+        <div className="product-responsive-grid" style={{gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))'}}>{select('INSPEÇÃO OBRIGATÓRIA','inspecao_qualidade_obrigatoria',[['true','Sim'],['false','Não']])}{field('NÍVEL DE QUALIDADE','nivel_qualidade')}<div style={{fontSize:12,color:'#52606d',lineHeight:1.5,paddingBottom:8}}>Desenhos aprovados, critérios de inspeção e documentos controlados ficam vinculados ao produto.</div></div>
+        <h2 style={{fontSize:14,margin:'16px 0 8px',color:'#123B50',fontWeight:900,letterSpacing:'.03em'}}>DEFEITOS REGISTRADOS</h2>
+        <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:12}}><thead><tr>{['Data','OP','Defeito','Quantidade','Observação'].map(h=><th key={h} style={{textAlign:'left',padding:5,borderBottom:'1px solid #d9e1ea',fontSize:12,fontWeight:800,color:'#344054'}}>{h}</th>)}</tr></thead><tbody>{defects.map(d=><tr key={d.id}><td style={{padding:5}}>{new Date(d.created_at).toLocaleString('pt-BR')}</td><td style={{padding:5}}>{d.ordem_producao_id}</td><td style={{padding:5}}>{d.defeito}</td><td style={{padding:5}}>{fmt(d.quantidade)}</td><td style={{padding:5}}>{d.observacao||'—'}</td></tr>)}{!defects.length&&emptyRow('Nenhum defeito registrado para este produto.',5)}</tbody></table></div>
+        <h2 style={{fontSize:14,margin:'16px 0 8px',color:'#123B50',fontWeight:900,letterSpacing:'.03em'}}>DOCUMENTOS / DESENHOS VINCULADOS</h2>
+        <div style={{display:'grid',gap:4}}>{attachments.map(a=><div key={a.id} style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 140px 170px',gap:10,padding:'9px 10px',border:'1px solid #e4e7ec',borderRadius:8,fontSize:12}}><b>{a.nome_arquivo}</b><span>{a.mime_type||'arquivo'}</span><span>{a.tamanho_bytes?Math.round(a.tamanho_bytes/1024)+' KB':'—'} · {new Date(a.created_at).toLocaleDateString('pt-BR')}</span></div>)}{!attachments.length&&<div style={{padding:14,textAlign:'center',color:'#667085',border:'1px dashed #cbd5e1',borderRadius:8,fontSize:12}}>Nenhum desenho/documento vinculado.</div>}</div>
       </section>}
     </section>
 
     <section className="product-list-panel" style={{...panel,overflow:'hidden'}}>
-      <div style={{display:'flex',alignItems:'end',gap:6,padding:7,background:'#f7f9fc',borderBottom:'1px solid #d6dde6',flexWrap:'wrap'}}>
-        <Search size={14} color="#2D8DB8"/><label style={{...label,width:'calc(100% - 24px)'}}>PESQUISAR PRODUTO<input aria-label="Pesquisar produto por código, descrição ou grupo" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código, descrição, grupo ou marca..." style={{...input,height:30}}/></label>
-        <label style={{...label,width:'100%'}}>FILTRAR POR GRUPO<select value={groupFilter} onChange={e=>setGroupFilter(e.target.value)} style={{...input,height:30}}><option value="TODAS">Todos os grupos</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}</select></label>
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:6,width:'100%'}}><span style={{fontSize:10,color:'#667085'}}><b style={{color:'#123B50'}}>{filtered.length}</b> produto(s) encontrado(s)</span><button type="button" onClick={()=>void load()} disabled={busy} style={{...btn('normal'),height:28}}><RefreshCw size={13}/>Atualizar</button></div>
+      <div style={{display:'flex',alignItems:'end',gap:10,padding:12,background:'#f7f9fc',borderBottom:'1px solid #d6dde6',flexWrap:'wrap'}}>
+        <Search size={17} color="#2D8DB8"/><label style={{...label,width:'calc(100% - 24px)'}}>PESQUISAR PRODUTO<input aria-label="Pesquisar produto por código, descrição ou grupo" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código, descrição, grupo ou marca..." style={{...input,height:40}}/></label>
+        <label style={{...label,width:'100%'}}>FILTRAR POR GRUPO<select value={groupFilter} onChange={e=>setGroupFilter(e.target.value)} style={{...input,height:40}}><option value="TODAS">Todos os grupos</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}</select></label>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,width:'100%'}}><span style={{fontSize:13,color:'#667085'}}><b style={{color:'#123B50'}}>{filtered.length}</b> produto(s) encontrado(s)</span><button type="button" onClick={()=>void load()} disabled={busy} style={{...btn('normal'),height:36}}><RefreshCw size={13}/>Atualizar</button></div>
       </div>
-      <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',minWidth:0,tableLayout:'fixed'}}><colgroup><col style={{width:'24%'}}/><col style={{width:'42%'}}/><col style={{width:'18%'}}/><col style={{width:'16%'}}/></colgroup><thead><tr>{['Código','Descrição do produto','Grupo','Status'].map(h=><th key={h} style={{textAlign:'left',padding:'7px 6px',borderBottom:'1px solid #d9e1ea',fontSize:9,fontWeight:700,background:'#f7f9fc',color:'#344054'}}>{h}</th>)}</tr></thead><tbody>{filtered.map(p=><tr key={p.id} onClick={()=>selectProduct(p)} onDoubleClick={()=>selectProduct(p)} aria-selected={selectedId===p.id} style={{background:selectedId===p.id?'#dff1f8':'#fff',cursor:'pointer',borderLeft:selectedId===p.id?'3px solid #2D8DB8':'3px solid transparent'}}><td title={p.codigo} style={{padding:'7px 6px',fontSize:10,fontWeight:700,color:'#123B50'}}>{p.codigo}</td><td title={p.nome} style={{padding:'7px 6px',fontSize:10}}>{p.nome}</td><td title={p.grupo||'—'} style={{padding:'7px 6px',fontSize:9}}>{p.grupo||'—'}</td><td style={{padding:'7px 6px',fontSize:9,color:p.ativo?'#25815f':'#b42318',fontWeight:700}}>{p.ativo?'ATIVO':'INATIVO'}</td></tr>)}{!filtered.length&&emptyRow('Nenhum produto encontrado.',4)}</tbody></table></div>
+      <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',minWidth:0,tableLayout:'fixed'}}><colgroup><col style={{width:'24%'}}/><col style={{width:'42%'}}/><col style={{width:'18%'}}/><col style={{width:'16%'}}/></colgroup><thead><tr>{['Código','Descrição do produto','Grupo','Status'].map(h=><th key={h} style={{textAlign:'left',padding:'10px 8px',borderBottom:'1px solid #d9e1ea',fontSize:12,fontWeight:800,textTransform:'uppercase',background:'#f7f9fc',color:'#344054'}}>{h}</th>)}</tr></thead><tbody>{filtered.map(p=><tr key={p.id} onClick={()=>selectProduct(p)} onDoubleClick={()=>selectProduct(p)} aria-selected={selectedId===p.id} style={{background:selectedId===p.id?'#dff1f8':'#fff',cursor:'pointer',borderLeft:selectedId===p.id?'3px solid #2D8DB8':'3px solid transparent'}}><td title={p.codigo} style={{padding:'10px 8px',fontSize:13,fontWeight:800,color:'#123B50'}}>{p.codigo}</td><td title={p.nome} style={{padding:'10px 8px',fontSize:13}}>{p.nome}</td><td title={p.grupo||'—'} style={{padding:'10px 8px',fontSize:12}}>{p.grupo||'—'}</td><td style={{padding:'10px 8px',fontSize:12,fontWeight:800,color:p.ativo?'#25815f':'#b42318'}}>{p.ativo?'ATIVO':'INATIVO'}</td></tr>)}{!filtered.length&&emptyRow('Nenhum produto encontrado.',4)}</tbody></table></div>
     </section>
     </div>
     {selectedId ? (
-      <section style={{...panel,margin:'0 10px 10px',padding:8}}>
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:5}}>
-          <h2 style={{margin:0,fontSize:11,color:'#123B50'}}>HISTÓRICO AUTOMÁTICO DO PRODUTO</h2>
-          <span style={{fontSize:8,color:'#667085'}}>erp_audit_logs • somente consulta</span>
+      <section style={{...panel,margin:'0 12px 12px',padding:12}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
+          <h2 style={{margin:0,fontSize:14,color:'#123B50',fontWeight:900,letterSpacing:'.03em'}}>HISTÓRICO AUTOMÁTICO DO PRODUTO</h2>
+          <span style={{fontSize:11,color:'#667085'}}>erp_audit_logs • somente consulta</span>
         </div>
-        <div style={{maxHeight:180,overflow:'auto'}}>
+        <div style={{maxHeight:240,overflow:'auto'}}>
           {audits.map(a=>(
-            <div key={a.id} style={{display:'grid',gridTemplateColumns:'145px 130px 1fr',gap:7,padding:'4px 5px',borderBottom:'1px solid #edf1f5',fontSize:9}}>
+            <div key={a.id} style={{display:'grid',gridTemplateColumns:'145px 130px 1fr',gap:7,padding:'4px 5px',borderBottom:'1px solid #edf1f5',fontSize:12}}>
               <span>{new Date(a.created_at).toLocaleString('pt-BR')}</span>
               <b>{a.action}</b>
               <details>
                 <summary style={{cursor:'pointer'}}>Ver alteração</summary>
-                <pre style={{fontSize:8,whiteSpace:'pre-wrap'}}>{JSON.stringify({antes:a.old_data,depois:a.new_data},null,2)}</pre>
+                <pre style={{fontSize:11,whiteSpace:'pre-wrap'}}>{JSON.stringify({antes:a.old_data,depois:a.new_data},null,2)}</pre>
               </details>
             </div>
           ))}
-          {!audits.length&&<span style={{fontSize:9,color:'#667085'}}>Nenhum evento registrado.</span>}
+          {!audits.length&&<span style={{fontSize:12,color:'#667085'}}>Nenhum evento registrado.</span>}
         </div>
       </section>
-    ) : null}    <footer className="product-screen-footer" style={{padding:'7px 12px 16px',fontSize:10,color:'#667085',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8}}><span>SYSNQRA ERP & SGQ INDUSTRIAL • Cadastro Mestre de Produtos</span><span>© FernandoSch_System — Todos os direitos reservados</span><button type="button" onClick={()=>window.print()} style={btn('normal')}><Printer size={13}/>IMPRIMIR TELA</button></footer>
+    ) : null}    <footer className="product-screen-footer" style={{padding:'10px 14px 18px',fontSize:12,color:'#667085',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8}}><span>SYSNQRA ERP & SGQ INDUSTRIAL • Cadastro Mestre de Produtos</span><span>© FernandoSch_System — Todos os direitos reservados</span><button type="button" onClick={()=>window.print()} style={btn('normal')}><Printer size={13}/>IMPRIMIR TELA</button></footer>
   </main></>
 }
