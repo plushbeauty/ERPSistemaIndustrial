@@ -17,6 +17,8 @@ const SetupADMInicial = lazy(() => import('./pages/SetupADMInicial'))
 const PCPWorkspace = lazy(() => import('./pages/PCPWorkspace'))
 const Paquimetro = lazy(() => import('./pages/QualidadePaquimetroDigital'))
 const ComprasWorkspace = lazy(() => import('./pages/ComprasWorkspace'))
+const SolicitacaoCompra = lazy(() => import('./pages/SolicitacaoCompra'))
+const ComprasRequisicoes = lazy(() => import('./pages/ComprasRequisicoes'))
 const AdministracaoConfiguracoesGlobais = lazy(() => import('./pages/AdministracaoConfiguracoesGlobais'))
 const BalancoEstoque = lazy(() => import('./features/inventario/BalancoEstoque'))
 const RHIndustrial = lazy(() => import('./pages/RHIndustrial'))
@@ -40,6 +42,8 @@ export default function AppEntryV2() {
             <Route path="/pageprincipal" element={<PagePrincipal />}>
               <Route index element={<AppIndustrial />} />
               <Route path="compras" element={<ComprasWorkspace />} />
+              <Route path="compras/solicitacao" element={<SolicitacaoCompra />} />
+              <Route path="compras/requisicoes" element={<ComprasRequisicoes />} />
               <Route path="administracao-configuracoes" element={<AdministracaoConfiguracoesGlobais />} />
               <Route path="fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />
               <Route path="fiscal/emissao" element={<QualityPlanGate><NFeEmissao /></QualityPlanGate>} />
@@ -53,6 +57,8 @@ export default function AppEntryV2() {
               <Route path="qualidade/rpnc" element={<QualityPlanGate><QualidadeRPNC /></QualityPlanGate>} />
             </Route>
             <Route path="/compras" element={<Navigate to="/pageprincipal/compras" replace />} />
+            <Route path="/compras/solicitacao" element={<Navigate to="/pageprincipal/compras/solicitacao" replace />} />
+            <Route path="/compras/requisicoes" element={<Navigate to="/pageprincipal/compras/requisicoes" replace />} />
             <Route path="/configuracoes-adm" element={<Navigate to="/pageprincipal/administracao-configuracoes" replace />} />
             <Route path="/administracao-configuracoes" element={<Navigate to="/pageprincipal/administracao-configuracoes" replace />} />
             <Route path="/erp-industrial" element={<Navigate to="/pageprincipal" replace />} />
