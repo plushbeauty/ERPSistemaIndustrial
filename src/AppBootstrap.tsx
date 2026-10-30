@@ -25,7 +25,8 @@ import './styles/visual-showcase-2026.css'
 const PublicIndustrialHome = lazyPage(() => import('./PublicIndustrialHome'), 'PublicIndustrialHome')
 const AppEntryV2 = lazyPage(() => import('./AppEntryV2'), 'AppEntryV2')
 const SetupADMInicial = lazyPage(() => import('./pages/SetupADMInicial'), 'SetupADMInicial')
-const publicPaths = new Set(['/','/home','/login','/planos'])
+const StaffOperatorLogin = lazyPage(() => import('./pages/StaffOperatorLogin'), 'StaffOperatorLogin')
+const publicPaths = new Set(['/','/home','/login','/login-operador','/planos'])
 
 class BootstrapBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state = { error: null as Error | null }
@@ -125,6 +126,7 @@ function AccessGate({ children }: { children: ReactNode }) {
 export default function AppBootstrap() {
   const path = window.location.pathname
   if (path === '/login') return <BootstrapBoundary><LoginBootstrap /></BootstrapBoundary>
+  if (path === '/login-operador') return <BootstrapBoundary><Suspense fallback={<Loading label="Preparando acesso do operador…" />}><StaffOperatorLogin /></Suspense></BootstrapBoundary>
   if (path === '/cadastro-master') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo cadastro Master…" />}><SetupADMInicial /></Suspense></BootstrapBoundary>
   if (path === '/' || path === '/home') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo SYSNQRA ERP & SGQ INDUSTRIAL…" />}><PublicIndustrialHome /></Suspense></BootstrapBoundary>
   const app = <BootstrapBoundary><Suspense fallback={<Loading />}><AppEntryV2 /></Suspense></BootstrapBoundary>
