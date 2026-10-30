@@ -26,6 +26,33 @@ const QualidadeRPNC = lazy(() => import('./pages/QualidadeRPNC'))
 const AdministracaoConfiguracoesGlobais = lazy(() => import('./pages/AdministracaoConfiguracoesGlobais'))
 const CentralAjuda = lazy(() => import('./pages/CentralAjuda'))
 const FinanceiroWorkspace = lazy(() => import('./modules/financeiro/pages/FinanceiroWorkspace'))
+// Páginas existentes sem rota — integradas ao menu em 2026-10-30 (comando de integração global)
+const FileTreeGED = lazy(() => import('./pages/FileTreeGED'))
+const PostosTrabalho = lazy(() => import('./features/pcp/PostosTrabalho'))
+const RoteiroOperacoes = lazy(() => import('./features/pcp/RoteiroOperacoes'))
+const AuditoriaSaldos = lazy(() => import('./features/inventario/AuditoriaSaldos'))
+const BalancoEstoque = lazy(() => import('./features/inventario/BalancoEstoque'))
+const RegrasDepreciacao = lazy(() => import('./features/inventario/RegrasDepreciacao'))
+const BankReconciliation = lazy(() => import('./features/banking/BankReconciliation'))
+const BankStatementImporter = lazy(() => import('./features/banking/BankStatementImporter'))
+const ListaPrecosCliente = lazy(() => import('./features/banking/ListaPrecosCliente'))
+const CadastroRegras = lazy(() => import('./features/comissoes/CadastroRegras'))
+const CalculoComissao = lazy(() => import('./features/comissoes/CalculoComissao'))
+const PerfilVendedor = lazy(() => import('./features/comissoes/PerfilVendedor'))
+const AuditoriaComissoes = lazy(() => import('./features/controladoria/AuditoriaComissoes'))
+const CadastroDecimais = lazy(() => import('./features/controladoria/CadastroDecimais'))
+const PainelLucratividade = lazy(() => import('./features/controladoria/PainelLucratividade'))
+const AssistenteRetificacao = lazy(() => import('./features/controladoria/AssistenteRetificacao'))
+const RetificacaoPedido = lazy(() => import('./features/controladoria/RetificacaoPedido'))
+const AnoFiscal = lazy(() => import('./features/fiscal/AnoFiscal'))
+const AuditoriaDocumental = lazy(() => import('./features/fiscal/AuditoriaDocumental'))
+const ClassificacaoFiscal = lazy(() => import('./features/fiscal/ClassificacaoFiscal'))
+const EstornoLancamentos = lazy(() => import('./features/fiscal/EstornoLancamentos'))
+const PainelRazaoGeral = lazy(() => import('./features/fiscal/PainelRazaoGeral'))
+const CustomerDnList = lazy(() => import('./pages/CustomerDnList'))
+const CustomerDnSettings = lazy(() => import('./pages/CustomerDnSettings'))
+const CustomerDnPod = lazy(() => import('./pages/CustomerDnPod'))
+const Master = lazy(() => import('./pages/Master'))
 
 function LoadingWorkspace() {
   return <main role="status" aria-live="polite" style={{ minHeight: '50vh', display: 'grid', placeItems: 'center', color: '#123b50', fontFamily: 'Inter,system-ui,sans-serif' }}>Carregando SYSNQRA ERP INDUSTRIAL…</main>
@@ -51,7 +78,33 @@ export default function AppEntryV2() {
               <Route path="administracao-configuracoes" element={<AdministracaoConfiguracoesGlobais />} />
               <Route path="fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />
               <Route path="pcp" element={<PCPWorkspace />} />
+              <Route path="pcp/roteiros" element={<QualityPlanGate><RoteiroOperacoes /></QualityPlanGate>} />
+              <Route path="chao-de-fabrica/postos" element={<QualityPlanGate><PostosTrabalho /></QualityPlanGate>} />
               <Route path="paquimetro" element={<QualityPlanGate><Paquimetro /></QualityPlanGate>} />
+              <Route path="qualidade/ged" element={<QualityPlanGate><FileTreeGED /></QualityPlanGate>} />
+              <Route path="estoque/auditoria-saldos" element={<QualityPlanGate><AuditoriaSaldos /></QualityPlanGate>} />
+              <Route path="estoque/balanco" element={<QualityPlanGate><BalancoEstoque /></QualityPlanGate>} />
+              <Route path="estoque/depreciacao" element={<QualityPlanGate><RegrasDepreciacao /></QualityPlanGate>} />
+              <Route path="financeiro/conciliacao" element={<QualityPlanGate><BankReconciliation /></QualityPlanGate>} />
+              <Route path="financeiro/extrato" element={<QualityPlanGate><BankStatementImporter /></QualityPlanGate>} />
+              <Route path="financeiro/lista-precos" element={<QualityPlanGate><ListaPrecosCliente /></QualityPlanGate>} />
+              <Route path="financeiro/comissoes" element={<QualityPlanGate><CalculoComissao /></QualityPlanGate>} />
+              <Route path="financeiro/comissoes/regras" element={<QualityPlanGate><CadastroRegras /></QualityPlanGate>} />
+              <Route path="financeiro/comissoes/perfil" element={<QualityPlanGate><PerfilVendedor /></QualityPlanGate>} />
+              <Route path="financeiro/auditoria-comissoes" element={<QualityPlanGate><AuditoriaComissoes /></QualityPlanGate>} />
+              <Route path="financeiro/decimais" element={<QualityPlanGate><CadastroDecimais /></QualityPlanGate>} />
+              <Route path="financeiro/lucratividade" element={<QualityPlanGate><PainelLucratividade /></QualityPlanGate>} />
+              <Route path="financeiro/retificacao" element={<QualityPlanGate><RetificacaoPedido /></QualityPlanGate>} />
+              <Route path="financeiro/retificacao-assistente" element={<QualityPlanGate><AssistenteRetificacao /></QualityPlanGate>} />
+              <Route path="financeiro/notas-debito" element={<QualityPlanGate><CustomerDnList /></QualityPlanGate>} />
+              <Route path="financeiro/notas-debito/configuracoes" element={<QualityPlanGate><CustomerDnSettings /></QualityPlanGate>} />
+              <Route path="financeiro/notas-debito/:id/pod" element={<QualityPlanGate><CustomerDnPod /></QualityPlanGate>} />
+              <Route path="fiscal/ano" element={<QualityPlanGate><AnoFiscal /></QualityPlanGate>} />
+              <Route path="fiscal/classificacao" element={<QualityPlanGate><ClassificacaoFiscal /></QualityPlanGate>} />
+              <Route path="fiscal/auditoria-documental" element={<QualityPlanGate><AuditoriaDocumental /></QualityPlanGate>} />
+              <Route path="fiscal/estorno" element={<QualityPlanGate><EstornoLancamentos /></QualityPlanGate>} />
+              <Route path="fiscal/razao" element={<QualityPlanGate><PainelRazaoGeral /></QualityPlanGate>} />
+              <Route path="master" element={<Master />} />
             </Route>
             <Route path="/ajuda" element={<Navigate to="/pageprincipal/ajuda" replace />} />
             <Route path="/financeiro" element={<Navigate to="/pageprincipal/financeiro" replace />} />
@@ -69,6 +122,11 @@ export default function AppEntryV2() {
             <Route path="/pcp" element={<Navigate to="/pageprincipal/pcp" replace />} />
             <Route path="/paquimetro" element={<Navigate to="/pageprincipal/paquimetro" replace />} />
             <Route path="/qualidade/paquimetro" element={<Navigate to="/pageprincipal/paquimetro" replace />} />
+            <Route path="/qualidade/ged-documentos" element={<Navigate to="/pageprincipal/qualidade/ged" replace />} />
+            <Route path="/qualidade/documentos" element={<Navigate to="/pageprincipal/qualidade/ged" replace />} />
+            <Route path="/documentos-qualidade" element={<Navigate to="/pageprincipal/qualidade/ged" replace />} />
+            <Route path="/pcp/roteiros" element={<Navigate to="/pageprincipal/pcp/roteiros" replace />} />
+            <Route path="/master" element={<Navigate to="/pageprincipal/master" replace />} />
             <Route path="*" element={<Navigate to="/pageprincipal" replace />} />
           </Routes>
         </ERPHorizontalShell>

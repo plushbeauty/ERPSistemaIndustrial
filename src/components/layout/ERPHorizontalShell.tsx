@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, FolderOpen, Warehouse, Banknote, Percent, Scale, ShieldCheck, BookOpen, Landmark, RotateCcw, Archive, FileWarning, Route, Monitor } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -22,10 +22,20 @@ const menus: MenuItem[] = [
   { label: 'Engenharia e PCP', route: '/pageprincipal/pcp', icon: Factory, children: [
     { label: 'Central PCP', route: '/pageprincipal/pcp', icon: ClipboardList },
     { label: 'Fichas de Processo', route: '/pageprincipal/pcp/fichas-processo', icon: ClipboardList, isUpdated: true },
+    { label: 'Roteiro de Operações', route: '/pageprincipal/pcp/roteiros', icon: Route, isUpdated: true },
+  ] },
+  { label: 'Chão de Fábrica', route: '/pageprincipal/chao-de-fabrica/postos', icon: Monitor, isUpdated: true, children: [
+    { label: 'Postos de Trabalho', route: '/pageprincipal/chao-de-fabrica/postos', icon: Monitor, isUpdated: true },
+  ] },
+  { label: 'Estoque e Almoxarifado', route: '/pageprincipal/estoque/auditoria-saldos', icon: Warehouse, isUpdated: true, children: [
+    { label: 'Auditoria de Saldos', route: '/pageprincipal/estoque/auditoria-saldos', icon: Scale, isUpdated: true },
+    { label: 'Balanço de Estoque', route: '/pageprincipal/estoque/balanco', icon: Archive, isUpdated: true },
+    { label: 'Regras de Depreciação', route: '/pageprincipal/estoque/depreciacao', icon: Percent, isUpdated: true },
   ] },
   { label: 'Qualidade / Paquímetro', route: '/pageprincipal/paquimetro', icon: Ruler, children: [
     { label: 'Paquímetro Digital', route: '/pageprincipal/paquimetro', icon: Ruler },
     { label: 'RPNC', route: '/pageprincipal/qualidade/rpnc', icon: ClipboardList, isUpdated: true },
+    { label: 'GED / Documentos da Qualidade', route: '/pageprincipal/qualidade/ged', icon: FolderOpen, isUpdated: true },
   ] },
   { label: 'Compras', route: '/pageprincipal/compras', icon: ShoppingCart, isUpdated: true, children: [
     { label: 'Central de Compras', route: '/pageprincipal/compras', icon: ShoppingCart, isUpdated: true },
@@ -35,8 +45,28 @@ const menus: MenuItem[] = [
   { label: 'Configurações', route: '/pageprincipal/administracao-configuracoes', icon: Settings },
   { label: 'Financeiro', route: '/pageprincipal/financeiro', icon: Wallet, isUpdated: true, children: [
     { label: 'Central Financeira', route: '/pageprincipal/financeiro', icon: Wallet, isUpdated: true },
+    { label: 'Conciliação Bancária', route: '/pageprincipal/financeiro/conciliacao', icon: Scale, isUpdated: true },
+    { label: 'Importação de Extrato', route: '/pageprincipal/financeiro/extrato', icon: Banknote, isUpdated: true },
+    { label: 'Lista de Preços por Cliente', route: '/pageprincipal/financeiro/lista-precos', icon: Percent, isUpdated: true },
+    { label: 'Cálculo de Comissões', route: '/pageprincipal/financeiro/comissoes', icon: Wallet, isUpdated: true },
+    { label: 'Regras de Comissão', route: '/pageprincipal/financeiro/comissoes/regras', icon: FileText, isUpdated: true },
+    { label: 'Perfil do Vendedor', route: '/pageprincipal/financeiro/comissoes/perfil', icon: Users, isUpdated: true },
+    { label: 'Auditoria de Comissões', route: '/pageprincipal/financeiro/auditoria-comissoes', icon: ShieldCheck, isUpdated: true },
+    { label: 'Cadastro de Decimais', route: '/pageprincipal/financeiro/decimais', icon: ClipboardList, isUpdated: true },
+    { label: 'Painel de Lucratividade', route: '/pageprincipal/financeiro/lucratividade', icon: FileText, isUpdated: true },
+    { label: 'Retificação de Pedido', route: '/pageprincipal/financeiro/retificacao', icon: RotateCcw, isUpdated: true },
+    { label: 'Assistente de Retificação', route: '/pageprincipal/financeiro/retificacao-assistente', icon: CircleHelp },
+    { label: 'Notas de Débito', route: '/pageprincipal/financeiro/notas-debito', icon: FileWarning, isUpdated: true },
+    { label: 'Configurações de Notas de Débito', route: '/pageprincipal/financeiro/notas-debito/configuracoes', icon: Settings, isUpdated: true },
   ] },
-  { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText },
+  { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText, isUpdated: true, children: [
+    { label: 'Central Fiscal', route: '/pageprincipal/fiscal', icon: FileText },
+    { label: 'Ano Fiscal', route: '/pageprincipal/fiscal/ano', icon: BookOpen, isUpdated: true },
+    { label: 'Classificação Fiscal', route: '/pageprincipal/fiscal/classificacao', icon: Landmark, isUpdated: true },
+    { label: 'Auditoria Documental', route: '/pageprincipal/fiscal/auditoria-documental', icon: ShieldCheck, isUpdated: true },
+    { label: 'Estorno de Lançamentos', route: '/pageprincipal/fiscal/estorno', icon: RotateCcw, isUpdated: true },
+    { label: 'Painel Razão Geral', route: '/pageprincipal/fiscal/razao', icon: Scale, isUpdated: true },
+  ] },
   { label: 'Central de Ajuda', route: '/pageprincipal/ajuda', icon: CircleHelp, isUpdated: true },
 ]
 
@@ -99,6 +129,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   }, [])
 
   const moduleLabel = pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
+    : pathname.startsWith('/pageprincipal/chao-de-fabrica') ? 'Chão de Fábrica'
+    : pathname.startsWith('/pageprincipal/estoque') ? 'Estoque e Almoxarifado'
+    : pathname.startsWith('/pageprincipal/qualidade') ? 'Qualidade / Paquímetro'
     : pathname.startsWith('/pageprincipal/rh') || pathname.startsWith('/rh') ? 'RH / Departamento Pessoal'
     : pathname.startsWith('/pageprincipal/paquimetro') ? 'Qualidade / Paquímetro'
     : pathname.startsWith('/pageprincipal/compras') || pathname.startsWith('/compras') ? 'Compras'
