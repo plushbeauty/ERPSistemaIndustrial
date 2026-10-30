@@ -33,27 +33,27 @@ type Staff = {
   foto_path?: string | null
 }
 type Row = Record<string, string | number | boolean | null | undefined> & { id: string }
-type Tab = 'Funcionários' | 'Cartão de ponto' | 'Registro de faltas' | 'Controle de treinamentos' | 'Férias e afastamentos' | 'Avaliações' | 'Acidentes' | 'Documentos'
+type Tab = 'Visão geral' | 'Funcionários' | 'Ponto / Presença' | 'Treinamentos' | 'Avaliações' | 'Ausências' | 'Acidentes' | 'Documentos'
 type Field = { key: string; label: string; type?: string; required?: boolean; options?: string[] }
 const tabs: { label: Tab; icon: typeof Users }[] = [
+  { label: 'Visão geral', icon: Users },
   { label: 'Funcionários', icon: Users },
-  { label: 'Cartão de ponto', icon: Clock3 },
-  { label: 'Registro de faltas', icon: CalendarDays },
-  { label: 'Controle de treinamentos', icon: GraduationCap },
-  { label: 'Férias e afastamentos', icon: FileText },
+  { label: 'Ponto / Presença', icon: Clock3 },
+  { label: 'Treinamentos', icon: GraduationCap },
   { label: 'Avaliações', icon: CheckCircle2 },
+  { label: 'Ausências', icon: CalendarDays },
   { label: 'Acidentes', icon: CalendarDays },
   { label: 'Documentos', icon: FileText },
 ]
-const schemas: Record<Exclude<Tab, 'Funcionários'>, { table: string; fields: Field[] }> = {
-  'Cartão de ponto': { table: 'erp_rh_ponto_eventos', fields: [
+const schemas: Record<Exclude<Tab, 'Funcionários' | 'Visão geral'>, { table: string; fields: Field[] }> = {
+  'Ponto / Presença': { table: 'erp_rh_ponto_eventos', fields: [
     { key: 'funcionario_id', label: 'Funcionário', type: 'staff', required: true },
     { key: 'tipo', label: 'Evento', type: 'select', options: ['ENTRADA', 'SAIDA_INTERVALO', 'RETORNO_INTERVALO', 'SAIDA'], required: true },
     { key: 'registrado_em', label: 'Data e hora', type: 'datetime-local', required: true },
     { key: 'origem', label: 'Origem', type: 'select', options: ['MANUAL', 'RELOGIO', 'CATRACA', 'IMPORTACAO'], required: true },
     { key: 'observacao', label: 'Observação' },
   ]},
-  'Registro de faltas': { table: 'erp_rh_faltas', fields: [
+  'Ausências': { table: 'erp_rh_faltas', fields: [
     { key: 'funcionario_id', label: 'Funcionário', type: 'staff', required: true },
     { key: 'data_inicio', label: 'Data inicial', type: 'date', required: true },
     { key: 'data_fim', label: 'Data final', type: 'date' },
@@ -62,7 +62,7 @@ const schemas: Record<Exclude<Tab, 'Funcionários'>, { table: string; fields: Fi
     { key: 'justificativa', label: 'Justificativa' },
     { key: 'observacoes', label: 'Observações' },
   ]},
-  'Controle de treinamentos': { table: 'erp_rh_treinamentos_registros', fields: [
+  'Treinamentos': { table: 'erp_rh_treinamentos_registros', fields: [
     { key: 'funcionario_id', label: 'Funcionário', type: 'staff', required: true },
     { key: 'titulo', label: 'Treinamento', required: true },
     { key: 'instrutor', label: 'Instrutor' },
@@ -71,16 +71,6 @@ const schemas: Record<Exclude<Tab, 'Funcionários'>, { table: string; fields: Fi
     { key: 'resultado', label: 'Resultado / avaliação' },
     { key: 'status', label: 'Situação', type: 'select', options: ['PENDENTE', 'CONCLUIDO', 'REPROVADO', 'VENCIDO'], required: true },
     { key: 'validade_ate', label: 'Validade até', type: 'date' },
-    { key: 'observacoes', label: 'Observações' },
-  ]},
-  'Férias e afastamentos': { table: 'erp_rh_ferias', fields: [
-    { key: 'funcionario_id', label: 'Funcionário', type: 'staff', required: true },
-    { key: 'periodo_aquisitivo_inicio', label: 'Início do período aquisitivo', type: 'date', required: true },
-    { key: 'periodo_aquisitivo_fim', label: 'Fim do período aquisitivo', type: 'date', required: true },
-    { key: 'inicio', label: 'Início das férias', type: 'date', required: true },
-    { key: 'fim', label: 'Fim das férias', type: 'date', required: true },
-    { key: 'dias', label: 'Dias', type: 'number', required: true },
-    { key: 'status', label: 'Situação', type: 'select', options: ['PROGRAMADA', 'GOZADA', 'CANCELADA'], required: true },
     { key: 'observacoes', label: 'Observações' },
   ]},
   'Avaliações': { table: 'erp_rh_avaliacoes', fields: [
@@ -121,7 +111,7 @@ const errorText = (error: unknown) => error instanceof Error ? error.message : '
 
 export default function RHIndustrial() {
   const [empresaId, setEmpresaId] = useState('')
-  const [tab, setTab] = useState<Tab>('Funcionários')
+  const [tab, setTab] = useState<Tab>('Visão geral')
   const [staff, setStaff] = useState<Staff[]>([])
   const [rows, setRows] = useState<Row[]>([])
   const [form, setForm] = useState<Record<string, string>>({})
@@ -161,12 +151,12 @@ export default function RHIndustrial() {
   }, [])
 
   const loadRows = useCallback(async (selectedTab: Tab, tenant: string) => {
-    if (selectedTab === 'Funcionários') { setRows([]); return }
-    const schema = schemas[selectedTab]
+    if (selectedTab === 'Funcionários' || selectedTab === 'Visão geral') { setRows([]); return }
+    const schema = schemas[selectedTab as Exclude<Tab, 'Funcionários' | 'Visão geral'>]
     let request = supabase.from(schema.table).select('*').eq('empresa_id', tenant).limit(300)
-    if (selectedTab === 'Cartão de ponto') request = request.gte('registrado_em', new Date(filterDate + 'T00:00:00').toISOString()).lt('registrado_em', new Date(new Date(filterDate + 'T00:00:00').getTime() + 86400000).toISOString()).order('registrado_em', { ascending: false })
-    else if (selectedTab === 'Registro de faltas') request = request.order('data_inicio', { ascending: false })
-    else if (selectedTab === 'Controle de treinamentos') request = request.order('data_treinamento', { ascending: false })
+    if (selectedTab === 'Ponto / Presença') request = request.gte('registrado_em', new Date(filterDate + 'T00:00:00').toISOString()).lt('registrado_em', new Date(new Date(filterDate + 'T00:00:00').getTime() + 86400000).toISOString()).order('registrado_em', { ascending: false })
+    else if (selectedTab === 'Ausências') request = request.order('data_inicio', { ascending: false })
+    else if (selectedTab === 'Treinamentos') request = request.order('data_treinamento', { ascending: false })
     else if (selectedTab === 'Férias e afastamentos') request = request.order('inicio', { ascending: false })
     else if (selectedTab === 'Avaliações') request = request.order('data_avaliacao', { ascending: false })
     else if (selectedTab === 'Acidentes') request = request.order('data_ocorrencia', { ascending: false })
@@ -211,7 +201,7 @@ export default function RHIndustrial() {
 
   const startNew = () => {
     setEditingId(null)
-    setForm(tab === 'Funcionários' ? blank(employeeFields) : blank(schemas[tab].fields))
+    setForm(tab === 'Funcionários' ? blank(employeeFields) : blank(schemas[tab as Exclude<Tab, 'Funcionários' | 'Visão geral'>].fields))
     setPhoto(null); setPhotoUrl(''); setMessage('')
   }
   const editStaff = async (person: Staff) => {
@@ -256,10 +246,10 @@ export default function RHIndustrial() {
 
   const saveOperational = async (event: FormEvent) => {
     event.preventDefault()
-    if (!empresaId || tab === 'Funcionários') return
+    if (!empresaId || tab === 'Funcionários' || tab === 'Visão geral') return
     setBusy(true); setMessage('')
     try {
-      const schema = schemas[tab]
+      const schema = schemas[tab as Exclude<Tab, 'Funcionários' | 'Visão geral'>]
       const payload: Record<string, unknown> = { empresa_id: empresaId, criado_por: (await supabase.auth.getUser()).data.user?.id ?? null }
       for (const field of schema.fields) {
         const value = (form[field.key] ?? '').trim()
@@ -275,7 +265,7 @@ export default function RHIndustrial() {
     finally { setBusy(false) }
   }
 
-  const uploadOperationalAttachment = async (file: File, rowId: string, column: 'anexo_path' | 'certificado_path') => {
+  const uploadOperationalAttachment = async (file: File, rowId: string, column: 'anexo_path' | 'certificado_path' | 'documento_path') => {
     const path = `${empresaId}/anexos/${rowId}/${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
     const { error } = await supabase.storage.from('rh-arquivos').upload(path, file, { upsert: true, contentType: file.type })
     if (error) throw error
@@ -288,7 +278,7 @@ export default function RHIndustrial() {
 
   const filteredStaff = staff.filter(person => [person.nome_completo, person.nome, person.cpf, person.matricula, person.cargo].some(value => String(value ?? '').toLowerCase().includes(query.toLowerCase())))
   const activeCount = staff.filter(person => !['desligado', 'inativo'].includes(String(person.status ?? '').toLowerCase())).length
-  const pendingTrainings = tab === 'Controle de treinamentos' ? rows.filter(row => ['PENDENTE', 'VENCIDO', 'REPROVADO'].includes(String(row.status))) : []
+  const pendingTrainings = tab === 'Treinamentos' ? rows.filter(row => ['PENDENTE', 'VENCIDO', 'REPROVADO'].includes(String(row.status))) : []
   const staffName = (id: unknown) => staff.find(person => person.id === id)?.nome_completo ?? staff.find(person => person.id === id)?.nome ?? 'Funcionário não localizado'
 
   const fieldControl = (field: Field) => {
@@ -308,17 +298,17 @@ export default function RHIndustrial() {
     <section className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
       <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><Users className="mb-2 text-sky-700" size={19}/><p className="text-xs text-slate-500">Funcionários cadastrados</p><strong className="text-2xl">{staff.length}</strong></div>
       <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CheckCircle2 className="mb-2 text-emerald-700" size={19}/><p className="text-xs text-slate-500">Ativos</p><strong className="text-2xl">{activeCount}</strong></div>
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><Clock3 className="mb-2 text-amber-700" size={19}/><p className="text-xs text-slate-500">Eventos de ponto no período</p><strong className="text-2xl">{tab === 'Cartão de ponto' ? rows.length : '—'}</strong></div>
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><GraduationCap className="mb-2 text-violet-700" size={19}/><p className="text-xs text-slate-500">Treinamentos pendentes</p><strong className="text-2xl">{tab === 'Controle de treinamentos' ? pendingTrainings.length : '—'}</strong></div>
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><Clock3 className="mb-2 text-amber-700" size={19}/><p className="text-xs text-slate-500">Eventos de ponto no período</p><strong className="text-2xl">{tab === 'Ponto / Presença' ? rows.length : '—'}</strong></div>
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><GraduationCap className="mb-2 text-violet-700" size={19}/><p className="text-xs text-slate-500">Treinamentos pendentes</p><strong className="text-2xl">{tab === 'Treinamentos' ? pendingTrainings.length : '—'}</strong></div>
     </section>
 
     <nav className="mb-4 flex gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm" aria-label="Abas do módulo RH">
-      {tabs.map(item => { const Icon = item.icon; return <button key={item.label} onClick={() => { setTab(item.label); setForm(blank(item.label === 'Funcionários' ? employeeFields : schemas[item.label].fields)); setEditingId(null); setMessage('') }} className={`flex min-h-10 shrink-0 items-center gap-2 rounded-lg px-3 text-xs font-bold transition ${tab === item.label ? 'bg-sky-700 text-white' : 'text-slate-600 hover:bg-slate-100'}`}><Icon size={15}/>{item.label}</button> })}
+      {tabs.map(item => { const Icon = item.icon; return <button key={item.label} onClick={() => { setTab(item.label); setForm(item.label === 'Funcionários' ? blank(employeeFields) : item.label === 'Visão geral' ? {} : blank(schemas[item.label as Exclude<Tab, 'Funcionários' | 'Visão geral'>].fields)); setEditingId(null); setMessage('') }} className={`flex min-h-10 shrink-0 items-center gap-2 rounded-lg px-3 text-xs font-bold transition ${tab === item.label ? 'bg-sky-700 text-white' : 'text-slate-600 hover:bg-slate-100'}`}><Icon size={15}/>{item.label}</button> })}
     </nav>
 
     {message && <div role="status" className={`mb-4 flex items-start gap-2 rounded-lg border px-3 py-2 text-sm ${/sucesso|salvo|gravado|enviado/i.test(message) ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-amber-200 bg-amber-50 text-amber-900'}`}>{message}</div>}
 
-    {tab === 'Funcionários' ? <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    {tab === 'Visão geral' ? <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4"><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><Users className="mb-2 text-sky-700" size={19}/><p className="text-xs text-slate-500">Funcionários cadastrados</p><strong className="text-2xl">{staff.length}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CheckCircle2 className="mb-2 text-emerald-700" size={19}/><p className="text-xs text-slate-500">Colaboradores ativos</p><strong className="text-2xl">{activeCount}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><Clock3 className="mb-2 text-amber-700" size={19}/><p className="text-xs text-slate-500">Eventos de ponto</p><strong className="text-2xl">—</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><GraduationCap className="mb-2 text-violet-700" size={19}/><p className="text-xs text-slate-500">Treinamentos pendentes</p><strong className="text-2xl">—</strong></article></section> : tab === 'Funcionários' ? <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-200 bg-slate-100 px-4 py-3"><h2 className="font-bold text-slate-900">{editingId ? 'Editar colaborador' : 'Cadastro de colaborador'}</h2><p className="mt-1 text-xs text-slate-500">Campos compactos, medidas conforme especificação; foto 3×4 protegida por empresa.</p></div>
       <form onSubmit={saveEmployee} className="p-4 md:p-5">
         <div className="mb-4 flex items-start gap-4">
@@ -348,12 +338,12 @@ export default function RHIndustrial() {
       </div>
     </section> : <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-200 bg-slate-100 px-4 py-3"><h2 className="font-bold text-slate-900">{tab}</h2><p className="mt-1 text-xs text-slate-500">Registros persistidos no Supabase com isolamento por empresa.</p></div>
-      {tab === 'Cartão de ponto' && <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 p-4"><label className="text-xs font-bold text-slate-600">Consultar dia <input type="date" value={filterDate} onChange={event => setFilterDate(event.target.value)} className="ml-2 h-9 rounded-lg border border-slate-300 px-3 font-normal"/></label><span className="text-xs text-slate-500">Para controle físico de catraca ou relógio, conecte o equipamento ou a integração de origem.</span></div>}
+      {tab === 'Ponto / Presença' && <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 p-4"><label className="text-xs font-bold text-slate-600">Consultar dia <input type="date" value={filterDate} onChange={event => setFilterDate(event.target.value)} className="ml-2 h-9 rounded-lg border border-slate-300 px-3 font-normal"/></label><span className="text-xs text-slate-500">Para controle físico de catraca ou relógio, conecte o equipamento ou a integração de origem.</span></div>}
       <form onSubmit={saveOperational} className="grid grid-cols-1 gap-4 p-4 md:grid-cols-3">
         {schemas[tab].fields.map(field => <div key={field.key}><label htmlFor={field.key} className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-600">{field.label}{field.required ? ' *' : ''}</label>{fieldControl(field)}</div>)}
         <div className="flex items-end"><button disabled={busy} type="submit" className="inline-flex h-9 items-center gap-2 rounded-lg bg-sky-700 px-4 text-sm font-bold text-white disabled:opacity-60"><Save size={15}/> Gravar registro</button></div>
       </form>
-      <div className="overflow-x-auto border-t border-slate-200 p-4"><table className="w-full min-w-[760px] text-left text-xs"><thead className="bg-slate-100 text-[10px] uppercase text-slate-600"><tr><th className="p-3">Funcionário</th>{schemas[tab].fields.filter(field => field.key !== 'funcionario_id' && field.key !== 'observacoes' && field.key !== 'justificativa').slice(0,4).map(field => <th key={field.key} className="p-3">{field.label}</th>)}<th className="p-3">Anexo</th></tr></thead><tbody>{rows.map(row => <tr key={row.id} className="border-b border-slate-100"><td className="p-3 font-semibold">{staffName(row.funcionario_id)}</td>{schemas[tab].fields.filter(field => field.key !== 'funcionario_id' && field.key !== 'observacoes' && field.key !== 'justificativa').slice(0,4).map(field => <td key={field.key} className="p-3">{display(row[field.key])}</td>)}<td className="p-3">{(tab === 'Registro de faltas' || tab === 'Controle de treinamentos') && <label className="cursor-pointer font-semibold text-sky-700 underline">{row[tab === 'Registro de faltas' ? 'anexo_path' : tab === 'Controle de treinamentos' ? 'certificado_path' : 'documento_path'] ? 'Substituir anexo' : 'Anexar arquivo'}<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" className="sr-only" onChange={event => { const file = event.target.files?.[0]; if (!file) return; if (file.size > 5 * 1024 * 1024) { setMessage('O arquivo deve ter no máximo 5 MB.'); return } void uploadOperationalAttachment(file, row.id, tab === 'Registro de faltas' ? 'anexo_path' : 'certificado_path').catch(error => setMessage(errorText(error))) }}/></label>}{tab !== 'Registro de faltas' && tab !== 'Controle de treinamentos' && tab !== 'Documentos' ? '—' : null}</td></tr>)}{rows.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-slate-500">{busy ? 'Carregando registros…' : 'Nenhum registro para os filtros atuais.'}</td></tr>}</tbody></table></div>
+      <div className="overflow-x-auto border-t border-slate-200 p-4"><table className="w-full min-w-[760px] text-left text-xs"><thead className="bg-slate-100 text-[10px] uppercase text-slate-600"><tr><th className="p-3">Funcionário</th>{schemas[tab].fields.filter(field => field.key !== 'funcionario_id' && field.key !== 'observacoes' && field.key !== 'justificativa').slice(0,4).map(field => <th key={field.key} className="p-3">{field.label}</th>)}<th className="p-3">Anexo</th></tr></thead><tbody>{rows.map(row => <tr key={row.id} className="border-b border-slate-100"><td className="p-3 font-semibold">{staffName(row.funcionario_id)}</td>{schemas[tab].fields.filter(field => field.key !== 'funcionario_id' && field.key !== 'observacoes' && field.key !== 'justificativa').slice(0,4).map(field => <td key={field.key} className="p-3">{display(row[field.key])}</td>)}<td className="p-3">{(tab === 'Ausências' || tab === 'Treinamentos' || tab === 'Documentos') && <label className="cursor-pointer font-semibold text-sky-700 underline">{row[tab === 'Ausências' ? 'anexo_path' : tab === 'Treinamentos' ? 'certificado_path' : 'documento_path'] ? 'Substituir anexo' : 'Anexar arquivo'}<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" className="sr-only" onChange={event => { const file = event.target.files?.[0]; if (!file) return; if (file.size > 5 * 1024 * 1024) { setMessage('O arquivo deve ter no máximo 5 MB.'); return } void uploadOperationalAttachment(file, row.id, tab === 'Ausências' ? 'anexo_path' : tab === 'Treinamentos' ? 'certificado_path' : 'documento_path').catch(error => setMessage(errorText(error))) }}/></label>}{tab !== 'Ausências' && tab !== 'Treinamentos' && tab !== 'Documentos' ? '—' : null}</td></tr>)}{rows.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-slate-500">{busy ? 'Carregando registros…' : 'Nenhum registro para os filtros atuais.'}</td></tr>}</tbody></table></div>
     </section>}
     <footer className="mt-4 flex items-center gap-2 text-[11px] text-slate-500"><UserRound size={13}/> Dados pessoais e anexos são restritos por empresa e sujeitos às políticas de acesso do Supabase.</footer>
   </main>
