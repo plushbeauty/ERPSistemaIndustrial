@@ -157,7 +157,6 @@ export default function RHIndustrial() {
     if (selectedTab === 'Ponto / Presença') request = request.gte('registrado_em', new Date(filterDate + 'T00:00:00').toISOString()).lt('registrado_em', new Date(new Date(filterDate + 'T00:00:00').getTime() + 86400000).toISOString()).order('registrado_em', { ascending: false })
     else if (selectedTab === 'Ausências') request = request.order('data_inicio', { ascending: false })
     else if (selectedTab === 'Treinamentos') request = request.order('data_treinamento', { ascending: false })
-    else if (selectedTab === 'Férias e afastamentos') request = request.order('inicio', { ascending: false })
     else if (selectedTab === 'Avaliações') request = request.order('data_avaliacao', { ascending: false })
     else if (selectedTab === 'Acidentes') request = request.order('data_ocorrencia', { ascending: false })
     else request = request.order('criado_em', { ascending: false })
@@ -200,8 +199,9 @@ export default function RHIndustrial() {
   }, [empresaId, tab, filterDate, loadRows])
 
   const startNew = () => {
+    if (tab === 'Visão geral') return
     setEditingId(null)
-    setForm(tab === 'Funcionários' ? blank(employeeFields) : blank(schemas[tab as Exclude<Tab, 'Funcionários' | 'Visão geral'>].fields))
+    setForm(tab === 'Funcionários' ? blank(employeeFields) : tab === 'Visão geral' ? {} : blank(schemas[tab as Exclude<Tab, 'Funcionários' | 'Visão geral'>].fields))
     setPhoto(null); setPhotoUrl(''); setMessage('')
   }
   const editStaff = async (person: Staff) => {
@@ -269,7 +269,7 @@ export default function RHIndustrial() {
     const path = `${empresaId}/anexos/${rowId}/${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
     const { error } = await supabase.storage.from('rh-arquivos').upload(path, file, { upsert: true, contentType: file.type })
     if (error) throw error
-    const schema = schemas[tab as Exclude<Tab, 'Funcionários'>]
+    const schema = schemas[tab as Exclude<Tab, 'Funcionários' | 'Visão geral'>]
     const { error: updateError } = await supabase.from(schema.table).update({ [column]: path }).eq('id', rowId).eq('empresa_id', empresaId)
     if (updateError) throw updateError
     setMessage('Anexo enviado com controle de acesso por empresa.')
