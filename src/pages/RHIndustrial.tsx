@@ -33,7 +33,7 @@ type Staff = {
   foto_path?: string | null
 }
 type Row = Record<string, string | number | boolean | null | undefined> & { id: string }
-type Tab = 'Funcionários' | 'Cartão de ponto' | 'Registro de faltas' | 'Controle de treinamentos' | 'Férias e afastamentos'
+type Tab = 'Funcionários' | 'Cartão de ponto' | 'Registro de faltas' | 'Controle de treinamentos' | 'Férias e afastamentos' | 'Avaliações' | 'Acidentes' | 'Documentos'
 type Field = { key: string; label: string; type?: string; required?: boolean; options?: string[] }
 const tabs: { label: Tab; icon: typeof Users }[] = [
   { label: 'Funcionários', icon: Users },
@@ -41,6 +41,9 @@ const tabs: { label: Tab; icon: typeof Users }[] = [
   { label: 'Registro de faltas', icon: CalendarDays },
   { label: 'Controle de treinamentos', icon: GraduationCap },
   { label: 'Férias e afastamentos', icon: FileText },
+  { label: 'Avaliações', icon: CheckCircle2 },
+  { label: 'Acidentes', icon: CalendarDays },
+  { label: 'Documentos', icon: FileText },
 ]
 const schemas: Record<Exclude<Tab, 'Funcionários'>, { table: string; fields: Field[] }> = {
   'Cartão de ponto': { table: 'erp_rh_ponto_eventos', fields: [
@@ -78,6 +81,37 @@ const schemas: Record<Exclude<Tab, 'Funcionários'>, { table: string; fields: Fi
     { key: 'fim', label: 'Fim das férias', type: 'date', required: true },
     { key: 'dias', label: 'Dias', type: 'number', required: true },
     { key: 'status', label: 'Situação', type: 'select', options: ['PROGRAMADA', 'GOZADA', 'CANCELADA'], required: true },
+    { key: 'observacoes', label: 'Observações' },
+  ]},
+  'Avaliações': { table: 'erp_rh_avaliacoes', fields: [
+    { key: 'funcionario_id', label: 'Funcionário', type: 'staff', required: true },
+    { key: 'data_avaliacao', label: 'Data da avaliação', type: 'date', required: true },
+    { key: 'tipo', label: 'Tipo de avaliação', type: 'select', options: ['DESEMPENHO', 'EXPERIENCIA', 'COMPETENCIAS', 'PERIODICA', 'OUTRA'], required: true },
+    { key: 'avaliador', label: 'Avaliador', required: true },
+    { key: 'nota', label: 'Nota', type: 'number' },
+    { key: 'resultado', label: 'Resultado' },
+    { key: 'plano_acao', label: 'Plano de ação' },
+    { key: 'observacoes', label: 'Observações' },
+  ]},
+  'Acidentes': { table: 'erp_rh_acidentes', fields: [
+    { key: 'funcionario_id', label: 'Funcionário', type: 'staff', required: true },
+    { key: 'data_ocorrencia', label: 'Data da ocorrência', type: 'date', required: true },
+    { key: 'hora_ocorrencia', label: 'Hora', type: 'time' },
+    { key: 'local', label: 'Local da ocorrência', required: true },
+    { key: 'tipo', label: 'Tipo', type: 'select', options: ['TIPICO', 'TRAJETO', 'DOENCA_OCUPACIONAL', 'QUASE_ACIDENTE', 'OUTRO'], required: true },
+    { key: 'gravidade', label: 'Gravidade', type: 'select', options: ['LEVE', 'MODERADA', 'GRAVE', 'FATAL'], required: true },
+    { key: 'descricao', label: 'Descrição', required: true },
+    { key: 'afastamento_dias', label: 'Dias de afastamento', type: 'number' },
+    { key: 'providencias', label: 'Providências adotadas' },
+    { key: 'status', label: 'Situação', type: 'select', options: ['ABERTO', 'EM_ANALISE', 'ENCERRADO'], required: true },
+  ]},
+  'Documentos': { table: 'erp_rh_documentos', fields: [
+    { key: 'funcionario_id', label: 'Funcionário', type: 'staff', required: true },
+    { key: 'tipo_documento', label: 'Tipo de documento', type: 'select', options: ['CONTRATO', 'RG', 'CPF', 'ASO', 'ATESTADO', 'CERTIFICADO', 'ADVERTENCIA', 'OUTRO'], required: true },
+    { key: 'titulo', label: 'Título / descrição', required: true },
+    { key: 'numero_documento', label: 'Número do documento' },
+    { key: 'data_emissao', label: 'Data de emissão', type: 'date' },
+    { key: 'validade_ate', label: 'Validade até', type: 'date' },
     { key: 'observacoes', label: 'Observações' },
   ]},
 }
@@ -133,7 +167,10 @@ export default function RHIndustrial() {
     if (selectedTab === 'Cartão de ponto') request = request.gte('registrado_em', new Date(filterDate + 'T00:00:00').toISOString()).lt('registrado_em', new Date(new Date(filterDate + 'T00:00:00').getTime() + 86400000).toISOString()).order('registrado_em', { ascending: false })
     else if (selectedTab === 'Registro de faltas') request = request.order('data_inicio', { ascending: false })
     else if (selectedTab === 'Controle de treinamentos') request = request.order('data_treinamento', { ascending: false })
-    else request = request.order('inicio', { ascending: false })
+    else if (selectedTab === 'Férias e afastamentos') request = request.order('inicio', { ascending: false })
+    else if (selectedTab === 'Avaliações') request = request.order('data_avaliacao', { ascending: false })
+    else if (selectedTab === 'Acidentes') request = request.order('data_ocorrencia', { ascending: false })
+    else request = request.order('criado_em', { ascending: false })
     const { data, error } = await request
     if (error) throw error
     setRows((data ?? []) as Row[])
@@ -316,7 +353,7 @@ export default function RHIndustrial() {
         {schemas[tab].fields.map(field => <div key={field.key}><label htmlFor={field.key} className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-600">{field.label}{field.required ? ' *' : ''}</label>{fieldControl(field)}</div>)}
         <div className="flex items-end"><button disabled={busy} type="submit" className="inline-flex h-9 items-center gap-2 rounded-lg bg-sky-700 px-4 text-sm font-bold text-white disabled:opacity-60"><Save size={15}/> Gravar registro</button></div>
       </form>
-      <div className="overflow-x-auto border-t border-slate-200 p-4"><table className="w-full min-w-[760px] text-left text-xs"><thead className="bg-slate-100 text-[10px] uppercase text-slate-600"><tr><th className="p-3">Funcionário</th>{schemas[tab].fields.filter(field => field.key !== 'funcionario_id' && field.key !== 'observacoes' && field.key !== 'justificativa').slice(0,4).map(field => <th key={field.key} className="p-3">{field.label}</th>)}<th className="p-3">Anexo</th></tr></thead><tbody>{rows.map(row => <tr key={row.id} className="border-b border-slate-100"><td className="p-3 font-semibold">{staffName(row.funcionario_id)}</td>{schemas[tab].fields.filter(field => field.key !== 'funcionario_id' && field.key !== 'observacoes' && field.key !== 'justificativa').slice(0,4).map(field => <td key={field.key} className="p-3">{display(row[field.key])}</td>)}<td className="p-3">{(tab === 'Registro de faltas' || tab === 'Controle de treinamentos') && <label className="cursor-pointer font-semibold text-sky-700 underline">{row[tab === 'Registro de faltas' ? 'anexo_path' : 'certificado_path'] ? 'Substituir anexo' : 'Anexar arquivo'}<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" className="sr-only" onChange={event => { const file = event.target.files?.[0]; if (!file) return; if (file.size > 5 * 1024 * 1024) { setMessage('O arquivo deve ter no máximo 5 MB.'); return } void uploadOperationalAttachment(file, row.id, tab === 'Registro de faltas' ? 'anexo_path' : 'certificado_path').catch(error => setMessage(errorText(error))) }}/></label>}{tab !== 'Registro de faltas' && tab !== 'Controle de treinamentos' ? '—' : null}</td></tr>)}{rows.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-slate-500">{busy ? 'Carregando registros…' : 'Nenhum registro para os filtros atuais.'}</td></tr>}</tbody></table></div>
+      <div className="overflow-x-auto border-t border-slate-200 p-4"><table className="w-full min-w-[760px] text-left text-xs"><thead className="bg-slate-100 text-[10px] uppercase text-slate-600"><tr><th className="p-3">Funcionário</th>{schemas[tab].fields.filter(field => field.key !== 'funcionario_id' && field.key !== 'observacoes' && field.key !== 'justificativa').slice(0,4).map(field => <th key={field.key} className="p-3">{field.label}</th>)}<th className="p-3">Anexo</th></tr></thead><tbody>{rows.map(row => <tr key={row.id} className="border-b border-slate-100"><td className="p-3 font-semibold">{staffName(row.funcionario_id)}</td>{schemas[tab].fields.filter(field => field.key !== 'funcionario_id' && field.key !== 'observacoes' && field.key !== 'justificativa').slice(0,4).map(field => <td key={field.key} className="p-3">{display(row[field.key])}</td>)}<td className="p-3">{(tab === 'Registro de faltas' || tab === 'Controle de treinamentos') && <label className="cursor-pointer font-semibold text-sky-700 underline">{row[tab === 'Registro de faltas' ? 'anexo_path' : tab === 'Controle de treinamentos' ? 'certificado_path' : 'documento_path'] ? 'Substituir anexo' : 'Anexar arquivo'}<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" className="sr-only" onChange={event => { const file = event.target.files?.[0]; if (!file) return; if (file.size > 5 * 1024 * 1024) { setMessage('O arquivo deve ter no máximo 5 MB.'); return } void uploadOperationalAttachment(file, row.id, tab === 'Registro de faltas' ? 'anexo_path' : 'certificado_path').catch(error => setMessage(errorText(error))) }}/></label>}{tab !== 'Registro de faltas' && tab !== 'Controle de treinamentos' && tab !== 'Documentos' ? '—' : null}</td></tr>)}{rows.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-slate-500">{busy ? 'Carregando registros…' : 'Nenhum registro para os filtros atuais.'}</td></tr>}</tbody></table></div>
     </section>}
     <footer className="mt-4 flex items-center gap-2 text-[11px] text-slate-500"><UserRound size={13}/> Dados pessoais e anexos são restritos por empresa e sujeitos às políticas de acesso do Supabase.</footer>
   </main>
