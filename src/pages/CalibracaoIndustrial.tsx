@@ -145,7 +145,7 @@ const emptyCalibration = (): CalibrationForm => ({
   temperatura_lab_c: '', umidade_relativa_pct: '', rastreabilidade_padrao: '', desvio_historico: '',
   criterio_aceitacao: '',
 })
-const inputClass = 'h-[30px] min-w-0 w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-normal text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]'
+const inputClass = 'h-[30px] min-w-0 w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] font-normal text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]'
 const labelClass = 'grid min-w-0 gap-[2px] text-[9px] font-semibold uppercase tracking-[.04em] text-slate-600'
 const actionClass = 'inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] px-2.5 text-[10px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50'
 const lightActionClass = 'inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2.5 text-[10px] font-semibold text-slate-700 disabled:opacity-50'

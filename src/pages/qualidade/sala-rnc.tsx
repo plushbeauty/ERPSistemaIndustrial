@@ -28,7 +28,7 @@ const dispositions = [
   { value: 'REPROCESSAR', label: 'Reprocessar' },
   { value: 'DEVOLVER', label: 'Devolver ao fornecedor' }
 ] as const
-const fieldClass = 'h-[30px] min-h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-100'
+const fieldClass = 'h-[30px] min-h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-100'
 const areaClass = 'min-h-[74px] w-full resize-y rounded-[2px] border border-slate-300 bg-white px-2 py-1.5 text-[10px] leading-4 text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20'
 const labelClass = 'mb-1 flex min-h-[12px] items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-600'
 const buttonClass = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-bold text-white hover:bg-[#236f91] disabled:cursor-not-allowed disabled:opacity-50'
