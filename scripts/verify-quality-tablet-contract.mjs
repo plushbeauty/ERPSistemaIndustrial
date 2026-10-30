@@ -8,6 +8,8 @@ const checks = [
   [app.includes('path="/erp-industrial"'), 'O dashboard principal deve permanecer acessível.'],
   [app.includes('path="/fiscal"'), 'A Fiscal aprovada deve permanecer acessível como referência.'],
   [!app.includes('path="/qualidade/tablet"') && !app.includes('path="/qualidade/paquimetro-digital"'), 'Rotas operacionais antigas devem ficar fora da navegação durante o reset.'],
+  [app.includes('path="qualidade/ged-documentos"') && app.includes('path="/qualidade/ged-documentos"') && app.includes("import('./pages/FileTreeGED')"), 'O GED deve ter rota protegida no workspace e alias legado redirecionado.'],
+  [shell.includes("route: '/pageprincipal/qualidade/ged-documentos'") && shell.includes("label: 'Documentos / GED'"), 'O GED deve estar acessível no submenu de Qualidade.'],
 ]
 let failed = false
 for (const [ok, message] of checks) {
