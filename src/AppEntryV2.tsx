@@ -25,7 +25,7 @@ const FichaProcesso = lazy(() => import('./features/pcp/FichaProcesso'))
 const QualidadeRPNC = lazy(() => import('./pages/QualidadeRPNC'))
 const AdministracaoConfiguracoesGlobais = lazy(() => import('./pages/AdministracaoConfiguracoesGlobais'))
 const CentralAjuda = lazy(() => import('./pages/CentralAjuda'))
-const FinanceiroWorkspace = lazy(() => import('./pages/FinanceiroWorkspace'))
+const FinanceiroWorkspace = lazy(() => import('./modules/financeiro/pages/FinanceiroWorkspace'))
 
 function LoadingWorkspace() {
   return <main role="status" aria-live="polite" style={{ minHeight: '50vh', display: 'grid', placeItems: 'center', color: '#123b50', fontFamily: 'Inter,system-ui,sans-serif' }}>Carregando SYSNQRA ERP INDUSTRIAL…</main>
