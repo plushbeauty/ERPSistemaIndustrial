@@ -1,6 +1,12 @@
 /**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
  * SYSNQRA ERP · Área do Funcionário / CPP
- * Revisão: PCP-AREA-FUNCIONARIO-2026-10-22-R2
+ * @REVISAO_ANTERIOR: PCP-AREA-FUNCIONARIO-2026-10-22-R2
  * Acesso autenticado; programação filtrada pelo funcionário associado ao e-mail da sessão.
  * Registros enviados ao ERP: erp_apontamentos_processo. Sem dados de demonstração.
  */

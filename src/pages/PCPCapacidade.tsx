@@ -1,8 +1,14 @@
 /**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
  * =========================================================================
  * SYSNQRA SISTEMAS INDUSTRIAIS — PCP / CAPACIDADE
  * Arquivo: src/pages/PCPCapacidade.tsx
- * Revisão: PCP-CAPACIDADE-004 | 30/10/2026
+ * @REVISAO_ANTERIOR: PCP-CAPACIDADE-004 | 30/10/2026
  * Layout padrão ERP industrial (shell único, sem shell de tablet aninhado) e
  * degradação graciosa quando o banco ainda não tem as colunas de capacidade.
  * Dados reais Supabase/RLS por empresa. Sem máquinas ou cargas simuladas.
@@ -222,16 +228,7 @@ export default function PCPCapacidade() {
     <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900 md:p-5">
       <div className="mx-auto w-full max-w-[1560px] space-y-4">
         <header className={`${cardClass} flex flex-wrap items-center justify-between gap-3 p-4`}>
-          <div className="flex min-w-[280px] items-start gap-3">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#123B50] text-white shadow-sm">
-              <BarChart3 size={24} />
-            </span>
-            <div>
-              <p className="text-[11px] font-black uppercase tracking-wider text-[#2D8DB8]">ERP Industrial · PCP / Capacidade</p>
-              <h1 className="text-2xl font-black leading-tight text-[#123B50]">Carga de Máquina e Capacidade</h1>
-              <p className="mt-1 text-sm text-slate-600">Capacidade semanal cadastrada por equipamento e carga calculada a partir das horas estimadas das OPs abertas da empresa autenticada.</p>
-            </div>
-          </div>
+          <p className="text-[11px] font-black uppercase tracking-wider text-[#2D8DB8]">ERP Industrial · PCP / Capacidade</p>
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" className={`${buttonClass} border-slate-300 bg-white text-slate-800 hover:bg-slate-50`} onClick={() => setShowHelp(value => !value)}>
               <HelpCircle size={18} /> AJUDA DA PÁGINA
