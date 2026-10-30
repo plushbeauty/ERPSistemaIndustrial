@@ -36,8 +36,8 @@ const companyFields = [
   { key: 'logo_url', label: 'URL do logotipo corporativo', span: 'md:col-span-12' },
 ] as const
 
-export default function AdministracaoConfiguracoesGlobais() {
-  const [section, setSection] = useState<Section>('empresa')
+export default function AdministracaoConfiguracoesGlobais({ initialSection = 'empresa' }: { initialSection?: Section }) {
+  const [section, setSection] = useState<Section>(initialSection)
   const [company, setCompany] = useState<CompanyRow | null>(null)
   const [users, setUsers] = useState<UserRow[]>([])
   const [roles, setRoles] = useState<RoleRow[]>([])

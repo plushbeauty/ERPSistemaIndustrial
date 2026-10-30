@@ -81,6 +81,18 @@ jobs:
       - name: Routes
         run: npm run verify-routes
 
+      - name: Setup wizard contract
+        run: npm run verify:setup-wizard
+
+      - name: Industrial controls contract
+        run: npm run verify:industrial-controls
+
+      - name: Accounting journals contract
+        run: npm run verify:account-journals
+
+      - name: System parameters contract
+        run: npm run verify:system-parameters
+
       - name: Quality tablet regression contract
         run: npm run verify:quality-tablet-contract
       - name: Global horizontal shell regression contract

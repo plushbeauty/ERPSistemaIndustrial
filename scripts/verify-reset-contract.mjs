@@ -9,7 +9,7 @@ const shell = read('src/components/layout/ERPHorizontalShell.tsx')
 const checks = [
   ['Home/logo pública preservada', fs.existsSync('src/PublicIndustrialHome.tsx') && bootstrap.includes("import('./PublicIndustrialHome')")],
   ['Dashboard aprovado preservado', dashboard.includes("IndustrialCommandDashboard")],
-  ['Shell Windows 11 preservado', shell.includes('BarraWindows11') && shell.includes('erp-windows-topbar')],
+  ['Barra lateral vertical e cabeçalho preservados', shell.includes('erp-vertical-sidebar') && shell.includes('erp-windows-topbar') && !shell.includes('BarraWindows11')],
   ['Fiscal aprovada preservada como referência', fs.existsSync('src/pages/Fiscal.tsx') && app.includes('path="fiscal"') && app.includes('path="/fiscal"')],
   ['Page Principal é a área central única', fs.existsSync('src/pages/PagePrincipal.tsx') && app.includes('path="/pageprincipal"') && app.includes('path="pcp"') && app.includes('path="paquimetro"') && app.includes('path="fiscal"') && app.includes('path="*"')],
   ['Página administrativa Master preservada', fs.existsSync('src/pages/Master.tsx')],
@@ -22,4 +22,4 @@ const checks = [
 const failures = checks.filter(([, ok]) => !ok)
 for (const [label, ok] of checks) console.log(`${ok ? 'PASS' : 'FAIL'} — ${label}`)
 if (failures.length) process.exit(1)
-console.log('RESET CONTRACT PASS — shell, logo, dashboard, Page Principal, Master, Fiscal, Paquímetro e autenticação mantidos.')
+console.log('RESET CONTRACT PASS — sidebar vertical, logo, dashboard, Page Principal, Master, Fiscal, Paquímetro e autenticação mantidos.')

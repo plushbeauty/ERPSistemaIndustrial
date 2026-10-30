@@ -25,7 +25,8 @@ import './styles/visual-showcase-2026.css'
 const PublicIndustrialHome = lazyPage(() => import('./PublicIndustrialHome'), 'PublicIndustrialHome')
 const AppEntryV2 = lazyPage(() => import('./AppEntryV2'), 'AppEntryV2')
 const SetupADMInicial = lazyPage(() => import('./pages/SetupADMInicial'), 'SetupADMInicial')
-const publicPaths = new Set(['/','/home','/login','/planos'])
+const PublicCompanySetupWizard = lazyPage(() => import('./pages/PublicCompanySetupWizard'), 'PublicCompanySetupWizard')
+const publicPaths = new Set(['/','/home','/login','/planos','/cadastro-empresa','/configuracao-inicial','/pageprincipal/configuracao-inicial'])
 
 class BootstrapBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state = { error: null as Error | null }
@@ -126,6 +127,9 @@ export default function AppBootstrap() {
   const path = window.location.pathname
   if (path === '/login') return <BootstrapBoundary><LoginBootstrap /></BootstrapBoundary>
   if (path === '/cadastro-master') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo cadastro Master…" />}><SetupADMInicial /></Suspense></BootstrapBoundary>
+  if (path === '/cadastro-empresa') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo configuração inicial da empresa…" />}><PublicCompanySetupWizard /></Suspense></BootstrapBoundary>
+  if (path === '/configuracao-inicial') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo configuração inicial da empresa…" />}><PublicCompanySetupWizard /></Suspense></BootstrapBoundary>
+  if (path === '/pageprincipal/configuracao-inicial') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo cadastro da empresa…" />}><PublicCompanySetupWizard /></Suspense></BootstrapBoundary>
   if (path === '/' || path === '/home') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo SYSNQRA ERP & SGQ INDUSTRIAL…" />}><PublicIndustrialHome /></Suspense></BootstrapBoundary>
   const app = <BootstrapBoundary><Suspense fallback={<Loading />}><AppEntryV2 /></Suspense></BootstrapBoundary>
   const isPublic = publicPaths.has(path) || path.startsWith('/modulos/')

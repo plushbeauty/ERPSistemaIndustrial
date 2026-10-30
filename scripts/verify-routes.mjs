@@ -47,7 +47,7 @@ for (const [, route, component] of routeMatches) {
 }
 
 const declaredRoutes = new Set(routeMatches.map(([, route]) => route))
-const newMenuEntries = [...moduleMenu.matchAll(/\{\s*label:\s*'[^']+'\s*,\s*route:\s*'([^']+)'[^}]*isNew:\s*true[^}]*\}/g)]
+const newMenuEntries = [...moduleMenu.matchAll(/\{\s*label:\s*'[^']+'\s*,\s*route:\s*'([^']+)'\s*,\s*icon:\s*[A-Z][A-Za-z0-9]*\s*,\s*isNew:\s*true[^}]*\}/g)]
 for (const [entry, route] of newMenuEntries) {
   const handledByPathResolver = new RegExp(`path\\s*===\\s*['"]${route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`).test(app)
   if (!declaredRoutes.has(route) && !handledByPathResolver) failures.push(`New menu entry ${route} has no matching application route.`)

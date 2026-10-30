@@ -20,14 +20,37 @@ const anon = Deno.env.get('SUPABASE_ANON_KEY')!
 const service = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const admin = createClient(supabaseUrl, service, { auth: { autoRefreshToken: false, persistSession: false } })
 
-function passwordIsStrong(value: string) {
-  return value.length >= 12
-    && /[A-Z]/.test(value)
+type PasswordPolicy = { comprimento_minimo: number; exigir_maiuscula: boolean; exigir_numero: boolean }
+
+async function loadPasswordPolicy(): Promise<PasswordPolicy> {
+  const { data, error } = await admin
+    .from('erp_sistema_politica_senha')
+    .select('comprimento_minimo, exigir_maiuscula, exigir_numero')
+    .eq('singleton', true)
+    .single()
+  if (error || !data) throw new Error('PASSWORD_POLICY_UNAVAILABLE')
+  return data as PasswordPolicy
+}
+
+function passwordIsStrong(value: string, policy: PasswordPolicy) {
+  return value.length >= policy.comprimento_minimo
+    && (!policy.exigir_maiuscula || /[A-Z]/.test(value))
+    && (!policy.exigir_numero || /\d/.test(value))
     && /[a-z]/.test(value)
-    && /\d/.test(value)
     && /[^A-Za-z0-9]/.test(value)
 }
-function randomPassword() {
+
+function passwordPolicyMessage(policy: PasswordPolicy) {
+  const requirements = [
+    policy.exigir_maiuscula ? 'uma letra maiúscula' : '',
+    policy.exigir_numero ? 'um número' : '',
+    'uma letra minúscula',
+    'um símbolo',
+  ].filter(Boolean)
+  return `A senha deve ter pelo menos ${policy.comprimento_minimo} caracteres e conter ${requirements.join(', ')}.`
+}
+
+function randomPassword(minimumLength = 16) {
   const groups = [
     'ABCDEFGHJKLMNPQRSTUVWXYZ',
     'abcdefghijkmnopqrstuvwxyz',
@@ -41,7 +64,7 @@ function randomPassword() {
     return source[values[0] % source.length]
   }
   const characters = groups.map(pick)
-  for (let index = 0; index < 12; index += 1) characters.push(pick(alphabet))
+  for (let index = 0; index < Math.max(12, minimumLength - characters.length); index += 1) characters.push(pick(alphabet))
   for (let index = characters.length - 1; index > 0; index -= 1) {
     const target = new Uint32Array(1)
     crypto.getRandomValues(target)
@@ -114,7 +137,8 @@ Deno.serve(async (req) => {
       const password = String(body.password || '')
       const nome = String(body.nome || '').trim()
       if (!email || !password || nome.length < 3) return json({ error: 'Nome e senha são obrigatórios.' }, 400)
-      if (!passwordIsStrong(password)) return json({ error: 'A senha deve ter pelo menos 12 caracteres, maiúsculas, minúsculas, números e símbolos.' }, 400)
+      const policy = await loadPasswordPolicy()
+      if (!passwordIsStrong(password, policy)) return json({ error: passwordPolicyMessage(policy) }, 400)
 
       const { data: invite, error: inviteError } = await admin
         .from('erp_convites_acesso')
@@ -196,7 +220,8 @@ Deno.serve(async (req) => {
     if (action === 'change_my_password') {
       const currentPassword = String(body.currentPassword || '')
       const newPassword = String(body.newPassword || '')
-      if (!passwordIsStrong(newPassword)) return json({ error: 'A nova senha deve ter pelo menos 12 caracteres, maiúsculas, minúsculas, números e símbolos.' }, 400)
+      const policy = await loadPasswordPolicy()
+      if (!passwordIsStrong(newPassword, policy)) return json({ error: passwordPolicyMessage(policy) }, 400)
       if (!authData.user.email) return json({ error: 'O usuário autenticado não possui e-mail.' }, 400)
       const verify = createClient(supabaseUrl, anon)
       const check = await verify.auth.signInWithPassword({ email: authData.user.email, password: currentPassword })
@@ -246,6 +271,7 @@ Deno.serve(async (req) => {
 
       let authUserId = ''
       let temporaryPassword: string | null = null
+      const policy = await loadPasswordPolicy()
       if (action === 'invite_user') {
         const { data: pending } = await admin
           .from('erp_convites_acesso')
@@ -258,7 +284,7 @@ Deno.serve(async (req) => {
 
         const created = await admin.auth.admin.createUser({
           email,
-          password: randomPassword(),
+          password: randomPassword(policy.comprimento_minimo),
           email_confirm: true,
           user_metadata: { nome, invited_user: true, must_change_password: true, empresa_id: empresaId },
           app_metadata: { empresa_id: empresaId, role: roleCode, is_master: false },
@@ -303,8 +329,8 @@ Deno.serve(async (req) => {
         return json({ ok: true, invited: true, audit_warning: auditWarning, message: 'Código de acesso enviado ao e-mail. O usuário deve abrir /ativar-acesso e informar o código recebido.' })
       }
 
-      const password = String(body.password || randomPassword())
-      if (!passwordIsStrong(password)) return json({ error: 'A senha deve ter pelo menos 12 caracteres e conter maiúsculas, minúsculas, números e símbolos.' }, 400)
+      const password = String(body.password || randomPassword(policy.comprimento_minimo))
+      if (!passwordIsStrong(password, policy)) return json({ error: passwordPolicyMessage(policy) }, 400)
       const created = await admin.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { must_change_password: !body.password, empresa_id: empresaId } })
       if (created.error || !created.data.user) return json({ error: created.error?.message || 'Não foi possível criar o usuário Auth.' }, 400)
       authUserId = created.data.user.id
@@ -346,7 +372,9 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'reset_password') {
-      const temporaryPassword = randomPassword()
+      const policy = await loadPasswordPolicy()
+      const temporaryPassword = randomPassword(policy.comprimento_minimo)
+      if (!passwordIsStrong(temporaryPassword, policy)) throw new Error('PASSWORD_GENERATION_POLICY_MISMATCH')
       const targetAuth = await admin.auth.admin.getUserById(target.auth_user_id || target.id)
       if (targetAuth.error || !targetAuth.data.user) return json({ error: targetAuth.error?.message || 'Identidade Auth não encontrada.' }, 404)
       const changed = await admin.auth.admin.updateUserById(target.auth_user_id || target.id, {
