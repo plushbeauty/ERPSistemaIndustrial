@@ -1,0 +1,259 @@
+/*
+ * SYSNQRA ERP INDUSTRIAL — PADRÃO VISUAL GLOBAL
+ * @DATA_REVISAO_APROVACAO 30/10/2026
+ * @STATUS_APROVACAO Em validação global
+ * @REVISAO REV-UI-CONSISTENCY-20261030
+ * Compatível com Tailwind CSS 3.4 — CSS puro, sem diretivas Tailwind 4.
+ * Escopo: áreas operacionais autenticadas; não altera fluxos, dados ou permissões.
+ */
+:root {
+  --erp-ui-bg: oklch(0.975 0.008 240);
+  --erp-ui-surface: oklch(1 0 0);
+  --erp-ui-surface-muted: oklch(0.958 0.012 240);
+  --erp-ui-ink: oklch(0.27 0.045 245);
+  --erp-ui-muted: oklch(0.53 0.035 245);
+  --erp-ui-primary: oklch(0.56 0.105 232);
+  --erp-ui-primary-hover: oklch(0.49 0.11 232);
+  --erp-ui-primary-ink: oklch(1 0 0);
+  --erp-ui-border: oklch(0.88 0.02 240);
+  --erp-ui-input: oklch(0.91 0.016 240);
+  --erp-ui-success: oklch(0.56 0.13 160);
+  --erp-ui-success-bg: oklch(0.96 0.035 160);
+  --erp-ui-warning: oklch(0.68 0.14 68);
+  --erp-ui-warning-bg: oklch(0.97 0.04 85);
+  --erp-ui-danger: oklch(0.56 0.19 25);
+  --erp-ui-danger-bg: oklch(0.965 0.035 25);
+  --erp-ui-info: oklch(0.58 0.12 235);
+  --erp-ui-radius: 2px;
+  --erp-ui-control-height: 32px;
+}
+.dark,
+.theme-dark,
+[data-theme="dark"] {
+  --erp-ui-bg: oklch(0.19 0.03 245);
+  --erp-ui-surface: oklch(0.23 0.035 245);
+  --erp-ui-surface-muted: oklch(0.27 0.035 245);
+  --erp-ui-ink: oklch(0.96 0.008 240);
+  --erp-ui-muted: oklch(0.73 0.025 240);
+  --erp-ui-border: oklch(0.38 0.03 245);
+  --erp-ui-input: oklch(0.32 0.03 245);
+  --erp-ui-primary: oklch(0.68 0.105 232);
+  --erp-ui-primary-hover: oklch(0.73 0.11 232);
+  --erp-ui-primary-ink: oklch(0.18 0.035 245);
+  --erp-ui-success-bg: oklch(0.29 0.055 160);
+  --erp-ui-warning-bg: oklch(0.31 0.055 75);
+  --erp-ui-danger-bg: oklch(0.30 0.065 25);
+}
+
+/* Superfícies e tipografia comuns dos módulos. */
+.v7-main,
+.module-workspace,
+.module-workspace-v3,
+.erp-page,
+.erp-module-page {
+  color: var(--erp-ui-ink);
+}
+.v7-main .erp-card,
+.module-workspace .erp-card,
+.module-workspace-v3 .erp-card,
+.erp-page .erp-card,
+.erp-module-page .erp-card,
+.v7-main .erp-panel,
+.v7-main .module-card {
+  border: 1px solid var(--erp-ui-border);
+  border-radius: var(--erp-ui-radius);
+  background: var(--erp-ui-surface);
+  color: var(--erp-ui-ink);
+  box-shadow: 0 1px 3px oklch(0.2 0.03 245 / 7%);
+}
+.v7-main .erp-label,
+.module-workspace .erp-label,
+.module-workspace-v3 .erp-label,
+.erp-page .erp-label {
+  color: var(--erp-ui-muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+/* Botão padrão: neutro. Evita cores arbitrárias em ações secundárias. */
+.v7-main .erp-btn,
+.v7-main .mw3-btn,
+.v7-main .secondary-v2,
+.v7-main button.erp-secondary,
+.v7-main button[data-variant="secondary"] {
+  min-height: var(--erp-ui-control-height);
+  border: 1px solid var(--erp-ui-border);
+  border-radius: var(--erp-ui-radius);
+  background: var(--erp-ui-surface);
+  color: var(--erp-ui-ink);
+  box-shadow: none;
+  font-weight: 700;
+}
+.v7-main .erp-btn:hover,
+.v7-main .mw3-btn:hover,
+.v7-main .secondary-v2:hover,
+.v7-main button.erp-secondary:hover,
+.v7-main button[data-variant="secondary"]:hover {
+  border-color: var(--erp-ui-primary);
+  background: var(--erp-ui-surface-muted);
+  color: var(--erp-ui-ink);
+}
+
+/* Ação principal — sempre azul institucional. */
+.v7-main .erp-btn-primary,
+.v7-main .mw3-btn.primary,
+.v7-main .industrial-primary,
+.v7-main .menu-green,
+.v7-main button.erp-primary,
+.v7-main button[data-variant="primary"],
+.v7-main button[class~="primary"],
+.v7-main a.erp-btn-primary {
+  min-height: var(--erp-ui-control-height);
+  border: 1px solid var(--erp-ui-primary);
+  border-radius: var(--erp-ui-radius);
+  background: var(--erp-ui-primary);
+  color: var(--erp-ui-primary-ink);
+  box-shadow: none;
+  font-weight: 800;
+}
+.v7-main .erp-btn-primary:hover,
+.v7-main .mw3-btn.primary:hover,
+.v7-main .industrial-primary:hover,
+.v7-main .menu-green:hover,
+.v7-main button.erp-primary:hover,
+.v7-main button[data-variant="primary"]:hover,
+.v7-main button[class~="primary"]:hover {
+  border-color: var(--erp-ui-primary-hover);
+  background: var(--erp-ui-primary-hover);
+  color: var(--erp-ui-primary-ink);
+}
+
+/* Ações destrutivas e de conclusão conservam semântica, não viram decoração. */
+.v7-main button.danger,
+.v7-main button.destructive,
+.v7-main button[data-variant="destructive"],
+.v7-main .erp-btn-danger {
+  border-color: var(--erp-ui-danger);
+  background: var(--erp-ui-danger);
+  color: oklch(1 0 0);
+}
+.v7-main button.success,
+.v7-main button[data-variant="success"],
+.v7-main .erp-btn-success {
+  border-color: var(--erp-ui-success);
+  background: var(--erp-ui-success);
+  color: oklch(1 0 0);
+}
+
+/* Inputs: altura, raio, borda e foco uniformes. */
+.v7-main input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+.v7-main select,
+.v7-main textarea,
+.module-workspace input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+.module-workspace select,
+.module-workspace textarea,
+.module-workspace-v3 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+.module-workspace-v3 select,
+.module-workspace-v3 textarea,
+.erp-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+.erp-page select,
+.erp-page textarea {
+  min-width: 0;
+  border: 1px solid var(--erp-ui-input);
+  border-radius: var(--erp-ui-radius);
+  background: var(--erp-ui-surface);
+  color: var(--erp-ui-ink);
+  box-shadow: none;
+}
+.v7-main input:focus,
+.v7-main select:focus,
+.v7-main textarea:focus,
+.module-workspace input:focus,
+.module-workspace select:focus,
+.module-workspace textarea:focus,
+.module-workspace-v3 input:focus,
+.module-workspace-v3 select:focus,
+.module-workspace-v3 textarea:focus {
+  border-color: var(--erp-ui-primary);
+  outline: none;
+  box-shadow: 0 0 0 2px oklch(0.56 0.105 232 / 18%);
+}
+
+/* Cabeçalhos de tabela e linhas com contraste consistente. */
+.v7-main table thead th,
+.module-workspace table thead th,
+.module-workspace-v3 table thead th,
+.erp-page table thead th {
+  border-bottom: 1px solid var(--erp-ui-border);
+  background: var(--erp-ui-surface-muted);
+  color: var(--erp-ui-muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+.v7-main table tbody td,
+.module-workspace table tbody td,
+.module-workspace-v3 table tbody td,
+.erp-page table tbody td {
+  border-bottom-color: var(--erp-ui-border);
+  color: var(--erp-ui-ink);
+}
+.v7-main table tbody tr:hover,
+.module-workspace table tbody tr:hover,
+.module-workspace-v3 table tbody tr:hover,
+.erp-page table tbody tr:hover {
+  background: oklch(0.56 0.105 232 / 5%);
+}
+
+/* Abas operacionais: um único indicador azul; sem botões coloridos concorrentes. */
+.v7-main .erp-tab,
+.v7-main .mw3-tabs button,
+.v7-main .industrial-tabs button,
+.v7-main [role="tab"] {
+  border-radius: var(--erp-ui-radius);
+  color: var(--erp-ui-muted);
+}
+.v7-main .erp-tab-active,
+.v7-main .mw3-tabs button.active,
+.v7-main .industrial-tabs button.active,
+.v7-main [role="tab"][aria-selected="true"] {
+  border-color: var(--erp-ui-primary);
+  background: var(--erp-ui-surface);
+  color: var(--erp-ui-primary);
+}
+
+/* Não alterar altura/cores de controles compactos de ícone, status, paginação e navegação. */
+.v7-main button.icon-button,
+.v7-main button[aria-label],
+.v7-main button[title],
+.v7-main .status,
+.v7-main .badge,
+.v7-main [role="status"] {
+  min-width: 0;
+}
+.v7-main button:disabled,
+.module-workspace button:disabled,
+.module-workspace-v3 button:disabled {
+  cursor: not-allowed;
+  opacity: .52;
+}
+@media (max-width: 640px) {
+  .v7-main .erp-btn,
+  .v7-main .erp-btn-primary,
+  .v7-main .mw3-btn,
+  .v7-main button.erp-primary,
+  .v7-main button.erp-secondary { min-height: 36px; }
+}
+
+
+/* Extensão global para o workspace autenticado SYSNQRA. */
+.synqra-module-shell,.erp-global-surface .erp-page,.erp-global-surface .module-workspace{color:var(--erp-ui-ink);min-width:0;max-width:100%;}
+.synqra-module-shell .erp-card,.synqra-module-shell .erp-panel,.synqra-module-shell .module-card{border:1px solid var(--erp-ui-border);border-radius:2px;background:var(--erp-ui-surface);color:var(--erp-ui-ink);box-shadow:0 1px 3px oklch(0.2 0.03 245 / 7%);}
+.synqra-module-shell .erp-label{color:var(--erp-ui-muted);font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;}
+.synqra-module-shell input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),.synqra-module-shell select,.synqra-module-shell textarea{min-width:0;max-width:100%;border-radius:2px;border-color:var(--erp-ui-input);background:var(--erp-ui-surface);color:var(--erp-ui-ink);}
+.synqra-module-shell button.erp-btn,.synqra-module-shell .erp-btn,.synqra-module-shell .erp-btn-primary{min-height:32px;border-radius:2px;font-size:12px;font-weight:700;}
+.synqra-module-shell table thead th{background:var(--erp-ui-surface-muted);color:var(--erp-ui-muted);font-size:10px;font-weight:800;letter-spacing:.045em;text-transform:uppercase;}
+.synqra-module-shell table tbody td{color:var(--erp-ui-ink);border-bottom-color:var(--erp-ui-border);}
