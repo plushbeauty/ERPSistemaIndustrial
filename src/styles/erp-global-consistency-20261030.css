@@ -257,3 +257,104 @@
 .synqra-module-shell button.erp-btn,.synqra-module-shell .erp-btn,.synqra-module-shell .erp-btn-primary{min-height:32px;border-radius:2px;font-size:12px;font-weight:700;}
 .synqra-module-shell table thead th{background:var(--erp-ui-surface-muted);color:var(--erp-ui-muted);font-size:10px;font-weight:800;letter-spacing:.045em;text-transform:uppercase;}
 .synqra-module-shell table tbody td{color:var(--erp-ui-ink);border-bottom-color:var(--erp-ui-border);}
+
+
+/* Aplicação real do padrão em todas as páginas dentro do workspace autenticado.
+   Mantém o Tailwind 3.4 do projeto; os tokens OKLCH são os mesmos do CSS fornecido. */
+.erp-horizontal-workspace {
+  background: var(--erp-ui-bg);
+  color: var(--erp-ui-ink);
+}
+.erp-horizontal-workspace .erp-card,
+.erp-horizontal-workspace .erp-panel,
+.erp-horizontal-workspace .module-card,
+.erp-horizontal-workspace .crud-list,
+.erp-horizontal-workspace .crud-table-wrap,
+.erp-horizontal-workspace section.rounded-xl,
+.erp-horizontal-workspace section.rounded-2xl {
+  border: 1px solid var(--erp-ui-border);
+  border-radius: 2px;
+  background: var(--erp-ui-surface);
+  color: var(--erp-ui-ink);
+  box-shadow: 0 1px 2px oklch(0.2 0.03 245 / 6%);
+}
+.erp-horizontal-workspace input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+.erp-horizontal-workspace select,
+.erp-horizontal-workspace textarea {
+  min-width: 0;
+  max-width: 100%;
+  border: 1px solid var(--erp-ui-input);
+  border-radius: 2px;
+  background: var(--erp-ui-surface);
+  color: var(--erp-ui-ink);
+  font-size: 12px;
+}
+.erp-horizontal-workspace input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+.erp-horizontal-workspace select {
+  min-height: 32px;
+}
+.erp-horizontal-workspace input:focus,
+.erp-horizontal-workspace select:focus,
+.erp-horizontal-workspace textarea:focus {
+  border-color: var(--erp-ui-primary);
+  outline: none;
+  box-shadow: 0 0 0 2px oklch(0.56 0.105 232 / 18%);
+}
+.erp-horizontal-workspace label {
+  color: var(--erp-ui-muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .045em;
+}
+.erp-horizontal-workspace button:not(.w11-btn):not(.w11-app):not(.w11-ico):not([aria-label]) {
+  border-radius: 2px;
+}
+.erp-horizontal-workspace table {
+  max-width: 100%;
+  border-collapse: collapse;
+}
+.erp-horizontal-workspace table thead th {
+  border-bottom: 1px solid var(--erp-ui-border);
+  background: var(--erp-ui-surface-muted);
+  color: var(--erp-ui-muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+.erp-horizontal-workspace table tbody td {
+  border-bottom-color: var(--erp-ui-border);
+  color: var(--erp-ui-ink);
+}
+.erp-horizontal-workspace .erp-btn,
+.erp-horizontal-workspace .erp-btn-primary {
+  display: inline-flex;
+  min-height: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--erp-ui-border);
+  border-radius: 2px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.erp-horizontal-workspace .erp-btn-primary {
+  border-color: var(--erp-ui-primary);
+  background: var(--erp-ui-primary);
+  color: var(--erp-ui-primary-ink);
+}
+.erp-horizontal-workspace .erp-label {
+  color: var(--erp-ui-muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+@media (max-width: 640px) {
+  .erp-horizontal-workspace { padding: 6px; }
+  .erp-horizontal-workspace input,
+  .erp-horizontal-workspace select,
+  .erp-horizontal-workspace button { max-width: 100%; }
+}
