@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, CheckCircle2, ClipboardList, CreditCard, FilePlus2, RefreshCw, Search, XCircle } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import ComprasPedidoForm from './ComprasPedidoForm'
