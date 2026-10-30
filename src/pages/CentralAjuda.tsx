@@ -2,6 +2,10 @@ import { ArrowRight, BookOpen, Factory, FileText, Package, Settings, ShieldCheck
 import { useNavigate } from 'react-router-dom'
 
 const groups = [
+  { title: 'Acesso e Chão de Fábrica', icon: ShieldCheck, items: [
+    { name: 'Login Operador / Administração', route: '/login-operador', purpose: 'Autenticar com Supabase Auth; o perfil OPERADOR_FABRIL acessa o Tablet e os demais perfis seguem para o ERP.' },
+    { name: 'Painel Tablet', route: '/tablet/dashboard', purpose: 'Acompanhar e registrar atividades de produção conforme as permissões do operador.' },
+  ]},
   { title: 'Compras', icon: ShoppingCart, items: [
     { name: 'Central de Compras', route: '/pageprincipal/compras', purpose: 'Gerenciar solicitações, cotações, pedidos e fornecedores.' },
     { name: 'Solicitação de Compra', route: '/pageprincipal/compras/solicitacao', purpose: 'Registrar necessidades de aquisição e encaminhar para aprovação.' },
