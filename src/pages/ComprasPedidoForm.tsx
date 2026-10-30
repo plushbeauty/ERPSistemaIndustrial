@@ -47,7 +47,7 @@ export default function ComprasPedidoForm({ onCancel, onSaved, orderId = null }:
       if (orderId) {
         const [orderResult, itemResult] = await Promise.all([
           supabase.from('erp_pedidos_compra').select('id,fornecedor_id,comprador_nome,condicao_pagamento,prazo_entrega,observacoes,status').eq('empresa_id', empresaId).eq('id', orderId).maybeSingle(),
-          supabase.from('erp_pedidos_compra_itens').select('produto_id,quantidade,unidade,preco_unitario,aliquota_ipi,aliquota_icms,centro_custo').eq('empresa_id', empresaId).eq('pedido_id', orderId).order('created_at', { ascending: true }),
+          supabase.from('erp_pedidos_compra_itens').select('produto_id,quantidade,unidade,preco_unitario,aliquota_ipi,aliquota_icms,centro_custo').eq('empresa_id', empresaId).eq('pedido_id', orderId),
         ])
         if (orderResult.error) setError('Falha ao carregar o pedido para edição: ' + orderResult.error.message)
         else if (!orderResult.data) setError('Pedido não encontrado nesta empresa ou sem acesso para edição.')
@@ -55,7 +55,10 @@ export default function ComprasPedidoForm({ onCancel, onSaved, orderId = null }:
           const order = orderResult.data as Row
           setHeader(current => ({ ...current, fornecedorId: asText(order, 'fornecedor_id'), comprador: asText(order, 'comprador_nome'), condicao: asText(order, 'condicao_pagamento'), entrega: asText(order, 'prazo_entrega'), observacoes: asText(order, 'observacoes'), status: asText(order, 'status') === 'PENDENTE_APROVACAO' ? 'PENDENTE_APROVACAO' : 'RASCUNHO' }))
           if (itemResult.error) setError('Falha ao carregar os itens do pedido: ' + itemResult.error.message)
-          else setItems(((itemResult.data ?? []) as Row[]).map(row => ({ key: crypto.randomUUID(), produtoId: asText(row, 'produto_id'), quantidade: asText(row, 'quantidade'), unidade: asText(row, 'unidade') || 'UN', preco: asText(row, 'preco_unitario') || '0', ncm: '', entrega: '', ordemProducaoId: '', centroCusto: asText(row, 'centro_custo'), ipi: asText(row, 'aliquota_ipi') || '0', icms: asText(row, 'aliquota_icms') || '0' })).length ? ((itemResult.data ?? []) as Row[]).map(row => ({ key: crypto.randomUUID(), produtoId: asText(row, 'produto_id'), quantidade: asText(row, 'quantidade'), unidade: asText(row, 'unidade') || 'UN', preco: asText(row, 'preco_unitario') || '0', ncm: '', entrega: '', ordemProducaoId: '', centroCusto: asText(row, 'centro_custo'), ipi: asText(row, 'aliquota_ipi') || '0', icms: asText(row, 'aliquota_icms') || '0' })) : [initialItem()])
+          else {
+            const loadedItems = ((itemResult.data ?? []) as Row[]).map(row => ({ key: crypto.randomUUID(), produtoId: asText(row, 'produto_id'), quantidade: asText(row, 'quantidade'), unidade: asText(row, 'unidade') || 'UN', preco: asText(row, 'preco_unitario') || '0', ncm: '', entrega: '', ordemProducaoId: '', centroCusto: asText(row, 'centro_custo'), ipi: asText(row, 'aliquota_ipi') || '0', icms: asText(row, 'aliquota_icms') || '0' }))
+            setItems(loadedItems.length ? loadedItems : [initialItem()])
+          }
         }
       }
       setLoadingRefs(false)
