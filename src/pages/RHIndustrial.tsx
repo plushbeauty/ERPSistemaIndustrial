@@ -122,6 +122,7 @@ export default function RHIndustrial() {
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [filterDate, setFilterDate] = useState(new Date().toISOString().slice(0, 10))
+  const [overviewStats, setOverviewStats] = useState({ pointToday: 0, pendingTrainings: 0, absences: 0, evaluations: 0, accidents: 0, documents: 0 })
 
   const employeeFields: Field[] = useMemo(() => [
     { key: 'nome_completo', label: 'Nome completo do colaborador', required: true },
@@ -170,6 +171,19 @@ export default function RHIndustrial() {
     try {
       await loadStaff(tenant)
       await loadRows(selectedTab, tenant)
+      const dayStart = new Date().toISOString().slice(0, 10) + 'T00:00:00'
+      const dayEnd = new Date(new Date(dayStart).getTime() + 86400000).toISOString()
+      const [point, training, absence, evaluation, accident, document] = await Promise.all([
+        supabase.from('erp_rh_ponto_eventos').select('id', { count: 'exact', head: true }).eq('empresa_id', tenant).gte('registrado_em', new Date(dayStart).toISOString()).lt('registrado_em', dayEnd),
+        supabase.from('erp_rh_treinamentos_registros').select('id', { count: 'exact', head: true }).eq('empresa_id', tenant).in('status', ['PENDENTE', 'VENCIDO', 'REPROVADO']),
+        supabase.from('erp_rh_faltas').select('id', { count: 'exact', head: true }).eq('empresa_id', tenant).eq('status', 'PENDENTE'),
+        supabase.from('erp_rh_avaliacoes').select('id', { count: 'exact', head: true }).eq('empresa_id', tenant),
+        supabase.from('erp_rh_acidentes').select('id', { count: 'exact', head: true }).eq('empresa_id', tenant).neq('status', 'ENCERRADO'),
+        supabase.from('erp_rh_documentos').select('id', { count: 'exact', head: true }).eq('empresa_id', tenant),
+      ])
+      const countErrors = [point, training, absence, evaluation, accident, document].filter(result => result.error)
+      if (countErrors.length) throw countErrors[0].error
+      setOverviewStats({ pointToday: point.count ?? 0, pendingTrainings: training.count ?? 0, absences: absence.count ?? 0, evaluations: evaluation.count ?? 0, accidents: accident.count ?? 0, documents: document.count ?? 0 })
       setMessage('')
     } catch (error) {
       setMessage(errorText(error))
@@ -308,7 +322,7 @@ export default function RHIndustrial() {
 
     {message && <div role="status" className={`mb-4 flex items-start gap-2 rounded-lg border px-3 py-2 text-sm ${/sucesso|salvo|gravado|enviado/i.test(message) ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-amber-200 bg-amber-50 text-amber-900'}`}>{message}</div>}
 
-    {tab === 'Visão geral' ? <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4"><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><Users className="mb-2 text-sky-700" size={19}/><p className="text-xs text-slate-500">Funcionários cadastrados</p><strong className="text-2xl">{staff.length}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CheckCircle2 className="mb-2 text-emerald-700" size={19}/><p className="text-xs text-slate-500">Colaboradores ativos</p><strong className="text-2xl">{activeCount}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><Clock3 className="mb-2 text-amber-700" size={19}/><p className="text-xs text-slate-500">Eventos de ponto</p><strong className="text-2xl">—</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><GraduationCap className="mb-2 text-violet-700" size={19}/><p className="text-xs text-slate-500">Treinamentos pendentes</p><strong className="text-2xl">—</strong></article></section> : tab === 'Funcionários' ? <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    {tab === 'Visão geral' ? <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4"><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><Users className="mb-2 text-sky-700" size={19}/><p className="text-xs text-slate-500">Funcionários cadastrados</p><strong className="text-2xl">{staff.length}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CheckCircle2 className="mb-2 text-emerald-700" size={19}/><p className="text-xs text-slate-500">Colaboradores ativos</p><strong className="text-2xl">{activeCount}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><Clock3 className="mb-2 text-amber-700" size={19}/><p className="text-xs text-slate-500">Eventos de ponto</p><strong className="text-2xl">{overviewStats.pointToday}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><GraduationCap className="mb-2 text-violet-700" size={19}/><p className="text-xs text-slate-500">Treinamentos pendentes</p><strong className="text-2xl">{overviewStats.pendingTrainings}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CalendarDays className="mb-2 text-amber-700" size={19}/><p className="text-xs text-slate-500">Ausências pendentes</p><strong className="text-2xl">{overviewStats.absences}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CheckCircle2 className="mb-2 text-violet-700" size={19}/><p className="text-xs text-slate-500">Avaliações registradas</p><strong className="text-2xl">{overviewStats.evaluations}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CalendarDays className="mb-2 text-rose-700" size={19}/><p className="text-xs text-slate-500">Acidentes em aberto</p><strong className="text-2xl">{overviewStats.accidents}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><FileText className="mb-2 text-slate-700" size={19}/><p className="text-xs text-slate-500">Documentos cadastrados</p><strong className="text-2xl">{overviewStats.documents}</strong></article></section> : tab === 'Funcionários' ? <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-200 bg-slate-100 px-4 py-3"><h2 className="font-bold text-slate-900">{editingId ? 'Editar colaborador' : 'Cadastro de colaborador'}</h2><p className="mt-1 text-xs text-slate-500">Campos compactos, medidas conforme especificação; foto 3×4 protegida por empresa.</p></div>
       <form onSubmit={saveEmployee} className="p-4 md:p-5">
         <div className="mb-4 flex items-start gap-4">
