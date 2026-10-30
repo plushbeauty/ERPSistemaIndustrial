@@ -215,7 +215,7 @@ export default function RHIndustrial() {
   const startNew = () => {
     if (tab === 'Visão geral') return
     setEditingId(null)
-    setForm(tab === 'Funcionários' ? blank(employeeFields) : tab === 'Visão geral' ? {} : blank(schemas[tab as Exclude<Tab, 'Funcionários' | 'Visão geral'>].fields))
+    setForm(tab === 'Funcionários' ? blank(employeeFields) : blank(schemas[tab as Exclude<Tab, 'Funcionários' | 'Visão geral'>].fields))
     setPhoto(null); setPhotoUrl(''); setMessage('')
   }
   const editStaff = async (person: Staff) => {
