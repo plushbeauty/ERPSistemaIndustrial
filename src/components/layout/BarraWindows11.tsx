@@ -63,7 +63,7 @@ export function BarraWindows11({ ativo = "home", onAbrir, onDesligar }: { ativo?
             <LayoutGrid size={20} color="#0078d4" />
           </button>
           <button className="w11-btn" aria-label="Pesquisar" onClick={() => setMenu(true)}><Search size={18} /></button>
-          {APPS.slice(0, 6).map((a) => (
+          {APPS.map((a) => (
             <button key={a.id} className={`w11-btn ${ativo === a.id ? "ativo" : ""}`} title={a.nome} onClick={() => abrir(a.id)}>
               <a.icone size={20} color={a.cor} />
             </button>
