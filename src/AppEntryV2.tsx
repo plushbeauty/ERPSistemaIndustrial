@@ -38,7 +38,7 @@ export default function AppEntryV2() {
               <Route path="fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />
               <Route path="pcp" element={<PCPWorkspace />} />
               <Route path="paquimetro" element={<QualityPlanGate><Paquimetro /></QualityPlanGate} />
-              <Route path="qualidade-rpnc" element={<QualityPlanGate><QualityRpncForm /></QualityPlanGate>} />
+              <Route path="qualidade/rpnc" element={<QualityPlanGate><QualityRpncForm /></QualityPlanGate>} />
             </Route>
             <Route path="/compras" element={<Navigate to="/pageprincipal/compras" replace />} />
             <Route path="/configuracoes-adm" element={<Navigate to="/pageprincipal/administracao-configuracoes" replace />} />
@@ -49,7 +49,7 @@ export default function AppEntryV2() {
             <Route path="/pcp" element={<Navigate to="/pageprincipal/pcp" replace />} />
             <Route path="/paquimetro" element={<Navigate to="/pageprincipal/paquimetro" replace />} />
             <Route path="/qualidade/paquimetro" element={<Navigate to="/pageprincipal/paquimetro" replace />} />
-            <Route path="/qualidade/rpnc" element={<Navigate to="/pageprincipal/qualidade-rpnc" replace />} />
+            <Route path="/qualidade/rpnc" element={<Navigate to="/pageprincipal/qualidade/rpnc" replace />} />
             <Route path="/rpnc" element={<Navigate to="/pageprincipal/qualidade-rpnc" replace />} />
             <Route path="*" element={<Navigate to="/pageprincipal" replace />} />
           </Routes>
