@@ -12,6 +12,8 @@ export default function AppIndustrialV7() {
       navigate('/pageprincipal/fiscal')
     } else if (route === '/paquimetro' || route === '/qualidade/paquimetro') {
       navigate('/pageprincipal/paquimetro')
+    } else if (route === '/qualidade/rpnc' || route.startsWith('/qualidade/rpnc/')) {
+      navigate('/pageprincipal/qualidade/rpnc')
     } else if (route.startsWith('/pcp')) {
       navigate('/pageprincipal/pcp')
     } else {
