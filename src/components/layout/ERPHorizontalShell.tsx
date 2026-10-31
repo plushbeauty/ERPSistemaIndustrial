@@ -21,6 +21,7 @@ const menus: MenuItem[] = [
   { label: 'RH / Departamento Pessoal', route: '/pageprincipal/rh', icon: Users, isUpdated: true },
   { label: 'Engenharia e PCP', route: '/pageprincipal/pcp', icon: Factory, children: [
     { label: 'Central PCP', route: '/pageprincipal/pcp', icon: ClipboardList },
+    { label: 'Ordens de Produção', route: '/pageprincipal/pcp/ordens-producao', icon: ClipboardList, isUpdated: true },
     { label: 'Fichas de Processo', route: '/pageprincipal/pcp/fichas-processo', icon: ClipboardList, isUpdated: true },
   ] },
   { label: 'Qualidade / Paquímetro', route: '/pageprincipal/paquimetro', icon: Ruler, children: [
@@ -225,12 +226,13 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       </main>
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
       <BarraWindows11
-        ativo={pathname.startsWith('/pageprincipal/rh') ? 'rh' : pathname.startsWith('/pageprincipal/pcp/fichas-processo') ? 'fichas' : pathname.startsWith('/pageprincipal/compras/solicitacao') ? 'solicitacao' : pathname.startsWith('/pageprincipal/compras/requisicoes') ? 'requisicoes' : pathname.startsWith('/pageprincipal/compras') ? 'compras' : pathname.startsWith('/pageprincipal/qualidade/rpnc') ? 'rpnc' : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/pageprincipal/paquimetro') ? 'paq' : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'fiscal' : pathname.startsWith('/pageprincipal') ? 'home' : ''}
+        ativo={pathname.startsWith('/pageprincipal/rh') ? 'rh' : pathname.startsWith('/pageprincipal/pcp/ordens-producao') ? 'op' : pathname.startsWith('/pageprincipal/pcp/fichas-processo') ? 'fichas' : pathname.startsWith('/pageprincipal/compras/solicitacao') ? 'solicitacao' : pathname.startsWith('/pageprincipal/compras/requisicoes') ? 'requisicoes' : pathname.startsWith('/pageprincipal/compras') ? 'compras' : pathname.startsWith('/pageprincipal/qualidade/rpnc') ? 'rpnc' : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/pageprincipal/paquimetro') ? 'paq' : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'fiscal' : pathname.startsWith('/pageprincipal') ? 'home' : ''}
         onAbrir={(id) => {
           const destinations: Record<string, string> = {
             home: '/pageprincipal',
             rh: '/pageprincipal/rh',
             fichas: '/pageprincipal/pcp/fichas-processo',
+            op: '/pageprincipal/pcp/ordens-producao',
             pcp: '/pageprincipal/pcp',
             maq: '/pageprincipal/pcp',
             op: '/pageprincipal/pcp',
