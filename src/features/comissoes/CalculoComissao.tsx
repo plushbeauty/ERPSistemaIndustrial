@@ -1,6 +1,7 @@
- @AUTOR: FernandoSch_System
+/**
+ * @AUTOR: FernandoSch_System
  * @DATA_REVISAO_APROVACAO: 2026-10-31
-*/
+ */
 /**
  * SYSNQRA ERP INDUSTRIAL 
  */
