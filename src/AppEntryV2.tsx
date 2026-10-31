@@ -99,7 +99,7 @@ export default function AppEntryV2() {
               <Route path="comissoes/regras" element={<CadastroRegras />} />
               <Route path="comissoes/calculo" element={<CalculoComissao />} />
               <Route path="comissoes/perfil" element={<PerfilVendedor />} />
-              <Route path="comissoes/auditoria" element={<AuditoriaComissoes />} />
+              <Route path="comissoes/auditoria" element={<Navigate to="/pageprincipal/controladoria/auditoria-comissoes" replace />} />
               <Route path="controladoria" element={<Navigate to="/pageprincipal/controladoria/lucratividade" replace />} />
               <Route path="controladoria/retificacao-assistente" element={<AssistenteRetificacao />} />
               <Route path="controladoria/auditoria-comissoes" element={<AuditoriaComissoes />} />
@@ -124,17 +124,17 @@ export default function AppEntryV2() {
               <Route path="estoque/auditoria-saldos" element={<QualityPlanGate><AuditoriaSaldos /></QualityPlanGate>} />
               <Route path="estoque/balanco" element={<QualityPlanGate><BalancoEstoque /></QualityPlanGate>} />
               <Route path="estoque/depreciacao" element={<QualityPlanGate><RegrasDepreciacao /></QualityPlanGate>} />
-              <Route path="financeiro/conciliacao" element={<QualityPlanGate><BankReconciliation /></QualityPlanGate>} />
-              <Route path="financeiro/extrato" element={<QualityPlanGate><BankStatementImporter /></QualityPlanGate>} />
-              <Route path="financeiro/lista-precos" element={<QualityPlanGate><ListaPrecosCliente /></QualityPlanGate>} />
-              <Route path="financeiro/comissoes" element={<QualityPlanGate><CalculoComissao /></QualityPlanGate>} />
-              <Route path="financeiro/comissoes/regras" element={<QualityPlanGate><CadastroRegras /></QualityPlanGate>} />
-              <Route path="financeiro/comissoes/perfil" element={<QualityPlanGate><PerfilVendedor /></QualityPlanGate>} />
-              <Route path="financeiro/auditoria-comissoes" element={<QualityPlanGate><AuditoriaComissoes /></QualityPlanGate>} />
-              <Route path="financeiro/decimais" element={<QualityPlanGate><CadastroDecimais /></QualityPlanGate>} />
-              <Route path="financeiro/lucratividade" element={<QualityPlanGate><PainelLucratividade /></QualityPlanGate>} />
+              <Route path="financeiro/conciliacao" element={<Navigate to="/pageprincipal/financeiro/conciliacao-bancaria" replace />} />
+              <Route path="financeiro/extrato" element={<Navigate to="/pageprincipal/financeiro/importar-extratos" replace />} />
+              <Route path="financeiro/lista-precos" element={<Navigate to="/pageprincipal/financeiro/lista-precos-cliente" replace />} />
+              <Route path="financeiro/comissoes" element={<Navigate to="/pageprincipal/comissoes/calculo" replace />} />
+              <Route path="financeiro/comissoes/regras" element={<Navigate to="/pageprincipal/comissoes/regras" replace />} />
+              <Route path="financeiro/comissoes/perfil" element={<Navigate to="/pageprincipal/comissoes/perfil" replace />} />
+              <Route path="financeiro/auditoria-comissoes" element={<Navigate to="/pageprincipal/controladoria/auditoria-comissoes" replace />} />
+              <Route path="financeiro/decimais" element={<Navigate to="/pageprincipal/controladoria/cadastro-decimais" replace />} />
+              <Route path="financeiro/lucratividade" element={<Navigate to="/pageprincipal/controladoria/lucratividade" replace />} />
               <Route path="financeiro/retificacao" element={<QualityPlanGate><RetificacaoPedido /></QualityPlanGate>} />
-              <Route path="financeiro/retificacao-assistente" element={<QualityPlanGate><AssistenteRetificacao /></QualityPlanGate>} />
+              <Route path="financeiro/retificacao-assistente" element={<Navigate to="/pageprincipal/controladoria/retificacao-assistente" replace />} />
               <Route path="financeiro/notas-debito" element={<QualityPlanGate><CustomerDnList /></QualityPlanGate>} />
               <Route path="financeiro/notas-debito/configuracoes" element={<QualityPlanGate><CustomerDnSettings /></QualityPlanGate>} />
               <Route path="financeiro/notas-debito/:id/pod" element={<QualityPlanGate><CustomerDnPod /></QualityPlanGate>} />
@@ -166,7 +166,7 @@ export default function AppEntryV2() {
             <Route path="/comissoes/regras" element={<Navigate to="/pageprincipal/comissoes/regras" replace />} />
             <Route path="/comissoes/calculo" element={<Navigate to="/pageprincipal/comissoes/calculo" replace />} />
             <Route path="/comissoes/perfil" element={<Navigate to="/pageprincipal/comissoes/perfil" replace />} />
-            <Route path="/comissoes/auditoria" element={<Navigate to="/pageprincipal/comissoes/auditoria" replace />} />
+            <Route path="/comissoes/auditoria" element={<Navigate to="/pageprincipal/controladoria/auditoria-comissoes" replace />} />
             <Route path="/controladoria" element={<Navigate to="/pageprincipal/controladoria" replace />} />
             <Route path="/controladoria/retificacao-assistente" element={<Navigate to="/pageprincipal/controladoria/retificacao-assistente" replace />} />
             <Route path="/controladoria/auditoria-comissoes" element={<Navigate to="/pageprincipal/controladoria/auditoria-comissoes" replace />} />

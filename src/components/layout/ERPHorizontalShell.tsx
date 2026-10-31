@@ -1,92 +1,16 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, UserCog, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, FolderOpen, Warehouse, Percent, Scale, ShieldCheck, BookOpen, Landmark, Calculator, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import { ChevronDown, ChevronRight, CircleHelp, Home, LogOut, Search, UserRound, X } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { BarraWindows11 } from './BarraWindows11'
 import PCPTabletMenuModal from '../PCPTabletMenuModal'
 import PageIntroCard from './PageIntroCard'
 import { fallbackPageIntro, hasNativeIntroCard, resolvePageIntro } from './pageIntroCatalog'
+import { erpMenus, erpModuleLabel, erpTaskbarActiveId, erpTaskbarDestinations, type MenuItem } from '../../config/erpNavigation'
 
-type MenuItem = {
-  label: string
-  route: string
-  icon?: LucideIcon
-  isNew?: boolean
-  isUpdated?: boolean
-  action?: 'pcpTablet'
-  minNivel?: number
-  children?: MenuItem[]
-}
+// Menu e atalhos vêm do catálogo único; o shell não declara rotas nem selos próprios.
+const menus: MenuItem[] = erpMenus
 
-const menus: MenuItem[] = [
-  { label: 'Financeiro', route: '/pageprincipal/financeiro', icon: Landmark, children: [
-    { label: 'Central Financeira', route: '/pageprincipal/financeiro', icon: Wallet, isUpdated: true },
-    { label: 'Conciliação Bancária', route: '/pageprincipal/financeiro/conciliacao-bancaria', icon: ClipboardList },
-    { label: 'Importar Extratos', route: '/pageprincipal/financeiro/importar-extratos', icon: FileText, isUpdated: true },
-    { label: 'Lista de Preços por Cliente', route: '/pageprincipal/financeiro/lista-precos-cliente', icon: ShoppingCart, isUpdated: true },
-    { label: 'Retificação de Pedido', route: '/pageprincipal/financeiro/retificacao', icon: RotateCcw, isUpdated: true },
-    { label: 'Notas de Débito', route: '/pageprincipal/financeiro/notas-debito', icon: FileWarning, isUpdated: true },
-    { label: 'Configurações de Notas de Débito', route: '/pageprincipal/financeiro/notas-debito/configuracoes', icon: Settings, isUpdated: true },
-  ] },
-  { label: 'Comissões', route: '/pageprincipal/comissoes', icon: Calculator, isUpdated: true, children: [
-    { label: 'Regras de Comissão', route: '/pageprincipal/comissoes/regras', icon: ClipboardList, isUpdated: true },
-    { label: 'Cálculo de Comissão', route: '/pageprincipal/comissoes/calculo', icon: Calculator, isUpdated: true },
-    { label: 'Perfil do Vendedor', route: '/pageprincipal/comissoes/perfil', icon: UserRound, isUpdated: true },
-  ] },
-  { label: 'Controladoria', route: '/pageprincipal/controladoria', icon: BookOpen, isUpdated: true, children: [
-    { label: 'Lucratividade e Margens', route: '/pageprincipal/controladoria/lucratividade', icon: ClipboardList, isUpdated: true },
-    { label: 'Razão Geral', route: '/pageprincipal/controladoria/razao-geral', icon: Landmark, isUpdated: true },
-    { label: 'Cadastro de Decimais', route: '/pageprincipal/controladoria/cadastro-decimais', icon: Settings, isUpdated: true },
-    { label: 'Estorno Documental', route: '/pageprincipal/controladoria/retificacao-assistente', icon: FileText, isUpdated: true },
-    { label: 'Auditoria de Comissões', route: '/pageprincipal/controladoria/auditoria-comissoes', icon: Calculator, isUpdated: true },
-  ] },
-  { label: 'Principal', route: '/pageprincipal', icon: Home },
-  { label: 'Cadastros Mestres', route: '/pageprincipal/cadastros/produtos', icon: Boxes, children: [
-    { label: 'Cadastro de Produtos', route: '/pageprincipal/cadastros/produtos', icon: Boxes, isUpdated: true },
-    { label: 'Ficha Técnica e Etiquetas', route: '/pageprincipal/cadastros/produtos/ficha-tecnica', icon: FileText, isUpdated: true },
-    { label: 'Parâmetros de Código', route: '/pageprincipal/cadastros/produtos/parametros-codigo', icon: Barcode, isUpdated: true },
-  ] },
-  { label: 'RH / Departamento Pessoal', route: '/pageprincipal/rh', icon: Users, isUpdated: true },
-  { label: 'Engenharia e PCP', route: '/pageprincipal/pcp', icon: Factory, children: [
-    { label: 'Central PCP', route: '/pageprincipal/pcp', icon: ClipboardList },
-    { label: 'Fichas de Processo', route: '/pageprincipal/pcp/fichas-processo', icon: ClipboardList, isUpdated: true },
-    { label: 'Roteiro de Operações', route: '/pageprincipal/pcp/roteiros', icon: Route, isUpdated: true },
-    { label: 'Carga e Capacidade', route: '/pageprincipal/pcp/capacidade', icon: BarChart3, isUpdated: true },
-  ] },
-  { label: 'Chão de Fábrica', route: '/pageprincipal/chao-de-fabrica/portal-operador', icon: Monitor, isUpdated: true, children: [
-    { label: 'Portal do Operador', route: '/pageprincipal/chao-de-fabrica/portal-operador', icon: Monitor, isUpdated: true },
-    { label: 'Postos de Trabalho', route: '/pageprincipal/chao-de-fabrica/postos', icon: ClipboardList, isUpdated: true },
-  ] },
-  { label: 'Estoque e Almoxarifado', route: '/pageprincipal/estoque/auditoria-saldos', icon: Warehouse, isUpdated: true, children: [
-    { label: 'Auditoria de Saldos', route: '/pageprincipal/estoque/auditoria-saldos', icon: Scale, isUpdated: true },
-    { label: 'Balanço de Estoque', route: '/pageprincipal/estoque/balanco', icon: Archive, isUpdated: true },
-    { label: 'Regras de Depreciação', route: '/pageprincipal/estoque/depreciacao', icon: Percent, isUpdated: true },
-  ] },
-  { label: 'Qualidade / Paquímetro', route: '/pageprincipal/paquimetro', icon: Ruler, children: [
-    { label: 'Paquímetro Digital', route: '/pageprincipal/paquimetro', icon: Ruler },
-    { label: 'RPNC', route: '/pageprincipal/qualidade/rpnc', icon: ClipboardList, isUpdated: true },
-    { label: 'Formulário RPNC (Ishikawa / 5 Porquês / CAPA)', route: '/pageprincipal/qualidade/rpnc-formulario', icon: FileText, isUpdated: true },
-    { label: 'Auditorias da Qualidade', route: '/pageprincipal/qualidade/auditorias', icon: ShieldCheck, isUpdated: true },
-    { label: 'GED / Documentos da Qualidade', route: '/pageprincipal/qualidade/ged', icon: FolderOpen, isUpdated: true },
-  ] },
-  { label: 'Compras', route: '/pageprincipal/compras', icon: ShoppingCart, isUpdated: true, children: [
-    { label: 'Central de Compras', route: '/pageprincipal/compras', icon: ShoppingCart, isUpdated: true },
-    { label: 'Solicitação de Compra', route: '/pageprincipal/compras/solicitacao', icon: FilePlus2, isUpdated: true },
-    { label: 'Requisições de Compra', route: '/pageprincipal/compras/requisicoes', icon: ClipboardList, isUpdated: true },
-  ] },
-  { label: 'Configurações', route: '/pageprincipal/administracao-configuracoes', icon: Settings },
-  { label: 'Configurações de Usuário', route: '/pageprincipal/configuracoes-usuario', icon: UserCog, isUpdated: true, minNivel: 8 },
-  { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText, isUpdated: true, children: [
-    { label: 'Central Fiscal', route: '/pageprincipal/fiscal', icon: FileText },
-    { label: 'Ano Fiscal', route: '/pageprincipal/fiscal/ano', icon: BookOpen, isUpdated: true },
-    { label: 'Classificação Fiscal', route: '/pageprincipal/fiscal/classificacao', icon: Landmark, isUpdated: true },
-    { label: 'Auditoria Documental', route: '/pageprincipal/fiscal/auditoria-documental', icon: ShieldCheck, isUpdated: true },
-    { label: 'Estorno de Lançamentos', route: '/pageprincipal/fiscal/estorno', icon: RotateCcw, isUpdated: true },
-    { label: 'Painel Razão Geral', route: '/pageprincipal/fiscal/razao', icon: Scale, isUpdated: true },
-  ] },
-  { label: 'Central de Ajuda', route: '/pageprincipal/ajuda', icon: CircleHelp },
-]
 
 export default function ERPHorizontalShell({ children, operatorName = 'Usuário ERP' }: { children: ReactNode; operatorName?: string }) {
   const navigate = useNavigate()
