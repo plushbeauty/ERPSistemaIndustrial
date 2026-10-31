@@ -1,3 +1,13 @@
+/**
+ * @AUTOR: FernandoSch_System
+ * @DATA_REVISAO_APROVACAO: 2026-10-31
+ * @STATUS_APROVACAO: PELO PROPRIETÁRIO
+ */
+/**
+ * SYSNQRA ERP INDUSTRIAL — Qualidade · Formulário
+ * Nenhum dado é simulado: toda leitura e gravação passa pela sessão autenticada, RBAC e RLS.
+ */
+
 import { useEffect, useRef, useState } from 'react'
 import { FileSpreadsheet, HelpCircle, Upload } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
