@@ -135,6 +135,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [pcpTabletOpen, setPcpTabletOpen] = useState(false)
   const [now, setNow] = useState(() => new Date())
   const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
+  const [dataEpoch, setDataEpoch] = useState(0)
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -166,7 +167,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   }, [])
 
   // Atualização automática por mudanças reais no banco, sem botão manual.
-  // Não recarrega telas de lançamento/edição para não apagar dados ainda não gravados.
+  // A área de trabalho é remontada (recarrega as consultas da tela); o navegador
+  // não é recarregado, para não descartar a sessão nem o estado do shell.
   useEffect(() => {
     let refreshTimer: number | undefined
     // Cada montagem recebe um tópico exclusivo: evita reutilizar um canal Realtime
@@ -180,7 +182,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         const userIsTyping = active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement || active instanceof HTMLSelectElement || (active instanceof HTMLElement && active.isContentEditable)
         if (routeIsEditing || userIsTyping) return
         if (refreshTimer !== undefined) window.clearTimeout(refreshTimer)
-        refreshTimer = window.setTimeout(() => window.location.reload(), 900)
+        refreshTimer = window.setTimeout(() => setDataEpoch(value => value + 1), 900)
       })
       .subscribe()
     return () => {
@@ -348,7 +350,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           <small>Tela atual: {pathname}</small><button type="button" onClick={() => { setHelpOpen(false); navigate('/ajuda') }}>Abrir Central de Ajuda</button>
         </div>}
       </header>
-      <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
+      <main key={`erp-workspace-${dataEpoch}`} className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {pageIntro && <PageIntroCard {...pageIntro} />}
         {children}
       </main>
