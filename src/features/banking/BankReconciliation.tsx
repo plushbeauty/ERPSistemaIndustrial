@@ -4,6 +4,16 @@
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
+/**
+ * @AUTOR: FernandoSch_System
+ * @DATA_REVISAO_APROVACAO: 2026-10-31
+ * @STATUS_APROVACAO: PELO PROPRIETÁRIO
+ */
+/**
+ * SYSNQRA ERP INDUSTRIAL — Financeiro · Conciliação Bancária
+ * Nenhum dado é simulado: toda leitura e gravação passa pela sessão autenticada, RBAC e RLS.
+ */
+
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AlertTriangle, CheckCircle, Download, Home, Landmark, List, ScrollText, Shuffle } from 'lucide-react'
@@ -28,11 +38,11 @@ type Transaction = {
 type Tab = 'match' | 'statement' | 'transactions' | 'clearance' | 'incorrect'
 
 const tabs: Array<[Tab, string, typeof Shuffle]> = [
-  ['match', 'Match and Reconcile', Shuffle],
-  ['statement', 'Reconciliation Statement', ScrollText],
-  ['transactions', 'Transactions', List],
-  ['clearance', 'Clearance Summary', CheckCircle],
-  ['incorrect', 'Incorrectly Cleared', AlertTriangle],
+  ['match', 'Conciliar lançamentos', Shuffle],
+  ['statement', 'Resumo da conciliação', ScrollText],
+  ['transactions', 'Lançamentos bancários', List],
+  ['clearance', 'Resumo de conciliações', CheckCircle],
+  ['incorrect', 'Divergências e ignorados', AlertTriangle],
 ]
 
 const brl = (value: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
@@ -166,7 +176,7 @@ export default function BankReconciliation() {
       p_referencia_interna: reference.trim() || null,
     })
     if (result.error) { setError(result.error.message); return }
-    setMessage('Transação conciliada atomicamente.')
+    setMessage('Lançamento conciliado com segurança.')
     setSelected(null)
     setReference('')
     await load()
@@ -186,27 +196,27 @@ export default function BankReconciliation() {
     URL.revokeObjectURL(url)
   }
 
-  if (mobile) return <div className="erp-global-density flex min-h-screen items-center justify-center bg-slate-50 p-4"><div className="rounded-md border border-gray-200 bg-white px-5 py-4 text-center"><Landmark size={24} className="mx-auto mb-2 text-slate-500" /><div className="text-[13px] font-semibold text-slate-800">Esta tela não é suportada em dispositivos móveis. Use o Desktop.</div></div></div>
+  if (mobile) return <div className="erp-global-density min-h-screen bg-[#F4FBFD] p-4"><div className="mx-auto max-w-lg rounded-2xl border border-[#D7E8EF] bg-white p-5 text-center shadow-sm"><Landmark size={28} className="mx-auto mb-3 text-[#2D8DB8]" /><div className="text-sm font-semibold text-[#123B50]">Conciliação bancária</div><p className="mt-2 text-xs text-slate-600">A versão compacta para celular está em preparação. Acesse esta rotina em um computador para realizar conciliações.</p></div></div>
 
-  return <div className="erp-global-density min-h-screen bg-slate-50 text-gray-800">
-    <div className="flex h-7 items-center gap-2 border-b border-gray-200 bg-white px-2 text-[10px] text-gray-500"><button type="button" onClick={() => navigate(-1)} className="flex h-7 items-center gap-1 rounded-md border border-gray-200 bg-white px-2 text-[10px] font-bold text-gray-600">← Voltar</button><Home size={12} /><span>Finanças</span><span>›</span><span className="font-medium text-gray-700">Conciliação Bancária</span></div>
-    <div className="flex h-7 items-center gap-2 border-b border-gray-200 bg-white px-2">
+  return <div className="erp-global-density min-h-screen bg-[#F4FBFD] text-slate-800">
+    <div className="flex min-h-10 items-center gap-2 border-b border-[#D7E8EF] bg-white px-4 text-xs text-slate-500"><button type="button" onClick={() => navigate(-1)} className="flex h-7 items-center gap-1 rounded-md border border-gray-200 bg-white px-2 text-[10px] font-bold text-gray-600">← Voltar</button><Home size={12} /><span>Finanças</span><span>›</span><span className="font-medium text-gray-700">Conciliação Bancária</span></div>
+    <div className="flex min-h-14 flex-wrap items-center gap-2 border-b border-[#D7E8EF] bg-white px-4 py-2">
       <label className="text-[10px] text-gray-500">Empresa</label><select className="h-7 w-40 rounded-md border border-gray-200 text-[11px]" disabled><option>Empresa atual</option></select>
       <label className="ml-1 text-[10px] text-gray-500">Data Limite</label><input type="date" value={date} onChange={(event) => setDate(event.target.value)} className="h-7 w-[110px] rounded-md border border-gray-200 px-1 text-[11px]" />
       <label className="ml-1 text-[10px] text-gray-500">Banco/Diário</label><div className="w-40"><LinkFieldCombobox value={accountId} options={options} onChange={setAccountId} placeholder="Banco" /></div>
       <label className="ml-1 text-[10px] text-gray-500">Status Lançamentos</label><select value={status} onChange={(event) => setStatus(event.target.value)} className="h-7 w-[140px] rounded-md border border-gray-200 px-1 text-[11px]"><option>TODOS</option><option>PENDENTE</option><option>CONCILIADO</option><option>IGNORADO</option></select>
-      <button type="button" onClick={exportXlsx} className="ml-auto flex h-7 w-[110px] items-center justify-center gap-1 rounded-md bg-[#ffcc00] text-[11px] font-semibold text-black"><Download size={12} />EXPORTAR XLSX</button>
+      <button type="button" onClick={exportXlsx} className="ml-auto flex h-7 w-[110px] items-center justify-center gap-1 rounded-md bg-[#2D8DB8] text-[11px] font-semibold text-white"><Download size={12} />EXPORTAR XLSX</button>
     </div>
-    <div className="flex h-7 items-center justify-between border border-gray-200 bg-slate-100 px-3 text-[11px] font-bold rounded-sm mb-2"><span>Conta Bancária Ativa: {accounts.find((account) => account.id === accountId)?.nome || "—"}</span><span className="rounded bg-green-100 px-2 py-0.5 font-black text-green-800">Saldo Contábil do Razão: {brl(saldoContabil)}</span></div>\n    <div className="scroll-fade-x flex h-7 overflow-x-auto border-b border-gray-200 bg-white px-2">{tabs.map(([key, label, Icon]) => <button key={key} type="button" onClick={() => setTab(key)} className={'flex h-7 shrink-0 items-center gap-1 rounded-md px-3 text-[11px] ' + (tab === key ? 'bg-slate-100 font-semibold text-slate-900' : 'text-slate-600')}><Icon size={12} className={key === 'incorrect' ? 'text-red-500' : ''} />{label}</button>)}</div>
-    <div className="p-2">
+    <div className="mx-4 mt-3 flex min-h-12 flex-wrap items-center justify-between gap-2 rounded-xl border border-[#D7E8EF] bg-white px-4 py-2 text-xs font-semibold shadow-sm"><span>Conta Bancária Ativa: {accounts.find((account) => account.id === accountId)?.nome || "—"}</span><span className="rounded bg-green-100 px-2 py-0.5 font-black text-green-800">Saldo Contábil do Razão: {brl(saldoContabil)}</span></div>\n    <div className="scroll-fade-x mx-4 mt-3 flex min-h-11 overflow-x-auto rounded-xl border border-[#D7E8EF] bg-white px-2 shadow-sm">{tabs.map(([key, label, Icon]) => <button key={key} type="button" onClick={() => setTab(key)} className={'flex h-7 shrink-0 items-center gap-1 rounded-md px-3 text-[11px] ' + (tab === key ? 'bg-slate-100 font-semibold text-slate-900' : 'text-slate-600')}><Icon size={12} className={key === 'incorrect' ? 'text-red-500' : ''} />{label}</button>)}</div>
+    <div className="p-4">
       {error && <div className="mb-2 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-[11px] text-red-700">{error}</div>}
       {message && <div className="mb-2 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-[11px] text-emerald-700">{message}</div>}
-      {tab === 'match' && <section className="rounded-md border border-gray-200 bg-white"><div className="flex h-7 items-center justify-between border-b border-gray-200 px-2 text-[11px]"><span className="font-semibold">Transações para conciliação</span><span className="text-gray-500">{rows.length} registros · líquido {brl(net)}</span></div><div className="max-h-[calc(100vh-125px)] overflow-auto"><table className="w-full border-collapse text-[10px]"><thead><tr className="h-7 bg-slate-700 text-white"><th className="px-2 text-left font-normal">Data</th><th className="px-2 text-left font-normal">Descrição</th><th className="px-2 text-left font-normal">Referência</th><th className="px-2 text-right font-normal">Valor</th><th className="px-2 text-left font-normal">Status</th><th className="w-20 px-2" /></tr></thead><tbody>{rows.map((row) => <tr key={row.id} className="h-7 border-t border-gray-100 even:bg-slate-50"><td className="px-2">{row.data_movimento}</td><td className="max-w-[420px] truncate px-2">{row.descricao}</td><td className="px-2">{row.referencia || '—'}</td><td className="px-2 text-right">{brl(row.tipo === 'DEBITO' ? -row.valor : row.valor)}</td><td className="px-2">{row.status}</td><td className="px-2 text-right">{row.status === 'PENDENTE' && <button type="button" className="h-7 rounded-md border border-emerald-600 px-2 text-[10px] text-emerald-700" onClick={() => setSelected(row)}>Conciliar</button>}</td></tr>)}</tbody></table>{!rows.length && <div className="p-5 text-center text-[11px] text-gray-400">Nenhuma transação para os filtros.</div>}</div></section>}
-      {tab === 'statement' && <section className="grid grid-cols-3 gap-2 rounded-md border border-gray-200 bg-white p-2 text-[11px]"><div className="rounded-md border p-2"><span className="block text-[10px] text-gray-500">Créditos</span><strong>{brl(credits)}</strong></div><div className="rounded-md border p-2"><span className="block text-[10px] text-gray-500">Débitos</span><strong>{brl(debits)}</strong></div><div className="rounded-md border p-2"><span className="block text-[10px] text-gray-500">Saldo do período</span><strong>{brl(net)}</strong></div></section>}
+      {tab === 'match' && <section className="overflow-hidden rounded-2xl border border-[#D7E8EF] bg-white shadow-sm"><div className="flex min-h-12 items-center justify-between border-b border-[#D7E8EF] px-4 text-xs"><span className="font-semibold">Transações para conciliação</span><span className="text-gray-500">{rows.length} registros · líquido {brl(net)}</span></div><div className="max-h-[calc(100vh-125px)] overflow-auto"><table className="w-full border-collapse text-[10px]"><thead><tr className="h-10 bg-[#123B50] text-white"><th className="px-2 text-left font-normal">Data</th><th className="px-2 text-left font-normal">Descrição</th><th className="px-2 text-left font-normal">Referência</th><th className="px-2 text-right font-normal">Valor</th><th className="px-2 text-left font-normal">Status</th><th className="w-20 px-2" /></tr></thead><tbody>{rows.map((row) => <tr key={row.id} className="h-10 border-t border-slate-100 even:bg-[#F4FBFD] hover:bg-sky-50/70"><td className="px-2">{row.data_movimento}</td><td className="max-w-[420px] truncate px-2">{row.descricao}</td><td className="px-2">{row.referencia || '—'}</td><td className="px-2 text-right">{brl(row.tipo === 'DEBITO' ? -row.valor : row.valor)}</td><td className="px-2">{row.status}</td><td className="px-2 text-right">{row.status === 'PENDENTE' && <button type="button" className="h-7 rounded-md border border-emerald-600 px-2 text-[10px] text-emerald-700" onClick={() => setSelected(row)}>Conciliar</button>}</td></tr>)}</tbody></table>{!rows.length && <div className="p-5 text-center text-[11px] text-gray-400">Nenhuma transação para os filtros.</div>}</div></section>}
+      {tab === 'statement' && <section className="grid grid-cols-1 gap-3 rounded-2xl border border-[#D7E8EF] bg-white p-4 text-xs shadow-sm sm:grid-cols-3"><div className="rounded-xl border border-[#D7E8EF] bg-[#F4FBFD] p-4"><span className="block text-[10px] text-gray-500">Créditos</span><strong>{brl(credits)}</strong></div><div className="rounded-md border p-2"><span className="block text-[10px] text-gray-500">Débitos</span><strong>{brl(debits)}</strong></div><div className="rounded-md border p-2"><span className="block text-[10px] text-gray-500">Saldo do período</span><strong>{brl(net)}</strong></div></section>}
       {tab === 'transactions' && <section className="rounded-md border border-gray-200 bg-white p-2 text-[11px]">Transações carregadas: <strong>{rows.length}</strong>.</section>}
       {tab === 'clearance' && <section className="rounded-md border border-gray-200 bg-white p-2 text-[11px]">Conciliadas: <strong>{rows.filter((row) => row.status === 'CONCILIADO').length}</strong> · pendentes: <strong>{rows.filter((row) => row.status === 'PENDENTE').length}</strong>.</section>}
       {tab === 'incorrect' && <section className="rounded-md border border-gray-200 bg-white p-2 text-[11px]">Divergências/ignoradas: <strong>{rows.filter((row) => row.status === 'IGNORADO').length}</strong>.</section>}
     </div>
-    {selected && <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 p-4"><div className="w-[420px] rounded-md border border-gray-200 bg-white p-3 shadow-xl"><div className="mb-2 text-[12px] font-semibold">Conciliar transação</div><div className="mb-2 text-[11px] text-gray-600">{selected.data_movimento} · {selected.descricao} · {brl(selected.valor)}</div><input value={reference} onChange={(event) => setReference(event.target.value)} placeholder="Referência interna" className="h-7 w-full rounded-md border border-gray-200 px-2 text-[11px]" /><div className="mt-2 flex justify-end gap-1"><button type="button" className="h-7 rounded-md border px-3 text-[11px]" onClick={() => setSelected(null)}>Cancelar</button><button type="button" className="h-7 rounded-md bg-emerald-600 px-3 text-[11px] text-white" onClick={() => void reconcile()}>Conciliar</button></div></div></div>}
+    {selected && <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm"><div className="w-full max-w-lg rounded-2xl border border-[#D7E8EF] bg-white p-5 shadow-2xl"><div className="mb-2 text-[12px] font-semibold">Conciliar transação</div><div className="mb-2 text-[11px] text-gray-600">{selected.data_movimento} · {selected.descricao} · {brl(selected.valor)}</div><input value={reference} onChange={(event) => setReference(event.target.value)} placeholder="Referência interna" className="h-7 w-full rounded-md border border-gray-200 px-2 text-[11px]" /><div className="mt-2 flex justify-end gap-1"><button type="button" className="h-7 rounded-md border px-3 text-[11px]" onClick={() => setSelected(null)}>Cancelar</button><button type="button" className="h-7 rounded-md bg-emerald-600 px-3 text-[11px] text-white" onClick={() => void reconcile()}>Conciliar</button></div></div></div>}
   </div>
 }

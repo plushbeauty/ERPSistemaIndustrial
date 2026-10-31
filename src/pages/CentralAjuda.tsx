@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom'
 const groups = [
   { title: 'Acesso e Chão de Fábrica', icon: ShieldCheck, items: [
     { name: 'Login Operador / Administração', route: '/login-operador', purpose: 'Autenticar com Supabase Auth; o perfil OPERADOR_FABRIL acessa o Tablet e os demais perfis seguem para o ERP.' },
-    { name: 'Painel Tablet', route: '/tablet/dashboard', purpose: 'Acompanhar e registrar atividades de produção conforme as permissões do operador.' },
+    { name: 'Painel Tablet', route: '/pageprincipal/chao-de-fabrica/portal-operador', purpose: 'Acompanhar e registrar atividades de produção conforme as permissões do operador.' },
   ]},
   { title: 'Compras', icon: ShoppingCart, items: [
     { name: 'Central de Compras', route: '/pageprincipal/compras', purpose: 'Gerenciar solicitações, cotações, pedidos e fornecedores.' },
@@ -20,7 +20,7 @@ const groups = [
   { title: 'Produção e PCP', icon: Factory, items: [
     { name: 'Central PCP', route: '/pageprincipal/pcp', purpose: 'Planejar e acompanhar ordens, recursos e execução.' },
     { name: 'Fichas de Processo', route: '/pageprincipal/pcp/fichas-processo', purpose: 'Consultar parâmetros e instruções de processo produtivo.' },
-    { name: 'Chão de Fábrica / Tablet', route: '/tablet/dashboard', purpose: 'Registrar e acompanhar a execução operacional.' },
+    { name: 'Chão de Fábrica / Tablet', route: '/pageprincipal/chao-de-fabrica/portal-operador', purpose: 'Registrar e acompanhar a execução operacional.' },
   ]},
   { title: 'Qualidade', icon: ShieldCheck, items: [
     { name: 'Paquímetro Digital', route: '/pageprincipal/paquimetro', purpose: 'Registrar medições e controles metrológicos.' },

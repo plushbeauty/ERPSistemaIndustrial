@@ -4,6 +4,13 @@
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
+/**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-31
+ */
+/**
+ * SYSNQRA ERP INDUSTRIAL 
+ */
 import { useEffect, useMemo, useState } from 'react'
 import { Ban, Plus, Save, Search } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
@@ -22,17 +29,21 @@ export default function CadastroRegras(){
  const [profileId,setProfileId]=useState(''),[sku,setSku]=useState(''),[pct,setPct]=useState(''),[meta,setMeta]=useState(''),[newProfile,setNewProfile]=useState('')
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState('')
  const load=async()=>{
+  const company=await supabase.rpc('erp_current_empresa_id')
+  if(company.error)throw company.error
+  if(!company.data)throw new Error('Selecione a empresa de trabalho antes de acessar as regras de comissão.')
+  const empresaId=String(company.data)
   const [p,r,x]=await Promise.all([
-   supabase.from('erp_comissao_perfis').select('id,nome,ativo').eq('ativo',true).order('nome'),
-   supabase.from('erp_produtos').select('id,codigo,nome,descricao,dimensional').eq('ativo',true).order('codigo').limit(5000),
-   supabase.from('erp_comissao_regras').select('id,perfil_id,produto_id,percentual,meta_quantidade,ativo,perfil:erp_comissao_perfis(id,nome,ativo),produto:erp_produtos(id,codigo,nome,descricao,dimensional)').eq('ativo',true).order('created_at',{ascending:false}),
+   supabase.from('erp_comissao_perfis').select('id,nome,ativo').eq('empresa_id',empresaId).eq('ativo',true).order('nome'),
+   supabase.from('erp_produtos').select('id,codigo,nome,descricao,dimensional').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(5000),
+   supabase.from('erp_comissao_regras').select('id,perfil_id,produto_id,percentual,meta_quantidade,ativo,perfil:erp_comissao_perfis(id,nome,ativo),produto:erp_produtos(id,codigo,nome,descricao,dimensional)').eq('empresa_id',empresaId).eq('ativo',true).order('created_at',{ascending:false}),
   ])
   if(p.error)throw p.error;if(r.error)throw r.error;if(x.error)throw x.error
   setProfiles((p.data??[]) as Profile[]);setProducts((r.data??[]) as Product[]);setRules((x.data??[]) as unknown as Rule[])
  }
  useEffect(()=>{void load().catch(e=>setError(e instanceof Error?e.message:'Falha ao carregar regras.'))},[])
  const productOptions=useMemo<LinkOption[]>(()=>products.map(p=>({value:p.id,label:p.codigo,description:p.nome,dimensions:p.dimensional??p.descricao??''})),[products])
- const addProfile=async()=>{if(!newProfile.trim())return;setBusy(true);setError('');const r=await supabase.from('erp_comissao_perfis').insert({nome:newProfile.trim()}).select('id,nome,ativo').single();setBusy(false);if(r.error){setError(r.error.message);return}setProfiles(v=>[...v,r.data as Profile]);setProfileId(r.data.id);setNewProfile('')}
+ const addProfile=async()=>{if(!newProfile.trim())return;setBusy(true);setError('');try{const company=await supabase.rpc('erp_current_empresa_id');if(company.error)throw company.error;if(!company.data)throw new Error('Selecione a empresa de trabalho antes de criar um perfil.');const r=await supabase.from('erp_comissao_perfis').insert({empresa_id:String(company.data),nome:newProfile.trim()}).select('id,nome,ativo').single();if(r.error)throw r.error;setProfiles(v=>[...v,r.data as Profile]);setProfileId(r.data.id);setNewProfile('')}catch(e){setError(e instanceof Error?e.message:'Falha ao criar perfil.')}finally{setBusy(false)}}
  const add=async()=>{setError('');setMessage('');if(!profileId||!sku){setError('Selecione perfil e SKU.');return}const p=Number(pct),m=Number(meta);if(!Number.isFinite(p)||p<0||p>100||!Number.isFinite(m)||m<0){setError('Percentual e meta devem ser numéricos válidos.');return}setBusy(true);const r=await supabase.rpc('erp_comissao_salvar_regra',{p_perfil_id:profileId,p_produto_id:sku,p_percentual:p,p_meta_quantidade:m});setBusy(false);if(r.error){setError(r.error.message);return}setMessage('Regra gravada.');await load()}
  const disable=async(id:string)=>{setError('');const r=await supabase.from('erp_comissao_regras').update({ativo:false}).eq('id',id);if(r.error)setError(r.error.message);else await load()}
  return <main className="min-h-screen bg-slate-50 p-3 text-gray-800">

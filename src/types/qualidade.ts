@@ -1,3 +1,7 @@
+/**
+ * Contrato tipado do payload Ishikawa 6M persistido em ishikawa_data.
+ * Mantém os seis grupos utilizados pelo formulário RPNC existente.
+ */
 export interface Ishikawa6MData {
   Metodo: string[];
   Maquina: string[];

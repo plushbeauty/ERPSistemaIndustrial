@@ -14,6 +14,7 @@ import './styles/erp-global-consistency-20261030.css'
 const PagePrincipal = lazy(() => import('./pages/PagePrincipal'))
 const AppIndustrial = lazy(() => import('./AppIndustrialV7'))
 const Fiscal = lazy(() => import('./pages/Fiscal'))
+const NFeEmissao = lazy(() => import('./pages/NFeEmissao'))
 const SetupADMInicial = lazy(() => import('./pages/SetupADMInicial'))
 const PCPWorkspace = lazy(() => import('./pages/PCPWorkspace'))
 const Paquimetro = lazy(() => import('./pages/QualidadePaquimetroDigital'))
@@ -67,6 +68,9 @@ const ParametrosCodigo = lazy(() => import('./pages/cadastro-produtos/Parametros
 const HelpFichaTecnica = lazy(() => import('./pages/cadastro-produtos/HelpFichaTecnica'))
 const HelpListagemProdutos = lazy(() => import('./pages/cadastro-produtos/HelpListagemProdutos'))
 const HelpParametrosCodigo = lazy(() => import('./pages/cadastro-produtos/HelpParametrosCodigo'))
+// Razão Geral: a main publicou o painel em controladoria; o módulo fiscal mantém a própria versão.
+// As duas rotas existem, então as duas origens ficam registradas com nomes distintos.
+const PainelRazaoGeralControladoria = lazy(() => import('./features/controladoria/PainelRazaoGeral'))
 
 function LoadingWorkspace() {
   return <main role="status" aria-live="polite" style={{ minHeight: '50vh', display: 'grid', placeItems: 'center', color: '#123b50', fontFamily: 'Inter,system-ui,sans-serif' }}>Carregando SYSNQRA ERP INDUSTRIAL…</main>
@@ -91,9 +95,25 @@ export default function AppEntryV2() {
               <Route path="qualidade/rpnc" element={<QualityPlanGate><QualidadeRPNC /></QualityPlanGate>} />
               <Route path="qualidade/rpnc-formulario" element={<QualityPlanGate><QualityRpncForm /></QualityPlanGate>} />
               <Route path="qualidade/auditorias" element={<QualityPlanGate><QualityAuditsList /></QualityPlanGate>} />
+              <Route path="comissoes" element={<Navigate to="/pageprincipal/comissoes/regras" replace />} />
+              <Route path="comissoes/regras" element={<CadastroRegras />} />
+              <Route path="comissoes/calculo" element={<CalculoComissao />} />
+              <Route path="comissoes/perfil" element={<PerfilVendedor />} />
+              <Route path="comissoes/auditoria" element={<AuditoriaComissoes />} />
+              <Route path="controladoria" element={<Navigate to="/pageprincipal/controladoria/lucratividade" replace />} />
+              <Route path="controladoria/retificacao-assistente" element={<AssistenteRetificacao />} />
+              <Route path="controladoria/auditoria-comissoes" element={<AuditoriaComissoes />} />
+              <Route path="controladoria/cadastro-decimais" element={<CadastroDecimais />} />
+              <Route path="controladoria/lucratividade" element={<PainelLucratividade />} />
+              <Route path="controladoria/razao-geral" element={<PainelRazaoGeralControladoria />} />
+              <Route path="controladoria/retificacao-pedido/:pedidoId" element={<RetificacaoPedido />} />
+              <Route path="financeiro/conciliacao-bancaria" element={<QualityPlanGate><BankReconciliation /></QualityPlanGate>} />
+              <Route path="financeiro/importar-extratos" element={<QualityPlanGate><BankStatementImporter /></QualityPlanGate>} />
+              <Route path="financeiro/lista-precos-cliente" element={<QualityPlanGate><ListaPrecosCliente /></QualityPlanGate>} />
               <Route path="administracao-configuracoes" element={<AdministracaoConfiguracoesGlobais />} />
               <Route path="configuracoes-usuario" element={<AccessControlSettings />} />
               <Route path="fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />
+              <Route path="fiscal/emissao" element={<QualityPlanGate><NFeEmissao /></QualityPlanGate>} />
               <Route path="pcp" element={<PCPWorkspace />} />
               <Route path="pcp/roteiros" element={<QualityPlanGate><RoteiroOperacoes /></QualityPlanGate>} />
               <Route path="pcp/capacidade" element={<QualityPlanGate><PCPCapacidade /></QualityPlanGate>} />
@@ -142,6 +162,21 @@ export default function AppEntryV2() {
             <Route path="/qualidade/rpnc" element={<Navigate to="/pageprincipal/qualidade/rpnc" replace />} />
             <Route path="/qualidade/rpnc-formulario" element={<Navigate to="/pageprincipal/qualidade/rpnc-formulario" replace />} />
             <Route path="/qualidade/auditorias" element={<Navigate to="/pageprincipal/qualidade/auditorias" replace />} />
+            <Route path="/comissoes" element={<Navigate to="/pageprincipal/comissoes" replace />} />
+            <Route path="/comissoes/regras" element={<Navigate to="/pageprincipal/comissoes/regras" replace />} />
+            <Route path="/comissoes/calculo" element={<Navigate to="/pageprincipal/comissoes/calculo" replace />} />
+            <Route path="/comissoes/perfil" element={<Navigate to="/pageprincipal/comissoes/perfil" replace />} />
+            <Route path="/comissoes/auditoria" element={<Navigate to="/pageprincipal/comissoes/auditoria" replace />} />
+            <Route path="/controladoria" element={<Navigate to="/pageprincipal/controladoria" replace />} />
+            <Route path="/controladoria/retificacao-assistente" element={<Navigate to="/pageprincipal/controladoria/retificacao-assistente" replace />} />
+            <Route path="/controladoria/auditoria-comissoes" element={<Navigate to="/pageprincipal/controladoria/auditoria-comissoes" replace />} />
+            <Route path="/controladoria/cadastro-decimais" element={<Navigate to="/pageprincipal/controladoria/cadastro-decimais" replace />} />
+            <Route path="/controladoria/lucratividade" element={<Navigate to="/pageprincipal/controladoria/lucratividade" replace />} />
+            <Route path="/controladoria/razao-geral" element={<Navigate to="/pageprincipal/controladoria/razao-geral" replace />} />
+            <Route path="/controladoria/retificacao-pedido/:pedidoId" element={<RetificacaoPedido />} />
+            <Route path="/financeiro/conciliacao-bancaria" element={<Navigate to="/pageprincipal/financeiro/conciliacao-bancaria" replace />} />
+            <Route path="/financeiro/importar-extratos" element={<Navigate to="/pageprincipal/financeiro/importar-extratos" replace />} />
+            <Route path="/financeiro/lista-precos-cliente" element={<Navigate to="/pageprincipal/financeiro/lista-precos-cliente" replace />} />
             <Route path="/configuracoes-adm" element={<Navigate to="/pageprincipal/administracao-configuracoes" replace />} />
             <Route path="/administracao-configuracoes" element={<Navigate to="/pageprincipal/administracao-configuracoes" replace />} />
             <Route path="/erp-industrial" element={<Navigate to="/pageprincipal" replace />} />
@@ -155,6 +190,7 @@ export default function AppEntryV2() {
             <Route path="/ajuda/listagem-produtos" element={<Navigate to="/pageprincipal/cadastros/ajuda/listagem-produtos" replace />} />
             <Route path="/ajuda/parametros-codigo" element={<Navigate to="/pageprincipal/cadastros/ajuda/parametros-codigo" replace />} />
             <Route path="/fiscal" element={<Navigate to="/pageprincipal/fiscal" replace />} />
+            <Route path="/fiscal/emissao" element={<Navigate to="/pageprincipal/fiscal/emissao" replace />} />
             <Route path="/pcp" element={<Navigate to="/pageprincipal/pcp" replace />} />
             <Route path="/paquimetro" element={<Navigate to="/pageprincipal/paquimetro" replace />} />
             <Route path="/qualidade/paquimetro" element={<Navigate to="/pageprincipal/paquimetro" replace />} />

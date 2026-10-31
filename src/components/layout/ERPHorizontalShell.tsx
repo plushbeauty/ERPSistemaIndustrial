@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, UserCog, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, FolderOpen, Warehouse, Banknote, Percent, Scale, ShieldCheck, BookOpen, Landmark, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, UserCog, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, FolderOpen, Warehouse, Percent, Scale, ShieldCheck, BookOpen, Landmark, Calculator, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -20,6 +20,27 @@ type MenuItem = {
 }
 
 const menus: MenuItem[] = [
+  { label: 'Financeiro', route: '/pageprincipal/financeiro', icon: Landmark, children: [
+    { label: 'Central Financeira', route: '/pageprincipal/financeiro', icon: Wallet, isUpdated: true },
+    { label: 'Conciliação Bancária', route: '/pageprincipal/financeiro/conciliacao-bancaria', icon: ClipboardList },
+    { label: 'Importar Extratos', route: '/pageprincipal/financeiro/importar-extratos', icon: FileText, isUpdated: true },
+    { label: 'Lista de Preços por Cliente', route: '/pageprincipal/financeiro/lista-precos-cliente', icon: ShoppingCart, isUpdated: true },
+    { label: 'Retificação de Pedido', route: '/pageprincipal/financeiro/retificacao', icon: RotateCcw, isUpdated: true },
+    { label: 'Notas de Débito', route: '/pageprincipal/financeiro/notas-debito', icon: FileWarning, isUpdated: true },
+    { label: 'Configurações de Notas de Débito', route: '/pageprincipal/financeiro/notas-debito/configuracoes', icon: Settings, isUpdated: true },
+  ] },
+  { label: 'Comissões', route: '/pageprincipal/comissoes', icon: Calculator, isUpdated: true, children: [
+    { label: 'Regras de Comissão', route: '/pageprincipal/comissoes/regras', icon: ClipboardList, isUpdated: true },
+    { label: 'Cálculo de Comissão', route: '/pageprincipal/comissoes/calculo', icon: Calculator, isUpdated: true },
+    { label: 'Perfil do Vendedor', route: '/pageprincipal/comissoes/perfil', icon: UserRound, isUpdated: true },
+  ] },
+  { label: 'Controladoria', route: '/pageprincipal/controladoria', icon: BookOpen, isUpdated: true, children: [
+    { label: 'Lucratividade e Margens', route: '/pageprincipal/controladoria/lucratividade', icon: ClipboardList, isUpdated: true },
+    { label: 'Razão Geral', route: '/pageprincipal/controladoria/razao-geral', icon: Landmark, isUpdated: true },
+    { label: 'Cadastro de Decimais', route: '/pageprincipal/controladoria/cadastro-decimais', icon: Settings, isUpdated: true },
+    { label: 'Estorno Documental', route: '/pageprincipal/controladoria/retificacao-assistente', icon: FileText, isUpdated: true },
+    { label: 'Auditoria de Comissões', route: '/pageprincipal/controladoria/auditoria-comissoes', icon: Calculator, isUpdated: true },
+  ] },
   { label: 'Principal', route: '/pageprincipal', icon: Home },
   { label: 'Cadastros Mestres', route: '/pageprincipal/cadastros/produtos', icon: Boxes, children: [
     { label: 'Cadastro de Produtos', route: '/pageprincipal/cadastros/produtos', icon: Boxes, isUpdated: true },
@@ -56,22 +77,6 @@ const menus: MenuItem[] = [
   ] },
   { label: 'Configurações', route: '/pageprincipal/administracao-configuracoes', icon: Settings },
   { label: 'Configurações de Usuário', route: '/pageprincipal/configuracoes-usuario', icon: UserCog, isUpdated: true, minNivel: 8 },
-  { label: 'Financeiro', route: '/pageprincipal/financeiro', icon: Wallet, isUpdated: true, children: [
-    { label: 'Central Financeira', route: '/pageprincipal/financeiro', icon: Wallet, isUpdated: true },
-    { label: 'Conciliação Bancária', route: '/pageprincipal/financeiro/conciliacao', icon: Scale, isUpdated: true },
-    { label: 'Importação de Extrato', route: '/pageprincipal/financeiro/extrato', icon: Banknote, isUpdated: true },
-    { label: 'Lista de Preços por Cliente', route: '/pageprincipal/financeiro/lista-precos', icon: Percent, isUpdated: true },
-    { label: 'Cálculo de Comissões', route: '/pageprincipal/financeiro/comissoes', icon: Wallet, isUpdated: true },
-    { label: 'Regras de Comissão', route: '/pageprincipal/financeiro/comissoes/regras', icon: FileText, isUpdated: true },
-    { label: 'Perfil do Vendedor', route: '/pageprincipal/financeiro/comissoes/perfil', icon: Users, isUpdated: true },
-    { label: 'Auditoria de Comissões', route: '/pageprincipal/financeiro/auditoria-comissoes', icon: ShieldCheck, isUpdated: true },
-    { label: 'Cadastro de Decimais', route: '/pageprincipal/financeiro/decimais', icon: ClipboardList, isUpdated: true },
-    { label: 'Painel de Lucratividade', route: '/pageprincipal/financeiro/lucratividade', icon: FileText, isUpdated: true },
-    { label: 'Retificação de Pedido', route: '/pageprincipal/financeiro/retificacao', icon: RotateCcw, isUpdated: true },
-    { label: 'Assistente de Retificação', route: '/pageprincipal/financeiro/retificacao-assistente', icon: CircleHelp },
-    { label: 'Notas de Débito', route: '/pageprincipal/financeiro/notas-debito', icon: FileWarning, isUpdated: true },
-    { label: 'Configurações de Notas de Débito', route: '/pageprincipal/financeiro/notas-debito/configuracoes', icon: Settings, isUpdated: true },
-  ] },
   { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText, isUpdated: true, children: [
     { label: 'Central Fiscal', route: '/pageprincipal/fiscal', icon: FileText },
     { label: 'Ano Fiscal', route: '/pageprincipal/fiscal/ano', icon: BookOpen, isUpdated: true },
@@ -80,7 +85,7 @@ const menus: MenuItem[] = [
     { label: 'Estorno de Lançamentos', route: '/pageprincipal/fiscal/estorno', icon: RotateCcw, isUpdated: true },
     { label: 'Painel Razão Geral', route: '/pageprincipal/fiscal/razao', icon: Scale, isUpdated: true },
   ] },
-  { label: 'Central de Ajuda', route: '/pageprincipal/ajuda', icon: CircleHelp, isUpdated: true },
+  { label: 'Central de Ajuda', route: '/pageprincipal/ajuda', icon: CircleHelp },
 ]
 
 export default function ERPHorizontalShell({ children, operatorName = 'Usuário ERP' }: { children: ReactNode; operatorName?: string }) {
@@ -164,6 +169,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   }, [])
 
   const moduleLabel = pathname.startsWith('/pageprincipal/cadastros') ? 'Cadastros Mestres'
+    : pathname.startsWith('/pageprincipal/comissoes') || pathname.startsWith('/comissoes') ? 'Comissões'
+    : pathname.startsWith('/pageprincipal/controladoria') || pathname.startsWith('/controladoria') ? 'Controladoria'
     : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
     : pathname.startsWith('/pageprincipal/chao-de-fabrica') ? 'Chão de Fábrica'
     : pathname.startsWith('/pageprincipal/estoque') ? 'Estoque e Almoxarifado'
@@ -307,7 +314,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       </main>
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
       <BarraWindows11
-        ativo={pathname.startsWith('/pageprincipal/rh') ? 'rh' : pathname.startsWith('/pageprincipal/pcp/fichas-processo') ? 'fichas' : pathname.startsWith('/pageprincipal/compras/solicitacao') ? 'solicitacao' : pathname.startsWith('/pageprincipal/compras/requisicoes') ? 'requisicoes' : pathname.startsWith('/pageprincipal/compras') ? 'compras' : pathname.startsWith('/pageprincipal/qualidade/rpnc') ? 'rpnc' : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/pageprincipal/paquimetro') ? 'paq' : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'fiscal' : pathname.startsWith('/pageprincipal') ? 'home' : ''}
+        ativo={pathname.startsWith('/pageprincipal/comissoes') || pathname.startsWith('/comissoes') ? 'comissoes' : pathname.startsWith('/pageprincipal/controladoria') || pathname.startsWith('/controladoria') ? 'controladoria' : pathname.startsWith('/pageprincipal/financeiro') || pathname.startsWith('/financeiro') ? 'financeiro' : pathname.startsWith('/pageprincipal/rh') ? 'rh' : pathname.startsWith('/pageprincipal/pcp/fichas-processo') ? 'fichas' : pathname.startsWith('/pageprincipal/compras/solicitacao') ? 'solicitacao' : pathname.startsWith('/pageprincipal/compras/requisicoes') ? 'requisicoes' : pathname.startsWith('/pageprincipal/compras') ? 'compras' : pathname.startsWith('/pageprincipal/qualidade/rpnc') ? 'rpnc' : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/pageprincipal/paquimetro') ? 'paq' : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'fiscal' : pathname.startsWith('/pageprincipal') ? 'home' : ''}
         onAbrir={(id) => {
           const destinations: Record<string, string> = {
             home: '/pageprincipal',
@@ -322,6 +329,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
             solicitacao: '/pageprincipal/compras/solicitacao',
             requisicoes: '/pageprincipal/compras/requisicoes',
             rpnc: '/pageprincipal/qualidade/rpnc',
+            financeiro: '/pageprincipal/financeiro',
+            comissoes: '/pageprincipal/comissoes',
+            controladoria: '/pageprincipal/controladoria',
           }
           go(destinations[id] ?? '/pageprincipal')
         }}
