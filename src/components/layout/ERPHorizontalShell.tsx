@@ -5,6 +5,8 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { BarraWindows11 } from './BarraWindows11'
 import PCPTabletMenuModal from '../PCPTabletMenuModal'
+import PageIntroCard from './PageIntroCard'
+import { fallbackPageIntro, hasNativeIntroCard, resolvePageIntro } from './pageIntroCatalog'
 
 type MenuItem = {
   label: string
@@ -63,29 +65,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     return () => document.removeEventListener('mousedown', close)
   }, [])
 
-  // Atualização automática por mudanças reais no banco, sem botão manual.
-  // Não recarrega telas de lançamento/edição para não apagar dados ainda não gravados.
-  useEffect(() => {
-    let refreshTimer: number | undefined
-    // Cada montagem recebe um tópico exclusivo: evita reutilizar um canal Realtime
-    // ainda inscrito durante remontagens rápidas (StrictMode/navegação).
-    const channel = supabase
-      .channel(`erp-global-data-refresh-${Date.now()}-${Math.random().toString(36).slice(2)}`)
-      .on('postgres_changes', { event: '*', schema: 'public' }, () => {
-        if (document.visibilityState !== 'visible') return
-        const routeIsEditing = /\/(novo|editar|cadastro|pedido|rfq|emissao|configuracoes|configuracao|form|apontamento|recebimento|transferencia|inventario|assinatura|login)([-/]|$)/i.test(window.location.pathname)
-        const active = document.activeElement
-        const userIsTyping = active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement || active instanceof HTMLSelectElement || (active instanceof HTMLElement && active.isContentEditable)
-        if (routeIsEditing || userIsTyping) return
-        if (refreshTimer !== undefined) window.clearTimeout(refreshTimer)
-        refreshTimer = window.setTimeout(() => window.location.reload(), 900)
-      })
-      .subscribe()
-    return () => {
-      if (refreshTimer !== undefined) window.clearTimeout(refreshTimer)
-      void supabase.removeChannel(channel)
-    }
-  }, [])
+  // Atualização de dados é responsabilidade das páginas e consultas do módulo.
+  // O shell não força reload global: isso evita perda de formulários e edição em andamento.
 
   const moduleLabel = pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
     : pathname.startsWith('/pageprincipal/paquimetro') ? 'Qualidade / Paquímetro'
@@ -129,6 +110,13 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     : pathname.startsWith('/qualidade')
     ? { title: 'Qualidade', purpose: 'Registrar não conformidades, evidências, causa raiz, ações corretivas e validação.', steps: ['Identifique produto, lote, processo e ocorrência.', 'Descreva o problema e a contenção imediata.', 'Registre causa raiz e plano de ação.', 'Anexe evidências e conclua após validar eficácia.'], fields: ['RPNC: registro da não conformidade.', 'Lote/produto: rastreabilidade afetada.', 'Causa raiz: causa comprovada, não apenas o sintoma.', 'Ação/responsável/prazo: plano verificável.', 'Evidência: documento ou registro que comprova a eficácia.'] }
     : { title: 'Ajuda da tela atual', purpose: 'Use esta ajuda para entender a finalidade da tela e o preenchimento dos campos mais comuns.', steps: ['Leia a finalidade antes de alterar dados.', 'Preencha campos obrigatórios com registros existentes.', 'Revise os dados e salve; confirme a mensagem de resultado.', 'Use a Central de Ajuda para consultar procedimentos do módulo.'], fields: ['Pesquisa: localiza registros existentes.', 'Filtros: limitam os resultados exibidos.', 'Status: indica a etapa do processo.', 'Salvar: grava dados reais; se houver erro, corrija a mensagem apresentada.'] }
+
+  const resolvedIntro = resolvePageIntro(pathname)
+  const pageIntro = resolvedIntro ?? fallbackPageIntro({
+    module: moduleLabel ?? 'SYSNQRA ERP',
+    label: contextualHelp.title === 'Ajuda da tela atual' ? undefined : contextualHelp.title,
+    purpose: contextualHelp.purpose,
+  })
 
   const logout = async () => {
     await supabase.auth.signOut()
@@ -212,7 +200,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       </main>
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
       <BarraWindows11
-        ativo={pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/pageprincipal/paquimetro') ? 'paq' : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'fiscal' : pathname.startsWith('/pageprincipal') ? 'home' : ''}
+        ativo={pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/pageprincipal/paquimetro') ? 'paq' : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'fiscal' : pathname.startsWith('/pageprincipal/compras') || pathname.startsWith('/compras') ? 'compras' : pathname.startsWith('/pageprincipal') ? 'home' : ''}
+        operador={operatorName === 'Usuário ERP' ? sessionOperator : operatorName}
+        onDesligar={logout}
         onAbrir={(id) => {
           const destinations: Record<string, string> = {
             home: '/pageprincipal',
@@ -221,6 +211,10 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
             op: '/pageprincipal/pcp',
             paq: '/pageprincipal/paquimetro',
             fiscal: '/pageprincipal/fiscal',
+            compras: '/pageprincipal/compras',
+            fichas: '/pageprincipal/pcp',
+            solicitacao: '/pageprincipal/compras',
+            requisicoes: '/pageprincipal/compras',
           }
           go(destinations[id] ?? '/pageprincipal')
         }}

@@ -1,17 +1,23 @@
 import { useEffect, useRef, useState } from "react";
 import type { LucideIcon } from "lucide-react";
-import { LayoutGrid, Search, CalendarClock, Power, User, Ruler, FileText, Home } from "lucide-react";
+import { LayoutGrid, Search, CalendarClock, Power, User, Ruler, FileText, Home, ShoppingCart, ClipboardList, FilePlus2, Users } from "lucide-react";
 
-type App = { id: string; nome: string; icone: LucideIcon; cor: string };
+type App = { id: string; nome: string; icone: LucideIcon; cor: string; indisponivel?: boolean };
 
 const APPS: App[] = [
   { id: "home", nome: "Página principal", icone: Home, cor: "#123b50" },
+  { id: "rh", nome: "RH / Departamento Pessoal", icone: Users, cor: "#f97316", indisponivel: true },
+  { id: "fichas", nome: "Fichas de Processo", icone: ClipboardList, cor: "#f97316" },
   { id: "pcp", nome: "PCP", icone: CalendarClock, cor: "#0078d4" },
   { id: "paq", nome: "Paquímetro", icone: Ruler, cor: "#111827" },
   { id: "fiscal", nome: "Fiscal", icone: FileText, cor: "#d97706" },
+  { id: "compras", nome: "Central de Compras", icone: ShoppingCart, cor: "#d97706" },
+  { id: "solicitacao", nome: "Solicitação de Compra", icone: FilePlus2, cor: "#f97316" },
+  { id: "requisicoes", nome: "Requisições de Compra", icone: ClipboardList, cor: "#f97316" },
+  { id: "rpnc", nome: "RPNC", icone: ClipboardList, cor: "#111827", indisponivel: true },
 ];
 
-export function BarraWindows11({ ativo = "home", onAbrir, onDesligar }: { ativo?: string; onAbrir?: (id: string) => void; onDesligar?: () => void | Promise<void> }) {
+export function BarraWindows11({ ativo = "home", operador = "Operador autenticado", onAbrir, onDesligar }: { ativo?: string; operador?: string; onAbrir?: (id: string) => void; onDesligar?: () => void | Promise<void> }) {
   const [menu, setMenu] = useState(false);
   const [busca, setBusca] = useState("");
   const ref = useRef<HTMLDivElement>(null);
@@ -39,7 +45,7 @@ export function BarraWindows11({ ativo = "home", onAbrir, onDesligar }: { ativo?
           <div className="w11-title">Fixados</div>
           <div className="w11-grid">
             {filtrados.map((a) => (
-              <button key={a.id} className="w11-app" onClick={() => abrir(a.id)}>
+              <button key={a.id} className="w11-app" disabled={a.indisponivel} title={a.indisponivel ? "Rota da tela ainda não está registrada no roteador" : a.nome} onClick={() => abrir(a.id)}>
                 <span className="w11-appicon" style={{ background: a.cor }}><a.icone size={20} color="#fff" /></span>
                 <span>{a.nome}</span>
               </button>
@@ -47,7 +53,7 @@ export function BarraWindows11({ ativo = "home", onAbrir, onDesligar }: { ativo?
             {filtrados.length === 0 && <div className="w11-vazio">Nada encontrado</div>}
           </div>
           <div className="w11-foot">
-            <div className="w11-user"><span className="w11-avatar"><User size={16} /></span>Operador PCP</div>
+            <div className="w11-user"><span className="w11-avatar"><User size={16} /></span>{operador}</div>
             <button className="w11-ico" aria-label="Desligar" onClick={() => { void onDesligar?.(); setMenu(false); }}><Power size={16} /></button>
           </div>
         </div>
@@ -59,7 +65,7 @@ export function BarraWindows11({ ativo = "home", onAbrir, onDesligar }: { ativo?
             <LayoutGrid size={20} color="#0078d4" />
           </button>
           <button className="w11-btn" aria-label="Pesquisar" onClick={() => setMenu(true)}><Search size={18} /></button>
-          {APPS.slice(0, 6).map((a) => (
+          {APPS.map((a) => (
             <button key={a.id} className={`w11-btn ${ativo === a.id ? "ativo" : ""}`} title={a.nome} onClick={() => abrir(a.id)}>
               <a.icone size={20} color={a.cor} />
             </button>
@@ -92,7 +98,7 @@ const css = `
 .w11-title{margin:16px 36px 8px;font-weight:600;font-size:14px}
 .w11-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:10px;row-gap:30px;padding:4px 24px 28px;min-height:190px;align-content:start}
 .w11-app{min-width:0;min-height:88px;border:0;background:transparent;border-radius:4px;padding:8px 4px 12px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:10px;font-size:12px;line-height:16px;cursor:pointer;color:inherit}
-.w11-app:hover{background:rgba(255,255,255,.8)}
+.w11-app:hover{background:rgba(255,255,255,.8)}.w11-app:disabled{opacity:.42;cursor:not-allowed}.w11-app:disabled:hover{background:transparent}
 .w11-appicon{flex:0 0 36px;width:36px;height:36px;border-radius:4px;display:grid;place-items:center}
 .w11-app>span:last-child{text-align:center;min-height:16px;max-width:100%;overflow-wrap:anywhere}
 .w11-vazio{grid-column:1/-1;text-align:center;color:#666;padding:30px;font-size:13px}
