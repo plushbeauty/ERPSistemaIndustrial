@@ -317,3 +317,90 @@ body{background:var(--ds-bg)}
 .icd-clean .icd-alert{margin:0!important;background:#FFF8E8!important;border-color:#E8C77A!important;color:#7B5B18!important}.icd-clean .icd-alert span{color:#8A6B2D!important}
 @media(max-width:900px){.v7-topbar{height:auto!important;min-height:78px!important;padding:10px 16px!important}.v7-top-brand img{width:50px!important;height:50px!important}.v7-top-brand strong{font-size:16px!important}.v7-top-actions{gap:10px!important}.v7-top-date{padding-right:10px!important}.v7-top-date strong{font-size:12px!important}.v7-header.v7-page-header{padding:16px 14px 8px!important}.v7-content{padding:8px 14px 24px!important}.icd-clean .icd-overview-grid{grid-template-columns:1fr!important}}
 @media(max-width:620px){.v7-topbar{padding:9px 12px!important}.v7-top-brand img{width:44px!important;height:44px!important}.v7-top-brand small{display:none!important}.v7-top-actions{gap:7px!important}.v7-top-date small{display:none!important}.v7-top-date strong{font-size:11px!important}.v7-top-user-simple{font-size:12px!important}.v7-top-exit{font-size:0!important;width:38px!important;padding:0!important}.v7-page-heading-line{align-items:flex-start!important;flex-direction:column!important;gap:7px!important}.v7-header.v7-page-header h1{font-size:24px!important}.icd-clean .icd-kpis{grid-template-columns:1fr 1fr!important}}
+
+
+/* SYSNQRA INDUSTRIAL DESIGN TOKENS — REV 2026-10-28 */
+/* Tailwind 3-compatible implementation. Do not use Tailwind v4 @theme in this repository. */
+:root {
+  --color-brand-primary: oklch(0.17 0.024 258.39);
+  --color-brand-secondary: oklch(0.12 0.016 258.39);
+  --color-brand-accent: oklch(0.59 0.166 45.44);
+  --color-ui-bg: oklch(0.968 0.007 247.996);
+  --color-ui-border: oklch(0.920 0.007 247.996);
+  --color-ui-success: oklch(0.723 0.144 144.111);
+  --font-display: "Inter", "Malgun Gothic", sans-serif;
+  --spacing-input-h: 2.25rem;
+}
+
+.erp-input-base,
+.erp-select-base {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: var(--spacing-input-h);
+  min-height: var(--spacing-input-h);
+  box-sizing: border-box;
+  padding: 0 0.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.25rem;
+  background: #fff;
+  color: #334155;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.erp-input-base { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.erp-select-base { font-family: var(--font-display); font-weight: 600; }
+.erp-input-base:focus,
+.erp-select-base:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgb(59 130 246 / 12%);
+}
+.erp-input-base:focus-visible,
+.erp-select-base:focus-visible { outline: 2px solid transparent; }
+.erp-input-base:disabled,
+.erp-select-base:disabled { cursor: not-allowed; opacity: 0.6; background: #f8fafc; }
+
+.erp-label-base {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1.2;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.erp-grid-row {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 0.75rem;
+  align-items: end;
+}
+.erp-grid-col-1 { grid-column: span 1 / span 1; }
+.erp-grid-col-2 { grid-column: span 2 / span 2; }
+.erp-grid-col-3 { grid-column: span 3 / span 3; }
+.erp-grid-col-4 { grid-column: span 4 / span 4; }
+.erp-grid-col-5 { grid-column: span 5 / span 5; }
+.erp-grid-col-6 { grid-column: span 6 / span 6; }
+.erp-grid-col-7 { grid-column: span 7 / span 7; }
+.erp-grid-col-8 { grid-column: span 8 / span 8; }
+.erp-grid-col-9 { grid-column: span 9 / span 9; }
+.erp-grid-col-10 { grid-column: span 10 / span 10; }
+.erp-grid-col-11 { grid-column: span 11 / span 11; }
+.erp-grid-col-12 { grid-column: span 12 / span 12; }
+
+@media (max-width: 900px) {
+  .erp-grid-row { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .erp-grid-col-1, .erp-grid-col-2, .erp-grid-col-3 { grid-column: span 3 / span 3; }
+  .erp-grid-col-4, .erp-grid-col-5, .erp-grid-col-6,
+  .erp-grid-col-7, .erp-grid-col-8, .erp-grid-col-9,
+  .erp-grid-col-10, .erp-grid-col-11, .erp-grid-col-12 { grid-column: span 6 / span 6; }
+}
+@media (max-width: 600px) {
+  .erp-grid-row { grid-template-columns: minmax(0, 1fr); }
+  .erp-grid-row > [class*="erp-grid-col-"] { grid-column: 1 / -1; }
+}
