@@ -1,12 +1,86 @@
-import { Save } from 'lucide-react'
-import { useEffect,useMemo,useState } from 'react'
+import { useState } from 'react'
+import { ArrowLeft, Save } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
-type Account={id:string;codigo:string;nome:string;banco:string|null}
-type Line={id:string;descricao:string;valor:number;saldoliquido:number}
-const input='h-7 rounded-md border border-gray-200 bg-white px-2 text-[11px]'
-export default function AssistenteRetificacao(){const [forma,setForma]=useState('');const [conta,setConta]=useState('');const [exige,setExige]=useState(false);const [accounts,setAccounts]=useState<Account[]>([]);const [lines,setLines]=useState<Line[]>([{id:'1',descricao:'',valor:0,saldoliquido:0},{id:'2',descricao:'',valor:0,saldoliquido:0}]);const [msg,setMsg]=useState('')
-useEffect(()=>{void (async()=>{const r=await supabase.from('erp_contas_bancarias').select('id,codigo,nome,banco').eq('ativo',true).order('nome');if(!r.error)setAccounts((r.data??[]) as Account[])})()},[])
-const filtered=useMemo(()=>forma==='Boleto'?accounts.filter(a=>Boolean(a.banco)):accounts,[accounts,forma])
-const changeDescription=(value:string)=>setLines(rows=>rows.map((r,i)=>i===0?{...r,descricao:value}:{...r,descricao:value}))
-const save=async()=>{if(exige&&!conta){setMsg('Conta bancária é obrigatória.');return}setMsg('Retificação pronta para gravação após validação da linha financeira.')}
-return <main className="min-h-full bg-slate-50 p-3"><div className="mb-2 flex items-center gap-2"><button className={input+' px-2 font-bold text-gray-600'} onClick={()=>window.history.back()}>← Voltar</button><h1 className="text-[12px] font-bold">⚙️ ASSISTENTE DE RETIFICAÇÃO E COMPLIANCE FINANCEIRO</h1></div><section className="rounded-md border border-gray-200 bg-white p-2 shadow-sm"><div className="grid grid-cols-[95px_140px_160px] gap-2"><div><label className="mb-0.5 block text-[10px] font-bold uppercase text-gray-500">Nº Registro</label><input className={input+' w-[95px] bg-gray-100'} readOnly value="—"/></div><div><label className="mb-0.5 block text-[10px] font-bold uppercase text-gray-500">Documento Origem</label><input className={input+' w-[140px]'} value="—" readOnly/></div><div><label className="mb-0.5 block text-[10px] font-bold uppercase text-gray-500">Vendedor Atribuído</label><input className={input+' w-[160px]'} value="" onChange={()=>undefined}/></div></div><div className="mt-2 flex items-end gap-2"><div><label className="mb-0.5 block text-[10px] font-bold uppercase text-gray-500">Forma de Pagamento</label><select className={input+' w-[160px]'} value={forma} onChange={e=>{setForma(e.target.value);setConta('')}}><option value="">Selecione</option><option>Boleto</option><option>PIX</option><option>Depósito Carteira</option></select></div><div><label className="mb-0.5 block text-[10px] font-bold uppercase text-gray-500">Conta Bancária Vinculada</label><select required={exige} className={input+' w-[180px]'} value={conta} onChange={e=>setConta(e.target.value)}><option value="">Selecione</option>{filtered.map(a=><option key={a.id} value={a.id}>{a.codigo} · {a.nome}</option>)}</select></div><label className="flex h-7 w-[70px] items-center gap-1 text-[10px] font-bold"><input type="checkbox" checked={exige} onChange={e=>setExige(e.target.checked)}/>Exige Banco</label></div><div className="scroll-fade-x mt-2 overflow-auto rounded border border-gray-200"><table className="w-full text-[10px]"><thead className="bg-slate-700 text-white"><tr className="h-7"><th className="p-1 text-left">Descrição</th><th className="p-1 text-right">Valor</th><th className="p-1 text-right">Saldo Líquido</th></tr></thead><tbody>{lines.map((l,i)=><tr key={l.id} className="h-[26px] border-b even:bg-slate-50"><td className="p-1"><input className={input+' w-full'} value={l.descricao} onChange={e=>changeDescription(e.target.value)} placeholder={i===0?'Digite o histórico':'copiado da linha 1'}/></td><td className="p-1 text-right text-gray-500">{l.valor.toFixed(2)}</td><td className="p-1 text-right text-gray-500">{l.saldoliquido.toFixed(2)}</td></tr>)}</tbody></table></div><div className="mt-4 flex justify-end gap-2"><button className="h-7 w-[120px] rounded-md bg-blue-600 text-[11px] font-bold text-white" onClick={()=>void save()}><Save size={12} className="mr-1 inline"/>Gravar Alteração</button><button className={input+' w-[80px]'} onClick={()=>{setForma('');setConta('');setExige(false);setMsg('')}}>Limpar</button></div>{msg&&<div className="mt-1 text-[10px] font-bold text-gray-600">{msg}</div>}</section></main>}
+
+const input = 'h-9 w-full rounded-md border border-gray-200 bg-white px-3 text-xs text-gray-800 outline-none focus:border-blue-500'
+const label = 'mb-1 block text-[10px] font-bold uppercase tracking-wide text-gray-500'
+
+export default function AssistenteRetificacao() {
+  const navigate = useNavigate()
+  const [documento, setDocumento] = useState('')
+  const [dataEstorno, setDataEstorno] = useState(new Date().toISOString().slice(0, 10))
+  const [justificativa, setJustificativa] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+
+  const save = async () => {
+    setError('')
+    setMessage('')
+    if (!documento.trim() || !dataEstorno || !justificativa.trim()) {
+      setError('Informe documento de origem, data e justificativa para registrar o estorno.')
+      return
+    }
+    setSaving(true)
+    try {
+      const result = await supabase.rpc('erp_fiscal_estornar_documento', {
+        p_documento: documento.trim(),
+        p_data: dataEstorno,
+        p_justificativa: justificativa.trim(),
+      })
+      if (result.error) throw result.error
+      setMessage('Registro de estorno documental gravado no PostgreSQL.')
+      setDocumento('')
+      setJustificativa('')
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Não foi possível registrar o estorno.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <main className="min-h-full bg-slate-50 p-3 text-gray-800">
+      <div className="mx-auto max-w-[1100px] space-y-3">
+        <header className="flex items-center gap-2">
+          <button type="button" onClick={() => navigate(-1)} className="inline-flex h-8 items-center gap-1 rounded-md border border-gray-200 bg-white px-3 text-[11px] font-bold text-gray-600">
+            <ArrowLeft size={13} /> Voltar
+          </button>
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-blue-700">ERP INDUSTRIAL • CONTROLADORIA</p>
+            <h1 className="text-[13px] font-bold">Assistente de Retificação e Compliance Financeiro</h1>
+          </div>
+        </header>
+
+        <section className="rounded-md border border-gray-200 bg-white p-3 shadow-sm">
+          <div className="mb-3 text-xs font-bold text-gray-700">Registro de estorno documental</div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_180px]">
+            <div>
+              <label className={label}>Documento de origem *</label>
+              <input className={input} value={documento} onChange={event => setDocumento(event.target.value)} placeholder="Número ou identificação do documento" maxLength={120} />
+            </div>
+            <div>
+              <label className={label}>Data do estorno *</label>
+              <input className={input} type="date" value={dataEstorno} onChange={event => setDataEstorno(event.target.value)} />
+            </div>
+            <div className="sm:col-span-2">
+              <label className={label}>Justificativa *</label>
+              <textarea className="min-h-24 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-xs text-gray-800 outline-none focus:border-blue-500" value={justificativa} onChange={event => setJustificativa(event.target.value)} placeholder="Descreva o motivo e a evidência que fundamenta o estorno." maxLength={2000} />
+            </div>
+          </div>
+          <p className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900">
+            Este procedimento registra o estorno documental e sua justificativa na tabela de controladoria. Ele não exclui nem altera automaticamente lançamentos bancários ou documentos fiscais originais.
+          </p>
+          {error && <div role="alert" className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{error}</div>}
+          {message && <div role="status" className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">{message}</div>}
+          <div className="mt-3 flex justify-end">
+            <button type="button" disabled={saving} onClick={() => void save()} className="inline-flex h-9 items-center gap-2 rounded-md bg-blue-600 px-4 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-50">
+              <Save size={14} /> {saving ? 'Gravando…' : 'Registrar estorno'}
+            </button>
+          </div>
+        </section>
+      </div>
+    </main>
+  )
+}
