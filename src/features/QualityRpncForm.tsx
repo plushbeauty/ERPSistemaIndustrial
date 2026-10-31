@@ -568,8 +568,8 @@ export default function QualityRpncForm() {
     try {
       const signed = await supabase.storage.from(BUCKET).createSignedUrl(path, 120)
       if (signed.error) throw signed.error
-      if (!signed.data?.url) throw new Error('O bucket não retornou o endereço do arquivo.')
-      window.open(signed.data.url, '_blank', 'noopener')
+      if (!signed.data?.signedUrl) throw new Error('O bucket não retornou o endereço do arquivo.')
+      window.open(signed.data.signedUrl, '_blank', 'noopener')
     } catch (cause) {
       setError(mensagem(cause))
     }
