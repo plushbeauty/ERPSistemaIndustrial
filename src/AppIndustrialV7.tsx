@@ -8,7 +8,9 @@ import DashboardPrincipal from './components/IndustrialCommandDashboard'
 export default function AppIndustrialV7() {
   const navigate = useNavigate()
   const handleNavigate = (route: string) => {
-    if (route === '/fiscal' || route.startsWith('/fiscal/')) {
+    if (route === '/qualidade/rpnc' || route.startsWith('/qualidade/rpnc/')) {
+      navigate('/pageprincipal/qualidade/rpnc')
+    } else if (route === '/fiscal' || route.startsWith('/fiscal/')) {
       navigate('/pageprincipal/fiscal')
     } else if (route === '/paquimetro' || route === '/qualidade/paquimetro') {
       navigate('/pageprincipal/paquimetro')
