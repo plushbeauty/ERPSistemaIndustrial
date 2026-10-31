@@ -20,6 +20,7 @@ const menus: MenuItem[] = [
   { label: 'Principal', route: '/pageprincipal', icon: Home },
   { label: 'Engenharia e PCP', route: '/pageprincipal/pcp', icon: Factory, children: [
     { label: 'Central PCP', route: '/pageprincipal/pcp', icon: ClipboardList },
+    { label: 'Ordens de Produção', route: '/pageprincipal/pcp/ordens-producao', icon: ClipboardList, isUpdated: true },
   ] },
   { label: 'Qualidade / Paquímetro', route: '/pageprincipal/paquimetro', icon: Ruler, children: [
     { label: 'Paquímetro Digital', route: '/pageprincipal/paquimetro', icon: Ruler },
