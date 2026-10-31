@@ -1,6 +1,12 @@
 /**
- * @DATA_REVISAO_APROVACAO: 2026-10-18
- * @REVISAO: ALMOX-RECEBIMENTO-PREMIUM-UI-01
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
+ * @DATA_REVISAO_ANTERIOR: 2026-10-18
+ * @REVISAO_ANTERIOR: ALMOX-RECEBIMENTO-PREMIUM-UI-01
  * @STATUS: SUBSTITUICAO_INTEGRAL_VALIDAR_CI
  * @ESCOPO: recebimento de lotes, controles compactos h-8, grid responsivo de 12 colunas.
  * @BASE: fluxo original existente no ERP; mantidos tenant da sessão, Storage e RPC transacional.

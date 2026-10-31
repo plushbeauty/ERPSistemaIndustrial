@@ -1,6 +1,12 @@
 /**
- * @DATA_REVISAO_APROVACAO: 2026-10-18
- * @STATUS_APROVACAO: POP-AJUDA-PARAMETROS-CODIGO-OK
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
+ * @DATA_REVISAO_ANTERIOR: 2026-10-18
+ * @STATUS_ANTERIOR: POP-AJUDA-PARAMETROS-CODIGO-OK
  * POP-ENG-009 — procedimento operacional para parâmetros de codificação de SKU.
  */
 import { ArrowLeft, Hash, ShieldCheck, Settings2 } from 'lucide-react'

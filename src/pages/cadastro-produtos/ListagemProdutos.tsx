@@ -1,8 +1,14 @@
 /**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
  * SYNQRA ERP — LISTAGEM MESTRE DE PRODUTOS
- * @DATA_REVISAO_APROVACAO: 2026-10-21
- * @REVISAO: REV-PRODUTO-UI-009 — padrão claro PCP, filtros compactos e alinhamento responsivo
- * @STATUS_APROVACAO: REVISÃO VISUAL AUTORIZADA EM 2026-10-21
+ * @DATA_REVISAO_ANTERIOR: 2026-10-21
+ * @REVISAO_ANTERIOR: REV-PRODUTO-UI-009 — padrão claro PCP, filtros compactos e alinhamento responsivo
+ * @STATUS_ANTERIOR: REVISÃO VISUAL AUTORIZADA EM 2026-10-21
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Box, Building2, Filter, HelpCircle, Layers, Printer, RefreshCw, Search, Tag } from 'lucide-react'

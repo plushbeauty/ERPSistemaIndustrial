@@ -1,3 +1,9 @@
+/**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
 import { AlertTriangle,CheckCircle,List,ScrollText,Shuffle } from 'lucide-react'
 import { NavLink,Outlet } from 'react-router-dom'
 const tabs=[['match','Match and Reconcile',Shuffle],['statement','Reconciliation Statement',ScrollText],['transactions','Transactions',List],['clearance','Clearance Summary',CheckCircle],['incorrect','Incorrectly Cleared',AlertTriangle]] as const

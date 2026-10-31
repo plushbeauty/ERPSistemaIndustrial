@@ -1,11 +1,17 @@
 /**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 13:00 BRT
  * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
  * ID da Revisão: REV-059
  * Data da revisão autorizada: 2026-10-22
- * Revisão: REV-PRODUTO-UI-013 — legibilidade do cadastro (campos preenchendo a célula do grid, tipografia e alturas no padrão ERP)
+ * @REVISAO_ANTERIOR: REV-PRODUTO-UI-013 — legibilidade do cadastro (campos preenchendo a célula do grid, tipografia e alturas no padrão ERP)
  * Status: consolidação visual preservando CRUD, segurança por empresa, estoque derivado, engenharia e fiscal.
  * Alterações: apenas layout/estilo; nenhum campo, consulta, validação ou gravação foi alterado.
  * Dados demonstrativos/fallbacks não são adicionados; falhas de consulta permanecem explícitas.
@@ -415,7 +421,7 @@ export default function ProdutosVendasIndustrial(){
       @media(max-width:700px){.product-master-screen .product-form-grid{grid-template-columns:repeat(12,minmax(0,1fr))}.product-master-screen .product-form-grid>*{grid-column:span 6!important}.product-master-screen .product-form-grid .product-unit-row{grid-column:span 12!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.product-master-screen .product-unit-row label{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(14px,auto) 40px;gap:5px}.product-master-screen .product-general-row>*:nth-child(3),.product-master-screen .product-general-row>*:nth-child(4){grid-column:span 12!important}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 12!important}.product-master-screen .product-responsive-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-responsive-grid{row-gap:12px}.product-master-screen .product-tabs button{padding:10px 12px!important;font-size:12px!important}.product-master-screen .product-responsive-grid>*{grid-column:span 1!important}.product-master-screen .product-inline-create{grid-template-columns:1fr}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 1!important}}
     `}</style>
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,padding:'12px 14px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
-      <div><div style={{fontSize:12,fontWeight:900,letterSpacing:'.06em',color:'#2D8DB8'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'3px 0 0',fontSize:22,fontWeight:900,color:'#123B50'}}>Cadastro de Produtos</h1></div>
+      <div style={{fontSize:12,fontWeight:900,letterSpacing:'.06em',color:'#2D8DB8'}}>CADASTROS • PRODUTOS</div>
       <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
         <button type="button" onClick={newProduct} style={btn('primary')}><Plus size={17}/>Novo</button>
         <input ref={importRef} type="file" accept=".xlsx,.xls,.csv" onChange={importExcel} style={{display:'none'}} />

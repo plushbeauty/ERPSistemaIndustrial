@@ -1,6 +1,12 @@
 /**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
  * SYSNQRA — Central RPNC multiorigem e relatório para cliente
- * Revisão: RPNC-MULTIORIGEM-2026-10-30-R1
+ * @REVISAO_ANTERIOR: RPNC-MULTIORIGEM-2026-10-30-R1
  * Ajuste: ciclo SGQ completo (8D simplificado) — criação E edição do registro com transição de status,
  * verificação de eficácia, e seleção de cliente/produto/OP/responsável por cadastro (sem UUID manual).
  * Dados reais em erp_rpnc; acesso condicionado à sessão e ao RLS existente.

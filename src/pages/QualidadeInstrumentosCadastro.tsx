@@ -1,6 +1,12 @@
 /**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
  * SYSNQRA SISTEMAS INDUSTRIAIS — QUALIDADE / METROLOGIA
- * Revisão: METRO-002 | Data: 22/10/2026
+ * @REVISAO_ANTERIOR: METRO-002 | Data: 22/10/2026
  * Escopo: cadastro real de instrumentos, prazos de calibração e bloqueio visual por vencimento.
  * Fonte de dados: public.erp_equipamentos_medicao; sem dados de demonstração.
  */

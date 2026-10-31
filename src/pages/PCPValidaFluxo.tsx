@@ -1,9 +1,15 @@
 /**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
  * =========================================================================
  * SYSNQRA — PCP / ENGENHARIA DE PROCESSO
  * Módulo: Validador de Fluxo de Estoque e Roteamento para OP
  * Arquivo: src/pages/PCPValidaFluxo.tsx
- * Revisão: PCP-FLOW-SIM-001 | 2026-10-21
+ * @REVISAO_ANTERIOR: PCP-FLOW-SIM-001 | 2026-10-21
  * Escopo: SIMULAÇÃO local; não grava estoque, reservas ou ordens no banco.
  * =========================================================================
  */

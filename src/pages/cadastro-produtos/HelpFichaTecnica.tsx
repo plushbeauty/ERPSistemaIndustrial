@@ -1,6 +1,12 @@
 /**
- * @DATA_REVISAO_APROVACAO: 2026-10-18
- * @STATUS_APROVACAO: POP-AJUDA-FICHA-TECNICA-OK
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
+ * @DATA_REVISAO_ANTERIOR: 2026-10-18
+ * @STATUS_ANTERIOR: POP-AJUDA-FICHA-TECNICA-OK
  * POP-ENG-002 — procedimento de abertura e validação de fichas técnicas.
  */
 import { ArrowLeft, Cpu, ShieldCheck, Tag } from 'lucide-react'

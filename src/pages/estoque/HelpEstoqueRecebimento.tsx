@@ -1,6 +1,12 @@
 /**
- * @DATA_REVISAO_APROVACAO: 2026-10-18
- * @REVISAO: POP-EST-012-01
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
+ * @DATA_REVISAO_ANTERIOR: 2026-10-18
+ * @REVISAO_ANTERIOR: POP-EST-012-01
  * @STATUS: AJUDA_OPERACIONAL_RECEBIMENTO
  * @ESCOPO: procedimento operacional para recebimento de insumos e rastreabilidade de laudos.
  */

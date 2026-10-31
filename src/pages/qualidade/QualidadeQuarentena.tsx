@@ -1,8 +1,14 @@
 /**
- * @DATA_REVISAO_APROVACAO: 2026-10-19
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
+ * @DATA_REVISAO_ANTERIOR: 2026-10-19
  * @DESENVOLVEDOR: FernandoSch
  * @NOME_SISTEMA: MOLDPLÁS ERP INDUSTRIAL
- * @STATUS_APROVACAO: QUALIDADE-QUARENTENA-STEEL-BLUE-REVISAO
+ * @STATUS_ANTERIOR: QUALIDADE-QUARENTENA-STEEL-BLUE-REVISAO
  * @ESCOPO: Interface compacta; retenção transacional existente preservada via erp_reter_lote.
  */
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'

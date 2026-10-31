@@ -1,9 +1,15 @@
 /**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
  * ERPSis — CONTROLE DE REVISÃO VISUAL
- * @DATA_REVISAO_APROVACAO: 2026-10-19
+ * @DATA_REVISAO_ANTERIOR: 2026-10-19
  * @DESENVOLVEDOR: FernandoSch
  * @NOME_SISTEMA: MOLDPLÁS ERP INDUSTRIAL
- * @STATUS_APROVACAO: INSPECOES-LOTES-STEEL-BLUE-OK
+ * @STATUS_ANTERIOR: INSPECOES-LOTES-STEEL-BLUE-OK
  * Split-screen, tabela densa, grid de 12 colunas, controles h-8 e cantos retos.
  * Contrato de dados preservado: tabelas existentes, tenant ativo, RLS e RPC transacional.
  */

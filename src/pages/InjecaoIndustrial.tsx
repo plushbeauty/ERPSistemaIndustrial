@@ -1,3 +1,9 @@
+/**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
 import { useEffect, useMemo, useState } from 'react'
 import { Boxes, Factory, History, PackageSearch, Pencil, Plus, RefreshCw, Search, Settings2, ShieldCheck, XCircle } from 'lucide-react'
 import VendasLayout, { type SalesNavSection } from './VendasLayout'

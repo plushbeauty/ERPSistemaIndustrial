@@ -1,8 +1,14 @@
 /**
- * @DATA_REVISAO_APROVACAO: 2026-10-19
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
+ * @DATA_REVISAO_ANTERIOR: 2026-10-19
  * @DESENVOLVEDOR: FernandoSch
  * @NOME_SISTEMA: MOLDPLÁS ERP INDUSTRIAL
- * @STATUS_APROVACAO: LIBERACAO-LOTES-INTEGRADO-REVISAO
+ * @STATUS_ANTERIOR: LIBERACAO-LOTES-INTEGRADO-REVISAO
  * @ESCOPO: registro documental de parecer SGQ; não efetua liberação transacional do estoque.
  */
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'

@@ -1,6 +1,12 @@
 /**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
  * SYSNQRA ERP & SGQ INDUSTRIAL — Controle de Desenhos Técnicos e Moldes
- * REVISAO: REV-DESENHOS-CAD-001 | DATA: 2026-10-20
+ * @REVISAO_ANTERIOR: REV-DESENHOS-CAD-001 | DATA: 2026-10-20
  * ESCOPO: cadastro de revisões por empresa, consulta e homologação com RPC protegida.
  * GED documental geral e telas aprovadas permanecem intactos.
  */

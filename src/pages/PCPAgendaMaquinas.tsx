@@ -1,4 +1,10 @@
 /**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
  * REVISÃO: 2026-10-23 · REV-PCP-AGENDA-007
  * Alteração: consultas paginadas e limpeza de dados/seleção/calendário anteriores antes de revalidar a empresa da sessão.
  * Preservado: RPCs, filtros por empresa_id, regras operacionais e layout aprovado.

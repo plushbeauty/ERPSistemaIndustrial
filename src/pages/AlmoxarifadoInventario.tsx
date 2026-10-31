@@ -1,6 +1,12 @@
 /**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
  * SYSNQRA ERP & SGQ INDUSTRIAL
- * Revisão: 1.1 | Data: 22/10/2026
+ * @REVISAO_ANTERIOR: 1.1 | Data: 22/10/2026
  * Escopo: Almoxarifado mestre, rastreabilidade, alertas de validade e fila FIFO.
  * Fonte de verdade: erp_estoque_lotes_rastreabilidade + erp_produtos.
  * Segurança: empresa obtida no banco e filtro de tenant em todas as leituras.

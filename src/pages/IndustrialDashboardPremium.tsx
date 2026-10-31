@@ -1,3 +1,9 @@
+/**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
 import { useEffect, useMemo, useState } from 'react'
 import { Activity, AlertTriangle, Boxes, CalendarDays, CheckCircle2, ClipboardCheck, Factory, Gauge, Package, RefreshCw, Settings, ShieldCheck, Truck, Users, Wrench, ArrowUpRight } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'

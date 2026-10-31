@@ -1,6 +1,12 @@
 /**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
  * SYSNQRA ERP & SGQ INDUSTRIAL
- * Revisão: 2026-10-20 | Fluxo de caixa real com escopo por empresa.
+ * @REVISAO_ANTERIOR: 2026-10-20 | Fluxo de caixa real com escopo por empresa.
  * Mantém IndustrialPageShell, sem dados fictícios e sem fallback de persistência.
  */
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'

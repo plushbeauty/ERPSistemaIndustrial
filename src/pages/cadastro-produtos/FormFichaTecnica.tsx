@@ -1,7 +1,13 @@
 /**
- * @DATA_REVISAO_APROVACAO: 2026-10-21
- * @REVISAO: REV-PRODUTO-UI-009 — controles compactos no padrão claro PCP
- * @STATUS_APROVACAO: REVISÃO VISUAL AUTORIZADA EM 2026-10-21
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
+ * @DATA_REVISAO_ANTERIOR: 2026-10-21
+ * @REVISAO_ANTERIOR: REV-PRODUTO-UI-009 — controles compactos no padrão claro PCP
+ * @STATUS_ANTERIOR: REVISÃO VISUAL AUTORIZADA EM 2026-10-21
  * ESCOPO: Ficha técnica do cadastro mestre; persistência real no Supabase e isolamento por empresa.
  */
 import { useEffect, useState } from 'react'

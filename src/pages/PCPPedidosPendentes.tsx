@@ -1,9 +1,15 @@
 /**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
  * =========================================================================
  * SYSNQRA SISTEMAS INDUSTRIAIS — PCP & GESTÃO DA PRODUÇÃO
  * Módulo: Ficha de Pedidos Pendentes e Rastreabilidade Fabril da Peça
  * Arquivo: src/pages/PCPPedidosPendentes.tsx
- * Revisão: IT-PCP-PEDIDOS-005 | 2026-10-23
+ * @REVISAO_ANTERIOR: IT-PCP-PEDIDOS-005 | 2026-10-23
  * Padrão Visual: SYSNQRA Industrial Compacto (#F4FBFD, #123B50, #2D8DB8, #48B7C7)
  * Esteira de Status:
  *   🔴 FALTA FABRICAR   — Sem estoque suficiente e sem OP vinculada

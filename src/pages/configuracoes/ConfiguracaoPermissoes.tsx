@@ -1,3 +1,9 @@
+/**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
 /*
  * REVISÃO TÉCNICA: 16/10/2026
  * Revisado: leitura do perfil pela querystring, catálogo de permissões documentado, seleção do perfil, gravação via RPC existente e compactação da matriz RBAC.

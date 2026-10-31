@@ -1,7 +1,13 @@
 /**
- * @DATA_REVISAO_APROVACAO: 2026-10-18
- * @REVISAO_APROVACAO: APROV-005
- * @STATUS_APROVACAO: AJUSTE-EXPRESSAMENTE-AUTORIZADO-2026-10-18
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
+ * @DATA_REVISAO_ANTERIOR: 2026-10-18
+ * @REVISAO_ANTERIOR: APROV-005
+ * @STATUS_ANTERIOR: AJUSTE-EXPRESSAMENTE-AUTORIZADO-2026-10-18
  * @FONTE_APROVADA: Vercel preview READY / commit 94da86b985c12801525661328577f7bd96188b85
  * @REGRA: ajuste compacto de campos autorizado expressamente em 2026-10-18; preservar fluxo funcional, cabeçalho azul e geometria aprovada.
  * @ESCOPO_ORIGINAL: Vendas > Novo Pedido; preserva fluxo funcional e geometria visual da versão aprovada.

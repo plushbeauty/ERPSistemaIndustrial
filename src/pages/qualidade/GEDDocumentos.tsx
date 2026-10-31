@@ -1,4 +1,10 @@
 /**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
  * ERPSis — QUALIDADE / GED DOCUMENTAL
  * Data: 2026-10-22 | Revisão: SGQ-DOC-2026-10-22-R1
  * Escopo: cabeçalho normativo com logotipo, título/código bloqueados em revisão e separação das rotas de nova emissão e atualização.

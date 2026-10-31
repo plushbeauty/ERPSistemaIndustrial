@@ -1,4 +1,10 @@
 /**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
  * REV-2026-10-23 — REV-FICHA-009: corrige contraste dos cartões após normalização dos fundos; texto escuro em superfícies claras e branco apenas em superfícies azul-petróleo/diagrama. Revisão visual autorizada pelo usuário.
  * REV-2026-10-22 — REV-FICHA-007: layout de alta densidade com 3 painéis de parâmetros e fotos lado a lado.
  * CSS escopado com prioridade para neutralizar conflitos do tema global; persistência e dados reais preservados.

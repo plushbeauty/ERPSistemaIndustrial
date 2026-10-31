@@ -1,4 +1,10 @@
 /**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
  * SYSNQRA — Gestão da Qualidade | Refugos e perdas
  * Revisão QAL-REFUGO-001 | 2026-10-21
  * Escrita transacional por RPC; sem alterar diretamente o acumulado produzido da OP.

@@ -1,5 +1,11 @@
 /**
- * Revisão: SGQ-METROLOGIA-2026-10-22-R1
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
+ * @REVISAO_ANTERIOR: SGQ-METROLOGIA-2026-10-22-R1
  * Escopo: remover campo duplicado de tipo de instrumento no formulário de cadastro.
  * Preservado: consultas Supabase, RPC, validações, persistência e estrutura visual restante.
  */

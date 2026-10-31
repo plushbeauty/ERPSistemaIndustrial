@@ -1,7 +1,13 @@
 /**
- * @DATA_REVISAO_APROVACAO: 2026-10-18
- * @REVISAO_APROVACAO: APROV-006
- * @STATUS_APROVACAO: AJUSTE-EXPRESSAMENTE-AUTORIZADO-2026-10-18
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ */
+/**
+ * @DATA_REVISAO_ANTERIOR: 2026-10-18
+ * @REVISAO_ANTERIOR: APROV-006
+ * @STATUS_ANTERIOR: AJUSTE-EXPRESSAMENTE-AUTORIZADO-2026-10-18
  * @REGRA: ajuste de alinhamento dos cards e legenda de cores autorizado expressamente em 2026-10-18; manter os dados reais e o fluxo existente.
  * @ESCOPO: cards ampliados e acompanhamento real de pedido, produção, qualidade, expedição e NF/saída.
  */
