@@ -10,8 +10,8 @@ const APPS: App[] = [
   { id: "financeiro", nome: "Financeiro", icone: Landmark, cor: "#ea580c" },
   { id: "comissoes", nome: "Comissões", icone: Calculator, cor: "#ea580c" },
   { id: "controladoria", nome: "Controladoria", icone: BookOpen, cor: "#ea580c" },
-  { id: "pcp", nome: "Engenharia e PCP", icone: CalendarClock, cor: "#0078d4" },
-  { id: "paq", nome: "Qualidade / Paquímetro", icone: Ruler, cor: "#111827" },
+  { id: "pcp", nome: "PCP", icone: CalendarClock, cor: "#0078d4" },
+  { id: "paq", nome: "Paquímetro", icone: Ruler, cor: "#111827" },
   { id: "fiscal", nome: "Fiscal", icone: FileText, cor: "#d97706" },
   { id: "configuracoes", nome: "Configurações", icone: Settings, cor: "#123b50" },
 ];
@@ -64,7 +64,7 @@ export function BarraWindows11({ ativo = "home", onAbrir, onDesligar }: { ativo?
             <LayoutGrid size={20} color="#0078d4" />
           </button>
           <button className="w11-btn" aria-label="Pesquisar" onClick={() => setMenu(true)}><Search size={18} /></button>
-          {APPS.slice(0, 7).map((a) => (
+          {APPS.map((a) => (
             <button key={a.id} className={`w11-btn ${ativo === a.id ? "ativo" : ""}`} title={a.nome} onClick={() => abrir(a.id)}>
               <a.icone size={20} color={a.cor} />
             </button>
