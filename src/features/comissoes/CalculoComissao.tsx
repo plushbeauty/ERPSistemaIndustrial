@@ -1,3 +1,10 @@
+ @AUTOR: FernandoSch_System
+ * @DATA_REVISAO_APROVACAO: 2026-10-31
+*/
+/**
+ * SYSNQRA ERP INDUSTRIAL 
+ */
+
 import { useEffect, useMemo, useState } from 'react'
 import { Calculator, FileSpreadsheet } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
