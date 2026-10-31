@@ -79,7 +79,7 @@ export default function AppEntryV2() {
             <Route path="/controladoria/cadastro-decimais" element={<Navigate to="/pageprincipal/controladoria/cadastro-decimais" replace />} />
             <Route path="/controladoria/lucratividade" element={<Navigate to="/pageprincipal/controladoria/lucratividade" replace />} />
             <Route path="/controladoria/razao-geral" element={<Navigate to="/pageprincipal/controladoria/razao-geral" replace />} />
-            <Route path="/controladoria/retificacao-pedido/:pedidoId" element={<Navigate to="/pageprincipal/controladoria/retificacao-pedido/:pedidoId" replace />} />
+            <Route path="/controladoria/retificacao-pedido/:pedidoId" element={<RetificacaoPedido />} />
             <Route path="/financeiro/conciliacao-bancaria" element={<Navigate to="/pageprincipal/financeiro/conciliacao-bancaria" replace />} />
             <Route path="/financeiro/importar-extratos" element={<Navigate to="/pageprincipal/financeiro/importar-extratos" replace />} />
             <Route path="/financeiro/lista-precos-cliente" element={<Navigate to="/pageprincipal/financeiro/lista-precos-cliente" replace />} />
