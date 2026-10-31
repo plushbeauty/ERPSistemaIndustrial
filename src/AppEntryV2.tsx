@@ -18,6 +18,9 @@ const PCPWorkspace = lazy(() => import('./pages/PCPWorkspace'))
 const Paquimetro = lazy(() => import('./pages/QualidadePaquimetroDigital'))
 const ComprasWorkspace = lazy(() => import('./pages/ComprasWorkspace'))
 const AdministracaoConfiguracoesGlobais = lazy(() => import('./pages/AdministracaoConfiguracoesGlobais'))
+const BankReconciliation = lazy(() => import('./features/banking/BankReconciliation'))
+const BankStatementImporter = lazy(() => import('./features/banking/BankStatementImporter'))
+const ListaPrecosCliente = lazy(() => import('./features/banking/ListaPrecosCliente'))
 
 function LoadingWorkspace() {
   return <main role="status" aria-live="polite" style={{ minHeight: '50vh', display: 'grid', placeItems: 'center', color: '#123b50', fontFamily: 'Inter,system-ui,sans-serif' }}>Carregando SYSNQRA ERP INDUSTRIAL…</main>
@@ -33,12 +36,20 @@ export default function AppEntryV2() {
             <Route path="/pageprincipal" element={<PagePrincipal />}>
               <Route index element={<AppIndustrial />} />
               <Route path="compras" element={<ComprasWorkspace />} />
+              <Route path="financeiro" element={<Navigate to="/pageprincipal/financeiro/conciliacao-bancaria" replace />} />
+              <Route path="financeiro/conciliacao-bancaria" element={<QualityPlanGate><BankReconciliation /></QualityPlanGate>} />
+              <Route path="financeiro/importar-extratos" element={<QualityPlanGate><BankStatementImporter /></QualityPlanGate>} />
+              <Route path="financeiro/lista-precos-cliente" element={<QualityPlanGate><ListaPrecosCliente /></QualityPlanGate>} />
               <Route path="administracao-configuracoes" element={<AdministracaoConfiguracoesGlobais />} />
               <Route path="fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />
               <Route path="pcp" element={<PCPWorkspace />} />
               <Route path="paquimetro" element={<QualityPlanGate><Paquimetro /></QualityPlanGate>} />
             </Route>
             <Route path="/compras" element={<Navigate to="/pageprincipal/compras" replace />} />
+            <Route path="/financeiro" element={<Navigate to="/pageprincipal/financeiro" replace />} />
+            <Route path="/financeiro/conciliacao-bancaria" element={<Navigate to="/pageprincipal/financeiro/conciliacao-bancaria" replace />} />
+            <Route path="/financeiro/importar-extratos" element={<Navigate to="/pageprincipal/financeiro/importar-extratos" replace />} />
+            <Route path="/financeiro/lista-precos-cliente" element={<Navigate to="/pageprincipal/financeiro/lista-precos-cliente" replace />} />
             <Route path="/configuracoes-adm" element={<Navigate to="/pageprincipal/administracao-configuracoes" replace />} />
             <Route path="/administracao-configuracoes" element={<Navigate to="/pageprincipal/administracao-configuracoes" replace />} />
             <Route path="/erp-industrial" element={<Navigate to="/pageprincipal" replace />} />
