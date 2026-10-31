@@ -10,6 +10,7 @@ import './styles/synqra-app-shell.css'
 import './styles/synqra-workspace-standard.css'
 import './styles/compras-workspace.css'
 import './styles/erp-global-consistency-20261030.css'
+import './styles/synqra-premium-foundation-20261031.css'
 
 const PagePrincipal = lazy(() => import('./pages/PagePrincipal'))
 const AppIndustrial = lazy(() => import('./AppIndustrialV7'))
