@@ -27,6 +27,8 @@ const introCatalog: Record<string, PageIntro> = {
 
   'paquimetro': { module: 'Qualidade / Metrologia', title: 'Paquímetro Digital', description: 'Medição dimensional com leitura, tolerância e evidência da inspeção registrada no lote.' },
   'qualidade/rpnc': { module: 'Qualidade / SGQ', title: 'RPNC · Registro de Não Conformidade', description: 'Abertura, triagem e acompanhamento de não conformidades com causa raiz, plano de ação e evidências.' },
+  'qualidade/formulario-rpnc': { module: 'Qualidade / SGQ', title: 'Formulário de Tratamento de Não Conformidade', description: 'Relato da ocorrência, Ishikawa e 5 Porquês, plano de ação CAPA com responsáveis e prazos, alerta de recorrência por peça/lote e impressão do relatório do SGQ.' },
+  'qualidade/auditorias': { module: 'Qualidade / SGQ', title: 'Auditorias da Qualidade', description: 'Programa de auditorias por norma e período, com líder, status e as RPNCs vinculadas como constatações.' },
   'qualidade/ged': { module: 'Qualidade / SGQ', title: 'GED · Documentos da Qualidade', description: 'Repositório controlado de procedimentos, instruções de trabalho e registros do sistema de gestão.' },
 
   'compras/solicitacao': { module: 'Compras', title: 'Solicitação de Compra', description: 'Necessidade interna formalizada com itens, urgência e aprovação antes de ir para cotação.' },

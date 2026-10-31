@@ -119,6 +119,9 @@ const QualidadeIndustrial = lazyPage(() => import('./pages/QualidadeIndustrial')
 const QualidadeInstrumentosCadastro = lazyPage(() => import('./pages/QualidadeInstrumentosCadastro'), 'default')
 const AcompanhamentoNaoConformidade = lazyPage(() => import('./pages/AcompanhamentoNaoConformidade'), 'AcompanhamentoNaoConformidade')
 const QualidadeRPNCMultiorigem = lazyPage(() => import('./pages/QualidadeRPNCMultiorigem'), 'default')
+// Formulário RPNC (Ishikawa / 5 Porquês / CAPA / recorrência) e grade de auditorias — prompts SGQ de 2026-10-31
+const QualityRpncForm = lazyPage(() => import('./pages/QualityRpncForm'), 'default')
+const QualityAuditsList = lazyPage(() => import('./pages/QualityAuditsList'), 'default')
 const DiretoriaDashboard = lazyPage(() => import('./pages/DiretoriaDashboard'), 'default')
 const EstoqueAlmoxarifado = lazyPage(() => import('./pages/EstoqueAlmoxarifadoCompact'), 'default')
 const ProdutosVendasIndustrial = lazyPage(() => import('./pages/ProdutosVendasIndustrial'), 'ProdutosVendasIndustrial')
@@ -592,6 +595,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/liberacao-lote" element={<QualityPlanGate><QualidadeLiberacaoLotes /></QualityPlanGate>} />
       <Route path="/qualidade/dashboard-rnc" element={<QualityPlanGate><QualidadeDashboardRNC /></QualityPlanGate>} />
       <Route path="/qualidade/rpnc" element={<QualityPlanGate><QualidadeRPNCMultiorigem /></QualityPlanGate>} />
+      <Route path="/qualidade/formulario-rpnc" element={<QualityPlanGate><QualityRpncForm /></QualityPlanGate>} />
+      <Route path="/qualidade/auditorias" element={<QualityPlanGate><QualityAuditsList /></QualityPlanGate>} />
       <Route path="/qualidade/pfmea" element={<QualityPlanGate><QualidadePFMEA /></QualityPlanGate>} />
       <Route path="/qualidade/documentos" element={<QualityPlanGate><DocumentosQualidadeControle /></QualityPlanGate>} />
       <Route path="/qualidade/inspecao-processo" element={<QualityPlanGate><QualidadeInspecaoProcesso /></QualityPlanGate>} />

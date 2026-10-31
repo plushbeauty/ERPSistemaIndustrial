@@ -96,6 +96,8 @@ const menus: MenuItem[] = [
     { label: 'FMEA / PFMEA', route: '/qualidade/fmea' },
     { label: 'RNC / CAPA', route: '/qualidade/rnc-capa' },
     { label: 'Central RPNC multiorigem', route: '/qualidade/rpnc' },
+    { label: 'Formulário RPNC (Ishikawa / 5 Porquês / CAPA)', route: '/qualidade/formulario-rpnc' },
+    { label: 'Auditorias da Qualidade', route: '/qualidade/auditorias' },
     { label: 'CEP / medições', route: '/qualidade/cep' },
     { label: 'Cadastro de documentos (GED)', route: '/qualidade/ged-documentos' },
     { label: 'Qualidade Tablet', route: '/qualidade', action: 'qualityTablet' },
