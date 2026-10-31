@@ -1,3 +1,7 @@
+ * @AUTOR: FernandoSch_System
+ * @DATA_REVISAO_APROVACAO: 2026-10-31
+
+
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AlertTriangle, CheckCircle, Download, Home, Landmark, List, ScrollText, Shuffle } from 'lucide-react'
