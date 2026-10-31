@@ -14,7 +14,6 @@ const PagePrincipal = lazy(() => import('./pages/PagePrincipal'))
 const AppIndustrial = lazy(() => import('./AppIndustrialV7'))
 const Fiscal = lazy(() => import('./pages/Fiscal'))
 const NFeEmissao = lazy(() => import('./pages/NFeEmissao'))
-const NFeEmissao = lazy(() => import('./pages/NFeEmissao'))
 const SetupADMInicial = lazy(() => import('./pages/SetupADMInicial'))
 const PCPWorkspace = lazy(() => import('./pages/PCPWorkspace'))
 const Paquimetro = lazy(() => import('./pages/QualidadePaquimetroDigital'))
@@ -67,7 +66,6 @@ export default function AppEntryV2() {
               <Route path="administracao-configuracoes" element={<AdministracaoConfiguracoesGlobais />} />
               <Route path="fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />
               <Route path="fiscal/emissao" element={<QualityPlanGate><NFeEmissao /></QualityPlanGate>} />
-              <Route path="fiscal/emissao" element={<QualityPlanGate><NFeEmissao /></QualityPlanGate>} />
               <Route path="pcp" element={<PCPWorkspace />} />
               <Route path="paquimetro" element={<QualityPlanGate><Paquimetro /></QualityPlanGate>} />
               <Route path="qualidade/rpnc" element={<QualityPlanGate><QualityRpncForm /></QualityPlanGate>} />
@@ -94,7 +92,6 @@ export default function AppEntryV2() {
             <Route path="/erp-industrial" element={<Navigate to="/pageprincipal" replace />} />
             <Route path="/cadastros" element={<Navigate to="/pageprincipal" replace />} />
             <Route path="/fiscal" element={<Navigate to="/pageprincipal/fiscal" replace />} />
-            <Route path="/fiscal/emissao" element={<Navigate to="/pageprincipal/fiscal/emissao" replace />} />
             <Route path="/fiscal/emissao" element={<Navigate to="/pageprincipal/fiscal/emissao" replace />} />
             <Route path="/pcp" element={<Navigate to="/pageprincipal/pcp" replace />} />
             <Route path="/paquimetro" element={<Navigate to="/pageprincipal/paquimetro" replace />} />
