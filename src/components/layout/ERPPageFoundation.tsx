@@ -3,7 +3,6 @@
  * Revisão: PREMIUM-FOUNDATION-20261031-01 | Desenvolvedor: Fernando Schuinsekel
  */
 import type { ReactNode } from 'react'
-import '../../styles/synqra-premium-foundation-20261031.css'
 
 export type ERPPageMetaTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'navy'
 
