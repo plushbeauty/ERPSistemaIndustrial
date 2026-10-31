@@ -1,12 +1,10 @@
-import type { ReactNode } from 'react'
-
 export type PageIntro = {
   module?: string
   title: string
   description: string
 }
 
-export default function PageIntroCard({ module, title, description }: PageIntro): ReactNode {
+export default function PageIntroCard({ module, title, description }: PageIntro) {
   return (
     <section className="page-intro-card" aria-label={`Abertura: ${title}`}>
       {module && <span className="page-intro-module">{module}</span>}
