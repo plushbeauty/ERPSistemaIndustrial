@@ -13,6 +13,7 @@ const page = read('src/pages/PagePrincipal.tsx')
 const shell = read('src/components/layout/ERPHorizontalShell.tsx')
 const taskbar = read('src/components/layout/BarraWindows11.tsx')
 const planGate = read('src/components/quality/QualityPlanGate.tsx')
+const navigation = read('src/config/erpNavigation.ts')
 
 const requiredFiles = [
   'src/IndustrialLoginDirect.tsx',
@@ -44,10 +45,10 @@ const checks = [
   ['Tenant isolation and Master identity contract remain present', bootstrap.includes("from('erp_usuarios')") && bootstrap.includes("from('erp_empresas')") && bootstrap.includes('empresa_id') && bootstrap.includes('nivel_admin') && bootstrap.includes('is_master')],
   ['PCP, Paquímetro, Fiscal, Compras and Configurações are nested under PagePrincipal', app.includes('path="pcp"') && app.includes('path="paquimetro"') && app.includes('path="fiscal"') && app.includes('path="compras"') && app.includes('path="administracao-configuracoes"')],
   ['RH, Compras, RPNC and Fichas de Processo remain registered after login', app.includes('path="rh"') && app.includes('path="qualidade/rpnc"') && app.includes('path="compras/solicitacao"') && app.includes('path="compras/requisicoes"') && app.includes('path="pcp/fichas-processo"')],
-  ['Windows 11 menu exposes RH, PCP Fichas, RPNC and Compras entries', shell.includes("label: 'RH / Departamento Pessoal'") && shell.includes("label: 'Fichas de Processo'") && shell.includes("label: 'RPNC'") && shell.includes("label: 'Solicitação de Compra'")],
+  ['Windows 11 menu exposes RH, PCP Fichas, RPNC and Compras entries', shell.includes("from '../../config/erpNavigation'") && navigation.includes("label: 'RH / Departamento Pessoal'") && navigation.includes("label: 'Fichas de Processo'") && navigation.includes("label: 'RPNC'") && navigation.includes("label: 'Solicitação de Compra'")],
   ['Windows 11 taskbar exposes RH and Fichas de Processo', taskbar.includes('nome: "RH / Departamento Pessoal"') && taskbar.includes('nome: "Fichas de Processo"')],
   ['Legacy URLs redirect into the shared workspace', app.includes('Navigate to="/pageprincipal"') && app.includes('Navigate to="/pageprincipal/pcp"') && app.includes('Navigate to="/pageprincipal/paquimetro"') && app.includes('Navigate to="/pageprincipal/fiscal"') && app.includes('Navigate to="/pageprincipal/compras"') && app.includes('Navigate to="/pageprincipal/administracao-configuracoes"')],
-  ['Windows 11 menu preserves Principal, PCP, Qualidade, Fiscal, Compras and Configurações', shell.includes("label: 'Principal'") && shell.includes("label: 'Engenharia e PCP'") && shell.includes("label: 'Qualidade / Paquímetro'") && shell.includes("label: 'Fiscal'") && shell.includes("label: 'Compras'") && shell.includes("label: 'Configurações'")],
+  ['Windows 11 menu preserves Principal, PCP, Qualidade, Fiscal, Compras and Configurações', navigation.includes("label: 'Principal'") && navigation.includes("label: 'Engenharia e PCP'") && navigation.includes("label: 'Qualidade / Paquímetro'") && navigation.includes("label: 'Fiscal'") && navigation.includes("label: 'Compras'") && navigation.includes("label: 'Configurações'")],
   ['Windows 11 taskbar routes the phase-one modules', taskbar.includes('nome: "PCP"') && taskbar.includes('nome: "Paquímetro"') && taskbar.includes('nome: "Fiscal"')],
   ['Plan access checks normalize nested PagePrincipal routes', planGate.includes("path.startsWith('/pageprincipal/')") && planGate.includes("path === '/paquimetro'")],
   ['Shared compact form, grid, table and action styles are loaded', app.includes("synqra-workspace-standard.css") && existsSync('src/styles/synqra-workspace-standard.css')],

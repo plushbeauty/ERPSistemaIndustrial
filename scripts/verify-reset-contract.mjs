@@ -5,6 +5,7 @@ const app = read('src/AppEntryV2.tsx')
 const bootstrap = read('src/AppBootstrap.tsx')
 const dashboard = read('src/AppIndustrialV7.tsx')
 const shell = read('src/components/layout/ERPHorizontalShell.tsx')
+const navigation = read('src/config/erpNavigation.ts')
 
 const checks = [
   ['Home/logo pública preservada', fs.existsSync('src/PublicIndustrialHome.tsx') && bootstrap.includes("import('./PublicIndustrialHome')")],
@@ -16,7 +17,7 @@ const checks = [
   ['Gate de sessão Supabase preservado', bootstrap.includes('function AccessGate') && bootstrap.includes('supabase.auth.getSession()')],
   ['Perfil ERP ativo e soft-delete verificados', bootstrap.includes(".from('erp_usuarios')") && bootstrap.includes(".eq('ativo', true)") && bootstrap.includes(".is('deleted_at', null)")],
   ['Isolamento por empresa e validação Master preservados', bootstrap.includes("empresa_id") && bootstrap.includes("nivel_admin") && bootstrap.includes("is_master") && bootstrap.includes("MASTER")],
-  ['Menu ativo contém os módulos preservados', shell.includes("label: 'Principal'") && shell.includes("label: 'Engenharia e PCP'") && shell.includes("label: 'Fiscal'") && shell.includes("label: 'Qualidade / Paquímetro'")],
+  ['Menu ativo contém os módulos preservados', shell.includes("erpNavigation") && navigation.includes("label: 'Principal'") && navigation.includes("label: 'Engenharia e PCP'") && navigation.includes("label: 'Fiscal'") && navigation.includes("label: 'Qualidade / Paquímetro'")],
 ]
 
 const failures = checks.filter(([, ok]) => !ok)
