@@ -5,6 +5,8 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { BarraWindows11 } from './BarraWindows11'
 import PCPTabletMenuModal from '../PCPTabletMenuModal'
+import PageIntroCard from './PageIntroCard'
+import { fallbackPageIntro, hasNativeIntroCard, resolvePageIntro } from './pageIntroCatalog'
 
 type MenuItem = {
   label: string
@@ -150,6 +152,15 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     ? { title: 'Qualidade', purpose: 'Registrar não conformidades, evidências, causa raiz, ações corretivas e validação.', steps: ['Identifique produto, lote, processo e ocorrência.', 'Descreva o problema e a contenção imediata.', 'Registre causa raiz e plano de ação.', 'Anexe evidências e conclua após validar eficácia.'], fields: ['RPNC: registro da não conformidade.', 'Lote/produto: rastreabilidade afetada.', 'Causa raiz: causa comprovada, não apenas o sintoma.', 'Ação/responsável/prazo: plano verificável.', 'Evidência: documento ou registro que comprova a eficácia.'] }
     : { title: 'Ajuda da tela atual', purpose: 'Use esta ajuda para entender a finalidade da tela e o preenchimento dos campos mais comuns.', steps: ['Leia a finalidade antes de alterar dados.', 'Preencha campos obrigatórios com registros existentes.', 'Revise os dados e salve; confirme a mensagem de resultado.', 'Use a Central de Ajuda para consultar procedimentos do módulo.'], fields: ['Pesquisa: localiza registros existentes.', 'Filtros: limitam os resultados exibidos.', 'Status: indica a etapa do processo.', 'Salvar: grava dados reais; se houver erro, corrija a mensagem apresentada.'] }
 
+  const matchedMenuItem = menus.flatMap(menu => [menu, ...(menu.children ?? [])]).find(item => item.route === pathname)
+  const pageIntro = hasNativeIntroCard(pathname)
+    ? null
+    : resolvePageIntro(pathname) ?? fallbackPageIntro({
+      module: current?.label,
+      label: matchedMenuItem?.label ?? current?.label,
+      purpose: contextualHelp.purpose,
+    })
+
   const logout = async () => {
     await supabase.auth.signOut()
     navigate('/login', { replace: true })
@@ -228,6 +239,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         </div>}
       </header>
       <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
+        {pageIntro && <PageIntroCard {...pageIntro} />}
         {children}
       </main>
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
