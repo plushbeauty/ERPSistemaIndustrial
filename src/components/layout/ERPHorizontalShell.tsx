@@ -28,12 +28,12 @@ const menus: MenuItem[] = [
     { label: 'Perfil do Vendedor', route: '/pageprincipal/comissoes/perfil', icon: UserRound, isUpdated: true },
     { label: 'Auditoria de Comissões', route: '/pageprincipal/comissoes/auditoria', icon: FileText, isUpdated: true },
   ] },
-  { label: 'Controladoria', route: '/pageprincipal/controladoria', icon: BookOpen, children: [
-    { label: 'Lucratividade e Margens', route: '/pageprincipal/controladoria/lucratividade', icon: ClipboardList },
-    { label: 'Razão Geral', route: '/pageprincipal/controladoria/razao-geral', icon: Landmark },
-    { label: 'Cadastro de Decimais', route: '/pageprincipal/controladoria/cadastro-decimais', icon: Settings },
-    { label: 'Retificação Financeira', route: '/pageprincipal/controladoria/retificacao-assistente', icon: FileText },
-    { label: 'Auditoria de Comissões', route: '/pageprincipal/controladoria/auditoria-comissoes', icon: Calculator },
+  { label: 'Controladoria', route: '/pageprincipal/controladoria', icon: BookOpen, isUpdated: true, children: [
+    { label: 'Lucratividade e Margens', route: '/pageprincipal/controladoria/lucratividade', icon: ClipboardList, isUpdated: true },
+    { label: 'Razão Geral', route: '/pageprincipal/controladoria/razao-geral', icon: Landmark, isUpdated: true },
+    { label: 'Cadastro de Decimais', route: '/pageprincipal/controladoria/cadastro-decimais', icon: Settings, isUpdated: true },
+    { label: 'Retificação Financeira', route: '/pageprincipal/controladoria/retificacao-assistente', icon: FileText, isUpdated: true },
+    { label: 'Auditoria de Comissões', route: '/pageprincipal/controladoria/auditoria-comissoes', icon: Calculator, isUpdated: true },
   ] },
   { label: 'Principal', route: '/pageprincipal', icon: Home },
   { label: 'Engenharia e PCP', route: '/pageprincipal/pcp', icon: Factory, children: [
