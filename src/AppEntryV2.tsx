@@ -23,6 +23,9 @@ const ComprasRequisicoes = lazy(() => import('./pages/ComprasRequisicoes'))
 const RHIndustrial = lazy(() => import('./pages/RHIndustrial'))
 const FichaProcesso = lazy(() => import('./features/pcp/FichaProcesso'))
 const QualidadeRPNC = lazy(() => import('./pages/QualidadeRPNC'))
+// Formulário RPNC (Ishikawa / 5 Porquês / CAPA / recorrência) e grade de auditorias — prompts SGQ de 2026-10-31
+const QualityRpncForm = lazy(() => import('./pages/QualityRpncForm'))
+const QualityAuditsList = lazy(() => import('./pages/QualityAuditsList'))
 const AdministracaoConfiguracoesGlobais = lazy(() => import('./pages/AdministracaoConfiguracoesGlobais'))
 // Controle de acesso do chão de fábrica — visível apenas para nível 8 e 9 (comando de 2026-10-30)
 const AccessControlSettings = lazy(() => import('./pages/AccessControlSettings'))
@@ -86,6 +89,8 @@ export default function AppEntryV2() {
               <Route path="rh" element={<RHIndustrial />} />
               <Route path="pcp/fichas-processo" element={<FichaProcesso />} />
               <Route path="qualidade/rpnc" element={<QualityPlanGate><QualidadeRPNC /></QualityPlanGate>} />
+              <Route path="qualidade/rpnc-formulario" element={<QualityPlanGate><QualityRpncForm /></QualityPlanGate>} />
+              <Route path="qualidade/auditorias" element={<QualityPlanGate><QualityAuditsList /></QualityPlanGate>} />
               <Route path="administracao-configuracoes" element={<AdministracaoConfiguracoesGlobais />} />
               <Route path="configuracoes-usuario" element={<AccessControlSettings />} />
               <Route path="fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />
@@ -135,6 +140,8 @@ export default function AppEntryV2() {
             <Route path="/compras/solicitacao" element={<Navigate to="/pageprincipal/compras/solicitacao" replace />} />
             <Route path="/compras/requisicoes" element={<Navigate to="/pageprincipal/compras/requisicoes" replace />} />
             <Route path="/qualidade/rpnc" element={<Navigate to="/pageprincipal/qualidade/rpnc" replace />} />
+            <Route path="/qualidade/rpnc-formulario" element={<Navigate to="/pageprincipal/qualidade/rpnc-formulario" replace />} />
+            <Route path="/qualidade/auditorias" element={<Navigate to="/pageprincipal/qualidade/auditorias" replace />} />
             <Route path="/configuracoes-adm" element={<Navigate to="/pageprincipal/administracao-configuracoes" replace />} />
             <Route path="/administracao-configuracoes" element={<Navigate to="/pageprincipal/administracao-configuracoes" replace />} />
             <Route path="/erp-industrial" element={<Navigate to="/pageprincipal" replace />} />
