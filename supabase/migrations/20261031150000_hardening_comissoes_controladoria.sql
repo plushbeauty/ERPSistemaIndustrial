@@ -87,7 +87,7 @@ begin
   ) then
     raise exception 'PERFIL_FORA_DA_EMPRESA';
   end if;
-  if p_status not in ('Ativo','Inativo') then
+  if p_status is null or p_status not in ('Ativo','Inativo') then
     raise exception 'STATUS_DO_VINCULO_INVALIDO';
   end if;
 
