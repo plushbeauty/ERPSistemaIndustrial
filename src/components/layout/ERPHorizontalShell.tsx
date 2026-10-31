@@ -232,10 +232,12 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       </main>
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
       <BarraWindows11
-        ativo={pathname.startsWith('/pageprincipal/comissoes') || pathname.startsWith('/comissoes') ? 'comissoes' : pathname.startsWith('/pageprincipal/controladoria') || pathname.startsWith('/controladoria') ? 'controladoria' : pathname.startsWith('/pageprincipal/financeiro') || pathname.startsWith('/financeiro') ? 'financeiro' : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/pageprincipal/paquimetro') ? 'paq' : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'fiscal' : pathname.startsWith('/pageprincipal') ? 'home' : ''}
+        ativo={pathname.startsWith('/pageprincipal/comissoes') || pathname.startsWith('/comissoes') ? 'comissoes' : pathname.startsWith('/pageprincipal/controladoria') || pathname.startsWith('/controladoria') ? 'controladoria' : pathname.startsWith('/pageprincipal/financeiro') || pathname.startsWith('/financeiro') ? 'financeiro' : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/pageprincipal/paquimetro') ? 'paq' : pathname.startsWith('/pageprincipal/compras') || pathname.startsWith('/compras') ? 'compras' : pathname.startsWith('/pageprincipal/administracao-configuracoes') || pathname.startsWith('/configuracoes-adm') ? 'configuracoes' : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'fiscal' : pathname.startsWith('/pageprincipal') ? 'home' : ''}
         onAbrir={(id) => {
           const destinations: Record<string, string> = {
             home: '/pageprincipal',
+            compras: '/pageprincipal/compras',
+            configuracoes: '/pageprincipal/administracao-configuracoes',
             pcp: '/pageprincipal/pcp',
             maq: '/pageprincipal/pcp',
             op: '/pageprincipal/pcp',
