@@ -92,11 +92,17 @@ export function resolvePageIntro(pathname: string): PageIntro | null {
 
 /**
  * Fallback para telas alcançadas pelo menu mas ainda sem verbete curado:
- * reaproveita o rótulo real do menu e a finalidade já documentada da ajuda contextual.
+ * usa o rótulo real do menu e a finalidade já documentada na ajuda contextual.
+ * Sem ajuda específica, descreve só a posição da rotina no sistema, sem afirmar funcionalidade.
  */
 export function fallbackPageIntro(parts: { module?: string; label?: string; purpose?: string }): PageIntro | null {
   const label = parts.label?.trim()
+  if (!label) return null
+  const module = parts.module?.trim() || undefined
   const purpose = parts.purpose?.trim()
-  if (!label || !purpose) return null
-  return { module: parts.module?.trim() || undefined, title: label, description: purpose }
+  return {
+    module,
+    title: label,
+    description: purpose ?? `Rotina ${label} do módulo ${module ?? 'SYSNQRA'} do ERP industrial.`,
+  }
 }

@@ -183,9 +183,10 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   // Card de abertura obrigatório de toda tela: catálogo curado primeiro e,
   // para telas de menu ainda sem verbete, o rótulo do menu + a finalidade da ajuda.
   const menuLeafLabel = current?.children?.find(child => child.route === pathname)?.label ?? current?.label
+  const contextualPurpose = contextualHelp.title === 'Ajuda da tela atual' ? undefined : contextualHelp.purpose
   const pageIntro = hasNativeIntroCard(pathname)
     ? null
-    : resolvePageIntro(pathname) ?? fallbackPageIntro({ module: current?.label, label: menuLeafLabel, purpose: contextualHelp.purpose })
+    : resolvePageIntro(pathname) ?? fallbackPageIntro({ module: current?.label, label: menuLeafLabel, purpose: contextualPurpose })
 
   const logout = async () => {
     await supabase.auth.signOut()
