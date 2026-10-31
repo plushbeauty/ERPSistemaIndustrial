@@ -37,7 +37,7 @@ export default function AppEntryV2() {
               <Route path="administracao-configuracoes" element={<AdministracaoConfiguracoesGlobais />} />
               <Route path="fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />
               <Route path="pcp" element={<PCPWorkspace />} />
-              <Route path="paquimetro" element={<QualityPlanGate><Paquimetro /></QualityPlanGate} />
+              <Route path="paquimetro" element={<QualityPlanGate><Paquimetro /></QualityPlanGate>} />
               <Route path="qualidade/rpnc" element={<QualityPlanGate><QualityRpncForm /></QualityPlanGate>} />
             </Route>
             <Route path="/compras" element={<Navigate to="/pageprincipal/compras" replace />} />
