@@ -6,7 +6,7 @@ import { supabase } from '../../lib/supabaseClient'
 import { BarraWindows11 } from './BarraWindows11'
 import PCPTabletMenuModal from '../PCPTabletMenuModal'
 import PageIntroCard from './PageIntroCard'
-import { resolvePageIntro } from './pageIntroCatalog'
+import { fallbackPageIntro, hasNativeIntroCard, resolvePageIntro } from './pageIntroCatalog'
 
 type MenuItem = {
   label: string
@@ -147,7 +147,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     ? menus.find(menu => menu.label === moduleLabel) ?? { label: moduleLabel, route: '/' + pathname.split('/')[1], icon: Home }
     : undefined
   const current = currentModuleMenu ?? menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
-  const pageIntro = resolvePageIntro(pathname)
   const normalizedSearch = moduleSearch.trim().toLocaleLowerCase('pt-BR')
   const searchedMenus = normalizedSearch ? menus.map(menu => ({ ...menu, children: menu.children?.filter(child => child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)) })).filter(menu => menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.route.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || Boolean(menu.children?.length)) : menus
   useEffect(() => {
@@ -180,6 +179,13 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     : pathname.startsWith('/qualidade')
     ? { title: 'Qualidade', purpose: 'Registrar não conformidades, evidências, causa raiz, ações corretivas e validação.', steps: ['Identifique produto, lote, processo e ocorrência.', 'Descreva o problema e a contenção imediata.', 'Registre causa raiz e plano de ação.', 'Anexe evidências e conclua após validar eficácia.'], fields: ['RPNC: registro da não conformidade.', 'Lote/produto: rastreabilidade afetada.', 'Causa raiz: causa comprovada, não apenas o sintoma.', 'Ação/responsável/prazo: plano verificável.', 'Evidência: documento ou registro que comprova a eficácia.'] }
     : { title: 'Ajuda da tela atual', purpose: 'Use esta ajuda para entender a finalidade da tela e o preenchimento dos campos mais comuns.', steps: ['Leia a finalidade antes de alterar dados.', 'Preencha campos obrigatórios com registros existentes.', 'Revise os dados e salve; confirme a mensagem de resultado.', 'Use a Central de Ajuda para consultar procedimentos do módulo.'], fields: ['Pesquisa: localiza registros existentes.', 'Filtros: limitam os resultados exibidos.', 'Status: indica a etapa do processo.', 'Salvar: grava dados reais; se houver erro, corrija a mensagem apresentada.'] }
+
+  // Card de abertura obrigatório de toda tela: catálogo curado primeiro e,
+  // para telas de menu ainda sem verbete, o rótulo do menu + a finalidade da ajuda.
+  const menuLeafLabel = current?.children?.find(child => child.route === pathname)?.label ?? current?.label
+  const pageIntro = hasNativeIntroCard(pathname)
+    ? null
+    : resolvePageIntro(pathname) ?? fallbackPageIntro({ module: current?.label, label: menuLeafLabel, purpose: contextualHelp.purpose })
 
   const logout = async () => {
     await supabase.auth.signOut()

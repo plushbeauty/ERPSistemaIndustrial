@@ -63,6 +63,13 @@ const introCatalog: Record<string, PageIntro> = {
 
 const pagePrincipalPrefix = '/pageprincipal'
 
+/** Telas que já desenham o próprio card navy aprovado; o shell não adiciona outro acima. */
+const nativeIntroCardPaths = ['/compras', '/financeiro', '/administracao-configuracoes']
+
+export function hasNativeIntroCard(pathname: string): boolean {
+  return nativeIntroCardPaths.includes(normalizeWorkspacePath(pathname))
+}
+
 export function normalizeWorkspacePath(pathname: string): string {
   const withoutPrefix = pathname.startsWith(pagePrincipalPrefix)
     ? pathname.slice(pagePrincipalPrefix.length)
@@ -81,4 +88,15 @@ export function resolvePageIntro(pathname: string): PageIntro | null {
     .sort((a, b) => b.length - a.length)
   const best = candidates[0]
   return best ? introCatalog[best] : null
+}
+
+/**
+ * Fallback para telas alcançadas pelo menu mas ainda sem verbete curado:
+ * reaproveita o rótulo real do menu e a finalidade já documentada da ajuda contextual.
+ */
+export function fallbackPageIntro(parts: { module?: string; label?: string; purpose?: string }): PageIntro | null {
+  const label = parts.label?.trim()
+  const purpose = parts.purpose?.trim()
+  if (!label || !purpose) return null
+  return { module: parts.module?.trim() || undefined, title: label, description: purpose }
 }
