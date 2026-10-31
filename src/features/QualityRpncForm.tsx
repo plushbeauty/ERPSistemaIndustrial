@@ -647,7 +647,7 @@ export default function QualityRpncForm() {
           </label>
           <label className="qrf-field">Gravidade
             <select className="erp-input" value={severidade} onChange={(e) => setSeveridade(e.target.value as Severidade)} disabled={saving}>
-              {SEVERIDADES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>}
+              {SEVERIDADES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
           </label>
           <label className="qrf-field">Setor responsável
