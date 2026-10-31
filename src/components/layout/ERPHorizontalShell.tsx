@@ -92,7 +92,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     }
   }, [])
 
-  const moduleLabel = pathname.startsWith('/pageprincipal/financeiro') || pathname.startsWith('/financeiro') ? 'Financeiro'\n    : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
+  const moduleLabel = pathname.startsWith('/pageprincipal/financeiro') || pathname.startsWith('/financeiro') ? 'Financeiro'
+    : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
     : pathname.startsWith('/pageprincipal/paquimetro') ? 'Qualidade / Paquímetro'
     : pathname.startsWith('/pageprincipal/compras') || pathname.startsWith('/compras') ? 'Compras'
     : pathname.startsWith('/pageprincipal/administracao-configuracoes') || pathname.startsWith('/configuracoes-adm') || pathname.startsWith('/administracao-configuracoes') ? 'Configurações'
@@ -225,7 +226,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
             maq: '/pageprincipal/pcp',
             op: '/pageprincipal/pcp',
             paq: '/pageprincipal/paquimetro',
-            fiscal: '/pageprincipal/fiscal',\n            financeiro: '/pageprincipal/financeiro',
+            fiscal: '/pageprincipal/fiscal',
+            financeiro: '/pageprincipal/financeiro',
           }
           go(destinations[id] ?? '/pageprincipal')
         }}
@@ -272,7 +274,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-windows-menu-children button{display:flex;align-items:center;gap:8px;width:100%;min-height:29px;padding:5px 8px;border:0;background:#fff;text-align:left;color:#334155;font-size:10px;cursor:pointer}
         .erp-windows-menu-children button>svg{flex:0 0 auto}.erp-windows-menu-children button>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .erp-windows-menu-children button:hover,.erp-windows-menu-children button.is-active{background:#eaf5f8;color:#123b50}
-        .erp-windows-menu-children button.is-rfq-active{background:#1d5fd1!important;border-color:#1d5fd1!important;color:#fff!important;font-weight:800;box-shadow:inset 3px 0 #0b2545}\n        .erp-windows-menu-children button.is-updated-orange{background:#f97316!important;border:1px solid #ea580c!important;color:#fff!important;font-weight:900;box-shadow:inset 4px 0 #9a3412}\n        .erp-windows-menu-children button.is-updated-orange:hover,.erp-windows-menu-children button.is-updated-orange.is-active{background:#ea580c!important;border-color:#c2410c!important;color:#fff!important}
+        .erp-windows-menu-children button.is-rfq-active{background:#1d5fd1!important;border-color:#1d5fd1!important;color:#fff!important;font-weight:800;box-shadow:inset 3px 0 #0b2545}
+        .erp-windows-menu-children button.is-updated-orange{background:#f97316!important;border:1px solid #ea580c!important;color:#fff!important;font-weight:900;box-shadow:inset 4px 0 #9a3412}
+        .erp-windows-menu-children button.is-updated-orange:hover,.erp-windows-menu-children button.is-updated-orange.is-active{background:#ea580c!important;border-color:#c2410c!important;color:#fff!important}
         .erp-windows-no-results{margin:12px 8px;font-size:10px;color:#64748b}
         .erp-windows-start-footer{min-height:38px;display:flex;align-items:center;gap:6px;padding:0 10px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:10px;color:#334155}
         .erp-windows-start-footer span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
