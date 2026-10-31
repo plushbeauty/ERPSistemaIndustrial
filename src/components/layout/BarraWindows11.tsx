@@ -1,17 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import type { LucideIcon } from "lucide-react";
-import { LayoutGrid, Search, CalendarClock, Power, User, Ruler, FileText, Home, Landmark, Calculator, BookOpen } from "lucide-react";
+import { LayoutGrid, Search, CalendarClock, Power, User, Ruler, FileText, Home, Landmark, Calculator, BookOpen, ShoppingCart, Settings } from "lucide-react";
 
 type App = { id: string; nome: string; icone: LucideIcon; cor: string };
 
 const APPS: App[] = [
   { id: "home", nome: "Página principal", icone: Home, cor: "#123b50" },
-  { id: "comissoes", nome: "Comissões", icone: Calculator, cor: "#f97316" },
-  { id: "controladoria", nome: "Controladoria", icone: BookOpen, cor: "#f97316" },
-  { id: "financeiro", nome: "Financeiro", icone: Landmark, cor: "#f97316" },
-  { id: "pcp", nome: "PCP", icone: CalendarClock, cor: "#0078d4" },
-  { id: "paq", nome: "Paquímetro", icone: Ruler, cor: "#111827" },
+  { id: "compras", nome: "Compras", icone: ShoppingCart, cor: "#ea580c" },
+  { id: "financeiro", nome: "Financeiro", icone: Landmark, cor: "#ea580c" },
+  { id: "comissoes", nome: "Comissões", icone: Calculator, cor: "#ea580c" },
+  { id: "controladoria", nome: "Controladoria", icone: BookOpen, cor: "#ea580c" },
+  { id: "pcp", nome: "Engenharia e PCP", icone: CalendarClock, cor: "#0078d4" },
+  { id: "paq", nome: "Qualidade / Paquímetro", icone: Ruler, cor: "#111827" },
   { id: "fiscal", nome: "Fiscal", icone: FileText, cor: "#d97706" },
+  { id: "configuracoes", nome: "Configurações", icone: Settings, cor: "#123b50" },
 ];
 
 export function BarraWindows11({ ativo = "home", onAbrir, onDesligar }: { ativo?: string; onAbrir?: (id: string) => void; onDesligar?: () => void | Promise<void> }) {
@@ -86,22 +88,22 @@ const css = `
 .w11-btn.ativo::after{content:"";position:absolute;bottom:1px;width:18px;height:3px;border-radius:1px;background:#48b7c7}
 
  
-.w11-start{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);width:min(600px,94vw);z-index:51;border-radius:4px;
+.w11-start{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);width:min(760px,96vw);z-index:51;border-radius:4px;
   background:rgba(242,242,242,.92);backdrop-filter:blur(30px) saturate(1.6);border:1px solid rgba(0,0,0,.1);box-shadow:0 16px 48px rgba(0,0,0,.25);
   font-family:"Segoe UI",system-ui,sans-serif;color:#1f1f1f;animation:w11up .2s ease-out;overflow:hidden}
 @keyframes w11up{from{opacity:0;transform:translate(-50%,20px)}to{opacity:1;transform:translate(-50%,0)}}
 .w11-search{margin:24px 28px 8px;display:flex;align-items:center;gap:8px;background:#fff;border-radius:20px;padding:8px 14px;border-bottom:2px solid #0078d4}
 .w11-search input{border:0;outline:0;flex:1;font-size:14px;background:transparent}
 .w11-title{margin:16px 36px 8px;font-weight:600;font-size:14px}
-.w11-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:10px;row-gap:30px;padding:4px 24px 28px;min-height:190px;align-content:start}
-.w11-app{min-width:0;min-height:88px;border:0;background:transparent;border-radius:4px;padding:8px 4px 12px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:10px;font-size:12px;line-height:16px;cursor:pointer;color:inherit}
-.w11-app:hover{background:rgba(255,255,255,.8)}
-.w11-appicon{flex:0 0 36px;width:36px;height:36px;border-radius:4px;display:grid;place-items:center}
-.w11-app>span:last-child{text-align:center;min-height:16px;max-width:100%;overflow-wrap:anywhere}
+.w11-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));column-gap:14px;row-gap:18px;padding:8px 24px 28px;min-height:220px;align-content:start}
+.w11-app{min-width:0;min-height:112px;border:1px solid transparent;background:transparent;border-radius:6px;padding:10px 6px 12px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:10px;font-size:13px;font-weight:600;line-height:18px;cursor:pointer;color:inherit}
+.w11-app:hover{background:rgba(255,255,255,.9);border-color:rgba(18,59,80,.12);box-shadow:0 4px 14px rgba(18,59,80,.08)}
+.w11-appicon{flex:0 0 48px;width:48px;height:48px;border-radius:6px;display:grid;place-items:center;box-shadow:0 3px 8px rgba(15,23,42,.16)}
+.w11-app>span:last-child{text-align:center;min-height:36px;max-width:100%;overflow-wrap:anywhere;color:#173b4a}
 .w11-vazio{grid-column:1/-1;text-align:center;color:#666;padding:30px;font-size:13px}
 .w11-foot{display:flex;justify-content:space-between;align-items:center;padding:12px 40px;background:rgba(0,0,0,.04);border-top:1px solid rgba(0,0,0,.06)}
 .w11-user{display:flex;align-items:center;gap:10px;font-size:13px}
 .w11-avatar{width:30px;height:30px;border-radius:50%;background:#ddd;display:grid;place-items:center}
 .w11-ico{border:0;background:transparent;border-radius:6px;width:34px;height:34px;display:grid;place-items:center;cursor:pointer}.w11-ico:hover{background:rgba(255,255,255,.8)}
-@media(max-width:640px){.w11-grid{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:6px;row-gap:26px;padding:4px 12px 22px;min-height:190px}.w11-app{min-height:86px;padding:8px 2px 12px;gap:8px;font-size:11px}.w11-center{gap:1px}.w11-btn{width:34px;height:38px}.w11-bar{height:48px}}
+@media(max-width:640px){.w11-grid{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:6px;row-gap:12px;padding:4px 12px 22px;min-height:190px}.w11-app{min-height:96px;padding:8px 2px 10px;gap:8px;font-size:11px}.w11-appicon{flex-basis:42px;width:42px;height:42px}.w11-center{gap:1px}.w11-btn{width:34px;height:38px}.w11-bar{height:48px}}
 `;
