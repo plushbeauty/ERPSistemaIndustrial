@@ -295,3 +295,51 @@ revoke all on function public.erp_decimal_salvar_regra(text,text,integer) from p
 grant execute on function public.erp_decimal_salvar_regra(text,text,integer) to authenticated;
 revoke all on function public.erp_fiscal_estornar_documento(text,date,text) from public,anon;
 grant execute on function public.erp_fiscal_estornar_documento(text,date,text) to authenticated;
+
+
+-- Saldo do razão calculado no banco sobre todos os lançamentos do tenant,
+-- sem limitar o cálculo à grade paginada exibida na interface.
+create or replace function public.erp_fiscal_saldo_razao(p_conta_id uuid)
+returns numeric
+language plpgsql
+security invoker
+set search_path=public
+as $$
+declare
+  v_empresa uuid := public.erp_current_empresa_id();
+  v_saldo_inicial numeric := 0;
+  v_movimento numeric := 0;
+begin
+  if v_empresa is null then
+    raise exception 'EMPRESA_NAO_IDENTIFICADA';
+  end if;
+  if not public.erp_is_master() and not exists (
+    select 1 from public.erp_usuarios u
+    where u.auth_user_id=auth.uid()
+      and u.empresa_id=v_empresa
+      and u.ativo=true and u.deleted_at is null
+      and upper(trim(coalesce(u.perfil,''))) in ('ADMINISTRADOR','CONTROLADORIA','FINANCEIRO')
+  ) then
+    raise exception 'RAZAO_GERAL_NAO_AUTORIZADO';
+  end if;
+
+  select coalesce(c.saldo_inicial,0)
+    into v_saldo_inicial
+  from public.erp_contas_bancarias c
+  where c.id=p_conta_id and c.empresa_id=v_empresa and c.ativo=true;
+
+  if not found then
+    raise exception 'CONTA_BANCARIA_FORA_DA_EMPRESA';
+  end if;
+
+  select coalesce(sum(coalesce(l.credito,0)-coalesce(l.debito,0)),0)
+    into v_movimento
+  from public.erp_fiscal_razao_lancamentos l
+  where l.empresa_id=v_empresa and l.conta_bancaria_id=p_conta_id;
+
+  return v_saldo_inicial + v_movimento;
+end;
+$$;
+
+revoke all on function public.erp_fiscal_saldo_razao(uuid) from public,anon;
+grant execute on function public.erp_fiscal_saldo_razao(uuid) to authenticated;
