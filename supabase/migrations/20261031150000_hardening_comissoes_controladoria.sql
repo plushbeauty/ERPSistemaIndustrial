@@ -215,7 +215,13 @@ declare
   v_empresa uuid := public.erp_current_empresa_id();
   v_id uuid;
 begin
-  if not public.erp_is_master() and not public.erp_comissao_autorizado() then
+  if not public.erp_is_master() and not exists (
+    select 1 from public.erp_usuarios u
+    where u.auth_user_id=auth.uid()
+      and u.empresa_id=v_empresa
+      and u.ativo=true and u.deleted_at is null
+      and upper(trim(coalesce(u.perfil,''))) in ('ADMINISTRADOR','CONTROLADORIA','FINANCEIRO')
+  ) then
     raise exception 'CONTROLADORIA_NAO_AUTORIZADA';
   end if;
   if v_empresa is null then
@@ -250,6 +256,15 @@ declare
 begin
   if v_empresa is null then
     raise exception 'EMPRESA_NAO_IDENTIFICADA: selecione a empresa de trabalho.';
+  end if;
+  if not public.erp_is_master() and not exists (
+    select 1 from public.erp_usuarios u
+    where u.auth_user_id=auth.uid()
+      and u.empresa_id=v_empresa
+      and u.ativo=true and u.deleted_at is null
+      and upper(trim(coalesce(u.perfil,''))) in ('ADMINISTRADOR','CONTROLADORIA','FINANCEIRO')
+  ) then
+    raise exception 'ESTORNO_NAO_AUTORIZADO';
   end if;
   if btrim(coalesce(p_documento,''))='' or p_data is null
      or btrim(coalesce(p_justificativa,''))='' then
