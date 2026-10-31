@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, Landmark } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, Landmark, Calculator, BookOpen } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -21,6 +21,19 @@ const menus: MenuItem[] = [
     { label: 'Conciliação Bancária', route: '/pageprincipal/financeiro/conciliacao-bancaria', icon: ClipboardList, isUpdated: true },
     { label: 'Importar Extratos', route: '/pageprincipal/financeiro/importar-extratos', icon: FileText, isUpdated: true },
     { label: 'Lista de Preços por Cliente', route: '/pageprincipal/financeiro/lista-precos-cliente', icon: ShoppingCart, isUpdated: true },
+  ] },
+  { label: 'Comissões', route: '/pageprincipal/comissoes', icon: Calculator, isUpdated: true, children: [
+    { label: 'Regras de Comissão', route: '/pageprincipal/comissoes/regras', icon: ClipboardList, isUpdated: true },
+    { label: 'Cálculo de Comissão', route: '/pageprincipal/comissoes/calculo', icon: Calculator, isUpdated: true },
+    { label: 'Perfil do Vendedor', route: '/pageprincipal/comissoes/perfil', icon: UserRound, isUpdated: true },
+    { label: 'Auditoria de Comissões', route: '/pageprincipal/comissoes/auditoria', icon: FileText, isUpdated: true },
+  ] },
+  { label: 'Controladoria', route: '/pageprincipal/controladoria', icon: BookOpen, children: [
+    { label: 'Lucratividade e Margens', route: '/pageprincipal/controladoria/lucratividade', icon: ClipboardList },
+    { label: 'Razão Geral', route: '/pageprincipal/controladoria/razao-geral', icon: Landmark },
+    { label: 'Cadastro de Decimais', route: '/pageprincipal/controladoria/cadastro-decimais', icon: Settings },
+    { label: 'Retificação Financeira', route: '/pageprincipal/controladoria/retificacao-assistente', icon: FileText },
+    { label: 'Auditoria de Comissões', route: '/pageprincipal/controladoria/auditoria-comissoes', icon: Calculator },
   ] },
   { label: 'Principal', route: '/pageprincipal', icon: Home },
   { label: 'Engenharia e PCP', route: '/pageprincipal/pcp', icon: Factory, children: [
@@ -92,7 +105,10 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     }
   }, [])
 
-  const moduleLabel = pathname.startsWith('/pageprincipal/financeiro') || pathname.startsWith('/financeiro') ? 'Financeiro'\n    : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
+  const moduleLabel = pathname.startsWith('/pageprincipal/financeiro') || pathname.startsWith('/financeiro') ? 'Financeiro'
+    : pathname.startsWith('/pageprincipal/comissoes') || pathname.startsWith('/comissoes') ? 'Comissões'
+    : pathname.startsWith('/pageprincipal/controladoria') || pathname.startsWith('/controladoria') ? 'Controladoria'
+    : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
     : pathname.startsWith('/pageprincipal/paquimetro') ? 'Qualidade / Paquímetro'
     : pathname.startsWith('/pageprincipal/compras') || pathname.startsWith('/compras') ? 'Compras'
     : pathname.startsWith('/pageprincipal/administracao-configuracoes') || pathname.startsWith('/configuracoes-adm') || pathname.startsWith('/administracao-configuracoes') ? 'Configurações'
@@ -217,7 +233,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       </main>
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
       <BarraWindows11
-        ativo={pathname.startsWith('/pageprincipal/financeiro') || pathname.startsWith('/financeiro') ? 'financeiro' : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/pageprincipal/paquimetro') ? 'paq' : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'fiscal' : pathname.startsWith('/pageprincipal') ? 'home' : ''}
+        ativo={pathname.startsWith('/pageprincipal/comissoes') || pathname.startsWith('/comissoes') ? 'comissoes' : pathname.startsWith('/pageprincipal/controladoria') || pathname.startsWith('/controladoria') ? 'controladoria' : pathname.startsWith('/pageprincipal/financeiro') || pathname.startsWith('/financeiro') ? 'financeiro' : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/pageprincipal/paquimetro') ? 'paq' : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'fiscal' : pathname.startsWith('/pageprincipal') ? 'home' : ''}
         onAbrir={(id) => {
           const destinations: Record<string, string> = {
             home: '/pageprincipal',
@@ -225,7 +241,10 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
             maq: '/pageprincipal/pcp',
             op: '/pageprincipal/pcp',
             paq: '/pageprincipal/paquimetro',
-            fiscal: '/pageprincipal/fiscal',\n            financeiro: '/pageprincipal/financeiro',
+            fiscal: '/pageprincipal/fiscal',
+            financeiro: '/pageprincipal/financeiro',
+            comissoes: '/pageprincipal/comissoes',
+            controladoria: '/pageprincipal/controladoria',
           }
           go(destinations[id] ?? '/pageprincipal')
         }}
