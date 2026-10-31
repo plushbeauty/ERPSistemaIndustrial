@@ -642,12 +642,12 @@ export default function QualityRpncForm() {
         <div className="grid grid-cols-1 gap-3 p-3 md:grid-cols-2 xl:grid-cols-4">
           <label className="qrf-field">Origem (obrigatória)
             <select className="erp-input" value={origem} onChange={(e) => setOrigem(e.target.value as TipoRegistro)} disabled={saving}>
-              {ORIGENS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>}
+              {ORIGENS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </label>
           <label className="qrf-field">Gravidade
             <select className="erp-input" value={severidade} onChange={(e) => setSeveridade(e.target.value as Severidade)} disabled={saving}>
-              {SEVERIDADES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>}
+              {SEVERIDADES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
           </label>
           <label className="qrf-field">Setor responsável
