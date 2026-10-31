@@ -91,6 +91,34 @@ export async function getAccessTokenOrThrow(): Promise<string> {
 }
 
 /**
+ * Extrai a mensagem devolvida pela Edge Function quando o HTTP status não é 2xx.
+ * O SDK entrega apenas um erro genérico e mantém a resposta em `context`.
+ */
+async function readEdgeFunctionMessage(error: unknown): Promise<string | null> {
+  const context = typeof error === 'object' && error !== null && 'context' in error
+    ? (error as { context: unknown }).context
+    : undefined
+  if (!(context instanceof Response)) return null
+  try {
+    const body: unknown = await context.json()
+    const record = asPlainRecord(body)
+    for (const key of ['error', 'message', 'msg', 'error_description']) {
+      const value = record[key]
+      if (typeof value === 'string' && value.trim()) return value.trim()
+    }
+  } catch {
+    return null
+  }
+  return null
+}
+
+function asPlainRecord(value: unknown): Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {}
+}
+
+/**
  * Invoca uma Edge Function pelo SDK oficial do Supabase.
  * O SDK administra apikey e cabeçalhos; o token é fornecido explicitamente
  * para garantir que a chamada use a sessão validada acima.
@@ -108,7 +136,11 @@ export async function invokeSecureEdgeFunction<T = unknown>(
       },
     })
 
-    if (error) throw error
+    if (error) {
+      const message = await readEdgeFunctionMessage(error)
+      if (message) throw new Error(message)
+      throw error
+    }
     return { data: data as T, error: null }
   } catch (error) {
     const normalized = error instanceof Error ? error : new Error('EDGE_FUNCTION_REQUEST_FAILED')

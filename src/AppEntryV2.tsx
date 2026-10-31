@@ -158,6 +158,7 @@ const SolicitacaoCompra = lazyPage(() => import('./pages/SolicitacaoCompra'), 'S
 const TesteERP = lazyPage(() => import('./pages/TesteERP'), 'TesteERP')
 const UsuariosAdmin = lazyPage(() => import('./pages/UsuariosAdmin'), 'UsuariosAdmin')
 const ConfiguracoesADMPage = lazyPage(() => import('./pages/configuracoes/ConfiguracoesADM'), 'ConfiguracoesADMPage')
+const AccessControlSettings = lazyPage(() => import('./pages/AccessControlSettings'), 'AccessControlSettings')
 const DocumentosQualidadeControle = lazyPage(() => import('./pages/DocumentosQualidadeControle'), 'DocumentosQualidadeControle')
 const QualidadeProcedimentos = lazyPage(() => import('./pages/qualidade/QualidadeProcedimentos'), 'default')
 const QualidadeLiberacaoLotes = lazyPage(() => import('./pages/qualidade/QualidadeLiberacaoLotes'), 'default')
@@ -700,6 +701,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/usuarios-admin" element={<UsuariosAdmin />} />
       <Route path="/usuarios" element={<UsuariosAdmin />} />
       <Route path="/configuracoes-adm/*" element={<ConfiguracoesADMPage />} />
+      <Route path="/configuracoes-usuario" element={<AccessControlSettings />} />
       <Route path="/documentos-qualidade" element={<QualityPlanGate><DocumentosQualidadeControle /></QualityPlanGate>} />
       <Route path="/recebimento-materiais" element={<RecebimentoMateriais />} />
       <Route path="/manual-usuario" element={<ManualUsuario />} />
