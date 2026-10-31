@@ -39,6 +39,7 @@ const menus: MenuItem[] = [
     { label: 'Central PCP', route: '/pageprincipal/pcp', icon: ClipboardList },
   ] },
   { label: 'Qualidade / Paquímetro', route: '/pageprincipal/paquimetro', icon: Ruler, children: [
+    { label: 'RPNC · Não conformidades', route: '/pageprincipal/qualidade/rpnc', icon: ClipboardList, isUpdated: true },
     { label: 'Paquímetro Digital', route: '/pageprincipal/paquimetro', icon: Ruler },
   ] },
   { label: 'Compras', route: '/pageprincipal/compras', icon: ShoppingCart, isUpdated: true },
@@ -232,7 +233,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       </main>
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
       <BarraWindows11
-        ativo={pathname.startsWith('/pageprincipal/comissoes') || pathname.startsWith('/comissoes') ? 'comissoes' : pathname.startsWith('/pageprincipal/controladoria') || pathname.startsWith('/controladoria') ? 'controladoria' : pathname.startsWith('/pageprincipal/financeiro') || pathname.startsWith('/financeiro') ? 'financeiro' : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/pageprincipal/paquimetro') ? 'paq' : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'fiscal' : pathname.startsWith('/pageprincipal') ? 'home' : ''}
+        ativo={pathname.startsWith('/pageprincipal/comissoes') || pathname.startsWith('/comissoes') ? 'comissoes' : pathname.startsWith('/pageprincipal/controladoria') || pathname.startsWith('/controladoria') ? 'controladoria' : pathname.startsWith('/pageprincipal/financeiro') || pathname.startsWith('/financeiro') ? 'financeiro' : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/pageprincipal/qualidade/rpnc') ? 'rpnc' : pathname.startsWith('/pageprincipal/paquimetro') ? 'paq' : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'fiscal' : pathname.startsWith('/pageprincipal') ? 'home' : ''}
         onAbrir={(id) => {
           const destinations: Record<string, string> = {
             home: '/pageprincipal',
@@ -240,6 +241,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
             maq: '/pageprincipal/pcp',
             op: '/pageprincipal/pcp',
             paq: '/pageprincipal/paquimetro',
+            rpnc: '/pageprincipal/qualidade/rpnc',
             fiscal: '/pageprincipal/fiscal',
             financeiro: '/pageprincipal/financeiro',
             comissoes: '/pageprincipal/comissoes',
