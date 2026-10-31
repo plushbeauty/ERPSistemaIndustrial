@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, FolderOpen, Warehouse, Banknote, Percent, Scale, ShieldCheck, BookOpen, Landmark, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, UserCog, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, FolderOpen, Warehouse, Banknote, Percent, Scale, ShieldCheck, BookOpen, Landmark, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -15,6 +15,7 @@ type MenuItem = {
   isNew?: boolean
   isUpdated?: boolean
   action?: 'pcpTablet'
+  minNivel?: number
   children?: MenuItem[]
 }
 
@@ -52,6 +53,7 @@ const menus: MenuItem[] = [
     { label: 'Requisições de Compra', route: '/pageprincipal/compras/requisicoes', icon: ClipboardList, isUpdated: true },
   ] },
   { label: 'Configurações', route: '/pageprincipal/administracao-configuracoes', icon: Settings },
+  { label: 'Configurações de Usuário', route: '/pageprincipal/configuracoes-usuario', icon: UserCog, isUpdated: true, minNivel: 8 },
   { label: 'Financeiro', route: '/pageprincipal/financeiro', icon: Wallet, isUpdated: true, children: [
     { label: 'Central Financeira', route: '/pageprincipal/financeiro', icon: Wallet, isUpdated: true },
     { label: 'Conciliação Bancária', route: '/pageprincipal/financeiro/conciliacao', icon: Scale, isUpdated: true },
@@ -90,6 +92,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [now, setNow] = useState(() => new Date())
   const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
   const [dataEpoch, setDataEpoch] = useState(0)
+  const [sessionNivel, setSessionNivel] = useState(0)
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -100,6 +103,25 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       else if (data.user?.email) setSessionOperator(data.user.email)
     })
   }, [operatorName])
+
+  // Nível administrativo da sessão: restringe itens do menu (ex.: Configurações de Usuário, nível 8/9).
+  // É apenas sinalização visual; a concessão real continua no RLS e nas RPCs security definer.
+  useEffect(() => {
+    let ativo = true
+    void (async () => {
+      const { data } = await supabase.auth.getUser()
+      if (!data.user) return
+      const usuario = await supabase
+        .from('erp_usuarios')
+        .select('nivel_admin')
+        .eq('auth_user_id', data.user.id)
+        .eq('ativo', true)
+        .is('deleted_at', null)
+        .maybeSingle<{ nivel_admin: number }>()
+      if (ativo) setSessionNivel(Number(usuario.data?.nivel_admin ?? 0))
+    })()
+    return () => { ativo = false }
+  }, [])
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000)
@@ -151,12 +173,14 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     : pathname.startsWith('/pageprincipal/financeiro') || pathname.startsWith('/financeiro') ? 'Financeiro'
     : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'Fiscal'
     : null
+  const visibleMenus: MenuItem[] = menus.filter(menu => menu.minNivel === undefined || sessionNivel >= menu.minNivel)
+    .map(menu => (menu.children ? { ...menu, children: menu.children.filter(child => child.minNivel === undefined || sessionNivel >= child.minNivel) } : menu))
   const currentModuleMenu = moduleLabel
-    ? menus.find(menu => menu.label === moduleLabel) ?? { label: moduleLabel, route: '/' + pathname.split('/')[1], icon: Home }
+    ? visibleMenus.find(menu => menu.label === moduleLabel) ?? { label: moduleLabel, route: '/' + pathname.split('/')[1], icon: Home }
     : undefined
-  const current = currentModuleMenu ?? menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
+  const current = currentModuleMenu ?? visibleMenus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
   const normalizedSearch = moduleSearch.trim().toLocaleLowerCase('pt-BR')
-  const searchedMenus = normalizedSearch ? menus.map(menu => ({ ...menu, children: menu.children?.filter(child => child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)) })).filter(menu => menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.route.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || Boolean(menu.children?.length)) : menus
+  const searchedMenus = normalizedSearch ? visibleMenus.map(menu => ({ ...menu, children: menu.children?.filter(child => child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)) })).filter(menu => menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.route.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || Boolean(menu.children?.length)) : visibleMenus
   useEffect(() => {
     setOpenMenu(null)
     setStartMenuOpen(false)

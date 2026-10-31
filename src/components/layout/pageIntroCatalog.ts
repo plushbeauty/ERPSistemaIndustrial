@@ -63,6 +63,8 @@ const introCatalog: Record<string, PageIntro> = {
   'cadastros/ajuda/listagem-produtos': { module: 'Cadastros Mestres', title: 'POP · Listagem de Produtos', description: 'Procedimento operacional da listagem: estrutura relacional, geração de part number e conferência antes de gravar.' },
   'cadastros/ajuda/parametros-codigo': { module: 'Cadastros Mestres', title: 'POP · Parâmetros de Código', description: 'Procedimento operacional das regras de código e da gravação segura da numeração em erp_codigos.' },
 
+  'configuracoes-usuario': { module: 'Configurações', title: 'Configurações de Usuário', description: 'Controle de acesso do chão de fábrica: acessos coletivos ou por posto, matriz de módulos por setor e modelos por nível de acesso.' },
+
   'master': { module: 'Plataforma', title: 'Console da Plataforma', description: 'Administração técnica de empresas, planos e acessos da plataforma SYSNQRA.' },
 }
 

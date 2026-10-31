@@ -24,6 +24,8 @@ const RHIndustrial = lazy(() => import('./pages/RHIndustrial'))
 const FichaProcesso = lazy(() => import('./features/pcp/FichaProcesso'))
 const QualidadeRPNC = lazy(() => import('./pages/QualidadeRPNC'))
 const AdministracaoConfiguracoesGlobais = lazy(() => import('./pages/AdministracaoConfiguracoesGlobais'))
+// Controle de acesso do chão de fábrica — visível apenas para nível 8 e 9 (comando de 2026-10-30)
+const AccessControlSettings = lazy(() => import('./pages/AccessControlSettings'))
 const CentralAjuda = lazy(() => import('./pages/CentralAjuda'))
 const FinanceiroWorkspace = lazy(() => import('./modules/financeiro/pages/FinanceiroWorkspace'))
 // Páginas existentes sem rota — integradas ao menu em 2026-10-30 (comando de integração global)
@@ -85,6 +87,7 @@ export default function AppEntryV2() {
               <Route path="pcp/fichas-processo" element={<FichaProcesso />} />
               <Route path="qualidade/rpnc" element={<QualityPlanGate><QualidadeRPNC /></QualityPlanGate>} />
               <Route path="administracao-configuracoes" element={<AdministracaoConfiguracoesGlobais />} />
+              <Route path="configuracoes-usuario" element={<AccessControlSettings />} />
               <Route path="fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />
               <Route path="pcp" element={<PCPWorkspace />} />
               <Route path="pcp/roteiros" element={<QualityPlanGate><RoteiroOperacoes /></QualityPlanGate>} />
