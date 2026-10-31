@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowLeft, Save } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -12,10 +12,28 @@ export default function AssistenteRetificacao() {
   const [dataEstorno, setDataEstorno] = useState(new Date().toISOString().slice(0, 10))
   const [justificativa, setJustificativa] = useState('')
   const [saving, setSaving] = useState(false)
+  const [access, setAccess] = useState<boolean | null>(null)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
 
+  useEffect(() => {
+    let active = true
+    const checkAccess = async () => {
+      const auth = await supabase.auth.getUser()
+      if (auth.error) throw auth.error
+      if (!auth.data.user) { navigate('/login', { replace: true }); return }
+      const profile = await supabase.from('erp_usuarios').select('perfil,is_master,nivel_admin,empresa_id,setor_id').eq('auth_user_id', auth.data.user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
+      if (profile.error) throw profile.error
+      const role = String(profile.data?.perfil ?? '').trim().toUpperCase()
+      const strictMaster = profile.data?.is_master === true && Number(profile.data?.nivel_admin) >= 100 && role === 'MASTER' && profile.data?.empresa_id === null && profile.data?.setor_id === null
+      if (active) setAccess(strictMaster || ['ADMINISTRADOR', 'CONTROLADORIA', 'FINANCEIRO'].includes(role))
+    }
+    void checkAccess().catch(reason => { if (active) { setAccess(false); setError(reason instanceof Error ? reason.message : 'Falha ao validar acesso.') } })
+    return () => { active = false }
+  }, [navigate])
+
   const save = async () => {
+    if (access !== true) return
     setError('')
     setMessage('')
     if (!documento.trim() || !dataEstorno || !justificativa.trim()) {
@@ -53,7 +71,9 @@ export default function AssistenteRetificacao() {
           </div>
         </header>
 
-        <section className="rounded-md border border-gray-200 bg-white p-3 shadow-sm">
+        {access === null && <p role="status" className="rounded-md border border-gray-200 bg-white p-3 text-xs text-gray-600">Verificando permissões…</p>}
+        {access === false && <p role="alert" className="rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-700">Acesso restrito à Administração, Controladoria ou Financeiro.</p>}
+        {access === true && <section className="rounded-md border border-gray-200 bg-white p-3 shadow-sm">
           <div className="mb-3 text-xs font-bold text-gray-700">Registro de estorno documental</div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_180px]">
             <div>
@@ -79,7 +99,7 @@ export default function AssistenteRetificacao() {
               <Save size={14} /> {saving ? 'Gravando…' : 'Registrar estorno'}
             </button>
           </div>
-        </section>
+        </section>}
       </div>
     </main>
   )
