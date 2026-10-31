@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch_System
  * @DATA_REVISAO_APROVACAO: 2026-10-31
  * @REVISAO: REV-SGQ-RPNC-FORMULARIO-20261031-01 — formulário RPNC modelo MGF3657 (SoftExpert), pasta virtual de evidências, CAPA dinâmica e relatório A4
  * @STATUS_APROVACAO: AGUARDA APLICAÇÃO DA MIGRATION 20261031100000_...SQL PELO PROPRIETÁRIO
