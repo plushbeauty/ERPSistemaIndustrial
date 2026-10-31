@@ -55,6 +55,13 @@ const CustomerDnPod = lazy(() => import('./pages/CustomerDnPod'))
 const Master = lazy(() => import('./pages/Master'))
 const PCPAreaFuncionario = lazy(() => import('./pages/PCPAreaFuncionario'))
 const PCPCapacidade = lazy(() => import('./pages/PCPCapacidade'))
+// Cadastro de Produtos — migrado em 2026-10-30 da branch legada para a origem única de código
+const ProdutosVendasIndustrial = lazy(() => import('./pages/ProdutosVendasIndustrial'))
+const ModuloCadastroProdutos = lazy(() => import('./pages/cadastro-produtos/ModuloCadastroProdutos'))
+const ParametrosCodigo = lazy(() => import('./pages/cadastro-produtos/ParametrosCodigo'))
+const HelpFichaTecnica = lazy(() => import('./pages/cadastro-produtos/HelpFichaTecnica'))
+const HelpListagemProdutos = lazy(() => import('./pages/cadastro-produtos/HelpListagemProdutos'))
+const HelpParametrosCodigo = lazy(() => import('./pages/cadastro-produtos/HelpParametrosCodigo'))
 
 function LoadingWorkspace() {
   return <main role="status" aria-live="polite" style={{ minHeight: '50vh', display: 'grid', placeItems: 'center', color: '#123b50', fontFamily: 'Inter,system-ui,sans-serif' }}>Carregando SYSNQRA ERP INDUSTRIAL…</main>
@@ -109,6 +116,13 @@ export default function AppEntryV2() {
               <Route path="fiscal/estorno" element={<QualityPlanGate><EstornoLancamentos /></QualityPlanGate>} />
               <Route path="fiscal/razao" element={<QualityPlanGate><PainelRazaoGeral /></QualityPlanGate>} />
               <Route path="master" element={<Master />} />
+              <Route path="cadastros/produtos" element={<ProdutosVendasIndustrial />} />
+              <Route path="cadastros/produtos/imprimir" element={<ProdutosVendasIndustrial />} />
+              <Route path="cadastros/produtos/ficha-tecnica" element={<ModuloCadastroProdutos />} />
+              <Route path="cadastros/produtos/parametros-codigo" element={<ParametrosCodigo />} />
+              <Route path="cadastros/ajuda/ficha-tecnica" element={<HelpFichaTecnica />} />
+              <Route path="cadastros/ajuda/listagem-produtos" element={<HelpListagemProdutos />} />
+              <Route path="cadastros/ajuda/parametros-codigo" element={<HelpParametrosCodigo />} />
             </Route>
             <Route path="/ajuda" element={<Navigate to="/pageprincipal/ajuda" replace />} />
             <Route path="/financeiro" element={<Navigate to="/pageprincipal/financeiro" replace />} />
@@ -121,7 +135,15 @@ export default function AppEntryV2() {
             <Route path="/configuracoes-adm" element={<Navigate to="/pageprincipal/administracao-configuracoes" replace />} />
             <Route path="/administracao-configuracoes" element={<Navigate to="/pageprincipal/administracao-configuracoes" replace />} />
             <Route path="/erp-industrial" element={<Navigate to="/pageprincipal" replace />} />
-            <Route path="/cadastros" element={<Navigate to="/pageprincipal" replace />} />
+            <Route path="/cadastros" element={<Navigate to="/pageprincipal/cadastros/produtos" replace />} />
+            <Route path="/produtos" element={<Navigate to="/pageprincipal/cadastros/produtos" replace />} />
+            <Route path="/produtos-vendas" element={<Navigate to="/pageprincipal/cadastros/produtos" replace />} />
+            <Route path="/produtos-vendas/imprimir" element={<Navigate to="/pageprincipal/cadastros/produtos/imprimir" replace />} />
+            <Route path="/cadastro-produtos" element={<Navigate to="/pageprincipal/cadastros/produtos/ficha-tecnica" replace />} />
+            <Route path="/cadastro-produtos/parametros-codigo" element={<Navigate to="/pageprincipal/cadastros/produtos/parametros-codigo" replace />} />
+            <Route path="/ajuda/ficha-tecnica" element={<Navigate to="/pageprincipal/cadastros/ajuda/ficha-tecnica" replace />} />
+            <Route path="/ajuda/listagem-produtos" element={<Navigate to="/pageprincipal/cadastros/ajuda/listagem-produtos" replace />} />
+            <Route path="/ajuda/parametros-codigo" element={<Navigate to="/pageprincipal/cadastros/ajuda/parametros-codigo" replace />} />
             <Route path="/fiscal" element={<Navigate to="/pageprincipal/fiscal" replace />} />
             <Route path="/pcp" element={<Navigate to="/pageprincipal/pcp" replace />} />
             <Route path="/paquimetro" element={<Navigate to="/pageprincipal/paquimetro" replace />} />

@@ -55,8 +55,13 @@ const introCatalog: Record<string, PageIntro> = {
   'financeiro/notas-debito': { module: 'Financeiro', title: 'Notas de Débito', description: 'Emissão e acompanhamento de notas de débito por cliente, inclusive comprovantes de entrega (POD).' },
   'financeiro/notas-debito/configuracoes': { module: 'Financeiro', title: 'Configurações de Notas de Débito', description: 'Séries, impostos e regras de emissão das notas de débito da empresa.' },
 
-  'produtos-vendas': { module: 'Cadastros', title: 'Cadastro de Produtos', description: 'Ficha técnica, parâmetros de numeração, listagem e etiquetas dos itens do catálogo industrial.' },
-  'imprimir-produto': { module: 'Cadastros', title: 'Impressão de Etiquetas de Produto', description: 'Emissão de etiquetas do SKU cadastrado no formato e na quantidade usados no chão de fábrica.' },
+  'cadastros/produtos': { module: 'Cadastros Mestres', title: 'Cadastro de Produtos', description: 'Identificação, fiscal, estoque, dimensional e produção do item, gravados em erp_produtos pela empresa autenticada.' },
+  'cadastros/produtos/imprimir': { module: 'Cadastros Mestres', title: 'Ficha Técnica do Produto', description: 'Documento A4 do produto selecionado, gerado a partir dos dados persistidos no cadastro mestre.' },
+  'cadastros/produtos/ficha-tecnica': { module: 'Cadastros Mestres', title: 'Ficha Técnica e Etiquetas', description: 'Listagem geral, ficha técnica, código de barras em ZPL e regras de formação do código do produto.' },
+  'cadastros/produtos/parametros-codigo': { module: 'Cadastros Mestres', title: 'Parâmetros de Código', description: 'Prefixo, separador, modo e dígitos da numeração de SKUs gravada em erp_codigos.' },
+  'cadastros/ajuda/ficha-tecnica': { module: 'Cadastros Mestres', title: 'POP · Ficha Técnica do Produto', description: 'Procedimento operacional da ficha técnica: chave do SKU, empresa, categoria e unidade de medida.' },
+  'cadastros/ajuda/listagem-produtos': { module: 'Cadastros Mestres', title: 'POP · Listagem de Produtos', description: 'Procedimento operacional da listagem: estrutura relacional, geração de part number e conferência antes de gravar.' },
+  'cadastros/ajuda/parametros-codigo': { module: 'Cadastros Mestres', title: 'POP · Parâmetros de Código', description: 'Procedimento operacional das regras de código e da gravação segura da numeração em erp_codigos.' },
 
   'master': { module: 'Plataforma', title: 'Console da Plataforma', description: 'Administração técnica de empresas, planos e acessos da plataforma SYSNQRA.' },
 }

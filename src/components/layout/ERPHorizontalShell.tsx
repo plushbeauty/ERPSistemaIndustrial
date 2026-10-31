@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, FolderOpen, Warehouse, Banknote, Percent, Scale, ShieldCheck, BookOpen, Landmark, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3 } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, FolderOpen, Warehouse, Banknote, Percent, Scale, ShieldCheck, BookOpen, Landmark, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -20,6 +20,11 @@ type MenuItem = {
 
 const menus: MenuItem[] = [
   { label: 'Principal', route: '/pageprincipal', icon: Home },
+  { label: 'Cadastros Mestres', route: '/pageprincipal/cadastros/produtos', icon: Boxes, children: [
+    { label: 'Cadastro de Produtos', route: '/pageprincipal/cadastros/produtos', icon: Boxes, isUpdated: true },
+    { label: 'Ficha Técnica e Etiquetas', route: '/pageprincipal/cadastros/produtos/ficha-tecnica', icon: FileText, isUpdated: true },
+    { label: 'Parâmetros de Código', route: '/pageprincipal/cadastros/produtos/parametros-codigo', icon: Barcode, isUpdated: true },
+  ] },
   { label: 'RH / Departamento Pessoal', route: '/pageprincipal/rh', icon: Users, isUpdated: true },
   { label: 'Engenharia e PCP', route: '/pageprincipal/pcp', icon: Factory, children: [
     { label: 'Central PCP', route: '/pageprincipal/pcp', icon: ClipboardList },
@@ -84,6 +89,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [pcpTabletOpen, setPcpTabletOpen] = useState(false)
   const [now, setNow] = useState(() => new Date())
   const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
+  const [dataEpoch, setDataEpoch] = useState(0)
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -109,7 +115,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   }, [])
 
   // Atualização automática por mudanças reais no banco, sem botão manual.
-  // Não recarrega telas de lançamento/edição para não apagar dados ainda não gravados.
+  // A mudança de dados remonta apenas a área de trabalho (recarrega as consultas da tela);
+  // o navegador não é recarregado, para não perder a sessão nem o estado do shell.
   useEffect(() => {
     let refreshTimer: number | undefined
     // Cada montagem recebe um tópico exclusivo: evita reutilizar um canal Realtime
@@ -123,7 +130,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         const userIsTyping = active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement || active instanceof HTMLSelectElement || (active instanceof HTMLElement && active.isContentEditable)
         if (routeIsEditing || userIsTyping) return
         if (refreshTimer !== undefined) window.clearTimeout(refreshTimer)
-        refreshTimer = window.setTimeout(() => window.location.reload(), 900)
+        refreshTimer = window.setTimeout(() => setDataEpoch(value => value + 1), 900)
       })
       .subscribe()
     return () => {
@@ -132,7 +139,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     }
   }, [])
 
-  const moduleLabel = pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
+  const moduleLabel = pathname.startsWith('/pageprincipal/cadastros') ? 'Cadastros Mestres'
+    : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
     : pathname.startsWith('/pageprincipal/chao-de-fabrica') ? 'Chão de Fábrica'
     : pathname.startsWith('/pageprincipal/estoque') ? 'Estoque e Almoxarifado'
     : pathname.startsWith('/pageprincipal/qualidade') ? 'Qualidade / Paquímetro'
@@ -176,6 +184,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     ? { title: 'Vendas', purpose: 'Consultar pedidos, clientes, prazos e andamento comercial.', steps: ['Use a pesquisa para localizar pedido ou cliente.', 'Aplique filtros de status e período.', 'Abra o pedido para conferir itens e histórico.'], fields: ['Pesquisa: número do pedido ou nome/código.', 'Status: etapa atual do fluxo.', 'Período: intervalo usado no relatório.', 'Cliente: referência ao cadastro comercial.'] }
     : pathname.startsWith('/compras')
     ? { title: 'Compras', purpose: 'Gerir solicitações, cotações, pedidos, aprovações e recebimentos.', steps: ['Confira fornecedor e especificação.', 'Informe itens, quantidades, preços e prazo.', 'Envie para aprovação conforme permissão.', 'Acompanhe recebimento e conferência fiscal.'], fields: ['Fornecedor: parceiro cadastrado.', 'Item/quantidade/unidade: o que será comprado.', 'Preço e condição: termos negociados.', 'Prazo: entrega acordada.', 'Centro de custo/local: destino da compra.'] }
+    : pathname.includes('/cadastros')
+    ? { title: 'Cadastro mestre de produtos', purpose: 'Manter identificação, dados fiscais, estoque, dimensional e produção do produto, sempre isolados pela empresa autenticada.', steps: ['Pesquise o produto por código, nome ou referência.', 'Selecione o registro e ative a edição antes de alterar campos.', 'Preencha os campos com valores já cadastrados nas fontes oficiais (grupo, unidade, NCM, máquina).', 'Grave e confirme a mensagem de resultado; use IMPRIMIR FICHA TÉCNICA para o documento em A4.'], fields: ['Código/nome: identificação do produto na empresa.', 'Unidade de compra/venda: como o item entra e sai do estoque.', 'NCM, CEST, CST/CSOSN e CFOP: classificação usada pelo módulo Fiscal.', 'Estoque atual, ponto de reposição e máximo: saldos e gatilhos de compra.', 'Peso e dimensões: base para logística e custo de transporte.'] }
     : pathname.startsWith('/qualidade')
     ? { title: 'Qualidade', purpose: 'Registrar não conformidades, evidências, causa raiz, ações corretivas e validação.', steps: ['Identifique produto, lote, processo e ocorrência.', 'Descreva o problema e a contenção imediata.', 'Registre causa raiz e plano de ação.', 'Anexe evidências e conclua após validar eficácia.'], fields: ['RPNC: registro da não conformidade.', 'Lote/produto: rastreabilidade afetada.', 'Causa raiz: causa comprovada, não apenas o sintoma.', 'Ação/responsável/prazo: plano verificável.', 'Evidência: documento ou registro que comprova a eficácia.'] }
     : { title: 'Ajuda da tela atual', purpose: 'Use esta ajuda para entender a finalidade da tela e o preenchimento dos campos mais comuns.', steps: ['Leia a finalidade antes de alterar dados.', 'Preencha campos obrigatórios com registros existentes.', 'Revise os dados e salve; confirme a mensagem de resultado.', 'Use a Central de Ajuda para consultar procedimentos do módulo.'], fields: ['Pesquisa: localiza registros existentes.', 'Filtros: limitam os resultados exibidos.', 'Status: indica a etapa do processo.', 'Salvar: grava dados reais; se houver erro, corrija a mensagem apresentada.'] }
@@ -265,7 +275,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           <small>Tela atual: {pathname}</small><button type="button" onClick={() => { setHelpOpen(false); navigate('/ajuda') }}>Abrir Central de Ajuda</button>
         </div>}
       </header>
-      <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
+      <main key={`erp-workspace-${dataEpoch}`} className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {pageIntro && <PageIntroCard {...pageIntro} />}
         {children}
       </main>
