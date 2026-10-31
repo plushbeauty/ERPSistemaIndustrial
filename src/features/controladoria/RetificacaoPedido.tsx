@@ -63,7 +63,7 @@ export default function RetificacaoPedido() {
 
       const profile = await supabase
         .from('erp_usuarios')
-        .select('perfil,is_master,ativo,deleted_at')
+        .select('perfil,is_master,nivel_admin,empresa_id,setor_id,ativo,deleted_at')
         .eq('auth_user_id', auth.user.id)
         .eq('ativo', true)
         .is('deleted_at', null)
@@ -71,7 +71,8 @@ export default function RetificacaoPedido() {
 
       if (profile.error) throw profile.error
       const perfil = String(profile.data?.perfil ?? '').trim().toUpperCase()
-      const allowed = Boolean(profile.data?.is_master) || perfil === 'ADMINISTRADOR' || perfil === 'CONTROLADORIA'
+      const strictMaster = profile.data?.is_master === true && Number(profile.data?.nivel_admin) >= 100 && perfil === 'MASTER' && profile.data?.empresa_id === null && profile.data?.setor_id === null
+      const allowed = strictMaster || perfil === 'ADMINISTRADOR' || perfil === 'CONTROLADORIA'
       if (!allowed) {
         if (active) {
           setRoleAllowed(false)
