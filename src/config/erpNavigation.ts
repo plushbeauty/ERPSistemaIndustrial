@@ -8,7 +8,7 @@
  * este catálogo; nenhum dos dois declara rotas próprias. Os selos do menu nunca são
  * decorativos: são derivados de erpScreenRegistry, que registra a evidência real da tela.
  */
-import { Archive, BarChart3, Barcode, BookOpen, Boxes, Calculator, CalendarClock, CircleHelp, ClipboardList, Factory, FilePlus2, FileText, FileWarning, FolderOpen, Home, Landmark, Monitor, Percent, RotateCcw, Route, Ruler, Scale, Settings, ShieldCheck, ShoppingCart, UserCog, UserRound, Users, Wallet, Warehouse } from 'lucide-react'
+import { Archive, BarChart3, Barcode, BookOpen, Boxes, Calculator, CalendarClock, CircleHelp, ClipboardList, Factory, FilePlus2, FileText, FileWarning, FolderOpen, Home, Landmark, LayoutDashboard, Monitor, Percent, RotateCcw, Route, Ruler, Scale, Settings, ShieldCheck, ShoppingCart, UserCog, UserRound, Users, Wallet, Warehouse } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { erpScreenHasBadge, erpScreenRecord, normalizeErpRoute } from './erpScreenRegistry'
 
@@ -56,6 +56,7 @@ const menuSeeds: MenuSeed[] = [
   ] },
   { label: 'RH / Departamento Pessoal', route: '/pageprincipal/rh', icon: Users },
   { label: 'Engenharia e PCP', route: '/pageprincipal/pcp', icon: Factory, children: [
+    { label: 'Dashboard do PCP', route: '/pageprincipal/pcp/dashboard', icon: LayoutDashboard },
     { label: 'Central PCP', route: '/pageprincipal/pcp', icon: ClipboardList },
     { label: 'Fichas de Processo', route: '/pageprincipal/pcp/fichas-processo', icon: ClipboardList },
     { label: 'Roteiro de Operações', route: '/pageprincipal/pcp/roteiros', icon: Route },

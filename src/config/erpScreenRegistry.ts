@@ -63,6 +63,7 @@ export const erpScreenRegistry: Record<string, ErpScreenRecord> = {
   'rh': { status: 'validada', banco: ['erp_funcionarios', 'erp_rh_ponto_eventos', 'erp_rh_treinamentos_registros', 'erp_rh_faltas', 'erp_rh_avaliacoes'], rpc: ['erp_current_empresa_id'], migration: '20261030190000_rh_avaliacoes_acidentes_documentos.sql', aplicada: false, nota: 'Núcleo funcional; avaliação/acidente dependem da confirmação da migration.' },
 
   'pcp': { status: 'validada', nota: 'Workspace por abas; cada aba consulta o banco (ordens, fichas, BOM, apuração).' },
+  'pcp/dashboard': { status: 'parcial', banco: ['erp_ordens_producao', 'erp_produtos', 'erp_maquinas', 'erp_pcp_programacoes', 'erp_apontamentos_processo', 'erp_producao_paradas', 'erp_empresas'], rpc: ['erp_current_empresa_id'], nota: 'Somente leitura. Sem views nem RPCs de KPI no banco: todo indicador é calculado na tela a partir das tabelas reais; qualquer fonte ilegível aparece como aviso honesto em vez de número inventado.' },
   'pcp/fichas-processo': { status: 'validada', banco: ['erp_produtos', 'erp_postos_trabalho', 'erp_pcp_roteiro_operacoes'], rpc: ['erp_current_empresa_id'] },
   'pcp/roteiros': { status: 'validada', banco: ['erp_pcp_roteiro_operacoes', 'erp_produtos', 'erp_postos_trabalho'], rpc: ['erp_current_empresa_id'] },
   'pcp/capacidade': { status: 'pendente', banco: ['erp_maquinas', 'erp_ordens_producao'], migration: '20261023120000_pcp_capacidade_schema_sync.sql', aplicada: false, nota: 'Colunas de capacidade ainda não confirmadas no banco do tenant.' },
