@@ -26,7 +26,12 @@ const PublicIndustrialHome = lazyPage(() => import('./PublicIndustrialHome'), 'P
 const AppEntryV2 = lazyPage(() => import('./AppEntryV2'), 'AppEntryV2')
 const SetupADMInicial = lazyPage(() => import('./pages/SetupADMInicial'), 'SetupADMInicial')
 const StaffOperatorLogin = lazyPage(() => import('./pages/StaffOperatorLogin'), 'StaffOperatorLogin')
-const publicPaths = new Set(['/','/home','/login','/login-operador','/planos'])
+// Telas públicas da home aprovada — links /planos, /blog, /contato e /cadastro-empresa não tinham rota no sistema
+const PlanosIndustrial = lazyPage(() => import('./pages/PlanosIndustrial'), 'PlanosIndustrial')
+const Blog = lazyPage(() => import('./pages/Blog'), 'Blog')
+const Contato = lazyPage(() => import('./pages/Contato'), 'Contato')
+const CadastroEmpresa = lazyPage(() => import('./pages/CadastroEmpresa'), 'CadastroEmpresa')
+const publicPaths = new Set(['/','/home','/login','/login-operador','/planos','/blog','/contato','/cadastro-empresa'])
 
 class BootstrapBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state = { error: null as Error | null }
@@ -128,6 +133,10 @@ export default function AppBootstrap() {
   if (path === '/login') return <BootstrapBoundary><LoginBootstrap /></BootstrapBoundary>
   if (path === '/login-operador') return <BootstrapBoundary><Suspense fallback={<Loading label="Preparando acesso do operador…" />}><StaffOperatorLogin /></Suspense></BootstrapBoundary>
   if (path === '/cadastro-master') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo cadastro Master…" />}><SetupADMInicial /></Suspense></BootstrapBoundary>
+  if (path === '/planos') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo catálogo de planos…" />}><PlanosIndustrial /></Suspense></BootstrapBoundary>
+  if (path === '/blog') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo Blog…" />}><Blog /></Suspense></BootstrapBoundary>
+  if (path === '/contato') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo Contato…" />}><Contato /></Suspense></BootstrapBoundary>
+  if (path === '/cadastro-empresa') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo cadastro da empresa…" />}><CadastroEmpresa /></Suspense></BootstrapBoundary>
   if (path === '/' || path === '/home') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo SYSNQRA ERP & SGQ INDUSTRIAL…" />}><PublicIndustrialHome /></Suspense></BootstrapBoundary>
   const app = <BootstrapBoundary><Suspense fallback={<Loading />}><AppEntryV2 /></Suspense></BootstrapBoundary>
   const isPublic = publicPaths.has(path) || path.startsWith('/modulos/')
