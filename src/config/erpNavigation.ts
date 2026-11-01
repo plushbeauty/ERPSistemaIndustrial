@@ -1,14 +1,14 @@
 /**
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-10-31
- * @REVISAO: REV-NAVIGACAO-UNICA-20261031-01 — catálogo único de menu, atalhos e selos
+ * @REVISAO: REV-NAVIGACAO-UNICA-20261101-02 — catálogo único de menu e selos, sem barra de atalhos
  * @STATUS_APROVACAO: PENDENTE de homologação pelo proprietário
  *
- * Fonte única de navegação do ERP. O shell horizontal e a barra Windows 11 consomem
- * este catálogo; nenhum dos dois declara rotas próprias. Os selos do menu nunca são
- * decorativos: são derivados de erpScreenRegistry, que registra a evidência real da tela.
+ * Fonte única de navegação do ERP. O shell horizontal consome este catálogo e não
+ * declara rotas próprias. Os selos do menu nunca são decorativos: são derivados de
+ * erpScreenRegistry, que registra a evidência real da tela.
  */
-import { Archive, BarChart3, Barcode, BookOpen, Boxes, Calculator, CalendarClock, CircleHelp, ClipboardList, Factory, FilePlus2, FileText, FileWarning, FolderOpen, Home, Landmark, LayoutDashboard, Monitor, Percent, RotateCcw, Route, Ruler, Scale, Settings, ShieldCheck, ShoppingCart, UserCog, UserRound, Users, Wallet, Warehouse } from 'lucide-react'
+import { Archive, BarChart3, Barcode, BookOpen, Boxes, Calculator, CircleHelp, ClipboardList, Factory, FilePlus2, FileText, FileWarning, FolderOpen, Home, Landmark, LayoutDashboard, Monitor, Percent, RotateCcw, Route, Ruler, Scale, Settings, ShieldCheck, ShoppingCart, UserCog, UserRound, Users, Wallet, Warehouse } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { erpScreenHasBadge, erpScreenRecord, normalizeErpRoute } from './erpScreenRegistry'
 
@@ -113,44 +113,6 @@ export const erpMenuLabelByRoute: Record<string, string> = {}
 for (const menu of erpMenus) {
   erpMenuLabelByRoute[menu.route] = menu.label
   for (const child of menu.children ?? []) erpMenuLabelByRoute[child.route] = child.label
-}
-
-export type TaskbarApp = { id: string; nome: string; icone: LucideIcon; cor: string; rota: string }
-
-/** Atalhos da barra Windows 11. Cada atalho aponta para uma rota deste mesmo catálogo. */
-export const erpTaskbarApps: TaskbarApp[] = [
-  { id: 'home', nome: 'Página principal', icone: Home, cor: '#123b50', rota: '/pageprincipal' },
-  { id: 'rh', nome: 'RH / Departamento Pessoal', icone: Users, cor: '#f97316', rota: '/pageprincipal/rh' },
-  { id: 'fichas', nome: 'Fichas de Processo', icone: ClipboardList, cor: '#f97316', rota: '/pageprincipal/pcp/fichas-processo' },
-  { id: 'comissoes', nome: 'Comissões', icone: Calculator, cor: '#f97316', rota: '/pageprincipal/comissoes' },
-  { id: 'controladoria', nome: 'Controladoria', icone: BookOpen, cor: '#f97316', rota: '/pageprincipal/controladoria' },
-  { id: 'financeiro', nome: 'Financeiro', icone: Landmark, cor: '#f97316', rota: '/pageprincipal/financeiro' },
-  { id: 'pcp', nome: 'PCP', icone: CalendarClock, cor: '#0078d4', rota: '/pageprincipal/pcp' },
-  { id: 'paq', nome: 'Paquímetro', icone: Ruler, cor: '#111827', rota: '/pageprincipal/paquimetro' },
-  { id: 'fiscal', nome: 'Fiscal', icone: FileText, cor: '#d97706', rota: '/pageprincipal/fiscal' },
-  { id: 'compras', nome: 'Central de Compras', icone: ShoppingCart, cor: '#d97706', rota: '/pageprincipal/compras' },
-  { id: 'solicitacao', nome: 'Solicitação de Compra', icone: FilePlus2, cor: '#f97316', rota: '/pageprincipal/compras/solicitacao' },
-  { id: 'requisicoes', nome: 'Requisições de Compra', icone: ClipboardList, cor: '#f97316', rota: '/pageprincipal/compras/requisicoes' },
-  { id: 'rpnc', nome: 'RPNC', icone: ClipboardList, cor: '#111827', rota: '/pageprincipal/qualidade/rpnc' },
-]
-
-/** Destino de cada atalho, derivado do próprio atalho — sem mapa paralelo dentro do shell. */
-export const erpTaskbarDestinations: Record<string, string> = Object.fromEntries(erpTaskbarApps.map(app => [app.id, app.rota]))
-
-function workspaceKey(path: string): string {
-  return path.startsWith('/pageprincipal') ? path.slice('/pageprincipal'.length) : path
-}
-
-/** Atalho ativo = rota catalogada que for o prefixo mais longo do caminho atual. */
-export function erpTaskbarActiveId(pathname: string): string {
-  const key = workspaceKey(pathname)
-  let matched: TaskbarApp | undefined
-  for (const app of erpTaskbarApps) {
-    const routeKey = workspaceKey(app.rota)
-    const inside = routeKey === '' || key === routeKey || key.startsWith(`${routeKey}/`)
-    if (inside && (!matched || workspaceKey(matched.rota).length <= routeKey.length)) matched = app
-  }
-  return matched?.id ?? ''
 }
 
 const modulePrefixes: Array<[string, string]> = [

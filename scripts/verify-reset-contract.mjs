@@ -10,7 +10,7 @@ const navigation = read('src/config/erpNavigation.ts')
 const checks = [
   ['Home/logo pública preservada', fs.existsSync('src/PublicIndustrialHome.tsx') && bootstrap.includes("import('./PublicIndustrialHome')")],
   ['Dashboard aprovado preservado', dashboard.includes("IndustrialCommandDashboard")],
-  ['Shell Windows 11 preservado', shell.includes('BarraWindows11') && shell.includes('erp-windows-topbar')],
+  ['Shell Windows 11 com menu superior preservado', shell.includes('erp-windows-topbar') && shell.includes('erp-windows-menu-list') && !shell.includes('BarraWindows11')],
   ['Fiscal aprovada preservada como referência', fs.existsSync('src/pages/Fiscal.tsx') && app.includes('path="fiscal"') && app.includes('path="/fiscal"')],
   ['Page Principal é a área central única', fs.existsSync('src/pages/PagePrincipal.tsx') && app.includes('path="/pageprincipal"') && app.includes('path="pcp"') && app.includes('path="paquimetro"') && app.includes('path="fiscal"') && app.includes('path="*"')],
   ['Página administrativa Master preservada', fs.existsSync('src/pages/Master.tsx')],

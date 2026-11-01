@@ -2,14 +2,13 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { ChevronDown, ChevronRight, CircleHelp, Home, LogOut, Search, UserRound, X } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
-import { BarraWindows11 } from './BarraWindows11'
 import PCPTabletMenuModal from '../PCPTabletMenuModal'
 import PageIntroCard from './PageIntroCard'
 import TrialStatusBanner from './TrialStatusBanner'
 import { fallbackPageIntro, hasNativeIntroCard, resolvePageIntro } from './pageIntroCatalog'
-import { erpMenus, erpModuleLabel, erpTaskbarActiveId, erpTaskbarDestinations, type MenuItem } from '../../config/erpNavigation'
+import { erpMenus, type MenuItem } from '../../config/erpNavigation'
 
-// Menu e atalhos vêm do catálogo único; o shell não declara rotas nem selos próprios.
+// Menu vem do catálogo único; o shell não declara rotas nem selos próprios.
 const menus: MenuItem[] = erpMenus
 
 
@@ -239,29 +238,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         {children}
       </main>
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
-      <BarraWindows11
-        ativo={pathname.startsWith('/pageprincipal/comissoes') || pathname.startsWith('/comissoes') ? 'comissoes' : pathname.startsWith('/pageprincipal/controladoria') || pathname.startsWith('/controladoria') ? 'controladoria' : pathname.startsWith('/pageprincipal/financeiro') || pathname.startsWith('/financeiro') ? 'financeiro' : pathname.startsWith('/pageprincipal/rh') ? 'rh' : pathname.startsWith('/pageprincipal/pcp/fichas-processo') ? 'fichas' : pathname.startsWith('/pageprincipal/compras/solicitacao') ? 'solicitacao' : pathname.startsWith('/pageprincipal/compras/requisicoes') ? 'requisicoes' : pathname.startsWith('/pageprincipal/compras') ? 'compras' : pathname.startsWith('/pageprincipal/qualidade/rpnc') ? 'rpnc' : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/pageprincipal/paquimetro') ? 'paq' : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'fiscal' : pathname.startsWith('/pageprincipal') ? 'home' : ''}
-        onAbrir={(id) => {
-          const destinations: Record<string, string> = {
-            home: '/pageprincipal',
-            rh: '/pageprincipal/rh',
-            fichas: '/pageprincipal/pcp/fichas-processo',
-            pcp: '/pageprincipal/pcp',
-            maq: '/pageprincipal/pcp',
-            op: '/pageprincipal/pcp',
-            paq: '/pageprincipal/paquimetro',
-            fiscal: '/pageprincipal/fiscal',
-            compras: '/pageprincipal/compras',
-            solicitacao: '/pageprincipal/compras/solicitacao',
-            requisicoes: '/pageprincipal/compras/requisicoes',
-            rpnc: '/pageprincipal/qualidade/rpnc',
-            financeiro: '/pageprincipal/financeiro',
-            comissoes: '/pageprincipal/comissoes',
-            controladoria: '/pageprincipal/controladoria',
-          }
-          go(destinations[id] ?? '/pageprincipal')
-        }}
-      />
 
       <style>{`
         .erp-horizontal-shell{min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%);color:#123b50}
