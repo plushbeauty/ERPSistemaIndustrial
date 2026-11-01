@@ -37,6 +37,9 @@
   font-size: 13px;
 }
 
+/** Variação sem rail lateral: usada pela tela principal, que navega pelos próprios cartões de módulo. */
+.smp-shell--solo { grid-template-columns: minmax(0, 1fr); }
+
 .smp-shell *,
 .smp-shell *::before,
 .smp-shell *::after { box-sizing: border-box; }
@@ -280,9 +283,40 @@
 .smp-skeleton i { display: block; height: 14px; border-radius: 3px; background: linear-gradient(90deg, #EEF5F8 25%, #F8FCFD 37%, #EEF5F8 63%); background-size: 400% 100%; animation: smp-shimmer 1.35s ease-in-out infinite; }
 @keyframes smp-shimmer { from { background-position: 100% 50%; } to { background-position: 0 50%; } }
 
+/* ------------------------------------------------------ cartões de módulo */
+.smp-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(238px, 1fr)); gap: 12px; }
+.smp-tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px 15px 14px 18px;
+  border: 1px solid var(--smp-line);
+  border-radius: var(--smp-radius);
+  background: var(--smp-surface);
+  box-shadow: var(--smp-shadow);
+  color: var(--smp-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+.smp-tile::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: var(--smp-radius) 0 0 var(--smp-radius); background: var(--smp-blue); }
+.smp-tile:hover { border-color: var(--smp-blue); box-shadow: 0 2px 4px rgba(14, 42, 56, .06), 0 12px 26px rgba(14, 42, 56, .09); transform: translateY(-1px); }
+.smp-tile:focus-visible { outline: 2px solid rgba(72, 183, 199, .55); outline-offset: 2px; }
+.smp-tile-icon { display: grid; place-items: center; flex: 0 0 auto; width: 38px; height: 38px; border-radius: 3px; background: var(--smp-line-soft); color: var(--smp-blue); }
+.smp-tile-main { min-width: 0; flex: 1 1 auto; }
+.smp-tile-main strong { display: block; font-size: 13px; font-weight: 900; letter-spacing: -.1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.smp-tile-main span { display: block; margin-top: 3px; color: var(--smp-muted); font-size: 11px; font-weight: 700; }
+.smp-tile > .smp-chip, .smp-tile > .smp-tile-go { flex: 0 0 auto; }
+.smp-tile-go { color: #9DB4BF; }
+.smp-tile:hover .smp-tile-go { color: var(--smp-blue); }
+
 /* ------------------------------------------------------------- responsivo */
 @media (max-width: 1420px) {
   .smp-shell { grid-template-columns: 208px minmax(0, 1fr); }
+  .smp-shell--solo { grid-template-columns: minmax(0, 1fr); }
   .smp-grid { grid-template-columns: minmax(0, 1fr) 290px; }
 }
 @media (max-width: 1240px) {
