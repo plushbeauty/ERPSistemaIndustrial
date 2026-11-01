@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabaseClient'
 import { BarraWindows11 } from './BarraWindows11'
 import PCPTabletMenuModal from '../PCPTabletMenuModal'
 import PageIntroCard from './PageIntroCard'
+import TrialStatusBanner from './TrialStatusBanner'
 import { fallbackPageIntro, hasNativeIntroCard, resolvePageIntro } from './pageIntroCatalog'
 import { erpMenus, erpModuleLabel, erpTaskbarActiveId, erpTaskbarDestinations, type MenuItem } from '../../config/erpNavigation'
 
@@ -233,6 +234,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         </div>}
       </header>
       <main key={`erp-workspace-${dataEpoch}`} className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
+        <TrialStatusBanner />
         {pageIntro && <PageIntroCard {...pageIntro} />}
         {children}
       </main>
