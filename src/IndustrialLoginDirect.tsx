@@ -1,12 +1,12 @@
 /**
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-01
- * @REVISAO: REV-LOGIN-PREMIUM-20261101-01 — refação visual da tela de acesso; contrato de autenticação inalterado
- * @STATUS_APROVACAO: REFAÇÃO VISUAL AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-01
+ * @REVISAO: REV-LOGIN-FOTO-INDUSTRIAL-20261101-01 — tela de acesso sobre a foto da planta, com cartão flutuante à direita
+ * @STATUS_APROVACAO: LAYOUT APROVADO PELO PROPRIETÁRIO EM 2026-11-01 · contrato de autenticação inalterado
  */
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, ReactNode, useEffect, useState } from 'react'
 import { motion } from 'motion/react'
-import { Building2, Eye, EyeOff, Layers, LockKeyhole, ShieldCheck, Sparkles } from 'lucide-react'
+import { BadgeCheck, Building2, Eye, EyeOff, Gauge, Handshake, Lock, Mail, ShieldCheck, Sparkles } from 'lucide-react'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 import './styles/industrial-login.css'
 
@@ -16,6 +16,46 @@ type Props = {
   returnTo?: string
   masterMode?: boolean
   onLoginStateChange?: (state: 'idle' | 'authenticating' | 'unlocked' | 'error') => void
+}
+
+const pilaresSistema = [
+  { rotulo: 'Produtividade', icone: Gauge },
+  { rotulo: 'Qualidade', icone: BadgeCheck },
+  { rotulo: 'Confiabilidade', icone: ShieldCheck },
+  { rotulo: 'Parceria', icone: Handshake },
+]
+
+function AuthFrame({ children }: { children: ReactNode }) {
+  return (
+    <motion.main
+      className="auth-screen"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.32 }}
+    >
+      <p className="auth-sr-only">
+        SYSNQRA ERP &amp; SGQ Industrial — planta industrial iluminada no fim do expediente.
+      </p>
+      <div className="auth-shell">
+        <header className="auth-brand">
+          <span className="auth-brand-logo">
+            <img src="/logo/logo.png" alt="" />
+            <span>SYSNQRA</span>
+          </span>
+          <div className="auth-brand-copy">
+            <h2>Planejar. Controlar. <em>Evoluir.</em></h2>
+            <p>Gestão inteligente para uma indústria mais eficiente.</p>
+          </div>
+        </header>
+        {children}
+      </div>
+      <footer className="auth-statusbar">
+        <span><b>SYSNQRA</b>&nbsp;ERP &amp; SGQ INDUSTRIAL</span>
+        <span>Versão <em>{__APP_VERSION__}</em> · Autenticação Supabase</span>
+        <span>Sua indústria <em>sempre à frente</em></span>
+      </footer>
+    </motion.main>
+  )
 }
 
 function safeReturnTo(value?: string | null) {
@@ -270,189 +310,149 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false, on
 
   if (checking) {
     return (
-      <motion.main
-        className="auth-screen"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.32 }}
-      >
-        <section className="auth-card" aria-busy="true">
-          <div className="auth-brand">
-            <span className="auth-brand-logo">
-              <img src="/logo/logo.png" alt="" />
-              <span>SYSNQRA</span>
-            </span>
-            <div className="auth-brand-copy">
-              <small>AMBIENTE INDUSTRIAL PROTEGIDO</small>
-              <h2>Verificando seu<br /><em>acesso seguro.</em></h2>
-              <p>A sessão anterior está sendo validada no Supabase Auth e no perfil ERP da sua empresa antes da liberação.</p>
-            </div>
-            <span className="auth-brand-foot">SYSNQRA ERP &amp; SGQ INDUSTRIAL · TECNOLOGIA A SERVIÇO DA INDÚSTRIA</span>
-          </div>
-          <div className="auth-panel">
-            <div className="auth-loading-card">
-              <span className="auth-overline">SYSNQRA • ACESSO SEGURO</span>
-              <h1>Preparando seu acesso</h1>
-              <p className="auth-description">Validando a sessão do SYSNQRA ERP &amp; SGQ INDUSTRIAL…</p>
-              <div className="auth-loading-bar"><i /></div>
-              <div className="auth-security-note">
-                <ShieldCheck size={16} />
-                <span>Sessão segura e persistente. Nenhum dado é liberado antes da validação do perfil e da empresa.</span>
-              </div>
+      <AuthFrame>
+        <section className="auth-panel" aria-busy="true">
+          <div className="auth-loading-card">
+            <span className="auth-overline">SYSNQRA • ACESSO SEGURO</span>
+            <h1>Preparando seu<br /><em>acesso.</em></h1>
+            <p className="auth-description">
+              Validando a sessão do SYSNQRA ERP &amp; SGQ INDUSTRIAL no Supabase Auth e no perfil ERP da sua empresa…
+            </p>
+            <div className="auth-loading-bar"><i /></div>
+            <div className="auth-security-note">
+              <ShieldCheck size={16} />
+              <span>Nenhum dado é liberado antes da validação do perfil, da empresa vinculada e do status do acesso.</span>
             </div>
           </div>
         </section>
-      </motion.main>
+      </AuthFrame>
     )
   }
 
   return (
-    <motion.main
-      className="auth-screen"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.32 }}
-    >
-      <section className="auth-card">
-        <div className="auth-brand">
-          <span className="auth-brand-logo">
-            <img src="/logo/logo.png" alt="" />
-            <span>SYSNQRA</span>
-          </span>
-          <div className="auth-brand-copy">
-            <small>GESTÃO INDUSTRIAL INTEGRADA</small>
-            <h2>Bem-vindo ao<br /><em>SYSNQRA ERP &amp; SGQ.</em></h2>
-            <p>
-              {masterMode
-                ? 'Painel administrativo do proprietário. O perfil MASTER é conferido no banco antes de qualquer tela abrir.'
-                : 'Produção, qualidade, estoque, compras e gestão no mesmo ambiente — com o isolamento da sua empresa garantido no banco.'}
-            </p>
+    <AuthFrame>
+      <section className="auth-panel" aria-label="Formulário de acesso ao SYSNQRA ERP &amp; SGQ INDUSTRIAL">
+        <div className="auth-panel-inner">
+          <div className="auth-heading">
+            <span className="auth-overline">{masterMode ? 'SYSNQRA • LOGIN MASTER' : 'SYSNQRA • ACESSO SEGURO'}</span>
+            <span className="auth-status"><i /> Ambiente protegido</span>
           </div>
-          <ul className="auth-brand-points">
-            <li>
-              <ShieldCheck size={17} />
-              <span><b>Isolamento por empresa</b>Cada acesso é validado no perfil ERP e na empresa vinculada antes de liberar o sistema.</span>
-            </li>
-            <li>
-              <Layers size={17} />
-              <span><b>Módulos integrados</b>PCP, chão de fábrica, SGQ, metrologia, estoque, custos e financeiro em uma base única.</span>
-            </li>
-            <li>
-              <LockKeyhole size={17} />
-              <span><b>Autenticação Supabase</b>Senhas nunca ficam no navegador; a sessão é emitida e renovada pelo Supabase Auth.</span>
-            </li>
-          </ul>
-          <span className="auth-brand-foot">SYSNQRA ERP &amp; SGQ INDUSTRIAL · TECNOLOGIA A SERVIÇO DA INDÚSTRIA</span>
-        </div>
 
-        <section className="auth-panel" aria-label="Formulário de acesso ao SYSNQRA ERP &amp; SGQ INDUSTRIAL">
-          <div className="auth-panel-inner">
-            <div className="auth-heading">
-              <span className="auth-overline">{masterMode ? 'SYSNQRA • LOGIN MASTER' : 'SYSNQRA • ACESSO SEGURO'}</span>
-              <span className="auth-status"><i /> Ambiente protegido</span>
+          <h1>
+            {masterMode ? 'Telas Master' : 'Bem-vindo ao SYSNQRA'}<br />
+            <em>{masterMode ? 'Área do proprietário' : 'ERP Industrial'}</em>
+          </h1>
+
+          <p className="auth-description">
+            {masterMode
+              ? 'Área reservada ao proprietário do projeto. O perfil MASTER é conferido no banco antes de qualquer tela abrir.'
+              : 'Acesse sua conta para continuar. Empresa, perfil e status são conferidos no banco antes de liberar o ambiente.'}
+          </p>
+
+          <form className="auth-form" onSubmit={submit}>
+            <label htmlFor="erp-direct-email">E-mail</label>
+            <div className="auth-input-wrap">
+              <Mail size={17} className="auth-input-icon" aria-hidden="true" />
+              <input
+                id="erp-direct-email"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="seu@email.com"
+                autoComplete="username"
+                autoFocus
+                required
+              />
             </div>
 
-            <h1>{masterMode ? 'Telas Master' : 'Entrar no SYSNQRA'}</h1>
+            <div className="auth-label-row">
+              <label htmlFor="erp-direct-password">Senha</label>
+              <button type="button" className="auth-text-button" onClick={recover} disabled={busy}>
+                Esqueci minha senha
+              </button>
+            </div>
 
-            <p className="auth-description">
-              {masterMode
-                ? 'Área reservada ao proprietário do projeto. Informe o acesso MASTER para abrir o painel administrativo.'
-                : 'Use o e-mail e a senha cadastrados. A empresa, o perfil e o status são conferidos no banco antes de liberar o ambiente.'}
-            </p>
-
-            <form className="auth-form" onSubmit={submit}>
-              <label htmlFor="erp-direct-email">E-mail</label>
-              <div className="auth-input-wrap">
-                <input
-                  id="erp-direct-email"
-                  type="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="seu@email.com"
-                  autoComplete="username"
-                  autoFocus
-                  required
-                />
-              </div>
-
-              <div className="auth-label-row">
-                <label htmlFor="erp-direct-password">Senha</label>
-                <button type="button" className="auth-text-button" onClick={recover} disabled={busy}>
-                  Esqueci minha senha
-                </button>
-              </div>
-
-              <div className="auth-input-wrap">
-                <input
-                  id="erp-direct-password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  placeholder="Digite sua senha"
-                  autoComplete="current-password"
-                  required
-                />
-                <button
-                  type="button"
-                  className="auth-password-toggle"
-                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                  onClick={() => setShowPassword((value) => !value)}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-
-              {error && <div className="auth-message auth-error" role="alert">{error}</div>}
-              {notice && <div className="auth-message auth-notice" role="status">{notice}</div>}
-
-              <motion.button
-                className="auth-submit"
-                type="submit"
-                disabled={busy}
-                whileHover={{ y: -1 }}
-                whileTap={{ scale: 0.985 }}
+            <div className="auth-input-wrap">
+              <Lock size={17} className="auth-input-icon" aria-hidden="true" />
+              <input
+                id="erp-direct-password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Digite sua senha"
+                autoComplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                className="auth-password-toggle"
+                aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                onClick={() => setShowPassword((value) => !value)}
               >
-                {busy ? (
-                  <>
-                    <span className="auth-spinner" />
-                    Entrando…
-                  </>
-                ) : (
-                  <>
-                    Entrar no sistema
-                  </>
-                )}
-              </motion.button>
-
-            </form>
-
-            {!masterMode && (
-              <>
-                <div className="auth-divider">Ainda não tem ambiente</div>
-                <a className="auth-register" href="/cadastro-empresa">
-                  <Building2 size={16} /> Cadastrar minha empresa
-                </a>
-                <a className="auth-trial" href={'/cadastro-empresa?modo=trial&plano=profissional'}>
-                  <Sparkles size={16} /> Começar teste grátis de 15 dias
-                </a>
-              </>
-            )}
-
-            <div className="auth-security-note">
-              <ShieldCheck size={16} />
-              <span>Autenticação feita pelo Supabase Auth. Nenhuma senha é armazenada no navegador.</span>
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
 
-            <div className="auth-footer">
-              <a href="/planos">Ver planos</a>
-              <span>·</span>
-              <a href="/">Site institucional</a>
-              <span>·</span>
-              <a href="/contato">Suporte</a>
-            </div>
+            {error && <div className="auth-message auth-error" role="alert">{error}</div>}
+            {notice && <div className="auth-message auth-notice" role="status">{notice}</div>}
+
+            <motion.button
+              className="auth-submit"
+              type="submit"
+              disabled={busy}
+              whileHover={{ y: -1 }}
+              whileTap={{ scale: 0.985 }}
+            >
+              {busy ? (
+                <>
+                  <span className="auth-spinner" />
+                  Entrando…
+                </>
+              ) : (
+                <>
+                  Entrar no sistema
+                </>
+              )}
+            </motion.button>
+
+          </form>
+
+          {!masterMode && (
+            <>
+              <div className="auth-divider">Ainda não tem ambiente</div>
+              <a className="auth-register" href="/cadastro-empresa">
+                <Building2 size={16} /> Cadastrar minha empresa
+              </a>
+              <a className="auth-trial" href={'/cadastro-empresa?modo=trial&plano=profissional'}>
+                <Sparkles size={16} /> Começar teste grátis de 15 dias
+              </a>
+            </>
+          )}
+
+          <div className="auth-divider">{masterMode ? 'Princípios do painel' : 'Pilares do sistema'}</div>
+          <ul className="auth-pillars">
+            {pilaresSistema.map(({ rotulo, icone: Icone }) => (
+              <li key={rotulo}>
+                <Icone size={16} aria-hidden="true" />
+                <span>{rotulo}</span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="auth-security-note">
+            <ShieldCheck size={16} />
+            <span>Autenticação feita pelo Supabase Auth. Nenhuma senha é armazenada no navegador.</span>
           </div>
-        </section>
+
+          <div className="auth-footer">
+            <a href="/planos">Ver planos</a>
+            <span>·</span>
+            <a href="/">Site institucional</a>
+            <span>·</span>
+            <a href="/contato">Suporte</a>
+          </div>
+        </div>
       </section>
-    </motion.main>
+    </AuthFrame>
   )
 }

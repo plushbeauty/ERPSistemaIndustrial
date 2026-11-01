@@ -15,3 +15,9 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }
+
+/**
+ * Versão publicada em package.json, injetada pelo `define` do vite.config.ts.
+ * Usada na barra de status da tela de acesso; evita versão digitada à mão.
+ */
+declare const __APP_VERSION__: string
