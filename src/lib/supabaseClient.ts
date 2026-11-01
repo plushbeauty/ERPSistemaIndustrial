@@ -94,22 +94,36 @@ export async function getAccessTokenOrThrow(): Promise<string> {
  * Extrai a mensagem devolvida pela Edge Function quando o HTTP status não é 2xx.
  * O SDK entrega apenas um erro genérico e mantém a resposta em `context`.
  */
-async function readEdgeFunctionMessage(error: unknown): Promise<string | null> {
+export async function readEdgeFunctionMessage(error: unknown): Promise<string | null> {
+  return (await readEdgeFunctionError(error)).message
+}
+
+/**
+ * Versão completa da leitura: a resposta só pode ser consumida uma vez, então
+ * mensagem e mapa de campos inválidos (`campos`) saem do mesmo parse.
+ */
+export async function readEdgeFunctionError(error: unknown): Promise<{ message: string | null; campos: Record<string, string> }> {
+  const vazio = { message: null, campos: {} as Record<string, string> }
   const context = typeof error === 'object' && error !== null && 'context' in error
     ? (error as { context: unknown }).context
     : undefined
-  if (!(context instanceof Response)) return null
+  if (!(context instanceof Response)) return vazio
   try {
     const body: unknown = await context.json()
     const record = asPlainRecord(body)
+    const camposRaw = asPlainRecord(record.campos)
+    const campos: Record<string, string> = {}
+    for (const [chave, valor] of Object.entries(camposRaw)) {
+      if (typeof valor === 'string' && valor.trim()) campos[chave] = valor.trim()
+    }
     for (const key of ['error', 'message', 'msg', 'error_description']) {
       const value = record[key]
-      if (typeof value === 'string' && value.trim()) return value.trim()
+      if (typeof value === 'string' && value.trim()) return { message: value.trim(), campos }
     }
   } catch {
-    return null
+    return vazio
   }
-  return null
+  return vazio
 }
 
 function asPlainRecord(value: unknown): Record<string, unknown> {

@@ -30,8 +30,10 @@ const StaffOperatorLogin = lazyPage(() => import('./pages/StaffOperatorLogin'), 
 const PlanosIndustrial = lazyPage(() => import('./pages/PlanosIndustrial'), 'PlanosIndustrial')
 const Blog = lazyPage(() => import('./pages/Blog'), 'Blog')
 const Contato = lazyPage(() => import('./pages/Contato'), 'Contato')
-const CadastroEmpresa = lazyPage(() => import('./pages/CadastroEmpresa'), 'CadastroEmpresa')
-const publicPaths = new Set(['/','/home','/login','/login-operador','/planos','/blog','/contato','/cadastro-empresa'])
+const AtivarSysnqra = lazyPage(() => import('./pages/AtivarSysnqra'), 'AtivarSysnqra')
+const RecuperarSenha = lazyPage(() => import('./pages/RecuperarSenha'), 'RecuperarSenha')
+const activationPaths = new Set(['/cadastro-empresa', '/ativar'])
+const publicPaths = new Set(['/','/home','/login','/login-operador','/planos','/blog','/contato',...activationPaths,'/recuperar-senha'])
 
 class BootstrapBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state = { error: null as Error | null }
@@ -136,7 +138,8 @@ export default function AppBootstrap() {
   if (path === '/planos') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo catálogo de planos…" />}><PlanosIndustrial /></Suspense></BootstrapBoundary>
   if (path === '/blog') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo Blog…" />}><Blog /></Suspense></BootstrapBoundary>
   if (path === '/contato') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo Contato…" />}><Contato /></Suspense></BootstrapBoundary>
-  if (path === '/cadastro-empresa') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo cadastro da empresa…" />}><CadastroEmpresa /></Suspense></BootstrapBoundary>
+  if (path === '/recuperar-senha') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo recuperação de senha…" />}><RecuperarSenha /></Suspense></BootstrapBoundary>
+  if (activationPaths.has(path)) return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo ativação do SYSNQRA…" />}><AtivarSysnqra /></Suspense></BootstrapBoundary>
   if (path === '/' || path === '/home') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo SYSNQRA ERP & SGQ INDUSTRIAL…" />}><PublicIndustrialHome /></Suspense></BootstrapBoundary>
   const app = <BootstrapBoundary><Suspense fallback={<Loading />}><AppEntryV2 /></Suspense></BootstrapBoundary>
   const isPublic = publicPaths.has(path) || path.startsWith('/modulos/')
