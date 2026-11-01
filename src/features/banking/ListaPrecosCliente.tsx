@@ -78,7 +78,7 @@ export default function ListaPrecosCliente() {
         <div className="mt-2 rounded-md bg-slate-50 px-2 py-1 text-[10px] text-slate-600">Colunas exatas: cnpj_cliente · sku_produto · preco_especial · validade_tabela</div>
         {error && <div className="mt-2 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-[11px] text-red-700">{error}</div>}
         {message && <div className="mt-2 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-[11px] text-emerald-700">{message}</div>}
-        <div className="mt-2 flex justify-end"><button type="button" disabled={busy} onClick={() => void importFile()} className="flex h-7 items-center gap-1 rounded-md bg-emerald-600 px-4 text-[11px] font-semibold text-white"><Upload size={12} />Upload</button></div>
+        <div className="mt-2 flex justify-end"><button type="button" disabled={busy} onClick={() => void importFile()} className="flex h-[30px] items-center gap-1 rounded-[2px] bg-emerald-600 px-4 text-[11px] font-semibold text-white"><Upload size={12} />Upload</button></div>
       </section>
       <section className="border-s border-gray-200 p-3">
         <div className="mb-2 text-[13px] font-semibold">Tabelas cadastradas</div>

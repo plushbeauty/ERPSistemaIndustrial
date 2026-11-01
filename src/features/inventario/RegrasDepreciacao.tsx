@@ -12,7 +12,7 @@ import { supabase } from '../../lib/supabaseClient'
 type Rule={id:string;grupo_item:string;dias_sem_giro:number;percentual_depreciacao:number;ativo:boolean}
 const input='h-7 rounded-md border border-gray-200 bg-white px-2 text-[11px] leading-none'
 const label='mb-0.5 text-[10px] font-bold uppercase text-gray-500'
-const button='inline-flex h-7 items-center justify-center gap-1 rounded-md px-2 text-[11px] font-bold'
+const button='inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2.5 text-[11px] font-bold text-slate-700 hover:bg-slate-50'
 
 export default function RegrasDepreciacao(){
  const navigate=useNavigate();const [rules,setRules]=useState<Rule[]>([]);const [grupo,setGrupo]=useState('');const [dias,setDias]=useState('180');const [desconto,setDesconto]=useState('20');const [busy,setBusy]=useState(false);const [error,setError]=useState('')

@@ -225,7 +225,7 @@ export default function PCPAreaFuncionario() {
     }
   }
 
-  return <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900 md:p-5">
+  return <main className="erp-touch-scope min-h-screen bg-[#F4FBFD] p-3 text-slate-900 md:p-5">
     <div className="mx-auto w-full max-w-[1560px] space-y-4">
       <header className="flex flex-wrap items-center justify-between gap-3 border border-[#C8E3EE] bg-white p-4 shadow-[0_3px_12px_rgba(18,59,80,.07)]">
         <div className="flex items-center gap-3"><span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-[3px] border border-[#C8E3EE] bg-[#123B50]"><img src="/icons/pcp-portal-operador.svg" alt="Portal do Operador — Chão de Fábrica" className="h-full w-full object-cover" /></span><div><p className="text-[10px] font-black uppercase tracking-[.15em] text-[#2D8DB8]">SYSNQRA · CHÃO DE FÁBRICA</p><h1 className="text-2xl font-black text-[#123B50]">Área do Funcionário</h1><p className="text-xs text-slate-500">Programação semanal e Cartão de Processo Produtivo (CPP)</p></div></div>

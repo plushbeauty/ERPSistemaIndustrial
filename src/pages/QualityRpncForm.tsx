@@ -852,7 +852,7 @@ export default function QualityRpncForm() {
                           </label>
                         </div>
                       </td>
-                      <td className="erp-td"><button type="button" className="erp-btn" disabled={bloqueado} onClick={() => void removerAcao(index)}><Trash2 size={13} /></button></td>
+                      <td className="erp-td"><button type="button" className="erp-btn" disabled={bloqueado} onClick={() => void removerAcao(index)} aria-label="Excluir plano de acao"><Trash2 size={13} /></button></td>
                     </tr>
                   ))}
                   {!acoes.length && <tr><td className="erp-td italic text-slate-500" colSpan={8}>Nenhuma ação no banco. Adicione a primeira linha abaixo.</td></tr>}
@@ -961,7 +961,7 @@ export default function QualityRpncForm() {
                   <span className="min-w-0 flex-1 truncate font-mono">{e.nome_arquivo}</span>
                   <span className="text-[10px] text-slate-500">{tamanho(e.tamanho_bytes)}</span>
                   <button type="button" className="erp-btn" onClick={() => void baixar(e.storage_path)}><FileText size={12} /> Abrir</button>
-                  <button type="button" className="erp-btn" onClick={() => void excluirEvidencia(e)}><Trash2 size={12} /></button>
+                  <button type="button" className="erp-btn" onClick={() => void excluirEvidencia(e)} aria-label="Excluir evidencia"><Trash2 size={12} /></button>
                 </li>
               ))}
               {!evidencias.length && <li className="p-3 text-xs italic text-slate-500">Nenhum arquivo na pasta desta RPNC.</li>}

@@ -112,7 +112,7 @@ export default function ClassificacaoFiscal() {
             Vigência início
             <input className={`${input} erp-field-date`} type="date" value={vigencia} onChange={(event) => setVigencia(event.target.value)} />
           </label>
-          <button type="button" aria-label="Adicionar classificação" title="Adicionar classificação" disabled={busy} onClick={() => void save()} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-green-700 text-white disabled:opacity-50">
+          <button type="button" aria-label="Adicionar classificação" title="Adicionar classificação" disabled={busy} onClick={() => void save()} className="flex h-[30px] w-10 shrink-0 items-center justify-center rounded-sm bg-green-700 text-white disabled:opacity-50">
             <Plus size={16} />
           </button>
         </div>

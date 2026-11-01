@@ -33,7 +33,7 @@ const flagColumns: { key: FlagKey; label: string }[] = [
 
 const input = 'h-8 w-full rounded-md border border-slate-300 bg-white px-2 text-[11px] text-slate-800'
 const label = 'mb-1 block text-[9px] font-bold uppercase tracking-wide text-slate-500'
-const button = 'inline-flex h-8 items-center justify-center gap-1 rounded-md px-3 text-[11px] font-bold transition-colors'
+const button = 'inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-3 text-[11px] font-bold transition-colors'
 const primaryButton = `${button} bg-[#123B50] text-white hover:bg-[#0d2f40]`
 const lightButton = `${button} border border-slate-300 bg-white text-slate-700 hover:border-[#2D8DB8] hover:text-[#123B50]`
 const cellFlag = 'border border-slate-200 text-[11px]'

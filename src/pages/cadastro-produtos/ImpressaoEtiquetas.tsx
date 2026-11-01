@@ -34,7 +34,7 @@ export default function ImpressaoEtiquetas() {
   const download = () => { if (!z) return; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([z], { type: 'text/plain' })); a.download = 'etiqueta-' + (product?.codigo || 'produto') + '.zpl'; a.click(); setMsg('ZPL gerado para envio pela ponte de impressão.') }
 
   return (
-    <section className="space-y-5">
+    <section className="erp-touch-scope space-y-5">
       <div><p className="text-xs font-black tracking-[.2em] text-blue-700">IDENTIFICAÇÃO</p><h2 className="text-2xl font-black text-slate-900">Código de Barras</h2><p className="text-sm font-semibold text-slate-500">Geração ZPL real para a ponte de impressão.</p></div>
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl">
         <div className="grid gap-5 md:grid-cols-2">

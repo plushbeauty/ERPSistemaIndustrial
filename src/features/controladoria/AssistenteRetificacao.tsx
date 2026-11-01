@@ -68,7 +68,7 @@ export default function AssistenteRetificacao() {
     <main className="min-h-full bg-slate-50 p-3 text-gray-800">
       <div className="mx-auto max-w-[1100px] space-y-3">
         <header className="flex items-center gap-2">
-          <button type="button" onClick={() => navigate(-1)} className="inline-flex h-8 items-center gap-1 rounded-md border border-gray-200 bg-white px-3 text-[11px] font-bold text-gray-600">
+          <button type="button" onClick={() => navigate(-1)} className="inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-gray-200 bg-white px-3 text-[11px] font-bold text-gray-600">
             <ArrowLeft size={13} /> Voltar
           </button>
           <div>
@@ -101,7 +101,7 @@ export default function AssistenteRetificacao() {
           {error && <div role="alert" className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{error}</div>}
           {message && <div role="status" className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">{message}</div>}
           <div className="mt-3 flex justify-end">
-            <button type="button" disabled={saving} onClick={() => void save()} className="inline-flex h-9 items-center gap-2 rounded-md bg-blue-600 px-4 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-50">
+            <button type="button" disabled={saving} onClick={() => void save()} className="inline-flex h-[30px] items-center gap-2 rounded-[2px] bg-blue-600 px-4 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-50">
               <Save size={14} /> {saving ? 'Gravando…' : 'Registrar estorno'}
             </button>
           </div>

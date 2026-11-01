@@ -129,15 +129,15 @@ export default function QualidadePaquimetroDigital() {
         </section>
 
         <nav className="flex w-full gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-sm md:w-fit" role="tablist" aria-label="Seções de qualidade">
-          <button type="button" role="tab" aria-selected={tab === 'metro'} onClick={() => setTab('metro')} className="rounded-lg px-4 py-2.5 text-xs font-bold transition-colors" style={tab === 'metro' ? { background: '#0f172a', color: '#fff' } : { color: muted }}>Metrologia &amp; Calibração</button>
-          <button type="button" role="tab" aria-selected={tab === 'docs'} onClick={() => setTab('docs')} className="rounded-lg px-4 py-2.5 text-xs font-bold transition-colors" style={tab === 'docs' ? { background: '#0f172a', color: '#fff' } : { color: muted }}>Documentos da Qualidade</button>
+          <button type="button" role="tab" aria-selected={tab === 'metro'} onClick={() => setTab('metro')} className="rounded-[2px] px-4 py-2.5 text-xs font-bold transition-colors" style={tab === 'metro' ? { background: '#0f172a', color: '#fff' } : { color: muted }}>Metrologia &amp; Calibração</button>
+          <button type="button" role="tab" aria-selected={tab === 'docs'} onClick={() => setTab('docs')} className="rounded-[2px] px-4 py-2.5 text-xs font-bold transition-colors" style={tab === 'docs' ? { background: '#0f172a', color: '#fff' } : { color: muted }}>Documentos da Qualidade</button>
         </nav>
 
         {error && <div role="alert" className="flex items-start gap-2 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800"><AlertTriangle size={16} className="mt-0.5 shrink-0"/>{error}</div>}
         {tab === 'metro' ? (
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
             <section className={`${panel} overflow-hidden`}>
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 p-4"><div><h2 className="text-sm font-extrabold text-slate-900">Cadastro de instrumentos e calibração</h2><p className="mt-1 text-xs text-slate-500">Instrumentos cadastrados para a empresa ativa</p></div><button type="button" onClick={() => void loadInstruments()} disabled={loading} className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 disabled:opacity-50"><RefreshCw size={13}/>{loading ? 'Consultando…' : 'Atualizar'}</button></div>
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 p-4"><div><h2 className="text-sm font-extrabold text-slate-900">Cadastro de instrumentos e calibração</h2><p className="mt-1 text-xs text-slate-500">Instrumentos cadastrados para a empresa ativa</p></div><button type="button" onClick={() => void loadInstruments()} disabled={loading} className="inline-flex h-[30px] items-center gap-2 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 disabled:opacity-50"><RefreshCw size={13}/>{loading ? 'Consultando…' : 'Atualizar'}</button></div>
               <div className="overflow-x-auto">
               <table className="quality-metrology-table w-full min-w-[640px] whitespace-nowrap text-xs">
                 <thead className="border-b border-slate-200 bg-slate-50 text-left text-[10px] uppercase tracking-wider text-slate-500"><tr>{['TAG / Código', 'Instrumento', 'Próxima calibração', 'Situação'].map(name => <th key={name} className="px-4 py-3 font-bold">{name}</th>)}</tr></thead>
@@ -157,14 +157,14 @@ export default function QualidadePaquimetroDigital() {
               <input value={tag} onChange={event => setTag(event.target.value)} placeholder="Ex.: PAQ-002" className="erp-premium-input mt-4 h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 font-mono text-sm uppercase text-slate-900 outline-none focus:border-blue-500 focus:bg-white" />
               {tag.trim() && !selected && <p className="mt-3 text-sm text-slate-500">Instrumento não encontrado nesta empresa.</p>}
               {selected && (selected.blocked ? <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800"><p className="font-bold">● Operação bloqueada</p><p className="mt-1">Instrumento com status impeditivo ou calibração vencida/sem data válida.</p></div> : <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800"><CheckCircle2 size={14} className="mr-1 inline"/>{selected.descricao} — confira a situação cadastral antes do uso.</div>)}
-              <div className="mt-5 border-t border-slate-200 pt-4"><p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Instrumentos disponíveis</p><div className="mt-2 flex flex-wrap gap-1.5">{rows.filter(item => !item.blocked).map(item => <button type="button" key={item.codigo} onClick={() => setTag(item.codigo)} className="rounded-md border border-blue-200 bg-blue-50 px-2 py-1 font-mono text-xs font-bold text-blue-800 transition hover:border-blue-400 hover:bg-blue-100">{item.codigo}</button>)}</div></div>
+              <div className="mt-5 border-t border-slate-200 pt-4"><p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Instrumentos disponíveis</p><div className="mt-2 flex flex-wrap gap-1.5">{rows.filter(item => !item.blocked).map(item => <button type="button" key={item.codigo} onClick={() => setTag(item.codigo)} className="rounded-[2px] border border-blue-200 bg-blue-50 px-2 py-1 font-mono text-xs font-bold text-blue-800 transition hover:border-blue-400 hover:bg-blue-100">{item.codigo}</button>)}</div></div>
             </aside>
           </div>
         ) : (
           <section className={`${panel} p-5`}>
             <div className="flex items-center gap-2"><FileText size={18} style={{ color: accent }}/><h2 className="font-semibold">Documentos da Qualidade</h2></div>
             <p className="mt-2 text-sm text-slate-500">A documentação oficial já fica centralizada no GED do ERP. Abra o módulo para consultar arquivos, revisões e permissões da empresa.</p>
-            <button type="button" onClick={() => navigate('/qualidade/ged-documentos')} className="mt-4 inline-flex h-9 items-center gap-2 rounded-lg bg-blue-700 px-4 text-xs font-bold text-white shadow-sm transition hover:-translate-y-px hover:bg-blue-800">Abrir GED de Qualidade <ArrowUpRight size={14}/></button>
+            <button type="button" onClick={() => navigate('/qualidade/ged-documentos')} className="mt-4 inline-flex h-[30px] items-center gap-2 rounded-[2px] bg-blue-700 px-4 text-xs font-bold text-white shadow-sm transition hover:-translate-y-px hover:bg-blue-800">Abrir GED de Qualidade <ArrowUpRight size={14}/></button>
           </section>
         )}
 

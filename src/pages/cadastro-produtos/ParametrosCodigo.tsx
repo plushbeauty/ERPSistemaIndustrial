@@ -156,10 +156,10 @@ export default function ParametrosCodigo() {
         </div>
         <div className="flex items-center gap-1.5">
           <Link to="/pageprincipal/cadastros/ajuda/parametros-codigo" className="inline-flex h-7 items-center rounded border border-slate-300 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-slate-50">POP / Ajuda</Link>
-          <button type="button" onClick={() => void load()} disabled={busy} aria-label="Atualizar regras" className="inline-flex h-7 w-7 items-center justify-center rounded border border-slate-300 bg-white text-slate-600 shadow-sm hover:bg-slate-50 disabled:opacity-50">
+          <button type="button" onClick={() => void load()} disabled={busy} aria-label="Atualizar regras" className="inline-flex h-[30px] w-7 items-center justify-center rounded border border-slate-300 bg-white text-slate-600 shadow-sm hover:bg-slate-50 disabled:opacity-50">
             <RefreshCw size={12} className={busy ? 'animate-spin' : ''} />
           </button>
-          <button type="button" onClick={() => void add()} disabled={busy || !empresaId} className="inline-flex h-7 items-center gap-1 rounded bg-teal-700 px-3 text-[10px] font-black uppercase tracking-wide text-white shadow-sm transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-50">
+          <button type="button" onClick={() => void add()} disabled={busy || !empresaId} className="inline-flex h-[30px] items-center gap-1 rounded bg-teal-700 px-3 text-[10px] font-black uppercase tracking-wide text-white shadow-sm transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-50">
             <Plus size={11} /> Nova regra
           </button>
         </div>
@@ -202,7 +202,7 @@ export default function ParametrosCodigo() {
                   </td>
                   <td className="p-2 text-center font-mono text-[10px] font-black text-slate-500">{String(regra.sequencia_atual).padStart(regra.digitos_produto, '0')}</td>
                   <td className="p-1.5 text-center">
-                    <button type="button" onClick={() => void save(regra)} disabled={busy || savingId === regra.id} className="mx-auto inline-flex h-7 items-center justify-center gap-1 rounded bg-teal-700 px-2.5 text-[9px] font-black uppercase text-white shadow-sm transition hover:bg-teal-800 disabled:cursor-wait disabled:opacity-50">
+                    <button type="button" onClick={() => void save(regra)} disabled={busy || savingId === regra.id} className="mx-auto inline-flex h-[30px] items-center justify-center gap-1 rounded bg-teal-700 px-2.5 text-[9px] font-black uppercase text-white shadow-sm transition hover:bg-teal-800 disabled:cursor-wait disabled:opacity-50">
                       <Save size={10} /> {savingId === regra.id ? 'Salvando' : 'Salvar'}
                     </button>
                   </td>

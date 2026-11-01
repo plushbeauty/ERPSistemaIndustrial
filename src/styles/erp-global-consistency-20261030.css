@@ -25,7 +25,7 @@
   --erp-ui-danger-bg: oklch(0.965 0.035 25);
   --erp-ui-info: oklch(0.58 0.12 235);
   --erp-ui-radius: 2px;
-  --erp-ui-control-height: 32px;
+  --erp-ui-control-height: 30px;
 }
 .dark,
 .theme-dark,

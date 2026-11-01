@@ -16,7 +16,7 @@ type Row=Product & {saldo:number;custo:number;total:number;status:string}
 
 const input='h-7 rounded-md border border-gray-200 bg-white px-2 text-[11px] leading-none outline-none focus:border-blue-400'
 const label='mb-0.5 text-[10px] font-bold uppercase text-gray-500'
-const button='inline-flex h-7 items-center justify-center gap-1 rounded-md px-2 text-[11px] font-bold'
+const button='inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2.5 text-[11px] font-bold text-slate-700 hover:bg-slate-50'
 function fuzzy(value:string,query:string){const q=query.trim().toLowerCase();if(!q)return true;let i=0;for(const c of value.toLowerCase()){if(c===q[i])i++;if(i===q.length)return true}return false}
 
 function exportXlsx(rows:Row[],date:string){const data=[['SKU','Descrição','Saldo Físico','Unidade','Custo Unitário','Custo Total R$','Status do Lote'],...rows.map(r=>[r.codigo,r.nome,String(r.saldo),r.unidade??'',r.custo.toFixed(6),r.total.toFixed(2),r.status])];const blob=makeXlsx(data,'Valoração');const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='balanco-estoque-'+date+'.xlsx';a.click();URL.revokeObjectURL(url)}

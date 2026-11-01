@@ -133,7 +133,7 @@ export default function FileTreeGED() {
           <h1 className="text-xl font-extrabold text-slate-900">Central de Evidências (GED)</h1>
           <p className="mt-1 text-xs text-slate-500">Rastreabilidade documental por cliente, RPNC, equipamento e lote</p>
         </div>
-        <button type="button" onClick={() => void carregar()} disabled={carregando} aria-label="Atualizar documentos" className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50">
+        <button type="button" onClick={() => void carregar()} disabled={carregando} aria-label="Atualizar documentos" className="inline-flex h-[30px] items-center gap-2 rounded-[2px] border border-slate-200 px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50">
           <RefreshCw size={15} className={carregando ? 'animate-spin' : ''} /> Atualizar
         </button>
       </header>
@@ -153,7 +153,7 @@ export default function FileTreeGED() {
               const clienteKey = `cliente:${clienteNome}`
               const clienteAberto = Boolean(pastasAbertas[clienteKey] || busca.trim())
               return <div key={clienteKey} className="select-none">
-                <button type="button" onClick={() => togglePasta(clienteKey)} aria-expanded={clienteAberto} className="flex w-full items-center gap-2 rounded-lg p-2 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50">
+                <button type="button" onClick={() => togglePasta(clienteKey)} aria-expanded={clienteAberto} className="flex w-full items-center gap-2 rounded-[2px] p-2 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50">
                   {clienteAberto ? <ChevronDown size={16} className="text-slate-400" /> : <ChevronRight size={16} className="text-slate-400" />}
                   {clienteAberto ? <FolderOpen size={19} className="text-amber-500" /> : <Folder size={19} className="text-amber-500" />}
                   <span>{clienteNome}</span>
@@ -164,7 +164,7 @@ export default function FileTreeGED() {
                     const rpncKey = `rpnc:${rpnc.id}`
                     const aberta = Boolean(pastasAbertas[rpncKey] || busca.trim())
                     return <div key={rpnc.id}>
-                      <button type="button" onClick={() => togglePasta(rpncKey)} aria-expanded={aberta} className="flex w-full items-center gap-2 rounded-md p-2 text-left text-xs text-slate-700 hover:bg-slate-50">
+                      <button type="button" onClick={() => togglePasta(rpncKey)} aria-expanded={aberta} className="flex w-full items-center gap-2 rounded-[2px] p-2 text-left text-xs text-slate-700 hover:bg-slate-50">
                         {aberta ? <ChevronDown size={14} className="text-slate-400" /> : <ChevronRight size={14} className="text-slate-400" />}
                         {aberta ? <FolderOpen size={16} className="text-sky-600" /> : <Folder size={16} className="text-sky-600" />}
                         <span className="font-bold text-sky-700">{rpnc.numero_rpnc}</span>

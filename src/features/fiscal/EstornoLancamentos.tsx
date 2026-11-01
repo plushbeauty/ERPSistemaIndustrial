@@ -113,7 +113,7 @@ export default function EstornoLancamentos() {
               Justificativa
               <input className="h-10 w-full rounded-sm border border-slate-300 px-2 text-sm" value={justification} onChange={(event) => setJustification(event.target.value)} />
             </label>
-            <button type="button" onClick={() => void registerRequest()} disabled={busy} className="h-10 rounded-sm bg-blue-800 px-3 text-sm font-semibold text-white disabled:opacity-50">
+            <button type="button" onClick={() => void registerRequest()} disabled={busy} className="h-[30px] rounded-sm bg-blue-800 px-3 text-sm font-semibold text-white disabled:opacity-50">
               {busy ? 'Registrando…' : 'Registrar solicitação'}
             </button>
           </div>

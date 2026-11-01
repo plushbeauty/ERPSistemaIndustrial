@@ -42,7 +42,7 @@ const originOptions: Array<{ value: Origin; label: string }> = [
 ]
 const inputClass = 'h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-2 focus:ring-[#2D8DB8]/15 disabled:bg-slate-100'
 const labelClass = 'grid gap-1 text-[10px] font-bold uppercase tracking-wide text-slate-500'
-const buttonClass = 'inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 hover:border-[#2D8DB8] disabled:cursor-not-allowed disabled:opacity-50'
+const buttonClass = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 hover:border-[#2D8DB8] disabled:cursor-not-allowed disabled:opacity-50'
 
 function errorMessage(cause: unknown): string {
   return cause instanceof Error ? cause.message : 'Operação não concluída. Consulte o log do Supabase e tente novamente.'
@@ -236,7 +236,7 @@ export default function QualidadeRPNC() {
 
         <footer className="flex flex-wrap items-center justify-between gap-2">
           <p className="max-w-2xl text-[10px] text-slate-500">A abertura exige sessão autenticada, permissão de criação e setor ativo da empresa atual. A RPC existente gera o protocolo no banco e executa as validações transacionais.</p>
-          <button type="submit" disabled={saving || loading || !companyId || !sectorId || !description.trim() || description.trim().length < 10} className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-[#123B50] px-4 text-xs font-extrabold text-white hover:bg-[#1D5F7A] disabled:cursor-not-allowed disabled:opacity-50">
+          <button type="submit" disabled={saving || loading || !companyId || !sectorId || !description.trim() || description.trim().length < 10} className="inline-flex h-[30px] items-center justify-center gap-2 rounded-[2px] bg-[#123B50] px-4 text-xs font-extrabold text-white hover:bg-[#1D5F7A] disabled:cursor-not-allowed disabled:opacity-50">
             <Save size={14} /> {saving ? 'Registrando…' : 'Registrar RPNC'}
           </button>
         </footer>

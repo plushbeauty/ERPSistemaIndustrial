@@ -13,7 +13,7 @@ type Account={id:string;codigo:string;nome:string;banco:string|null;saldo_inicia
 type Row={id:string;documento:string|null;descricao:string;debito:number;credito:number;criado_em:string}
 const input='h-7 rounded-md border border-gray-200 bg-white px-2 text-[11px] outline-none focus:border-blue-400'
 const label='mb-0.5 block text-[10px] font-bold uppercase text-gray-500'
-const button='inline-flex h-7 items-center justify-center gap-1 rounded-md px-2 text-[11px] font-bold'
+const button='inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2.5 text-[11px] font-bold text-slate-700 hover:bg-slate-50'
 export default function PainelRazaoGeral(){
  const navigate=useNavigate();const [accounts,setAccounts]=useState<Account[]>([]);const [accountId,setAccountId]=useState('');const [rows,setRows]=useState<Row[]>([]);const [balance,setBalance]=useState(0);const [empresaId,setEmpresaId]=useState('');const [error,setError]=useState('');const [loading,setLoading]=useState(false)
  const loadAccounts=async()=>{const company=await supabase.rpc('erp_current_empresa_id');if(company.error||!company.data){setError(company.error?.message??'Empresa de trabalho não identificada.');return}const tenant=String(company.data);setEmpresaId(tenant);const r=await supabase.from('erp_contas_bancarias').select('id,codigo,nome,banco,saldo_inicial,ativo').eq('empresa_id',tenant).eq('ativo',true).order('nome');if(r.error){setError(r.error.message);return}setAccounts((r.data??[]) as Account[])}

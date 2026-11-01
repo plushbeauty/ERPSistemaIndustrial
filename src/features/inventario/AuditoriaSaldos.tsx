@@ -12,7 +12,7 @@ import { supabase } from '../../lib/supabaseClient'
 type Log={id:string;ajustado_em:string;operador:string;sku:string;saldo_antigo:number;saldo_novo:number;ajuste_financeiro:number;motivo:string;justificativa:string}
 const input='h-7 rounded-md border border-gray-200 bg-white px-2 text-[11px] leading-none'
 const label='mb-0.5 text-[10px] font-bold uppercase text-gray-500'
-const button='inline-flex h-7 items-center justify-center gap-1 rounded-md px-2 text-[11px] font-bold'
+const button='inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2.5 text-[11px] font-bold text-slate-700 hover:bg-slate-50'
 
 export default function AuditoriaSaldos(){
  const navigate=useNavigate();const [date,setDate]=useState('');const [motivo,setMotivo]=useState('');const [sku,setSku]=useState('');const [rows,setRows]=useState<Log[]>([]);const [loading,setLoading]=useState(false);const [error,setError]=useState('')

@@ -70,7 +70,7 @@ async function queryMachinesWithoutCapacity(tenantId: string): Promise<Machine[]
 
 const cardClass = 'rounded-xl border border-slate-200 bg-white shadow-sm'
 const inputClass = 'h-[38px] w-full min-w-[92px] rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-2 focus:ring-[#48B7C7]/30'
-const buttonClass = 'inline-flex min-h-[40px] items-center justify-center gap-2 rounded-lg border px-4 text-sm font-black shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50'
+const buttonClass = 'inline-flex min-h-[30px] items-center justify-center gap-2 rounded-[2px] border px-4 text-sm font-black shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50'
 
 export default function PCPCapacidade() {
   const [machines, setMachines] = useState<Machine[]>([])

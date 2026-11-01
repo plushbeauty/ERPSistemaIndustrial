@@ -150,7 +150,7 @@ export default function PedidoCompraForm({
         </section>
 
         <div className="mt-4 flex justify-end border-t border-slate-200 pt-4">
-          <button type="submit" disabled={disabled || saving} className="inline-flex h-8 items-center gap-2 rounded-[2px] bg-[#2D8DB8] px-5 text-xs font-bold text-white shadow-sm transition-colors hover:bg-[#23769b] disabled:cursor-not-allowed disabled:opacity-60">
+          <button type="submit" disabled={disabled || saving} className="inline-flex h-[30px] items-center gap-2 rounded-[2px] bg-[#2D8DB8] px-5 text-xs font-bold text-white shadow-sm transition-colors hover:bg-[#23769b] disabled:cursor-not-allowed disabled:opacity-60">
             <Save size={14} aria-hidden="true" />
             {saving ? 'Salvando...' : 'Emitir Pedido de Compra'}
           </button>

@@ -22,7 +22,7 @@ type Rule={id:string;perfil_id:string;produto_id:string;percentual:number;meta_q
 
 const input='h-7 rounded-md border border-gray-200 bg-white px-2 py-0.5 text-[11px] text-gray-800 outline-none focus:border-blue-500'
 const label='mb-0.5 block text-[10px] font-bold uppercase text-gray-500'
-const button='flex h-7 items-center justify-center gap-1 rounded-md px-2 text-[11px] font-bold'
+const button='flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2.5 text-[11px] font-bold text-slate-700 hover:bg-slate-50'
 
 export default function CadastroRegras(){
  const [profiles,setProfiles]=useState<Profile[]>([]),[products,setProducts]=useState<Product[]>([]),[rules,setRules]=useState<Rule[]>([])
