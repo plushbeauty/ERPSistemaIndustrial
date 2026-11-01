@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
   let authUserId: string | null = null
 
   try {
-    const body = await req.json()
+    const body = await req.json() as Record<string, unknown>
     const razao = clean(body.razao_social)
     const fantasia = clean(body.nome_fantasia)
     const documento = normalize(body.documento ?? body.cnpj)
@@ -44,6 +44,16 @@ Deno.serve(async (req) => {
     const nomeAdmin = clean(body.nome_admin)
     const senha = clean(body.senha)
     const nomeAcesso = clean(body.nome_acesso) || fantasia.split(/\s+/)[0]
+    const planoSelecionado = clean(body.plano || 'start').toLowerCase()
+    const planosBanco = {
+      start: 'essencial',
+      industrial: 'profissional',
+      enterprise: 'diamante',
+    } as const
+    if (!['start', 'industrial', 'enterprise'].includes(planoSelecionado)) {
+      return json({ error: 'Plano comercial inválido. Selecione Start, Industrial ou Enterprise.' }, 400)
+    }
+    const catalogoBanco = planosBanco[planoSelecionado as keyof typeof planosBanco]
 
     if (!razao || !fantasia || !documento || !email || !nomeAdmin || !senha || !nomeAcesso) return json({ error: 'Preencha todos os campos obrigatórios.' }, 400)
     if (!['CPF','CNPJ'].includes(tipoDocumento.toUpperCase())) return json({ error: 'Informe se o documento é CPF ou CNPJ.' }, 400)
@@ -65,7 +75,8 @@ Deno.serve(async (req) => {
       razao_social: razao,
       nome_fantasia: fantasia,
       cnpj: documento,
-      plano: 'Essencial',
+      plano: catalogoBanco,
+      plan_type: catalogoBanco,
       ativo: true,
       status: 'ativo',
       plano_status: 'trial',
@@ -102,7 +113,7 @@ Deno.serve(async (req) => {
 
     if (userError || !erpUser) throw userError ?? new Error('ERP_USER_CREATE_FAILED')
 
-    return json({ ok:true, empresa:{id:empresa.id,nome_fantasia:empresa.nome_fantasia,razao_social:empresa.razao_social}, login_nome:nomeAcesso, email, tipo_documento:tipoDocumento.toUpperCase(), trial_ends_at:trialEnd.toISOString() }, 201)
+    return json({ ok:true, empresa:{id:empresa.id,nome_fantasia:empresa.nome_fantasia,razao_social:empresa.razao_social}, login_nome:nomeAcesso, email, plano:planoSelecionado, catalogo_banco:catalogoBanco, tipo_documento:tipoDocumento.toUpperCase(), trial_ends_at:trialEnd.toISOString() }, 201)
   } catch (error) {
     if (authUserId) await admin.auth.admin.deleteUser(authUserId).catch(()=>undefined)
     if (empresaId) {

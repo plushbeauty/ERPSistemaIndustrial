@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-31
  * @REVISAO: REV-SGQ-AUDITORIAS-20261031-01 — grade de monitoramento de auditorias e vínculo transacional de RPNCs como constatações
  * @STATUS_APROVACAO: AGUARDA APLICAÇÃO DA MIGRATION 20261031100000_...SQL PELO PROPRIETÁRIO

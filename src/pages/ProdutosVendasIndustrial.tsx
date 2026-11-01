@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PRODUTOS-MIGRACAO-20261030-01 — migracao para a origem unica; rotas proprias e links internos remapeados
  * @STATUS_APROVACAO: MIGRACAO AUTORIZADA PELO PROPRIETARIO EM 2026-10-30 (opcao "migrar para a origem unica")
@@ -652,6 +652,6 @@ export default function ProdutosVendasIndustrial(){
           {!audits.length&&<span style={{fontSize:12,color:'#667085'}}>Nenhum evento registrado.</span>}
         </div>
       </section>
-    ) : null}    <footer className="product-screen-footer" style={{padding:'10px 14px 18px',fontSize:12,color:'#667085',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8}}><span>SYSNQRA ERP & SGQ INDUSTRIAL • Cadastro Mestre de Produtos</span><span>© FernandoSch_System — Todos os direitos reservados</span><button type="button" onClick={()=>window.print()} style={btn('normal')}><Printer size={13}/>IMPRIMIR TELA</button></footer>
+    ) : null}    <footer className="product-screen-footer" style={{padding:'10px 14px 18px',fontSize:12,color:'#667085',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8}}><span>SYSNQRA ERP & SGQ INDUSTRIAL • Cadastro Mestre de Produtos</span><span>© FernandoSch — Todos os direitos reservados</span><button type="button" onClick={()=>window.print()} style={btn('normal')}><Printer size={13}/>IMPRIMIR TELA</button></footer>
   </main></>
 }

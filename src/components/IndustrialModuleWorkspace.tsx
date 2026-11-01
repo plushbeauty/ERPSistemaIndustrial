@@ -241,7 +241,7 @@ export default function IndustrialModuleWorkspace({module,profile,onBack}:{modul
       </main>
     </section>
 
-    <footer className="mw3-footer"><span>SYSNQRA ERP & SGQ INDUSTRIAL</span><span>Tablet operacional • controles ≥ 10px</span><span>FernandoSch_System</span></footer>
+    <footer className="mw3-footer"><span>SYSNQRA ERP & SGQ INDUSTRIAL</span><span>Tablet operacional • controles ≥ 10px</span><span>FernandoSch</span></footer>
 
     {selected&&<div className="mw3-modal-backdrop" onMouseDown={()=>setSelected(null)}><div className="mw3-modal" onMouseDown={e=>e.stopPropagation()}><header><div><span>DETALHE DO REGISTRO</span><h2>{module.title}</h2></div><button onClick={()=>setSelected(null)}><X size={18}/></button></header><div className="mw3-detail-grid">{fields.map(f=><div key={f.key}><span>{f.label}</span><strong>{norm(selected[f.key])||'—'}</strong></div>)}</div><footer><button className="mw3-btn secondary" onClick={()=>{edit(selected);setSelected(null)}}><Pencil size={15}/> Editar</button><button className="mw3-btn secondary" onClick={()=>setSelected(null)}>Fechar</button></footer></div></div>}
     {help&&<div className="mw3-modal-backdrop" onMouseDown={()=>setHelp(false)}><div className="mw3-help-modal" onMouseDown={e=>e.stopPropagation()}><HelpPanel module={module} tabs={tabs} onClose={()=>setHelp(false)}/></div></div>}
