@@ -61,9 +61,11 @@
 }
 .smp-rail-brand { padding: 6px 10px 12px; border-bottom: 1px solid rgba(255, 255, 255, .12); margin-bottom: 10px; }
 .smp-rail-brand strong { display: block; color: #fff; font-size: 15px; font-weight: 900; letter-spacing: -.2px; }
-.smp-rail-brand span { display: block; margin-top: 3px; color: #9FC6D6; font-size: 11px; line-height: 1.45; }
-.smp-rail-group { margin-top: 12px; padding: 0 10px 5px; color: #7FA9BC; font-size: 10px; font-weight: 900; letter-spacing: 1.2px; text-transform: uppercase; }
-.smp-rail-item {
+.smp-rail-brand span { display: block; margin-top: 3px; color: rgba(255, 255, 255, .72); font-size: 11px; line-height: 1.45; }
+.smp-rail-group { margin-top: 12px; padding: 0 10px 5px; color: rgba(255, 255, 255, .78); font-size: 10px; font-weight: 900; letter-spacing: 1.2px; text-transform: uppercase; }
+/* As regras levam o prefixo .smp-shell de propósito: `.smp-shell a { color: inherit }` tem
+   precedência maior que uma classe solta, e sem ele o link do rail herdava o azul-escuro da shell. */
+.smp-shell .smp-rail-item {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -73,16 +75,16 @@
   border: 0;
   border-radius: 3px;
   background: transparent;
-  color: #DCEAF1;
+  color: #fff;
   font: inherit;
   font-weight: 600;
   text-align: left;
   cursor: pointer;
   transition: background .16s ease, color .16s ease;
 }
-.smp-rail-item svg { flex: 0 0 auto; opacity: .82; }
-.smp-rail-item:hover { background: rgba(255, 255, 255, .09); color: #fff; }
-.smp-rail-item.is-active { background: rgba(72, 183, 199, .22); color: #fff; font-weight: 800; box-shadow: inset 2px 0 0 var(--smp-cyan); }
+.smp-shell .smp-rail-item svg { flex: 0 0 auto; opacity: .9; color: #fff; }
+.smp-shell .smp-rail-item:hover { background: rgba(255, 255, 255, .14); color: #fff; }
+.smp-shell .smp-rail-item.is-active { background: rgba(72, 183, 199, .28); color: #fff; font-weight: 800; box-shadow: inset 2px 0 0 var(--smp-cyan); }
 .smp-rail-foot { margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, .12); }
 
 /* ------------------------------------------------------------------ corpo */
@@ -329,7 +331,7 @@
   .smp-rail { position: static; flex-direction: row; flex-wrap: wrap; gap: 4px; padding: 8px; }
   .smp-rail-brand, .smp-rail-group { display: none; }
   .smp-rail-foot { margin-top: 0; padding-top: 0; border-top: 0; }
-  .smp-rail-item { width: auto; min-height: 34px; }
+  .smp-shell .smp-rail-item { width: auto; min-height: 34px; }
   .smp-side-group { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 680px) {
