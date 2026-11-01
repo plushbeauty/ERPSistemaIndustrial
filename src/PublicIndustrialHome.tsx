@@ -62,8 +62,11 @@ const productMenuModules: Module[] = [
 ]
 const visuals = [
   { src:'/images/sgq-erp-pcp.png', label:'Planejamento e produção', eyebrow:'PCP E PRODUÇÃO', alt:'Tela do módulo PCP do ERP Industrial' },
+  { src:'/images/cena-chao-de-fabrica.webp', label:'Chão de fábrica e MES', eyebrow:'CHÃO DE FÁBRICA E MES', alt:'Terminal de máquina na linha de produção com indicadores de apontamento' },
+  { src:'/images/cena-almoxarifado.webp', label:'Estoque e materiais', eyebrow:'ESTOQUE E MATERIAIS', alt:'Operador conferindo itens no almoxarifado com coletor de dados' },
   { src:'/images/sgq-erp-qualidade.png', label:'Gestão da qualidade', eyebrow:'QUALIDADE E SGQ', alt:'Tela do módulo de qualidade do ERP Industrial' },
-  { src:'/images/funcionario.png', label:'Equipe industrial', eyebrow:'OPERAÇÃO REAL', alt:'Profissional em ambiente industrial' },
+  { src:'/images/cena-gestao.webp', label:'Indicadores e gestão', eyebrow:'INDICADORES E GESTÃO', alt:'Gestores acompanhando painel de indicadores com a fábrica ao fundo' },
+  { src:'/images/funcionario.png', label:'Equipe industrial', eyebrow:'PESSOAS E COMPETÊNCIAS', alt:'Profissional em ambiente industrial' },
 ]
 
 export default function PublicIndustrialHome(){
