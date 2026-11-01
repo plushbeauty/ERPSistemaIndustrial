@@ -166,8 +166,8 @@ export default function IndustrialReferenceShell({
             
             <button 
               type="button" 
-              title="Abrir Tablet operacional" 
-              onClick={() => { window.location.href = '/tablet/dashboard' }} 
+              title="Abrir o Portal do Operador"
+              onClick={() => { window.location.href = '/pageprincipal/chao-de-fabrica/portal-operador' }}
               className="inline-flex h-8 items-center gap-2 rounded-[2px] border border-slate-200 bg-white px-3 text-xs font-bold text-slate-600 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-900"
             >
               <Tablet className="h-3.5 w-3.5 text-slate-400" /> 

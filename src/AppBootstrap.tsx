@@ -142,6 +142,6 @@ export default function AppBootstrap() {
   if (activationPaths.has(path)) return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo ativação do SYSNQRA…" />}><AtivarSysnqra /></Suspense></BootstrapBoundary>
   if (path === '/' || path === '/home') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo SYSNQRA ERP & SGQ INDUSTRIAL…" />}><PublicIndustrialHome /></Suspense></BootstrapBoundary>
   const app = <BootstrapBoundary><Suspense fallback={<Loading />}><AppEntryV2 /></Suspense></BootstrapBoundary>
-  const isPublic = publicPaths.has(path) || path.startsWith('/modulos/')
+  const isPublic = publicPaths.has(path)
   return isPublic ? app : <AccessGate>{app}</AccessGate>
 }

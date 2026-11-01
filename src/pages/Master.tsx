@@ -5,7 +5,6 @@
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { AlertTriangle, Building2, CheckCircle2, CircleDollarSign, Clock3, RefreshCw, Save, Search, ShieldCheck, Users } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
@@ -173,7 +172,7 @@ export default function Master() {
           <p>Empresas, usuários, catálogo de planos, módulos contratados e auditoria global.</p>
         </div>
         <div className="master-actions">
-          <Link to="/usuarios"><Users size={17} /> Usuários por empresa</Link>
+          <a href="#master-empresas"><Users size={17} /> Usuários por empresa</a>
           <button type="button" onClick={() => void load()} disabled={loading || busy}><RefreshCw size={17} /> Atualizar</button>
         </div>
       </header>
@@ -200,7 +199,7 @@ export default function Master() {
           </p>
         </section>
 
-        <section className="master-panel master-companies">
+        <section className="master-panel master-companies" id="master-empresas">
           <div className="master-panel-title">
             <div><Building2 /><div><strong>Empresas clientes</strong><small>Tenant Master separado dos dados operacionais da empresa.</small></div></div>
             <label className="master-search"><Search size={15} /><input value={search} onChange={event => { setSearch(event.target.value); setCompanyPage(0) }} placeholder="Buscar empresa, plano ou status" aria-label="Buscar empresas" /></label>

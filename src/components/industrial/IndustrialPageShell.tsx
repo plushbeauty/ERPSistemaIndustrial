@@ -67,7 +67,7 @@ export default function IndustrialPageShell({ module, title, subtitle, children,
       nav={nav}
       activeId="current"
       onNav={() => {}}
-      onHome={() => { window.location.href = '/tablet/dashboard' }}
+      onHome={() => { window.location.href = '/pageprincipal/chao-de-fabrica/portal-operador' }}
       actions={actionNodes}
     >
       <div className="erp-dense space-y-4">

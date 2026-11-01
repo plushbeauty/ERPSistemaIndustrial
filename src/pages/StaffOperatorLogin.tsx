@@ -52,7 +52,7 @@ export default function StaffOperatorLogin() {
       if (mode === 'operator' && !isOperator) throw new Error('Este usuário não possui perfil OPERADOR_FABRIL.')
       if (mode === 'admin' && isOperator) throw new Error('Operadores devem utilizar a entrada de Chão de Fábrica.')
 
-      if (mode === 'operator') navigate('/tablet/dashboard', { replace: true })
+      if (mode === 'operator') navigate('/pageprincipal/chao-de-fabrica/portal-operador', { replace: true })
       else navigate('/pageprincipal', { replace: true })
     } catch (cause) {
       await supabase.auth.signOut().catch(() => undefined)

@@ -78,7 +78,7 @@ function isTabletDevice() {
 
 function destinationAfterLogin(result: IndustrialDestination, requested?: string | null) {
   if (result.isMaster) return '/diretoria/dashboard'
-  if (isTabletDevice() || result.perfil === 'OPERADOR_FABRIL') return '/tablet/dashboard'
+  if (isTabletDevice() || result.perfil === 'OPERADOR_FABRIL') return '/pageprincipal/chao-de-fabrica/portal-operador'
   const desktopProfiles = new Set(['DIRETOR', 'ADMINISTRADOR', 'ADMIN', 'PCP', 'PCPISTA', 'PLANEJADOR', 'PLANEJADOR_PCP'])
   if (desktopProfiles.has(result.perfil)) return '/diretoria/dashboard'
   return safeReturnTo(requested)
