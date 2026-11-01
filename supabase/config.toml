@@ -9,5 +9,11 @@ verify_jwt = true
 [functions.erp-company-signup]
 verify_jwt = false
 
+[functions.erp-onboarding-activate]
+verify_jwt = false
+
+[functions.consultar-cnpj]
+verify_jwt = false
+
 [functions.erp-mes-ingest]
 verify_jwt = false
