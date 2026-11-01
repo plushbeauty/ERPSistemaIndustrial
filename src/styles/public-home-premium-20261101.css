@@ -119,9 +119,36 @@
 .ph-shot-bar { display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-bottom: 1px solid var(--ph-line); background: #F7FBFD; }
 .ph-shot-bar i { width: 9px; height: 9px; border-radius: 50%; background: #CFE2EA; }
 .ph-shot-bar span { margin-left: 8px; font-size: 11px; font-weight: 800; color: #7791A0; letter-spacing: .3px; }
-.ph-shot img { display: block; width: 100%; height: auto; }
-.ph-shot--hero img { aspect-ratio: 16 / 9; object-fit: cover; object-position: top left; }
-.ph-shot-fallback { display: grid; place-items: center; min-height: 220px; padding: 26px; text-align: center; color: var(--ph-muted); font-size: 12px; font-weight: 800; background: repeating-linear-gradient(135deg, #F7FBFD, #F7FBFD 12px, #EFF7FA 12px, #EFF7FA 24px); }
+/* ---------- réplica das telas reais (src/components/marketing/TelaVitrine.tsx) ----------
+   Mesma linguagem do rail e dos painéis dentro do ERP: fundo navy, item ativo com filete
+   ciano, cartões de índice e tabela listrada. Assim a vitrine não anuncia tela diferente
+   da que o cliente vai encontrar depois de autenticado. */
+.ph-replica { display: grid; grid-template-columns: 138px minmax(0, 1fr); min-height: 252px; background: var(--ph-tint); }
+.ph-replica-rail { padding: 10px 8px; background: #123B50; color: #fff; }
+.ph-replica-rail strong { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 900; letter-spacing: -.2px; }
+.ph-replica-rail ul { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.ph-replica-rail li { padding: 4px 5px; border-radius: 2px; font-size: 9.5px; font-weight: 700; line-height: 1.3; color: #fff; opacity: .82; }
+.ph-replica-rail li.is-ativo { background: rgba(72, 183, 199, .28); box-shadow: inset 2px 0 0 #48B7C7; font-weight: 900; opacity: 1; }
+.ph-replica-corpo { display: grid; align-content: start; gap: 8px; min-width: 0; padding: 10px; }
+.ph-replica-indices { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.ph-replica-indices > div { min-width: 0; padding: 6px 7px; background: #fff; border: 1px solid var(--ph-line); border-radius: 3px; }
+.ph-replica-indices span { display: block; overflow: hidden; font-size: 7.5px; font-weight: 900; letter-spacing: .6px; text-transform: uppercase; color: var(--ph-muted); white-space: nowrap; text-overflow: ellipsis; }
+.ph-replica-indices strong { display: block; margin-top: 2px; font-size: 15px; color: #123B50; }
+.ph-replica-tabela { width: 100%; background: #fff; border: 1px solid var(--ph-line); border-radius: 3px; border-collapse: separate; border-spacing: 0; overflow: hidden; font-size: 9px; }
+.ph-replica-tabela th { padding: 5px 6px; background: #DCECF2; border-bottom: 1px solid #B9D4DF; color: #17445A; font-size: 7.5px; font-weight: 900; letter-spacing: .3px; text-align: left; text-transform: uppercase; white-space: nowrap; }
+.ph-replica-tabela td { padding: 5px 6px; border-bottom: 1px solid #EAF2F6; color: #315466; white-space: nowrap; }
+.ph-replica-tabela tbody tr:last-child td { border-bottom: 0; }
+.ph-replica-tabela tbody tr:nth-child(even) { background: #F0F7FA; }
+.ph-replica-nota { margin: 0; font-size: 9px; color: var(--ph-muted); }
+.ph-replica-nota code { font-size: 8.5px; }
+.ph-shot--hero .ph-replica { min-height: 306px; }
+.ph-replica--compacta { min-height: 0; }
+.ph-replica--compacta .ph-replica-tabela tbody tr:nth-child(n + 3) { display: none; }
+.ph-replica--compacta .ph-replica-nota { display: none; }
+@media (max-width: 720px) {
+  .ph-replica { grid-template-columns: 104px minmax(0, 1fr); }
+  .ph-replica-indices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 
 /* ---------- seções ---------- */
 .ph-wrap { width: min(1280px, calc(100% - 40px)); margin: 0 auto; }

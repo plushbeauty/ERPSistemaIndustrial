@@ -1,7 +1,7 @@
 /**
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-01
- * @REVISAO: REV-VITRINE-PUBLICA-20261101-02 — /planos refeita como página comercial premium
+ * @REVISAO: REV-VITRINE-PUBLICA-20261101-03 — arte do PCP trocada pela réplica da tela real
  * @STATUS_APROVACAO: REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01 ("COISA MAIS FEIA DE SE VER … VEJA TODOS OS MODULOS DO SISTEMA PARA COLOCAR NOS PLANOS")
  *
  * Os preços e a composição continuam vindo do catálogo comercial do banco (erp_planos_catalogo
@@ -13,6 +13,7 @@ import { ArrowLeft, ArrowRight, Check, ChevronRight, Database, Minus, RefreshCw,
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import { telasVitrine, TelaVitrineReplica } from '../components/marketing/TelaVitrine'
 import '../styles/public-home-premium-20261101.css'
 
 type PlanModuleRow = {
@@ -315,8 +316,8 @@ export default function PlanosIndustrial() {
           <p className="ph-cta-note">Ativação em três etapas, dados isolados por empresa e migração assistida dos cadastros.</p>
         </div>
         <div className="ph-shot">
-          <div className="ph-shot-bar" aria-hidden="true"><i /><i /><i /><span>sysnqra.app/pageprincipal/pcp/dashboard</span></div>
-          <img src="/images/telas/pcp.webp" alt="Dashboard do PCP com programação por máquina e ordens de produção" loading="lazy" decoding="async" />
+          <div className="ph-shot-bar" aria-hidden="true"><i /><i /><i /><span>sysnqra.app{telasVitrine.pcp.rota}</span></div>
+          <TelaVitrineReplica tela={telasVitrine.pcp} compacta />
         </div>
       </div>
     </section>

@@ -1,45 +1,47 @@
 /**
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-01
- * @REVISAO: REV-VITRINE-PUBLICA-20261101-03 — hero virou carrossel full-bleed com overlay, setas, barras e CTA por slide
+ * @REVISAO: REV-VITRINE-PUBLICA-20261101-04 — carrossel e seção de telas mostram réplicas das telas reais
  * @STATUS_APROVACAO: REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01
  *
  * Ordem recebida em 2026-11-01: manter o fundo branco e a tipografia padrão do menu, mas
  * trazer de volta o carrossel do topo — imagem industrial de ponta a ponta, camada escura
  * para o texto branco ficar legível, setas discretas nas laterais, barras na base indicando
  * a quantidade de slides e um botão de ação em cada slide levando ao módulo correspondente.
- * As artes vivem em public/images/ — se o arquivo não existir a moldura mostra um aviso em
- * vez de imagem quebrada, então dá para trocar os arquivos sem mexer neste código.
+ * Na mesma ordem: a vitrine só pode anunciar tela que existe. As quatro molduras abaixo são
+ * réplicas montadas com o vocabulário visual do próprio sistema (TelaVitrine), cada uma com
+ * a rota real na barra do navegador, em vez de arte desenhada à parte.
  */
 import { ArrowRight, BarChart3, Boxes, Bot, Check, ChevronDown, ChevronLeft, ChevronRight, ClipboardCheck, Factory, FileText, PackageCheck, Receipt, Settings, ShieldCheck, Truck, Users, Wrench, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { telasVitrine, TelaVitrineReplica, type TelaVitrine } from './components/marketing/TelaVitrine'
 import './styles/public-home-premium-20261101.css'
 
 type Module = { key: string; title: string; description: string; Icon: LucideIcon }
-type Screen = { key: string; image: string; eyebrow: string; title: string; description: string; highlights: string[]; alt: string }
+type Screen = { key: TelaVitrine['key']; eyebrow: string; title: string; description: string; highlights: string[] }
 
 const screens: Screen[] = [
   {
-    key: 'pcp', image: '/images/telas/pcp.webp', eyebrow: 'PCP E PRODUÇÃO', alt: 'Tela do dashboard do PCP com programação por máquina e ordens de produção',
+    key: 'pcp', eyebrow: 'PCP E PRODUÇÃO',
     title: 'Dashboard do PCP: a fábrica programada em uma tela só',
     description: 'A programação por máquina no calendário, as ordens abertas com avanço real e a carga de cada equipamento juntos. O planejador vê o dia, a semana e o mês sem abrir cinco relatórios, e clica na ordem para ver as peças boas, o refugo e as paradas daquele lote.',
     highlights: ['Gantt por máquina', 'Ordens e avanço', 'Eficiência e refugo', 'Carga de capacidade'],
   },
   {
-    key: 'qualidade', image: '/images/telas/qualidade.webp', eyebrow: 'QUALIDADE E SGQ', alt: 'Tela de tratamento de não conformidade com Ishikawa e plano de ação',
+    key: 'qualidade', eyebrow: 'QUALIDADE E SGQ',
     title: 'Qualidade com evidência: da não conformidade ao plano de ação',
     description: 'A abertura da RPNC registra a ocorrência, a causa raiz com Ishikawa e 5 Porquês, e o plano de ação CAPA com responsável e prazo. O sistema alerta quando a mesma peça ou lote volta a falhar e o relatório sai pronto para a auditoria.',
     highlights: ['RPNC e triagem', 'Causa raiz', 'CAPA com prazo', 'Auditorias e evidências'],
   },
   {
-    key: 'estoque', image: '/images/telas/estoque.webp', eyebrow: 'ESTOQUE E ALMOXARIFADO', alt: 'Tela de almoxarifado com posição de estoque, mapa de endereços e leitura de código de barras',
+    key: 'estoque', eyebrow: 'ESTOQUE E ALMOXARIFADO',
     title: 'Almoxarifado: saldo, lote e endereço no mesmo lançamento',
     description: 'Cada item aparece com o lote, o endereço de armazenagem, o que está reservado e o que está realmente disponível. O mapa de endereços mostra onde o material está, e o leitor de código de barras registra a movimentação sem digitar nada.',
     highlights: ['Posição de estoque', 'Reservado × disponível', 'Mapa de endereços', 'Coleta por código'],
   },
   {
-    key: 'chao-de-fabrica', image: '/images/telas/chao-de-fabrica.webp', eyebrow: 'CHÃO DE FÁBRICA', alt: 'Terminal de apontamento do operador no chão de fábrica',
+    key: 'chao-de-fabrica', eyebrow: 'CHÃO DE FÁBRICA',
     title: 'Posto de apontamento que o operador usa com luva',
     description: 'Botão grande, contador de peças e status da máquina na tela do tablet ao lado do equipamento. O operador inicia a produção, registra parada com motivo, marca refugo e setup — e o apontamento entra na ordem na hora, com usuário e turno.',
     highlights: ['Contador de produção', 'Parada com motivo', 'Refugo e setup', 'Turno e operador'],
@@ -168,14 +170,12 @@ const genericDetail = (m: Module): ModuleDetail => ({
   results: ['Status do processo', 'Pendências', 'Histórico', 'Integrações relacionadas'],
 })
 
-function ScreenShot({ screen }: { screen: Screen }) {
-  const [quebrada, setQuebrada] = useState(false)
+function ScreenShot({ screen, compacta = false }: { screen: Screen; compacta?: boolean }) {
+  const tela = telasVitrine[screen.key]
   return (
     <div className="ph-shot ph-shot--hero">
-      <div className="ph-shot-bar" aria-hidden="true"><i /><i /><i /><span>sysnqra.app/pageprincipal</span></div>
-      {quebrada
-        ? <div className="ph-shot-fallback">Arte desta tela em breve — envie a imagem e coloque em public/images/telas/{screen.key}.webp</div>
-        : <img src={screen.image} alt={screen.alt} loading="lazy" decoding="async" onError={() => setQuebrada(true)} />}
+      <div className="ph-shot-bar" aria-hidden="true"><i /><i /><i /><span>sysnqra.app{tela.rota}</span></div>
+      <TelaVitrineReplica tela={tela} compacta={compacta} />
     </div>
   )
 }
@@ -307,7 +307,7 @@ export default function PublicIndustrialHome() {
         </div>
         <div className="ph-screens">
           {screens.map(screen => <article key={screen.key} className="ph-screen">
-            <ScreenShot screen={screen} />
+            <ScreenShot screen={screen} compacta />
             <div className="ph-screen-copy">
               <span>{screen.eyebrow}</span>
               <h3>{screen.title}</h3>
