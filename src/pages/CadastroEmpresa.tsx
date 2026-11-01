@@ -90,7 +90,7 @@ function PlanSummary({ plan }: { plan: ErpPlano }) {
 
 export default function CadastroEmpresa() {
   const initialPlan = new URLSearchParams(window.location.search).get('plano')
-  const [planKey, setPlanKey] = useState(() => planoPorChave(initialPlan)?.chave ?? 'start')
+  const [planKey, setPlanKey] = useState<ErpPlano['chave']>(() => planoPorChave(initialPlan)?.chave ?? 'start')
   const [form, setForm] = useState<FormValues>(initialForm)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -168,7 +168,7 @@ export default function CadastroEmpresa() {
           <div className="mt-6 flex items-start gap-3 rounded-xl border border-white/15 bg-white/5 p-4 text-xs leading-5 text-slate-100"><ShieldCheck size={18} className="mt-0.5 shrink-0 text-cyan-200"/><span>O cadastro cria uma empresa e um usuário administrador. Os dados operacionais permanecem protegidos pelas permissões e políticas do ERP.</span></div>
           <div className="mt-6">
             <label htmlFor="plan" className="mb-2 block text-[10px] font-black uppercase tracking-wider text-cyan-100">Plano comercial</label>
-            <select id="plan" value={planKey} onChange={event => setPlanKey(event.target.value as ErpPlano['chave'])} className="h-11 w-full rounded-xl border border-white/20 bg-[#173E52] px-3 text-sm font-bold text-white outline-none focus:border-cyan-200">
+            <select id="plan" value={planKey} onChange={event => { const selectedPlan = planoPorChave(event.target.value); if (selectedPlan) setPlanKey(selectedPlan.chave) }} className="h-11 w-full rounded-xl border border-white/20 bg-[#173E52] px-3 text-sm font-bold text-white outline-none focus:border-cyan-200">
               {planosErp.map(item => <option key={item.chave} value={item.chave}>{item.nome} — {item.precoMensal === null ? 'Sob consulta' : precoFormatado(item.precoMensal) + '/mês'}</option>)}
             </select>
           </div>
