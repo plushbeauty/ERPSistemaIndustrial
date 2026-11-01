@@ -1,166 +1,293 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-01
+ * @REVISAO: REV-VITRINE-PUBLICA-20261101-01 — home pública refeita em fundo branco, sem carrossel
+ * @STATUS_APROVACAO: REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01
+ *
+ * Ordem recebida em 2026-11-01: tirar o fundo azul, acabar com o carrossel e mostrar as
+ * telas reais do sistema com texto explicando cada uma; tipografia do menu do topo em
+ * tamanho padrão único de 13px; logo com fundo branco e letras escuras.
+ * As artes vivem em public/images/telas/<modulo>.webp — se o arquivo não existir a
+ * moldura mostra um aviso em vez de imagem quebrada, então dá para trocar os arquivos
+ * sem mexer neste código.
  */
-/**
- * APROVADO — página pública restaurada do arquivo enviado em 2026-10-18.
- * Não alterar hero, carrossel, acessibilidade ou planos sem autorização expressa.
- */
-/*
- * TELA PRINCIPAL APROVADA PELO USUÁRIO — NÃO ALTERAR SEM ORDEM EXPLÍCITA.
- * Data da aprovação/revisão registrada: 2026-10-16.
- * Fonte visual aprovada: branch fix/clientes-clone-fornecedores-producao, commit 9f1e37a.
- * Escopo: preservar o desenho aprovado; mudanças futuras exigem autorização explícita.
- * Validação: integração no main e publicação ainda pendentes de CI/deploy.
- */
-import { ArrowRight, BarChart3, Boxes, ChevronDown, ChevronLeft, ChevronRight, ClipboardCheck, Factory, FileText, PackageCheck, Pause, Play, Receipt, ShieldCheck, Truck, Users, Wrench, X, Settings, Bot } from 'lucide-react'
+import { ArrowRight, BarChart3, Boxes, Bot, Check, ChevronDown, ClipboardCheck, Factory, FileText, PackageCheck, Receipt, Settings, ShieldCheck, Truck, Users, Wrench, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { useEffect, useMemo, useState, type KeyboardEvent } from 'react'
+import { useState } from 'react'
+import './styles/public-home-premium-20261101.css'
 
-type Module = { key: string; title: string; description: string; route: string; Icon: LucideIcon }
+type Module = { key: string; title: string; description: string; Icon: LucideIcon }
+type Screen = { key: string; image: string; eyebrow: string; title: string; description: string; highlights: string[]; alt: string }
+
+const screens: Screen[] = [
+  {
+    key: 'pcp', image: '/images/telas/pcp.webp', eyebrow: 'PCP E PRODUÇÃO', alt: 'Tela do dashboard do PCP com programação por máquina e ordens de produção',
+    title: 'Dashboard do PCP: a fábrica programada em uma tela só',
+    description: 'A programação por máquina no calendário, as ordens abertas com avanço real e a carga de cada equipamento juntos. O planejador vê o dia, a semana e o mês sem abrir cinco relatórios, e clica na ordem para ver as peças boas, o refugo e as paradas daquele lote.',
+    highlights: ['Gantt por máquina', 'Ordens e avanço', 'Eficiência e refugo', 'Carga de capacidade'],
+  },
+  {
+    key: 'qualidade', image: '/images/telas/qualidade.webp', eyebrow: 'QUALIDADE E SGQ', alt: 'Tela de tratamento de não conformidade com Ishikawa e plano de ação',
+    title: 'Qualidade com evidência: da não conformidade ao plano de ação',
+    description: 'A abertura da RPNC registra a ocorrência, a causa raiz com Ishikawa e 5 Porquês, e o plano de ação CAPA com responsável e prazo. O sistema alerta quando a mesma peça ou lote volta a falhar e o relatório sai pronto para a auditoria.',
+    highlights: ['RPNC e triagem', 'Causa raiz', 'CAPA com prazo', 'Auditorias e evidências'],
+  },
+  {
+    key: 'estoque', image: '/images/telas/estoque.webp', eyebrow: 'ESTOQUE E ALMOXARIFADO', alt: 'Tela de almoxarifado com posição de estoque, mapa de endereços e leitura de código de barras',
+    title: 'Almoxarifado: saldo, lote e endereço no mesmo lançamento',
+    description: 'Cada item aparece com o lote, o endereço de armazenagem, o que está reservado e o que está realmente disponível. O mapa de endereços mostra onde o material está, e o leitor de código de barras registra a movimentação sem digitar nada.',
+    highlights: ['Posição de estoque', 'Reservado × disponível', 'Mapa de endereços', 'Coleta por código'],
+  },
+  {
+    key: 'chao-de-fabrica', image: '/images/telas/chao-de-fabrica.webp', eyebrow: 'CHÃO DE FÁBRICA', alt: 'Terminal de apontamento do operador no chão de fábrica',
+    title: 'Posto de apontamento que o operador usa com luva',
+    description: 'Botão grande, contador de peças e status da máquina na tela do tablet ao lado do equipamento. O operador inicia a produção, registra parada com motivo, marca refugo e setup — e o apontamento entra na ordem na hora, com usuário e turno.',
+    highlights: ['Contador de produção', 'Parada com motivo', 'Refugo e setup', 'Turno e operador'],
+  },
+]
 
 const modules: Module[] = [
-  { key:'pcp', title:'PCP e Produção', description:'Planejamento, ordens, sequenciamento e acompanhamento do chão de fábrica.', route:'/pcp', Icon:Factory },
-  { key:'estoque', title:'Estoque e Materiais', description:'Saldos, movimentações, rastreabilidade e necessidades de materiais.', route:'/estoque', Icon:Boxes },
-  { key:'recebimento', title:'Recebimento de Materiais', description:'NF-e XML, conferência, lotes e entrada rastreável.', route:'/modulos/recebimento', Icon:PackageCheck },
-  { key:'qualidade', title:'Qualidade', description:'RPNC, auditorias, CAPA, documentos e evidências.', route:'/qualidade', Icon:ClipboardCheck },
-  { key:'manutencao', title:'Manutenção', description:'Máquinas, planos preventivos, corretivas e histórico.', route:'/modulos/manutencao', Icon:Wrench },
-  { key:'fiscal', title:'Financeiro e Fiscal', description:'Processos financeiros, documentos e visão fiscal.', route:'/fiscal', Icon:Receipt },
-  { key:'indicadores', title:'Indicadores', description:'Produção, qualidade, estoque, custos e performance.', route:'/modulos/indicadores', Icon:BarChart3 },
-  { key:'engenharia', title:'Engenharia e BOM', description:'Fichas técnicas, versões, estruturas e roteiros.', route:'/modulos/engenharia', Icon:FileText },
-  { key:'compras', title:'Compras e Fornecedores', description:'Solicitações, pedidos, fornecedores e recebimento.', route:'/modulos/compras', Icon:Truck },
-  { key:'clientes', title:'Clientes', description:'Cadastro, documentos, contatos e histórico comercial.', route:'/modulos/clientes', Icon:Users },
-  { key:'rastreabilidade', title:'Rastreabilidade', description:'Lote da matéria-prima até produto acabado e expedição.', route:'/modulos/rastreabilidade', Icon:ShieldCheck },
-  { key:'custos', title:'Custos Industriais', description:'Materiais, mão de obra, máquinas, perdas e margem.', route:'/modulos/custos', Icon:BarChart3 },
-  { key:'expedicao', title:'Expedição', description:'Separação, conferência, embalagem, romaneio e entrega.', route:'/modulos/expedicao', Icon:Truck },
-  { key:'fmea', title:'FMEA e Risco', description:'Análise de modos de falha, RPN e ações preventivas.', route:'/modulos/fmea', Icon:ClipboardCheck },
-  { key:'rh', title:'RH e Competências', description:'Pessoas, treinamentos, competências e permissões.', route:'/modulos/rh', Icon:Users },
-  { key:'xml', title:'Leitor XML', description:'Importação e conferência de XML fiscal com rastreabilidade documental.', route:'/recebimento-materiais', Icon:FileText },
-  { key:'prensa-dupla', title:'PCP de Prensa Dupla', description:'Planejamento de operação síncrona frente/trás e capacidade de produção.', route:'/pcp', Icon:Factory },
-  { key:'chao-fabrica', title:'Chão de Fábrica', description:'Apontamentos operacionais, produção, paradas, refugo e rastreabilidade.', route:'/tablet/dashboard', Icon:Factory },
-  { key:'metrologia-rbc', title:'Metrologia RBC', description:'Instrumentos, certificados, validade e histórico de calibração.', route:'/qualidade/instrumentos', Icon:ShieldCheck },
-  { key:'documentos-obsoletos', title:'Documentos Obsoletos', description:'Controle de documentos vigentes, revisões e registros obsoletos.', route:'/qualidade/documentos', Icon:FileText },
-  { key:'matriz-desenhos', title:'Matriz de Desenhos', description:'Revisões, documentos técnicos e estruturas de engenharia controladas.', route:'/engenharia/revisoes-bom', Icon:FileText },
-  { key:'manutencao-tpm', title:'Manutenção TPM', description:'Ordens, bloqueio de máquinas, corretiva, preventiva e laudo técnico.', route:'/manutencao', Icon:Wrench },
-  { key:'roteirizacao-balanca', title:'Roteirização de Carga', description:'Expedição, roteirização e conferência operacional de cargas.', route:'/expedicao/roteirizacao', Icon:Truck },
+  { key: 'pcp', title: 'PCP e Produção', description: 'Planejamento, ordens, sequenciamento e acompanhamento do chão de fábrica.', Icon: Factory },
+  { key: 'estoque', title: 'Estoque e Materiais', description: 'Saldos, movimentações, lotes, endereços e rastreabilidade.', Icon: Boxes },
+  { key: 'recebimento', title: 'Recebimento de Materiais', description: 'NF-e XML, conferência, lotes e entrada rastreável.', Icon: PackageCheck },
+  { key: 'qualidade', title: 'Qualidade e SGQ', description: 'RPNC, auditorias, CAPA, documentos e evidências.', Icon: ClipboardCheck },
+  { key: 'manutencao', title: 'Manutenção', description: 'Máquinas, planos preventivos, corretivas e histórico.', Icon: Wrench },
+  { key: 'fiscal', title: 'Fiscal', description: 'Apuração, documentos fiscais e obrigações acessórias.', Icon: Receipt },
+  { key: 'financeiro', title: 'Financeiro e Controladoria', description: 'Conciliação, contas, margens, custo industrial e resultado.', Icon: BarChart3 },
+  { key: 'compras', title: 'Compras e Fornecedores', description: 'Solicitações, requisições, cotações e pedidos.', Icon: Truck },
+  { key: 'comissoes', title: 'Comissões', description: 'Regras, cálculo, perfil do vendedor e auditoria.', Icon: ClipboardCheck },
+  { key: 'rh', title: 'RH e Departamento Pessoal', description: 'Colaboradores, jornada, custo de hora e competências.', Icon: Users },
+  { key: 'engenharia', title: 'Engenharia e BOM', description: 'Fichas de processo, roteiros, estruturas e revisões.', Icon: FileText },
+  { key: 'chao-fabrica', title: 'Chão de Fábrica', description: 'Apontamentos, paradas, refugo e rastreabilidade por lote.', Icon: Factory },
+  { key: 'metrologia', title: 'Metrologia', description: 'Paquímetro digital, instrumentos, calibração e validade.', Icon: ShieldCheck },
+  { key: 'documentos', title: 'Documentos Controlados', description: 'GED do SGQ: procedimentos, instruções e revisões.', Icon: FileText },
+  { key: 'expedicao', title: 'Expedição', description: 'Separação, conferência, embalagem, romaneio e entrega.', Icon: Truck },
+  { key: 'indicadores', title: 'Indicadores', description: 'Produção, qualidade, estoque, custos e performance.', Icon: BarChart3 },
 ]
 
 const plans = [
-  { key:'start', name:'Start', monthly:199, description:'Gestão essencial de materiais, cadastros e rotinas para iniciar a organização industrial.' },
-  { key:'industrial', name:'Industrial', monthly:349, description:'Integração de PCP, produção, qualidade, estoque e indicadores para a operação.' },
-  { key:'enterprise', name:'Enterprise', monthly:null, description:'Escopo personalizado, governança e integração conforme as necessidades da sua operação.' },
+  { key: 'start', name: 'Start', monthly: 199, tag: 'Plano de entrada', description: 'Cadastros, materiais e rotinas essenciais para organizar a operação e sair da planilha.' },
+  { key: 'industrial', name: 'Industrial', monthly: 349, tag: 'Mais escolhido', description: 'PCP, chão de fábrica, qualidade com SGQ, estoque e indicadores integrados na mesma base.' },
+  { key: 'enterprise', name: 'Enterprise', monthly: null, tag: 'Operação avançada', description: 'Escopo personalizado, múltiplas unidades, integrações e governança conforme a sua operação.' },
 ] as const
 
-const productMenuModules: Module[] = [
-  { key:'materiais', title:'Materiais', description:'Estoque, movimentações, lotes e rastreabilidade.', route:'/estoque', Icon:Boxes },
-  { key:'qualidade-menu', title:'Qualidade', description:'Inspeções, não conformidades e documentos controlados.', route:'/qualidade', Icon:ClipboardCheck },
-  { key:'producao-menu', title:'Produção (MRP)', description:'Planejamento, ordens e acompanhamento do chão de fábrica.', route:'/pcp', Icon:Factory },
-  { key:'financeiro-menu', title:'Financeiro', description:'Processos financeiros e visão fiscal da operação.', route:'/fiscal', Icon:Receipt },
-  { key:'rh-menu', title:'RH', description:'Pessoas, treinamentos, competências e permissões.', route:'/modulos/rh', Icon:Users },
-]
-const visuals = [
-  { src:'/images/sgq-erp-pcp.png', label:'Planejamento e produção', eyebrow:'PCP E PRODUÇÃO', alt:'Tela do módulo PCP do ERP Industrial' },
-  { src:'/images/cena-chao-de-fabrica.webp', label:'Chão de fábrica e MES', eyebrow:'CHÃO DE FÁBRICA E MES', alt:'Terminal de máquina na linha de produção com indicadores de apontamento' },
-  { src:'/images/cena-almoxarifado.webp', label:'Estoque e materiais', eyebrow:'ESTOQUE E MATERIAIS', alt:'Operador conferindo itens no almoxarifado com coletor de dados' },
-  { src:'/images/sgq-erp-qualidade.png', label:'Gestão da qualidade', eyebrow:'QUALIDADE E SGQ', alt:'Tela do módulo de qualidade do ERP Industrial' },
-  { src:'/images/cena-gestao.webp', label:'Indicadores e gestão', eyebrow:'INDICADORES E GESTÃO', alt:'Gestores acompanhando painel de indicadores com a fábrica ao fundo' },
-  { src:'/images/funcionario.png', label:'Equipe industrial', eyebrow:'PESSOAS E COMPETÊNCIAS', alt:'Profissional em ambiente industrial' },
-]
+const productMenuModules: Module[] = modules.slice(0, 9)
 
-export default function PublicIndustrialHome(){
- const [menuOpen,setMenuOpen]=useState(false),[index,setIndex]=useState(0),[helpOpen,setHelpOpen]=useState(false),[selectedModule,setSelectedModule]=useState<Module|null>(null),[billingPeriod,setBillingPeriod]=useState<'monthly'|'annual'>('monthly'),[rotationPaused,setRotationPaused]=useState(false),[reducedMotion,setReducedMotion]=useState(false)
- const current=visuals[index]
- useEffect(()=>{
-  const preference=window.matchMedia('(prefers-reduced-motion: reduce)')
-  const updatePreference=()=>setReducedMotion(preference.matches)
-  updatePreference()
-  preference.addEventListener('change',updatePreference)
-  return()=>preference.removeEventListener('change',updatePreference)
- },[])
- useEffect(()=>{
-  if(rotationPaused||reducedMotion)return
-  const timer=window.setInterval(()=>setIndex(value=>(value+1)%visuals.length),5000)
-  return()=>window.clearInterval(timer)
- },[rotationPaused,reducedMotion])
- const moveSlide=(direction:number)=>setIndex(value=>(value+direction+visuals.length)%visuals.length)
- const handleCarouselKeyDown=(event:KeyboardEvent<HTMLElement>)=>{
-  if(event.key==='ArrowLeft'){event.preventDefault();moveSlide(-1)}
-  if(event.key==='ArrowRight'){event.preventDefault();moveSlide(1)}
- }
- const featured=useMemo(()=>modules.slice(0,7),[])
- return <main className="sgq-public-home">
-  <style>{`
-:root{color-scheme:light}
-.sgq-public-home{--ink:#123B50;--muted:#617985;--line:#d7e5eb;--brand:#2D8DB8;--deep:#123B50;--aqua:#48B7C7;--green:#3A9D78;--gold:#E6A34A;min-height:100vh;background:#F4FBFD;color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:13px;overflow-x:clip}
-.sgq-public-home *{box-sizing:border-box}.sgq-public-home a{text-decoration:none;color:inherit}
-.sgq-nav{position:relative;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:18px;height:64px;padding:0 clamp(14px,3vw,42px);background:#fff;border-bottom:1px solid #d7e5eb}
-.sgq-brand{display:flex;align-items:center;min-width:0}.sgq-brand img{display:block;width:205px;height:58px;object-fit:contain;object-position:left center}
-.sgq-nav-links,.sgq-nav-actions{display:flex;align-items:center;gap:7px}
-.sgq-nav-link,.sgq-product-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 10px;border:0;border-radius:2px;background:transparent;color:#123B50;font-family:inherit;font-size:13px;font-weight:750;white-space:nowrap;cursor:pointer}
-.sgq-nav-link:hover,.sgq-product-button:hover{background:#EAF7FA;color:#123B50}.sgq-product{position:relative}
-.sgq-product-menu{position:absolute;top:42px;left:0;width:700px;max-width:calc(100vw - 24px);padding:12px;border:1px solid var(--line);border-radius:3px;background:#fff;box-shadow:0 18px 45px rgba(10,36,48,.24);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
-.sgq-product-menu a,.sgq-product-option{display:flex;align-items:flex-start;gap:9px;padding:10px;border:0;border-radius:2px;background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer;width:100%}
-.sgq-product-menu a:hover,.sgq-product-option:hover{background:#EAF7FA}.sgq-product-menu svg{flex:0 0 auto;color:var(--brand);margin-top:2px}.sgq-product-menu strong{display:block;font-size:11px}.sgq-product-menu small{display:block;margin-top:3px;color:var(--muted);font-size:9px;line-height:1.4}
-.sgq-nav-actions{gap:8px}.sgq-owner{display:grid;place-items:center;width:32px;height:32px;border:1px solid #d7e5eb;border-radius:2px;color:#123B50}.sgq-owner:hover{background:rgba(72,183,199,.18)}
-.sgq-login,.sgq-contact{display:inline-flex;align-items:center;justify-content:center;min-height:32px;padding:0 13px;border-radius:2px;font-size:13px;font-weight:900;white-space:nowrap}.sgq-login{background:var(--green);color:#fff!important}.sgq-contact{border:1px solid var(--line);background:#fff}
-.sgq-hero{position:relative;isolation:isolate;width:100%;height:calc(100dvh - 64px);min-height:560px;max-height:1000px;overflow:hidden;background:#123B50}
-.sgq-hero-shade{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(18,59,80,.24),rgba(18,59,80,0) 70%)}
-.sgq-hero-inner{position:relative;z-index:2;display:grid;grid-template-columns:minmax(340px,42%) minmax(0,58%);width:100%;height:100%;max-width:none;margin:0;padding:0;gap:0;text-align:left}
-.sgq-hero-copy{position:relative;z-index:3;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-width:0;margin:0;padding:clamp(28px,5vw,76px);border-right:1px solid rgba(72,183,199,.22);background:linear-gradient(115deg,rgba(11,39,54,.98),rgba(18,59,80,.91) 78%,rgba(18,59,80,.84));backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);text-align:left}
-.sgq-kicker{display:block;color:#8FE1ED;font-size:10px;font-weight:900;letter-spacing:2px;line-height:1.5}
-.sgq-hero-copy h1,.sgq-hero h1{margin:14px 0 16px;color:#fff;font-size:clamp(32px,4.1vw,64px);font-weight:900;line-height:1.04;letter-spacing:-1.8px}
-.sgq-hero-copy p{max-width:48ch;margin:0;color:#F4FBFD;font-size:clamp(13px,1.15vw,16px);line-height:1.75}
-.sgq-trial-cta{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:40px;margin-top:25px;padding:0 17px;border:1px solid rgba(255,255,255,.16);border-radius:2px;background:var(--green);color:#fff!important;font-size:10px;font-weight:900;letter-spacing:.4px;text-transform:uppercase;transition:background .18s,transform .18s}
-.sgq-trial-cta:hover{background:#2f8767;transform:translateY(-1px)}
-.sgq-stage{position:relative;align-self:stretch;width:100%;height:100%;min-width:0;margin:0;padding:0;border:0;border-radius:0;background:#123B50;box-shadow:none;overflow:hidden}
-.sgq-stage-media{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;border-radius:0;background:#123B50;overflow:hidden}
-.sgq-stage-media img{position:absolute;inset:0;display:block;width:100%;max-width:none;height:100%;object-fit:cover;object-position:center;padding:0;margin:0;border:0;border-radius:0;opacity:0;transform:scale(.865);transition:opacity .65s ease,transform 5s ease}
-.sgq-stage-media img.active{opacity:1;transform:scale(.85)}.sgq-stage-caption,.sgq-dots,.sgq-carousel-control{display:none!important}
-.sgq-wrap{width:min(1320px,calc(100% - 40px));margin:0 auto}.sgq-section{padding:68px 0;background:#fff}
-.sgq-section-heading{max-width:820px;margin:0 auto 30px;text-align:center}.sgq-section-heading>span{color:#2D8DB8;font-size:9px;font-weight:950;letter-spacing:2px}
-.sgq-section-heading h2{margin:9px 0;font-size:clamp(27px,3vw,40px);line-height:1.15;letter-spacing:-1px;color:#123B50}.sgq-section-heading p{margin:0;color:var(--muted);font-size:13px;line-height:1.7}
-.sgq-modules{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.sgq-module{min-width:0;padding:18px;border:1px solid var(--line);border-radius:2px;background:#fff;box-shadow:0 5px 15px rgba(18,59,80,.05);transition:border-color .18s,transform .18s}
-.sgq-module:hover{transform:translateY(-2px);border-color:#2D8DB8}.sgq-module-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:2px;background:linear-gradient(135deg,#123B50,#2D8DB8);color:#fff}
-.sgq-module h3{margin:12px 0 5px;color:#123B50;font-size:15px;line-height:1.35}.sgq-module p{min-height:52px;margin:0;color:var(--muted);font-size:10px;line-height:1.6}.sgq-module-link{display:inline-flex;align-items:center;gap:5px;margin-top:12px;color:#2D8DB8;font-size:10px;font-weight:900}
-.sgq-module-detail{scroll-margin-top:12px;margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:2px;background:#F4FBFD}.sgq-module-detail-head{display:flex;align-items:center;gap:12px}
-.sgq-module-detail-head h2{margin:3px 0;color:#123B50;font-size:23px}.sgq-module-detail-head p{margin:0;color:var(--muted);font-size:11px;line-height:1.6}.sgq-detail-back{margin-left:auto;white-space:nowrap;color:#2D8DB8;font-size:10px;font-weight:900}
-.sgq-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}.sgq-detail-grid article{padding:14px;border:1px solid var(--line);border-radius:2px;background:#fff}
-.sgq-detail-grid h3{margin:0 0 9px;font-size:12px;color:#123B50}.sgq-detail-grid ul,.sgq-detail-grid ol{margin:0;padding-left:17px;color:#526b76;font-size:10px;line-height:1.9}.sgq-detail-grid ol{list-style:none;padding:0}
-.sgq-detail-grid ol li{display:flex;align-items:center;gap:8px}.sgq-detail-grid ol b{color:#2D8DB8;font-size:10px}.sgq-detail-security{margin:12px 0 0;color:var(--muted);font-size:10px;line-height:1.6}
-.sgq-all-modules{margin-top:16px;text-align:center}.sgq-all-modules a,.sgq-all-modules button{display:inline-flex;align-items:center;gap:7px;padding:10px 14px;border:1px solid #2D8DB8;border-radius:2px;background:#fff;color:#123B50;font-size:10px;font-weight:900}
-.sgq-flow{background:#EAF7FA}.sgq-flow-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.sgq-flow-card{padding:20px;border:1px solid var(--line);border-radius:2px;background:#fff}
-.sgq-flow-card b{color:#2D8DB8;font-size:9px;letter-spacing:1.3px}.sgq-flow-card h3{margin:8px 0;color:#123B50;font-size:17px}.sgq-flow-card p{margin:0;color:var(--muted);font-size:11px;line-height:1.65}
-.sgq-pricing{background:#F4FBFD}.sgq-billing-toggle{display:flex;align-items:center;justify-content:center;gap:5px;margin:-6px auto 24px}
-.sgq-billing-toggle button{min-height:30px;padding:0 14px;border:1px solid var(--line);border-radius:2px;background:#fff;color:#123B50;font-size:10px;font-weight:800;cursor:pointer}.sgq-billing-toggle button[aria-pressed=true]{border-color:#2D8DB8;background:#123B50;color:#fff}
-.sgq-billing-savings{margin-left:7px;color:#3A9D78;font-size:10px;font-weight:900}.sgq-plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;width:min(1100px,100%);margin:0 auto}
-.sgq-plan{display:flex;flex-direction:column;align-items:flex-start;min-width:0;padding:22px;border:1px solid var(--line);border-radius:2px;background:#fff}.sgq-plan.featured{border:2px solid #2D8DB8;box-shadow:0 10px 26px rgba(45,141,184,.12)}
-.sgq-plan>small{color:#2D8DB8;font-size:9px;font-weight:900;letter-spacing:1px}.sgq-plan h3{margin:8px 0;color:#123B50;font-size:22px}.sgq-plan>strong{color:#123B50;font-size:29px;line-height:1.2}
-.sgq-price-period,.sgq-annual-total{display:block;margin-top:4px;color:var(--muted);font-size:10px}.sgq-plan p{flex:1;min-height:48px;margin:14px 0;color:var(--muted);font-size:11px;line-height:1.6}
-.sgq-plan>a{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;min-height:36px;padding:0 12px;border-radius:2px;background:#123B50;color:#fff!important;font-size:10px;font-weight:900}.sgq-plan-secondary{display:block;margin-top:10px;color:var(--muted);font-size:9px;line-height:1.5}
-.sgq-plans-page-link{display:flex;justify-content:center;margin:22px auto 0}.sgq-plans-page-link a{display:inline-flex;min-height:36px;align-items:center;justify-content:center;gap:8px;padding:0 14px;border:1px solid #2D8DB8;border-radius:2px;background:#fff;color:#123B50;font-size:10px;font-weight:900}
-.sgq-footer{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:22px clamp(14px,3vw,42px);background:#0B2837;color:#D7E9EF;font-size:10px}.sgq-footer img{width:140px;height:38px;object-fit:contain}.sgq-footer a:hover{color:#8FE1ED}
-.sgq-help-fab{position:fixed;right:18px;bottom:18px;z-index:1000;display:grid;place-items:center;width:48px;height:48px;border:1px solid rgba(255,255,255,.45);border-radius:50%;background:#2D8DB8;color:#fff;box-shadow:0 8px 24px rgba(18,59,80,.28);cursor:pointer}
-.sgq-help-fab:hover{background:#123B50}.sgq-help-panel{position:fixed;right:20px;bottom:78px;z-index:1001;width:320px;max-width:calc(100vw - 32px);max-height:calc(100dvh - 100px);overflow:auto;padding:18px;border:1px solid var(--line);border-radius:3px;background:#fff;box-shadow:0 20px 55px rgba(18,59,80,.22)}
-.sgq-help-panel h3{margin:0;color:#123B50;font-size:15px}.sgq-help-panel p{color:var(--muted);font-size:11px;line-height:1.6}.sgq-help-panel a{display:block;padding:7px 0;color:#2D8DB8;font-size:10px;font-weight:900}
-@media(max-width:1050px){.sgq-nav-links{gap:2px}.sgq-nav-link,.sgq-product-button{padding:8px 6px;font-size:10px}.sgq-brand img{width:170px}.sgq-hero-inner{grid-template-columns:minmax(300px,44%) minmax(0,56%)}.sgq-hero-copy{padding:clamp(24px,4vw,44px)}.sgq-modules{grid-template-columns:repeat(2,minmax(0,1fr))}.sgq-detail-grid{grid-template-columns:1fr}.sgq-product-menu{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:760px){.sgq-nav{height:60px;padding:0 12px}.sgq-brand img{width:160px;height:54px}.sgq-nav-links{display:none}.sgq-hero{height:auto;min-height:0;max-height:none;overflow:visible}.sgq-hero-inner{grid-template-columns:minmax(0,1fr);height:auto}.sgq-hero-copy{padding:26px 20px 28px;border-right:0;border-bottom:1px solid rgba(72,183,199,.22)}.sgq-hero-copy h1,.sgq-hero h1{font-size:clamp(30px,8vw,44px);letter-spacing:-1px}.sgq-hero-copy p{font-size:13px}.sgq-stage{height:clamp(260px,64vw,460px);min-height:0}.sgq-wrap{width:calc(100% - 24px)}.sgq-section{padding:48px 0}.sgq-flow-grid,.sgq-plans{grid-template-columns:1fr}.sgq-footer{flex-wrap:wrap}.sgq-product-menu{left:auto;right:0;grid-template-columns:1fr}.sgq-contact{display:none}}
-@media(max-width:460px){.sgq-brand img{width:140px}.sgq-nav-actions{gap:5px}.sgq-owner{width:30px;height:30px}.sgq-login{min-height:30px;padding:0 9px}.sgq-modules{grid-template-columns:1fr}.sgq-module-detail{padding:13px}.sgq-module-detail-head{align-items:flex-start;flex-wrap:wrap}.sgq-detail-back{margin-left:0}.sgq-billing-toggle{flex-wrap:wrap}.sgq-footer{gap:10px}.sgq-footer img{width:115px}}
-@media(prefers-reduced-motion:reduce){.sgq-module,.sgq-trial-cta,.sgq-stage-media img{transition:none!important}}
-`}</style>
-  <header className="sgq-nav">
-   <a href="/" className="sgq-brand" aria-label="SYSNQRA ERP & SGQ INDUSTRIAL"><img src="/logo/logo.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL"/></a>
-   <div className="sgq-nav-links"><a className="sgq-nav-link" href="#inicio">Início</a><div className="sgq-product" onMouseEnter={()=>setMenuOpen(true)} onMouseLeave={()=>setMenuOpen(false)}><button className="sgq-product-button" type="button" aria-expanded={menuOpen} aria-haspopup="true" onClick={()=>setMenuOpen(v=>!v)}>Descubra nossos produtos <ChevronDown size={15}/></button>{menuOpen&&<div className="sgq-product-menu">{productMenuModules.map(m=>{const Icon=m.Icon;return <a key={m.key} href="#modulo-detalhe" onClick={()=>{setSelectedModule(m);setMenuOpen(false)}}><Icon size={17}/><span><strong>{m.title}</strong><small>{m.description}</small></span></a>})}</div>}</div><a className="sgq-nav-link" href="#planos">Planos</a><a className="sgq-nav-link" href="/blog">Blog</a><a className="sgq-nav-link" href="/contato">Contato</a></div>
-   <div className="sgq-nav-actions"><a className="sgq-owner" href="/cadastro-master" title="Cadastro do proprietário Master" aria-label="Cadastro do proprietário Master"><Settings size={17}/></a><a className="sgq-login" href="/login">Entrar</a></div>
-  </header>
-  <section id="inicio" className="sgq-hero"><div className="sgq-hero-shade" aria-hidden="true"/><div className="sgq-wrap sgq-hero-inner"><div className="sgq-hero-copy"><span className="sgq-kicker">ERP &amp; SGQ INDUSTRIAL INTEGRADO</span><h1>SYSNQRA: Controle mestre absoluto da operação fabril.</h1><p>Conecte os dados de processos, PCP de alta densidade, inspeções síncronas de qualidade e rastreabilidade reversa em um único barramento protegido.</p><a className="sgq-trial-cta" href="/cadastro-empresa">Acessar Demonstração Grátis <ArrowRight size={16}/></a></div><div className="sgq-stage" role="region" aria-roledescription="carrossel" aria-label="Apresentação visual do SYSNQRA ERP Industrial" tabIndex={0} onKeyDown={handleCarouselKeyDown}><div className="sgq-stage-media" aria-live="off">{visuals.map((v,i)=><img key={v.src} src={v.src} alt={i===index?v.alt:''} aria-hidden={i!==index} className={i===index?'active':''} loading={i===index?'eager':'lazy'} decoding="async"/>)}</div><div className="sgq-stage-caption" aria-live="polite"><span>{current.eyebrow}</span><strong>{current.label}</strong></div><div className="sgq-dots" role="group" aria-label="Controles do carrossel"><button className="sgq-carousel-control" type="button" aria-label="Imagem anterior" onClick={()=>moveSlide(-1)}><ChevronLeft size={17}/></button>{visuals.map((v,i)=><button key={v.src} type="button" className={i===index?'sgq-dot active':'sgq-dot'} aria-label={'Mostrar '+v.label} aria-pressed={i===index} onClick={()=>setIndex(i)}/>) }<button className="sgq-carousel-control" type="button" aria-label="Próxima imagem" onClick={()=>moveSlide(1)}><ChevronRight size={17}/></button><button className="sgq-carousel-control" type="button" aria-label={rotationPaused?'Iniciar rotação automática':'Pausar rotação automática'} aria-pressed={rotationPaused} disabled={reducedMotion} title={reducedMotion?'Rotação automática desativada pela preferência de movimento reduzido':rotationPaused?'Iniciar rotação automática':'Pausar rotação automática'} onClick={()=>setRotationPaused(value=>!value)}>{rotationPaused?<Play size={15}/>:<Pause size={15}/>}</button></div></div></div></section>
-  <section id="planos" className="sgq-section sgq-pricing"><div className="sgq-wrap"><div className="sgq-section-heading"><span>NOSSOS PLANOS</span><h2>Escolha o plano certo para sua indústria.</h2><p>Compare as opções e comece pelo nível que faz sentido para a sua operação.</p></div><div className="sgq-billing-toggle" role="group" aria-label="Periodicidade de cobrança"><button type="button" aria-pressed={billingPeriod==='monthly'} onClick={()=>setBillingPeriod('monthly')}>Mensal</button><button type="button" aria-pressed={billingPeriod==='annual'} onClick={()=>setBillingPeriod('annual')}>Anual</button><span className="sgq-billing-savings">15% de desconto no anual</span></div><div className="sgq-plans">{plans.map((p,i)=>{const annualPrice=p.monthly===null?null:Math.round(p.monthly*0.85*100)/100;const shownPrice=p.monthly===null?'Sob consulta':(billingPeriod==='annual'?annualPrice!:p.monthly).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});const annualTotal=annualPrice===null?null:annualPrice*12;return <article key={p.key} className={`sgq-plan ${i===1?'featured':''}`}><small>{i===1?'MAIS ESCOLHIDO':i===2?'OPERAÇÃO AVANÇADA':'PLANO DE ENTRADA'}</small><h3>{p.name}</h3><strong>{shownPrice}</strong>{p.monthly!==null&&<span className="sgq-price-period">{billingPeriod==='annual'?'por mês no plano anual':'por mês'}</span>}{billingPeriod==='annual'&&annualTotal!==null&&<span className="sgq-annual-total">Total anual: {annualTotal.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</span>}<p>{p.description}</p><a href="/cadastro-empresa">{p.monthly===null?'Falar sobre Enterprise':'Começar agora'} <ArrowRight size={14}/></a>{p.monthly!==null&&<span className="sgq-plan-secondary">{billingPeriod==='annual'?'Cobrança anual com 15% de desconto.':'Altere para anual e economize 15%.'}</span>}</article>})}</div><div className="sgq-plans-page-link"><a href="/planos">Ver catálogo completo de planos <ArrowRight size={16}/></a></div></div></section>
-  <section id="modulos" className="sgq-section"><div className="sgq-wrap"><div className="sgq-section-heading"><span>DESCUBRA NOSSOS PRODUTOS</span><h2>Cada módulo tem uma função clara dentro da operação.</h2><p>Clique em qualquer módulo para ver o que ele faz, como trabalha, quais indicadores entrega e qual fluxo ele atende.</p></div><div className="sgq-modules">{featured.map(m=>{const Icon=m.Icon;return <article key={m.key} className="sgq-module"><span className="sgq-module-icon"><Icon size={20}/></span><h3>{m.title}</h3><p>{m.description}</p><div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:13}}><a className="sgq-module-link" href="#modulo-detalhe" onClick={()=>setSelectedModule(m)}>Ver como funciona <ArrowRight size={14}/></a></div></article>})}</div><div id="modulo-detalhe" className="sgq-module-detail" aria-live="polite">{selectedModule&&(()=>{const m=selectedModule;const Icon=m.Icon;const details:Record<string,{items:string[];flow:string[];results:string[]}>={pcp:{items:['Planejamento e programação das ordens de produção','Capacidade de máquinas, turnos e recursos','Apontamentos, paradas, setup e perdas','Rastreabilidade e fechamento da produção'],flow:['Planejar','Programar','Produzir','Apontar','Inspecionar','Fechar'],results:['Ordens e quantidades produzidas','Eficiência e paradas','Perdas e refugo','Integração com estoque e qualidade']},estoque:{items:['Consulta de saldo por item e localização','Entradas, saídas e ajustes controlados','Lotes, rastreabilidade e inventário','Materiais críticos e necessidades de reposição'],flow:['Necessidade','Receber','Armazenar','Consumir','Inventariar'],results:['Saldos disponíveis','Movimentações','Itens críticos','Histórico por lote']},qualidade:{items:['Inspeções e critérios de aceitação','Não conformidades e ações corretivas','Auditorias e evidências','Documentos controlados e revisões'],flow:['Inspecionar','Registrar','Analisar risco','Corrigir','Verificar'],results:['Inspeções e ocorrências','Ações em aberto','Auditorias','Documentos vigentes']},recebimento:{items:['Conferência de NF-e XML e itens','Validação de quantidades recebidas','Identificação e controle de lotes','Encaminhamento rastreável ao estoque'],flow:['NF-e','Conferir','Identificar lotes','Registrar','Armazenar'],results:['Recebimentos pendentes','Divergências','Lotes recebidos','Entrada rastreável']},compras:{items:['Solicitações e cotações de compra','Cadastro e acompanhamento de fornecedores','Pedidos e aprovações','Controle de prazos e recebimentos'],flow:['Solicitar','Cotizar','Aprovar','Comprar','Receber'],results:['Pedidos abertos','Prazos de entrega','Fornecedores','Compras do período']},manutencao:{items:['Cadastro e histórico de equipamentos','Planos preventivos e ordens corretivas','Registro de intervenções e paradas','Integração com máquinas e produção'],flow:['Ativo','Planejar','Abrir ordem','Executar','Registrar'],results:['Ordens abertas','Preventivas pendentes','Paradas','Disponibilidade']},fiscal:{items:['Documentos e processos fiscais','Conferência de eventos da operação','Acompanhamento financeiro relacionado','Consultas e relatórios gerenciais'],flow:['Operação','Documento','Validar','Integrar','Analisar'],results:['Pendências fiscais','Documentos processados','Previsões','Movimentações']}};const d=details[m.key]||{items:[m.description,'Cadastros e consultas relacionados ao processo','Acompanhamento de etapas e pendências','Integração com áreas conectadas do ERP'],flow:['Cadastrar','Planejar','Executar','Conferir','Acompanhar'],results:['Status do processo','Pendências','Histórico','Integrações relacionadas']};return <><div className="sgq-module-detail-head"><span className="sgq-module-icon"><Icon size={22}/></span><div><span className="sgq-kicker">{m.title.toUpperCase()}</span><h2>{m.title}</h2><p>{m.description}</p></div><a className="sgq-detail-back" href="#inicio">Voltar ao início ↑</a></div><div className="sgq-detail-grid"><article><h3>O que este módulo contempla</h3><ul>{d.items.map(x=><li key={x}>{x}</li>)}</ul></article><article><h3>Fluxo de trabalho</h3><ol>{d.flow.map((x,i)=><li key={x}><b>{String(i+1).padStart(2,'0')}</b>{x}</li>)}</ol></article><article><h3>O que você acompanha</h3><ul>{d.results.map(x=><li key={x}>{x}</li>)}</ul></article></div><p className="sgq-detail-security">Esta é uma apresentação pública do módulo. Para acessar dados e executar operações reais, é necessário entrar no sistema com usuário e senha.</p></>})()}</div><div className="sgq-all-modules"><button type="button" className="sgq-product-button" onClick={()=>setMenuOpen(true)}>Ver todos os produtos <ChevronDown size={15}/></button></div></div></section>
-  <section id="fluxo" className="sgq-section sgq-flow"><div className="sgq-wrap"><div className="sgq-section-heading"><span>COMO O ERP SE CONECTA</span><h2>Da matéria-prima ao resultado.</h2><p>Os módulos se conectam para reduzir retrabalho e manter rastreabilidade entre áreas.</p></div><div className="sgq-flow-grid"><article className="sgq-flow-card"><b>01 · PLANEJAR</b><h3>Engenharia + PCP + MRP</h3><p>Estrutura, capacidade, necessidades e programação antes da execução.</p></article><article className="sgq-flow-card"><b>02 · EXECUTAR</b><h3>Produção + Estoque + Qualidade</h3><p>Apontamentos, materiais, inspeções, lotes, perdas e evidências conectados.</p></article><article className="sgq-flow-card"><b>03 · GERIR</b><h3>Custos + Fiscal + Indicadores</h3><p>Os dados operacionais viram visão financeira, fiscal e gerencial.</p></article></div></div></section>
-  
-  <footer className="sgq-footer"><img src="/logo/logo.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL"/><span>SYSNQRA ERP & SGQ INDUSTRIAL · FernandoSch_System</span><div><a href="/contato">Contato</a> · <a href="/blog">Blog</a> · <a href="/login">Entrar</a></div></footer>
-  <button className="sgq-help-fab" type="button" aria-label="Abrir Ajuda IA" title="Ajuda IA" onClick={()=>setHelpOpen(v=>!v)} aria-expanded={helpOpen}><Bot size={22}/></button>
-  {helpOpen&&<div className="sgq-help-panel"><button type="button" aria-label="Fechar" onClick={()=>setHelpOpen(false)} style={{float:'right',border:0,background:'transparent',cursor:'pointer'}}><X size={16}/></button><h3>Como posso ajudar?</h3><p>Consulte a apresentação dos módulos ou entre no sistema para acessar os dados da sua empresa.</p><a href="#modulos">Ver módulos</a><a href="#planos">Ver planos</a><a href="/contato">Falar com atendimento</a></div>}
- </main>
+type ModuleDetail = { items: string[]; flow: string[]; results: string[] }
+
+const moduleDetails: Record<string, ModuleDetail> = {
+  pcp: { items: ['Planejamento e programação das ordens de produção', 'Capacidade de máquinas, turnos e recursos', 'Apontamentos, paradas, setup e perdas', 'Rastreabilidade e fechamento da produção'], flow: ['Planejar', 'Programar', 'Produzir', 'Apontar', 'Inspecionar', 'Fechar'], results: ['Ordens e quantidades produzidas', 'Eficiência e paradas', 'Perdas e refugo', 'Integração com estoque e qualidade'] },
+  estoque: { items: ['Consulta de saldo por item, lote e localização', 'Entradas, saídas e ajustes controlados', 'Inventário e acurácia de saldos', 'Materiais críticos e necessidade de reposição'], flow: ['Necessidade', 'Receber', 'Armazenar', 'Consumir', 'Inventariar'], results: ['Saldos disponíveis', 'Movimentações', 'Itens críticos', 'Histórico por lote'] },
+  qualidade: { items: ['Registro de não conformidade (RPNC) e triagem', 'Causa raiz com Ishikawa e plano de ação CAPA', 'Auditorias internas com evidências', 'Documentos controlados e revisões'], flow: ['Registrar', 'Triar', 'Analisar causa', 'Agir', 'Verificar eficácia'], results: ['Não conformidades abertas', 'Ações com prazo e responsável', 'Recorrência por peça e lote', 'Documentos vigentes'] },
+  recebimento: { items: ['Conferência de NF-e XML e itens', 'Validação de quantidades recebidas', 'Identificação e controle de lotes', 'Encaminhamento rastreável ao estoque'], flow: ['NF-e', 'Conferir', 'Identificar lotes', 'Registrar', 'Armazenar'], results: ['Recebimentos pendentes', 'Divergências', 'Lotes recebidos', 'Entrada rastreável'] },
+  compras: { items: ['Solicitações e requisições de compra', 'Cotação e acompanhamento de fornecedores', 'Pedidos, aprovações e prazos', 'Vínculo com recebimento e financeiro'], flow: ['Solicitar', 'Cotar', 'Aprovar', 'Comprar', 'Receber'], results: ['Pedidos abertos', 'Prazos de entrega', 'Fornecedores', 'Compras do período'] },
+  manutencao: { items: ['Cadastro e histórico de equipamentos', 'Planos preventivos e ordens corretivas', 'Registro de intervenções e paradas', 'Integração com máquinas e produção'], flow: ['Ativo', 'Planejar', 'Abrir ordem', 'Executar', 'Registrar'], results: ['Ordens abertas', 'Preventivas pendentes', 'Paradas', 'Disponibilidade'] },
+  fiscal: { items: ['Apuração e conferência de documentos fiscais', 'Classificação fiscal com base oficial', 'Emissão de NF-e e eventos', 'Obrigações acessórias por período'], flow: ['Operação', 'Documento', 'Validar', 'Apurar', 'Entregar'], results: ['Pendências fiscais', 'Documentos processados', 'Apuração do período', 'Razão e lançamentos'] },
+  financeiro: { items: ['Contas a pagar e a receber por empresa', 'Conciliação bancária com extrato importado', 'Custo industrial, margem e lucratividade', 'Auditoria de comissões e estornos'], flow: ['Lançar', 'Conciliar', 'Apurar', 'Analisar', 'Decidir'], results: ['Saldo e previsões', 'Diferenças de conciliação', 'Margem por produto e cliente', 'Resultado do período'] },
+  rh: { items: ['Colaboradores, cargos e jornada', 'Custo de hora por função e setor', 'Treinamentos e competências', 'Permissões por setor e posto de trabalho'], flow: ['Cadastrar', 'Escalar', 'Alocar', 'Apontar', 'Custear'], results: ['Quadro e turno', 'Custo de hora', 'Treinamentos válidos', 'Acessos por posto'] },
+  engenharia: { items: ['Fichas de processo do injetado ao montado', 'Roteiro de operações com tempos padrão', 'Estrutura de produto (BOM) e versões', 'Parâmetros de código e part number'], flow: ['Projetar', 'Estruturar', 'Rotear', 'Padronizar', 'Revisar'], results: ['Tempo padrão por operação', 'Estruturas e versões', 'Ficha técnica imprimível', 'Histórico de revisão'] },
+  'chao-fabrica': { items: ['Terminal de apontamento por posto', 'Contador de peças boas e refugo', 'Parada com motivo e tempo', 'Lote, operador e turno registrados'], flow: ['Selecionar máquina', 'Iniciar', 'Apontar', 'Registrar parada', 'Encerrar turno'], results: ['Produção em tempo real', 'Paradas e motivos', 'Refugo por operação', 'Avanço da ordem'] },
+  metrologia: { items: ['Medição dimensional com paquímetro digital', 'Tolerâncias e critérios de aceitação', 'Instrumentos, certificados e validade', 'Evidência vinculada ao lote'], flow: ['Medir', 'Comparar', 'Julgar', 'Registrar', 'Calibrar'], results: ['Medições e desvios', 'Instrumentos vencidos', 'Histórico por item', 'Evidência de inspeção'] },
+  documentos: { items: ['Repositório controlado de documentos do SGQ', 'Procedimentos, instruções de trabalho e registros', 'Revisões, vigência e obsoletos', 'Trilha de acesso por empresa'], flow: ['Elaborar', 'Aprovar', 'Publicar', 'Revisar', 'Tornar obsoleto'], results: ['Documentos vigentes', 'Revisões pendentes', 'Obsoletos arquivados', 'Acessos e evidências'] },
+  expedicao: { items: ['Separação e conferência de pedidos', 'Embalagem, romaneio e etiquetagem', 'Roteirização de carga e entrega', 'Comprovante de entrega (POD)'], flow: ['Separar', 'Conferir', 'Embalhar', 'Carregar', 'Entregar'], results: ['Pedidos prontos', 'Cargas e rotas', 'Volumes e cubagem', 'Entregas confirmadas'] },
+  indicadores: { items: ['Índices de produção, qualidade e estoque', 'Custo, margem e resultado por período', 'Painéis por setor, máquina e produto', 'Base para a reunião de resultados'], flow: ['Coletar', 'Consolidar', 'Comparar', 'Decidir'], results: ['Eficiência e OEE', 'Refugo e retrabalho', 'Acurácia de estoque', 'Margem industrial'] },
+  comissoes: { items: ['Regras por vendedor, produto e período', 'Cálculo sobre faturamento e metas', 'Perfil do vendedor e custo de hora', 'Auditoria antes do pagamento'], flow: ['Regra', 'Faturar', 'Calcular', 'Auditar', 'Pagar'], results: ['Base de cálculo', 'Comissão apurada', 'Divergências', 'Histórico de pagamento'] },
+}
+
+const genericDetail = (m: Module): ModuleDetail => ({
+  items: [m.description, 'Cadastros e consultas do processo', 'Acompanhamento de etapas e pendências', 'Integração com as áreas conectadas do ERP'],
+  flow: ['Cadastrar', 'Planejar', 'Executar', 'Conferir', 'Acompanhar'],
+  results: ['Status do processo', 'Pendências', 'Histórico', 'Integrações relacionadas'],
+})
+
+function ScreenShot({ screen }: { screen: Screen }) {
+  const [quebrada, setQuebrada] = useState(false)
+  return (
+    <div className="ph-shot ph-shot--hero">
+      <div className="ph-shot-bar" aria-hidden="true"><i /><i /><i /><span>sysnqra.app/pageprincipal</span></div>
+      {quebrada
+        ? <div className="ph-shot-fallback">Arte desta tela em breve — envie a imagem e coloque em public/images/telas/{screen.key}.webp</div>
+        : <img src={screen.image} alt={screen.alt} loading="lazy" decoding="async" onError={() => setQuebrada(true)} />}
+    </div>
+  )
+}
+
+export default function PublicIndustrialHome() {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [helpOpen, setHelpOpen] = useState(false)
+  const [selectedModule, setSelectedModule] = useState<Module | null>(null)
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly')
+
+  const openModule = (m: Module) => {
+    setSelectedModule(m)
+    setMenuOpen(false)
+    window.requestAnimationFrame(() => document.getElementById('modulo-detalhe')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  }
+
+  return <main className="sgq-public-home">
+    <header className="ph-nav">
+      <a href="/" className="ph-brand" aria-label="SYSNQRA ERP & SGQ INDUSTRIAL">
+        <img className="ph-brand-mark" src="/logo/logo.png" alt="" aria-hidden="true" />
+        <span className="ph-brand-text"><strong>SYNQRA</strong><span>ERP &amp; SGQ Industrial</span></span>
+      </a>
+      <nav className="ph-nav-links" aria-label="Navegação principal">
+        <a className="ph-nav-link" href="#inicio">Início</a>
+        <div className="ph-product" onMouseEnter={() => setMenuOpen(true)} onMouseLeave={() => setMenuOpen(false)}>
+          <button className="ph-product-button" type="button" aria-expanded={menuOpen} aria-haspopup="true" onClick={() => setMenuOpen(value => !value)}>Produtos do sistema <ChevronDown size={15} /></button>
+          {menuOpen && <div className="ph-product-menu">{productMenuModules.map(m => { const Icon = m.Icon; return <a key={m.key} href="#modulo-detalhe" onClick={() => openModule(m)}><Icon size={17} /><span><strong>{m.title}</strong><small>{m.description}</small></span></a> })}</div>}
+        </div>
+        <a className="ph-nav-link" href="#telas">Telas</a>
+        <a className="ph-nav-link" href="#planos">Planos</a>
+        <a className="ph-nav-link" href="/blog">Blog</a>
+        <a className="ph-nav-link" href="/contato">Contato</a>
+      </nav>
+      <div className="ph-nav-actions">
+        <a className="ph-icon-link" href="/cadastro-master" title="Cadastro do proprietário Master" aria-label="Cadastro do proprietário Master"><Settings size={17} /></a>
+        <a className="ph-ghost" href="/login">Entrar</a>
+        <a className="ph-solid" href="/cadastro-empresa">Teste grátis 15 dias</a>
+      </div>
+    </header>
+
+    <section id="inicio" className="ph-hero">
+      <div className="ph-wrap ph-hero-grid">
+        <div>
+          <span className="ph-kicker">ERP &amp; SGQ industrial integrado</span>
+          <h1>A sua fábrica inteira em <em>uma única base</em>, do pedido ao custo.</h1>
+          <p className="ph-lead">PCP, chão de fábrica, qualidade com SGQ, estoque, compras, fiscal e controladoria gravando na mesma base, separada por empresa. Sem planilha paralela, sem retrabalho de digitação e sem número inventado em relatório.</p>
+          <div className="ph-cta-row">
+            <a className="ph-solid" href="/cadastro-empresa">Ativar teste grátis de 15 dias <ArrowRight size={16} /></a>
+            <a className="ph-ghost" href="#telas">Ver as telas do sistema</a>
+          </div>
+          <p className="ph-cta-note">O teste inclui todos os módulos do plano Industrial. Nenhum cartão é solicitado para começar.</p>
+          <div className="ph-assurances">
+            <span className="ph-assurance"><Check size={15} /> Dados isolados por empresa</span>
+            <span className="ph-assurance"><Check size={15} /> Telas feitas para uso no chão de fábrica</span>
+            <span className="ph-assurance"><Check size={15} /> Trilha de auditoria nos registros</span>
+          </div>
+        </div>
+        <ScreenShot screen={screens[0]} />
+      </div>
+    </section>
+
+    <section id="telas" className="ph-section ph-section--tint">
+      <div className="ph-wrap">
+        <div className="ph-head">
+          <span>As telas do sistema</span>
+          <h2>Não é promessa de brochure: é a tela que o seu time abre na segunda-feira.</h2>
+          <p>Cada rotina abaixo é uma tela real do SYSNQRA, com o que ela resolve no dia a dia da indústria.</p>
+        </div>
+        <div className="ph-screens">
+          {screens.map(screen => <article key={screen.key} className="ph-screen">
+            <ScreenShot screen={screen} />
+            <div className="ph-screen-copy">
+              <span>{screen.eyebrow}</span>
+              <h3>{screen.title}</h3>
+              <p>{screen.description}</p>
+              <ul className="ph-screen-list">{screen.highlights.map(item => <li key={item}>{item}</li>)}</ul>
+            </div>
+          </article>)}
+        </div>
+      </div>
+    </section>
+
+    <section id="modulos" className="ph-section">
+      <div className="ph-wrap">
+        <div className="ph-head">
+          <span>Módulos do ERP</span>
+          <h2>Cada módulo tem uma função clara dentro da operação.</h2>
+          <p>Clique em um módulo para ver o que ele contempla, como trabalha e o que você acompanha.</p>
+        </div>
+        <div className="ph-modules">{modules.map(m => { const Icon = m.Icon; return <button key={m.key} type="button" className="ph-module" aria-pressed={selectedModule?.key === m.key} onClick={() => openModule(m)}>
+          <span className="ph-module-icon"><Icon size={20} /></span>
+          <h3>{m.title}</h3>
+          <p>{m.description}</p>
+        </button> })}</div>
+        <div id="modulo-detalhe" className="ph-module-detail" aria-live="polite">
+          {selectedModule ? (() => {
+            const m = selectedModule
+            const Icon = m.Icon
+            const d = moduleDetails[m.key] ?? genericDetail(m)
+            return <>
+              <div className="ph-detail-head">
+                <span className="ph-module-icon"><Icon size={22} /></span>
+                <div><h3>{m.title}</h3><p>{m.description}</p></div>
+                <a className="ph-detail-back" href="#inicio">Voltar ao início ↑</a>
+              </div>
+              <div className="ph-detail-grid">
+                <article><h4>O que este módulo contempla</h4><ul>{d.items.map(item => <li key={item}>{item}</li>)}</ul></article>
+                <article><h4>Fluxo de trabalho</h4><ol>{d.flow.map((item, i) => <li key={item}><b>{String(i + 1).padStart(2, '0')}</b>{item}</li>)}</ol></article>
+                <article><h4>O que você acompanha</h4><ul>{d.results.map(item => <li key={item}>{item}</li>)}</ul></article>
+              </div>
+              <p className="ph-detail-security">Esta é a apresentação pública do módulo. Para ver dados e executar operações reais, entre no sistema com o usuário da sua empresa.</p>
+            </>
+          })() : <p className="ph-detail-security" style={{ marginTop: 0 }}>Escolha um módulo acima para abrir o detalhamento da rotina.</p>}
+        </div>
+      </div>
+    </section>
+
+    <section id="planos" className="ph-section ph-section--tint">
+      <div className="ph-wrap">
+        <div className="ph-head">
+          <span>Planos</span>
+          <h2>Comece pelo nível que a sua operação aguenta hoje.</h2>
+          <p>Todos os planos incluem ativação em 3 etapas, armazenamento das evidências e isolamento dos dados por empresa.</p>
+        </div>
+        <div className="ph-billing" role="group" aria-label="Periodicidade de cobrança">
+          <button type="button" aria-pressed={billingPeriod === 'monthly'} onClick={() => setBillingPeriod('monthly')}>Mensal</button>
+          <button type="button" aria-pressed={billingPeriod === 'annual'} onClick={() => setBillingPeriod('annual')}>Anual</button>
+          <span>15% de desconto no anual</span>
+        </div>
+        <div className="ph-plans">{plans.map(plan => {
+          const annualPrice = plan.monthly === null ? null : Math.round(plan.monthly * 0.85 * 100) / 100
+          const shown = plan.monthly === null ? 'Sob consulta' : (billingPeriod === 'annual' ? annualPrice! : plan.monthly).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+          const annualTotal = annualPrice === null ? null : annualPrice * 12
+          return <article key={plan.key} className={plan.key === 'industrial' ? 'ph-plan is-featured' : 'ph-plan'}>
+            <small>{plan.tag}</small>
+            <h3>{plan.name}</h3>
+            <span className="ph-plan-price">{shown}</span>
+            {plan.monthly !== null && <span className="ph-plan-period">{billingPeriod === 'annual' ? 'por mês, cobrado anualmente' : 'por mês'}</span>}
+            {billingPeriod === 'annual' && annualTotal !== null && <span className="ph-plan-period">Total anual: {annualTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>}
+            <p>{plan.description}</p>
+            <a href="/planos">{plan.monthly === null ? 'Falar sobre o Enterprise' : 'Ver o que este plano inclui'} <ArrowRight size={14} /></a>
+          </article>
+        })}</div>
+        <div className="ph-plans-link"><a className="ph-ghost" href="/planos">Comparar os módulos de cada plano <ArrowRight size={16} /></a></div>
+      </div>
+    </section>
+
+    <section id="fluxo" className="ph-section">
+      <div className="ph-wrap">
+        <div className="ph-head">
+          <span>Como o ERP se conecta</span>
+          <h2>Da matéria-prima ao resultado.</h2>
+          <p>Os módulos compartilham a mesma base, então o dado entra uma vez e vale para todas as áreas.</p>
+        </div>
+        <div className="ph-flow">
+          <article><b>01 · PLANEJAR</b><h3>Engenharia + PCP + MRP</h3><p>Estrutura, roteiro, capacidade, necessidade de material e programação antes de a máquina girar.</p></article>
+          <article><b>02 · EXECUTAR</b><h3>Produção + Estoque + Qualidade</h3><p>Apontamentos, consumo de material, inspeções, lotes, refugo e evidência registrada no momento certo.</p></article>
+          <article><b>03 · GERIR</b><h3>Custos + Fiscal + Indicadores</h3><p>O que foi executado vira custo real, documento fiscal e indicador de resultado no fechamento.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <footer className="ph-footer">
+      <div className="ph-footer-brand">
+        <img src="/logo/logo.png" alt="" aria-hidden="true" />
+        <div><strong>SYNQRA</strong><br />ERP &amp; SGQ Industrial · FernandoSch_System</div>
+      </div>
+      <div><a href="/contato">Contato</a> · <a href="/blog">Blog</a> · <a href="/planos">Planos</a> · <a href="/login">Entrar</a></div>
+    </footer>
+
+    <button className="ph-help-fab" type="button" aria-label="Abrir ajuda" title="Ajuda" aria-expanded={helpOpen} onClick={() => setHelpOpen(value => !value)}><Bot size={22} /></button>
+    {helpOpen && <div className="ph-help-panel">
+      <button type="button" aria-label="Fechar ajuda" onClick={() => setHelpOpen(false)} style={{ float: 'right', border: 0, background: 'transparent', cursor: 'pointer' }}><X size={16} /></button>
+      <h3>Como posso ajudar?</h3>
+      <p>Veja as telas do sistema, entenda cada módulo ou comece o teste grátis de 15 dias.</p>
+      <a href="#telas">Ver as telas</a>
+      <a href="#modulos">Ver módulos</a>
+      <a href="#planos">Ver planos</a>
+      <a href="/cadastro-empresa">Ativar teste grátis</a>
+      <a href="/contato">Falar com atendimento</a>
+    </div>}
+  </main>
 }
