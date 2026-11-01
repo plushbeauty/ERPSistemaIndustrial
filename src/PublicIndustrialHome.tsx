@@ -1,19 +1,19 @@
 /**
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-01
- * @REVISAO: REV-VITRINE-PUBLICA-20261101-01 — home pública refeita em fundo branco, sem carrossel
+ * @REVISAO: REV-VITRINE-PUBLICA-20261101-03 — hero virou carrossel full-bleed com overlay, setas, barras e CTA por slide
  * @STATUS_APROVACAO: REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01
  *
- * Ordem recebida em 2026-11-01: tirar o fundo azul, acabar com o carrossel e mostrar as
- * telas reais do sistema com texto explicando cada uma; tipografia do menu do topo em
- * tamanho padrão único de 13px; logo com fundo branco e letras escuras.
- * As artes vivem em public/images/telas/<modulo>.webp — se o arquivo não existir a
- * moldura mostra um aviso em vez de imagem quebrada, então dá para trocar os arquivos
- * sem mexer neste código.
+ * Ordem recebida em 2026-11-01: manter o fundo branco e a tipografia padrão do menu, mas
+ * trazer de volta o carrossel do topo — imagem industrial de ponta a ponta, camada escura
+ * para o texto branco ficar legível, setas discretas nas laterais, barras na base indicando
+ * a quantidade de slides e um botão de ação em cada slide levando ao módulo correspondente.
+ * As artes vivem em public/images/ — se o arquivo não existir a moldura mostra um aviso em
+ * vez de imagem quebrada, então dá para trocar os arquivos sem mexer neste código.
  */
-import { ArrowRight, BarChart3, Boxes, Bot, Check, ChevronDown, ClipboardCheck, Factory, FileText, PackageCheck, Receipt, Settings, ShieldCheck, Truck, Users, Wrench, X } from 'lucide-react'
+import { ArrowRight, BarChart3, Boxes, Bot, Check, ChevronDown, ChevronLeft, ChevronRight, ClipboardCheck, Factory, FileText, PackageCheck, Receipt, Settings, ShieldCheck, Truck, Users, Wrench, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import './styles/public-home-premium-20261101.css'
 
 type Module = { key: string; title: string; description: string; Icon: LucideIcon }
@@ -43,6 +43,74 @@ const screens: Screen[] = [
     title: 'Posto de apontamento que o operador usa com luva',
     description: 'Botão grande, contador de peças e status da máquina na tela do tablet ao lado do equipamento. O operador inicia a produção, registra parada com motivo, marca refugo e setup — e o apontamento entra na ordem na hora, com usuário e turno.',
     highlights: ['Contador de produção', 'Parada com motivo', 'Refugo e setup', 'Turno e operador'],
+  },
+]
+
+type HeroSlide = {
+  key: string
+  eyebrow: string
+  titleLead: string
+  titleAccent: string
+  titleTail: string
+  description: string
+  background: string
+  shot: Screen
+  primary: { label: string; href: string }
+  secondary: { label: string; href: string }
+  assurances?: string[]
+}
+
+const heroSlides: HeroSlide[] = [
+  {
+    key: 'capa',
+    eyebrow: 'ERP & SGQ industrial integrado',
+    titleLead: 'A sua fábrica inteira em', titleAccent: 'uma única base', titleTail: ', do pedido ao custo.',
+    description: 'PCP, chão de fábrica, qualidade com SGQ, estoque, compras, fiscal e controladoria gravando na mesma base, separada por empresa. Sem planilha paralela, sem retrabalho de digitação e sem número inventado em relatório.',
+    background: '/images/cena-celula-injecao.webp',
+    shot: screens[0],
+    primary: { label: 'Ativar teste grátis de 15 dias', href: '/cadastro-empresa' },
+    secondary: { label: 'Ver as telas do sistema', href: '#telas' },
+    assurances: ['Dados isolados por empresa', 'Telas feitas para uso no chão de fábrica', 'Trilha de auditoria nos registros'],
+  },
+  {
+    key: 'pcp',
+    eyebrow: 'PCP e produção',
+    titleLead: 'A fábrica programada em', titleAccent: 'uma tela só', titleTail: ' — do pedido ao apontamento.',
+    description: 'Gantt por máquina, ordens abertas com avanço real e carga de capacidade juntos. O planejador vê o dia, a semana e o mês sem abrir cinco relatórios.',
+    background: '/images/cena-pcp.webp',
+    shot: screens[0],
+    primary: { label: 'Testar o PCP no meu ambiente', href: '/cadastro-empresa' },
+    secondary: { label: 'Ver o PCP nos planos', href: '/planos?modulo=pcp' },
+  },
+  {
+    key: 'qualidade',
+    eyebrow: 'Qualidade e SGQ',
+    titleLead: 'Da não conformidade ao', titleAccent: 'plano de ação', titleTail: ' com evidência.',
+    description: 'RPNC, causa raiz com Ishikawa e 5 Porquês, CAPA com responsável e prazo, auditorias e documentos controlados no mesmo fluxo — prontos para a auditoria certificadora.',
+    background: '/images/cena-qualidade.webp',
+    shot: screens[1],
+    primary: { label: 'Testar o SGQ no meu ambiente', href: '/cadastro-empresa' },
+    secondary: { label: 'Ver a Qualidade nos planos', href: '/planos?modulo=qualidade' },
+  },
+  {
+    key: 'estoque',
+    eyebrow: 'Estoque e almoxarifado',
+    titleLead: 'Saldo, lote e endereço no', titleAccent: 'mesmo lançamento', titleTail: '.',
+    description: 'O que está reservado e o que está realmente disponível, o mapa de endereços e a movimentação registrada por código de barras — sem digitação no portão.',
+    background: '/images/cena-almoxarifado.webp',
+    shot: screens[2],
+    primary: { label: 'Testar o Estoque no meu ambiente', href: '/cadastro-empresa' },
+    secondary: { label: 'Ver o Estoque nos planos', href: '/planos?modulo=estoque' },
+  },
+  {
+    key: 'chao-de-fabrica',
+    eyebrow: 'Chão de fábrica',
+    titleLead: 'Posto de apontamento que o operador usa', titleAccent: 'com luva', titleTail: '.',
+    description: 'Botão grande, contador de peças e status da máquina no tablet ao lado do equipamento. Produção, parada, refugo e setup entram na ordem na hora, com usuário e turno.',
+    background: '/images/cena-chao-de-fabrica.webp',
+    shot: screens[3],
+    primary: { label: 'Testar o Chão de Fábrica', href: '/cadastro-empresa' },
+    secondary: { label: 'Ver o Chão de Fábrica nos planos', href: '/planos?modulo=chao-de-fabrica' },
   },
 ]
 
@@ -112,6 +180,86 @@ function ScreenShot({ screen }: { screen: Screen }) {
   )
 }
 
+const INTERVALO_SLIDE_MS = 7000
+
+function HeroCarousel() {
+  const [indice, setIndice] = useState(0)
+  const [pausado, setPausado] = useState(false)
+  const total = heroSlides.length
+
+  const irPara = useCallback((passo: number) => setIndice(atual => (atual + passo + total) % total), [total])
+
+  useEffect(() => {
+    if (pausado) return undefined
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
+    const timer = window.setInterval(() => setIndice(atual => (atual + 1) % total), INTERVALO_SLIDE_MS)
+    return () => window.clearInterval(timer)
+  }, [pausado, total])
+
+  const slide = heroSlides[indice]
+
+  return (
+    <section
+      id="inicio"
+      className="ph-hero ph-hero--carousel"
+      aria-roledescription="carrossel"
+      aria-label="Telas e módulos do SYSNQRA ERP & SGQ Industrial"
+      onMouseEnter={() => setPausado(true)}
+      onMouseLeave={() => setPausado(false)}
+      onFocusCapture={() => setPausado(true)}
+      onBlurCapture={() => setPausado(false)}
+    >
+      <div className="ph-carousel-bg" aria-hidden="true">
+        {heroSlides.map((item, i) => (
+          <img key={item.key} src={item.background} alt="" className={i === indice ? 'is-active' : undefined} loading={i === 0 ? 'eager' : 'lazy'} decoding="async" />
+        ))}
+      </div>
+      <div className="ph-carousel-scrim" aria-hidden="true" />
+
+      <div className="ph-wrap ph-carousel-grid" key={slide.key}>
+        <div className="ph-slide-copy">
+          <span className="ph-kicker">{slide.eyebrow}</span>
+          <h1>{slide.titleLead} <em>{slide.titleAccent}</em>{slide.titleTail}</h1>
+          <p className="ph-lead">{slide.description}</p>
+          <div className="ph-cta-row">
+            <a className="ph-solid" href={slide.primary.href}>{slide.primary.label} <ArrowRight size={16} /></a>
+            <a className="ph-ghost" href={slide.secondary.href}>{slide.secondary.label}</a>
+          </div>
+          {slide.assurances && (
+            <div className="ph-assurances">
+              {slide.assurances.map(item => <span key={item} className="ph-assurance"><Check size={15} /> {item}</span>)}
+            </div>
+          )}
+          <p className="ph-cta-note">O teste inclui todos os módulos do plano Industrial. Nenhum cartão é solicitado para começar.</p>
+        </div>
+        <ScreenShot screen={slide.shot} />
+      </div>
+
+      <div className="ph-carousel-bar">
+        <div className="ph-carousel-dots" role="tablist" aria-label="Slides do carrossel">
+          {heroSlides.map((item, i) => (
+            <button
+              key={item.key}
+              type="button"
+              role="tab"
+              aria-selected={i === indice}
+              aria-label={`Slide ${i + 1} de ${total}: ${item.eyebrow}`}
+              className={i === indice ? 'ph-carousel-dot is-active' : 'ph-carousel-dot'}
+              onClick={() => setIndice(i)}
+            />
+          ))}
+        </div>
+        <span className="ph-carousel-count">
+          {String(indice + 1).padStart(2, '0')} <span>/ {String(total).padStart(2, '0')}</span>
+        </span>
+      </div>
+
+      <button type="button" className="ph-carousel-arrow is-prev" onClick={() => irPara(-1)} aria-label="Slide anterior"><ChevronLeft size={20} /></button>
+      <button type="button" className="ph-carousel-arrow is-next" onClick={() => irPara(1)} aria-label="Próximo slide"><ChevronRight size={20} /></button>
+    </section>
+  )
+}
+
 export default function PublicIndustrialHome() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [helpOpen, setHelpOpen] = useState(false)
@@ -128,7 +276,7 @@ export default function PublicIndustrialHome() {
     <header className="ph-nav">
       <a href="/" className="ph-brand" aria-label="SYSNQRA ERP & SGQ INDUSTRIAL">
         <img className="ph-brand-mark" src="/logo/logo.png" alt="" aria-hidden="true" />
-        <span className="ph-brand-text"><strong>SYNQRA</strong><span>ERP &amp; SGQ Industrial</span></span>
+        <span className="ph-brand-text"><strong>SYSNQRA</strong><span>ERP &amp; SGQ Industrial</span></span>
       </a>
       <nav className="ph-nav-links" aria-label="Navegação principal">
         <a className="ph-nav-link" href="#inicio">Início</a>
@@ -148,26 +296,7 @@ export default function PublicIndustrialHome() {
       </div>
     </header>
 
-    <section id="inicio" className="ph-hero">
-      <div className="ph-wrap ph-hero-grid">
-        <div>
-          <span className="ph-kicker">ERP &amp; SGQ industrial integrado</span>
-          <h1>A sua fábrica inteira em <em>uma única base</em>, do pedido ao custo.</h1>
-          <p className="ph-lead">PCP, chão de fábrica, qualidade com SGQ, estoque, compras, fiscal e controladoria gravando na mesma base, separada por empresa. Sem planilha paralela, sem retrabalho de digitação e sem número inventado em relatório.</p>
-          <div className="ph-cta-row">
-            <a className="ph-solid" href="/cadastro-empresa">Ativar teste grátis de 15 dias <ArrowRight size={16} /></a>
-            <a className="ph-ghost" href="#telas">Ver as telas do sistema</a>
-          </div>
-          <p className="ph-cta-note">O teste inclui todos os módulos do plano Industrial. Nenhum cartão é solicitado para começar.</p>
-          <div className="ph-assurances">
-            <span className="ph-assurance"><Check size={15} /> Dados isolados por empresa</span>
-            <span className="ph-assurance"><Check size={15} /> Telas feitas para uso no chão de fábrica</span>
-            <span className="ph-assurance"><Check size={15} /> Trilha de auditoria nos registros</span>
-          </div>
-        </div>
-        <ScreenShot screen={screens[0]} />
-      </div>
-    </section>
+    <HeroCarousel />
 
     <section id="telas" className="ph-section ph-section--tint">
       <div className="ph-wrap">
@@ -273,7 +402,7 @@ export default function PublicIndustrialHome() {
     <footer className="ph-footer">
       <div className="ph-footer-brand">
         <img src="/logo/logo.png" alt="" aria-hidden="true" />
-        <div><strong>SYNQRA</strong><br />ERP &amp; SGQ Industrial · FernandoSch_System</div>
+        <div><strong>SYSNQRA</strong><br />ERP &amp; SGQ Industrial · FernandoSch_System</div>
       </div>
       <div><a href="/contato">Contato</a> · <a href="/blog">Blog</a> · <a href="/planos">Planos</a> · <a href="/login">Entrar</a></div>
     </footer>

@@ -36,7 +36,7 @@ export default function HelpListagemProdutos() {
             <li>Após salvar, confirme a mensagem de sucesso e a presença do item na listagem.</li>
           </ul>
         </section>
-        <footer className="border-t pt-2 text-center text-[8px] font-mono uppercase tracking-widest text-slate-400">SYNQRA ERP • Padrões de Dados Mestres • Revisão 2026-10-19</footer>
+        <footer className="border-t pt-2 text-center text-[8px] font-mono uppercase tracking-widest text-slate-400">SYSNQRA ERP • Padrões de Dados Mestres • Revisão 2026-10-19</footer>
       </div>
     </main>
   )

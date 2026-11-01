@@ -348,7 +348,7 @@ export default function ProdutosVendasIndustrial(){
           <button type="button" onClick={()=>window.close()} style={btn('normal')}>FECHAR</button>
         </div>
         <header style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',borderBottom:'2px solid #2D8DB8',paddingBottom:10}}>
-          <div><strong style={{fontSize:14}}>SYNQRA INDUSTRIAL</strong><h1 style={{margin:'8px 0 0',fontSize:20}}>FICHA TÉCNICA DO PRODUTO RESTRITA</h1></div>
+          <div><strong style={{fontSize:14}}>SYSNQRA INDUSTRIAL</strong><h1 style={{margin:'8px 0 0',fontSize:20}}>FICHA TÉCNICA DO PRODUTO RESTRITA</h1></div>
           <span style={{fontSize:10}}>CÓDIGO: {form.codigo}</span>
         </header>
         <table><tbody>

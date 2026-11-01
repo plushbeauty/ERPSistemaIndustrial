@@ -37,7 +37,7 @@ export default function Sidebar() {
         aria-label="Navegação principal"
       >
         <div className="synqra-sidebar-brand">
-          <img src={synqraLogo} alt="SYNQRA ERP & SGQ Industrial" />
+          <img src={synqraLogo} alt="SYSNQRA ERP & SGQ Industrial" />
         </div>
         <p className="synqra-sidebar-caption">MÓDULOS</p>
         <div className="synqra-sidebar-search" role="search">

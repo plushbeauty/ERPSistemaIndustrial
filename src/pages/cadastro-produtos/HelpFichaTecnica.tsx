@@ -42,7 +42,7 @@ export default function HelpFichaTecnica() {
           <li>Acione “Gerar SKU e Salvar” e aguarde a confirmação.</li>
           <li>Se houver erro, não considere o registro concluído; encaminhe a mensagem para suporte.</li>
         </ol>
-        <footer className="border-t pt-2 text-center text-[8px] font-mono uppercase tracking-widest text-slate-400">SYNQRA · Padrões de Engenharia · POP-ENG-002</footer>
+        <footer className="border-t pt-2 text-center text-[8px] font-mono uppercase tracking-widest text-slate-400">SYSNQRA · Padrões de Engenharia · POP-ENG-002</footer>
       </article>
     </main>
   )

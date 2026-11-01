@@ -168,7 +168,7 @@ export default function Master() {
     <div className="master-page">
       <header>
         <div>
-          <span className="master-kicker">SYNQRA ERP • MASTER</span>
+          <span className="master-kicker">SYSNQRA ERP • MASTER</span>
           <h1>Console da plataforma</h1>
           <p>Empresas, usuários, catálogo de planos, módulos contratados e auditoria global.</p>
         </div>

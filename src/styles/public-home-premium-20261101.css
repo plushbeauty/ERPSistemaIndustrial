@@ -256,3 +256,105 @@
 @media (prefers-reduced-motion: reduce) {
   .ph-module { transition: none; }
 }
+
+/* ================================================================
+   CARROSSEL DO TOPO — imagem industrial de ponta a ponta, camada
+   escura para o texto branco, setas discretas nas laterais, barras
+   na base e um botão de ação por slide.
+   ================================================================ */
+.ph-hero--carousel {
+  position: relative;
+  padding: clamp(56px, 7vw, 104px) 0 clamp(64px, 6vw, 86px);
+  background: var(--ph-navy);
+  overflow: hidden;
+  isolation: isolate;
+}
+.ph-hero--carousel::before { display: none; }
+
+.ph-carousel-bg { position: absolute; inset: 0; z-index: -2; }
+.ph-carousel-bg img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center;
+  opacity: 0;
+  transition: opacity .9s ease;
+}
+.ph-carousel-bg img.is-active { opacity: 1; }
+
+/* rgba(0,0,0,.5) e mais: a foto da fábrica é detalhada demais para texto cru. */
+.ph-carousel-scrim {
+  position: absolute; inset: 0; z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(6, 24, 34, .88) 0%, rgba(6, 24, 34, .7) 42%, rgba(6, 24, 34, .42) 72%, rgba(6, 24, 34, .58) 100%),
+    rgba(0, 0, 0, .5);
+}
+
+.ph-carousel-grid {
+  display: grid;
+  grid-template-columns: minmax(0, .98fr) minmax(0, 1.02fr);
+  gap: clamp(24px, 4vw, 56px);
+  align-items: center;
+  animation: phSlideIn .55s ease both;
+}
+@keyframes phSlideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.ph-slide-copy .ph-kicker { border-color: rgba(255, 255, 255, .24); background: rgba(255, 255, 255, .1); color: #9FE0F1; }
+.ph-slide-copy h1 { margin: 16px 0 14px; font-size: clamp(29px, 3.9vw, 52px); line-height: 1.07; color: #fff; }
+.ph-slide-copy h1 em { font-style: normal; color: #7FDCEF; }
+.ph-slide-copy .ph-lead { max-width: 56ch; color: rgba(238, 248, 252, .84); }
+.ph-slide-copy .ph-cta-note { color: rgba(238, 248, 252, .6); }
+.ph-slide-copy .ph-ghost { border-color: rgba(255, 255, 255, .3); background: rgba(255, 255, 255, .08); color: #fff; }
+.ph-slide-copy .ph-ghost:hover { border-color: #7FDCEF; background: rgba(255, 255, 255, .16); color: #fff; }
+.ph-slide-copy .ph-assurances { margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, .18); }
+.ph-slide-copy .ph-assurance { color: rgba(238, 248, 252, .86); }
+.ph-slide-copy .ph-assurance svg { color: #6FD3AE; }
+.ph-hero--carousel .ph-shot { border-color: rgba(255, 255, 255, .2); box-shadow: 0 34px 70px rgba(3, 15, 22, .55); }
+
+.ph-carousel-bar {
+  position: relative; z-index: 2;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  width: min(1280px, calc(100% - 40px));
+  margin: clamp(26px, 3vw, 40px) auto 0;
+}
+.ph-carousel-dots { display: flex; align-items: center; gap: 8px; }
+.ph-carousel-dot {
+  width: 34px; height: 4px; padding: 0;
+  border: 0; border-radius: 2px;
+  background: rgba(255, 255, 255, .3);
+  cursor: pointer;
+  transition: background .2s ease, width .2s ease;
+}
+.ph-carousel-dot:hover { background: rgba(255, 255, 255, .55); }
+.ph-carousel-dot.is-active { width: 56px; background: #7FDCEF; }
+.ph-carousel-count { font-size: 11px; font-weight: 900; letter-spacing: .14em; color: rgba(238, 248, 252, .9); }
+.ph-carousel-count span { color: rgba(238, 248, 252, .45); font-weight: 800; }
+
+.ph-carousel-arrow {
+  position: absolute; top: 50%; z-index: 2;
+  display: grid; place-items: center;
+  width: 40px; height: 40px; margin-top: -20px; padding: 0;
+  border: 1px solid rgba(255, 255, 255, .26); border-radius: 50%;
+  background: rgba(6, 24, 34, .4); color: #fff;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: background .18s ease, border-color .18s ease;
+}
+.ph-carousel-arrow:hover { background: rgba(6, 24, 34, .72); border-color: #7FDCEF; }
+.ph-carousel-arrow.is-prev { left: clamp(10px, 2vw, 28px); }
+.ph-carousel-arrow.is-next { right: clamp(10px, 2vw, 28px); }
+
+@media (max-width: 1080px) {
+  .ph-carousel-grid { grid-template-columns: minmax(0, 1fr); }
+  .ph-hero--carousel { padding-top: clamp(44px, 8vw, 64px); }
+  .ph-carousel-arrow { display: none; }
+}
+@media (max-width: 560px) {
+  .ph-carousel-bar { width: calc(100% - 26px); }
+  .ph-carousel-dot { width: 22px; }
+  .ph-carousel-dot.is-active { width: 36px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ph-carousel-grid { animation: none; }
+  .ph-carousel-bg img, .ph-carousel-dot, .ph-carousel-arrow { transition: none; }
+}
