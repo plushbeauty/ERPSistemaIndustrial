@@ -66,7 +66,8 @@ const menuSeeds: MenuSeed[] = [
     { label: 'Portal do Operador', route: '/pageprincipal/chao-de-fabrica/portal-operador', icon: Monitor },
     { label: 'Postos de Trabalho', route: '/pageprincipal/chao-de-fabrica/postos', icon: ClipboardList },
   ] },
-  { label: 'Estoque e Almoxarifado', route: '/pageprincipal/estoque/auditoria-saldos', icon: Warehouse, children: [
+  { label: 'Estoque e Almoxarifado', route: '/pageprincipal/estoque/almoxarifado', icon: Warehouse, children: [
+    { label: 'Almoxarifado', route: '/pageprincipal/estoque/almoxarifado', icon: Warehouse },
     { label: 'Auditoria de Saldos', route: '/pageprincipal/estoque/auditoria-saldos', icon: Scale },
     { label: 'Balanço de Estoque', route: '/pageprincipal/estoque/balanco', icon: Archive },
     { label: 'Regras de Depreciação', route: '/pageprincipal/estoque/depreciacao', icon: Percent },

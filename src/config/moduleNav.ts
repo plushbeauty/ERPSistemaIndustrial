@@ -10,14 +10,19 @@
  * rota viva.
  */
 import {
+  Archive,
   BarChart3,
   ClipboardList,
   FileText,
   HelpCircle,
   LayoutDashboard,
   ListOrdered,
+  Package,
+  Percent,
+  Scale,
   ScanLine,
   Settings,
+  Warehouse,
   Workflow,
   type LucideIcon,
 } from 'lucide-react'
@@ -33,6 +38,12 @@ export type ModuleNav = {
 
 const workspace = '/pageprincipal'
 
+/** Rodapé igual em todos os rails: configuração por usuário e ajuda do módulo. */
+const footComum: ModuleNavItem[] = [
+  { label: 'Configurações', route: `${workspace}/configuracoes-usuario`, icon: Settings },
+  { label: 'Ajuda', route: `${workspace}/ajuda`, icon: HelpCircle },
+]
+
 export const moduleNavs: ModuleNav[] = [
   {
     key: 'pcp',
@@ -47,10 +58,21 @@ export const moduleNavs: ModuleNav[] = [
       { label: 'Portal do Operador', route: `${workspace}/chao-de-fabrica/portal-operador`, icon: ScanLine },
       { label: 'Postos de Trabalho', route: `${workspace}/chao-de-fabrica/postos`, icon: Workflow },
     ],
-    footItems: [
-      { label: 'Configurações', route: `${workspace}/configuracoes-usuario`, icon: Settings },
-      { label: 'Ajuda', route: `${workspace}/ajuda`, icon: HelpCircle },
+    footItems: footComum,
+  },
+  {
+    key: 'estoque',
+    title: 'Estoque',
+    subtitle: 'Almoxarifado, saldos e inventário',
+    items: [
+      { label: 'Almoxarifado', route: `${workspace}/estoque/almoxarifado`, icon: Warehouse },
+      { label: 'Auditoria de Saldos', route: `${workspace}/estoque/auditoria-saldos`, icon: Scale },
+      { label: 'Balanço de Estoque', route: `${workspace}/estoque/balanco`, icon: Archive },
+      { label: 'Regras de Depreciação', route: `${workspace}/estoque/depreciacao`, icon: Percent },
+      { label: 'Cadastro de Produtos', route: `${workspace}/cadastros/produtos`, icon: Package },
+      { label: 'Portal do Operador', route: `${workspace}/chao-de-fabrica/portal-operador`, icon: ScanLine },
     ],
+    footItems: footComum,
   },
 ]
 

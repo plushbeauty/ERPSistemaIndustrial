@@ -63,6 +63,8 @@ const Master = lazy(() => import('./pages/Master'))
 const PCPAreaFuncionario = lazy(() => import('./pages/PCPAreaFuncionario'))
 const PCPCapacidade = lazy(() => import('./pages/PCPCapacidade'))
 const PCPDashboard = lazy(() => import('./pages/PCPDashboard'))
+// Almoxarifado — tela premium do Estoque refeita em 2026-11-01 sobre os contratos reais de saldo, reserva, lote e movimento
+const EstoqueAlmoxarifado = lazy(() => import('./pages/EstoqueAlmoxarifado'))
 // Cadastro de Produtos — migrado em 2026-10-30 da branch legada para a origem única de código
 const ProdutosVendasIndustrial = lazy(() => import('./pages/ProdutosVendasIndustrial'))
 const ModuloCadastroProdutos = lazy(() => import('./pages/cadastro-produtos/ModuloCadastroProdutos'))
@@ -124,6 +126,7 @@ export default function AppEntryV2() {
               <Route path="chao-de-fabrica/portal-operador" element={<PCPAreaFuncionario />} />
               <Route path="paquimetro" element={<QualityPlanGate><Paquimetro /></QualityPlanGate>} />
               <Route path="qualidade/ged" element={<QualityPlanGate><FileTreeGED /></QualityPlanGate>} />
+              <Route path="estoque/almoxarifado" element={<QualityPlanGate><EstoqueAlmoxarifado /></QualityPlanGate>} />
               <Route path="estoque/auditoria-saldos" element={<QualityPlanGate><AuditoriaSaldos /></QualityPlanGate>} />
               <Route path="estoque/balanco" element={<QualityPlanGate><BalancoEstoque /></QualityPlanGate>} />
               <Route path="estoque/depreciacao" element={<QualityPlanGate><RegrasDepreciacao /></QualityPlanGate>} />
@@ -155,6 +158,8 @@ export default function AppEntryV2() {
               <Route path="cadastros/ajuda/listagem-produtos" element={<HelpListagemProdutos />} />
               <Route path="cadastros/ajuda/parametros-codigo" element={<HelpParametrosCodigo />} />
             </Route>
+            <Route path="/estoque" element={<Navigate to="/pageprincipal/estoque/almoxarifado" replace />} />
+            <Route path="/estoque/auditoria-saldos" element={<Navigate to="/pageprincipal/estoque/auditoria-saldos" replace />} />
             <Route path="/ajuda" element={<Navigate to="/pageprincipal/ajuda" replace />} />
             <Route path="/financeiro" element={<Navigate to="/pageprincipal/financeiro" replace />} />
             <Route path="/compras" element={<Navigate to="/pageprincipal/compras" replace />} />
