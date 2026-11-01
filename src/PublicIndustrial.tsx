@@ -1,17 +1,23 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 import { ArrowRight, BarChart3, Boxes, Check, Factory, Gauge, Package, ShieldCheck, ShoppingCart, Wrench, X } from 'lucide-react'
 import { useState } from 'react'
+import { planosErp, precoFormatado } from './config/planosPublicos'
 
-const plans = [
-  { name: 'Essencial', price: 'R$ 199', description: 'Para pequenas indústrias que querem organizar a operação.', features: ['Dashboard executivo', 'Estoque e materiais', 'Compras e fornecedores', 'Produção e OP', 'Cadastros e histórico'], missing: ['MRP avançado', 'PCP e agenda de máquinas', 'Qualidade / RPNC', 'Manutenção / CMMS', 'OEE e indicadores avançados', 'Painel Master / multiempresa', 'Integrações fiscais'], featured: false },
-  { name: 'Profissional', price: 'R$ 349', description: 'Para operações que precisam integrar planejamento e chão de fábrica.', features: ['Tudo do Essencial', 'MRP e planejamento', 'PCP e agenda de máquinas', 'Qualidade / RPNC', 'Manutenção / CMMS', 'Indicadores e OEE'], missing: ['Painel Master / multiempresa', 'Auditoria executiva ampliada', 'Integrações avançadas'], featured: true },
-  { name: 'Diamante', price: 'R$ 549', description: 'A gestão completa para empresas que querem enxergar toda a fábrica.', features: ['Tudo do Profissional', 'Painel Master / multiempresa', 'Gestão de permissões', 'Indicadores executivos', 'Auditoria e rastreabilidade', 'Integrações e expansão', 'Fiscal e documentos eletrônicos'], missing: [], featured: false },
-]
+const plans = planosErp.map(plan => ({
+  chave: plan.chave,
+  name: plan.nome,
+  price: plan.precoMensal === null ? 'Sob consulta' : precoFormatado(plan.precoMensal),
+  custom: plan.precoMensal === null,
+  description: plan.descricao,
+  features: plan.recursos,
+  limits: plan.limites,
+  featured: plan.destaque === true,
+}))
 
 const modules = [
   ['Produção', Factory, 'Ordens de produção, processos, apontamentos e rastreabilidade.', 'pcp'],
@@ -51,10 +57,10 @@ export default function PublicIndustrial() {
 
       <section id="como-funciona" className="public-section workflow"><div className="section-heading"><span className="public-kicker">COMO FUNCIONA</span><h2>Uma sequência operacional clara.</h2></div><div className="workflow-grid"><Workflow n="01" title="Planeje" text="Estruture produtos, fichas, processos, demanda e necessidades de materiais." /><Workflow n="02" title="Produza" text="Transforme planejamento em OPs, processos, apontamentos e rastreabilidade." /><Workflow n="03" title="Controle" text="Acompanhe estoque, qualidade, manutenção, custos, fiscal e indicadores." /></div></section>
 
-      <section id="planos" className="public-section plans-section"><div className="section-heading"><span className="public-kicker">PLANOS</span><h2>Escolha o nível de gestão da sua indústria.</h2><p>Compare o que cada plano contempla.</p></div><div className="plans-grid">{plans.map(plan => <article className={plan.featured ? 'plan-card featured' : 'plan-card'} key={plan.name}>{plan.featured && <span className="plan-badge">MAIS ESCOLHIDO</span>}<h3>{plan.name}</h3><p>{plan.description}</p><strong>{plan.price}<small>/mês</small></strong><a href="/login">Começar teste <ArrowRight size={16} /></a><div className="plan-list"><b>Você tem:</b><ul>{plan.features.map(feature => <li className="has" key={feature}><Check size={16} /> {feature}</li>)}</ul></div><div className="plan-list missing"><b>Você deixa de ter neste plano:</b>{plan.missing.length ? <ul>{plan.missing.map(feature => <li key={feature}><X size={15} /> {feature}</li>)}</ul> : <p className="all-access">Nada. Este é o pacote completo.</p>}</div></article>)}</div></section>
+      <section id="planos" className="public-section plans-section"><div className="section-heading"><span className="public-kicker">PLANOS</span><h2>Escolha o nível de gestão da sua indústria.</h2><p>Compare o que cada plano contempla.</p></div><div className="plans-grid">{plans.map(plan => <article className={plan.featured ? 'plan-card featured' : 'plan-card'} key={plan.name}>{plan.featured && <span className="plan-badge">MAIS ESCOLHIDO</span>}<h3>{plan.name}</h3><p>{plan.description}</p><strong>{plan.price}{!plan.custom&&<small>/mês</small>}</strong><a href={`/cadastro-empresa?plano=${plan.chave}`}>{plan.custom?'Falar sobre Enterprise':'Começar teste'} <ArrowRight size={16} /></a><div className="plan-list"><b>Você tem:</b><ul>{plan.features.map(feature => <li className="has" key={feature}><Check size={16} /> {feature}</li>)}</ul></div><div className="plan-list missing"><b>Limites e implantação:</b><ul><li>{plan.limits.usuarios}</li><li>{plan.limits.empresas}</li><li>{plan.limits.implantacao}</li></ul></div></article>)}</div></section>
     </main>
 
-    <footer className="public-footer"><img src="/logo/logo.png" alt="SGQ ERP" /><span>FernandoSch_System • SGQ ERP • Sistema de Gestão Industrial</span><a className="nav-cta-login" href="/login">Acessar sistema</a></footer>
+    <footer className="public-footer"><img src="/logo/logo.png" alt="SGQ ERP" /><span>SYSNQRA ERP INDUSTRIAL • SGQ ERP • Sistema de Gestão Industrial</span><a className="nav-cta-login" href="/login">Acessar sistema</a></footer>
     <button className="public-help" onClick={() => setHelpOpen(!helpOpen)}>{helpOpen ? <X size={19}/> : <span>?</span>}<b>Ajuda IA</b></button>{helpOpen && <div className="public-help-panel"><strong>Assistente SGQ ERP</strong><p>Posso explicar recursos, planos, módulos, fiscal, MRP, produção e estoque.</p><a href="#planos">Ver comparação dos planos</a><a href="#por-dentro">Ver telas por dentro</a><a href="/login">Acessar o ERP</a></div>}
   </div>
 }

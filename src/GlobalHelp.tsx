@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
@@ -8,7 +8,7 @@
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 12:55 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * Desenvolvedor: IA Copiloto (homologado pelo responsável)
  * ID da Revisão: REV-057
  * Alterações: Consolidar cabeçalho e manter API de reconhecimento de voz com interfaces estritas.
  * Status do Build Local: Não executado — validação será feita pelo gate remoto.

@@ -26,7 +26,8 @@ const PublicIndustrialHome = lazyPage(() => import('./PublicIndustrialHome'), 'P
 const AppEntryV2 = lazyPage(() => import('./AppEntryV2'), 'AppEntryV2')
 const SetupADMInicial = lazyPage(() => import('./pages/SetupADMInicial'), 'SetupADMInicial')
 const StaffOperatorLogin = lazyPage(() => import('./pages/StaffOperatorLogin'), 'StaffOperatorLogin')
-const publicPaths = new Set(['/','/home','/login','/login-operador','/planos'])
+const CadastroEmpresa = lazyPage(() => import('./pages/CadastroEmpresa'), 'CadastroEmpresa')
+const publicPaths = new Set(['/','/home','/login','/login-operador','/planos','/cadastro-empresa'])
 
 class BootstrapBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state = { error: null as Error | null }
@@ -70,6 +71,13 @@ function LoginBootstrap() {
   const params = new URLSearchParams(window.location.search)
   const returnTo = params.get('returnTo') ?? ''
   return <IndustrialLoginDirect returnTo={returnTo || undefined} masterMode={params.get('mode') === 'master'} />
+}
+
+function PublicPlansRedirect() {
+  useEffect(() => {
+    window.location.replace('/#planos')
+  }, [])
+  return <Loading label='Abrindo os planos comerciais...' />
 }
 
 function AccessGate({ children }: { children: ReactNode }) {
@@ -128,6 +136,8 @@ export default function AppBootstrap() {
   if (path === '/login') return <BootstrapBoundary><LoginBootstrap /></BootstrapBoundary>
   if (path === '/login-operador') return <BootstrapBoundary><Suspense fallback={<Loading label="Preparando acesso do operador…" />}><StaffOperatorLogin /></Suspense></BootstrapBoundary>
   if (path === '/cadastro-master') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo cadastro Master…" />}><SetupADMInicial /></Suspense></BootstrapBoundary>
+  if (path === '/cadastro-empresa') return <BootstrapBoundary><Suspense fallback={<Loading label='Preparando cadastro da empresa...' />}><CadastroEmpresa /></Suspense></BootstrapBoundary>
+  if (path === '/planos') return <BootstrapBoundary><PublicPlansRedirect /></BootstrapBoundary>
   if (path === '/' || path === '/home') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo SYSNQRA ERP & SGQ INDUSTRIAL…" />}><PublicIndustrialHome /></Suspense></BootstrapBoundary>
   const app = <BootstrapBoundary><Suspense fallback={<Loading />}><AppEntryV2 /></Suspense></BootstrapBoundary>
   const isPublic = publicPaths.has(path) || path.startsWith('/modulos/')
