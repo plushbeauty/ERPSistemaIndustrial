@@ -1,12 +1,12 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-01
+ * @REVISAO: REV-LOGIN-FOTO-INDUSTRIAL-20261101-01 — tela de acesso sobre a foto da planta, com cartão flutuante à direita
+ * @STATUS_APROVACAO: LAYOUT APROVADO PELO PROPRIETÁRIO EM 2026-11-01 · contrato de autenticação inalterado
  */
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, ReactNode, useEffect, useState } from 'react'
 import { motion } from 'motion/react'
-import { Eye, EyeOff, ShieldCheck } from 'lucide-react'
+import { BadgeCheck, Building2, Eye, EyeOff, Gauge, Handshake, Lock, Mail, ShieldCheck, Sparkles } from 'lucide-react'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 import './styles/industrial-login.css'
 
@@ -16,6 +16,46 @@ type Props = {
   returnTo?: string
   masterMode?: boolean
   onLoginStateChange?: (state: 'idle' | 'authenticating' | 'unlocked' | 'error') => void
+}
+
+const pilaresSistema = [
+  { rotulo: 'Produtividade', icone: Gauge },
+  { rotulo: 'Qualidade', icone: BadgeCheck },
+  { rotulo: 'Confiabilidade', icone: ShieldCheck },
+  { rotulo: 'Parceria', icone: Handshake },
+]
+
+function AuthFrame({ children }: { children: ReactNode }) {
+  return (
+    <motion.main
+      className="auth-screen"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.32 }}
+    >
+      <p className="auth-sr-only">
+        SYSNQRA ERP &amp; SGQ Industrial — planta industrial iluminada no fim do expediente.
+      </p>
+      <div className="auth-shell">
+        <header className="auth-brand">
+          <span className="auth-brand-logo">
+            <img src="/logo/logo.png" alt="" />
+            <span>SYSNQRA</span>
+          </span>
+          <div className="auth-brand-copy">
+            <h2>Planejar. Controlar. <em>Evoluir.</em></h2>
+            <p>Gestão inteligente para uma indústria mais eficiente.</p>
+          </div>
+        </header>
+        {children}
+      </div>
+      <footer className="auth-statusbar">
+        <span><b>SYSNQRA</b>&nbsp;ERP &amp; SGQ INDUSTRIAL</span>
+        <span>Versão <em>{__APP_VERSION__}</em> · Autenticação Supabase</span>
+        <span>Sua indústria <em>sempre à frente</em></span>
+      </footer>
+    </motion.main>
+  )
 }
 
 function safeReturnTo(value?: string | null) {
@@ -38,7 +78,7 @@ function isTabletDevice() {
 
 function destinationAfterLogin(result: IndustrialDestination, requested?: string | null) {
   if (result.isMaster) return '/diretoria/dashboard'
-  if (isTabletDevice() || result.perfil === 'OPERADOR_FABRIL') return '/tablet/dashboard'
+  if (isTabletDevice() || result.perfil === 'OPERADOR_FABRIL') return '/pageprincipal/chao-de-fabrica/portal-operador'
   const desktopProfiles = new Set(['DIRETOR', 'ADMINISTRADOR', 'ADMIN', 'PCP', 'PCPISTA', 'PLANEJADOR', 'PLANEJADOR_PCP'])
   if (desktopProfiles.has(result.perfil)) return '/diretoria/dashboard'
   return safeReturnTo(requested)
@@ -270,69 +310,49 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false, on
 
   if (checking) {
     return (
-      <motion.main
-        className="auth-screen"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.32 }}
-      >
-        <section className="auth-panel">
-          <div className="auth-panel-inner">
-            <div className="auth-heading">
-              <span className="auth-overline">
-                {masterMode ? 'SYSNQRA ERP & SGQ INDUSTRIAL INDUSTRIAL • LOGIN MASTER' : 'SYSNQRA • ACESSO SEGURO'}
-              </span>
-            </div>
-            <h1>Preparando seu acesso</h1>
-            <p className="auth-description">Validando a sessão do SYSNQRA ERP & SGQ INDUSTRIAL…</p>
+      <AuthFrame>
+        <section className="auth-panel" aria-busy="true">
+          <div className="auth-loading-card">
+            <span className="auth-overline">SYSNQRA • ACESSO SEGURO</span>
+            <h1>Preparando seu<br /><em>acesso.</em></h1>
+            <p className="auth-description">
+              Validando a sessão do SYSNQRA ERP &amp; SGQ INDUSTRIAL no Supabase Auth e no perfil ERP da sua empresa…
+            </p>
+            <div className="auth-loading-bar"><i /></div>
             <div className="auth-security-note">
               <ShieldCheck size={16} />
-              <span>Sessão segura e persistente.</span>
+              <span>Nenhum dado é liberado antes da validação do perfil, da empresa vinculada e do status do acesso.</span>
             </div>
           </div>
         </section>
-      </motion.main>
+      </AuthFrame>
     )
   }
 
   return (
-    <motion.main
-      className="auth-screen"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.32 }}
-    >
-      <section className="auth-visual" aria-label="Boas-vindas ao SYSNQRA ERP & SGQ INDUSTRIAL">
-        <img src="/images/sgq/sgq-erp-login.png" alt="Imagem institucional do SYSNQRA ERP & SGQ INDUSTRIAL" />
-        <div className="auth-visual-shade" aria-hidden="true" />
-        <div className="auth-visual-content">
-          <div className="auth-visual-message">
-            <span>GESTÃO INDUSTRIAL INTEGRADA</span>
-            <h2>Bem-vindo ao<br /><em>SYSNQRA ERP &amp; SGQ INDUSTRIAL.</em></h2>
-            <p>Gestão, produção e qualidade integradas em um único ambiente, com acesso seguro às informações da sua operação.</p>
-          </div>
-          <small>SYSNQRA ERP & SGQ INDUSTRIAL · TECNOLOGIA A SERVIÇO DA INDÚSTRIA</small>
-        </div>
-      </section>
-
-      <section className="auth-panel">
+    <AuthFrame>
+      <section className="auth-panel" aria-label="Formulário de acesso ao SYSNQRA ERP &amp; SGQ INDUSTRIAL">
         <div className="auth-panel-inner">
           <div className="auth-heading">
-            <span className="auth-overline">SYSNQRA • ACESSO SEGURO</span>
+            <span className="auth-overline">{masterMode ? 'SYSNQRA • LOGIN MASTER' : 'SYSNQRA • ACESSO SEGURO'}</span>
             <span className="auth-status"><i /> Ambiente protegido</span>
           </div>
 
-          <h1>{masterMode ? 'Telas Master — Administrador do Projeto' : 'Entrar no SYSNQRA ERP & SGQ INDUSTRIAL'}</h1>
+          <h1>
+            {masterMode ? 'Telas Master' : 'Bem-vindo ao SYSNQRA'}<br />
+            <em>{masterMode ? 'Área do proprietário' : 'ERP Industrial'}</em>
+          </h1>
 
           <p className="auth-description">
             {masterMode
-              ? 'Área reservada ao proprietário do projeto. O perfil MASTER é validado antes da abertura do painel administrativo.'
-              : 'Entre com seu e-mail e senha cadastrados. A empresa, o perfil e o status são validados antes de liberar o acesso.'}
+              ? 'Área reservada ao proprietário do projeto. O perfil MASTER é conferido no banco antes de qualquer tela abrir.'
+              : 'Acesse sua conta para continuar. Empresa, perfil e status são conferidos no banco antes de liberar o ambiente.'}
           </p>
 
           <form className="auth-form" onSubmit={submit}>
             <label htmlFor="erp-direct-email">E-mail</label>
             <div className="auth-input-wrap">
+              <Mail size={17} className="auth-input-icon" aria-hidden="true" />
               <input
                 id="erp-direct-email"
                 type="email"
@@ -353,6 +373,7 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false, on
             </div>
 
             <div className="auth-input-wrap">
+              <Lock size={17} className="auth-input-icon" aria-hidden="true" />
               <input
                 id="erp-direct-password"
                 type={showPassword ? 'text' : 'password'}
@@ -396,14 +417,42 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false, on
 
           </form>
 
+          {!masterMode && (
+            <>
+              <div className="auth-divider">Ainda não tem ambiente</div>
+              <a className="auth-register" href="/cadastro-empresa">
+                <Building2 size={16} /> Cadastrar minha empresa
+              </a>
+              <a className="auth-trial" href={'/cadastro-empresa?modo=trial&plano=profissional'}>
+                <Sparkles size={16} /> Começar teste grátis de 15 dias
+              </a>
+            </>
+          )}
+
+          <div className="auth-divider">{masterMode ? 'Princípios do painel' : 'Pilares do sistema'}</div>
+          <ul className="auth-pillars">
+            {pilaresSistema.map(({ rotulo, icone: Icone }) => (
+              <li key={rotulo}>
+                <Icone size={16} aria-hidden="true" />
+                <span>{rotulo}</span>
+              </li>
+            ))}
+          </ul>
+
           <div className="auth-security-note">
             <ShieldCheck size={16} />
             <span>Autenticação feita pelo Supabase Auth. Nenhuma senha é armazenada no navegador.</span>
           </div>
 
-
+          <div className="auth-footer">
+            <a href="/planos">Ver planos</a>
+            <span>·</span>
+            <a href="/">Site institucional</a>
+            <span>·</span>
+            <a href="/contato">Suporte</a>
+          </div>
         </div>
       </section>
-    </motion.main>
+    </AuthFrame>
   )
 }
