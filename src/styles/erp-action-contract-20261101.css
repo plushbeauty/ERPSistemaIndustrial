@@ -113,6 +113,47 @@
   background: #F4FBFD !important;
 }
 
+/* ---------------------------------------------------------------------------
+   CAMPOS (input / select / textarea). REV-CAMPO-COMPACTO-20261101-01, 01/11/2026.
+   Queixa do proprietario: "os edits estão grandes demais para os campos, fazendo as
+   telas ficarem grandes, tendo que descer até lá embaixo para preencher". O caso pior
+   era o cadastro de colaborador do RH (h-9 = 36px, texto 14px, gap 16px). O campo passa
+   a ter a MESMA altura do botao (30px), texto 12px e raio 2px, entao dois campos cabem
+   na linha que antes ocupava um. TextArea fica multilinha de proposito.
+   ------------------------------------------------------------------------- */
+.erp-global-surface input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="image"]),
+.erp-global-surface select {
+  height: var(--erp-control-height) !important;
+  min-height: 0 !important;
+  max-height: var(--erp-control-height) !important;
+  border-radius: var(--erp-control-radius) !important;
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  padding: 0 8px;
+}
+
+.erp-global-surface textarea {
+  height: auto !important;
+  min-height: 44px !important;
+  border-radius: var(--erp-control-radius) !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+  padding: 5px 8px;
+}
+
+/* Rotulo de campo: 11px e 3px de respiro. Menos isso e o dono perde a legenda do campo. */
+.erp-global-surface label[for] {
+  margin-bottom: 3px !important;
+  font-size: 11px !important;
+  line-height: 1.25;
+}
+
+/* Grelha dos formularios: 10px entre linhas. Limitado a <form> de proposito — os painéis de KPI
+   do workspace premium usam grid fora de form e manteriam o respiro aprovado. */
+.erp-global-surface form [class*="grid"] {
+  row-gap: 10px;
+}
+
 /* Escopo de toque: chao de fabrica e impressao de etiquetas. Alvo minimo de 46px, nao 30px. */
 .erp-global-surface .erp-touch-scope button,
 .erp-global-surface .erp-touch-scope a[class*="btn"] {

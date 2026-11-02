@@ -208,7 +208,8 @@
   background: oklch(0.56 0.105 232 / 5%);
 }
 
-/* Abas operacionais: um único indicador azul; sem botões coloridos concorrentes. */
+/* Abas operacionais: indicador unico. Em 2026-11-01 o fundo branco da aba ativa foi trocado pelo
+   dourado do contrato (erp-active-gold-20261101.css): sobre a barra branca o rotulo ativo sumia. */
 .v7-main .erp-tab,
 .v7-main .mw3-tabs button,
 .v7-main .industrial-tabs button,
@@ -220,9 +221,9 @@
 .v7-main .mw3-tabs button.active,
 .v7-main .industrial-tabs button.active,
 .v7-main [role="tab"][aria-selected="true"] {
-  border-color: var(--erp-ui-primary);
-  background: var(--erp-ui-surface);
-  color: var(--erp-ui-primary);
+  border-color: var(--erp-active-gold-deep, #A87B12);
+  background: var(--erp-active-gold, #C9961C);
+  color: var(--erp-active-ink, #123B50);
 }
 
 /* Não alterar altura/cores de controles compactos de ícone, status, paginação e navegação. */

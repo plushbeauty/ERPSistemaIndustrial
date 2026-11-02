@@ -64,7 +64,7 @@
 }
 .sxv-rail-head .sxv-kicker { color: #8FE1ED; }
 .sxv-rail-head h2 { margin: 10px 0 6px; font-size: clamp(24px, 2.5vw, 31px); font-weight: 900; letter-spacing: -.9px; color: #fff; line-height: 1.1; }
-.sxv-rail-head p { margin: 0; color: #BBDCE6; font-size: 12px; line-height: 1.65; }
+.sxv-rail-head p { margin: 0; color: #fff; font-size: 12px; line-height: 1.65; }
 
 .sxv-steps { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 4px; position: relative; z-index: 1; }
 .sxv-step { display: flex; gap: 12px; align-items: flex-start; padding: 12px 10px; border-radius: var(--sxv-radius); transition: background .18s; }
