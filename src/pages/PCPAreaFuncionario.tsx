@@ -1,12 +1,20 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-02
+ * @REVISAO: REV-PORTAL-OPERADOR-DESCRICAO-E-SEMANA-20261102-01 — Portal do Operador em uma só abertura
+ * @STATUS_APROVACAO: DETERMINADO PELO PROPRIETARIO EM 2026-11-02 ("os cards estao pequenos fazendo os
+ *   numero ficarem grandes para eles e tem um card a mais tirar so e para ter um card para descricao da tela")
+ *
+ * O header navy proprio da tela foi removido: o card de abertura do shell (PageIntroCard, verbete
+ * 'chao-de-fabrica/portal-operador') ja cumpre esse papel e a tela ficava com dois cabecalhos. O botao
+ * Atualizar passou para o topo de "Minha semana" e entrou um card que diz o que a tela faz e como usar.
+ * Os sete dias deixaram de dividir a largura em qualquer tela (2/4/7 colunas por breakpoint) e o numero
+ * do dia perdeu o text-4xl, que era maior que o proprio card.
  */
 /**
  * SYSNQRA ERP · Área do Funcionário / CPP
- * @REVISAO_ANTERIOR: PCP-AREA-FUNCIONARIO-2026-10-22-R2
+ * @REVISAO_ANTERIOR: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @REVISAO_ANTERIOR_2: PCP-AREA-FUNCIONARIO-2026-10-22-R2
  * Acesso autenticado; programação filtrada pelo funcionário associado ao e-mail da sessão.
  * Registros enviados ao ERP: erp_apontamentos_processo. Sem dados de demonstração.
  */
@@ -227,10 +235,10 @@ export default function PCPAreaFuncionario() {
 
   return <main className="erp-touch-scope min-h-screen bg-[#F4FBFD] p-3 text-slate-900 md:p-5">
     <div className="mx-auto w-full max-w-[1560px] space-y-4">
-      <header className="flex flex-wrap items-center justify-between gap-3 border border-[#C8E3EE] bg-white p-4 shadow-[0_3px_12px_rgba(18,59,80,.07)]">
-        <div className="flex items-center gap-3"><span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-[3px] border border-[#C8E3EE] bg-[#123B50]"><img src="/icons/pcp-portal-operador.svg" alt="Portal do Operador — Chão de Fábrica" className="h-full w-full object-cover" /></span><div><p className="text-[10px] font-black uppercase tracking-[.15em] text-[#2D8DB8]">SYSNQRA · CHÃO DE FÁBRICA</p><h1 className="text-2xl font-black text-[#123B50]">Área do Funcionário</h1><p className="text-xs text-slate-500">Programação semanal e Cartão de Processo Produtivo (CPP)</p></div></div>
-        <button type="button" onClick={()=>void load()} disabled={loading} className={smallButton+' min-h-[40px] border-slate-300 bg-white px-4 text-sm text-slate-700'}><RefreshCw size={16} className={loading?'animate-spin':''}/> Atualizar</button>
-      </header>
+      <section aria-label="Descrição e uso da tela" className="grid items-start gap-4 border border-[#C8E3EE] bg-white p-4 shadow-[0_2px_8px_rgba(18,59,80,.04)] md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div><h2 className="text-sm font-black uppercase text-[#123B50]">O que esta tela faz</h2><p className="mt-2 text-sm leading-relaxed text-slate-600">Mostra a programação semanal do PCP que pertence a você — o operador autenticado, vinculado ao cadastro do RH pelo e-mail da sessão — e abre o Cartão de Processo Produtivo (CPP) da tarefa escolhida: OP, produto, máquina, quantidades planejadas, ficha de processo aprovada e insumos da estrutura.</p><p className="mt-2 text-sm leading-relaxed text-slate-600">É desta tela que sai o apontamento real de produção gravado em <strong>erp_apontamentos_processo</strong>: horário de início, fim, peças boas, refugo e motivo de parada, já enviados ao PCP para conferência.</p></div>
+        <div><h2 className="text-sm font-black uppercase text-[#123B50]">Como usar</h2><ol className="mt-2 space-y-1.5 text-sm leading-relaxed text-slate-600"><li><strong>1.</strong> Toque no dia da semana para listar as tarefas programadas para você.</li><li><strong>2.</strong> Toque na tarefa para abrir o CPP e conferir OP, produto, máquina e ficha aprovada.</li><li><strong>3.</strong> Pressione <strong>Iniciar produção</strong>; o sistema registra o horário e o vínculo com a OP.</li><li><strong>4.</strong> Ao terminar, informe peças boas, refugo e ocorrências e pressione <strong>Finalizar e enviar ao PCP</strong>.</li></ol><p className="mt-3 text-xs font-bold text-slate-500">Sem tarefa no dia? O PCP é quem atribui a programação e o operador — o botão Atualizar recarrega a agenda.</p></div>
+      </section>
       {(error || message) && <p role={error?'alert':'status'} className={'border p-4 text-sm font-bold '+(error?'border-rose-200 bg-rose-50 text-rose-800':'border-emerald-200 bg-emerald-50 text-emerald-800')}>{error||message}</p>}
       {!loading && !employee && !error && <p className="border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">Conta ainda não vinculada a um funcionário no RH.</p>}
       <section className="flex flex-wrap items-center justify-between gap-4 border border-slate-200 bg-white p-4">
@@ -238,16 +246,17 @@ export default function PCPAreaFuncionario() {
         <div className="flex flex-wrap gap-2 text-xs font-bold"><span className="border border-slate-200 bg-slate-50 px-3 py-2">Matrícula: {employee?.matricula ?? '—'}</span><span className="border border-emerald-200 bg-emerald-50 px-3 py-2 text-emerald-800"><ShieldCheck size={14} className="mr-1 inline"/>Acesso autenticado</span></div>
       </section>
       <section className="border border-slate-200 bg-white p-4 shadow-[0_2px_8px_rgba(18,59,80,.04)]">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-3">
           <div className="flex items-center gap-2"><CalendarDays size={20} className="text-[#2D8DB8]"/><div><h2 className="text-sm font-black uppercase text-[#123B50]">Minha semana</h2><p className="text-xs text-slate-500">Toque em uma data para ver os produtos programados para você.</p></div></div>
-          <div className="flex items-center gap-2">
-            <button type="button" onClick={()=>changeWeek(-1)} aria-label="Semana anterior" className="grid h-10 w-10 shrink-0 place-items-center border border-slate-300 bg-white text-[#123B50] hover:bg-[#F4FBFD]"><ChevronLeft size={18}/></button>
-            <p className="min-w-[178px] text-center text-sm font-black text-[#123B50]">{new Date(days[0]+'T12:00:00').toLocaleDateString('pt-BR')} — {new Date(days[6]+'T12:00:00').toLocaleDateString('pt-BR')}</p>
-            <button type="button" onClick={()=>changeWeek(1)} aria-label="Próxima semana" className="grid h-10 w-10 shrink-0 place-items-center border border-slate-300 bg-white text-[#123B50] hover:bg-[#F4FBFD]"><ChevronRight size={18}/></button>
-          </div>
+          <button type="button" onClick={()=>void load()} disabled={loading} className={smallButton+' border-slate-300 bg-white px-4 text-sm text-slate-700'}><RefreshCw size={16} className={loading?'animate-spin':''}/> Atualizar</button>
         </div>
-        <div className="grid grid-cols-7 gap-2 pb-1">
-          {days.map(day=>{const count=programs.filter(item=>localDate(new Date(item.inicio_planejado))===day).length;const isSelected=selectedDay===day;return <button type="button" key={day} onClick={()=>setSelectedDay(day)} aria-pressed={isSelected} aria-label={new Date(day+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})+(count?', '+count+' tarefa(s) programada(s)':' sem tarefas programadas')} className={'flex min-h-[132px] min-w-0 flex-col items-center justify-center rounded-[3px] border px-1 py-4 text-center transition-colors sm:px-2 '+(isSelected?'border-[#123B50] bg-[#123B50] text-white shadow-[0_3px_8px_rgba(18,59,80,.2)]':'border-slate-200 bg-white text-slate-700 hover:border-[#2D8DB8] hover:bg-[#F4FBFD]')}><span className="block text-xs font-black uppercase leading-tight sm:text-sm">{new Date(day+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</span><span className="my-2 block text-3xl font-black leading-none sm:text-4xl">{day.slice(8,10)}</span><span className={'mb-1 block h-2.5 w-2.5 shrink-0 rounded-full '+(count?'bg-emerald-500':'bg-slate-200')}/><span className="block text-[11px] font-bold leading-tight sm:text-xs">{count?count+' tarefa(s)':'Livre'}</span></button>})}
+        <div className="my-3 flex flex-wrap items-center justify-center gap-2">
+          <button type="button" onClick={()=>changeWeek(-1)} aria-label="Semana anterior" className="grid h-10 w-10 shrink-0 place-items-center border border-slate-300 bg-white text-[#123B50] hover:bg-[#F4FBFD]"><ChevronLeft size={18}/></button>
+          <p className="min-w-[232px] text-center text-sm font-black text-[#123B50]">{new Date(days[0]+'T12:00:00').toLocaleDateString('pt-BR')} — {new Date(days[6]+'T12:00:00').toLocaleDateString('pt-BR')}</p>
+          <button type="button" onClick={()=>changeWeek(1)} aria-label="Próxima semana" className="grid h-10 w-10 shrink-0 place-items-center border border-slate-300 bg-white text-[#123B50] hover:bg-[#F4FBFD]"><ChevronRight size={18}/></button>
+        </div>
+        <div className="grid grid-cols-2 gap-2 pb-1 sm:grid-cols-4 lg:grid-cols-7">
+          {days.map(day=>{const count=programs.filter(item=>localDate(new Date(item.inicio_planejado))===day).length;const isSelected=selectedDay===day;return <button type="button" key={day} onClick={()=>setSelectedDay(day)} aria-pressed={isSelected} aria-label={new Date(day+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})+(count?', '+count+' tarefa(s) programada(s)':' sem tarefas programadas')} className={'flex min-h-[92px] min-w-0 flex-col items-center justify-center rounded-[3px] border px-3 py-3 text-center transition-colors lg:min-h-[104px] '+(isSelected?'border-[#123B50] bg-[#123B50] text-white shadow-[0_3px_8px_rgba(18,59,80,.2)]':'border-slate-200 bg-white text-slate-700 hover:border-[#2D8DB8] hover:bg-[#F4FBFD]')}><span className="block text-[11px] font-black uppercase leading-tight tracking-wide sm:text-xs">{new Date(day+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</span><span className="mt-1.5 block text-2xl font-black leading-none sm:text-[26px]">{day.slice(8,10)}</span><span className="mt-2 flex items-center gap-1.5"><span className={'block h-2.5 w-2.5 shrink-0 rounded-full '+(count?'bg-emerald-500':'bg-slate-200')}/><span className="block text-[11px] font-bold leading-tight sm:text-xs">{count?count+' tarefa(s)':'Livre'}</span></span></button>})}
         </div>
       </section>
       <section className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]">
