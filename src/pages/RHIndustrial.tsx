@@ -4,102 +4,435 @@
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
-import { ChangeEvent, ReactNode, useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, BarChart3, CalendarCheck2, CalendarDays, CheckCircle2, Edit3, FileText, GraduationCap, ImagePlus, Plus, RefreshCw, Save, Trash2, UserRound, Users, X } from 'lucide-react'
+/**
+ * @REVISAO: REV-EDIT-UNIFORME-20261101-01 — botao "Editar" da lista passa a usar a classe do contrato unico
+ * de acao (erp-edit-button, 30px e raio 2px). Autorizado pelo proprietario na auditoria visual de 2026-11-01.
+ */
+/**
+ * @REVISAO: REV-RH-UM-CARD-E-CAMPO-COMPACTO-20261101-01 — 01/11/2026, por determinacao do proprietario.
+ * (1) O header azul-marinho proprio da tela foi removido: o card de abertura do shell (PageIntroCard) ja
+ * e o card de cima, e a tela ficava com DOIS cards. O botao Atualizar passou para a barra de abas.
+ * (2) As abas ganharam role=tablist/role=tab + aria-selected, que e o gancho do contrato de aba ativa
+ * dourada (erp-active-gold-20261101.css). (3) Grelha do formulario de 16px para 10px de respiro; a altura
+ * dos campos vem do contrato de campo (30px), que faz dois campos caberem na linha que antes ocupava um.
+ */
+/**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-11-02
+ * @REVISAO: REV-RH-CAMPOS-NA-REGUA-20261102-01 — cadastro de colaborador com largura por tipo de dado
+ * @STATUS_APROVACAO: DETERMINADO PELO PROPRIETARIO EM 2026-11-02 ("olha os edits como estao grande; se
+ *   deixar menor o sistema vai ficar mais organizado")
+ *
+ * Defeito: cada campo era um w-full dentro de um grid de 12 colunas, entao CPF, RG e data de nascimento
+ * recebiam ~700px de caixa e a tela inteira descia ate o fim da pagina para ser preenchida. O formulario
+ * passa aos grupos de um cadastro de pessoal (Identificacao, Contato, Vinculo/jornada/custo) e cada campo
+ * recebe a largura da regua aprovada em src/styles/erp-design-system-2026.css (erp-field-name,
+ * erp-field-cpf, erp-field-date, erp-field-money, ...). A largura fica no involucro e o controle continua
+ * w-full dentro dele: o campo nao briga com o grid e quebra sozinho em tela estreita. As abas operacionais
+ * (ponto, ausencias, treinamentos, avaliacoes, acidentes, documentos) seguem a mesma regua por tipo.
+ * Nada de leitura ou gravacao no Supabase foi alterado.
+ */
+/**
+ * SYSNQRA ERP INDUSTRIAL — RH operacional
+ * @DATA_REVISAO_APROVACAO 30/10/2026
+ * @STATUS_APROVACAO Em validação
+ * @REVISAO REV-RH-20261030
+ * Dados persistidos no Supabase; isolamento por empresa/RLS; sem dados fictícios.
+ */
+import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import { fetchAllPages } from '../lib/supabasePagination'
-import VendasLayout from './VendasLayout'
+import { CalendarDays, Camera, CheckCircle2, Clock3, FileText, GraduationCap, RefreshCw, Save, Search, UserRound, Users, X } from 'lucide-react'
 
-type Tab='dashboard'|'funcionarios'|'ponto'|'treinamentos'|'cronograma'|'avaliacoes'|'ausencias'|'acidentes'|'documentos'|'comercial'
-type Employee={id:string;matricula:string|null;nome:string;cpf:string|null;cargo:string|null;setor_id:string|null;data_admissao:string|null;data_demissao:string|null;status:string;email:string|null;telefone:string|null;foto_storage_path:string|null}
-type Sector={id:string;codigo:string;nome:string};type Training={id:string;plano_id:string|null;titulo:string;instrutor:string|null;data:string|null;carga_horas:number|null;status:string};type Plan={id:string;codigo:string;titulo:string;setor_id:string|null;competencia:string|null;periodo:string|null;status:string}
-type Agenda={id:string;treinamento_id:string;funcionario_id:string;data_prevista:string;hora_inicio:string|null;hora_fim:string|null;obrigatorio:boolean;presenca:boolean;concluido:boolean;nota:number|null;observacao:string|null}
-type Point={id:string;funcionario_id:string;data:string;entrada:string|null;saida_intervalo:string|null;retorno_intervalo:string|null;saida:string|null;observacao:string|null}
-type Evaluation={id:string;funcionario_id:string;periodo_inicio:string;periodo_fim:string;nota:number|null;avaliador_id:string|null;pontos_fortes:string|null;pontos_melhoria:string|null;plano_acao:string|null;status:string}
-type Absence={id:string;funcionario_id:string;data_inicio:string;data_fim:string;tipo:string;motivo:string|null;status:string}
-type Accident={id:string;funcionario_id:string;data_acidente:string;hora_acidente:string|null;tipo:string;gravidade:string;local:string|null;descricao:string;parte_corpo:string|null;afastamento:boolean;dias_afastamento:number;cat_numero:string|null;causa:string|null;acao_corretiva:string|null;status:string}
-type Doc={id:string;funcionario_id:string;tipo:string;numero:string|null;emissao:string|null;validade:string|null;storage_path:string|null;observacoes:string|null};type CompanyBrand={razao_social:string;nome_fantasia:string|null;cnpj:string|null;logo_url:string|null;logo_impressao_url:string|null;endereco:string|null;cidade:string|null;uf:string|null}
-const today=()=>new Date().toISOString().slice(0,10)
-const tabs:[Tab,string,typeof Users][]=[['dashboard','Visão geral',BarChart3],['funcionarios','Funcionários',Users],['ponto','Ponto / Presença',CalendarCheck2],['treinamentos','Treinamentos',GraduationCap],['cronograma','Cronograma',CalendarDays],['avaliacoes','Avaliações',CheckCircle2],['ausencias','Ausências',CalendarCheck2],['acidentes','Acidentes',AlertTriangle],['documentos','Documentos',FileText],['comercial','Comercial / Comissões',Users]]
-function Field(p:{label:string;value:string;set:(v:string)=>void;type?:string;wide?:boolean}){return <label className={'rh-field '+(p.wide?'wide':'')}><span>{p.label}</span><input className="rh-input" type={p.type??'text'} value={p.value} onChange={e=>p.set(e.target.value)}/></label>}
-function Select(p:{label:string;value:string;set:(v:string)=>void;children:ReactNode;wide?:boolean}){return <label className={'rh-field '+(p.wide?'wide':'')}><span>{p.label}</span><select className="rh-input" value={p.value} onChange={e=>p.set(e.target.value)}>{p.children}</select></label>}
-function Modal(p:{title:string;close:()=>void;save:()=>void;busy:boolean;children:ReactNode}){return <div className="rh-backdrop"><div className="rh-modal"><header className="rh-modal-head"><h2>{p.title}</h2><button className="rh-icon" type="button" onClick={p.close}><X size={14}/></button></header><div>{p.children}</div><footer className="rh-modal-foot"><button className="rh-btn" type="button" onClick={p.close}>Cancelar</button><button className="rh-btn primary" type="button" disabled={p.busy} onClick={p.save}><Save size={13}/>{p.busy?'Salvando':'Salvar'}</button></footer></div></div>}
-function PageNav(p:{page:number;count:number;set:(n:number)=>void}){const n=Math.max(1,Math.ceil(p.count/25));return <div className="rh-pagination"><span>{p.count} registro(s) · página {p.page+1} de {n}</span><div><button disabled={!p.page} onClick={()=>p.set(p.page-1)}>Anterior</button><button disabled={p.page+1>=n} onClick={()=>p.set(p.page+1)}>Próxima</button></div></div>}
+type Staff = {
+  id: string
+  empresa_id: string
+  nome?: string | null
+  nome_completo?: string | null
+  matricula?: string | null
+  cpf?: string | null
+  rg?: string | null
+  data_nascimento?: string | null
+  celular?: string | null
+  telefone?: string | null
+  email?: string | null
+  data_admissao?: string | null
+  cargo?: string | null
+  departamento?: string | null
+  regime_trabalho?: string | null
+  turno_trabalho?: string | null
+  numero_cracha_rfid?: string | null
+  salario_nominal?: number | null
+  custo_hora_homem?: number | null
+  status?: string | null
+  foto_path?: string | null
+}
+type Row = Record<string, string | number | boolean | null | undefined> & { id: string }
+type Tab = 'Visão geral' | 'Funcionários' | 'Ponto / Presença' | 'Treinamentos' | 'Avaliações' | 'Ausências' | 'Acidentes' | 'Documentos'
+type Field = { key: string; label: string; type?: string; required?: boolean; options?: string[] }
+/**
+ * Cadastro de colaborador em grupos, cada campo com a largura da régua aprovada
+ * (src/styles/erp-design-system-2026.css). A largura fica no invólucro e o controle continua
+ * w-full, então o campo nunca briga com o grid e quebra sozinho em telas estreitas.
+ */
+const employeeGroups: { title: string; keys: string[] }[] = [
+  { title: 'Identificação', keys: ['nome_completo', 'data_nascimento', 'cpf', 'rg'] },
+  { title: 'Contato', keys: ['celular', 'telefone', 'email'] },
+  { title: 'Vínculo, jornada e custo', keys: ['matricula', 'data_admissao', 'cargo', 'departamento', 'regime_trabalho', 'turno_trabalho', 'numero_cracha_rfid', 'salario_nominal', 'custo_hora_homem', 'status'] },
+]
+const employeeFieldWidth: Record<string, string> = {
+  nome_completo: 'erp-field-name',
+  data_nascimento: 'erp-field-date',
+  cpf: 'erp-field-cpf',
+  rg: 'erp-field-number',
+  celular: 'erp-field-phone',
+  telefone: 'erp-field-phone',
+  email: 'erp-field-email',
+  matricula: 'erp-field-code',
+  data_admissao: 'erp-field-date',
+  cargo: 'erp-field-text',
+  departamento: 'erp-field-text',
+  regime_trabalho: 'erp-field-text',
+  turno_trabalho: 'erp-field-text',
+  numero_cracha_rfid: 'erp-field-number',
+  salario_nominal: 'erp-field-money',
+  custo_hora_homem: 'erp-field-money',
+  status: 'erp-field-text',
+}
+const tabs: { label: Tab; icon: typeof Users }[] = [
+  { label: 'Visão geral', icon: Users },
+  { label: 'Funcionários', icon: Users },
+  { label: 'Ponto / Presença', icon: Clock3 },
+  { label: 'Treinamentos', icon: GraduationCap },
+  { label: 'Avaliações', icon: CheckCircle2 },
+  { label: 'Ausências', icon: CalendarDays },
+  { label: 'Acidentes', icon: CalendarDays },
+  { label: 'Documentos', icon: FileText },
+]
+const operationalFieldWidth = (field: Field) => {
+  if (field.key === 'observacoes' || field.key === 'justificativa') return 'erp-field-description'
+  if (field.type === 'date') return 'erp-field-date'
+  if (field.type === 'datetime-local') return 'erp-field-datetime'
+  if (field.type === 'number') return 'erp-field-money'
+  return 'erp-field-text'
+}
+const schemas: Record<Exclude<Tab, 'Funcionários' | 'Visão geral'>, { table: string; fields: Field[] }> = {
+  'Ponto / Presença': { table: 'erp_rh_ponto_eventos', fields: [
+    { key: 'funcionario_id', label: 'Funcionário', type: 'staff', required: true },
+    { key: 'tipo', label: 'Evento', type: 'select', options: ['ENTRADA', 'SAIDA_INTERVALO', 'RETORNO_INTERVALO', 'SAIDA'], required: true },
+    { key: 'registrado_em', label: 'Data e hora', type: 'datetime-local', required: true },
+    { key: 'origem', label: 'Origem', type: 'select', options: ['MANUAL', 'RELOGIO', 'CATRACA', 'IMPORTACAO'], required: true },
+    { key: 'observacao', label: 'Observação' },
+  ]},
+  'Ausências': { table: 'erp_rh_faltas', fields: [
+    { key: 'funcionario_id', label: 'Funcionário', type: 'staff', required: true },
+    { key: 'data_inicio', label: 'Data inicial', type: 'date', required: true },
+    { key: 'data_fim', label: 'Data final', type: 'date' },
+    { key: 'tipo', label: 'Ocorrência', type: 'select', options: ['FALTA', 'ATESTADO', 'ATRASO', 'SAIDA_ANTECIPADA', 'OUTRA'], required: true },
+    { key: 'status', label: 'Situação', type: 'select', options: ['PENDENTE', 'JUSTIFICADA', 'INJUSTIFICADA', 'CANCELADA'], required: true },
+    { key: 'justificativa', label: 'Justificativa' },
+    { key: 'observacoes', label: 'Observações' },
+  ]},
+  'Treinamentos': { table: 'erp_rh_treinamentos_registros', fields: [
+    { key: 'funcionario_id', label: 'Funcionário', type: 'staff', required: true },
+    { key: 'titulo', label: 'Treinamento', required: true },
+    { key: 'instrutor', label: 'Instrutor' },
+    { key: 'data_treinamento', label: 'Data', type: 'date', required: true },
+    { key: 'carga_horas', label: 'Carga horária', type: 'number', required: true },
+    { key: 'resultado', label: 'Resultado / avaliação' },
+    { key: 'status', label: 'Situação', type: 'select', options: ['PENDENTE', 'CONCLUIDO', 'REPROVADO', 'VENCIDO'], required: true },
+    { key: 'validade_ate', label: 'Validade até', type: 'date' },
+    { key: 'observacoes', label: 'Observações' },
+  ]},
+  'Avaliações': { table: 'erp_rh_avaliacoes', fields: [
+    { key: 'funcionario_id', label: 'Funcionário', type: 'staff', required: true },
+    { key: 'data_avaliacao', label: 'Data da avaliação', type: 'date', required: true },
+    { key: 'tipo', label: 'Tipo de avaliação', type: 'select', options: ['DESEMPENHO', 'EXPERIENCIA', 'COMPETENCIAS', 'PERIODICA', 'OUTRA'], required: true },
+    { key: 'avaliador', label: 'Avaliador', required: true },
+    { key: 'nota', label: 'Nota', type: 'number' },
+    { key: 'resultado', label: 'Resultado' },
+    { key: 'plano_acao', label: 'Plano de ação' },
+    { key: 'observacoes', label: 'Observações' },
+  ]},
+  'Acidentes': { table: 'erp_rh_acidentes', fields: [
+    { key: 'funcionario_id', label: 'Funcionário', type: 'staff', required: true },
+    { key: 'data_ocorrencia', label: 'Data da ocorrência', type: 'date', required: true },
+    { key: 'hora_ocorrencia', label: 'Hora', type: 'time' },
+    { key: 'local', label: 'Local da ocorrência', required: true },
+    { key: 'tipo', label: 'Tipo', type: 'select', options: ['TIPICO', 'TRAJETO', 'DOENCA_OCUPACIONAL', 'QUASE_ACIDENTE', 'OUTRO'], required: true },
+    { key: 'gravidade', label: 'Gravidade', type: 'select', options: ['LEVE', 'MODERADA', 'GRAVE', 'FATAL'], required: true },
+    { key: 'descricao', label: 'Descrição', required: true },
+    { key: 'afastamento_dias', label: 'Dias de afastamento', type: 'number' },
+    { key: 'providencias', label: 'Providências adotadas' },
+    { key: 'status', label: 'Situação', type: 'select', options: ['ABERTO', 'EM_ANALISE', 'ENCERRADO'], required: true },
+  ]},
+  'Documentos': { table: 'erp_rh_documentos', fields: [
+    { key: 'funcionario_id', label: 'Funcionário', type: 'staff', required: true },
+    { key: 'tipo_documento', label: 'Tipo de documento', type: 'select', options: ['CONTRATO', 'RG', 'CPF', 'ASO', 'ATESTADO', 'CERTIFICADO', 'ADVERTENCIA', 'OUTRO'], required: true },
+    { key: 'titulo', label: 'Título / descrição', required: true },
+    { key: 'numero_documento', label: 'Número do documento' },
+    { key: 'data_emissao', label: 'Data de emissão', type: 'date' },
+    { key: 'validade_ate', label: 'Validade até', type: 'date' },
+    { key: 'observacoes', label: 'Observações' },
+  ]},
+}
+const blank = (fields: Field[]) => Object.fromEntries(fields.map(f => [f.key, f.type === 'datetime-local' ? new Date().toISOString().slice(0, 16) : ''])) as Record<string, string>
+const display = (value: unknown) => value === null || value === undefined || value === '' ? '—' : String(value)
+const errorText = (error: unknown) => error instanceof Error ? error.message : 'Não foi possível concluir a operação.'
 
-export default function RHIndustrial(){
- const [tab,setTab]=useState<Tab>('dashboard'),[page,setPage]=useState(0),[query,setQuery]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState('')
- const [employees,setEmployees]=useState<Employee[]>([]),[sectors,setSectors]=useState<Sector[]>([]),[trainings,setTrainings]=useState<Training[]>([]),[plans,setPlans]=useState<Plan[]>([]),[agenda,setAgenda]=useState<Agenda[]>([]),[points,setPoints]=useState<Point[]>([]),[evaluations,setEvaluations]=useState<Evaluation[]>([]),[absences,setAbsences]=useState<Absence[]>([]),[accidents,setAccidents]=useState<Accident[]>([]),[docs,setDocs]=useState<Doc[]>([]),[photos,setPhotos]=useState<Record<string,string>>({})
- const [modal,setModal]=useState<string|null>(null),[editing,setEditing]=useState<string|null>(null),[form,setForm]=useState<Record<string,string>>({}),[file,setFile]=useState<File|null>(null),[companyBrand,setCompanyBrand]=useState<CompanyBrand|null>(null),[selectedSessionKey,setSelectedSessionKey]=useState('')
- const set=(k:string,v:string)=>setForm(x=>({...x,[k]:v}))
- const company=async()=>{const r=await supabase.rpc('erp_current_empresa_id');if(r.error||!r.data)throw r.error??new Error('Empresa da sessão não identificada.');return String(r.data)}
- const en=(id:string)=>employees.find(x=>x.id===id)?.nome??'—',sn=(id:string|null)=>sectors.find(x=>x.id===id)?.nome??'—';const sessions=useMemo(()=>{const grouped=new Map<string,{key:string;trainingId:string;date:string;start:string|null;end:string|null;attendees:Agenda[]}>();for(const item of agenda){const key=[item.treinamento_id,item.data_prevista,item.hora_inicio??'',item.hora_fim??''].join('|');const session=grouped.get(key)??{key,trainingId:item.treinamento_id,date:item.data_prevista,start:item.hora_inicio,end:item.hora_fim,attendees:[]};session.attendees.push(item);grouped.set(key,session)}return [...grouped.values()].sort((a,b)=>a.date.localeCompare(b.date)||String(a.start??'').localeCompare(String(b.start??'')))},[agenda]);const selectedSession=sessions.find(s=>s.key===selectedSessionKey)??sessions[0];const selectedTraining=selectedSession?trainings.find(t=>t.id===selectedSession.trainingId):undefined
- const load=async()=>{setBusy(true);setError('');try{const empresa_id=await company();const brandResult=await supabase.from('erp_empresas').select('razao_social,nome_fantasia,cnpj,logo_url,logo_impressao_url,endereco,cidade,uf').eq('id',empresa_id).maybeSingle();if(brandResult.error)throw brandResult.error;setCompanyBrand(brandResult.data as CompanyBrand|null);const [e,s,t,p,a,pt,ev,ab,ac,d]=await Promise.all([
-  fetchAllPages<Employee>((f,z)=>supabase.from('erp_funcionarios').select('id,matricula,nome,cpf,cargo,setor_id,data_admissao,data_demissao,status,email,telefone,foto_storage_path').eq('empresa_id',empresa_id).order('nome').range(f,z)),
-  fetchAllPages<Sector>((f,z)=>supabase.from('erp_setores').select('id,codigo,nome').eq('empresa_id',empresa_id).eq('ativo',true).order('nome').range(f,z)),
-  fetchAllPages<Training>((f,z)=>supabase.from('erp_treinamentos').select('id,plano_id,titulo,instrutor,data,carga_horas,status').eq('empresa_id',empresa_id).order('data',{ascending:false}).range(f,z)),
-  fetchAllPages<Plan>((f,z)=>supabase.from('erp_planos_treinamento').select('id,codigo,titulo,setor_id,competencia,periodo,status').eq('empresa_id',empresa_id).order('periodo',{ascending:false}).range(f,z)),
-  fetchAllPages<Agenda>((f,z)=>supabase.from('erp_treinamentos_funcionarios_agenda').select('id,treinamento_id,funcionario_id,data_prevista,hora_inicio,hora_fim,obrigatorio,presenca,concluido,nota,observacao').eq('empresa_id',empresa_id).order('data_prevista').range(f,z)),
-  fetchAllPages<Point>((f,z)=>supabase.from('erp_ponto_registros').select('id,funcionario_id,data,entrada,saida_intervalo,retorno_intervalo,saida,observacao').eq('empresa_id',empresa_id).order('data',{ascending:false}).range(f,z)),
-  fetchAllPages<Evaluation>((f,z)=>supabase.from('erp_avaliacoes_funcionarios').select('id,funcionario_id,periodo_inicio,periodo_fim,nota,avaliador_id,pontos_fortes,pontos_melhoria,plano_acao,status').eq('empresa_id',empresa_id).order('created_at',{ascending:false}).range(f,z)),
-  fetchAllPages<Absence>((f,z)=>supabase.from('erp_ausencias_funcionarios').select('id,funcionario_id,data_inicio,data_fim,tipo,motivo,status').eq('empresa_id',empresa_id).order('data_inicio',{ascending:false}).range(f,z)),
-  fetchAllPages<Accident>((f,z)=>supabase.from('erp_acidentes_trabalho').select('id,funcionario_id,data_acidente,hora_acidente,tipo,gravidade,local,descricao,parte_corpo,afastamento,dias_afastamento,cat_numero,causa,acao_corretiva,status').eq('empresa_id',empresa_id).order('data_acidente',{ascending:false}).range(f,z)),
-  fetchAllPages<Doc>((f,z)=>supabase.from('erp_funcionarios_documentos').select('id,funcionario_id,tipo,numero,emissao,validade,storage_path,observacoes').eq('empresa_id',empresa_id).order('validade').range(f,z))
- ]);setEmployees(e);setSectors(s);setTrainings(t);setPlans(p);setAgenda(a);setPoints(pt);setEvaluations(ev);setAbsences(ab);setAccidents(ac);setDocs(d)
- const ps:Record<string,string>={};await Promise.all(e.filter(x=>x.foto_storage_path).map(async x=>{const r=await supabase.storage.from('documentos-erp').createSignedUrl(x.foto_storage_path!,3600);if(!r.error&&r.data?.signedUrl)ps[x.id]=r.data.signedUrl}));setPhotos(ps)
- }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar RH.')}finally{setBusy(false)}}
- useEffect(()=>{void load()},[]);useEffect(()=>{const q=new URLSearchParams(location.search).get('tab');if(tabs.some(x=>x[0]===q))setTab(q as Tab)},[]);useEffect(()=>setPage(0),[tab,query])
- const open=(kind:string,row?:Record<string,unknown>)=>{setModal(kind);setEditing(row?.id?String(row.id):null);setFile(null);setError('');const r=(k:string,d:string)=>String(row?.[k]??d)
-  if(kind==='employee')setForm({matricula:r('matricula',''),nome:r('nome',''),cpf:r('cpf',''),cargo:r('cargo',''),setor_id:r('setor_id',''),data_admissao:r('data_admissao',today()),data_demissao:r('data_demissao',''),email:r('email',''),telefone:r('telefone',''),status:r('status','ativo')})
-  if(kind==='training')setForm({plano_id:r('plano_id',''),titulo:r('titulo',''),instrutor:r('instrutor',''),data:r('data',today()),carga_horas:r('carga_horas',''),status:r('status','programado')})
-  if(kind==='agenda')setForm({treinamento_id:r('treinamento_id',trainings[0]?.id??''),funcionario_id:r('funcionario_id',employees[0]?.id??''),data_prevista:r('data_prevista',today()),hora_inicio:r('hora_inicio',''),hora_fim:r('hora_fim',''),obrigatorio:r('obrigatorio','true'),presenca:r('presenca','false'),concluido:r('concluido','false'),nota:r('nota',''),observacao:r('observacao','')})
-  if(kind==='point')setForm({funcionario_id:r('funcionario_id',employees[0]?.id??''),data:r('data',today()),entrada:'',saida_intervalo:'',retorno_intervalo:'',saida:'',observacao:r('observacao','')})
-  if(kind==='evaluation')setForm({funcionario_id:r('funcionario_id',employees[0]?.id??''),periodo_inicio:r('periodo_inicio',today()),periodo_fim:r('periodo_fim',today()),nota:r('nota',''),avaliador_id:r('avaliador_id',''),pontos_fortes:r('pontos_fortes',''),pontos_melhoria:r('pontos_melhoria',''),plano_acao:r('plano_acao',''),status:r('status','ABERTA')})
-  if(kind==='absence')setForm({funcionario_id:r('funcionario_id',employees[0]?.id??''),data_inicio:r('data_inicio',today()),data_fim:r('data_fim',today()),tipo:r('tipo','FALTA'),motivo:r('motivo',''),status:r('status','ABERTA')})
-  if(kind==='accident')setForm({funcionario_id:r('funcionario_id',employees[0]?.id??''),data_acidente:r('data_acidente',today()),hora_acidente:r('hora_acidente',''),tipo:r('tipo','ACIDENTE_TIPICO'),gravidade:r('gravidade','LEVE'),local:r('local',''),descricao:r('descricao',''),parte_corpo:r('parte_corpo',''),afastamento:r('afastamento','false'),dias_afastamento:r('dias_afastamento','0'),cat_numero:r('cat_numero',''),causa:r('causa',''),acao_corretiva:r('acao_corretiva',''),status:r('status','ABERTO')})
-  if(kind==='document')setForm({funcionario_id:r('funcionario_id',employees[0]?.id??''),tipo:r('tipo','RG'),numero:r('numero',''),emissao:r('emissao',''),validade:r('validade',''),observacoes:r('observacoes','')})
- }
- const close=()=>{setModal(null);setEditing(null);setForm({});setFile(null)}
- const save=async()=>{if(!modal)return;setBusy(true);setError('');try{const empresa_id=await company();let table='';let payload:Record<string,unknown>={empresa_id}
-  if(modal==='employee'){if(!form.nome?.trim())throw new Error('Nome é obrigatório.');table='erp_funcionarios';payload={...payload,matricula:form.matricula||null,nome:form.nome.trim(),cpf:form.cpf||null,cargo:form.cargo||null,setor_id:form.setor_id||null,data_admissao:form.data_admissao||null,data_demissao:form.data_demissao||null,email:form.email||null,telefone:form.telefone||null,status:form.status||'ativo'}}
-  if(modal==='training'){table='erp_treinamentos';payload={...payload,plano_id:form.plano_id||null,titulo:form.titulo.trim(),instrutor:form.instrutor||null,data:form.data||null,carga_horas:form.carga_horas?Number(form.carga_horas):null,status:form.status||'programado'}}
-  if(modal==='agenda'){table='erp_treinamentos_funcionarios_agenda';payload={...payload,treinamento_id:form.treinamento_id,funcionario_id:form.funcionario_id,data_prevista:form.data_prevista,hora_inicio:form.hora_inicio||null,hora_fim:form.hora_fim||null,obrigatorio:form.obrigatorio==='true',presenca:form.presenca==='true',concluido:form.concluido==='true',nota:form.nota?Number(form.nota):null,observacao:form.observacao||null}}
-  if(modal==='point'){table='erp_ponto_registros';payload={...payload,funcionario_id:form.funcionario_id,data:form.data,entrada:form.entrada?new Date(form.data+'T'+form.entrada).toISOString():null,saida_intervalo:form.saida_intervalo?new Date(form.data+'T'+form.saida_intervalo).toISOString():null,retorno_intervalo:form.retorno_intervalo?new Date(form.data+'T'+form.retorno_intervalo).toISOString():null,saida:form.saida?new Date(form.data+'T'+form.saida).toISOString():null,observacao:form.observacao||null}}
-  if(modal==='evaluation'){table='erp_avaliacoes_funcionarios';payload={...payload,funcionario_id:form.funcionario_id,periodo_inicio:form.periodo_inicio,periodo_fim:form.periodo_fim,nota:form.nota?Number(form.nota):null,avaliador_id:form.avaliador_id||null,pontos_fortes:form.pontos_fortes||null,pontos_melhoria:form.pontos_melhoria||null,plano_acao:form.plano_acao||null,status:form.status||'ABERTA'}}
-  if(modal==='absence'){table='erp_ausencias_funcionarios';payload={...payload,funcionario_id:form.funcionario_id,data_inicio:form.data_inicio,data_fim:form.data_fim,tipo:form.tipo,motivo:form.motivo||null,status:form.status||'ABERTA'}}
-  if(modal==='accident'){if(!form.descricao?.trim())throw new Error('Descrição é obrigatória.');table='erp_acidentes_trabalho';payload={...payload,funcionario_id:form.funcionario_id,data_acidente:form.data_acidente,hora_acidente:form.hora_acidente||null,tipo:form.tipo,gravidade:form.gravidade,local:form.local||null,descricao:form.descricao.trim(),parte_corpo:form.parte_corpo||null,afastamento:form.afastamento==='true',dias_afastamento:Number(form.dias_afastamento||0),cat_numero:form.cat_numero||null,causa:form.causa||null,acao_corretiva:form.acao_corretiva||null,status:form.status||'ABERTO'}}
-  if(modal==='document'){table='erp_funcionarios_documentos';payload={...payload,funcionario_id:form.funcionario_id,tipo:form.tipo,numero:form.numero||null,emissao:form.emissao||null,validade:form.validade||null,observacoes:form.observacoes||null}}
-  const q=editing?await supabase.from(table).update(payload).eq('id',editing).eq('empresa_id',empresa_id):await supabase.from(table).insert(payload).select('id').single();if(q.error)throw q.error
-  const id=editing??(q.data as {id:string}|null)?.id
-  if(modal==='employee'&&file&&id){if(file.size>5242880)throw new Error('Foto acima de 5 MB.');if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('Use JPG, PNG ou WEBP.');const path=empresa_id+'/funcionarios/'+id+'/'+crypto.randomUUID()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');const up=await supabase.storage.from('documentos-erp').upload(path,file,{upsert:true,contentType:file.type});if(up.error)throw up.error;const u=await supabase.from('erp_funcionarios').update({foto_storage_path:path}).eq('id',id).eq('empresa_id',empresa_id);if(u.error)throw u.error}
-  setMessage(editing?'Registro atualizado.':'Registro criado.');close();await load()
- }catch(e){setError(e instanceof Error?e.message:'Não foi possível salvar.')}finally{setBusy(false)}}
- const remove=async(id:string,table:string)=>{if(!confirm('Excluir este registro?'))return;setBusy(true);try{const empresa_id=await company();const r=await supabase.from(table).delete().eq('id',id).eq('empresa_id',empresa_id);if(r.error)throw r.error;setMessage('Registro excluído.');await load()}catch(e){setError(e instanceof Error?e.message:'Não foi possível excluir.')}finally{setBusy(false)}}
- const filteredEmployees=useMemo(()=>{const q=query.toLowerCase();return employees.filter(x=>!q||[x.nome,x.matricula,x.cpf,x.cargo].join(' ').toLowerCase().includes(q))},[employees,query])
- const months=Array.from({length:12},(_,i)=>{const d=new Date();d.setMonth(d.getMonth()-(11-i));return d.toISOString().slice(0,7)})
- const bars=(kind:'ponto'|'treino'|'acidente')=>months.map(m=>kind==='ponto'?{m,a:points.filter(x=>x.data.slice(0,7)===m&&x.entrada).length,b:points.filter(x=>x.data.slice(0,7)===m&&!x.entrada).length}:kind==='treino'?{m,a:agenda.filter(x=>x.data_prevista.slice(0,7)===m&&x.concluido).length,b:agenda.filter(x=>x.data_prevista.slice(0,7)===m&&!x.presenca).length}:{m,a:accidents.filter(x=>x.data_acidente.slice(0,7)===m).length,b:0})
- const max=(d:{a:number;b:number}[])=>Math.max(1,...d.flatMap(x=>[x.a,x.b]))
- const dashboard=()=>{const k=bars('ponto'),t=bars('treino'),a=bars('acidente');const active=employees.filter(x=>x.status==='ativo').length;return <><div className="rh-kpis">{[['Funcionários ativos',active,UserRound],['Treinamentos concluídos',agenda.filter(x=>x.concluido).length,GraduationCap],['Faltas de treinamento',agenda.filter(x=>!x.presenca).length,CalendarCheck2],['Acidentes',accidents.length,AlertTriangle],['Dias afastados',accidents.reduce((n,x)=>n+x.dias_afastamento,0),CalendarDays],['Docs vencidos',docs.filter(x=>x.validade&&x.validade<today()).length,FileText]].map(([l,v,I])=>{const Icon=I as typeof Users;return <div className="rh-kpi" key={String(l)}><Icon size={15}/><span>{String(l)}</span><strong>{String(v)}</strong></div>})}</div><div className="rh-chart-grid">{[['Presença x faltas — ponto',k],['Treinamentos concluídos x faltas',t],['Acidentes por mês',a]].map(([title,data])=>{const d=data as {m:string;a:number;b:number}[];return <section className="rh-card" key={String(title)}><header className="rh-card-head"><strong>{String(title)}</strong></header><div className="rh-chart">{d.map(x=><div className="rh-month" key={x.m}><div className="rh-bars"><i className="bar-a" style={{height:Math.max(3,x.a/max(d)*145)}}/><i className="bar-b" style={{height:Math.max(3,x.b/max(d)*145)}}/></div><small>{x.m.slice(5)}</small></div>)}</div></section>})}</div><section className="rh-card"><header className="rh-card-head"><strong>Painel de segurança</strong></header><div className="rh-safety"><div><span>Acidentes com afastamento</span><strong>{accidents.filter(x=>x.afastamento).length}</strong></div><div><span>Acidentes graves/fatais</span><strong>{accidents.filter(x=>['GRAVE','FATAL'].includes(x.gravidade)).length}</strong></div><div><span>CAT informada</span><strong>{accidents.filter(x=>x.cat_numero).length}</strong></div><div><span>Funcionários com faltas</span><strong>{new Set(absences.filter(x=>x.tipo==='FALTA').map(x=>x.funcionario_id)).size}</strong></div></div></section></>}
- const simpleTable=(kind:Tab)=>{
-  if(kind==='funcionarios')return <section className="rh-card"><header className="rh-card-head"><strong>Cadastro de funcionários</strong><div className="rh-tools"><input className="rh-search" placeholder="Nome, matrícula, CPF..." value={query} onChange={e=>setQuery(e.target.value)}/><button className="rh-btn primary" onClick={()=>open('employee')}><Plus size={13}/>Novo</button></div></header><div className="rh-table-wrap"><table className="rh-table"><thead><tr><th>Foto</th><th>Matrícula</th><th>Nome</th><th>CPF</th><th>Cargo</th><th>Setor</th><th>Admissão</th><th>Status</th><th>Ações</th></tr></thead><tbody>{filteredEmployees.slice(page*25,page*25+25).map(e=><tr key={e.id}><td>{photos[e.id]?<img className="rh-avatar" src={photos[e.id]} alt=""/>:<span className="rh-avatar empty"><UserRound size={13}/></span>}</td><td>{e.matricula||'—'}</td><td className="strong">{e.nome}</td><td>{e.cpf||'—'}</td><td>{e.cargo||'—'}</td><td>{sn(e.setor_id)}</td><td>{e.data_admissao||'—'}</td><td>{e.status}</td><td><button className="rh-icon" onClick={()=>open('employee',e)}><Edit3 size={13}/></button><button className="rh-icon danger" onClick={()=>void remove(e.id,'erp_funcionarios')}><Trash2 size={13}/></button></td></tr>)}</tbody></table></div><PageNav page={page} count={filteredEmployees.length} set={setPage}/></section>
-  if(kind==='comercial')return <section className="rh-card"><header className="rh-card-head"><div><strong>Vendedores e comissões</strong><p>Cadastro de vendedores por usuário autorizado e regras comerciais já existentes.</p></div></header><div className="rh-form"><div className="rh-field wide"><span>VÍNCULO DO VENDEDOR</span><p>O módulo comercial usa os usuários reais do ERP e a tabela de vínculos de comissão. Para evitar cadastro duplicado ou criação automática de login, faça o vínculo do vendedor existente.</p><a className="rh-btn primary" href="/comissoes/perfil">Abrir cadastro de vendedor / perfil de comissão</a></div><div className="rh-field"><span>REGRAS DE COMISSÃO</span><p>Percentuais e metas são configurados no módulo comercial autorizado.</p><a className="rh-btn" href="/comissoes/regras">Abrir regras de comissão</a></div><div className="rh-field"><span>APURAÇÃO E CONFERÊNCIA</span><p>Consulte os cálculos existentes antes de qualquer aprovação ou pagamento.</p><a className="rh-btn" href="/comissoes/calculo">Abrir apuração de comissão</a></div></div></section>;
-  if(kind==='treinamentos')return <section className="rh-card"><header className="rh-card-head"><strong>Treinamentos</strong><button className="rh-btn primary" onClick={()=>open('training')}><Plus size={13}/>Novo treinamento</button></header><div className="rh-table-wrap"><table className="rh-table"><thead><tr><th>Treinamento</th><th>Plano</th><th>Instrutor</th><th>Data</th><th>Carga</th><th>Status</th><th>Ações</th></tr></thead><tbody>{trainings.slice(page*25,page*25+25).map(t=><tr key={t.id}><td className="strong">{t.titulo}</td><td>{plans.find(x=>x.id===t.plano_id)?.titulo||'—'}</td><td>{t.instrutor||'—'}</td><td>{t.data||'—'}</td><td>{t.carga_horas?String(t.carga_horas)+' h':'—'}</td><td>{t.status}</td><td><button className="rh-icon" onClick={()=>open('training',t)}><Edit3 size={13}/></button><button className="rh-icon danger" onClick={()=>void remove(t.id,'erp_treinamentos')}><Trash2 size={13}/></button></td></tr>)}</tbody></table></div><PageNav page={page} count={trainings.length} set={setPage}/></section>
-  if(kind==='ponto')return <section className="rh-card"><header className="rh-card-head"><strong>Ponto / presença</strong><button className="rh-btn primary" onClick={()=>open('point')}><Plus size={13}/>Lançar ponto</button></header><div className="rh-table-wrap"><table className="rh-table"><thead><tr><th>Data</th><th>Funcionário</th><th>Entrada</th><th>Intervalo</th><th>Retorno</th><th>Saída</th><th>Observação</th><th>Ações</th></tr></thead><tbody>{points.slice(page*25,page*25+25).map(p=><tr key={p.id}><td>{p.data}</td><td className="strong">{en(p.funcionario_id)}</td><td>{p.entrada?new Date(p.entrada).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—'}</td><td>{p.saida_intervalo?new Date(p.saida_intervalo).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—'}</td><td>{p.retorno_intervalo?new Date(p.retorno_intervalo).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—'}</td><td>{p.saida?new Date(p.saida).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—'}</td><td>{p.observacao||'—'}</td><td><button className="rh-icon" onClick={()=>open('point',p)}><Edit3 size={13}/></button><button className="rh-icon danger" onClick={()=>void remove(p.id,'erp_ponto_registros')}><Trash2 size={13}/></button></td></tr>)}</tbody></table></div><PageNav page={page} count={points.length} set={setPage}/></section>
-  if(kind==='avaliacoes')return <section className="rh-card"><header className="rh-card-head"><strong>Avaliações de desempenho</strong><button className="rh-btn primary" onClick={()=>open('evaluation')}><Plus size={13}/>Nova avaliação</button></header><div className="rh-table-wrap"><table className="rh-table"><thead><tr><th>Funcionário</th><th>Período</th><th>Nota</th><th>Melhoria</th><th>Status</th><th>Ações</th></tr></thead><tbody>{evaluations.slice(page*25,page*25+25).map(x=><tr key={x.id}><td className="strong">{en(x.funcionario_id)}</td><td>{x.periodo_inicio} → {x.periodo_fim}</td><td>{x.nota??'—'}</td><td>{x.pontos_melhoria||'—'}</td><td>{x.status}</td><td><button className="rh-icon" onClick={()=>open('evaluation',x)}><Edit3 size={13}/></button><button className="rh-icon danger" onClick={()=>void remove(x.id,'erp_avaliacoes_funcionarios')}><Trash2 size={13}/></button></td></tr>)}</tbody></table></div><PageNav page={page} count={evaluations.length} set={setPage}/></section>
-  if(kind==='ausencias')return <section className="rh-card"><header className="rh-card-head"><strong>Faltas, afastamentos e ausências</strong><button className="rh-btn primary" onClick={()=>open('absence')}><Plus size={13}/>Registrar</button></header><div className="rh-table-wrap"><table className="rh-table"><thead><tr><th>Funcionário</th><th>Início</th><th>Fim</th><th>Tipo</th><th>Motivo</th><th>Status</th><th>Ações</th></tr></thead><tbody>{absences.slice(page*25,page*25+25).map(x=><tr key={x.id}><td className="strong">{en(x.funcionario_id)}</td><td>{x.data_inicio}</td><td>{x.data_fim}</td><td>{x.tipo}</td><td>{x.motivo||'—'}</td><td>{x.status}</td><td><button className="rh-icon" onClick={()=>open('absence',x)}><Edit3 size={13}/></button><button className="rh-icon danger" onClick={()=>void remove(x.id,'erp_ausencias_funcionarios')}><Trash2 size={13}/></button></td></tr>)}</tbody></table></div><PageNav page={page} count={absences.length} set={setPage}/></section>
-  if(kind==='acidentes')return <section className="rh-card"><header className="rh-card-head"><strong>Acidentes de trabalho</strong><button className="rh-btn primary" onClick={()=>open('accident')}><Plus size={13}/>Registrar acidente</button></header><div className="rh-table-wrap"><table className="rh-table"><thead><tr><th>Data</th><th>Funcionário</th><th>Tipo</th><th>Gravidade</th><th>Local</th><th>Afast.</th><th>Dias</th><th>CAT</th><th>Status</th><th>Ações</th></tr></thead><tbody>{accidents.slice(page*25,page*25+25).map(x=><tr key={x.id}><td>{x.data_acidente}</td><td className="strong">{en(x.funcionario_id)}</td><td>{x.tipo}</td><td>{x.gravidade}</td><td>{x.local||'—'}</td><td>{x.afastamento?'Sim':'Não'}</td><td>{x.dias_afastamento}</td><td>{x.cat_numero||'—'}</td><td>{x.status}</td><td><button className="rh-icon" onClick={()=>open('accident',x)}><Edit3 size={13}/></button><button className="rh-icon danger" onClick={()=>void remove(x.id,'erp_acidentes_trabalho')}><Trash2 size={13}/></button></td></tr>)}</tbody></table></div><PageNav page={page} count={accidents.length} set={setPage}/></section>
-  if(kind==='documentos')return <section className="rh-card"><header className="rh-card-head"><strong>Documentos dos funcionários</strong><button className="rh-btn primary" onClick={()=>open('document')}><Plus size={13}/>Novo documento</button></header><div className="rh-table-wrap"><table className="rh-table"><thead><tr><th>Funcionário</th><th>Tipo</th><th>Número</th><th>Emissão</th><th>Validade</th><th>Situação</th><th>Ações</th></tr></thead><tbody>{docs.slice(page*25,page*25+25).map(x=>{const v=!!x.validade&&x.validade<today();return <tr key={x.id}><td className="strong">{en(x.funcionario_id)}</td><td>{x.tipo}</td><td>{x.numero||'—'}</td><td>{x.emissao||'—'}</td><td>{x.validade||'—'}</td><td>{v?'VENCIDO':'VÁLIDO'}</td><td><button className="rh-icon" onClick={()=>open('document',x)}><Edit3 size={13}/></button><button className="rh-icon danger" onClick={()=>void remove(x.id,'erp_funcionarios_documentos')}><Trash2 size={13}/></button></td></tr>})}</tbody></table></div><PageNav page={page} count={docs.length} set={setPage}/></section>
-  return <section className="rh-card"><header className="rh-card-head"><div><strong>Cronograma matricial de treinamentos</strong><p>Funcionários nas colunas · treinamentos nas linhas · data, presença e conclusão por célula.</p></div><div className="rh-tools"><select aria-label="Turma para lista de presença" className="rh-search" style={{width:300}} value={selectedSession?.key??''} onChange={e=>setSelectedSessionKey(e.target.value)}><option value="">Selecione uma turma agendada</option>{sessions.map(s=><option key={s.key} value={s.key}>{trainings.find(t=>t.id===s.trainingId)?.titulo??'Treinamento'} · {s.date} · {s.attendees.length} participante(s)</option>)}</select><button className="rh-btn" type="button" disabled={!selectedSession} onClick={()=>window.print()}>Imprimir presença</button><button className="rh-btn primary" onClick={()=>open('agenda')}><Plus size={13}/>Agendar</button></div></header><div className="rh-matrix-wrap"><table className="rh-matrix"><thead><tr><th className="sticky">Treinamento</th>{employees.map(e=><th key={e.id}>{photos[e.id]?<img src={photos[e.id]} className="rh-matrix-avatar" alt=""/>:<UserRound size={13}/>}<b>{e.nome}</b><small>{e.cargo||sn(e.setor_id)}</small></th>)}</tr></thead><tbody>{trainings.map(t=><tr key={t.id}><th className="sticky"><b>{t.titulo}</b><small>{t.carga_horas?String(t.carga_horas)+' h':'—'}</small></th>{employees.map(e=>{const a=agenda.find(x=>x.treinamento_id===t.id&&x.funcionario_id===e.id);return <td key={e.id}><button className={'rh-cell '+(a?.concluido?'ok':a?.presenca?'scheduled':a?'missed':'blank')} onClick={()=>open('agenda',a??{treinamento_id:t.id,funcionario_id:e.id})}>{a?<><b>{a.data_prevista}</b><small>{a.presenca?'Presente':'Falta'}{a.concluido?' · concluído':''}</small></>:'Agendar'}</button></td>})}</tr>)}</tbody></table></div></section>
- }
- const modalView=()=>{if(!modal)return null;const Emp=()=> <Select label="Funcionário" value={form.funcionario_id??''} set={v=>set('funcionario_id',v)}><option value="">Selecione</option>{employees.map(e=><option key={e.id} value={e.id}>{e.nome}</option>)}</Select>
-  if(modal==='employee')return <Modal title={editing?'Editar funcionário':'Novo funcionário'} close={close} save={()=>void save()} busy={busy}><div className="rh-form"><div className="rh-photo"><div>{editing&&photos[editing]?<img src={photos[editing]} alt="Foto atual"/>:<UserRound size={34}/>}</div><label className="rh-btn"><ImagePlus size={13}/>Anexar foto<input hidden type="file" accept="image/jpeg,image/png,image/webp" onChange={(e:ChangeEvent<HTMLInputElement>)=>setFile(e.target.files?.[0]??null)}/></label>{file&&<small>{file.name}</small>}</div><Field label="Matrícula" value={form.matricula??''} set={v=>set('matricula',v)}/><Field label="Nome completo *" value={form.nome??''} set={v=>set('nome',v)}/><Field label="CPF" value={form.cpf??''} set={v=>set('cpf',v)}/><Field label="Cargo" value={form.cargo??''} set={v=>set('cargo',v)}/><Select label="Setor" value={form.setor_id??''} set={v=>set('setor_id',v)}><option value="">Selecione</option>{sectors.map(s=><option key={s.id} value={s.id}>{s.codigo} · {s.nome}</option>)}</Select><Select label="Status" value={form.status??'ativo'} set={v=>set('status',v)}><option>ativo</option><option>inativo</option><option>afastado</option><option>desligado</option></Select><Field label="Admissão" value={form.data_admissao??''} set={v=>set('data_admissao',v)} type="date"/><Field label="Demissão" value={form.data_demissao??''} set={v=>set('data_demissao',v)} type="date"/><Field label="E-mail" value={form.email??''} set={v=>set('email',v)} type="email"/><Field label="Telefone" value={form.telefone??''} set={v=>set('telefone',v)}/></div></Modal>
-  if(modal==='training')return <Modal title="Cadastro de treinamento" close={close} save={()=>void save()} busy={busy}><div className="rh-form"><Select label="Plano" value={form.plano_id??''} set={v=>set('plano_id',v)}><option value="">Sem plano</option>{plans.map(p=><option key={p.id} value={p.id}>{p.codigo} · {p.titulo}</option>)}</Select><Field label="Título *" value={form.titulo??''} set={v=>set('titulo',v)}/><Field label="Instrutor" value={form.instrutor??''} set={v=>set('instrutor',v)}/><Field label="Data base" value={form.data??''} set={v=>set('data',v)} type="date"/><Field label="Carga horária" value={form.carga_horas??''} set={v=>set('carga_horas',v)} type="number"/><Select label="Status" value={form.status??'programado'} set={v=>set('status',v)}><option>programado</option><option>em_andamento</option><option>concluido</option><option>cancelado</option></Select></div></Modal>
-  if(modal==='agenda')return <Modal title="Agenda de treinamento" close={close} save={()=>void save()} busy={busy}><div className="rh-form"><Select label="Treinamento" value={form.treinamento_id??''} set={v=>set('treinamento_id',v)}><option value="">Selecione</option>{trainings.map(t=><option key={t.id} value={t.id}>{t.titulo}</option>)}</Select><Emp/><Field label="Data prevista" value={form.data_prevista??''} set={v=>set('data_prevista',v)} type="date"/><Field label="Hora início" value={form.hora_inicio??''} set={v=>set('hora_inicio',v)} type="time"/><Field label="Hora fim" value={form.hora_fim??''} set={v=>set('hora_fim',v)} type="time"/><Select label="Obrigatório" value={form.obrigatorio??'true'} set={v=>set('obrigatorio',v)}><option value="true">Sim</option><option value="false">Não</option></Select><Select label="Presença" value={form.presenca??'false'} set={v=>set('presenca',v)}><option value="false">Falta</option><option value="true">Presente</option></Select><Select label="Concluído" value={form.concluido??'false'} set={v=>set('concluido',v)}><option value="false">Não</option><option value="true">Sim</option></Select><Field label="Nota" value={form.nota??''} set={v=>set('nota',v)} type="number"/><Field label="Observação" value={form.observacao??''} set={v=>set('observacao',v)} wide/></div></Modal>
-  if(modal==='point')return <Modal title="Lançamento de ponto" close={close} save={()=>void save()} busy={busy}><div className="rh-form"><Emp/><Field label="Data" value={form.data??today()} set={v=>set('data',v)} type="date"/><Field label="Entrada" value={form.entrada??''} set={v=>set('entrada',v)} type="time"/><Field label="Saída intervalo" value={form.saida_intervalo??''} set={v=>set('saida_intervalo',v)} type="time"/><Field label="Retorno intervalo" value={form.retorno_intervalo??''} set={v=>set('retorno_intervalo',v)} type="time"/><Field label="Saída" value={form.saida??''} set={v=>set('saida',v)} type="time"/><Field label="Observação" value={form.observacao??''} set={v=>set('observacao',v)} wide/></div></Modal>
-  if(modal==='evaluation')return <Modal title="Avaliação de desempenho" close={close} save={()=>void save()} busy={busy}><div className="rh-form"><Emp/><Field label="Avaliador (ID)" value={form.avaliador_id??''} set={v=>set('avaliador_id',v)}/><Field label="Período inicial" value={form.periodo_inicio??''} set={v=>set('periodo_inicio',v)} type="date"/><Field label="Período final" value={form.periodo_fim??''} set={v=>set('periodo_fim',v)} type="date"/><Field label="Nota" value={form.nota??''} set={v=>set('nota',v)} type="number"/><Select label="Status" value={form.status??'ABERTA'} set={v=>set('status',v)}><option>ABERTA</option><option>CONCLUIDA</option><option>CANCELADA</option></Select><Field label="Pontos fortes" value={form.pontos_fortes??''} set={v=>set('pontos_fortes',v)} wide/><Field label="Pontos de melhoria" value={form.pontos_melhoria??''} set={v=>set('pontos_melhoria',v)} wide/><Field label="Plano de ação" value={form.plano_acao??''} set={v=>set('plano_acao',v)} wide/></div></Modal>
-  if(modal==='absence')return <Modal title="Falta / afastamento" close={close} save={()=>void save()} busy={busy}><div className="rh-form"><Emp/><Select label="Tipo" value={form.tipo??'FALTA'} set={v=>set('tipo',v)}><option>FALTA</option><option>ATESTADO</option><option>FERIAS</option><option>LICENCA</option><option>OUTROS</option></Select><Field label="Data inicial" value={form.data_inicio??''} set={v=>set('data_inicio',v)} type="date"/><Field label="Data final" value={form.data_fim??''} set={v=>set('data_fim',v)} type="date"/><Field label="Motivo" value={form.motivo??''} set={v=>set('motivo',v)} wide/><Select label="Status" value={form.status??'ABERTA'} set={v=>set('status',v)}><option>ABERTA</option><option>APROVADA</option><option>ENCERRADA</option><option>CANCELADA</option></Select></div></Modal>
-  if(modal==='accident')return <Modal title="Registro de acidente de trabalho" close={close} save={()=>void save()} busy={busy}><div className="rh-form"><Emp/><Field label="Data" value={form.data_acidente??today()} set={v=>set('data_acidente',v)} type="date"/><Field label="Hora" value={form.hora_acidente??''} set={v=>set('hora_acidente',v)} type="time"/><Select label="Tipo" value={form.tipo??'ACIDENTE_TIPICO'} set={v=>set('tipo',v)}><option>ACIDENTE_TIPICO</option><option>ACIDENTE_TRAJETO</option><option>DOENCA_OCUPACIONAL</option><option>INCIDENTE</option></Select><Select label="Gravidade" value={form.gravidade??'LEVE'} set={v=>set('gravidade',v)}><option>LEVE</option><option>MODERADA</option><option>GRAVE</option><option>FATAL</option></Select><Field label="Local" value={form.local??''} set={v=>set('local',v)}/><Field label="Parte do corpo" value={form.parte_corpo??''} set={v=>set('parte_corpo',v)}/><Select label="Afastamento" value={form.afastamento??'false'} set={v=>set('afastamento',v)}><option value="false">Não</option><option value="true">Sim</option></Select><Field label="Dias de afastamento" value={form.dias_afastamento??'0'} set={v=>set('dias_afastamento',v)} type="number"/><Field label="CAT" value={form.cat_numero??''} set={v=>set('cat_numero',v)}/><Field label="Causa" value={form.causa??''} set={v=>set('causa',v)}/><Field label="Descrição *" value={form.descricao??''} set={v=>set('descricao',v)} wide/><Field label="Ação corretiva" value={form.acao_corretiva??''} set={v=>set('acao_corretiva',v)} wide/><Select label="Status" value={form.status??'ABERTO'} set={v=>set('status',v)}><option>ABERTO</option><option>EM_ANALISE</option><option>TRATADO</option><option>ENCERRADO</option></Select></div></Modal>
-  return <Modal title="Documento do funcionário" close={close} save={()=>void save()} busy={busy}><div className="rh-form"><Emp/><Select label="Tipo" value={form.tipo??'RG'} set={v=>set('tipo',v)}><option>RG</option><option>CPF</option><option>CNH</option><option>CTPS</option><option>ASO</option><option>CERTIFICADO</option><option>OUTRO</option></Select><Field label="Número" value={form.numero??''} set={v=>set('numero',v)}/><Field label="Emissão" value={form.emissao??''} set={v=>set('emissao',v)} type="date"/><Field label="Validade" value={form.validade??''} set={v=>set('validade',v)} type="date"/><Field label="Observações" value={form.observacoes??''} set={v=>set('observacoes',v)} wide/></div></Modal>
- }
- const body=tab==='dashboard'?dashboard():simpleTable(tab);const printSheet=selectedSession?<section className="rh-print-sheet"><header className="rh-print-header">{(companyBrand?.logo_impressao_url||companyBrand?.logo_url)&&<img src={companyBrand.logo_impressao_url||companyBrand.logo_url||''} alt="Logo da empresa"/>}<div><h1>{companyBrand?.razao_social||companyBrand?.nome_fantasia||'Empresa não identificada'}</h1>{companyBrand?.cnpj&&<p>CNPJ: {companyBrand.cnpj}</p>}{(companyBrand?.endereco||companyBrand?.cidade)&&<p>{[companyBrand.endereco,companyBrand.cidade,companyBrand.uf].filter(Boolean).join(' · ')}</p>}</div></header><h2>LISTA DE PRESENÇA — TREINAMENTO</h2><div className="rh-print-meta"><p><b>Treinamento:</b> {selectedTraining?.titulo??'—'}</p><p><b>Turma / data:</b> {selectedSession.date}</p><p><b>Horário:</b> {selectedSession.start||'—'} a {selectedSession.end||'—'}</p><p><b>Carga horária prevista:</b> {selectedTraining?.carga_horas!=null?`${selectedTraining.carga_horas} h`:'Não cadastrada'}</p><p><b>Instrutor:</b> {selectedTraining?.instrutor||'Não cadastrado'}</p><p><b>Local / modalidade:</b> Não cadastrados no registro atual</p><p><b>Conteúdo programático:</b> Não cadastrado no registro atual</p></div><table><thead><tr><th>Nº</th><th>Nome completo</th><th>Matrícula</th><th>Cargo / departamento</th><th>Presença</th><th>Assinatura do participante</th><th>Observações</th></tr></thead><tbody>{selectedSession.attendees.map((a,index)=>{const employee=employees.find(e=>e.id===a.funcionario_id);return <tr key={a.id}><td>{index+1}</td><td>{employee?.nome??'Funcionário não localizado'}</td><td>{employee?.matricula||'—'}</td><td>{[employee?.cargo,sn(employee?.setor_id??null)].filter(x=>x&&x!=='—').join(' / ')||'—'}</td><td>{a.presenca?'PRESENTE':'AUSENTE'}</td><td style={{height:34}}></td><td>{a.observacao||''}</td></tr>})}</tbody></table><div className="rh-print-totals"><span>Convocados: {selectedSession.attendees.length}</span><span>Presentes: {selectedSession.attendees.filter(a=>a.presenca).length}</span><span>Ausentes: {selectedSession.attendees.filter(a=>!a.presenca).length}</span><span>Concluídos: {selectedSession.attendees.filter(a=>a.concluido).length}</span></div><p className="rh-print-foot">Carga horária realizada: não registrada no esquema atual. Emitido em {new Date().toLocaleString('pt-BR')}.</p><div className="rh-print-notes"><b>Observações / ocorrências:</b><div></div></div><div className="rh-print-signatures"><div>Instrutor do treinamento</div><div>Responsável pelo treinamento</div></div><p className="rh-print-version">Documento gerado a partir dos registros de turma disponíveis no ERP. Versão emitida em {new Date().toLocaleString('pt-BR')}.</p></section>:null;
- const css='.rh-page{max-width:1600px;margin:auto;color:#294650}.rh-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}.rh-head h1{font-size:20px;font-weight:500;margin:0;color:#173b49}.rh-head p{font-size:10px;margin:3px 0;color:#73868c}.rh-tabs{display:flex;overflow:auto;border:1px solid #d8e6ea;border-bottom:0;background:#eef6f8}.rh-tab{height:34px;border:0;border-right:1px solid #d8e6ea;border-bottom:2px solid transparent;background:#eef6f8;padding:0 10px;display:flex;align-items:center;gap:6px;color:#52707a;font-size:9px;font-weight:400;white-space:nowrap}.rh-tab:hover{background:#dfeff4;color:#15566d}.rh-tab.active{color:#fff;background:#2d8db8;border-bottom-color:#176d91;font-weight:500}.rh-card{background:#fff;border:1px solid #d7e5e8;margin-top:0;box-shadow:0 2px 8px #123b5008}.rh-card-head{min-height:46px;padding:0 10px;border-bottom:1px solid #dfe9eb;display:flex;align-items:center;justify-content:space-between;gap:8px}.rh-card-head strong{font-size:12px;font-weight:500;color:#234a58}.rh-card-head p{font-size:9px;color:#71858d;margin:3px 0}.rh-tools{display:flex;gap:5px;align-items:center}.rh-search{height:32px;width:340px;border:1px solid #c9dce1;border-radius:3px;padding:0 8px;font-size:10px;background:#fff}.rh-search:focus{border-color:#4d9db7;box-shadow:0 0 0 2px #2d8db81c;outline:0}.rh-btn{height:32px;min-width:32px;border:1px solid #c5d9de;border-radius:3px;background:#fff;color:#315966;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:9px;font-weight:400}.rh-btn.primary{background:#2d8db8;border-color:#2d8db8;color:#fff}.rh-btn.primary:hover{background:#247b9e;border-color:#247b9e}.rh-icon{width:28px;height:28px;border:1px solid #d1e0e4;background:#fff;border-radius:3px;display:inline-grid;place-items:center;color:#516b74}.rh-icon:hover{background:#edf7fa;border-color:#b5d4dc;color:#1e6c85}.rh-icon.danger:hover{background:#fff0ee;border-color:#efc7c2;color:#b54b40}.rh-table-wrap{overflow:auto}.rh-table{width:100%;min-width:920px;border-collapse:collapse}.rh-table th{height:34px;background:#f0f6f8;border-bottom:1px solid #d7e5e8;padding:0 8px;text-align:left;font-size:8.5px;color:#617981;font-weight:500}.rh-table td{height:43px;border-bottom:1px solid #e7eef0;padding:5px 8px;font-size:10.5px}.rh-table tbody tr:hover{background:#f8fcfd}.rh-table .strong{font-weight:500;color:#284a55}.rh-avatar{width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid #c9dfe4;display:inline-grid;place-items:center;background:#edf6f8;color:#4b8393}.rh-kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;margin-top:9px}.rh-kpi{position:relative;min-height:70px;padding:9px;border:1px solid #d6e5e9;background:#eef7f9;box-shadow:none}.rh-kpi:nth-child(1){background:#edf7fa;border-color:#cce3e9}.rh-kpi:nth-child(2){background:#edf8f3;border-color:#cce5d8}.rh-kpi:nth-child(3){background:#fff7e8;border-color:#f0dfb8}.rh-kpi:nth-child(4){background:#fff0ee;border-color:#edcbc6}.rh-kpi:nth-child(5){background:#f3f0fb;border-color:#ddd5ee}.rh-kpi:nth-child(6){background:#f1f5f7;border-color:#d6e0e4}.rh-kpi svg{position:absolute;right:8px;top:8px}.rh-kpi:nth-child(1) svg{color:#2d8db8}.rh-kpi:nth-child(2) svg{color:#3c9670}.rh-kpi:nth-child(3) svg{color:#c58a2b}.rh-kpi:nth-child(4) svg{color:#c94f45}.rh-kpi:nth-child(5) svg{color:#765ca7}.rh-kpi:nth-child(6) svg{color:#607d88}.rh-kpi span{font-size:9px;color:#61767e;display:block}.rh-kpi strong{font-size:20px;font-weight:500;display:block;margin-top:4px}.rh-kpi:nth-child(1) strong{color:#1f718d}.rh-kpi:nth-child(2) strong{color:#287554}.rh-kpi:nth-child(3) strong{color:#9a6b19}.rh-kpi:nth-child(4) strong{color:#b33f37}.rh-kpi:nth-child(5) strong{color:#624c8e}.rh-kpi:nth-child(6) strong{color:#4d6872}.rh-chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.rh-chart-grid .rh-card:last-child{grid-column:1/-1}.rh-chart{height:190px;padding:10px;display:flex;align-items:flex-end;gap:5px;overflow:auto}.rh-month{flex:1;min-width:35px;text-align:center}.rh-bars{height:155px;display:flex;align-items:flex-end;justify-content:center;gap:2px}.rh-bars i{width:9px;min-height:3px;display:block}.bar-a{background:#2d8db8}.bar-b{background:#d65b61}.rh-month small{font-size:8px;color:#7a8b90}.rh-safety{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:10px}.rh-safety div{border:1px solid #e1eaec;padding:10px;background:#f7fafb}.rh-safety div:nth-child(1){background:#fff3f1;border-color:#edcfca}.rh-safety div:nth-child(2){background:#fff0ef;border-color:#e9c5c1}.rh-safety div:nth-child(3){background:#fff8ea;border-color:#efdfba}.rh-safety div:nth-child(4){background:#eef7fa;border-color:#d1e4e9}.rh-safety span{font-size:9px;color:#74878d;display:block}.rh-safety strong{font-size:20px;font-weight:500;display:block;margin-top:4px;color:#304f5a}.rh-safety div:nth-child(1) strong,.rh-safety div:nth-child(2) strong{color:#bd473f}.rh-matrix-wrap{overflow:auto;max-height:650px}.rh-matrix{border-collapse:collapse;min-width:900px}.rh-matrix th,.rh-matrix td{border-right:1px solid #dfe9eb;border-bottom:1px solid #e3ecee}.rh-matrix thead th{min-width:135px;height:70px;padding:5px;background:#e9f4f7;text-align:center;font-size:9px;color:#355b67}.rh-matrix thead th b,.rh-matrix thead th small{display:block}.rh-matrix thead th small{font-weight:400;color:#809097}.rh-matrix-avatar{width:25px;height:25px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 3px}.sticky{position:sticky;left:0;z-index:2;background:#f2f8fa!important;min-width:190px;text-align:left!important;padding:7px}.sticky b,.sticky small{display:block}.sticky small{font-weight:400;color:#87979c}.rh-cell{width:100%;min-height:52px;border:0;background:#fff;cursor:pointer;padding:5px}.rh-cell:hover{outline:1px solid #8fc2d0;outline-offset:-1px}.rh-cell b,.rh-cell small{display:block;font-size:9px}.rh-cell small{color:#7a8c92}.rh-cell.ok{background:#e8f6ee}.rh-cell.scheduled{background:#eaf5f9}.rh-cell.missed{background:#fff0ee}.rh-cell.blank{background:#fafcfc}.rh-form{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:13px}.rh-field{display:grid;gap:4px}.rh-field.wide{grid-column:1/-1}.rh-field span{font-size:9px;font-weight:400;color:#526d75}.rh-input{height:32px;width:100%;box-sizing:border-box;border:1px solid #cedcdf;border-radius:2px;background:#fff;padding:0 7px;font-size:10px;color:#294650}.rh-input:focus{border-color:#4d9db7;box-shadow:0 0 0 2px #2d8db81c;outline:0}.rh-photo{grid-column:1/-1;display:flex;align-items:center;gap:9px;padding:8px;border:1px solid #d8e5e8;background:#f4f9fa}.rh-photo div{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#e7f1f4;overflow:hidden}.rh-photo img{width:58px;height:58px;object-fit:cover}.rh-photo small{font-size:9px;color:#74878d}.rh-backdrop{position:fixed;inset:0;z-index:100;background:#102a324a;display:grid;place-items:center;padding:14px}.rh-modal{width:min(860px,calc(100vw - 24px));max-height:92vh;overflow:auto;background:#fff;border:1px solid #d5e1e4;box-shadow:0 20px 60px #102a3230}.rh-modal-head{height:48px;padding:0 12px;border-bottom:1px solid #e1e9eb;display:flex;align-items:center;justify-content:space-between}.rh-modal-head h2{font-size:14px;font-weight:500;margin:0;color:#234a58}.rh-modal-foot{display:flex;justify-content:flex-end;gap:5px;border-top:1px solid #e1e9eb;padding:8px 12px}.rh-pagination{display:flex;justify-content:space-between;padding:8px 10px;font-size:9px;color:#7b8c92}.rh-pagination button{height:28px;border:1px solid #cddde1;background:#fff;border-radius:3px;font-size:9px;padding:0 8px}.rh-pagination button:hover{background:#edf7fa;border-color:#b8d3da}.rh-pagination button+button{margin-left:4px}.sales-alert{padding:7px 9px;border:1px solid;font-size:10px;margin-top:8px}@media(max-width:1050px){.rh-kpis{grid-template-columns:repeat(3,1fr)}.rh-chart-grid{grid-template-columns:1fr}.rh-chart-grid .rh-card:last-child{grid-column:auto}}@media(max-width:650px){.rh-kpis{grid-template-columns:1fr 1fr}.rh-form{grid-template-columns:1fr}.rh-field.wide{grid-column:auto}.rh-tools{width:100%}.rh-search{width:100%}}'; return <VendasLayout title="Recursos Humanos" subtitle="Pessoas · jornada · desenvolvimento · segurança · documentos" onRefresh={()=>void load()}><style>{css}</style><style>{'@page{size:A4 portrait;margin:12mm}.rh-print-sheet{display:none}@media print{body *{visibility:hidden!important}.rh-print-sheet,.rh-print-sheet *{visibility:visible!important}.rh-page{display:none!important}.rh-print-sheet{display:block!important;position:absolute;left:0;top:0;width:100%;background:#fff;color:#111;font:10pt Arial,sans-serif}.rh-print-sheet h1{font-size:15pt;margin:0 0 3mm}.rh-print-sheet h2{font-size:13pt;text-align:center;margin:8mm 0 5mm}.rh-print-header{display:flex;align-items:center;gap:8mm;border-bottom:1px solid #333;padding-bottom:4mm}.rh-print-header img{max-width:38mm;max-height:20mm;object-fit:contain}.rh-print-header p,.rh-print-meta p{margin:1mm 0;font-size:9pt}.rh-print-meta{display:grid;grid-template-columns:1fr 1fr;gap:1mm 5mm;margin-bottom:5mm}.rh-print-sheet table{width:100%;border-collapse:collapse;font-size:8pt}.rh-print-sheet th,.rh-print-sheet td{border:1px solid #555;padding:2mm 1.5mm;text-align:left;vertical-align:top}.rh-print-sheet th{background:#eef3f5!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.rh-print-totals{display:flex;justify-content:space-between;gap:4mm;border:1px solid #555;padding:3mm;margin-top:4mm;font-size:9pt}.rh-print-foot,.rh-print-version{font-size:8pt;margin-top:3mm}.rh-print-notes{margin-top:5mm}.rh-print-notes div{height:12mm;border-bottom:1px solid #999}.rh-print-signatures{display:grid;grid-template-columns:1fr 1fr;gap:18mm;margin:20mm 5mm 0}.rh-print-signatures div{border-top:1px solid #222;text-align:center;padding-top:2mm;font-size:9pt}}'}</style><div className="rh-page"><div className="rh-head"><div><h1>Gestão de Recursos Humanos</h1><p>Cadastro · jornada · treinamento · desenvolvimento · segurança do trabalho · documentos</p></div><button className="rh-btn" onClick={()=>void load()} disabled={busy}><RefreshCw size={13}/>{busy?'Atualizando':'Atualizar'}</button></div>{(error||message)&&<div className="sales-alert" style={{background:error?'#fff4f2':'#eff8f3',borderColor:error?'#efc8c3':'#c9e3d5',color:error?'#a0443a':'#26734f'}}>{error||message}</div>}<nav className="rh-tabs">{tabs.map(([id,label,Icon])=><button className={'rh-tab '+(tab===id?'active':'')} type="button" key={id} onClick={()=>setTab(id)}><Icon size={13}/>{label}</button>)}</nav>{body}</div>{printSheet}{modalView()}</VendasLayout>
+export default function RHIndustrial() {
+  const [empresaId, setEmpresaId] = useState('')
+  const [tab, setTab] = useState<Tab>('Visão geral')
+  const [staff, setStaff] = useState<Staff[]>([])
+  const [rows, setRows] = useState<Row[]>([])
+  const [form, setForm] = useState<Record<string, string>>({})
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [photo, setPhoto] = useState<File | null>(null)
+  const [photoUrl, setPhotoUrl] = useState('')
+  const [query, setQuery] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState('')
+  const [filterDate, setFilterDate] = useState(new Date().toISOString().slice(0, 10))
+  const [overviewStats, setOverviewStats] = useState({ pointToday: 0, pendingTrainings: 0, absences: 0, evaluations: 0, accidents: 0, documents: 0 })
+
+  const employeeFields: Field[] = useMemo(() => [
+    { key: 'nome_completo', label: 'Nome completo do colaborador', required: true },
+    { key: 'data_nascimento', label: 'Data de nascimento', type: 'date', required: true },
+    { key: 'cpf', label: 'CPF', required: true },
+    { key: 'rg', label: 'RG' },
+    { key: 'celular', label: 'Celular / WhatsApp', type: 'tel' },
+    { key: 'telefone', label: 'Telefone fixo', type: 'tel' },
+    { key: 'email', label: 'E-mail corporativo', type: 'email' },
+    { key: 'matricula', label: 'Matrícula', required: true },
+    { key: 'data_admissao', label: 'Data de admissão', type: 'date', required: true },
+    { key: 'cargo', label: 'Cargo', required: true },
+    { key: 'departamento', label: 'Departamento', required: true },
+    { key: 'regime_trabalho', label: 'Regime de trabalho', type: 'select', options: ['CLT', 'Estágio', 'Aprendiz', 'Temporário', 'Terceirizado'], required: true },
+    { key: 'turno_trabalho', label: 'Turno', type: 'select', options: ['Administrativo', '1º turno', '2º turno', '3º turno', 'Comercial', 'Escala'], required: true },
+    { key: 'numero_cracha_rfid', label: 'Número do crachá RFID' },
+    { key: 'salario_nominal', label: 'Salário nominal (R$)', type: 'number' },
+    { key: 'custo_hora_homem', label: 'Custo hora-homem (R$)', type: 'number' },
+    { key: 'status', label: 'Situação', type: 'select', options: ['Ativo', 'Afastado', 'Férias', 'Desligado'], required: true },
+  ], [])
+
+  const loadStaff = useCallback(async (tenant: string) => {
+    const { data, error } = await supabase.from('erp_funcionarios').select('*').eq('empresa_id', tenant).order('nome', { ascending: true }).limit(1000)
+    if (error) throw error
+    const people = (data ?? []) as Staff[]
+    setStaff(people)
+    return people
+  }, [])
+
+  const loadRows = useCallback(async (selectedTab: Tab, tenant: string) => {
+    if (selectedTab === 'Funcionários' || selectedTab === 'Visão geral') { setRows([]); return }
+    const schema = schemas[selectedTab as Exclude<Tab, 'Funcionários' | 'Visão geral'>]
+    let request = supabase.from(schema.table).select('*').eq('empresa_id', tenant).limit(300)
+    if (selectedTab === 'Ponto / Presença') request = request.gte('registrado_em', new Date(filterDate + 'T00:00:00').toISOString()).lt('registrado_em', new Date(new Date(filterDate + 'T00:00:00').getTime() + 86400000).toISOString()).order('registrado_em', { ascending: false })
+    else if (selectedTab === 'Ausências') request = request.order('data_inicio', { ascending: false })
+    else if (selectedTab === 'Treinamentos') request = request.order('data_treinamento', { ascending: false })
+    else if (selectedTab === 'Avaliações') request = request.order('data_avaliacao', { ascending: false })
+    else if (selectedTab === 'Acidentes') request = request.order('data_ocorrencia', { ascending: false })
+    else request = request.order('criado_em', { ascending: false })
+    const { data, error } = await request
+    if (error) throw error
+    setRows((data ?? []) as Row[])
+  }, [filterDate])
+
+  const reload = useCallback(async (tenant: string, selectedTab: Tab) => {
+    setBusy(true)
+    try {
+      await loadStaff(tenant)
+      await loadRows(selectedTab, tenant)
+      const dayStart = new Date().toISOString().slice(0, 10) + 'T00:00:00'
+      const dayEnd = new Date(new Date(dayStart).getTime() + 86400000).toISOString()
+      const [point, training, absence, evaluation, accident, document] = await Promise.all([
+        supabase.from('erp_rh_ponto_eventos').select('id', { count: 'exact', head: true }).eq('empresa_id', tenant).gte('registrado_em', new Date(dayStart).toISOString()).lt('registrado_em', dayEnd),
+        supabase.from('erp_rh_treinamentos_registros').select('id', { count: 'exact', head: true }).eq('empresa_id', tenant).in('status', ['PENDENTE', 'VENCIDO', 'REPROVADO']),
+        supabase.from('erp_rh_faltas').select('id', { count: 'exact', head: true }).eq('empresa_id', tenant).eq('status', 'PENDENTE'),
+        supabase.from('erp_rh_avaliacoes').select('id', { count: 'exact', head: true }).eq('empresa_id', tenant),
+        supabase.from('erp_rh_acidentes').select('id', { count: 'exact', head: true }).eq('empresa_id', tenant).neq('status', 'ENCERRADO'),
+        supabase.from('erp_rh_documentos').select('id', { count: 'exact', head: true }).eq('empresa_id', tenant),
+      ])
+      const countErrors = [point, training, absence, evaluation, accident, document].filter(result => result.error)
+      if (countErrors.length) throw countErrors[0].error
+      setOverviewStats({ pointToday: point.count ?? 0, pendingTrainings: training.count ?? 0, absences: absence.count ?? 0, evaluations: evaluation.count ?? 0, accidents: accident.count ?? 0, documents: document.count ?? 0 })
+      setMessage('')
+    } catch (error) {
+      setMessage(errorText(error))
+    } finally { setBusy(false) }
+  }, [loadRows, loadStaff])
+
+  useEffect(() => {
+    let alive = true
+    void (async () => {
+      setBusy(true)
+      try {
+        const { data, error } = await supabase.rpc('erp_current_empresa_id')
+        if (error) throw error
+        const tenant = typeof data === 'string' ? data : ''
+        if (!tenant) throw new Error('Selecione uma empresa ativa antes de acessar o RH.')
+        if (!alive) return
+        setEmpresaId(tenant)
+        await reload(tenant, 'Funcionários')
+      } catch (error) { if (alive) setMessage(errorText(error)) }
+      finally { if (alive) setBusy(false) }
+    })()
+    return () => { alive = false }
+  }, [reload])
+
+  useEffect(() => {
+    if (empresaId) void loadRows(tab, empresaId).catch(error => setMessage(errorText(error)))
+  }, [empresaId, tab, filterDate, loadRows])
+
+  const startNew = () => {
+    if (tab === 'Visão geral') return
+    setEditingId(null)
+    setForm(tab === 'Funcionários' ? blank(employeeFields) : blank(schemas[tab as Exclude<Tab, 'Funcionários' | 'Visão geral'>].fields))
+    setPhoto(null); setPhotoUrl(''); setMessage('')
+  }
+  const editStaff = async (person: Staff) => {
+    setEditingId(person.id)
+    setForm(Object.fromEntries(employeeFields.map(field => [field.key, display(person[field.key as keyof Staff]) === '—' ? '' : String(person[field.key as keyof Staff] ?? '')])))
+    setPhoto(null); setPhotoUrl('')
+    if (person.foto_path) {
+      const { data } = await supabase.storage.from('rh-arquivos').createSignedUrl(person.foto_path, 900)
+      if (data?.signedUrl) setPhotoUrl(data.signedUrl)
+    }
+    setMessage('')
+  }
+
+  const saveEmployee = async (event: FormEvent) => {
+    event.preventDefault()
+    if (!empresaId) return
+    setBusy(true); setMessage('')
+    try {
+      const payload: Record<string, unknown> = { empresa_id: empresaId, nome: form.nome_completo.trim(), nome_completo: form.nome_completo.trim(), atualizado_em: new Date().toISOString() }
+      for (const field of employeeFields) {
+        const value = (form[field.key] ?? '').trim()
+        if (field.required && !value) throw new Error('Preencha: ' + field.label)
+        payload[field.key] = value === '' ? null : field.type === 'number' ? Number(value) : value
+      }
+      if (photo) {
+        const extension = photo.name.split('.').pop()?.toLowerCase() || 'jpg'
+        const path = `${empresaId}/funcionarios/${editingId ?? crypto.randomUUID()}/foto.${extension}`
+        const { error: uploadError } = await supabase.storage.from('rh-arquivos').upload(path, photo, { upsert: true, contentType: photo.type })
+        if (uploadError) throw uploadError
+        payload.foto_path = path
+      }
+      const result = editingId
+        ? await supabase.from('erp_funcionarios').update(payload).eq('id', editingId).eq('empresa_id', empresaId).select('id').single()
+        : await supabase.from('erp_funcionarios').insert(payload).select('id').single()
+      if (result.error) throw result.error
+      setMessage('Cadastro salvo no banco.')
+      setEditingId(null); setPhoto(null); setPhotoUrl(''); setForm(blank(employeeFields))
+      await reload(empresaId, 'Funcionários')
+    } catch (error) { setMessage(errorText(error)) }
+    finally { setBusy(false) }
+  }
+
+  const saveOperational = async (event: FormEvent) => {
+    event.preventDefault()
+    if (!empresaId || tab === 'Funcionários' || tab === 'Visão geral') return
+    setBusy(true); setMessage('')
+    try {
+      const schema = schemas[tab as Exclude<Tab, 'Funcionários' | 'Visão geral'>]
+      const payload: Record<string, unknown> = { empresa_id: empresaId, criado_por: (await supabase.auth.getUser()).data.user?.id ?? null }
+      for (const field of schema.fields) {
+        const value = (form[field.key] ?? '').trim()
+        if (field.required && !value) throw new Error('Preencha: ' + field.label)
+        payload[field.key] = value === '' ? null : field.type === 'number' ? Number(value) : field.type === 'datetime-local' ? new Date(value).toISOString() : value
+      }
+      const { error } = await supabase.from(schema.table).insert(payload)
+      if (error) throw error
+      setMessage('Registro gravado com sucesso.')
+      setForm(blank(schema.fields))
+      await reload(empresaId, tab)
+    } catch (error) { setMessage(errorText(error)) }
+    finally { setBusy(false) }
+  }
+
+  const uploadOperationalAttachment = async (file: File, rowId: string, column: 'anexo_path' | 'certificado_path' | 'documento_path') => {
+    const path = `${empresaId}/anexos/${rowId}/${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
+    const { error } = await supabase.storage.from('rh-arquivos').upload(path, file, { upsert: true, contentType: file.type })
+    if (error) throw error
+    const schema = schemas[tab as Exclude<Tab, 'Funcionários' | 'Visão geral'>]
+    const { error: updateError } = await supabase.from(schema.table).update({ [column]: path }).eq('id', rowId).eq('empresa_id', empresaId)
+    if (updateError) throw updateError
+    setMessage('Anexo enviado com controle de acesso por empresa.')
+    await reload(empresaId, tab)
+  }
+
+  const filteredStaff = staff.filter(person => [person.nome_completo, person.nome, person.cpf, person.matricula, person.cargo].some(value => String(value ?? '').toLowerCase().includes(query.toLowerCase())))
+  const activeCount = staff.filter(person => !['desligado', 'inativo'].includes(String(person.status ?? '').toLowerCase())).length
+  const pendingTrainings = tab === 'Treinamentos' ? rows.filter(row => ['PENDENTE', 'VENCIDO', 'REPROVADO'].includes(String(row.status))) : []
+  const staffName = (id: unknown) => staff.find(person => person.id === id)?.nome_completo ?? staff.find(person => person.id === id)?.nome ?? 'Funcionário não localizado'
+
+  const fieldControl = (field: Field) => {
+    const common = { id: field.key, name: field.key, required: field.required, value: form[field.key] ?? '', onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => setForm(previous => ({ ...previous, [field.key]: event.target.value })), className: 'w-full min-w-0 h-[30px] rounded-[2px] border border-slate-300 bg-white px-2 text-xs font-semibold text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20' }
+    if (field.type === 'select') return <select {...common}><option value="">Selecione…</option>{(field.options ?? []).map(option => <option key={option} value={option}>{option}</option>)}</select>
+    if (field.type === 'staff') return <select {...common}><option value="">Selecione o colaborador…</option>{staff.map(person => <option key={person.id} value={person.id}>{person.matricula ? person.matricula + ' — ' : ''}{person.nome_completo ?? person.nome ?? person.id}</option>)}</select>
+    if (field.key === 'observacoes' || field.key === 'justificativa') return <textarea {...common} rows={2} className="w-full rounded-[2px] border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-800 outline-none focus:border-[#2D8DB8]" />
+    return <input {...common} type={field.type ?? 'text'} step={field.type === 'number' ? '0.01' : undefined} />
+  }
+
+  return <main className="rh-page min-h-[70vh] bg-slate-50 p-3 text-slate-800 md:p-5">
+    <section className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><Users className="mb-2 text-sky-700" size={19}/><p className="text-xs text-slate-500">Funcionários cadastrados</p><strong className="text-2xl">{staff.length}</strong></div>
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CheckCircle2 className="mb-2 text-emerald-700" size={19}/><p className="text-xs text-slate-500">Ativos</p><strong className="text-2xl">{activeCount}</strong></div>
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><Clock3 className="mb-2 text-amber-700" size={19}/><p className="text-xs text-slate-500">Eventos de ponto no período</p><strong className="text-2xl">{tab === 'Ponto / Presença' ? rows.length : '—'}</strong></div>
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><GraduationCap className="mb-2 text-violet-700" size={19}/><p className="text-xs text-slate-500">Treinamentos pendentes</p><strong className="text-2xl">{tab === 'Treinamentos' ? pendingTrainings.length : '—'}</strong></div>
+    </section>
+
+    <div className="mb-4 flex flex-wrap items-start gap-2">
+      <nav role="tablist" aria-label="Abas do módulo RH" className="flex min-w-0 flex-1 flex-wrap gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm">
+        {tabs.map(item => { const Icon = item.icon; return <button key={item.label} type="button" role="tab" aria-selected={tab === item.label} onClick={() => { setTab(item.label); setForm(item.label === 'Funcionários' ? blank(employeeFields) : item.label === 'Visão geral' ? {} : blank(schemas[item.label as Exclude<Tab, 'Funcionários' | 'Visão geral'>].fields)); setEditingId(null); setMessage('') }} className={`flex min-h-[30px] shrink-0 items-center gap-2 rounded-[2px] px-3 text-xs font-bold transition ${tab === item.label ? 'bg-sky-700 text-white' : 'text-slate-600 hover:bg-slate-100'}`}><Icon size={15}/>{item.label}</button> })}
+      </nav>
+      <button type="button" onClick={() => empresaId && void reload(empresaId, tab)} className="inline-flex h-[30px] shrink-0 items-center gap-2 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"><RefreshCw size={14}/> Atualizar</button>
+    </div>
+
+    {message && <div role="status" className={`mb-4 flex items-start gap-2 rounded-lg border px-3 py-2 text-sm ${/sucesso|salvo|gravado|enviado/i.test(message) ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-amber-200 bg-amber-50 text-amber-900'}`}>{message}</div>}
+
+    {tab === 'Visão geral' ? <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4"><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><Users className="mb-2 text-sky-700" size={19}/><p className="text-xs text-slate-500">Funcionários cadastrados</p><strong className="text-2xl">{staff.length}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CheckCircle2 className="mb-2 text-emerald-700" size={19}/><p className="text-xs text-slate-500">Colaboradores ativos</p><strong className="text-2xl">{activeCount}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><Clock3 className="mb-2 text-amber-700" size={19}/><p className="text-xs text-slate-500">Eventos de ponto</p><strong className="text-2xl">{overviewStats.pointToday}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><GraduationCap className="mb-2 text-violet-700" size={19}/><p className="text-xs text-slate-500">Treinamentos pendentes</p><strong className="text-2xl">{overviewStats.pendingTrainings}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CalendarDays className="mb-2 text-amber-700" size={19}/><p className="text-xs text-slate-500">Ausências pendentes</p><strong className="text-2xl">{overviewStats.absences}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CheckCircle2 className="mb-2 text-violet-700" size={19}/><p className="text-xs text-slate-500">Avaliações registradas</p><strong className="text-2xl">{overviewStats.evaluations}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CalendarDays className="mb-2 text-rose-700" size={19}/><p className="text-xs text-slate-500">Acidentes em aberto</p><strong className="text-2xl">{overviewStats.accidents}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><FileText className="mb-2 text-slate-700" size={19}/><p className="text-xs text-slate-500">Documentos cadastrados</p><strong className="text-2xl">{overviewStats.documents}</strong></article></section> : tab === 'Funcionários' ? <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-200 bg-slate-100 px-4 py-3"><h2 className="font-bold text-slate-900">{editingId ? 'Editar colaborador' : 'Cadastro de colaborador'}</h2><p className="mt-1 text-xs text-slate-500">Campos compactos, medidas conforme especificação; foto 3×4 protegida por empresa.</p></div>
+      <form onSubmit={saveEmployee} className="p-4 md:p-5">
+        <div className="mb-4 flex items-start gap-4">
+          <div>
+            <label htmlFor="rh-foto" className="flex aspect-[3/4] max-h-36 w-28 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-slate-50 text-center text-xs text-slate-500 hover:border-sky-500">
+              {photo ? <img src={URL.createObjectURL(photo)} alt="Prévia da foto do colaborador" className="h-full w-full object-cover"/> : photoUrl ? <img src={photoUrl} alt="Foto atual do colaborador" className="h-full w-full object-cover"/> : <><Camera size={25} className="mb-2"/><span className="font-semibold">Foto 3×4</span><span className="mt-1 px-2">JPG, PNG ou WebP</span></>}
+            </label>
+            <input id="rh-foto" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={event => { const file = event.target.files?.[0] ?? null; if (file && file.size > 5 * 1024 * 1024) { setMessage('A foto deve ter no máximo 5 MB.'); return } setPhoto(file); if (file) setPhotoUrl('') }}/>
+            <p className="mt-2 text-[11px] text-slate-500">Foto 3×4 · máx. 5 MB</p>
+          </div>
+          <p className="pt-1 text-xs text-slate-500">Preencha os dados do colaborador. Os campos pessoais respeitam as proporções especificadas e os dados são gravados no banco da empresa selecionada.</p>
+        </div>
+        <div className="space-y-4">
+          {employeeGroups.map(group => {
+            const fields = group.keys.map(key => employeeFields.find(field => field.key === key)).filter((field): field is Field => Boolean(field))
+            return <div key={group.title}>
+              <h3 className="mb-2 border-b border-slate-200 pb-1 text-[10px] font-bold uppercase tracking-widest text-[#2D8DB8]">{group.title}</h3>
+              <div className="flex flex-wrap gap-x-4 gap-y-3">
+                {fields.map(field => <div key={field.key} className={employeeFieldWidth[field.key] ?? 'erp-field-text'}><label htmlFor={field.key} className="block text-[10px] font-bold uppercase tracking-wider text-slate-600">{field.label}{field.required ? ' *' : ''}</label>{fieldControl(field)}</div>)}
+              </div>
+            </div>
+          })}
+        </div>
+        <div className="mt-5 flex flex-wrap justify-end gap-2 border-t border-slate-200 pt-4">
+          <button type="button" onClick={startNew} className="inline-flex h-[30px] items-center gap-2 rounded-[2px] border border-slate-300 px-4 text-sm font-semibold text-slate-700"><X size={15}/> Cancelar</button>
+          <button disabled={busy} type="submit" className="inline-flex h-[30px] items-center gap-2 rounded-[2px] bg-sky-700 px-4 text-sm font-bold text-white disabled:opacity-60"><Save size={15}/>{busy ? 'Gravando…' : 'Gravar'}</button>
+        </div>
+      </form>
+      <div className="border-t border-slate-200 p-4">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><h3 className="font-bold">Funcionários cadastrados</h3><label className="relative"><Search size={14} className="absolute left-3 top-2.5 text-slate-400"/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Buscar nome, CPF, matrícula…" className="h-9 w-64 max-w-full rounded-lg border border-slate-300 pl-8 pr-3 text-sm"/></label></div>
+        <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-xs"><thead className="bg-slate-100 text-[10px] uppercase tracking-wide text-slate-600"><tr><th className="p-3">Matrícula</th><th className="p-3">Colaborador</th><th className="p-3">Cargo / departamento</th><th className="p-3">Situação</th><th className="p-3">Ação</th></tr></thead><tbody>{filteredStaff.map(person => <tr key={person.id} className="border-b border-slate-100"><td className="p-3">{display(person.matricula)}</td><td className="p-3 font-semibold">{display(person.nome_completo ?? person.nome)}<div className="mt-1 font-normal text-slate-500">{display(person.cpf)}</div></td><td className="p-3">{display(person.cargo)}<div className="mt-1 text-slate-500">{display(person.departamento)}</div></td><td className="p-3">{display(person.status)}</td><td className="p-3"><button type="button" onClick={() => void editStaff(person)} className="erp-edit-button border border-slate-300 font-semibold text-slate-700 hover:bg-slate-50">Editar</button></td></tr>)}{filteredStaff.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-slate-500">{busy ? 'Carregando registros…' : 'Nenhum funcionário encontrado.'}</td></tr>}</tbody></table></div>
+      </div>
+    </section> : <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-200 bg-slate-100 px-4 py-3"><h2 className="font-bold text-slate-900">{tab}</h2><p className="mt-1 text-xs text-slate-500">Registros persistidos no Supabase com isolamento por empresa.</p></div>
+      {tab === 'Ponto / Presença' && <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 p-4"><label className="text-xs font-bold text-slate-600">Consultar dia <input type="date" value={filterDate} onChange={event => setFilterDate(event.target.value)} className="ml-2 h-9 rounded-lg border border-slate-300 px-3 font-normal"/></label><span className="text-xs text-slate-500">Para controle físico de catraca ou relógio, conecte o equipamento ou a integração de origem.</span></div>}
+      <form onSubmit={saveOperational} className="flex flex-wrap content-start items-end gap-x-4 gap-y-3 p-4">
+        {schemas[tab].fields.map(field => <div key={field.key} className={operationalFieldWidth(field)}><label htmlFor={field.key} className="block text-[10px] font-bold uppercase tracking-wider text-slate-600">{field.label}{field.required ? ' *' : ''}</label>{fieldControl(field)}</div>)}
+        <div className="flex items-end"><button disabled={busy} type="submit" className="inline-flex h-[30px] items-center gap-2 rounded-[2px] bg-sky-700 px-4 text-xs font-bold text-white disabled:opacity-60"><Save size={15}/> Gravar registro</button></div>
+      </form>
+      <div className="overflow-x-auto border-t border-slate-200 p-4"><table className="w-full min-w-[760px] text-left text-xs"><thead className="bg-slate-100 text-[10px] uppercase text-slate-600"><tr><th className="p-3">Funcionário</th>{schemas[tab].fields.filter(field => field.key !== 'funcionario_id' && field.key !== 'observacoes' && field.key !== 'justificativa').slice(0,4).map(field => <th key={field.key} className="p-3">{field.label}</th>)}<th className="p-3">Anexo</th></tr></thead><tbody>{rows.map(row => <tr key={row.id} className="border-b border-slate-100"><td className="p-3 font-semibold">{staffName(row.funcionario_id)}</td>{schemas[tab].fields.filter(field => field.key !== 'funcionario_id' && field.key !== 'observacoes' && field.key !== 'justificativa').slice(0,4).map(field => <td key={field.key} className="p-3">{display(row[field.key])}</td>)}<td className="p-3">{(tab === 'Ausências' || tab === 'Treinamentos' || tab === 'Documentos') && <label className="cursor-pointer font-semibold text-sky-700 underline">{row[tab === 'Ausências' ? 'anexo_path' : tab === 'Treinamentos' ? 'certificado_path' : 'documento_path'] ? 'Substituir anexo' : 'Anexar arquivo'}<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" className="sr-only" onChange={event => { const file = event.target.files?.[0]; if (!file) return; if (file.size > 5 * 1024 * 1024) { setMessage('O arquivo deve ter no máximo 5 MB.'); return } void uploadOperationalAttachment(file, row.id, tab === 'Ausências' ? 'anexo_path' : tab === 'Treinamentos' ? 'certificado_path' : 'documento_path').catch(error => setMessage(errorText(error))) }}/></label>}{tab !== 'Ausências' && tab !== 'Treinamentos' && tab !== 'Documentos' ? '—' : null}</td></tr>)}{rows.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-slate-500">{busy ? 'Carregando registros…' : 'Nenhum registro para os filtros atuais.'}</td></tr>}</tbody></table></div>
+    </section>}
+    <footer className="mt-4 flex items-center gap-2 text-[11px] text-slate-500"><UserRound size={13}/> Dados pessoais e anexos são restritos por empresa e sujeitos às políticas de acesso do Supabase.</footer>
+  </main>
 }
