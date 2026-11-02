@@ -65,6 +65,9 @@ const PCPCapacidade = lazy(() => import('./pages/PCPCapacidade'))
 const PCPDashboard = lazy(() => import('./pages/PCPDashboard'))
 // Almoxarifado — tela premium do Estoque refeita em 2026-11-01 sobre os contratos reais de saldo, reserva, lote e movimento
 const EstoqueAlmoxarifado = lazy(() => import('./pages/EstoqueAlmoxarifado'))
+// Baixa de matéria-prima por lote e rastreabilidade lote/NF -> peças produzidas (RPCs da migration 20261101200000)
+const BaixaLoteFlutuante = lazy(() => import('./features/estoque/BaixaLoteFlutuante'))
+const RastreabilidadeLote = lazy(() => import('./features/estoque/RastreabilidadeLote'))
 // Cadastro de Produtos — migrado em 2026-10-30 da branch legada para a origem única de código
 const ProdutosVendasIndustrial = lazy(() => import('./pages/ProdutosVendasIndustrial'))
 const ModuloCadastroProdutos = lazy(() => import('./pages/cadastro-produtos/ModuloCadastroProdutos'))
@@ -130,6 +133,8 @@ export default function AppEntryV2() {
               <Route path="estoque/auditoria-saldos" element={<QualityPlanGate><AuditoriaSaldos /></QualityPlanGate>} />
               <Route path="estoque/balanco" element={<QualityPlanGate><BalancoEstoque /></QualityPlanGate>} />
               <Route path="estoque/depreciacao" element={<QualityPlanGate><RegrasDepreciacao /></QualityPlanGate>} />
+              <Route path="estoque/baixa-por-lote" element={<QualityPlanGate><BaixaLoteFlutuante /></QualityPlanGate>} />
+              <Route path="estoque/rastreabilidade-lote" element={<QualityPlanGate><RastreabilidadeLote /></QualityPlanGate>} />
               <Route path="financeiro/conciliacao" element={<Navigate to="/pageprincipal/financeiro/conciliacao-bancaria" replace />} />
               <Route path="financeiro/extrato" element={<Navigate to="/pageprincipal/financeiro/importar-extratos" replace />} />
               <Route path="financeiro/lista-precos" element={<Navigate to="/pageprincipal/financeiro/lista-precos-cliente" replace />} />
@@ -160,6 +165,8 @@ export default function AppEntryV2() {
             </Route>
             <Route path="/estoque" element={<Navigate to="/pageprincipal/estoque/almoxarifado" replace />} />
             <Route path="/estoque/auditoria-saldos" element={<Navigate to="/pageprincipal/estoque/auditoria-saldos" replace />} />
+            <Route path="/estoque/baixa-por-lote" element={<Navigate to="/pageprincipal/estoque/baixa-por-lote" replace />} />
+            <Route path="/estoque/rastreabilidade-lote" element={<Navigate to="/pageprincipal/estoque/rastreabilidade-lote" replace />} />
             <Route path="/ajuda" element={<Navigate to="/pageprincipal/ajuda" replace />} />
             <Route path="/financeiro" element={<Navigate to="/pageprincipal/financeiro" replace />} />
             <Route path="/compras" element={<Navigate to="/pageprincipal/compras" replace />} />

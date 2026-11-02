@@ -11,10 +11,12 @@
  */
 import {
   Archive,
+  ArrowLeftRight,
   BarChart3,
   ClipboardList,
   FileText,
   HelpCircle,
+  History,
   LayoutDashboard,
   ListOrdered,
   Package,
@@ -69,6 +71,8 @@ export const moduleNavs: ModuleNav[] = [
       { label: 'Auditoria de Saldos', route: `${workspace}/estoque/auditoria-saldos`, icon: Scale },
       { label: 'Balanço de Estoque', route: `${workspace}/estoque/balanco`, icon: Archive },
       { label: 'Regras de Depreciação', route: `${workspace}/estoque/depreciacao`, icon: Percent },
+      { label: 'Baixa por Lote', route: `${workspace}/estoque/baixa-por-lote`, icon: ArrowLeftRight },
+      { label: 'Rastreabilidade de Lote', route: `${workspace}/estoque/rastreabilidade-lote`, icon: History },
       { label: 'Cadastro de Produtos', route: `${workspace}/cadastros/produtos`, icon: Package },
       { label: 'Portal do Operador', route: `${workspace}/chao-de-fabrica/portal-operador`, icon: ScanLine },
     ],

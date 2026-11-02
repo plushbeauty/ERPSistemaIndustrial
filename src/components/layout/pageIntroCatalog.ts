@@ -24,6 +24,8 @@ const introCatalog: Record<string, PageIntro> = {
   'estoque/auditoria-saldos': { module: 'Estoque e Almoxarifado', title: 'Auditoria de Saldos e Inventário', description: 'Saldo do sistema confrontado com a contagem física, por item, lote e endereço de armazenagem.' },
   'estoque/balanco': { module: 'Estoque e Almoxarifado', title: 'Balanço e Valoração de Estoque', description: 'Quantidades e valores de estoque para a valoração contábil do período apurado.' },
   'estoque/depreciacao': { module: 'Estoque e Almoxarifado', title: 'Regras de Depreciação de Estoque', description: 'Métodos, taxas e critérios de desvalorização aplicados aos itens em armazenagem.' },
+  'estoque/baixa-por-lote': { module: 'Estoque e Almoxarifado', title: 'Baixa de Matéria-Prima por Lote', description: 'Janela flutuante: digite o código do material, veja todos os lotes aprovados e baixe pelo lote mais antigo, atravessando vários lotes quando um só não cobre o pedido interno.' },
+  'estoque/rastreabilidade-lote': { module: 'Estoque e Almoxarifado', title: 'Rastreabilidade de Lote', description: 'Digite o número do lote ou a NF de entrada e veja as baixas por pedido interno e as peças apontadas nas ordens de produção que consumiram aquele lote.' },
 
   'paquimetro': { module: 'Qualidade / Metrologia', title: 'Paquímetro Digital', description: 'Medição dimensional com leitura, tolerância e evidência da inspeção registrada no lote.' },
   'qualidade/rpnc': { module: 'Qualidade / SGQ', title: 'RPNC · Registro de Não Conformidade', description: 'Abertura, triagem e acompanhamento de não conformidades com causa raiz, plano de ação e evidências.' },
@@ -74,7 +76,7 @@ const introCatalog: Record<string, PageIntro> = {
 const pagePrincipalPrefix = '/pageprincipal'
 
 /** Telas que já desenham o próprio cabeçalho de abertura; o shell não adiciona outro acima. */
-const nativeIntroCardPaths = ['/compras', '/financeiro', '/administracao-configuracoes', '/pcp/dashboard', '/estoque/almoxarifado']
+const nativeIntroCardPaths = ['/compras', '/financeiro', '/administracao-configuracoes', '/pcp/dashboard', '/estoque/almoxarifado', '/estoque/baixa-por-lote', '/estoque/rastreabilidade-lote']
 
 export function hasNativeIntroCard(pathname: string): boolean {
   return nativeIntroCardPaths.includes(normalizeWorkspacePath(pathname))

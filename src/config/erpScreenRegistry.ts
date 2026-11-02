@@ -74,6 +74,8 @@ export const erpScreenRegistry: Record<string, ErpScreenRecord> = {
   'estoque/auditoria-saldos': { status: 'parcial', banco: ['erp_inventario_auditoria_saldos'], nota: 'Leitura sem gravação própria e sem escopo de empresa explícito no componente.' },
   'estoque/balanco': { status: 'validada', banco: ['erp_almoxarifados', 'erp_produtos'], rpc: ['erp_current_empresa_id'] },
   'estoque/depreciacao': { status: 'validada', banco: ['erp_depreciacao_regras'], rpc: ['erp_depreciacao_salvar_regra', 'erp_depreciacao_desativar_regra'] },
+  'estoque/baixa-por-lote': { status: 'pendente', banco: ['erp_produtos', 'erp_estoque_lotes_rastreabilidade', 'erp_estoque_movimentos', 'erp_ordens_producao'], rpc: ['erp_lote_saldos_por_material', 'erp_lote_planejar_baixa', 'erp_lote_baixar_por_fifo'], migration: '20261101200000_erp_lote_baixa_fifo_rastreabilidade_v1.sql', aplicada: false, nota: 'A alocação FIFO por lote e a gravação dos movimentos acontecem no servidor; sem a migration as três RPCs não existem e a tela declara a pendência.' },
+  'estoque/rastreabilidade-lote': { status: 'pendente', banco: ['erp_estoque_lotes_rastreabilidade', 'erp_estoque_movimentos', 'erp_apontamentos_processo', 'erp_ordens_producao', 'erp_produtos'], rpc: ['erp_lote_rastrear'], migration: '20261101200000_erp_lote_baixa_fifo_rastreabilidade_v1.sql', aplicada: false, nota: 'Consulta lote/NF → baixas → peças apontadas, resolvida pela RPC security definer na empresa da sessão.' },
 
   'paquimetro': { status: 'validada', banco: ['erp_equipamentos_medicao', 'erp_inspecoes'], rpc: ['erp_current_empresa_id'] },
   'qualidade/rpnc': { status: 'validada', banco: ['erp_rpnc', 'erp_qualidade_rpnc_evidencias', 'erp_setores'], rpc: ['erp_current_empresa_id', 'erp_sgq_abrir_rpnc'] },

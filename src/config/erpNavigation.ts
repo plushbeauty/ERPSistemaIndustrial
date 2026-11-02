@@ -8,7 +8,7 @@
  * declara rotas próprias. Os selos do menu nunca são decorativos: são derivados de
  * erpScreenRegistry, que registra a evidência real da tela.
  */
-import { Archive, BarChart3, Barcode, BookOpen, Boxes, Calculator, CircleHelp, ClipboardList, Factory, FilePlus2, FileText, FileWarning, FolderOpen, Home, Landmark, LayoutDashboard, Monitor, Percent, RotateCcw, Route, Ruler, Scale, Settings, ShieldCheck, ShoppingCart, UserCog, UserRound, Users, Wallet, Warehouse } from 'lucide-react'
+import { Archive, ArrowLeftRight, BarChart3, Barcode, BookOpen, Boxes, Calculator, CircleHelp, ClipboardList, Factory, FilePlus2, FileText, FileWarning, FolderOpen, History, Home, Landmark, LayoutDashboard, Monitor, Percent, RotateCcw, Route, Ruler, Scale, Settings, ShieldCheck, ShoppingCart, UserCog, UserRound, Users, Wallet, Warehouse } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { erpScreenHasBadge, erpScreenRecord, normalizeErpRoute } from './erpScreenRegistry'
 
@@ -71,6 +71,8 @@ const menuSeeds: MenuSeed[] = [
     { label: 'Auditoria de Saldos', route: '/pageprincipal/estoque/auditoria-saldos', icon: Scale },
     { label: 'Balanço de Estoque', route: '/pageprincipal/estoque/balanco', icon: Archive },
     { label: 'Regras de Depreciação', route: '/pageprincipal/estoque/depreciacao', icon: Percent },
+    { label: 'Baixa por Lote', route: '/pageprincipal/estoque/baixa-por-lote', icon: ArrowLeftRight },
+    { label: 'Rastreabilidade de Lote', route: '/pageprincipal/estoque/rastreabilidade-lote', icon: History },
   ] },
   { label: 'Qualidade / Paquímetro', route: '/pageprincipal/paquimetro', icon: Ruler, children: [
     { label: 'Paquímetro Digital', route: '/pageprincipal/paquimetro', icon: Ruler },

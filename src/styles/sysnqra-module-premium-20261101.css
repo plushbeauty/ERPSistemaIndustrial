@@ -234,7 +234,7 @@
 
 /* ----------------------------------------------------------- coluna lateral */
 .smp-field { display: grid; gap: 5px; margin-bottom: 11px; }
-.smp-field > span { color: var(--smp-muted); font-size: 11px; font-weight: 800; }
+.smp-field > span, .smp-field > label { color: var(--smp-muted); font-size: 11px; font-weight: 800; }
 .smp-select, .smp-input {
   width: 100%; min-height: 36px; padding: 0 10px; border: 1px solid var(--smp-line); border-radius: 3px;
   background: #fff; color: var(--smp-ink); font: inherit; font-size: 12px; font-weight: 700;
@@ -248,6 +248,8 @@
 .smp-legend-list div { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--smp-ink); }
 .smp-legend-list i { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }
 .smp-legend-list b { margin-left: auto; color: var(--smp-muted); font-variant-numeric: tabular-nums; }
+.smp-legend-list dt { color: var(--smp-muted); font-weight: 800; }
+.smp-legend-list dd { margin: 0 0 0 auto; color: var(--smp-ink); font-variant-numeric: tabular-nums; }
 
 .smp-events { display: grid; gap: 2px; }
 .smp-event { display: flex; align-items: center; gap: 10px; padding: 9px 2px; border-bottom: 1px solid var(--smp-line-soft); font-size: 12px; }
@@ -280,6 +282,7 @@
 .smp-state--error svg { color: var(--smp-danger); }
 .smp-note { display: flex; align-items: flex-start; gap: 9px; padding: 11px 13px; border: 1px solid #F1E2C6; border-radius: 3px; background: #FDF7EC; color: #7A5410; font-size: 12px; font-weight: 700; line-height: 1.55; }
 .smp-note--info { border-color: #CFE7EF; background: #F1FAFD; color: #1C5F7C; }
+.smp-note--error { border-color: #F0CDD0; background: #FDF2F3; color: #A93E44; }
 .smp-note code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
 .smp-skeleton { display: grid; gap: 10px; padding: 14px 16px; }
 .smp-skeleton i { display: block; height: 14px; border-radius: 3px; background: linear-gradient(90deg, #EEF5F8 25%, #F8FCFD 37%, #EEF5F8 63%); background-size: 400% 100%; animation: smp-shimmer 1.35s ease-in-out infinite; }
