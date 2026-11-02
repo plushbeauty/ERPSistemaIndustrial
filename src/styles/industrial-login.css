@@ -4,6 +4,8 @@
  * @REVISAO: REV-LOGIN-FOTO-INDUSTRIAL-20261101-01 — tela de acesso sobre foto da planta com cartão flutuante à direita
  * @REVISAO_2: REV-LOGIN-CAMPOS-PRETOS-20261102-01 — ordem do proprietário (#82): texto preto nos campos,
  *             caixa mais estreita, bloco encostado à direita e escala de abertura menor.
+ * @REVISAO_3: REV-LOGIN-BLOCO-DIREITA-20261102-02 — painel fixado na trilha 2 do shell; em auto-place ele
+ *             caía na trilha larga (marca oculta) e media 582px a 398px da borda em vez de encostar à direita.
  * @STATUS_APROVACAO: LAYOUT APROVADO PELO PROPRIETÁRIO EM 2026-11-01; AJUSTES DE 2026-11-02 ORDENADOS PELO PROPRIETÁRIO
  */
 
@@ -109,7 +111,12 @@
 .auth-panel {
   position: relative;
   min-width: 0;
-  justify-self: end;
+  /* A marca fica oculta na tela cheia (a foto já traz a marca impressa), então o
+     painel precisa ser fixado explicitamente na trilha da direita; em auto-place
+     ele cairia na trilha larga e se esticaria até o próprio conteúdo. */
+  grid-column: 2;
+  justify-self: stretch;
+  width: 100%;
   box-sizing: border-box;
   padding: clamp(18px, 1.6vw, 26px);
   border: 1px solid var(--lg-glass-line);
@@ -247,7 +254,7 @@
   }
   .auth-shell { grid-template-columns: minmax(0, 1fr); justify-items: center; align-content: center; gap: 22px; }
   .auth-brand { display: flex; }
-  .auth-panel { width: min(100%, 380px); justify-self: center; }
+  .auth-panel { grid-column: 1; width: min(100%, 380px); justify-self: center; }
 }
 
 @media (max-width: 560px) {

@@ -9,7 +9,7 @@
 | Vendas → Novo Pedido — `src/pages/NovoPedido.tsx` | APROV-005, controles compactos; revisão expressamente autorizada em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | Vendas → Status do pedido — `src/pages/VendasCentral.tsx` | APROV-006, alinhamento dos cards e legenda visível; revisão autorizada em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | Cadastro de Produtos — `src/pages/ProdutosVendasIndustrial.tsx` | Referência aprovada anterior | Hash Git do arquivo verificado no CI |
-| Login institucional — `src/styles/industrial-login.css` | APROV-005 / REV-LOGIN-CAMPOS-PRETOS-20261102-01: campos brancos com texto preto, caixa estreita e bloco à direita | Hash Git do arquivo verificado no CI |
+| Login institucional — `src/styles/industrial-login.css` | APROV-005 / REV-LOGIN-BLOCO-DIREITA-20261102-02: campos brancos com texto preto, caixa estreita encostada à direita na trilha 2 do shell | Hash Git do arquivo verificado no CI |
 | PCP → Submenu de fichas — `src/components/PCPTabletMenuModal.tsx` | Submenu de fichas aprovado em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | Shell horizontal — `src/components/layout/ERPHorizontalShell.tsx` | APROV-014: menu SGQ direto e Paquímetro Digital visível; Central de Compras abre em `/compras` | Hash Git do arquivo verificado no CI |
 | Dashboard industrial — `src/components/IndustrialCommandDashboard.tsx` | Restaurado da referência aprovada em 2026-10-18 | Hash Git do arquivo verificado no CI |
@@ -85,3 +85,10 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - `src/IndustrialLoginDirect.tsx` permanece com o mesmo hash: nenhum markup nem contrato de autenticação mudou — só o CSS.
 - `src/components/auth/FloatingLoginModal.css` recebeu as cores escuras do cartão branco que faltavam (título, labels, pilares, divisor, botões secundários e avisos estavam em texto claro sobre fundo branco no modal).
 - Abaixo de 1040px o cartão volta a ser centralizado, com largura máxima de 380px.
+
+## Registro da revisão REV-LOGIN-BLOCO-DIREITA-20261102-02 — 2026-11-02
+
+- Medição da tela real (1440×900) provou que a revisão anterior não encostava o bloco à direita: o cartão media 582px e deixava 398px à esquerda e 459px à direita, porque `.auth-brand` fica `display:none` na tela cheia e `.auth-panel`, em auto-place, ocupava a trilha larga do grid.
+- Correção em `src/styles/industrial-login.css`: `grid-column: 2` + `justify-self: stretch` no painel e `grid-column: 1` no empilhamento de 1040px. Na medição seguinte o cartão ficou com 360px a 56px da borda (1150px de largura: 340px a 46px).
+- O texto dos campos é escuro sobre branco: a cor final medida é `#17333F` e a fonte 16px, ambas impostas pelas regras globais de legibilidade/anti-zoom de tablet (`src/styles/index.css`), que não foram combatidas para não regredir as demais telas.
+- `IndustrialLoginDirect.tsx` continua com hash `556ae8ec` — nenhuma alteração de markup ou autenticação.
