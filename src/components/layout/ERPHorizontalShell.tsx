@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { CircleHelp, ChevronDown, UserRound, UserCog, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, FolderOpen, Warehouse, Percent, Scale, ShieldCheck, BookOpen, Landmark, Calculator, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { BarraWindows11 } from './BarraWindows11'
 import { supabase } from '../../lib/supabaseClient'
 import PCPTabletMenuModal from '../PCPTabletMenuModal'
 import PageIntroCard from './PageIntroCard'
@@ -353,31 +352,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       </main>
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
 
-
-      <BarraWindows11
-        ativo={pathname.startsWith('/pageprincipal/comissoes') || pathname.startsWith('/comissoes') ? 'comissoes' : pathname.startsWith('/pageprincipal/controladoria') || pathname.startsWith('/controladoria') ? 'controladoria' : pathname.startsWith('/pageprincipal/financeiro') || pathname.startsWith('/financeiro') ? 'financeiro' : pathname.startsWith('/pageprincipal/rh') ? 'rh' : pathname.startsWith('/pageprincipal/pcp/fichas-processo') ? 'fichas' : pathname.startsWith('/pageprincipal/compras/solicitacao') ? 'solicitacao' : pathname.startsWith('/pageprincipal/compras/requisicoes') ? 'requisicoes' : pathname.startsWith('/pageprincipal/compras') ? 'compras' : pathname.startsWith('/pageprincipal/qualidade/rpnc') ? 'rpnc' : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/pageprincipal/paquimetro') ? 'paq' : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'fiscal' : pathname.startsWith('/pageprincipal') ? 'home' : ''}
-        onAbrir={(id) => {
-          const destinations: Record<string, string> = {
-            home: '/pageprincipal',
-            rh: '/pageprincipal/rh',
-            fichas: '/pageprincipal/pcp/fichas-processo',
-            pcp: '/pageprincipal/pcp',
-            maq: '/pageprincipal/pcp',
-            op: '/pageprincipal/pcp',
-            paq: '/pageprincipal/paquimetro',
-            fiscal: '/pageprincipal/fiscal',
-            compras: '/pageprincipal/compras',
-            solicitacao: '/pageprincipal/compras/solicitacao',
-            requisicoes: '/pageprincipal/compras/requisicoes',
-            rpnc: '/pageprincipal/qualidade/rpnc',
-            financeiro: '/pageprincipal/financeiro',
-            comissoes: '/pageprincipal/comissoes',
-            controladoria: '/pageprincipal/controladoria',
-          }
-          go(destinations[id] ?? '/pageprincipal')
-        }}
-      />
-
       <style>{`
         .erp-horizontal-shell{display:grid;grid-template-columns:248px minmax(0,1fr);grid-template-rows:48px minmax(0,1fr);min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%);color:#123b50}
         .erp-windows-topbar{grid-column:1/-1;grid-row:1;position:sticky;top:0}
@@ -393,18 +367,18 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-sidebar-nav{flex:1;min-height:0;overflow:auto;padding:4px 7px 12px;scrollbar-width:thin;scrollbar-color:#4d7c91 transparent}
         .erp-sidebar-item{min-height:39px;display:flex;align-items:center;margin:2px 0;border:1px solid transparent;border-radius:5px}
         .erp-sidebar-item.is-active{background:rgba(72,183,199,.17);border-color:rgba(72,183,199,.35)}
-        .erp-sidebar-item.is-updated{border-left:3px solid #f97316;background:rgba(249,115,22,.09)}
-        .erp-sidebar-main{flex:1;min-width:0;height:37px;display:flex;align-items:center;gap:10px;padding:0 9px;border:0;background:transparent;color:#e9f4f8;text-align:left;font-size:11px;cursor:pointer}
+        .erp-sidebar-item.is-updated{border-left:3px solid #f97316;background:transparent}
+        .erp-sidebar-main{flex:1;min-width:0;height:37px;display:flex;align-items:center;gap:10px;padding:0 9px;border:0;background:transparent;color:#f1f5f9;text-align:left;font-size:10px;font-weight:500;line-height:1.2;cursor:pointer}
         .erp-sidebar-main>svg{flex:0 0 auto;color:#9ed7e5}.erp-sidebar-main span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .erp-sidebar-item.is-active .erp-sidebar-main{color:#fff;font-weight:800}.erp-sidebar-item.is-active .erp-sidebar-main>svg{color:#48b7c7}
+        .erp-sidebar-item.is-active .erp-sidebar-main{color:#fff;font-weight:600}.erp-sidebar-item.is-active .erp-sidebar-main>svg{color:#48b7c7}
         .erp-sidebar-item.is-updated .erp-sidebar-main>svg{color:#fb923c}.erp-sidebar-update-dot{width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:#f97316}
         .erp-sidebar-expand{width:27px;height:34px;display:grid;place-items:center;border:0;background:transparent;color:#c5dce5;cursor:pointer}
         .erp-sidebar-children{margin:1px 0 5px 20px;padding:3px 0 3px 9px;border-left:1px solid rgba(157,205,220,.35)}
-        .erp-sidebar-child{width:100%;min-height:31px;display:flex;align-items:center;gap:8px;padding:5px 7px;border:0;border-radius:4px;background:transparent;color:#c8dce4;text-align:left;font-size:10px;cursor:pointer}
+        .erp-sidebar-child{width:100%;min-height:30px;display:flex;align-items:center;gap:8px;padding:5px 7px;border:0;border-radius:4px;background:transparent;color:#e2e8f0;text-align:left;font-size:9px;font-weight:400;line-height:1.25;cursor:pointer}
         .erp-sidebar-child span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.erp-sidebar-child>svg{flex:0 0 auto}
-        .erp-sidebar-child:hover,.erp-sidebar-child.is-active{background:rgba(72,183,199,.18);color:#fff}.erp-sidebar-child.is-updated{color:#fdba74}
+        .erp-sidebar-child:hover,.erp-sidebar-child.is-active{background:rgba(72,183,199,.18);color:#fff}.erp-sidebar-child.is-updated{color:#e2e8f0;font-weight:400}
         .erp-sidebar-footer{display:flex;flex-direction:column;gap:3px;padding:8px 7px;border-top:1px solid rgba(255,255,255,.12)}
-        .erp-sidebar-footer>button,.erp-sidebar-user{min-height:35px;display:flex;align-items:center;gap:10px;padding:0 10px;border:0;border-radius:5px;background:transparent;color:#e4f0f4;text-align:left;font-size:10px;cursor:pointer}
+        .erp-sidebar-footer>button,.erp-sidebar-user{min-height:35px;display:flex;align-items:center;gap:10px;padding:0 10px;border:0;border-radius:5px;background:transparent;color:#e4f0f4;text-align:left;font-size:9px;font-weight:400;cursor:pointer}
         .erp-sidebar-footer>button:hover{background:rgba(255,255,255,.1)}.erp-sidebar-footer span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.erp-sidebar-user{color:#a9cbd8;border-top:1px solid rgba(255,255,255,.1);border-radius:0}
         .erp-horizontal-workspace{grid-column:2;grid-row:2;width:100%;max-width:100%;min-width:0;min-height:calc(100vh - 48px);padding:8px;box-sizing:border-box;background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%)}
         @media(max-width:900px){.erp-horizontal-shell{grid-template-columns:210px minmax(0,1fr)}.erp-sidebar-brand{padding:0 8px}}
