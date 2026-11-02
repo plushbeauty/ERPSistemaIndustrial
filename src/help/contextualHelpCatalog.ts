@@ -198,24 +198,12 @@ const help: Record<string, ContextualHelp> = {
   },
 }
 
-const aliases: Array<[string, string]> = [
-  ['/pageprincipal/financeiro/notas-debito', '/pageprincipal/financeiro'],
-  ['/pageprincipal/financeiro/lista-precos-cliente', '/pageprincipal/financeiro'],
-  ['/pageprincipal/financeiro/retificacao', '/pageprincipal/financeiro'],
-  ['/pageprincipal/financeiro', '/pageprincipal/financeiro'],
-  ['/pageprincipal/controladoria', '/pageprincipal/financeiro'],
-  ['/pageprincipal/comissoes', '/pageprincipal/financeiro'],
-  ['/pageprincipal/estoque', '/pageprincipal/cadastros/produtos'],
-  ['/pageprincipal/administracao-configuracoes', '/pageprincipal'],
-]
 
 export function resolveContextualHelp(pathname: string): ContextualHelp {
   const exact = help[pathname]
   if (exact) return exact
   const prefix = Object.keys(help).filter((route) => route !== '/pageprincipal' && pathname.startsWith(route + '/')).sort((a, b) => b.length - a.length)[0]
   if (prefix) return { ...help[prefix], title: help[prefix].title + ' — rotina relacionada', tips: [...(help[prefix].tips ?? []), 'Esta rota específica ainda precisa de validação campo a campo com a tela implementada.'], verified: false }
-  const alias = aliases.find(([prefix]) => pathname.startsWith(prefix))
-  if (alias && help[alias[1]]) return { ...help[alias[1]], title: 'Orientação inicial — ' + help[alias[1]].title, tips: [...(help[alias[1]].tips ?? []), 'Conteúdo provisório: validar os campos e ações desta rota antes de orientar a operação.'], verified: false }
   const leaf = pathname.split('/').filter(Boolean).pop()?.replace(/[-_]/g, ' ') ?? 'tela atual'
   return {
     title: 'Ajuda — ' + leaf.replace(/\b\w/g, (letter) => letter.toUpperCase()),
