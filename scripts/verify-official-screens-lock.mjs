@@ -23,6 +23,9 @@ import path from 'node:path'
  * Revisao 2026-11-02 (#85): ordem do proprietario para travar os codigos novos. Entram no contrato a
  * ficha de processo em 4 abas (#80) e a ativacao do convite por e-mail (#81) — sem essa segunda tela,
  * o link que a erp-user-admin envia por e-mail apontava para uma rota inexistente nesta branch.
+ * Revisao 2026-11-02 (#CRUD-usuarios): preserva a tela com editar/arquivar acessos
+ * na tabela; somente o hash oficial foi atualizado apos a validacao do Vercel.
+ * A estrutura visual industrial existente nao foi redesenhada.
  * Mudanca neste contrato exige ordem explicita do proprietario.
  */
 
@@ -42,7 +45,7 @@ const oficiais = [
   { path: 'src/pages/QualityRpncForm.tsx', sha: '50452b68f2663eb27ec2cfae7120d4c58d4b3478', label: 'Qualidade / RPNC com Ishikawa, 5 Porques e CAPA' },
   { path: 'src/pages/QualityRpncUnified.tsx', sha: 'fec24d027d3848674b74a78abbc89a195af5546e', label: 'Qualidade / RPNC unificada em abas' },
   { path: 'src/pages/QualityAuditsList.tsx', sha: '34d4247238acaa0cab346056b56953a049c4ec2d', label: 'Qualidade / Painel de auditorias' },
-  { path: 'src/pages/AccessControlSettings.tsx', sha: '0161ef8ffd66d5f35213668b989353dc8d9637e5', label: 'Configuracoes / Controle de acesso por setor' },
+  { path: 'src/pages/AccessControlSettings.tsx', sha: '64fbe7d0a0cb14e2aff8565f14fd713de2b13a00', label: 'Configuracoes / Controle de acesso por setor (CRUD de usuarios preservado; sem redesign)' },
   { path: 'src/pages/PCPCapacidade.tsx', sha: '7b26fa34132d8ffcf116d53e780e372383280f5a', label: 'PCP / Capacidade de maquinas' },
   { path: 'src/pages/NFeEmissao.tsx', sha: '42d900235de282a042c0352ad37c871f622ac40e', label: 'Fiscal / Emissao de NF-e em etapas (transacional, na prod)' },
   { path: 'src/pages/FichasProcesso.tsx', sha: '0a7ba99d8f78bf0d47b449cfb908ff2ee1f8db7c', label: 'PCP / Ficha de processo com descrições por categoria e seletor laranja (REV-PCP-FICHA-CATEGORIA-20261102-01)' },
