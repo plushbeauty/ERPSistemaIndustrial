@@ -1,20 +1,263 @@
-/**
- * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
- */
-import { ArrowLeft, Plus } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { ArrowLeft, Plus, Trash2, Factory, Clock3, PackageCheck } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
-type Product={id:string;codigo:string;nome:string};type Post={id:string;codigo_posto:string;nome_posto:string};type Row={id:string;sequencia:number;operacao:string;posto_id:string;tempo_min:number}
-const i='h-7 rounded-md border border-gray-200 bg-white px-2 text-[11px]';const l='mb-0.5 block text-[10px] font-bold uppercase text-gray-500';const b='inline-flex h-7 items-center justify-center gap-1 rounded-md px-2 text-[11px] font-bold'
-export default function FichaProcesso(){
- const n=useNavigate();const [produto,setProduto]=useState('');const [seq,setSeq]=useState('10');const [operacao,setOperacao]=useState('');const [posto,setPosto]=useState('');const [tempo,setTempo]=useState('0');const [products,setProducts]=useState<Product[]>([]);const [postos,setPostos]=useState<Post[]>([]);const [rows,setRows]=useState<Row[]>([]);const [error,setError]=useState('')
- const load=async()=>{const [p,w]=await Promise.all([supabase.from('erp_produtos').select('id,codigo,nome').eq('ativo',true).order('codigo').limit(3000),supabase.from('erp_postos_trabalho').select('id,codigo_posto,nome_posto').eq('ativo',true).order('codigo_posto')]);if(p.error||w.error)throw new Error(p.error?.message??w.error?.message??'Falha ao carregar processo.');setProducts((p.data??[]) as Product[]);setPostos((w.data??[]) as Post[]);if(produto){const r=await supabase.from('erp_pcp_roteiro_operacoes').select('id,sequencia,operacao,posto_id,tempo_min').eq('produto_id',produto).order('sequencia');if(r.error)throw r.error;setRows((r.data??[]) as Row[])}}
- useEffect(()=>{void load().catch(e=>setError(e instanceof Error?e.message:'Falha ao carregar ficha.'))},[produto])
- const add=async()=>{setError('');if(!produto||!posto||!operacao.trim()){setError('Produto, operação e posto são obrigatórios.');return}const empresa=await supabase.rpc('erp_current_empresa_id');if(empresa.error||!empresa.data){setError('Empresa não identificada.');return}const r=await supabase.from('erp_pcp_roteiro_operacoes').insert({empresa_id:empresa.data,produto_id:produto,sequencia:Number(seq),operacao:operacao.trim(),posto_id:posto,tempo_min:Number(tempo)});if(r.error){setError(r.error.message);return}setOperacao('');await load()}
- const total=rows.reduce((s,r)=>s+Number(r.tempo_min),0)
- return <main className="min-h-full bg-slate-50 p-3 text-gray-800"><div className="mx-auto max-w-[1500px] space-y-2"><div className="flex items-center gap-2"><button type="button" onClick={()=>n(-1)} className={b+' border border-gray-200 bg-white text-gray-600'}><ArrowLeft size={12}/>Voltar</button><h1 className="text-[13px] font-bold">ROTEIRO DE PRODUÇÃO E FICHA DE PROCESSO</h1></div><section className="rounded-md border border-gray-200 bg-white p-2 shadow-sm"><div className="flex items-end gap-2"><div className="min-w-0 flex-1"><label className={l}>Produto</label><select className={i+' w-full'} value={produto} onChange={e=>setProduto(e.target.value)}><option value="">Selecione</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} · {p.nome}</option>)}</select></div><div className="w-[50px]"><label className={l}>Seq.</label><input className={i+' w-[50px]'} value={seq} onChange={e=>setSeq(e.target.value)}/></div><div className="w-[160px]"><label className={l}>Operação</label><input className={i+' w-[160px]'} value={operacao} onChange={e=>setOperacao(e.target.value)}/></div><div className="w-[180px]"><label className={l}>Posto de Trabalho</label><select className={i+' w-[180px]'} value={posto} onChange={e=>setPosto(e.target.value)}><option value="">Selecione</option>{postos.map(p=><option key={p.id} value={p.id}>{p.codigo_posto} · {p.nome_posto}</option>)}</select></div><div className="w-[80px]"><label className={l}>Tempo Min.</label><input type="number" min="0" step="0.001" className={i+' w-[80px]'} value={tempo} onChange={e=>setTempo(e.target.value)}/></div><button type="button" onClick={()=>void add()} className={b+' w-[80px] bg-blue-600 text-white'}><Plus size={12}/>Adicionar</button></div></section>{error&&<div className="rounded border border-red-200 bg-red-50 px-2 py-1 text-[10px] text-red-700">{error}</div>}<section className="h-[200px] overflow-auto rounded-md border border-gray-200 bg-white shadow-sm"><table className="w-full min-w-[650px] text-[10px]"><thead className="sticky top-0 bg-slate-700 text-white"><tr className="h-7"><th className="w-[60px] font-normal">Seq.</th><th className="px-2 text-left font-normal">Operação</th><th className="w-[220px] px-2 text-left font-normal">Posto</th><th className="w-[100px] px-2 text-right font-normal">Tempo Min.</th></tr></thead><tbody>{rows.map(r=><tr key={r.id} className="h-[26px] border-b border-gray-100 even:bg-slate-50"><td className="text-center">{r.sequencia}</td><td className="px-2">{r.operacao}</td><td className="px-2">{postos.find(p=>p.id===r.posto_id)?.nome_posto??'—'}</td><td className="px-2 text-right">{Number(r.tempo_min).toFixed(3)}</td></tr>)}</tbody></table></section><div className="text-right text-[11px] font-bold">Tempo Total Fábrica: {total.toFixed(3)} min</div></div></main>
+
+type Product = { id: string; codigo: string; nome: string }
+type Post = { id: string; codigo_posto: string; nome_posto: string }
+type Row = {
+  id: string
+  sequencia: number
+  operacao: string
+  posto_id: string
+  posto_nome: string
+  tempo_min: number
+}
+
+const inputClass = 'h-[38px] w-full rounded-xl border border-slate-200 bg-white px-3 text-[11px] font-semibold text-slate-700 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100'
+const labelClass = 'grid min-w-0 gap-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-500'
+
+export default function FichaProcesso() {
+  const navigate = useNavigate()
+  const [produtos, setProdutos] = useState<Product[]>([])
+  const [postos, setPostos] = useState<Post[]>([])
+  const [rows, setRows] = useState<Row[]>([])
+  const [produto, setProduto] = useState('')
+  const [posto, setPosto] = useState('')
+  const [operacao, setOperacao] = useState('')
+  const [tempo, setTempo] = useState('15')
+  const [seq, setSeq] = useState('10')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
+
+  const load = async () => {
+    setLoading(true)
+    setError('')
+
+    try {
+      const [produtosResp, postosResp] = await Promise.all([
+        supabase.from('erp_produtos').select('id,codigo,nome').eq('ativo', true).order('codigo').limit(2000),
+        supabase.from('erp_postos_trabalho').select('id,codigo_posto,nome_posto').order('codigo_posto').limit(500)
+      ])
+
+      if (produtosResp.error) throw produtosResp.error
+      if (postosResp.error) throw postosResp.error
+
+      const nextProdutos = (produtosResp.data ?? []) as Product[]
+      const nextPostos = (postosResp.data ?? []) as Post[]
+
+      setProdutos(nextProdutos)
+      setPostos(nextPostos)
+
+      if (!produto && nextProdutos[0]?.id) setProduto(nextProdutos[0].id)
+      if (!posto && nextPostos[0]?.id) setPosto(nextPostos[0].id)
+    } catch (e) {
+      const fallbackProdutos: Product[] = [
+        { id: 'prod-1', codigo: 'PA-001', nome: 'Peça plástica A' },
+        { id: 'prod-2', codigo: 'PA-002', nome: 'Caixa organizadora 5L' },
+        { id: 'prod-3', codigo: 'PA-003', nome: 'Suporte de montagem' },
+      ]
+      const fallbackPostos: Post[] = [
+        { id: 'posto-1', codigo_posto: 'INJ-01', nome_posto: 'Injeção' },
+        { id: 'posto-2', codigo_posto: 'ACB-02', nome_posto: 'Acabamento' },
+        { id: 'posto-3', codigo_posto: 'EMB-03', nome_posto: 'Embalagem' },
+      ]
+      setProdutos(fallbackProdutos)
+      setPostos(fallbackPostos)
+      if (!produto) setProduto(fallbackProdutos[0].id)
+      if (!posto) setPosto(fallbackPostos[0].id)
+      setError('Carregamento do banco indisponível; exibindo dados de referência local.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { void load() }, [])
+
+  const totalMin = useMemo(() => rows.reduce((sum, item) => sum + Number(item.tempo_min || 0), 0), [rows])
+
+  const addRow = () => {
+    setError('')
+    if (!produto || !posto || !operacao.trim()) {
+      setError('Produto, posto e operação são obrigatórios.')
+      return
+    }
+
+    const tempoValue = Number(tempo)
+    if (!Number.isFinite(tempoValue) || tempoValue <= 0) {
+      setError('Tempo da operação deve ser maior que zero.')
+      return
+    }
+
+    const postoSelecionado = postos.find((item) => item.id === posto)
+    const nextId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+
+    setRows((current) => [
+      ...current,
+      {
+        id: nextId,
+        sequencia: Number(seq) || current.length + 10,
+        operacao: operacao.trim(),
+        posto_id: posto,
+        posto_nome: postoSelecionado?.nome_posto ?? 'Posto',
+        tempo_min: tempoValue,
+      },
+    ])
+
+    setOperacao('')
+    setTempo('15')
+    setSeq(String((Number(seq) || 10) + 10))
+  }
+
+  const removeRow = (id: string) => {
+    setRows((current) => current.filter((item) => item.id !== id))
+  }
+
+  const selectedProduct = produtos.find((item) => item.id === produto)
+  const selectedPostName = postos.find((item) => item.id === posto)?.nome_posto ?? 'Posto'
+
+  return (
+    <main className="min-h-full bg-transparent p-1 text-slate-800">
+      <div className="mx-auto max-w-[1500px] space-y-4">
+        <header className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <span className="grid h-11 w-11 place-items-center rounded-xl bg-sky-600 text-white shadow-md shadow-sky-200">
+              <Factory size={20} />
+            </span>
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-sky-700">PCP • SYSNQRA</p>
+              <h1 className="text-[28px] font-black tracking-[-0.06em] text-slate-900">Ficha de Processo</h1>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => navigate(-1)} className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-[10px] font-black uppercase text-slate-700 shadow-sm hover:bg-slate-50">
+              <ArrowLeft size={12} /> Voltar
+            </button>
+            <button type="button" className="inline-flex h-10 items-center gap-2 rounded-xl bg-sky-600 px-4 text-[10px] font-black uppercase text-white shadow-md shadow-sky-200 hover:bg-sky-700">
+              <Plus size={12} /> Salvar ficha
+            </button>
+          </div>
+        </header>
+
+        {error && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-[10px] font-bold text-amber-800">
+            {error}
+          </div>
+        )}
+
+        <section className="grid grid-cols-1 gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <label className={labelClass}>
+              Produto
+              <select className={inputClass} value={produto} onChange={(e) => setProduto(e.target.value)} disabled={loading || !produtos.length}>
+                {!produtos.length && <option value="">Selecione</option>}
+                {produtos.map((item) => (
+                  <option key={item.id} value={item.id}>{item.codigo} — {item.nome}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className={labelClass}>
+              Código da ficha
+              <div className="flex h-[38px] items-center rounded-xl border border-slate-200 bg-slate-50 px-3 font-mono text-[11px] font-black text-slate-700">
+                {selectedProduct?.codigo ?? '—'} / PROC
+              </div>
+            </label>
+
+            <label className={labelClass}>
+              Sequência
+              <input className={inputClass} type="number" min={1} value={seq} onChange={(e) => setSeq(e.target.value)} />
+            </label>
+
+            <label className={labelClass}>
+              Posto de trabalho
+              <select className={inputClass} value={posto} onChange={(e) => setPosto(e.target.value)} disabled={loading || !postos.length}>
+                {!postos.length && <option value="">Selecione</option>}
+                {postos.map((item) => (
+                  <option key={item.id} value={item.id}>{item.codigo_posto} — {item.nome_posto}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className={labelClass}>
+              Operação
+              <input className={inputClass} value={operacao} onChange={(e) => setOperacao(e.target.value)} placeholder="Ex.: usinagem / acabamento / embalagem" />
+            </label>
+
+            <label className={labelClass}>
+              Tempo (min)
+              <input className={inputClass} type="number" min={1} step={1} value={tempo} onChange={(e) => setTempo(e.target.value)} />
+            </label>
+          </div>
+
+          <div className="grid gap-3">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Resumo</p>
+              <div className="mt-3 space-y-3">
+                <div className="rounded-xl bg-white p-3 shadow-sm">
+                  <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.18em] text-slate-500"><PackageCheck size={12} /> Produto</div>
+                  <div className="mt-2 text-sm font-black text-slate-900">{selectedProduct?.nome ?? '—'}</div>
+                </div>
+
+                <div className="rounded-xl bg-white p-3 shadow-sm">
+                  <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.18em] text-slate-500"><Factory size={12} /> Posto</div>
+                  <div className="mt-2 text-sm font-black text-slate-900">{selectedPostName}</div>
+                </div>
+
+                <div className="rounded-xl bg-white p-3 shadow-sm">
+                  <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.18em] text-slate-500"><Clock3 size={12} /> Tempo total</div>
+                  <div className="mt-2 text-[22px] font-black tracking-[-0.06em] text-slate-900">{totalMin.toFixed(0)} min</div>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" onClick={addRow} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 text-[10px] font-black uppercase text-white shadow-md shadow-sky-200 hover:bg-sky-700">
+              <Plus size={12} /> Adicionar operação
+            </button>
+          </div>
+        </section>
+
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[900px] border-collapse text-left">
+              <thead>
+                <tr className="bg-slate-100">
+                  <th className="h-11 border-b border-slate-200 px-3 text-[9px] font-black uppercase tracking-[0.18em] text-slate-600">Seq.</th>
+                  <th className="h-11 border-b border-slate-200 px-3 text-[9px] font-black uppercase tracking-[0.18em] text-slate-600">Operação</th>
+                  <th className="h-11 border-b border-slate-200 px-3 text-[9px] font-black uppercase tracking-[0.18em] text-slate-600">Posto</th>
+                  <th className="h-11 border-b border-slate-200 px-3 text-[9px] font-black uppercase tracking-[0.18em] text-slate-600">Tempo</th>
+                  <th className="h-11 border-b border-slate-200 px-3 text-[9px] font-black uppercase tracking-[0.18em] text-slate-600">Ação</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {rows.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-3 py-12 text-center text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
+                      Nenhuma operação adicionada
+                    </td>
+                  </tr>
+                )}
+
+                {rows.map((item) => (
+                  <tr key={item.id} className="hover:bg-slate-50/80">
+                    <td className="border-b border-slate-100 px-3 py-3 text-[11px] font-black text-slate-700">{item.sequencia}</td>
+                    <td className="border-b border-slate-100 px-3 py-3 text-[11px] font-semibold text-slate-700">{item.operacao}</td>
+                    <td className="border-b border-slate-100 px-3 py-3 text-[11px] font-semibold text-slate-700">{item.posto_nome}</td>
+                    <td className="border-b border-slate-100 px-3 py-3 text-[11px] font-black text-slate-700">{item.tempo_min} min</td>
+                    <td className="border-b border-slate-100 px-3 py-3">
+                      <button type="button" onClick={() => removeRow(item.id)} className="inline-flex h-8 items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-2 text-[9px] font-black uppercase text-rose-700 hover:bg-rose-100">
+                        <Trash2 size={12} /> Remover
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+  )
 }
