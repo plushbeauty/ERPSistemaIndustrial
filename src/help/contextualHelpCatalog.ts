@@ -9,6 +9,15 @@ export type ContextualHelp = {
 }
 
 const help: Record<string, ContextualHelp> = {
+  '/pageprincipal/ajuda': {
+    title: 'Central de Ajuda',
+    purpose: 'Localizar orientações operacionais por tela, módulo ou assunto e abrir diretamente a rotina correspondente.',
+    steps: ['Digite o nome da tela, módulo ou assunto no campo de pesquisa.', 'Leia a finalidade apresentada no cartão do resultado.', 'Abra a tela correspondente.', 'Dentro da tela, use o ícone de interrogação no topo para ver a orientação contextual completa.'],
+    fields: ['Pesquisa: procura por título, rota, finalidade, etapas e campos cadastrados.', 'Situação da orientação: indica se o conteúdo está cadastrado ou ainda precisa de validação técnica.'],
+    buttons: ['Abrir tela: navega para a rotina selecionada.', 'Voltar à tela anterior: retorna à página visitada antes da Central de Ajuda.'],
+    tips: ['Uma orientação marcada como pendente não deve ser tratada como procedimento oficial.'],
+    verified: true,
+  },
   '/pageprincipal': {
     title: 'Painel principal',
     purpose: 'Visão inicial para acessar os módulos e acompanhar indicadores e atalhos disponíveis para o perfil autenticado.',
