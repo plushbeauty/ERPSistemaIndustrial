@@ -24,7 +24,8 @@
 --     cadastro de pagamento que a tela precisa ter antes de transmitir.
 --   * erp_current_empresa_id(), erp_is_master() e erp_has_permission(modulo,
 --     acao) são os helpers canônicos já usados por 20261005130000:28-208. Este
---     arquivo não cita o helper legado erp_current_company_id.
+--     arquivo usa somente esses três; nenhuma variante legado de tenant é
+--     chamada aqui (o gate de contrato fiscal veta a variante legado).
 --   * O domínio de tPag (forma de pagamento) vai de 01 a 99 no MAN, com 90 =
 --     "Sem pagamento". Não invento aqui uma lista fechada de códigos: a
 --     constraint aceita o intervalo e a regra específica do 90 é validada na

@@ -97,7 +97,14 @@ export const erpScreenRegistry: Record<string, ErpScreenRecord> = {
   'fiscal/auditoria-documental': { status: 'parcial', banco: ['erp_fiscal_documentos'], nota: 'Leitura sem escopo de empresa explícito no componente; depende de RLS ativa na tabela.' },
   'fiscal/estorno': { status: 'validada', banco: ['erp_fiscal_estornos'], rpc: ['erp_fiscal_estornar_documento'], nota: 'Gravação pela RPC security definer.' },
   'fiscal/razao': { status: 'parcial', banco: ['erp_fiscal_razao_lancamentos', 'erp_contas_bancarias'], nota: 'Painel do módulo Fiscal; sem gravação própria.' },
-  'fiscal/emissao': { status: 'parcial', nota: 'Emissão de NFe exige credenciais e certificado: não homologada.' },
+  'fiscal/emissao': {
+    status: 'parcial',
+    banco: ['erp_clientes', 'erp_produtos', 'erp_empresas', 'erp_documentos_fiscais', 'erp_documentos_fiscais_itens', 'erp_notas_fiscais', 'erp_nfe_pagamentos', 'documentos-erp'],
+    rpc: ['erp_current_empresa_id', 'erp_reservar_numero_nfe', 'erp_salvar_rascunho_nfe', 'erp_nfe_pagamento_salvar', 'erp_nfe_pagamento_consultar'],
+    migration: ['20261005120000_erp_fiscal_nfe_numbering_and_claim_v1.sql', '20261005130000_erp_nfe_draft_tenant_permission_hardening.sql', '20261102013000_erp_nfe_pagamento_v1.sql'],
+    aplicada: false,
+    nota: 'Rascunho, numeração reservada e cobrança gravam pelo banco (security definer, escopo da sessão). Transmissão exige certificado digital, credenciais do integrador e homologação na SEFAZ ainda não realizados; cancelamento, CC-e e inutilização seguem sem rotina instalada.',
+  },
 
   'ajuda': { status: 'estatica', nota: 'Central de ajuda documentada; sem consultas ao banco por desenho.' },
   'master': { status: 'parcial', nota: 'Console da plataforma SaaS: painel PIX e cobrança dinâmica ainda não implementados.' },

@@ -45,6 +45,7 @@ const introCatalog: Record<string, PageIntro> = {
   'fiscal/auditoria-documental': { module: 'Fiscal', title: 'Auditoria Documental', description: 'Documentos fiscais pendentes, inconsistências e evidências organizados por período.' },
   'fiscal/estorno': { module: 'Fiscal', title: 'Estorno de Lançamentos', description: 'Solicitação e aprovação de estornos contábeis com justificativa e trilha de auditoria.' },
   'fiscal/razao': { module: 'Fiscal', title: 'Painel Razão Geral', description: 'Lançamentos consultados por conta, período e centro de custo no razão geral.' },
+  'fiscal/emissao': { module: 'Fiscal', title: 'Emissão de NF-e (modelo 55)', description: 'Monte a nota nas abas do emissor, confira as advertências antes de gravar e acompanhe a transmissão na grade de gerenciamento. A numeração é reservada pelo banco, o documento trava ao sair de Rascunho e nada é declarado autorizado sem chave de 44 dígitos e protocolo devolvidos pelo integrador.' },
 
   'financeiro/conciliacao-bancaria': { module: 'Financeiro', title: 'Conciliação Bancária', description: 'Extratos importados confrontados com os lançamentos do sistema, diferença por diferença.' },
   'financeiro/importar-extratos': { module: 'Financeiro', title: 'Importar Extratos', description: 'Importação de arquivos de extrato e registro dos lançamentos bancários da empresa.' },
