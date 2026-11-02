@@ -542,7 +542,7 @@ export default function AccessControlSettings() {
                       {postos.map(item => <option key={item.id} value={item.id}>{item.codigoPosto} · {item.nomePosto}</option>)}
                     </select>
                   </div>
-                  <div className="md:col-span-2"><span className={label}>E-mail de acesso</span><input type="email" className={input} value={formEmail} onChange={event => setFormEmail(event.target.value)} placeholder="cq.setor@empresa.com.br" /></div>
+                  <div className="md:col-span-2"><span className={label}>E-mail de acesso</span><input type="email" className={input} value={formEmail} disabled={Boolean(editingUserId)} onChange={event => setFormEmail(event.target.value)} placeholder="cq.setor@empresa.com.br" /></div>
                   <div><span className={label}>Login (gerado do setor/posto)</span><input className={input} value={formLogin} onChange={event => setFormLogin(event.target.value)} placeholder={suggestedLogin || 'CQ-COLETIVO'} /></div>
                   <div><span className={label}>Matrícula (opcional)</span><input className={input} value={formMatricula} onChange={event => setFormMatricula(event.target.value)} placeholder="1042" /></div>
                   <div><span className={label}>Perfil / nível de acesso</span>
@@ -551,10 +551,10 @@ export default function AccessControlSettings() {
                       {assignableRoles.map(item => <option key={item.roleId} value={item.roleId}>{item.nome} · nível {item.nivel}</option>)}
                     </select>
                   </div>
-                  <div className="md:col-span-2"><span className={label}>Senha (mín. 12 com A-Z, a-z, 0-9 e símbolo)</span><input type="password" className={input} value={formSenha} onChange={event => setFormSenha(event.target.value)} placeholder="em branco = senha temporária gerada pelo servidor" /></div>
+                  <div className="md:col-span-2"><span className={label}>Senha (mín. 12 com A-Z, a-z, 0-9 e símbolo)</span><input type="password" className={input} value={formSenha} disabled={Boolean(editingUserId)} onChange={event => setFormSenha(event.target.value)} placeholder="em branco = senha temporária gerada pelo servidor" /></div>
                 </div>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <button type="submit" className={primaryButton} disabled={saving || (!editingUserId && !setorId)}>{editingUserId ? <Save size={12}/> : <UserPlus size={12}/ >}{saving ? 'Salvando…' : editingUserId ? 'Salvar alterações' : 'Criar acesso do setor'}</button>
+                  <button type="submit" className={primaryButton} disabled={saving || (!editingUserId && !setorId)}>{editingUserId ? <Save size={12}/> : <UserPlus size={12}/>}{saving ? 'Salvando…' : editingUserId ? 'Salvar alterações' : 'Criar acesso do setor'}</button>
                   {editingUserId ? <button type="button" className={lightButton} disabled={saving} onClick={cancelEditUser}>Cancelar edição</button> : <button type="button" className={lightButton} disabled={saving || !setorId} onClick={event => { event.preventDefault(); void createUser(event, 'invite_user') }}>Enviar convite por e-mail</button>}
                   <span className="text-[9px] text-slate-500">{editingUserId ? 'O e-mail de autenticação não é alterado nesta rotina. Toda mudança é validada no servidor e auditada.' : 'A identidade Auth é criada pela Edge Function erp-user-admin com service role no servidor; o navegador nunca recebe credencial privada.'}</span>
                 </div>
