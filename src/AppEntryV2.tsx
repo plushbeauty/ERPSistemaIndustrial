@@ -1,5 +1,5 @@
-import { Suspense, lazy } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Suspense, lazy, type ReactNode } from 'react'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import ERPHorizontalShell from './components/layout/ERPHorizontalShell'
 import QualityPlanGate from './components/quality/QualityPlanGate'
 import './styles/rh-industrial-theme.css'
@@ -71,12 +71,30 @@ const HelpParametrosCodigo = lazy(() => import('./pages/cadastro-produtos/HelpPa
 // Razão Geral: a main publicou o painel em controladoria; o módulo fiscal mantém a própria versão.
 // As duas rotas existem, então as duas origens ficam registradas com nomes distintos.
 const PainelRazaoGeralControladoria = lazy(() => import('./features/controladoria/PainelRazaoGeral'))
+// Experiecircncia publica nova (home com carrossel, planos, cadastro de empresa, blog, contato) — comando de 2026-11-02
+const PlanosIndustrial = lazy(() => import('./pages/PlanosIndustrial'))
+const CadastroEmpresa = lazy(() => import('./pages/CadastroEmpresa'))
+const Blog = lazy(() => import('./pages/Blog'))
+const Contato = lazy(() => import('./pages/Contato'))
 
 function LoadingWorkspace() {
   return <main role="status" aria-live="polite" style={{ minHeight: '50vh', display: 'grid', placeItems: 'center', color: '#123b50', fontFamily: 'Inter,system-ui,sans-serif' }}>Carregando SYSNQRA ERP INDUSTRIAL…</main>
 }
 
+function PublicPage({ children }: { children: ReactNode }) {
+  return (
+    <Suspense fallback={<LoadingWorkspace />}>
+      <div className="erp-global-surface">{children}</div>
+    </Suspense>
+  )
+}
+
 export default function AppEntryV2() {
+  const path = useLocation().pathname
+  if (path === '/planos') return <PublicPage><PlanosIndustrial /></PublicPage>
+  if (path === '/cadastro-empresa') return <PublicPage><CadastroEmpresa /></PublicPage>
+  if (path === '/blog') return <PublicPage><Blog /></PublicPage>
+  if (path === '/contato') return <PublicPage><Contato /></PublicPage>
   return (
     <Suspense fallback={<LoadingWorkspace />}>
       <div className="erp-global-surface">
