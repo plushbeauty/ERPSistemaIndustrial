@@ -22,6 +22,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, CheckCircle2, FileCheck2, FileText, Landmark, RefreshCw, Receipt, Search, ShieldCheck, Send } from 'lucide-react'
 import { supabase, invokeSecureEdgeFunction } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import { erroBancoNaoInstalado, MIGRACAO_LIBERACAO_ITEM_FISCAL } from '../lib/supabaseRpcStatus'
 import FiscalSidebar from '../components/fiscal/FiscalSidebar'
 
 type Tab = 'liberacao' | 'notas' | 'receber' | 'pagar' | 'relatorios'
@@ -60,6 +61,9 @@ export default function Fiscal() {
   const [documentsPage, setDocumentsPage] = useState(1)
   const [accountsPage, setAccountsPage] = useState(1)
   const [items, setItems] = useState<Item[]>([])
+  const [liberado, setLiberado] = useState<Record<string, number>>({})
+  const [observacao, setObservacao] = useState('')
+  const [saldoAviso, setSaldoAviso] = useState('')
   const [docs, setDocs] = useState<Doc[]>([])
   const [receber, setReceber] = useState<Conta[]>([])
   const [pagar, setPagar] = useState<Conta[]>([])
@@ -108,23 +112,42 @@ export default function Fiscal() {
     setSelected(id)
     setMessage('')
     setError('')
+    setSaldoAviso('')
     try {
       if (!companyId) throw new Error('Empresa da sessão não identificada.')
-      const rows = await fetchAllPages<Item>((from, to) => supabase
-        .from('erp_pedidos_venda_itens')
-        .select('id,pedido_id,produto_id,descricao,quantidade,valor_unitario,total', { count: 'exact' })
-        .eq('empresa_id', companyId).eq('pedido_id', id).order('id').range(from, to))
+      const [rows, ledger] = await Promise.all([
+        fetchAllPages<Item>((from, to) => supabase
+          .from('erp_pedidos_venda_itens')
+          .select('id,pedido_id,produto_id,descricao,quantidade,valor_unitario,total', { count: 'exact' })
+          .eq('empresa_id', companyId).eq('pedido_id', id).order('id').range(from, to)),
+        supabase.from('erp_fiscal_liberacoes_pedido_item')
+          .select('pedido_item_id,quantidade')
+          .eq('empresa_id', companyId).eq('pedido_id', id)
+      ])
+      if (ledger.error) {
+        setLiberado({})
+        setSaldoAviso(erroBancoNaoInstalado(ledger.error, 'erp_fiscal_liberacoes_pedido_item', MIGRACAO_LIBERACAO_ITEM_FISCAL)
+          ?? `Não foi possível ler as liberações já registradas: ${ledger.error.message}`)
+      } else {
+        const soma: Record<string, number> = {}
+        for (const row of (ledger.data ?? []) as { pedido_item_id: string; quantidade: number }[]) {
+          soma[row.pedido_item_id] = (soma[row.pedido_item_id] ?? 0) + Number(row.quantidade || 0)
+        }
+        setLiberado(soma)
+      }
       setItems(rows)
     } catch (cause) {
       setItems([])
+      setLiberado({})
       setError(cause instanceof Error ? cause.message : 'Não foi possível carregar os itens do pedido.')
     }
   }
 
   async function release(item: Item): Promise<void> {
     const value = Number(qty[item.id] ?? 0)
-    if (!Number.isFinite(value) || value <= 0 || value > item.quantidade) {
-      setError('Informe uma quantidade válida, maior que zero e não superior ao saldo do item.')
+    const saldo = item.quantidade - (liberado[item.id] ?? 0)
+    if (!Number.isFinite(value) || value <= 0 || value > saldo) {
+      setError(`Informe uma quantidade maior que zero e não superior ao saldo pendente de ${saldo.toLocaleString('pt-BR')} deste item.`)
       return
     }
 
@@ -134,16 +157,22 @@ export default function Fiscal() {
       const { data, error: rpcError } = await supabase.rpc('erp_liberar_item_fiscal', {
         p_pedido_item_id: item.id,
         p_quantidade: value,
-        p_tipo: value === item.quantidade ? 'total' : 'parcial',
-        p_observacao: 'Liberação homologada pelo setor Fiscal'
+        p_tipo: value >= saldo ? 'total' : 'parcial',
+        p_observacao: observacao.trim() || 'Liberação homologada pelo setor Fiscal'
       })
-      if (rpcError) throw rpcError
+      if (rpcError) {
+        throw new Error(erroBancoNaoInstalado(rpcError, 'erp_liberar_item_fiscal', MIGRACAO_LIBERACAO_ITEM_FISCAL)
+          ?? `Não foi possível liberar o item: ${rpcError.message}`)
+      }
+      if (data === null || data === undefined) throw new Error('A rotina de liberação não confirmou o saldo; nenhum registro foi gravado.')
 
-      const result = data as { saldo_restante?: number } | null
-      const saldo = Number(result?.saldo_restante ?? 0)
-      setMessage('Item liberado: ' + value.toLocaleString('pt-BR') + '. Saldo pendente: ' + saldo.toLocaleString('pt-BR') + '.')
+      const result = data as { saldo_restante?: number; liberado_total?: number; tipo?: string } | null
+      const restante = Number(result?.saldo_restante ?? 0)
+      const totalLiberado = Number(result?.liberado_total ?? (liberado[item.id] ?? 0) + value)
+      setMessage('Item liberado: ' + value.toLocaleString('pt-BR') + ' (' + (result?.tipo === 'total' ? 'liberação total' : 'liberação parcial')
+        + '). Já liberado: ' + totalLiberado.toLocaleString('pt-BR') + '. Saldo pendente: ' + restante.toLocaleString('pt-BR') + '.')
       setQty(previous => ({ ...previous, [item.id]: '' }))
-      await load()
+      setObservacao('')
       if (selected) await openOrder(selected)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível concluir a liberação fiscal.')
@@ -316,30 +345,50 @@ export default function Fiscal() {
             <aside className="fiscal-panel fiscal-items-panel">
               <div className="fiscal-panel-heading"><h2>Itens do Pedido</h2>
               <p>Pedido selecionado: {selected ? '#' + (orders.find(order => order.id === selected)?.numero ?? '') : '—'}</p></div>
+              {saldoAviso && <p role="status" className="fiscal-empty">{saldoAviso}</p>}
               <div className="fiscal-item-list">
-                {items.map(item => (
-                  <article key={item.id} className="fiscal-item-card">
-                    <strong>{item.descricao}</strong>
-                    <span>Quantidade: {item.quantidade} • Total: {money(item.total)}</span>
-                    <div className="fiscal-release-form">
-                      <label>Qtd. a liberar
-                        <input
-                          type="number"
-                          min="0"
-                          max={item.quantidade}
-                          step="any"
-                          className="fiscal-input"
-                          value={qty[item.id] ?? ''}
-                          onChange={event => setQty(previous => ({ ...previous, [item.id]: event.target.value }))}
-                          placeholder="0"
-                        />
-                      </label>
-                      <button type="button" className="fiscal-button fiscal-button-success" disabled={busy} onClick={() => void release(item)}>
-                        <CheckCircle2 size={17} /> Liberar
-                      </button>
-                    </div>
-                  </article>
-                ))}
+                {items.map(item => {
+                  const jaLiberado = liberado[item.id] ?? 0
+                  const saldoItem = item.quantidade - jaLiberado
+                  return (
+                    <article key={item.id} className="fiscal-item-card">
+                      <strong>{item.descricao}</strong>
+                      <span>Quantidade: {item.quantidade} · Já liberado: {jaLiberado} · Saldo pendente: {saldoItem} · Total: {money(item.total)}</span>
+                      {saldoItem <= 0 && <span className="fiscal-status fiscal-status-success">Saldo totalmente liberado para faturamento</span>}
+                      <div className="fiscal-release-form">
+                        <label>Qtd. a liberar
+                          <input
+                            type="number"
+                            min="0"
+                            max={saldoItem}
+                            step="any"
+                            className="fiscal-input"
+                            disabled={busy || saldoItem <= 0}
+                            value={qty[item.id] ?? ''}
+                            onChange={event => setQty(previous => ({ ...previous, [item.id]: event.target.value }))}
+                            placeholder="0"
+                          />
+                        </label>
+                        <button type="button" className="fiscal-button fiscal-button-success" disabled={busy || saldoItem <= 0} onClick={() => void release(item)}>
+                          <CheckCircle2 size={17} /> {saldoItem <= 0 ? 'Sem saldo' : 'Liberar'}
+                        </button>
+                      </div>
+                    </article>
+                  )
+                })}
+                {!!items.length && (
+                  <div className="fiscal-release-obs">
+                    <label>Observação da liberação (opcional)
+                      <input
+                        className="fiscal-input"
+                        maxLength={300}
+                        value={observacao}
+                        placeholder="Vai para o registro do item liberado e para a trilha do sistema"
+                        onChange={event => setObservacao(event.target.value)}
+                      />
+                    </label>
+                  </div>
+                )}
                 {!items.length && <p className="fiscal-empty">Selecione um pedido na tabela para detalhar os itens.</p>}
               </div>
             </aside>
@@ -445,7 +494,7 @@ export default function Fiscal() {
       .fiscal-release-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(310px,1fr);align-items:start;gap:14px}.fiscal-panel{min-width:0;padding:16px;border:1px solid #dfe7f1;border-radius:12px;background:#fff;box-shadow:0 3px 10px rgba(15,23,42,.045)}.fiscal-panel h2{margin:0;color:#173452;font-size:14px;font-weight:800;line-height:1.3}.fiscal-panel>p{margin:7px 0 0;color:#64748b;font-size:11px;line-height:1.5}.fiscal-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;padding-bottom:11px;border-bottom:1px solid #e7edf5}.fiscal-panel-heading p{margin:4px 0 0;color:#64748b;font-size:11px;line-height:1.45}.fiscal-result-count{flex:none;padding:5px 9px;border:1px solid #dbeafe;border-radius:7px;background:#eff6ff;color:#1d4ed8;font-size:10px;font-weight:750}
       .fiscal-search{display:flex;align-items:center;gap:8px;width:min(100%,340px);height:36px;padding:0 10px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;color:#64748b}.fiscal-input{width:100%;min-width:0;height:36px;min-height:36px;padding:0 10px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;color:#0f172a;font:500 12px Inter,Segoe UI,Arial,sans-serif;outline:none;box-sizing:border-box}.fiscal-search .fiscal-input{height:32px;min-height:32px;padding:0;border:0;background:transparent}.fiscal-input:focus{border-color:#2563eb;background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.12);outline:none}.fiscal-input::placeholder{color:#94a3b8}
       .fiscal-table{width:100%;min-width:720px;border-collapse:separate;border-spacing:0;text-align:left;font-size:11px}.fiscal-table th{position:sticky;top:0;padding:9px 10px;border-bottom:1px solid #dfe7f1;background:#f1f5f9;color:#475569;font-size:9px;font-weight:800;letter-spacing:.045em;text-transform:uppercase;white-space:nowrap}.fiscal-table td{padding:9px 10px;border-bottom:1px solid #edf1f6;color:#334155;vertical-align:middle}.fiscal-table tbody tr:nth-child(even){background:#f8fafc}.fiscal-table tbody tr:hover,.fiscal-table tbody tr.selected{background:#eff6ff}.fiscal-table .numeric{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.fiscal-table .center{text-align:center}.fiscal-table .link-value{color:#1d4ed8;font-weight:800}.fiscal-status{display:inline-flex;align-items:center;min-height:22px;padding:3px 7px;border:1px solid transparent;border-radius:6px;font-size:9px;font-weight:800;line-height:1.2;white-space:nowrap}.fiscal-status-success{border-color:#bbf7d0;background:#dcfce7;color:#166534}.fiscal-status-pending{border-color:#fde68a;background:#fef3c7;color:#92400e}.fiscal-status-danger{border-color:#fecaca;background:#fee2e2;color:#b91c1c}.fiscal-status-neutral{border-color:#cbd5e1;background:#f1f5f9;color:#475569}
-      .fiscal-pagination{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:10px 2px 0;border-top:1px solid #e2e8f0;color:#64748b;font-size:10px}.fiscal-pagination>div{display:flex;align-items:center;gap:7px}.fiscal-empty{margin:10px 0 0;padding:20px;border:1px dashed #cbd5e1;border-radius:9px;background:#f8fafc;color:#64748b;font-size:11px;text-align:center}.fiscal-item-list{display:grid;gap:9px}.fiscal-item-card{padding:12px;border:1px solid #dfe7f1;border-radius:10px;background:#f8fafc}.fiscal-item-card>strong,.fiscal-item-card>span{display:block}.fiscal-item-card>strong{color:#173452;font-size:12px;font-weight:750;line-height:1.4;overflow-wrap:anywhere}.fiscal-item-card>span{margin-top:4px;color:#64748b;font-size:10px}.fiscal-release-form{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:9px;margin-top:10px}.fiscal-release-form label{display:grid;gap:4px;color:#475569;font-size:10px;font-weight:750}.fiscal-release-form .fiscal-button{min-width:108px}
+      .fiscal-pagination{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:10px 2px 0;border-top:1px solid #e2e8f0;color:#64748b;font-size:10px}.fiscal-pagination>div{display:flex;align-items:center;gap:7px}.fiscal-empty{margin:10px 0 0;padding:20px;border:1px dashed #cbd5e1;border-radius:9px;background:#f8fafc;color:#64748b;font-size:11px;text-align:center}.fiscal-item-list{display:grid;gap:9px}.fiscal-item-card{padding:12px;border:1px solid #dfe7f1;border-radius:10px;background:#f8fafc}.fiscal-item-card>strong,.fiscal-item-card>span{display:block}.fiscal-item-card>strong{color:#173452;font-size:12px;font-weight:750;line-height:1.4;overflow-wrap:anywhere}.fiscal-item-card>span{margin-top:4px;color:#64748b;font-size:10px}.fiscal-release-form{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:9px;margin-top:10px}.fiscal-release-form label{display:grid;gap:4px;color:#475569;font-size:10px;font-weight:750}.fiscal-release-form .fiscal-button{min-width:108px}.fiscal-release-obs{display:grid;gap:4px;padding:10px 12px;border:1px solid #dfe7f1;border-radius:10px;background:#fff;color:#475569;font-size:10px;font-weight:750}
       .fiscal-report-tabs{display:flex;flex-wrap:wrap;gap:6px;padding:7px;border:1px solid #dfe7f1;border-radius:10px;background:#fff}.fiscal-report-tab{height:36px;min-height:36px;padding:0 14px;border:1px solid #dfe7f1;border-radius:8px;background:#fff;color:#52677f;font-size:11px;font-weight:750;cursor:pointer}.fiscal-report-tab.active{border-color:#0b2545;background:#0b2545;color:#fff}.fiscal-workspace :focus-visible{outline:3px solid rgba(34,184,207,.65);outline-offset:2px}
       @media(max-width:1000px){.fiscal-release-grid{grid-template-columns:minmax(0,1fr)}.fiscal-items-panel{grid-row:2}.fiscal-hero-icon{margin-right:4px}}
       @media(max-width:680px){.fiscal-workspace{padding:10px 10px 24px}.fiscal-hero{min-height:0;padding:17px;border-radius:13px}.fiscal-hero h1{font-size:21px}.fiscal-hero-icon{width:30px;height:30px}.fiscal-actionbar{padding:7px}.fiscal-actionbar .fiscal-button{flex:1}.fiscal-tabs{margin:10px -1px;padding:5px}.fiscal-tab{height:34px;min-height:34px;padding:0 9px;font-size:10px}.fiscal-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.fiscal-stat-card{min-height:76px;padding:11px}.fiscal-stat-card strong{font-size:19px}.fiscal-panel{padding:11px}.fiscal-panel-heading{align-items:flex-start;flex-direction:column}.fiscal-search{width:100%}.fiscal-release-form{grid-template-columns:minmax(0,1fr) auto}.fiscal-release-form .fiscal-button{min-width:92px;padding:0 9px}.fiscal-pagination{align-items:flex-start;flex-direction:column}}
