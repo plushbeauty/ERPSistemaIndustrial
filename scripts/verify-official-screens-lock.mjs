@@ -36,6 +36,7 @@ const oficiais = [
 
 // Telas antigas deletadas do sistema. Recriar qualquer um destes caminhos reprova o build.
 const banidos = [
+  'src/components/layout/BarraWindows11.tsx',
   'src/PublicIndustrial.tsx',
   'src/features/QualityRpncForm .tsx',
   'src/features/fiscal/GeradorGruposContabeis.tsx',

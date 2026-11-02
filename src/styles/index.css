@@ -93,7 +93,7 @@ table td{color:#17333F!important;border-color:#dceaf0!important;font-size:16px!i
 @media print {
   @page { size: A4; margin: 12mm; }
   .erp-windows-topbar, .erp-horizontal-header, .erp-horizontal-menu,
-  .erp-global-status-row, .w11-bar, .w11-start, .v7-topbar, .v7-sidebar,
+  .erp-global-status-row, .v7-topbar, .v7-sidebar,
   .v7-launcher-backdrop, .floating-tablet-shell, .global-help-button,
   .global-help-panel, .print-toolbar, .print-hidden, .no-print,
   .print\\:hidden, [data-print-hide], button, input[type="button"], input[type="submit"] {
