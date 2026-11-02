@@ -1,8 +1,8 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-02
+ * @REVISAO: REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: "todos os edits do módulo estoque estão desalinhados e fora de tamanho". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).
+ * @STATUS_APROVACAO: CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela
  */
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
@@ -79,15 +79,15 @@ export default function EstoqueCurvaABC() {
     return [{ name: 'Classe A', value: a }, { name: 'Classe B', value: b }, { name: 'Classe C', value: c }]
   }, [items, stock])
 
-  return <main className="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-6">
-    <header className="flex flex-wrap items-center gap-2 border-b pb-4">
-      <div><p className="text-sm font-black text-slate-600">ESTOQUE &gt; INDICADORES CRÍTICOS</p><h1 className="text-2xl font-black">Curva ABC de Valorização</h1></div>
-      <div className="ml-auto flex gap-2 print:hidden"><button type="button" onClick={() => window.print()} className="rounded-sm bg-slate-900 px-4 py-2 text-sm font-bold text-white">IMPRIMIR RELATÓRIO</button></div>
+  return <main data-synqra-density="30px" className="min-h-screen bg-slate-50 p-2 text-slate-900 md:p-3">
+    <header className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2">
+      <p className="v2-eyebrow">Estoque &gt; indicadores críticos</p>
+      <div className="ml-auto flex gap-2 print:hidden"><button type="button" onClick={() => window.print()} className="bg-slate-900 font-bold text-white">IMPRIMIR RELATÓRIO</button></div>
     </header>
-    {error && <div role="alert" className="mt-4 border border-red-300 bg-red-50 p-3 text-sm text-red-900">{error}</div>}
-    <section className="mt-5 grid gap-5 lg:grid-cols-[360px_1fr]">
-      <article className="rounded-sm border bg-white p-5 shadow-sm"><h2 className="text-lg font-black">Distribuição patrimonial</h2>{busy ? <p className="py-10 text-sm">Carregando dados reais…</p> : <ResponsiveContainer width="100%" height={300}><PieChart><Pie data={data} dataKey="value" nameKey="name" innerRadius={65} outerRadius={105}>{data.map((row, index) => <Cell key={row.name} fill={colors[index]}/>)}</Pie><Tooltip/></PieChart></ResponsiveContainer>}</article>
-      <article className="rounded-sm border bg-white p-5 shadow-sm"><h2 className="text-lg font-black">Capital parado por classe</h2>{data.map(row => <div key={row.name} className="flex h-10 items-center justify-between border-b text-sm font-semibold"><span>{row.name}</span><span>R$ {row.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></div>)}<p className="mt-3 text-xs text-slate-500">Valor estimado a partir do último custo registrado por produto e do saldo físico; produtos sem custo cadastrado não são valorizados.</p></article>
+    {error && <div role="alert" className="mt-3 border border-red-300 bg-red-50 p-2 text-[11px] text-red-900">{error}</div>}
+    <section className="mt-3 grid gap-3 lg:grid-cols-[360px_1fr]">
+      <article className="border border-slate-200 bg-white p-3"><h2 className="text-lg font-black">Distribuição patrimonial</h2>{busy ? <p className="py-6 text-[11px]">Carregando dados reais…</p> : <ResponsiveContainer width="100%" height={300}><PieChart><Pie data={data} dataKey="value" nameKey="name" innerRadius={65} outerRadius={105}>{data.map((row, index) => <Cell key={row.name} fill={colors[index]}/>)}</Pie><Tooltip/></PieChart></ResponsiveContainer>}</article>
+      <article className="border border-slate-200 bg-white p-3"><h2 className="text-lg font-black">Capital parado por classe</h2>{data.map(row => <div key={row.name} className="flex h-8 items-center justify-between border-b border-slate-100 text-[11px] font-semibold"><span>{row.name}</span><span>R$ {row.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></div>)}<p className="mt-3 text-xs text-slate-500">Valor estimado a partir do último custo registrado por produto e do saldo físico; produtos sem custo cadastrado não são valorizados.</p></article>
     </section>
   </main>
 }

@@ -1,8 +1,8 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-02
+ * @REVISAO: REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: "todos os edits do módulo estoque estão desalinhados e fora de tamanho". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).
+ * @STATUS_APROVACAO: CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela
  */
 /**
  * @DATA_REVISAO_ANTERIOR: 2026-10-18
@@ -154,8 +154,8 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
   }
 
   return (
-    <VendasLayout title="Recebimento de Insumos e Lotes" subtitle="Conferência quantitativa, certificado químico e integração rastreável ao Almoxarifado">
-      <main className="space-y-3 p-1 text-xs text-slate-800">
+    <VendasLayout title="">
+      <main data-synqra-density="30px" className="space-y-3 p-1 text-xs text-slate-800">
         {(error || success) && <div className={`flex items-start gap-2 rounded-[2px] border px-3 py-2 text-[10px] font-bold ${error ? 'border-rose-200 bg-rose-50 text-rose-900' : 'border-emerald-200 bg-emerald-50 text-emerald-900'}`} role={error ? 'alert' : 'status'}>
           {error ? <X size={15} className="shrink-0" /> : <CheckCircle size={15} className="shrink-0" />}
           <span>{error || success}</span>

@@ -1,8 +1,8 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-02
+ * @REVISAO: REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: "todos os edits do módulo estoque estão desalinhados e fora de tamanho". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).
+ * @STATUS_APROVACAO: CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela
  */
 import { Download, ArrowLeft } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
@@ -26,9 +26,9 @@ export default function BalancoEstoque(){
  useEffect(()=>{void (async()=>{try{const empresa=await supabase.rpc('erp_current_empresa_id');if(empresa.error||!empresa.data)throw empresa.error??new Error('Empresa da sessão não identificada.');const empresaId=String(empresa.data);const [w,p]=await Promise.all([supabase.from('erp_almoxarifados').select('id,codigo,nome').eq('empresa_id',empresaId).eq('ativo',true).order('codigo'),supabase.from('erp_produtos').select('id,codigo,nome,unidade,estoque_atual,custo_medio').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(5000)]);if(w.error)throw w.error;if(p.error)throw p.error;setWarehouses((w.data??[]) as Warehouse[]);setProducts((p.data??[]) as Product[])}catch(e){setError(e instanceof Error?e.message:'Falha ao carregar balanço.')}finally{setLoading(false)}})()},[])
  const rows=useMemo<Row[]>(()=>products.filter(p=>fuzzy(p.codigo+' '+p.nome,search)).map(p=>{const saldo=Number(p.estoque_atual??0);const custo=Number(p.custo_medio??0);return {...p,saldo,custo,total:saldo*custo,status:saldo<0?'DIVERGENTE':'ATIVO'}}),[products,search])
  const total=rows.reduce((s,r)=>s+r.total,0)
- return <main className="min-h-screen bg-slate-50 p-3 text-gray-800">
+ return <main data-synqra-density="30px" className="min-h-screen bg-slate-50 p-3 text-gray-800">
   <div className="mx-auto max-w-[1600px] space-y-2">
-   <div className="flex items-center gap-2"><button type="button" onClick={()=>navigate('/estoque')} className={button+' border border-gray-200 bg-white text-gray-600'}><ArrowLeft size={12}/>Voltar</button><h1 className="text-[13px] font-bold text-gray-700">VALORAÇÃO CONTÁBIL DE ESTOQUE</h1></div>
+   <div className="flex items-center gap-2"><button type="button" onClick={()=>navigate('/estoque')} className={button+' border border-gray-200 bg-white text-gray-600'}><ArrowLeft size={12}/>Voltar</button><p className="text-[9px] font-black uppercase tracking-wider text-slate-500">Valoração contábil de estoque</p></div>
    {error&&<div className="border border-red-200 bg-red-50 px-2 py-1 text-[10px] text-red-700">{error}</div>}
    <section className="rounded-md border border-gray-200 bg-white p-2 shadow-sm"><div className="flex items-end gap-2">
     <div className="w-[110px] shrink-0"><label className={label}>Data Inventário</label><input className={input+' w-[110px]'} type="date" value={cut} onChange={e=>setCut(e.target.value)}/></div>

@@ -1,8 +1,8 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-02
+ * @REVISAO: REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: "todos os edits do módulo estoque estão desalinhados e fora de tamanho". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).
+ * @STATUS_APROVACAO: CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela
  */
 /**
  * SYSNQRA ERP & SGQ INDUSTRIAL
@@ -165,29 +165,25 @@ export default function AlmoxarifadoInventario() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F4F8FB] p-3 font-sans text-slate-800 antialiased md:p-5">
-      <div className="mx-auto max-w-[1700px] space-y-4">
-        <header className="flex flex-wrap items-center gap-3 border border-slate-200 border-l-4 border-l-[#E6A34A] bg-white p-4 shadow-[0_4px_18px_rgba(18,59,80,0.08)]">
-          <span className="flex h-11 w-11 items-center justify-center rounded-[2px] border border-slate-200 bg-[#F4FBFD] text-[#123B50]"><Archive size={22} /></span>
-          <div>
-            <div className="text-[9px] font-black uppercase tracking-[0.18em] text-[#2D8DB8]">SYSNQRA · LOGÍSTICA / SGQ</div>
-            <h1 className="text-lg font-black leading-6 md:text-xl">Almoxarifado Mestre · Rastreabilidade FIFO</h1>
-            <p className="text-[10px] text-slate-500">Lotes reais, validade, bloqueios de qualidade e ordem de entrada</p>
-          </div>
+    <main data-synqra-density="30px" className="min-h-screen bg-[#F4F8FB] p-2 font-sans text-slate-800 antialiased md:p-3">
+      <div className="mx-auto max-w-[1700px] space-y-3">
+        <header className="flex flex-wrap items-center gap-2 border border-slate-200 bg-white p-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-[2px] border border-slate-200 bg-[#F4FBFD] text-[#123B50]"><Archive size={16} /></span>
+          <p className="v2-eyebrow">SYSNQRA · Logística / SGQ — lotes reais, validade, bloqueios de qualidade e ordem de entrada</p>
           <button type="button" disabled={loading} onClick={() => void load()} className={button + ' ml-auto border-slate-300 bg-[#123B50] text-white hover:bg-[#194e68]'}><RefreshCw size={13} className={loading ? 'animate-spin' : ''} /> Atualizar lotes</button>
         </header>
 
         {(error || message) && <div role={error ? 'alert' : 'status'} className={'flex items-start justify-between gap-3 border px-3 py-2 text-xs font-bold ' + (error ? 'border-rose-300 bg-rose-50 text-rose-800' : 'border-emerald-300 bg-emerald-50 text-emerald-800')}><span>{error || message}</span><button type="button" onClick={() => { setError(''); setMessage('') }} aria-label="Fechar mensagem">×</button></div>}
 
         <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
-          <article className="border border-sky-200 border-t-4 border-t-sky-500 bg-white p-3 shadow-[0_5px_16px_rgba(18,59,80,0.07)]"><div className="flex items-center justify-between text-[9px] font-black uppercase text-slate-500">Lotes cadastrados <Archive size={16} /></div><div className="mt-2 text-2xl font-black text-[#123B50]">{kpis.total}</div><div className="text-[9px] text-slate-500">Empresa autenticada</div></article>
-          <article className="border border-rose-200 border-t-4 border-t-rose-500 bg-white p-3 shadow-[0_5px_16px_rgba(18,59,80,0.07)]"><div className="flex items-center justify-between text-[9px] font-black uppercase text-rose-700">Vencidos com saldo <ShieldAlert size={16} /></div><div className="mt-2 text-2xl font-black text-rose-700">{kpis.expired}</div><div className="text-[9px] text-rose-700">Não liberar para consumo</div></article>
-          <article className="border border-amber-200 border-t-4 border-t-amber-500 bg-white p-3 shadow-[0_5px_16px_rgba(18,59,80,0.07)]"><div className="flex items-center justify-between text-[9px] font-black uppercase text-amber-700">Vencem em até 5 dias <CalendarClock size={16} /></div><div className="mt-2 text-2xl font-black text-amber-700">{kpis.critical}</div><div className="text-[9px] text-amber-700">Priorizar avaliação</div></article>
-          <article className="border border-cyan-200 border-t-4 border-t-[#48B7C7] bg-white p-3 shadow-[0_5px_16px_rgba(18,59,80,0.07)]"><div className="flex items-center justify-between text-[9px] font-black uppercase text-[#2D8DB8]">Saldo disponível <PackageCheck size={16} /></div><div className="mt-2 text-2xl font-black">{kpis.balance.toLocaleString('pt-BR')}</div><div className="text-[9px] text-[#2D8DB8]">Unidades conforme cadastro</div></article>
-          <article className="border border-violet-200 border-t-4 border-t-violet-500 bg-white p-3 shadow-[0_5px_16px_rgba(18,59,80,0.07)]"><div className="flex items-center justify-between text-[9px] font-black uppercase text-violet-700">Retidos / reprovados <AlertTriangle size={16} /></div><div className="mt-2 text-2xl font-black text-violet-700">{kpis.held}</div><div className="text-[9px] text-violet-700">Excluídos da elegibilidade FIFO</div></article>
+          <article className="border border-sky-200 border-t-2 border-t-sky-500 bg-white p-3"><div className="flex items-center justify-between text-[9px] font-black uppercase text-slate-500">Lotes cadastrados <Archive size={16} /></div><div className="mt-2 text-2xl font-black text-[#123B50]">{kpis.total}</div><div className="text-[9px] text-slate-500">Empresa autenticada</div></article>
+          <article className="border border-rose-200 border-t-2 border-t-rose-500 bg-white p-3"><div className="flex items-center justify-between text-[9px] font-black uppercase text-rose-700">Vencidos com saldo <ShieldAlert size={16} /></div><div className="mt-2 text-2xl font-black text-rose-700">{kpis.expired}</div><div className="text-[9px] text-rose-700">Não liberar para consumo</div></article>
+          <article className="border border-amber-200 border-t-2 border-t-amber-500 bg-white p-3"><div className="flex items-center justify-between text-[9px] font-black uppercase text-amber-700">Vencem em até 5 dias <CalendarClock size={16} /></div><div className="mt-2 text-2xl font-black text-amber-700">{kpis.critical}</div><div className="text-[9px] text-amber-700">Priorizar avaliação</div></article>
+          <article className="border border-cyan-200 border-t-2 border-t-[#48B7C7] bg-white p-3"><div className="flex items-center justify-between text-[9px] font-black uppercase text-[#2D8DB8]">Saldo disponível <PackageCheck size={16} /></div><div className="mt-2 text-2xl font-black">{kpis.balance.toLocaleString('pt-BR')}</div><div className="text-[9px] text-[#2D8DB8]">Unidades conforme cadastro</div></article>
+          <article className="border border-violet-200 border-t-2 border-t-violet-500 bg-white p-3"><div className="flex items-center justify-between text-[9px] font-black uppercase text-violet-700">Retidos / reprovados <AlertTriangle size={16} /></div><div className="mt-2 text-2xl font-black text-violet-700">{kpis.held}</div><div className="text-[9px] text-violet-700">Excluídos da elegibilidade FIFO</div></article>
         </section>
 
-        <section className="border border-slate-200 bg-white p-3 shadow-[0_4px_16px_rgba(18,59,80,0.06)]">
+        <section className="border border-slate-200 bg-white p-3">
           <div className="mb-3 flex items-center gap-2"><PackageCheck size={16} className="text-[#2D8DB8]" /><h2 className="text-xs font-black uppercase tracking-wide">Recebimento de lote · transação atômica</h2></div>
           <p className="mb-3 text-[10px] text-slate-500">Este formulário só recebe material com status de qualidade APROVADO. Quarentena/reprovação devem passar pelo fluxo de inspeção do SGQ. O saldo é atualizado no banco pela RPC; não há escrita direta no cliente.</p>
           <div className="grid grid-cols-12 items-end gap-3">
@@ -201,7 +197,7 @@ export default function AlmoxarifadoInventario() {
           </div>
         </section>
 
-        <section className="border border-slate-200 bg-white p-3 shadow-[0_4px_16px_rgba(18,59,80,0.06)]">
+        <section className="border border-slate-200 bg-white p-3">
           <div className="mb-3 flex flex-wrap items-center gap-2"><div className="mr-auto"><h2 className="text-xs font-black uppercase tracking-wide">Fila mestre de lotes · FIFO / PEPS</h2><p className="mt-1 text-[10px] text-slate-500">Ordenação pela entrada mais antiga. A validade é alerta de FEFO e não substitui a regra FIFO.</p></div><div className="relative w-full sm:w-64"><Search size={13} className="absolute left-2 top-2 text-slate-500" /><input value={search} onChange={e => setSearch(e.target.value)} className={input + ' pl-7'} placeholder="Buscar lote, material ou NF..." /></div><select value={materialFilter} onChange={e => setMaterialFilter(e.target.value)} className={input + ' w-full sm:w-56'}><option value="">Todos os materiais</option>{products.map(p => <option key={p.id} value={p.id}>{p.codigo ?? '—'} — {p.nome ?? ''}</option>)}</select></div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] border-collapse text-left text-[10px]">

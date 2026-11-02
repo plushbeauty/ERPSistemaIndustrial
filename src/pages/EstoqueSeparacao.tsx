@@ -1,8 +1,8 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-02
+ * @REVISAO: REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: "todos os edits do módulo estoque estão desalinhados e fora de tamanho". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).
+ * @STATUS_APROVACAO: CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertCircle, ChevronLeft, ChevronRight, Printer, ScanLine } from 'lucide-react'
@@ -246,24 +246,21 @@ export default function EstoqueSeparacao() {
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
   return (
-    <main className="min-h-screen bg-slate-100 p-4 text-slate-900 sm:p-6">
-      <header className="mx-auto flex max-w-[1700px] flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4 print:hidden">
-        <div>
-          <p className="text-sm font-bold text-sky-700">ESTOQUE &gt; SEPARAÇÃO</p>
-          <h1 className="text-xl font-bold text-slate-950">Separação de material e rastreabilidade</h1>
-        </div>
+    <main data-synqra-density="30px" className="min-h-screen bg-slate-100 p-2 text-slate-900 sm:p-3">
+      <header className="mx-auto flex max-w-[1700px] flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-2 print:hidden">
+        <p className="v2-eyebrow">Estoque &gt; separação de material</p>
         <button
           type="button"
           onClick={() => window.print()}
           disabled={!card}
-          className="rounded-md bg-slate-800 px-5 py-3 font-bold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="bg-slate-800 font-bold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <Printer className="mr-2 inline" size={18} aria-hidden="true" />
+          <Printer className="inline" size={14} aria-hidden="true" />
           IMPRIMIR CARTÃO
         </button>
       </header>
 
-      <section className="mx-auto mt-5 max-w-[1700px] rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-6 print:hidden">
+      <section className="mx-auto mt-3 max-w-[1700px] border border-slate-200 bg-white p-3 print:hidden">
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           <EntityCodeLookup
             label="Ordem de produção"
@@ -298,7 +295,7 @@ export default function EstoqueSeparacao() {
           <label className="text-sm font-bold text-slate-800">
             Quantidade
             <input
-              className="mt-2 min-h-12 w-full rounded-md border border-slate-300 px-3 text-base text-slate-900"
+              className="mt-1 w-full"
               type="number"
               min="0.001"
               step="any"
@@ -313,37 +310,37 @@ export default function EstoqueSeparacao() {
           type="button"
           onClick={() => void separate()}
           disabled={loading || saving}
-          className="mt-5 rounded-md bg-blue-600 px-6 py-3 font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="stock-action-blue mt-4"
         >
-          <ScanLine className="mr-2 inline" size={18} aria-hidden="true" />
+          <ScanLine className="inline" size={14} aria-hidden="true" />
           {saving ? 'REGISTRANDO…' : 'REGISTRAR SEPARAÇÃO'}
         </button>
-        {loading && <p className="mt-4 text-sm text-slate-600">Carregando cadastros do tenant…</p>}
+        {loading && <p className="mt-3 text-[10px] text-slate-600">Carregando cadastros do tenant…</p>}
         {error && (
-          <p role="alert" className="mt-4 flex items-start gap-2 rounded-md border border-red-200 bg-red-50 p-4 font-semibold text-red-800">
-            <AlertCircle className="mt-0.5 shrink-0" size={18} aria-hidden="true" />
+          <p role="alert" className="mt-3 flex items-start gap-2 rounded-[2px] border border-red-200 bg-red-50 p-2 text-[11px] font-semibold text-red-800">
+            <AlertCircle className="mt-0.5 shrink-0" size={14} aria-hidden="true" />
             {error}
           </p>
         )}
-        {message && <p role="status" className="mt-4 rounded-md bg-emerald-50 p-4 font-semibold text-emerald-800">{message}</p>}
+        {message && <p role="status" className="mt-3 rounded-[2px] bg-emerald-50 p-2 text-[11px] font-semibold text-emerald-800">{message}</p>}
       </section>
 
-      <section className="mx-auto mt-6 max-w-[1700px] rounded-lg border border-slate-200 bg-white p-4 shadow-sm print:hidden sm:p-6">
+      <section className="mx-auto mt-3 max-w-[1700px] border border-slate-200 bg-white p-3 print:hidden">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-bold text-slate-950">Separações registradas</h2>
-          <span className="text-sm text-slate-600">{total} registro(s)</span>
+          <h2 className="font-bold text-slate-950">Separações registradas</h2>
+          <span className="text-[10px] text-slate-600">{total} registro(s)</span>
         </div>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[760px] border-collapse text-left text-sm">
             <thead className="bg-slate-100 text-xs uppercase text-slate-700">
               <tr>
-                <th className="px-3 py-3">Data</th>
-                <th className="px-3 py-3">OP</th>
-                <th className="px-3 py-3">Material</th>
-                <th className="px-3 py-3">Lote</th>
-                <th className="px-3 py-3">Quantidade</th>
-                <th className="px-3 py-3">Código</th>
-                <th className="px-3 py-3">Ação</th>
+                <th className="px-2 py-1">Data</th>
+                <th className="px-2 py-1">OP</th>
+                <th className="px-2 py-1">Material</th>
+                <th className="px-2 py-1">Lote</th>
+                <th className="px-2 py-1">Quantidade</th>
+                <th className="px-2 py-1">Código</th>
+                <th className="px-2 py-1">Ação</th>
               </tr>
             </thead>
             <tbody>
@@ -353,14 +350,14 @@ export default function EstoqueSeparacao() {
                 const lot = record.lote_id ? lots.find(item => item.id === record.lote_id) : undefined
                 return (
                   <tr key={record.id} className={index % 2 ? 'bg-slate-50' : 'bg-white'}>
-                    <td className="px-3 py-3">{new Date(record.created_at).toLocaleString('pt-BR')}</td>
-                    <td className="px-3 py-3 font-semibold">{order?.codigo ?? record.ordem_producao_id}</td>
-                    <td className="px-3 py-3">{material?.codigo ?? record.produto_id} — {material?.nome ?? 'Material'}</td>
-                    <td className="px-3 py-3">{lot?.codigo ?? '—'}</td>
-                    <td className="px-3 py-3">{record.quantidade} {material?.unidade ?? ''}</td>
-                    <td className="px-3 py-3 font-mono">{record.codigo_barras}</td>
-                    <td className="px-3 py-3">
-                      <button type="button" onClick={() => restoreCard(record)} className="font-semibold text-blue-700 underline hover:text-blue-900">
+                    <td className="px-2 py-1">{new Date(record.created_at).toLocaleString('pt-BR')}</td>
+                    <td className="px-2 py-1 font-semibold">{order?.codigo ?? record.ordem_producao_id}</td>
+                    <td className="px-2 py-1">{material?.codigo ?? record.produto_id} — {material?.nome ?? 'Material'}</td>
+                    <td className="px-2 py-1">{lot?.codigo ?? '—'}</td>
+                    <td className="px-2 py-1">{record.quantidade} {material?.unidade ?? ''}</td>
+                    <td className="px-2 py-1 font-mono">{record.codigo_barras}</td>
+                    <td className="px-2 py-1">
+                      <button type="button" onClick={() => restoreCard(record)} className="min-h-0 border-0 bg-transparent px-0 font-semibold text-blue-700 underline hover:bg-transparent hover:text-blue-900">
                         Abrir cartão
                       </button>
                     </td>
@@ -368,7 +365,7 @@ export default function EstoqueSeparacao() {
                 )
               })}
               {!loading && separations.length === 0 && (
-                <tr><td colSpan={7} className="px-3 py-8 text-center text-slate-500">Nenhuma separação registrada.</td></tr>
+                <tr><td colSpan={7} className="px-2 py-4 text-center text-slate-500">Nenhuma separação registrada.</td></tr>
               )}
             </tbody>
           </table>
@@ -378,20 +375,20 @@ export default function EstoqueSeparacao() {
             type="button"
             onClick={() => setPage(value => Math.max(0, value - 1))}
             disabled={page === 0 || loading}
-            className="inline-flex items-center gap-1 rounded-md border border-slate-300 px-3 py-2 font-semibold disabled:opacity-50"
+            className="border border-slate-300 font-semibold disabled:opacity-50"
             aria-label="Página anterior"
           >
-            <ChevronLeft size={18} aria-hidden="true" /> Anterior
+            <ChevronLeft size={14} aria-hidden="true" /> Anterior
           </button>
-          <span className="text-sm text-slate-600">Página {page + 1} de {pageCount}</span>
+          <span className="text-[10px] text-slate-600">Página {page + 1} de {pageCount}</span>
           <button
             type="button"
             onClick={() => setPage(value => Math.min(pageCount - 1, value + 1))}
             disabled={page >= pageCount - 1 || loading}
-            className="inline-flex items-center gap-1 rounded-md border border-slate-300 px-3 py-2 font-semibold disabled:opacity-50"
+            className="border border-slate-300 font-semibold disabled:opacity-50"
             aria-label="Próxima página"
           >
-            Próxima <ChevronRight size={18} aria-hidden="true" />
+            Próxima <ChevronRight size={14} aria-hidden="true" />
           </button>
         </div>
       </section>

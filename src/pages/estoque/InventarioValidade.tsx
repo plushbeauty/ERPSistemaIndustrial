@@ -1,8 +1,8 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-02
+ * @REVISAO: REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: "todos os edits do módulo estoque estão desalinhados e fora de tamanho". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).
+ * @STATUS_APROVACAO: CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela
  */
 /**
  * SYSNQRA ERP & SGQ INDUSTRIAL
@@ -134,46 +134,42 @@ export default function InventarioValidade() {
   }, [rows, today])
 
   return (
-    <main className="min-h-screen bg-slate-50 p-4 text-slate-800 antialiased sm:p-6">
-      <header className="mb-5 border-b border-slate-200 pb-4">
+    <main data-synqra-density="30px" className="min-h-screen bg-slate-50 p-2 text-slate-800 antialiased sm:p-3">
+      <header className="mb-3 border-b border-slate-200 pb-2">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-sky-700">ESTOQUE • RASTREABILIDADE</p>
-            <h1 className="mt-1 text-xl font-bold tracking-tight text-slate-900">Controle de Validade e FIFO / PEPS</h1>
-            <p className="mt-1 text-xs font-medium text-slate-500">SYSNQRA ERP &amp; SGQ INDUSTRIAL · lotes recebidos, shelf-life e fila PEPS</p>
-          </div>
+          <p className="v2-eyebrow">Estoque • rastreabilidade — lotes recebidos, shelf-life e fila PEPS</p>
           <button type="button" onClick={() => void load()} disabled={loading} className="inline-flex h-9 items-center gap-2 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 disabled:opacity-50">
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Atualizar
           </button>
         </div>
       </header>
 
-      {error && <div role="alert" className="mb-4 flex items-start gap-2 rounded-md border border-rose-300 bg-rose-50 p-3 text-xs font-semibold text-rose-800"><AlertTriangle size={16} className="mt-0.5 shrink-0" />{error}</div>}
+      {error && <div role="alert" className="mb-3 flex items-start gap-2 rounded-[2px] border border-rose-300 bg-rose-50 p-2 text-[11px] font-semibold text-rose-800"><AlertTriangle size={16} className="mt-0.5 shrink-0" />{error}</div>}
 
-      <section className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <article className={'rounded-lg border bg-white p-4 shadow-[0_4px_12px_rgba(0,0,0,0.05)] ' + (totals.expired ? 'border-rose-300 ring-1 ring-rose-100' : 'border-slate-200')}>
+      <section className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <article className={'rounded-[2px] border bg-white p-3 ' + (totals.expired ? 'border-rose-300 ring-1 ring-rose-100' : 'border-slate-200')}>
           <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-500"><span>Lotes vencidos</span><AlertTriangle size={17} className="text-rose-600" /></div>
           <div className={'mt-2 text-2xl font-extrabold ' + (totals.expired ? 'text-rose-600' : 'text-slate-900')}>{totals.expired}</div>
           <p className="mt-1 text-[10px] text-slate-500">Bloqueio operacional deve ser aplicado no fluxo de baixa</p>
         </article>
-        <article className="rounded-lg border border-amber-200 bg-white p-4 shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
+        <article className="rounded-[2px] border border-amber-200 bg-white p-3">
           <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-500"><span>Vencem em até 30 dias</span><CalendarClock size={17} className="text-amber-600" /></div>
           <div className={'mt-2 text-2xl font-extrabold ' + (totals.expiring ? 'text-amber-600' : 'text-slate-900')}>{totals.expiring}</div>
           <p className="mt-1 text-[10px] text-slate-500">Lotes que exigem prioridade de consumo</p>
         </article>
-        <article className="rounded-lg border border-slate-200 bg-white p-4 shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
+        <article className="rounded-[2px] border border-slate-200 bg-white p-3">
           <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-500"><span>Total de lotes</span><Boxes size={17} className="text-sky-700" /></div>
           <div className="mt-2 text-2xl font-extrabold text-slate-900">{totals.total}</div>
           <p className="mt-1 text-[10px] text-slate-500">Registros existentes na empresa autenticada</p>
         </article>
-        <article className="rounded-lg border border-slate-200 bg-white p-4 shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
+        <article className="rounded-[2px] border border-slate-200 bg-white p-3">
           <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-500"><span>Sem validade informada</span><ShieldCheck size={17} className="text-slate-500" /></div>
           <div className="mt-2 text-2xl font-extrabold text-slate-900">{totals.missingExpiry}</div>
           <p className="mt-1 text-[10px] text-slate-500">Não classificado como regular sem data registrada</p>
         </article>
       </section>
 
-      <section className="mb-5 rounded-lg border border-slate-200 bg-white p-4 shadow-[0_4px_12px_rgba(0,0,0,0.04)]">
+      <section className="mb-3 rounded-[2px] border border-slate-200 bg-white p-3">
         <label htmlFor="inventory-expiry-search" className="mb-1.5 block text-[10px] font-bold uppercase tracking-wide text-slate-600">Filtro de rastreabilidade</label>
         <div className="relative">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -181,7 +177,7 @@ export default function InventarioValidade() {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_4px_12px_rgba(0,0,0,0.04)]">
+      <section className="overflow-hidden rounded-[2px] border border-slate-200 bg-white">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-4 py-3">
           <div><h2 className="text-xs font-bold text-slate-900">Fila de recebimentos · PEPS</h2><p className="mt-1 text-[10px] text-slate-500">Ordenação pela data do recebimento mais antiga primeiro</p></div>
           <span className="text-[10px] font-semibold text-slate-500">{filtered.length} registro(s)</span>

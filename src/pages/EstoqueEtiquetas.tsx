@@ -1,8 +1,8 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-02
+ * @REVISAO: REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: "todos os edits do módulo estoque estão desalinhados e fora de tamanho". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).
+ * @STATUS_APROVACAO: CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela
  */
 /**
  * REVISÃO 2026-10-23 — Etiquetas do Estoque.
@@ -92,20 +92,16 @@ export default function EstoqueEtiquetas() {
   }
 
   return (
-    <section className="mx-auto w-full max-w-[1500px] space-y-3 p-2 text-[11px] text-slate-800" aria-busy={loading}>
+    <main data-synqra-density="30px" className="mx-auto w-full max-w-[1500px] space-y-3 p-2 text-[11px] text-slate-800" aria-busy={loading}>
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-2">
-        <div>
-          <p className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-sky-700"><Barcode size={12} /> Identificação · Etiquetas industriais</p>
-          <h2 className="text-sm font-black uppercase text-slate-900">Código de barras</h2>
-          <p className="text-[10px] text-slate-500">Geração de arquivo ZPL para impressão; a impressora não é acionada por esta tela.</p>
-        </div>
+        <p className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-sky-700"><Barcode size={12} /> Etiquetas industriais · código de barras</p>
         <span className="inline-flex h-7 items-center gap-1.5 rounded-[2px] border border-slate-200 bg-white px-2.5 text-[9px] font-bold uppercase text-slate-600"><Printer size={12} /> Saída ZPL</span>
       </header>
 
       {error && <div role="alert" className="flex items-start gap-1.5 rounded-[2px] border border-rose-200 bg-rose-50 p-2 text-[10px] font-bold text-rose-800"><AlertTriangle size={13} className="mt-0.5 shrink-0" />{error}</div>}
       {message && <div role="status" className="flex items-start gap-1.5 rounded-[2px] border border-emerald-200 bg-emerald-50 p-2 text-[10px] font-bold text-emerald-800"><CheckCircle2 size={13} className="mt-0.5 shrink-0" />{message}</div>}
 
-      <div className="grid grid-cols-1 gap-3 rounded-[2px] border border-slate-200 bg-white p-3 shadow-sm md:grid-cols-12">
+      <div className="grid grid-cols-1 gap-3 rounded-[2px] border border-slate-200 bg-white p-3 md:grid-cols-12">
         <label className={label + ' md:col-span-8'}><span className="flex items-center gap-1"><Package size={10} /> Produto ativo</span>
           <select className={input} value={id} onChange={event => { setId(event.target.value); setMessage(''); setError('') }} disabled={loading || !!error}>
             <option value="">{loading ? 'Carregando catálogo…' : 'Selecione um produto'}</option>
@@ -121,13 +117,13 @@ export default function EstoqueEtiquetas() {
         </div>
       </div>
 
-      <section className="overflow-hidden rounded-[2px] border border-slate-200 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-[2px] border border-slate-200 bg-white">
         <header className="flex h-8 items-center justify-between border-b border-slate-200 bg-slate-50 px-3">
           <h3 className="text-[9px] font-black uppercase tracking-wider text-slate-700">Pré-visualização do comando</h3>
           <span className="font-mono text-[9px] text-slate-500">{product ? `${product.codigo} · ${quantity} un.` : 'Aguardando seleção'}</span>
         </header>
         <pre className="max-h-[360px] min-h-[120px] overflow-auto bg-[#10222d] p-3 font-mono text-[10px] leading-5 text-cyan-100" aria-label="Conteúdo ZPL gerado">{zpl || (loading ? 'Carregando catálogo…' : 'Selecione um produto para visualizar o ZPL.')}</pre>
       </section>
-    </section>
+    </main>
   )
 }

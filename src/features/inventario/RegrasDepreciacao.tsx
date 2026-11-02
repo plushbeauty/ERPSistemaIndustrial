@@ -1,8 +1,8 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-02
+ * @REVISAO: REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: "todos os edits do módulo estoque estão desalinhados e fora de tamanho". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).
+ * @STATUS_APROVACAO: CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela
  */
 import { ArrowLeft, Save, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -20,8 +20,8 @@ export default function RegrasDepreciacao(){
  useEffect(()=>{void load().catch(e=>setError(e instanceof Error?e.message:'Falha ao carregar regras.'))},[])
  const save=async()=>{const d=Number(dias),p=Number(desconto);if(!grupo.trim()||!Number.isFinite(d)||d<0||!Number.isFinite(p)||p<0||p>100){setError('Informe grupo, dias e percentual válidos.');return}setBusy(true);setError('');try{const r=await supabase.rpc('erp_depreciacao_salvar_regra',{p_grupo_item:grupo.trim(),p_dias_sem_giro:d,p_percentual_depreciacao:p});if(r.error)throw r.error;setGrupo('');await load()}catch(e){setError(e instanceof Error?e.message:'Falha ao gravar regra.')}finally{setBusy(false)}}
  const remove=async(id:string)=>{setBusy(true);try{const r=await supabase.rpc('erp_depreciacao_desativar_regra',{p_regra_id:id});if(r.error)throw r.error;await load()}catch(e){setError(e instanceof Error?e.message:'Falha ao desativar regra.')}finally{setBusy(false)}}
- return <main className="min-h-screen bg-slate-50 p-3 text-gray-800"><div className="mx-auto max-w-[1600px] space-y-2">
-  <div className="flex items-center gap-2"><button type="button" onClick={()=>navigate('/estoque')} className={button+' border border-gray-200 bg-white text-gray-600'}><ArrowLeft size={12}/>Voltar</button><h1 className="text-[13px] font-bold text-gray-700">REGRAS DE DEPRECIAÇÃO DE ESTOQUE</h1></div>
+ return <main data-synqra-density="30px" className="min-h-screen bg-slate-50 p-3 text-gray-800"><div className="mx-auto max-w-[1600px] space-y-2">
+  <div className="flex items-center gap-2"><button type="button" onClick={()=>navigate('/estoque')} className={button+' border border-gray-200 bg-white text-gray-600'}><ArrowLeft size={12}/>Voltar</button><p className="text-[9px] font-black uppercase tracking-wider text-slate-500">Regras de depreciação de estoque</p></div>
   {error&&<div className="border border-red-200 bg-red-50 px-2 py-1 text-[10px] text-red-700">{error}</div>}
   <section className="rounded-md border border-gray-200 bg-white p-2 shadow-sm"><div className="flex items-end gap-2">
    <div className="w-[160px] shrink-0"><label className={label}>Grupo Produto</label><input id="cbGrupoItem" className={input+' w-[160px]'} value={grupo} onChange={e=>setGrupo(e.target.value)} placeholder="Grupo de matérias-primas"/></div>
