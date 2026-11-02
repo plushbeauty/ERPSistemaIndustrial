@@ -54,6 +54,7 @@ function lazyPage<P extends object>(
   })
 }
 import PCPPageHelp from './components/industrial/PCPPageHelp'
+import ERPStatusLegend from './components/layout/ERPStatusLegend'
 import './styles/industrial-login.css'
 import './styles/forms-premium.css'
 import './styles/manual-usuario-2026.css'
@@ -106,8 +107,7 @@ const PCPExecucaoIndustrial = lazyPage(() => import('./pages/PCPExecucaoIndustri
 const PCPCapacidade = lazyPage(() => import('./pages/PCPCapacidade'), 'default')
 const PCPAgendaMaquinas = lazyPage(() => import('./pages/PCPAgendaMaquinas'), 'default')
 const PCPProgramacaoGantt = lazyPage(() => import('./pages/PCPProgramacaoGantt'), 'default')
-const PCPFichasProcesso = lazyPage(() => import('./pages/PCPFichaProcessoTeste'), 'default')
-const PCPFichaProcessoTeste = lazyPage(() => import('./pages/PCPFichaProcessoTeste'), 'default')
+const PCPFichasProcesso = lazyPage(() => import('./pages/PCPFichasProcesso'), 'default')
 const QualidadeFichasProcesso = lazyPage(() => import('./pages/qualidade/FichasProcesso'), 'default')
 const HelpPCPFichas = lazyPage(() => import('./pages/HelpPCPFichas'), 'default')
 const PCPParadas = lazyPage(() => import('./pages/PCPParadasMaquina'), 'default')
@@ -232,6 +232,7 @@ const QualidadeAuditoria5S = lazyPage(() => import('./pages/QualidadeAuditoria5S
 const QualidadeMetodologia8D = lazyPage(() => import('./pages/QualidadeMetodologia8D'), 'QualidadeMetodologia8D')
 const QualidadeInspecaoProcesso = lazyPage(() => import('./pages/QualidadeInspecaoProcesso'), 'QualidadeInspecaoProcesso')
 const QualidadeInspecoesIndustrial = lazyPage(() => import('./pages/QualidadeInspecoesIndustrial'), 'default')
+const QualidadeCentralTablet = lazyPage(() => import('./pages/QualidadeCentralTablet'), 'QualidadeCentralTablet')
 const QualidadeEspecificacoesTecnicas = lazyPage(() => import('./pages/QualidadeEspecificacoesTecnicas'), 'default')
 const MoldesFerramentaria = lazyPage(() => import('./pages/MoldesFerramentaria'), 'MoldesFerramentaria')
 const OperacaoIndustrial = lazyPage(() => import('./pages/OperacaoIndustrial'), 'OperacaoIndustrial')
@@ -579,7 +580,6 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/programacao-gantt" element={<QualityPlanGate><PCPProgramacaoGantt /></QualityPlanGate>} />
       <Route path="/pcp/agenda-maquinas" element={<QualityPlanGate>{<PCPAgendaMaquinas />}</QualityPlanGate>} />
       <Route path="/pcp/fichas-processo" element={<QualityPlanGate>{<PCPFichasProcesso />}</QualityPlanGate>} />
-      <Route path="/pcp/ficha-processo-teste" element={<QualityPlanGate>{<PCPFichaProcessoTeste />}</QualityPlanGate>} />
       <Route path="/ajuda/pcp-fichas-processo" element={<HelpPCPFichas />} />
       <Route path="/pcp/mrp-ii" element={<QualityPlanGate>{<MRPIndustrial />}</QualityPlanGate>} />
       <Route path="/pcp/execucao-industrial" element={<QualityPlanGate>{<PCPExecucaoIndustrial />}</QualityPlanGate>} />
@@ -603,7 +603,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/inspecao-processo" element={<QualityPlanGate><QualidadeInspecaoProcesso /></QualityPlanGate>} />
       <Route path="/qualidade/fichas-processo" element={<QualityPlanGate><QualidadeFichasProcesso /></QualityPlanGate>} />
       <Route path="/qualidade/inspecoes" element={<QualityPlanGate><QualidadeInspecoesIndustrial /></QualityPlanGate>} />
-      <Route path="/qualidade/tablet" element={<Navigate to="/qualidade" replace />} />
+      <Route path="/qualidade/tablet" element={<QualityPlanGate><QualidadeCentralTablet /></QualityPlanGate>} />
       <Route path="/qualidade/inspecoes/operacao" element={<Navigate to="/qualidade/inspecoes" replace />} />
       <Route path="/qualidade/metodologia-8d" element={<QualityPlanGate><QualidadeMetodologia8D /></QualityPlanGate>} />
       <Route path="/qualidade/auditoria-5s" element={<QualityPlanGate><QualidadeAuditoria5S /></QualityPlanGate>} />
@@ -756,6 +756,7 @@ function AppIndustrialAuthenticated() {
           <ERPHorizontalShell>
             {protectedRoutes}
             <PCPPageHelp />
+            {location.pathname.startsWith('/pcp/agenda-maquinas') && <ERPStatusLegend />}
           </ERPHorizontalShell>
         </div>
       </Suspense>
