@@ -9,7 +9,7 @@ const shell = read('src/components/layout/ERPHorizontalShell.tsx')
 const checks = [
   ['Home/logo pública preservada', fs.existsSync('src/PublicIndustrialHome.tsx') && bootstrap.includes("import('./PublicIndustrialHome')")],
   ['Dashboard aprovado preservado', dashboard.includes("IndustrialCommandDashboard")],
-  ['Shell Windows 11 preservado', shell.includes('BarraWindows11') && shell.includes('erp-windows-topbar')],
+  ['Shell global com navegação lateral única preservado', !shell.includes('BarraWindows11') && shell.includes('erp-sidebar') && shell.includes('erp-windows-topbar')],
   ['Fiscal aprovada preservada como referência', fs.existsSync('src/pages/Fiscal.tsx') && app.includes('path="fiscal"') && app.includes('path="/fiscal"')],
   ['Page Principal é a área central única', fs.existsSync('src/pages/PagePrincipal.tsx') && app.includes('path="/pageprincipal"') && app.includes('path="pcp"') && app.includes('path="paquimetro"') && app.includes('path="fiscal"') && app.includes('path="*"')],
   ['Página administrativa Master preservada', fs.existsSync('src/pages/Master.tsx')],
