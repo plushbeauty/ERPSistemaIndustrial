@@ -5,7 +5,7 @@
  * @STATUS_APROVACAO: APLICACAO A TODOS OS MODULOS AUTORIZADA PELO PROPRIETARIO EM 2026-11-01
  *
  * Painel de almoxarifado do tenant autenticado. Os números vêm de erp_produtos,
- * erp_estoque_localizacoes, erp_estoque_reservas, erp_estoque_lotes,
+ * erp_estoque_localizacoes, erp_estoque_reservas, erp_estoque_lotes_rastreabilidade,
  * erp_estoque_movimentos e erp_estoque_inventarios. A única gravação da tela é
  * a movimentação manual pela RPC erp_estoque_registrar_movimento, que exige a
  * permissão estoque.movimentar e recalcula o saldo no servidor. Onde a base não
@@ -52,12 +52,13 @@ type Reserva = { produto_id: string | null; quantidade: number | null }
 type Lote = {
   id: string
   produto_id: string | null
-  lote_interno: string | null
   lote_fornecedor: string | null
+  nf_numero: string | null
+  quantidade_inicial: number | null
   quantidade_disponivel: number | null
-  status_inspecao: string | null
-  localizacao: string | null
-  data_entrada: string | null
+  status_qualidade: string | null
+  data_validade: string | null
+  created_at: string | null
 }
 type Movimento = {
   id: string
@@ -75,7 +76,7 @@ const COLUNAS_PRODUTO_COMPLETA = 'id,codigo,nome,unidade,estoque_atual,ponto_rep
 const COLUNAS_PRODUTO_MINIMA = 'id,codigo,nome,unidade,estoque_atual'
 const COLUNAS_LOCALIZACAO_COMPLETA = 'id,codigo,nome,tipo'
 const COLUNAS_LOCALIZACAO_MINIMA = 'id,codigo,nome'
-const COLUNAS_LOTE = 'id,produto_id,lote_interno,lote_fornecedor,quantidade_disponivel,status_inspecao,localizacao,data_entrada'
+const COLUNAS_LOTE = 'id,produto_id,lote_fornecedor,nf_numero,quantidade_inicial,quantidade_disponivel,status_qualidade,data_validade,created_at'
 const COLUNAS_MOVIMENTO = 'id,produto_id,tipo,quantidade,origem,documento,created_at'
 
 const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
@@ -196,7 +197,7 @@ export default function EstoqueAlmoxarifado() {
             }
           }),
         fetchAllPages<Reserva>((de, ate) => supabase.from('erp_estoque_reservas').select('produto_id,quantidade').eq('empresa_id', tenant).eq('status', 'ATIVA').range(de, ate)).catch(() => null),
-        consulta(supabase.from('erp_estoque_lotes').select(COLUNAS_LOTE).eq('empresa_id', tenant).order('data_entrada', { ascending: false }).limit(400).then(r => (r.error ? null : ((r.data ?? []) as Lote[])))).catch(() => null),
+        consulta(supabase.from('erp_estoque_lotes_rastreabilidade').select(COLUNAS_LOTE).eq('empresa_id', tenant).order('created_at', { ascending: false }).limit(400).then(r => (r.error ? null : ((r.data ?? []) as Lote[])))).catch(() => null),
         consulta(supabase.from('erp_estoque_movimentos').select(COLUNAS_MOVIMENTO).eq('empresa_id', tenant).order('created_at', { ascending: false }).limit(300).then(r => (r.error ? null : ((r.data ?? []) as Movimento[])))).catch(() => null),
         consulta(supabase.from('erp_estoque_inventarios').select('id,status,iniciado_em,encerrado_em').eq('empresa_id', tenant).order('iniciado_em', { ascending: false }).limit(1).then(r => (r.error ? null : (((r.data ?? []) as Inventario[])[0] ?? null)))).catch(() => null),
         consulta(supabase.from('erp_empresas').select('nome_fantasia,razao_social').eq('id', tenant).maybeSingle().then(r => r.data as { nome_fantasia: string | null; razao_social: string | null } | null)).catch(() => null),
@@ -216,7 +217,7 @@ export default function EstoqueAlmoxarifado() {
       }
       if (localizacaoRes === null) pendencias.push('A tabela erp_estoque_localizacoes não pôde ser lida: os itens aparecem sem endereço de armazenagem.')
       if (reservaRes === null) pendencias.push('A leitura de erp_estoque_reservas exige permissão de estoque: o saldo reservado não pôde ser confrontado com o saldo físico.')
-      if (loteRes === null) pendencias.push('Sem leitura de erp_estoque_lotes: o painel de lotes em inspeção fica vazio até o recebimento por NF-e ser usado.')
+      if (loteRes === null) pendencias.push('Sem leitura de erp_estoque_lotes_rastreabilidade: o painel de lotes fica vazio até o recebimento por NF-e gravar lotes para esta empresa.')
       if (movimentoRes === null) pendencias.push('O histórico de erp_estoque_movimentos exige a permissão estoque.ver: as movimentações dos últimos 7 dias não puderam ser contadas.')
 
       const resumo = inventarioRes
@@ -343,7 +344,7 @@ export default function EstoqueAlmoxarifado() {
     return { comSaldo, total: linhas.length, valor, abaixo, recentes, entradas, saidas, semHistorico: movimentos.length === 0 }
   }, [agora, linhas, movimentos, semCusto])
 
-  const lotesEmInspecao = useMemo(() => lotes.filter(l => String(l.status_inspecao ?? '').toUpperCase() !== 'APROVADO').slice(0, 6), [lotes])
+  const lotesEmInspecao = useMemo(() => lotes.filter(l => String(l.status_qualidade ?? '').toUpperCase() !== 'APROVADO').slice(0, 6), [lotes])
 
   const detalhes = useMemo(() => {
     if (!detalheId) return null
@@ -564,8 +565,8 @@ export default function EstoqueAlmoxarifado() {
                 <div className="smp-panel-head">
                   <Archive size={18} aria-hidden />
                   <div>
-                    <h2 className="smp-panel-title">Lotes em Inspeção</h2>
-                    <p className="smp-panel-sub">{lotes.length} lotes lidos de erp_estoque_lotes · {lotesEmInspecao.length} aguardando liberação da Qualidade</p>
+                    <h2 className="smp-panel-title">Lotes Recebidos</h2>
+                    <p className="smp-panel-sub">{lotes.length} lotes lidos de erp_estoque_lotes_rastreabilidade · {lotesEmInspecao.length} aguardando liberação da Qualidade</p>
                   </div>
                 </div>
                 <div className="smp-panel-body smp-panel-body--flush">
@@ -573,23 +574,23 @@ export default function EstoqueAlmoxarifado() {
                     <div className="smp-state">
                       <Archive size={22} aria-hidden />
                       <strong>Nenhum lote registrado</strong>
-                      <p>Os lotes entram aqui quando o recebimento por NF-e grava em erp_estoque_lotes para esta empresa.</p>
+                      <p>Os lotes entram aqui quando o recebimento por NF-e grava em erp_estoque_lotes_rastreabilidade para esta empresa.</p>
                     </div>
                   ) : (
                     <div className="smp-tablewrap">
                       <table className="smp-table">
-                        <thead><tr><th className="is-nowrap">Entrada</th><th>Lote</th><th>Item</th><th>Posição</th><th className="is-num">Disponível</th><th>Inspeção</th></tr></thead>
+                        <thead><tr><th className="is-nowrap">Entrada</th><th>Lote</th><th>NF</th><th>Item</th><th className="is-num">Disponível</th><th>Qualidade</th></tr></thead>
                         <tbody>
                           {(lotesEmInspecao.length > 0 ? lotesEmInspecao : lotes.slice(0, 6)).map(l => {
                             const produto = l.produto_id ? produtoPorId.get(l.produto_id) : null
                             return (
                               <tr key={l.id}>
-                                <td className="is-nowrap is-muted">{fmtData(l.data_entrada)}</td>
-                                <td className="is-strong">{l.lote_interno ?? '—'}</td>
+                                <td className="is-nowrap is-muted">{fmtData(l.created_at)}</td>
+                                <td className="is-strong">{l.lote_fornecedor ?? '—'}</td>
+                                <td className="is-muted">{l.nf_numero ?? '—'}</td>
                                 <td>{produto ? `${produto.codigo ?? ''} ${produto.nome ?? ''}`.trim() : 'Item não identificado'}</td>
-                                <td className="is-muted">{l.localizacao ?? '—'}</td>
                                 <td className="is-num">{fmtQtd(numero(l.quantidade_disponivel))}</td>
-                                <td><span className="smp-chip" data-tone={String(l.status_inspecao ?? '').toUpperCase() === 'APROVADO' ? 'success' : String(l.status_inspecao ?? '').toUpperCase() === 'REPROVADO' ? 'danger' : 'warning'}><i />{l.status_inspecao ?? '—'}</span></td>
+                                <td><span className="smp-chip" data-tone={String(l.status_qualidade ?? '').toUpperCase() === 'APROVADO' ? 'success' : String(l.status_qualidade ?? '').toUpperCase() === 'REPROVADO' ? 'danger' : 'warning'}><i />{l.status_qualidade ?? '—'}</span></td>
                               </tr>
                             )
                           })}
@@ -780,15 +781,15 @@ export default function EstoqueAlmoxarifado() {
               ) : (
                 <div className="smp-tablewrap">
                   <table className="smp-table">
-                    <thead><tr><th className="is-nowrap">Entrada</th><th>Lote interno</th><th>Lote fornecedor</th><th className="is-num">Disponível</th><th>Inspeção</th></tr></thead>
+                    <thead><tr><th className="is-nowrap">Entrada</th><th>Lote fornecedor</th><th>NF</th><th className="is-num">Disponível</th><th>Qualidade</th></tr></thead>
                     <tbody>
                       {detalhes.lotes.map(l => (
                         <tr key={l.id}>
-                          <td className="is-nowrap">{fmtData(l.data_entrada)}</td>
-                          <td className="is-strong">{l.lote_interno ?? '—'}</td>
-                          <td className="is-muted">{l.lote_fornecedor ?? '—'}</td>
+                          <td className="is-nowrap">{fmtData(l.created_at)}</td>
+                          <td className="is-strong">{l.lote_fornecedor ?? '—'}</td>
+                          <td className="is-muted">{l.nf_numero ?? '—'}</td>
                           <td className="is-num">{fmtQtd(numero(l.quantidade_disponivel))}</td>
-                          <td className="is-muted">{l.status_inspecao ?? '—'}</td>
+                          <td className="is-muted">{l.status_qualidade ?? '—'}</td>
                         </tr>
                       ))}
                     </tbody>
