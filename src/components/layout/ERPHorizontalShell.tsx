@@ -3,7 +3,6 @@ import { CircleHelp, ChevronDown, UserRound, UserCog, ChevronRight, Home, FileTe
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
-import { BarraWindows11 } from './BarraWindows11'
 import PCPTabletMenuModal from '../PCPTabletMenuModal'
 import PageIntroCard from './PageIntroCard'
 import { fallbackPageIntro, hasNativeIntroCard, resolvePageIntro } from './pageIntroCatalog'
@@ -92,6 +91,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [openMenu, setOpenMenu] = useState<string | null>(null)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [startMenuOpen, setStartMenuOpen] = useState(false)
   const [moduleSearch, setModuleSearch] = useState('')
   const [helpOpen, setHelpOpen] = useState(false)
@@ -308,96 +308,84 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           <small>Tela atual: {pathname}</small><button type="button" onClick={() => { setHelpOpen(false); navigate('/ajuda') }}>Abrir Central de Ajuda</button>
         </div>}
       </header>
+      <aside className={`erp-sidebar ${sidebarCollapsed ? 'is-collapsed' : ''}`} aria-label="Navegação principal">
+        <div className="erp-sidebar-brand">
+          <span className="erp-sidebar-mark" aria-hidden="true">S</span>
+          {!sidebarCollapsed && <span><strong>SYSNQRA</strong><small>ERP INDUSTRIAL</small></span>}
+          <button type="button" className="erp-sidebar-collapse" onClick={() => setSidebarCollapsed(value => !value)} aria-label={sidebarCollapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'} title={sidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}>{sidebarCollapsed ? <ChevronRight size={16}/> : <ChevronDown size={16}/>}</button>
+        </div>
+        {!sidebarCollapsed && <label className="erp-sidebar-search"><Search size={14}/><input value={moduleSearch} onChange={event => setModuleSearch(event.target.value)} placeholder="Buscar módulo..." aria-label="Buscar módulo"/>{moduleSearch && <button type="button" onClick={() => setModuleSearch('')} aria-label="Limpar busca"><X size={12}/></button>}</label>}
+        <nav className="erp-sidebar-nav">
+          {searchedMenus.map(menu => {
+            const Icon = menu.icon ?? Home;
+            const expanded = openMenu === menu.label || Boolean(normalizedSearch && menu.children?.length);
+            const active = current?.label === menu.label || pathname === menu.route || pathname.startsWith(menu.route + '/');
+            return <div className="erp-sidebar-group" key={menu.label}>
+              <div className={`erp-sidebar-item ${active ? 'is-active' : ''} ${menu.isUpdated ? 'is-updated' : ''}`}>
+                <button type="button" className="erp-sidebar-main" title={sidebarCollapsed ? menu.label : undefined} onClick={() => {
+                  if (menu.children?.length && !sidebarCollapsed) setOpenMenu(value => value === menu.label ? null : menu.label);
+                  else if (menu.children?.length) { setSidebarCollapsed(false); setOpenMenu(menu.label); }
+                  else { setOpenMenu(null); openMenuItem(menu); }
+                }}>
+                  <Icon size={18}/>{!sidebarCollapsed && <span>{menu.label}</span>}
+                  {!sidebarCollapsed && menu.isUpdated && <i className="erp-sidebar-update-dot" aria-label="Módulo atualizado"/>}
+                </button>
+                {!sidebarCollapsed && menu.children?.length ? <button type="button" className="erp-sidebar-expand" aria-label={`Expandir ${menu.label}`} aria-expanded={expanded} onClick={() => setOpenMenu(value => value === menu.label ? null : menu.label)}>{expanded ? <ChevronDown size={14}/> : <ChevronRight size={14}/>}</button> : null}
+              </div>
+              {!sidebarCollapsed && menu.children?.length && expanded && <div className="erp-sidebar-children">
+                {menu.children.map(child => { const ChildIcon = child.icon; const childActive = pathname === child.route; return <button type="button" key={child.label + child.route} className={`erp-sidebar-child ${childActive ? 'is-active' : ''} ${child.isUpdated ? 'is-updated' : ''}`} onClick={() => openMenuItem(child)}>{ChildIcon && <ChildIcon size={14}/>}<span>{child.label}</span></button>; })}
+              </div>}
+            </div>;
+          })}
+          {searchedMenus.length === 0 && !sidebarCollapsed && <p className="erp-sidebar-empty">Nenhum módulo encontrado.</p>}
+        </nav>
+        <div className="erp-sidebar-footer">
+          <button type="button" onClick={() => { setHelpOpen(true); }} title="Ajuda contextual"><CircleHelp size={17}/>{!sidebarCollapsed && <span>Ajuda da tela</span>}</button>
+          <button type="button" onClick={() => navigate('/pageprincipal/administracao-configuracoes')} title="Configurações"><Settings size={17}/>{!sidebarCollapsed && <span>Configurações</span>}</button>
+          <div className="erp-sidebar-user"><UserRound size={17}/>{!sidebarCollapsed && <span>{operatorName === 'Usuário ERP' ? sessionOperator : operatorName}</span>}</div>
+          <button type="button" onClick={() => void logout()} title="Sair"><LogOut size={17}/>{!sidebarCollapsed && <span>Sair</span>}</button>
+        </div>
+      </aside>
       <main key={`erp-workspace-${dataEpoch}`} className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {pageIntro && <PageIntroCard {...pageIntro} />}
         {children}
       </main>
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
-      <BarraWindows11
-        ativo={pathname.startsWith('/pageprincipal/comissoes') || pathname.startsWith('/comissoes') ? 'comissoes' : pathname.startsWith('/pageprincipal/controladoria') || pathname.startsWith('/controladoria') ? 'controladoria' : pathname.startsWith('/pageprincipal/financeiro') || pathname.startsWith('/financeiro') ? 'financeiro' : pathname.startsWith('/pageprincipal/rh') ? 'rh' : pathname.startsWith('/pageprincipal/pcp/fichas-processo') ? 'fichas' : pathname.startsWith('/pageprincipal/compras/solicitacao') ? 'solicitacao' : pathname.startsWith('/pageprincipal/compras/requisicoes') ? 'requisicoes' : pathname.startsWith('/pageprincipal/compras') ? 'compras' : pathname.startsWith('/pageprincipal/qualidade/rpnc') ? 'rpnc' : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/pageprincipal/paquimetro') ? 'paq' : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'fiscal' : pathname.startsWith('/pageprincipal') ? 'home' : ''}
-        onAbrir={(id) => {
-          const destinations: Record<string, string> = {
-            home: '/pageprincipal',
-            rh: '/pageprincipal/rh',
-            fichas: '/pageprincipal/pcp/fichas-processo',
-            pcp: '/pageprincipal/pcp',
-            maq: '/pageprincipal/pcp',
-            op: '/pageprincipal/pcp',
-            paq: '/pageprincipal/paquimetro',
-            fiscal: '/pageprincipal/fiscal',
-            compras: '/pageprincipal/compras',
-            solicitacao: '/pageprincipal/compras/solicitacao',
-            requisicoes: '/pageprincipal/compras/requisicoes',
-            rpnc: '/pageprincipal/qualidade/rpnc',
-            financeiro: '/pageprincipal/financeiro',
-            comissoes: '/pageprincipal/comissoes',
-            controladoria: '/pageprincipal/controladoria',
-          }
-          go(destinations[id] ?? '/pageprincipal')
-        }}
-      />
+
 
       <style>{`
-        .erp-horizontal-shell{min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%);color:#123b50}
-        .erp-windows-topbar{height:48px;min-height:48px;display:grid;grid-template-columns:auto minmax(145px,210px) minmax(220px,1fr) auto;align-items:center;gap:10px;padding:0 10px;background:#fff;border-bottom:1px solid #cbd5e1;box-sizing:border-box;position:sticky;top:0;z-index:1600;color:#111827}
-        .erp-windows-start-anchor{position:relative;height:100%;display:flex;align-items:center}
-        .erp-windows-start-button{min-width:76px;height:34px;display:flex;align-items:center;justify-content:center;gap:7px;padding:0 8px;border:1px solid #d1d5db;border-radius:2px;background:#fff;cursor:pointer}
-        .erp-windows-start-button:hover,.erp-windows-start-button.is-open{background:#eaf5f8;border-color:#2d8db8}
-        .erp-windows-logo{width:17px;height:17px;display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:2px;flex:0 0 17px;transform:skewY(-4deg)}.erp-windows-logo i{display:block;background:#2d8db8}.erp-windows-logo i:nth-child(2),.erp-windows-logo i:nth-child(3){background:#48b7c7}.erp-windows-start-label{font-size:11px;font-weight:700;color:#123b50}
-        .erp-windows-quick-search,.erp-windows-menu-search{height:30px;display:flex;align-items:center;gap:6px;padding:0 8px;border:1px solid #cbd5e1;background:#fff;color:#475569;box-sizing:border-box}
-        .erp-windows-quick-search:focus-within,.erp-windows-menu-search:focus-within{border-color:#2d8db8;box-shadow:0 0 0 1px rgba(45,141,184,.15)}
-        .erp-windows-quick-search input,.erp-windows-menu-search input{width:100%;min-width:0;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;font-size:11px!important;color:#111827}
-        .erp-windows-quick-search button,.erp-windows-menu-search button{border:0;background:transparent;display:flex;align-items:center;justify-content:center;padding:2px;cursor:pointer}
-        .erp-windows-system-title{display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:center;line-height:1.15;text-align:center}
-        .erp-windows-system-title strong{font-size:13px;font-weight:800;letter-spacing:.06em;color:#123b50;white-space:nowrap}
-        .erp-windows-system-title span{font-size:9px;font-weight:600;color:#64748b;letter-spacing:.06em;white-space:nowrap}
-        .erp-windows-session{display:flex;align-items:center;justify-content:flex-end;gap:9px;min-width:0;font-size:10px;color:#111827}
-        .erp-windows-session time{white-space:nowrap;font-variant-numeric:tabular-nums}
-        .erp-windows-session time span{color:#94a3b8;padding:0 2px}
-        .erp-windows-user{display:flex;align-items:center;gap:5px;max-width:190px;min-width:0;padding-left:9px;border-left:1px solid #e2e8f0}
-        .erp-windows-user span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
-        .erp-windows-help,.erp-windows-logout{width:27px;height:27px;display:flex;align-items:center;justify-content:center;border:1px solid #e2e8f0;background:#fff;color:#334155;border-radius:2px;cursor:pointer}
-        .erp-windows-help:hover,.erp-windows-logout:hover{background:#eaf5f8;border-color:#b9d4df}
-        .erp-windows-start-menu{position:absolute;top:47px;left:0;width:min(340px,calc(100vw - 16px));max-height:min(72vh,620px);display:flex;flex-direction:column;background:#fff;border:1px solid #cbd5e1;box-shadow:0 12px 32px rgba(15,23,42,.2);z-index:1800}
-        .erp-windows-start-heading{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0}
-        .erp-windows-start-heading div{display:flex;flex-direction:column;gap:2px}.erp-windows-start-heading strong{font-size:11px;color:#123b50}.erp-windows-start-heading small{font-size:9px;color:#64748b}
-        .erp-windows-start-heading>button{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:0;background:transparent;cursor:pointer}
-        .erp-windows-menu-search{margin:9px 10px 7px;flex:0 0 30px}
-        .erp-windows-menu-list{padding:0 6px 8px;overflow:auto;min-height:0}
-        .erp-windows-menu-row{min-height:34px;display:flex;align-items:center;border:1px solid transparent}
-        .erp-windows-menu-row.is-active{background:#edf6fa;border-color:#d5e8ef}
-        .erp-windows-menu-main>svg.is-new-icon,.erp-windows-menu-children button.is-new>svg.is-new-icon{color:#C65D00!important}
-        .erp-windows-menu-row.is-updated-orange{border-left:3px solid #f97316;background:#fff7ed!important}
-        .erp-windows-menu-row.is-updated-orange .erp-windows-menu-main{color:#c2410c!important;font-weight:800}
-        .erp-windows-menu-row.is-updated-orange .is-updated-orange-icon{color:#f97316!important}
-        .erp-windows-menu-main{flex:1;min-width:0;min-height:32px;display:flex;align-items:center;gap:9px;padding:0 8px;border:0;background:transparent;text-align:left;color:#1e293b;font-size:11px;cursor:pointer}
-        .erp-windows-menu-main span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .erp-windows-menu-main:hover,.erp-windows-menu-expand:hover{background:#f1f5f9}
-        .erp-windows-menu-expand{width:30px;align-self:stretch;display:flex;align-items:center;justify-content:center;border:0;background:transparent;cursor:pointer;color:#475569}
-        .erp-windows-menu-children{margin:0 0 4px 24px;padding:2px 0 2px 8px;border-left:1px solid #cbd5e1}
-        .erp-windows-menu-children button{display:flex;align-items:center;gap:8px;width:100%;min-height:29px;padding:5px 8px;border:0;background:#fff;text-align:left;color:#334155;font-size:10px;cursor:pointer}
-        .erp-windows-menu-children button>svg{flex:0 0 auto}.erp-windows-menu-children button>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .erp-windows-menu-children button:hover,.erp-windows-menu-children button.is-active{background:#eaf5f8;color:#123b50}
-        .erp-windows-menu-children button.is-rfq-active{background:#1d5fd1!important;border-color:#1d5fd1!important;color:#fff!important;font-weight:800;box-shadow:inset 3px 0 #0b2545}\n        .erp-windows-menu-children button.is-updated-orange{background:#f97316!important;border:1px solid #ea580c!important;color:#fff!important;font-weight:900;box-shadow:inset 4px 0 #9a3412}\n        .erp-windows-menu-children button.is-updated-orange:hover,.erp-windows-menu-children button.is-updated-orange.is-active{background:#ea580c!important;border-color:#c2410c!important;color:#fff!important}
-        .erp-windows-no-results{margin:12px 8px;font-size:10px;color:#64748b}
-        .erp-windows-start-footer{min-height:38px;display:flex;align-items:center;gap:6px;padding:0 10px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:10px;color:#334155}
-        .erp-windows-start-footer span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .erp-windows-start-footer button{height:25px;display:flex;align-items:center;gap:4px;padding:0 7px;border:1px solid #cbd5e1;background:#fff;border-radius:2px;font-size:10px;cursor:pointer}
-        .erp-windows-help-panel{position:absolute;right:40px;top:46px;z-index:1800;width:min(370px,90vw);max-height:75vh;overflow:auto;padding:10px 12px;border:1px solid #b9cbd3;background:#fff;box-shadow:0 6px 16px rgba(18,59,80,.16);font-size:10px;line-height:1.45;color:#173b4a}
-        .erp-windows-help-panel p{margin:5px 0}.erp-windows-help-panel ol,.erp-windows-help-panel ul{margin:4px 0 8px;padding-left:17px}.erp-windows-help-panel li{margin-bottom:3px}.erp-windows-help-panel small{display:block;border-top:1px solid #e2e8f0;padding-top:7px;color:#647b85}
-        .erp-windows-help-panel>button{margin-top:7px;height:28px;padding:0 9px;border:1px solid #2d8db8;background:#2d8db8;color:#fff;border-radius:2px;cursor:pointer}
-        .erp-horizontal-workspace{width:100%;max-width:100%;min-width:0;min-height:calc(100vh - 48px);padding:8px;box-sizing:border-box;background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%)}
-        .erp-horizontal-workspace .bg-white{background-color:#f8fcfe!important}.erp-horizontal-workspace .bg-slate-50{background-color:#edf6fa!important}.erp-horizontal-workspace .bg-slate-100{background-color:#e7f1f6!important}
-        .erp-horizontal-workspace .border-slate-200{border-color:#c9dde5!important}.erp-horizontal-workspace .border-slate-300{border-color:#b9d0dc!important}.erp-horizontal-workspace .text-slate-900{color:#123b50!important}.erp-horizontal-workspace .text-slate-700{color:#315466!important}
-        .erp-horizontal-workspace .rounded-xl,.erp-horizontal-workspace .rounded-2xl{border-radius:4px!important}.erp-horizontal-workspace .rounded-lg{border-radius:3px!important}
-        .erp-horizontal-workspace table thead th{background:#dcecf2;color:#17445a;border-bottom-color:#b9d4df}.erp-horizontal-workspace table tbody tr:nth-child(even){background-color:#f0f7fa}.erp-horizontal-workspace table tbody tr:hover{background-color:#e0f1f7}
-        .erp-horizontal-workspace input:focus,.erp-horizontal-workspace select:focus,.erp-horizontal-workspace textarea:focus{border-color:#2d8db8;outline-color:#2d8db8;box-shadow:0 0 0 2px rgba(45,141,184,.12)}
-        .erp-horizontal-workspace-compact h1{font-size:18px!important;line-height:1.2!important;font-weight:500!important}.erp-horizontal-workspace-compact h2{font-size:15px!important;line-height:1.25!important;font-weight:500!important}.erp-horizontal-workspace-compact h3{font-size:13px!important;line-height:1.3!important;font-weight:500!important}
-        .erp-horizontal-workspace-compact p{font-size:10px!important;line-height:1.4!important}.erp-horizontal-workspace-compact table{font-size:10px!important}.erp-horizontal-workspace-compact tbody td{font-size:10px!important;line-height:1.25!important}.erp-horizontal-workspace-compact thead th{font-size:9px!important;line-height:1.2!important;font-weight:500!important}.erp-horizontal-workspace-compact button{font-size:10px}.erp-horizontal-workspace-compact label{font-size:9px}.erp-horizontal-workspace-compact input,.erp-horizontal-workspace-compact select,.erp-horizontal-workspace-compact textarea{font-size:10px}
-        @media print{@page{size:A4;margin:12mm}.erp-windows-topbar,.print-hidden{display:none!important}.erp-horizontal-shell,.erp-horizontal-workspace{min-height:0!important;background:#fff!important;padding:0!important}.erp-horizontal-workspace *{box-shadow:none!important;backdrop-filter:none!important}thead{display:table-header-group}tr{break-inside:avoid}}
-        @media(max-width:900px){.erp-windows-topbar{grid-template-columns:auto minmax(110px,170px) minmax(140px,1fr) auto;gap:6px;padding:0 6px}.erp-windows-session{gap:5px}.erp-windows-session time{font-size:9px}.erp-windows-user{max-width:120px;padding-left:5px}.erp-windows-system-title strong{font-size:11px}}
-        @media(max-width:650px){.erp-windows-topbar{height:48px;grid-template-columns:auto minmax(0,1fr) auto;gap:6px}.erp-windows-quick-search{display:none}.erp-windows-system-title{align-items:flex-start;text-align:left}.erp-windows-system-title strong{font-size:10px;letter-spacing:0}.erp-windows-system-title span{font-size:8px}.erp-windows-session time{display:none}.erp-windows-user{max-width:90px}.erp-windows-user span{display:none}}
-        @media(prefers-reduced-motion:reduce){.erp-windows-start-menu{transition:none!important}}
+        .erp-horizontal-shell{display:grid;grid-template-columns:248px minmax(0,1fr);grid-template-rows:48px minmax(0,1fr);min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%);color:#123b50}
+        .erp-windows-topbar{grid-column:1/-1;grid-row:1;position:sticky;top:0}
+        .erp-sidebar{grid-column:1;grid-row:2;position:sticky;top:48px;height:calc(100vh - 48px);min-height:480px;display:flex;flex-direction:column;overflow:hidden;background:#123b50;color:#f8fafc;border-right:1px solid #0b2c3d;z-index:1200;transition:width .18s ease}
+        .erp-sidebar.is-collapsed{width:72px}
+        .erp-sidebar-brand{height:62px;min-height:62px;display:flex;align-items:center;gap:10px;padding:0 12px;border-bottom:1px solid rgba(255,255,255,.12)}
+        .erp-sidebar-mark{width:34px;height:34px;display:grid;place-items:center;flex:0 0 34px;border-radius:8px;background:#2d8db8;color:white;font-size:19px;font-weight:900}
+        .erp-sidebar-brand>span:nth-child(2){display:flex;min-width:0;flex:1;flex-direction:column;line-height:1.15}.erp-sidebar-brand strong{font-size:12px;letter-spacing:.08em}.erp-sidebar-brand small{margin-top:3px;font-size:8px;letter-spacing:.12em;color:#b8d7e4}
+        .erp-sidebar-collapse{width:27px;height:27px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.2);border-radius:5px;background:transparent;color:#fff;cursor:pointer}
+        .erp-sidebar-search{height:34px;min-height:34px;margin:10px 9px;display:flex;align-items:center;gap:7px;padding:0 9px;border:1px solid rgba(255,255,255,.2);border-radius:5px;background:rgba(255,255,255,.08);color:#c7e2ed}
+        .erp-sidebar-search input{width:100%;min-width:0;border:0!important;outline:0!important;background:transparent!important;color:white!important;font-size:10px!important;box-shadow:none!important}.erp-sidebar-search input::placeholder{color:#b8d0dc}
+        .erp-sidebar-search button{border:0;background:transparent;color:white;cursor:pointer}
+        .erp-sidebar-nav{flex:1;min-height:0;overflow:auto;padding:4px 7px 12px;scrollbar-width:thin;scrollbar-color:#4d7c91 transparent}
+        .erp-sidebar-item{min-height:39px;display:flex;align-items:center;margin:2px 0;border:1px solid transparent;border-radius:5px}
+        .erp-sidebar-item.is-active{background:rgba(72,183,199,.17);border-color:rgba(72,183,199,.35)}
+        .erp-sidebar-item.is-updated{border-left:3px solid #f97316;background:rgba(249,115,22,.09)}
+        .erp-sidebar-main{flex:1;min-width:0;height:37px;display:flex;align-items:center;gap:10px;padding:0 9px;border:0;background:transparent;color:#e9f4f8;text-align:left;font-size:11px;cursor:pointer}
+        .erp-sidebar-main>svg{flex:0 0 auto;color:#9ed7e5}.erp-sidebar-main span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .erp-sidebar-item.is-active .erp-sidebar-main{color:#fff;font-weight:800}.erp-sidebar-item.is-active .erp-sidebar-main>svg{color:#48b7c7}
+        .erp-sidebar-item.is-updated .erp-sidebar-main>svg{color:#fb923c}.erp-sidebar-update-dot{width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:#f97316}
+        .erp-sidebar-expand{width:27px;height:34px;display:grid;place-items:center;border:0;background:transparent;color:#c5dce5;cursor:pointer}
+        .erp-sidebar-children{margin:1px 0 5px 20px;padding:3px 0 3px 9px;border-left:1px solid rgba(157,205,220,.35)}
+        .erp-sidebar-child{width:100%;min-height:31px;display:flex;align-items:center;gap:8px;padding:5px 7px;border:0;border-radius:4px;background:transparent;color:#c8dce4;text-align:left;font-size:10px;cursor:pointer}
+        .erp-sidebar-child span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.erp-sidebar-child>svg{flex:0 0 auto}
+        .erp-sidebar-child:hover,.erp-sidebar-child.is-active{background:rgba(72,183,199,.18);color:#fff}.erp-sidebar-child.is-updated{color:#fdba74}
+        .erp-sidebar-footer{display:flex;flex-direction:column;gap:3px;padding:8px 7px;border-top:1px solid rgba(255,255,255,.12)}
+        .erp-sidebar-footer>button,.erp-sidebar-user{min-height:35px;display:flex;align-items:center;gap:10px;padding:0 10px;border:0;border-radius:5px;background:transparent;color:#e4f0f4;text-align:left;font-size:10px;cursor:pointer}
+        .erp-sidebar-footer>button:hover{background:rgba(255,255,255,.1)}.erp-sidebar-footer span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.erp-sidebar-user{color:#a9cbd8;border-top:1px solid rgba(255,255,255,.1);border-radius:0}
+        .erp-horizontal-workspace{grid-column:2;grid-row:2;width:100%;max-width:100%;min-width:0;min-height:calc(100vh - 48px);padding:8px;box-sizing:border-box;background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%)}
+        @media(max-width:900px){.erp-horizontal-shell{grid-template-columns:210px minmax(0,1fr)}.erp-sidebar-brand{padding:0 8px}}
+        @media(max-width:650px){.erp-horizontal-shell{grid-template-columns:54px minmax(0,1fr)}.erp-sidebar{width:54px;position:sticky}.erp-sidebar:not(.is-collapsed){width:54px}.erp-sidebar-brand{justify-content:center;padding:0 5px}.erp-sidebar-brand>span:nth-child(2),.erp-sidebar-collapse,.erp-sidebar-search,.erp-sidebar-footer span{display:none}.erp-sidebar-main{justify-content:center;padding:0 5px}.erp-sidebar-expand,.erp-sidebar-children{display:none}.erp-sidebar-footer>button,.erp-sidebar-user{justify-content:center;padding:0}.erp-sidebar-item{min-height:40px}.erp-horizontal-workspace{padding:6px}}
+        @media print{.erp-sidebar{display:none!important}.erp-horizontal-shell{display:block!important}.erp-horizontal-workspace{min-height:0!important}}
+
       `}</style>
     </div>
   )
