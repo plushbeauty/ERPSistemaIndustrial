@@ -7,17 +7,14 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { AlertCircle, CheckCircle2, Save, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import type { Ishikawa6MData } from '../types/qualidade'
+import IshikawaDiagrama from '../components/qualidade/IshikawaDiagrama'
+import type { Ishikawa6MData, IshikawaBruto } from '../types/qualidade'
+import { ishikawaVazio, normalizarIshikawa, serializarIshikawa } from '../types/qualidade'
+import '../styles/quality-rpnc-form.css'
 
 type RPNCRef = { id: string; numero_rpnc: string; descricao_nao_conformidade: string; status: string; criado_em: string }
-type Row = RPNCRef & { ishikawa_data: Ishikawa6MData | null; cinco_porques: string[] | null; prazo_eficacia_dias: 30 | 60 | null; data_verificacao_eficacia: string | null; parecer_eficacia: string | null; eficacia_aprovada: boolean | null }
+type Row = RPNCRef & { ishikawa_data: IshikawaBruto; cinco_porques: string[] | null; prazo_eficacia_dias: 30 | 60 | null; data_verificacao_eficacia: string | null; parecer_eficacia: string | null; eficacia_aprovada: boolean | null }
 type Props = { companyId: string; record: RPNCRef; onClose: () => void; onSaved: () => void }
-type CauseKey = keyof Ishikawa6MData
-const groups: Array<{key: CauseKey; label: string}> = [
- {key:'Metodo',label:'Método'},{key:'Maquina',label:'Máquina'},{key:'Medida',label:'Medição'},
- {key:'MeioAmbiente',label:'Meio ambiente'},{key:'MaoDeObra',label:'Mão de obra'},{key:'Material',label:'Material'}
-]
-const emptyFishbone = (): Ishikawa6MData => ({Metodo:[],Maquina:[],Medida:[],MeioAmbiente:[],MaoDeObra:[],Material:[]})
 const inputClass = 'h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-800 outline-none focus:border-[#2D8DB8] disabled:bg-slate-100'
 const labelClass = 'grid gap-1 text-[10px] font-bold uppercase tracking-wide text-slate-500'
 const buttonClass = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 disabled:opacity-50'
@@ -25,7 +22,7 @@ const message = (e: unknown) => e instanceof Error ? e.message : 'Operação nã
 
 export default function QualidadeRPNCTratamento({companyId,record,onClose,onSaved}: Props) {
  const [row,setRow] = useState<Row|null>(null)
- const [fishbone,setFishbone] = useState<Ishikawa6MData>(emptyFishbone)
+ const [fishbone,setFishbone] = useState<Ishikawa6MData>(ishikawaVazio)
  const [whys,setWhys] = useState<string[]>(['','','','',''])
  const [days,setDays] = useState<30|60>(30)
  const [parecer,setParecer] = useState('')
@@ -43,20 +40,19 @@ export default function QualidadeRPNCTratamento({companyId,record,onClose,onSave
    const result = await supabase.from('erp_rpnc').select('id,numero_rpnc,descricao_nao_conformidade,status,criado_em,ishikawa_data,cinco_porques,prazo_eficacia_dias,data_verificacao_eficacia,parecer_eficacia,eficacia_aprovada').eq('id',record.id).eq('empresa_id',companyId).single()
    if (result.error) throw result.error
    const current = result.data as Row
-   setRow(current); setFishbone(current.ishikawa_data ?? emptyFishbone())
+   setRow(current); setFishbone(normalizarIshikawa(current.ishikawa_data))
    setWhys(Array.from({length:5},(_,i)=>current.cinco_porques?.[i] ?? ''))
    setDays(current.prazo_eficacia_dias === 60 ? 60 : 30)
    setParecer(current.parecer_eficacia ?? ''); setEficaz(current.eficacia_aprovada ?? true)
   } catch(e) { setError(message(e)) } finally { setLoading(false) }
  },[companyId,record.id])
  useEffect(()=>{void load()},[load])
- const addCause = (key: CauseKey,value: string) => { const v=value.trim(); if(v) setFishbone(old=>({...old,[key]:[...old[key],v]})) }
  const saveAnalysis = async (event: FormEvent<HTMLFormElement>) => {
   event.preventDefault(); setSaving(true); setError(''); setNotice('')
   try {
    const auth=await supabase.auth.getUser(); if(auth.error) throw auth.error; if(!auth.data.user) throw new Error('Sessão expirada.')
    if(whys.some(v=>v.trim().length<3)) throw new Error('Responda os cinco porquês com pelo menos 3 caracteres.')
-   const result=await supabase.rpc('erp_sgq_salvar_analise_rpnc',{p_rpnc_id:record.id,p_ishikawa:fishbone,p_cinco_porques:whys.map(v=>v.trim()),p_prazo_dias:days})
+   const result=await supabase.rpc('erp_sgq_salvar_analise_rpnc',{p_rpnc_id:record.id,p_ishikawa:serializarIshikawa(fishbone),p_cinco_porques:whys.map(v=>v.trim()),p_prazo_dias:days})
    if(result.error) throw result.error
    setNotice('Investigação salva no Supabase.'); await load(); onSaved()
   } catch(e) {setError(message(e))} finally {setSaving(false)}
@@ -94,7 +90,7 @@ export default function QualidadeRPNCTratamento({companyId,record,onClose,onSave
   {loading||!row ? <p className="text-xs text-slate-500">Consultando Supabase…</p> : <>
    <form onSubmit={event=>void saveAnalysis(event)} className="space-y-3">
     <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-xs font-extrabold">Tela B · Ishikawa 6M e 5 Porquês</h3><label className={labelClass}>Carência de eficácia<select className={inputClass} value={days} onChange={event=>setDays(Number(event.target.value) as 30|60)}><option value={30}>30 dias</option><option value={60}>60 dias</option></select></label></div>
-    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">{groups.map(group=><CauseEditor key={group.key} label={group.label} values={fishbone[group.key]} disabled={saving} onAdd={value=>addCause(group.key,value)} onRemove={index=>setFishbone(old=>({...old,[group.key]:old[group.key].filter((_,i)=>i!==index)}))}/>)}</div>
+    <IshikawaDiagrama dados={fishbone} efeito={record.descricao_nao_conformidade} editavel={!saving} onChange={setFishbone} />
     <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">{whys.map((why,index)=><label key={index} className={labelClass}>Por quê {index+1}{index===4?' · causa raiz':''}<textarea className="min-h-20 w-full rounded-lg border border-slate-200 p-2 text-xs font-normal normal-case text-slate-800" value={why} onChange={event=>setWhys(old=>old.map((v,i)=>i===index?event.target.value:v))} minLength={3} required disabled={saving || (index > 0 && whys.slice(0,index).some(value => value.trim().length < 3))} placeholder={index===0?'Por que o desvio ocorreu?':'Por que a resposta anterior aconteceu?'}/></label>)}</div>
     <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3"><p className="text-[10px] text-slate-500">Cinco respostas obrigatórias; o PostgreSQL valida empresa, permissão, status e JSONB.</p><div className="flex flex-wrap gap-2">{stageTarget && <button type="button" onClick={() => void advanceStage()} disabled={saving} className={buttonClass}>Avançar para {stageTarget}</button>}<button type="submit" disabled={saving||whys.some(v=>v.trim().length<3)} className="inline-flex h-[30px] items-center gap-2 rounded-[2px] bg-[#123B50] px-4 text-xs font-extrabold text-white disabled:opacity-50"><Save size={14}/>Salvar investigação</button></div></footer>
    </form>
@@ -107,8 +103,4 @@ export default function QualidadeRPNCTratamento({companyId,record,onClose,onSave
    </form>
   </>}
  </section>
-}
-function CauseEditor({label,values,disabled,onAdd,onRemove}:{label:string;values:string[];disabled:boolean;onAdd:(value:string)=>void;onRemove:(index:number)=>void}) {
- const [draft,setDraft]=useState('')
- return <section className="rounded-[2px] border border-slate-200 p-2.5"><h4 className="mb-2 text-[10px] font-extrabold uppercase tracking-wide text-slate-600">{label}</h4><div className="flex gap-1"><input className={inputClass} value={draft} onChange={event=>setDraft(event.target.value)} disabled={disabled} placeholder="Causa potencial"/><button type="button" className={buttonClass} disabled={disabled||draft.trim().length<2} onClick={()=>{onAdd(draft);setDraft('')}}>Adicionar</button></div><ul className="mt-2 space-y-1">{values.map((value,index)=><li key={index} className="flex items-start gap-2 rounded bg-slate-50 p-2 text-xs"><span className="min-w-0 flex-1">{value}</span><button type="button" className="text-slate-500 hover:text-rose-700" aria-label="Remover causa" onClick={()=>onRemove(index)} disabled={disabled}>×</button></li>)}</ul></section>
 }

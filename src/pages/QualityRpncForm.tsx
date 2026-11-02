@@ -1,14 +1,15 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-31
- * @REVISAO: REV-SGQ-RPNC-FORMULARIO-20261031-01 — formulário RPNC modelo MGF3657 (SoftExpert), pasta virtual de evidências, CAPA dinâmica e relatório A4
- * @STATUS_APROVACAO: AGUARDA APLICAÇÃO DA MIGRATION 20261031100000_...SQL PELO PROPRIETÁRIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-01
+ * @REVISAO: REV-SGQ-RPNC-FORMULARIO-20261101-02 — formulário RPNC modelo MGF3657 (SoftExpert), pasta virtual de evidências, CAPA dinâmica, Ishikawa editável no desenho e relatório A4
+ * @STATUS_APROVACAO: AGUARDA APLICAÇÃO DAS MIGRATIONS 20261031100000_...SQL E 20261101220000_...SQL PELO PROPRIETÁRIO
  */
 /**
  * SYSNQRA ERP INDUSTRIAL — Qualidade · Formulário RPNC (QualityRpncForm).
  * Origem tipificada (sgq_tipo_registro), abertura atômica com pasta virtual privada
- * {empresa_id}/rpnc_{numero_rpnc} no bucket qualidade-evidencias, Ishikawa 6M + 5 Porquês,
- * varredura de recorrência com gaveta de espelhamento, plano CAPA dinâmico e impressão A4.
+ * {empresa_id}/rpnc_{numero_rpnc} no bucket qualidade-evidencias, Ishikawa 6M editável
+ * dentro do diagrama + 5 Porquês, varredura de recorrência com gaveta de espelhamento,
+ * plano CAPA dinâmico e impressão A4.
  * Nenhum dado é simulado: toda leitura e gravação passa pela sessão autenticada, RBAC e RLS.
  */
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
@@ -17,7 +18,9 @@ import {
   Paperclip, Plus, Printer, RefreshCw, Save, Search, Trash2, X,
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import type { Ishikawa6MData } from '../types/qualidade'
+import IshikawaDiagrama from '../components/qualidade/IshikawaDiagrama'
+import type { Ishikawa6MData, IshikawaBruto } from '../types/qualidade'
+import { ishikawaVazio, normalizarIshikawa, serializarIshikawa, totalDeCausas } from '../types/qualidade'
 import '../styles/quality-rpnc-form.css'
 
 type Severidade = 'Critica' | 'Maior' | 'Menor'
@@ -63,7 +66,7 @@ type RegistroRPNC = {
   sgq_auditoria_id: string | null
   sgq_pasta_evidencias: string | null
   sgq_tratamento_anomalia: Partial<TratamentoForm> | null
-  ishikawa_data: Ishikawa6MData | null
+  ishikawa_data: IshikawaBruto
   cinco_porques: string[] | null
   setor_id: string | null
   criado_em: string
@@ -83,7 +86,7 @@ type Recorrencia = {
   lote: string | null
   produto_codigo: string | null
   setor: string | null
-  ishikawa_data: Ishikawa6MData | null
+  ishikawa_data: IshikawaBruto
   cinco_porques: string[] | null
   acoes: Array<{ id: string; tipo: string; descricao: string; causa_raiz: string | null; responsavel: string | null; prazo: string | null; status: string; resultado_eficacia: string | null }>
 }
@@ -114,7 +117,6 @@ const GRUPOS_6M: Array<{ key: CauseKey; label: string }> = [
 ]
 const TIPOS_ACAO: Array<AcaoForm['tipo']> = ['Contencao', 'Corretiva', 'Preventiva']
 
-const fishboneVazio = (): Ishikawa6MData => ({ Metodo: [], Maquina: [], Medida: [], MeioAmbiente: [], MaoDeObra: [], Material: [] })
 const cadeiaVazia = (): string[] => ['', '', '', '', '']
 const tratamentoVazio = (): TratamentoForm => ({
   numero_controle: '', hora_ocorrencia: '', hora_restauracao: '', duracao: '',
@@ -212,7 +214,7 @@ export default function QualityRpncForm() {
   const [auditoriaId, setAuditoriaId] = useState('')
   const [descricao, setDescricao] = useState('')
   const [tratamento, setTratamento] = useState<TratamentoForm>(tratamentoVazio)
-  const [fishbone, setFishbone] = useState<Ishikawa6MData>(fishboneVazio)
+  const [fishbone, setFishbone] = useState<Ishikawa6MData>(ishikawaVazio)
   const [porques, setPorques] = useState<string[]>(cadeiaVazia)
   const [novaAcao, setNovaAcao] = useState<AcaoForm>({ tipo: 'Corretiva', descricao: '', causa_raiz: '', responsavel_id: '', prazo: '' })
   const [files, setFiles] = useState<File[]>([])
@@ -291,7 +293,7 @@ export default function QualityRpncForm() {
       setRpnc(registro)
       setPasta(registro.sgq_pasta_evidencias ?? `${tenantId}/rpnc_${registro.numero_rpnc}`)
       setTratamento(normalizarTratamento(registro.sgq_tratamento_anomalia))
-      setFishbone(registro.ishikawa_data ?? fishboneVazio())
+      setFishbone(normalizarIshikawa(registro.ishikawa_data))
       setPorques(Array.isArray(registro.cinco_porques) && registro.cinco_porques.length === 5 ? registro.cinco_porques : cadeiaVazia())
       setDescricao(registro.descricao_nao_conformidade)
       setOrigem(registro.sgq_tipo_registro ?? 'INTERNO')
@@ -353,7 +355,7 @@ export default function QualityRpncForm() {
     setFiles([])
     setDescricao('')
     setTratamento(tratamentoVazio())
-    setFishbone(fishboneVazio())
+    setFishbone(ishikawaVazio())
     setPorques(cadeiaVazia())
     setCodigoProduto('')
     setLote('')
@@ -443,7 +445,7 @@ export default function QualityRpncForm() {
       const result = await supabase.rpc('erp_sgq_salvar_formulario_rpnc', {
         p_rpnc_id: rpnc.id,
         p_tratamento: tratamento,
-        p_ishikawa: fishbone,
+        p_ishikawa: serializarIshikawa(fishbone),
         p_cinco_porques: porques,
         p_auditoria_id: auditoriaId || null,
         p_codigo_produto: codigoProduto.trim() || null,
@@ -589,11 +591,6 @@ export default function QualityRpncForm() {
     } finally {
       setSaving(false)
     }
-  }
-
-  const addCausa = (key: CauseKey, value: string) => {
-    const v = value.trim()
-    if (v) setFishbone((old) => ({ ...old, [key]: [...old[key], v] }))
   }
 
   const evidenciasDeAcao = useMemo(() => evidencias.filter((e) => e.finalidade === 'Acao' && e.acao_id), [evidencias])
@@ -744,12 +741,35 @@ export default function QualityRpncForm() {
                 <textarea className="erp-input qrf-textarea" rows={3} value={tratamento.investigacao} disabled={bloqueado}
                   onChange={(e) => setTratamento({ ...tratamento, investigacao: e.target.value })} />
               </label>
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {GRUPOS_6M.map((grupo) => (
-                  <EditorCausa key={grupo.key} rotulo={grupo.label} valores={fishbone[grupo.key]} desabilitado={bloqueado}
-                    onAdicionar={(v) => addCausa(grupo.key, v)}
-                    onRemover={(index) => setFishbone((old) => ({ ...old, [grupo.key]: old[grupo.key].filter((_, i) => i !== index) }))} />
-                ))}
+              <div className="qrf-diagrama-camada">
+                <IshikawaDiagrama
+                  dados={fishbone}
+                  efeito={descricao || rpnc?.descricao_nao_conformidade || 'Não conformidade descrita no relato'}
+                  editavel={!bloqueado}
+                  onChange={setFishbone}
+                />
+                <details className="qrf-diagrama-lista">
+                  <summary className="erp-label">Ver o texto completo das {totalDeCausas(fishbone)} causas por espinha</summary>
+                  <ul className="space-y-1 text-[11px]">
+                    {GRUPOS_6M.map((grupo) => {
+                      const causas = fishbone[grupo.key]
+                      if (!causas.length) return null
+                      return (
+                        <li key={grupo.key}>
+                          <strong>{grupo.label}: </strong>
+                          {causas.map((causa, indice) => (
+                            <span key={indice} className="inline-block">
+                              {causa.texto}
+                              {causa.subcausas.length ? ` (desdobrada em ${causa.subcausas.join(' · ')})` : ''}
+                              {indice < causas.length - 1 ? '; ' : ''}
+                            </span>
+                          ))}
+                        </li>
+                      )
+                    })}
+                    {!totalDeCausas(fishbone) && <li className="text-slate-500">Nenhuma causa registrada ainda — clique em uma espinha para começar.</li>}
+                  </ul>
+                </details>
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -992,11 +1012,20 @@ export default function QualityRpncForm() {
                     <div className="rounded-[2px] bg-slate-50 p-2">
                       <p className="erp-label">Ishikawa 6M</p>
                       <ul className="space-y-1 text-[11px]">
-                        {GRUPOS_6M.map((g) => {
-                          const lista = registro.ishikawa_data?.[g.key] ?? []
-                          return lista.length ? <li key={g.key}><strong>{g.label}:</strong> {lista.join('; ')}</li> : null
-                        })}
-                        {!GRUPOS_6M.some((g) => (registro.ishikawa_data?.[g.key] ?? []).length) && <li className="text-slate-500">Sem causas registradas.</li>}
+                        {(() => {
+                          const causas = normalizarIshikawa(registro.ishikawa_data)
+                          return (
+                            <>
+                              {GRUPOS_6M.map((g) => {
+                                const lista = causas[g.key]
+                                return lista.length
+                                  ? <li key={g.key}><strong>{g.label}:</strong> {lista.map((causa) => causa.subcausas.length ? `${causa.texto} (${causa.subcausas.join(' · ')})` : causa.texto).join('; ')}</li>
+                                  : null
+                              })}
+                              {!GRUPOS_6M.some((g) => causas[g.key].length) && <li className="text-slate-500">Sem causas registradas.</li>}
+                            </>
+                          )
+                        })()}
                       </ul>
                     </div>
                     <div className="rounded-[2px] bg-slate-50 p-2">
@@ -1064,11 +1093,26 @@ export default function QualityRpncForm() {
           <p className="qrf-report-text">{tratamento.investigacao || '—'}</p>
 
           <h2>Análise das causas · Ishikawa 6M</h2>
+          <IshikawaDiagrama
+            dados={fishbone}
+            efeito={rpnc.descricao_nao_conformidade || descricao || 'Não conformidade relatada'}
+            editavel={false}
+            onChange={() => undefined}
+          />
           <div className="qrf-grid-3">
             {GRUPOS_6M.map((g) => (
               <div key={g.key} className="qrf-box">
                 <h3>{g.label}</h3>
-                <ul>{(fishbone[g.key] ?? []).length ? fishbone[g.key].map((c, i) => <li key={i}>{c}</li>) : <li>Não aplicável / não identificado.</li>}</ul>
+                <ul>
+                  {fishbone[g.key].length
+                    ? fishbone[g.key].map((causa, i) => (
+                      <li key={i}>
+                        {causa.texto}
+                        {causa.subcausas.length ? <ul>{causa.subcausas.map((sub, j) => <li key={j}>{sub}</li>)}</ul> : null}
+                      </li>
+                    ))
+                    : <li>Não aplicável / não identificado.</li>}
+                </ul>
               </div>
             ))}
           </div>
@@ -1134,27 +1178,6 @@ export default function QualityRpncForm() {
         </section>
       )}
     </main>
-  )
-}
-
-function EditorCausa({ rotulo, valores, desabilitado, onAdicionar, onRemover }: {
-  rotulo: string; valores: string[]; desabilitado: boolean; onAdicionar: (value: string) => void; onRemover: (index: number) => void
-}) {
-  const [rascunho, setRascunho] = useState('')
-  return (
-    <section className="qrf-cause">
-      <h4 className="erp-label">{rotulo}</h4>
-      <div className="flex gap-1">
-        <input className="erp-input" value={rascunho} disabled={desabilitado} placeholder="Causa imediata"
-          onChange={(e) => setRascunho(e.target.value)} />
-        <button type="button" className="erp-btn" disabled={desabilitado || rascunho.trim().length < 2}
-          onClick={() => { onAdicionar(rascunho); setRascunho('') }}>Adicionar</button>
-      </div>
-      <ul>{valores.map((v, index) => (
-        <li key={index}><span className="min-w-0 flex-1">{v}</span>
-          <button type="button" className="text-slate-500 hover:text-rose-700" aria-label="Remover causa" disabled={desabilitado} onClick={() => onRemover(index)}>×</button></li>
-      ))}</ul>
-    </section>
   )
 }
 

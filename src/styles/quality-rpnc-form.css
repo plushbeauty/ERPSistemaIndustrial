@@ -55,28 +55,89 @@
   resize: vertical;
 }
 
-.qrf-cause {
+/* Diagrama de Ishikawa editável: o SVG é o próprio editor (clique na espinha). */
+.qrf-diagrama-camada {
   display: grid;
   gap: 6px;
-  border: 1px solid var(--qrf-line);
-  border-radius: 2px;
-  padding: 8px;
-  background: var(--color-muted);
+  min-width: 0;
 }
 
-.qrf-cause li {
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
+.qrf-diagrama-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--qrf-line);
   border-radius: 2px;
-  background: var(--color-card);
-  padding: 5px 7px;
-  color: var(--qrf-ink);
-  font-size: 11px;
-  font-weight: 500;
+  background: #fff;
+}
+
+.qrf-diagrama {
+  display: block;
+  width: 100%;
+  min-width: 1040px;
+  height: auto;
+  user-select: none;
+}
+
+/* Sem regra universal sobre <text>: o seletor de descendente (.qrf-diagrama text)
+   tem especificidade maior que a classe e engoliria o branco do rótulo navy. */
+.qrf-diagrama-legenda { font-size: 9px; font-weight: 800; letter-spacing: .08em; fill: #2D8DB8; }
+.qrf-diagrama-efeito { font-size: 11px; font-weight: 800; fill: #123B50; }
+.qrf-diagrama-grupo { font-size: 11.5px; font-weight: 850; letter-spacing: .04em; fill: #FFFFFF; text-anchor: middle; }
+.qrf-diagrama-contagem { font-size: 10px; font-weight: 800; fill: #B9D6E6; text-anchor: middle; }
+.qrf-diagrama-causa { font-size: 11.5px; font-weight: 700; fill: #1e293b; }
+.qrf-diagrama-sub { font-size: 10.2px; font-weight: 500; fill: #475569; }
+.qrf-diagrama-dica { font-size: 9.5px; font-weight: 700; fill: #94A3B8; }
+
+.qrf-diagrama-espinha { cursor: copy; }
+.qrf-diagrama-alvo { fill: transparent; cursor: text; }
+.qrf-diagrama-alvo:hover { fill: rgb(45 141 184 / 12%); }
+.qrf-diagrama-adicionar { cursor: copy; }
+.qrf-diagrama-adicionar circle { fill: #EDF3F7; stroke: #94A3B8; stroke-width: 1; }
+.qrf-diagrama-adicionar text { font-size: 11px; font-weight: 800; fill: #475569; }
+.qrf-diagrama-controle { cursor: pointer; }
+.qrf-diagrama-controle circle { fill: #EDF3F7; stroke: #94A3B8; stroke-width: 1; }
+.qrf-diagrama-controle text { font-size: 10.5px; font-weight: 900; fill: #334155; }
+.qrf-diagrama-controle:hover circle { fill: #D8E7F1; stroke: #123B50; }
+.qrf-diagrama-controle--remover:hover circle { fill: #FDECEC; stroke: #B4232C; }
+.qrf-diagrama-controle--remover:hover text { fill: #B4232C; }
+
+.qrf-diagrama-entrada {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 22px;
+  border: 1px solid #2D8DB8;
+  border-radius: 2px;
+  background: #fff;
+  padding: 0 4px;
+  color: #0f172a;
+  font: 500 11px/1.2 'Segoe UI', system-ui, sans-serif;
+  outline: none;
+}
+
+.qrf-diagrama-ajuda {
+  border-top: 1px dashed var(--qrf-line);
+  padding: 6px 8px;
+  color: var(--qrf-muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.qrf-diagrama-aviso { color: #B4232C; }
+
+.qrf-diagrama-lista {
+  display: grid;
+  gap: 2px;
+  padding: 4px 8px 8px;
+  font-size: 10.5px;
   text-transform: none;
   letter-spacing: normal;
 }
+
+.qrf-diagrama-lista summary { cursor: pointer; }
+.qrf-diagrama-lista ul { margin: 0; padding-left: 16px; display: grid; gap: 3px; color: var(--qrf-ink); text-transform: none; letter-spacing: normal; }
+.qrf-diagrama-lista strong { color: var(--qrf-ink); font-weight: 800; }
 
 .qrf-drawer {
   position: fixed;
@@ -140,6 +201,9 @@
   .qrf-report .qrf-box { border: 1px solid #666; padding: 5px; break-inside: avoid; }
   .qrf-report .qrf-box h3 { margin: 0 0 3px; font-size: 9px; letter-spacing: .05em; text-transform: uppercase; }
   .qrf-report .qrf-box ul { margin: 0; padding-left: 14px; }
+  .qrf-report .qrf-diagrama-wrap { overflow: visible; border: 0; }
+  .qrf-report .qrf-diagrama { min-width: 0; width: 100%; }
+  .qrf-report .qrf-diagrama-ajuda { display: none; }
   .qrf-report .qrf-sign { display: flex; gap: 24px; margin-top: 18px; }
   .qrf-report .qrf-sign span { border-top: 1px solid #000; flex: 1; padding-top: 3px; font-size: 9px; text-align: center; }
 }

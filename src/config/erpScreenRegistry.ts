@@ -23,8 +23,8 @@ export type ErpScreenRecord = {
   banco?: readonly string[]
   /** RPC/Edge Function usada como caminho de gravação autorizado. */
   rpc?: readonly string[]
-  /** Migration necessária para a tela funcionar. */
-  migration?: string
+  /** Migration necessária para a tela funcionar. Mais de uma quando a tela depende de duas. */
+  migration?: string | readonly string[]
   /** Confirmação do proprietário de que a migration está aplicada no projeto Supabase. */
   aplicada?: boolean
   nota?: string
@@ -78,8 +78,8 @@ export const erpScreenRegistry: Record<string, ErpScreenRecord> = {
   'estoque/rastreabilidade-lote': { status: 'pendente', banco: ['erp_estoque_lotes_rastreabilidade', 'erp_estoque_movimentos', 'erp_apontamentos_processo', 'erp_ordens_producao', 'erp_produtos'], rpc: ['erp_lote_rastrear'], migration: '20261101200000_erp_lote_baixa_fifo_rastreabilidade_v1.sql', aplicada: false, nota: 'Consulta lote/NF → baixas → peças apontadas, resolvida pela RPC security definer na empresa da sessão.' },
 
   'paquimetro': { status: 'validada', banco: ['erp_equipamentos_medicao', 'erp_inspecoes'], rpc: ['erp_current_empresa_id'] },
-  'qualidade/rpnc': { status: 'validada', banco: ['erp_rpnc', 'erp_qualidade_rpnc_evidencias', 'erp_setores'], rpc: ['erp_current_empresa_id', 'erp_sgq_abrir_rpnc'] },
-  'qualidade/rpnc-formulario': { status: 'pendente', banco: ['erp_rpnc', 'erp_setores', 'erp_produtos', 'erp_clientes', 'erp_usuarios'], rpc: ['erp_sgq_abrir_rpnc_formulario', 'erp_sgq_salvar_formulario_rpnc', 'erp_sgq_salvar_acoes_rpnc', 'erp_sgq_buscar_recorrencia_rpnc'], migration: '20261031100000_sgq_rpnc_formulario_auditorias_recorrencia_v1.sql', aplicada: false, nota: 'RPCs do formulário ainda não existem no banco: a tela abre em modo pendente e não grava.' },
+  'qualidade/rpnc': { status: 'validada', banco: ['erp_rpnc', 'erp_qualidade_rpnc_evidencias', 'erp_setores'], rpc: ['erp_current_empresa_id', 'erp_sgq_abrir_rpnc'], nota: 'Ishikawa com subcausa na Tela B depende de 20261101220000; sem ela o servidor aceita apenas causas simples, e a tela continua gravando.' },
+  'qualidade/rpnc-formulario': { status: 'pendente', banco: ['erp_rpnc', 'erp_setores', 'erp_produtos', 'erp_clientes', 'erp_usuarios'], rpc: ['erp_sgq_abrir_rpnc_formulario', 'erp_sgq_salvar_formulario_rpnc', 'erp_sgq_normalizar_ishikawa', 'erp_sgq_salvar_acoes_rpnc', 'erp_sgq_buscar_recorrencia_rpnc'], migration: ['20261031100000_sgq_rpnc_formulario_auditorias_recorrencia_v1.sql', '20261101220000_erp_sgq_ishikawa_editavel_subcausas_v1.sql'], aplicada: false, nota: 'RPCs do formulário ainda não existem no banco (20261031100000) e o Ishikawa com subcausa exige 20261101220000: a tela abre em modo pendente e o servidor recusa subcausa enquanto a migration não for aplicada.' },
   'qualidade/auditorias': { status: 'pendente', banco: ['erp_sgq_auditorias', 'erp_rpnc', 'erp_usuarios'], rpc: ['erp_sgq_vincular_rpnc_auditoria'], migration: '20261031100000_sgq_rpnc_formulario_auditorias_recorrencia_v1.sql', aplicada: false, nota: 'Tabela erp_sgq_auditorias criada pela mesma migration pendente.' },
   'qualidade/ged': { status: 'parcial', banco: ['erp_qualidade_rpnc_evidencias', 'erp_rpnc'], nota: 'Repositório em storage; revisão de documento (workflow ADENDO) ainda não implementada.' },
 
