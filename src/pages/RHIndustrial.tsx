@@ -9,6 +9,14 @@
  * de acao (erp-edit-button, 30px e raio 2px). Autorizado pelo proprietario no pente fino de 2026-11-01.
  */
 /**
+ * @REVISAO: REV-RH-UM-CARD-E-CAMPO-COMPACTO-20261101-01 — 01/11/2026, por determinacao do proprietario.
+ * (1) O header azul-marinho proprio da tela foi removido: o card de abertura do shell (PageIntroCard) ja
+ * e o card de cima, e a tela ficava com DOIS cards. O botao Atualizar passou para a barra de abas.
+ * (2) As abas ganharam role=tablist/role=tab + aria-selected, que e o gancho do contrato de aba ativa
+ * dourada (erp-active-gold-20261101.css). (3) Grelha do formulario de 16px para 10px de respiro; a altura
+ * dos campos vem do contrato de campo (30px), que faz dois campos caberem na linha que antes ocupava um.
+ */
+/**
  * SYSNQRA ERP INDUSTRIAL — RH operacional
  * @DATA_REVISAO_APROVACAO 30/10/2026
  * @STATUS_APROVACAO Em validação
@@ -314,11 +322,6 @@ export default function RHIndustrial() {
   }
 
   return <main className="rh-page min-h-[70vh] bg-slate-50 p-3 text-slate-800 md:p-5">
-    <header className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-900 px-5 py-4 text-white shadow-sm">
-      <div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-sky-300">SYSNQRA ERP INDUSTRIAL · GESTÃO DE PESSOAS</p><h1 className="mt-1 text-xl font-extrabold text-white">Recursos Humanos</h1><p className="mt-1 text-xs text-slate-300">Cadastro, jornada, ocorrências, capacitação e férias</p></div>
-      <button onClick={() => empresaId && void reload(empresaId, tab)} className="inline-flex h-[30px] items-center gap-2 rounded-[2px] border border-slate-600 px-3 text-sm font-semibold text-white hover:bg-slate-800"><RefreshCw size={15}/> Atualizar</button>
-    </header>
-
     <section className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
       <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><Users className="mb-2 text-sky-700" size={19}/><p className="text-xs text-slate-500">Funcionários cadastrados</p><strong className="text-2xl">{staff.length}</strong></div>
       <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CheckCircle2 className="mb-2 text-emerald-700" size={19}/><p className="text-xs text-slate-500">Ativos</p><strong className="text-2xl">{activeCount}</strong></div>
@@ -326,9 +329,12 @@ export default function RHIndustrial() {
       <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><GraduationCap className="mb-2 text-violet-700" size={19}/><p className="text-xs text-slate-500">Treinamentos pendentes</p><strong className="text-2xl">{tab === 'Treinamentos' ? pendingTrainings.length : '—'}</strong></div>
     </section>
 
-    <nav className="mb-4 flex gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm" aria-label="Abas do módulo RH">
-      {tabs.map(item => { const Icon = item.icon; return <button key={item.label} onClick={() => { setTab(item.label); setForm(item.label === 'Funcionários' ? blank(employeeFields) : item.label === 'Visão geral' ? {} : blank(schemas[item.label as Exclude<Tab, 'Funcionários' | 'Visão geral'>].fields)); setEditingId(null); setMessage('') }} className={`flex min-h-[30px] shrink-0 items-center gap-2 rounded-[2px] px-3 text-xs font-bold transition ${tab === item.label ? 'bg-sky-700 text-white' : 'text-slate-600 hover:bg-slate-100'}`}><Icon size={15}/>{item.label}</button> })}
-    </nav>
+    <div className="mb-4 flex flex-wrap items-start gap-2">
+      <nav role="tablist" aria-label="Abas do módulo RH" className="flex min-w-0 flex-1 flex-wrap gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm">
+        {tabs.map(item => { const Icon = item.icon; return <button key={item.label} type="button" role="tab" aria-selected={tab === item.label} onClick={() => { setTab(item.label); setForm(item.label === 'Funcionários' ? blank(employeeFields) : item.label === 'Visão geral' ? {} : blank(schemas[item.label as Exclude<Tab, 'Funcionários' | 'Visão geral'>].fields)); setEditingId(null); setMessage('') }} className={`flex min-h-[30px] shrink-0 items-center gap-2 rounded-[2px] px-3 text-xs font-bold transition ${tab === item.label ? 'bg-sky-700 text-white' : 'text-slate-600 hover:bg-slate-100'}`}><Icon size={15}/>{item.label}</button> })}
+      </nav>
+      <button type="button" onClick={() => empresaId && void reload(empresaId, tab)} className="inline-flex h-[30px] shrink-0 items-center gap-2 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"><RefreshCw size={14}/> Atualizar</button>
+    </div>
 
     {message && <div role="status" className={`mb-4 flex items-start gap-2 rounded-lg border px-3 py-2 text-sm ${/sucesso|salvo|gravado|enviado/i.test(message) ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-amber-200 bg-amber-50 text-amber-900'}`}>{message}</div>}
 
@@ -345,7 +351,7 @@ export default function RHIndustrial() {
           </div>
           <p className="pt-1 text-xs text-slate-500">Preencha os dados do colaborador. Os campos pessoais respeitam as proporções especificadas e os dados são gravados no banco da empresa selecionada.</p>
         </div>
-        <div className="grid grid-cols-1 content-start gap-4 md:grid-cols-12">
+        <div className="grid grid-cols-1 content-start gap-3 md:grid-cols-12">
           {employeeFields.map(field => {
             const span = field.key === 'nome_completo' ? 'md:col-span-9' : field.key === 'data_nascimento' ? 'md:col-span-3' : ['cpf','rg','celular'].includes(field.key) ? 'md:col-span-3' : field.key === 'email' ? 'md:col-span-6' : 'md:col-span-6'
             return <div key={field.key} className={span}><label htmlFor={field.key} className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-600">{field.label}{field.required ? ' *' : ''}</label>{fieldControl(field)}</div>
@@ -363,7 +369,7 @@ export default function RHIndustrial() {
     </section> : <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-200 bg-slate-100 px-4 py-3"><h2 className="font-bold text-slate-900">{tab}</h2><p className="mt-1 text-xs text-slate-500">Registros persistidos no Supabase com isolamento por empresa.</p></div>
       {tab === 'Ponto / Presença' && <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 p-4"><label className="text-xs font-bold text-slate-600">Consultar dia <input type="date" value={filterDate} onChange={event => setFilterDate(event.target.value)} className="ml-2 h-9 rounded-lg border border-slate-300 px-3 font-normal"/></label><span className="text-xs text-slate-500">Para controle físico de catraca ou relógio, conecte o equipamento ou a integração de origem.</span></div>}
-      <form onSubmit={saveOperational} className="grid grid-cols-1 gap-4 p-4 md:grid-cols-3">
+      <form onSubmit={saveOperational} className="grid grid-cols-1 gap-3 p-4 md:grid-cols-3">
         {schemas[tab].fields.map(field => <div key={field.key}><label htmlFor={field.key} className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-600">{field.label}{field.required ? ' *' : ''}</label>{fieldControl(field)}</div>)}
         <div className="flex items-end"><button disabled={busy} type="submit" className="inline-flex h-[30px] items-center gap-2 rounded-[2px] bg-sky-700 px-4 text-sm font-bold text-white disabled:opacity-60"><Save size={15}/> Gravar registro</button></div>
       </form>
