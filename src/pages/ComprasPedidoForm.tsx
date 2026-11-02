@@ -7,6 +7,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Plus, Trash2, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { erroBancoNaoInstalado, MIGRACAO_PEDIDO_COMPRA_COMPLETO } from '../lib/supabaseRpcStatus'
 
 type Row = Record<string, unknown>
 type Item = { key: string; produtoId: string; quantidade: string; unidade: string; preco: string; ncm: string; entrega: string; ordemProducaoId: string; centroCusto: string; ipi: string; icms: string }
@@ -74,6 +75,7 @@ export default function ComprasPedidoForm({ onCancel, onSaved }: { onCancel: () 
       if (!validItems.length) throw new Error('Inclua ao menos um produto com quantidade maior que zero.')
       for (const item of validItems) {
         if (item.ordemProducaoId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(item.ordemProducaoId)) throw new Error('O vínculo da OP deve ser o UUID válido da ordem de produção.')
+        if (item.ncm.trim() && !/^[0-9]{8,10}$/.test(item.ncm.trim())) throw new Error('O NCM do item deve ter 8 ou 10 dígitos, sem máscara.')
       }
       const { data: empresaId, error: tenantError } = await supabase.rpc('erp_current_empresa_id')
       if (tenantError) throw tenantError
@@ -104,7 +106,10 @@ export default function ComprasPedidoForm({ onCancel, onSaved }: { onCancel: () 
           observacoes_recebimento: header.recebimento.trim() || null,
         },
       })
-      if (saveError) throw saveError
+      if (saveError) {
+        throw new Error(erroBancoNaoInstalado(saveError, 'erp_compras_salvar_pedido_completo', MIGRACAO_PEDIDO_COMPRA_COMPLETO)
+          ?? `Não foi possível salvar o pedido: ${saveError.message}`)
+      }
       const record = Array.isArray(data) ? data[0] as Row | undefined : data as Row | null
       if (!record || typeof record.id !== 'string') throw new Error('O banco não retornou o pedido criado.')
       onSaved('Pedido PC-' + String(record.numero ?? '').padStart(4, '0') + ' salvo com ' + validItems.length + ' item(ns). Status: ' + (header.status === 'RASCUNHO' ? 'Rascunho' : 'Aguardando aprovação') + '.')
