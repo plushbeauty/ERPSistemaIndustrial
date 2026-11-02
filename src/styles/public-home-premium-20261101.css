@@ -119,6 +119,9 @@
 .ph-shot-bar { display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-bottom: 1px solid var(--ph-line); background: #F7FBFD; }
 .ph-shot-bar i { width: 9px; height: 9px; border-radius: 50%; background: #CFE2EA; }
 .ph-shot-bar span { margin-left: 8px; font-size: 11px; font-weight: 800; color: #7791A0; letter-spacing: .3px; }
+/* Captura real do sistema (public/images/telas/<chave>.png): ocupa o mesmo vão da réplica,
+   16:9 para casar com o bloco abaixo e com object-fit:cover sem cortar a interface ao meio. */
+.ph-shot-foto { display: block; width: 100%; aspect-ratio: 16 / 9; height: auto; object-fit: cover; object-position: top left; background: #fff; }
 /* ---------- réplica das telas reais (src/components/marketing/TelaVitrine.tsx) ----------
    Mesma linguagem do rail e dos painéis dentro do ERP: fundo navy, item ativo com filete
    ciano, cartões de índice e tabela listrada. Assim a vitrine não anuncia tela diferente

@@ -1,8 +1,13 @@
 /**
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-01
- * @REVISAO: REV-VITRINE-PUBLICA-20261101-04 — carrossel e seção de telas mostram réplicas das telas reais
+ * @REVISAO: REV-VITRINE-PUBLICA-20261101-05 — carrossel com encaixe para captura real do sistema
  * @STATUS_APROVACAO: REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01
+ *
+ * Ordem do proprietario em 2026-11-01: as fotos que vao entrar no carrossel sao capturas do proprio
+ * sistema, tiradas por ele. O encaixe esta pronto em capturasReais — basta soltar o arquivo em
+ * public/images/telas/<chave>.png (chaves: pcp, qualidade, estoque, chao-de-fabrica) e registrar o
+ * caminho ali. Sem o arquivo, a moldura continua mostrando a replica DOM daquela rota.
  *
  * Ordem recebida em 2026-11-01: manter o fundo branco e a tipografia padrão do menu, mas
  * trazer de volta o carrossel do topo — imagem industrial de ponta a ponta, camada escura
@@ -170,12 +175,34 @@ const genericDetail = (m: Module): ModuleDetail => ({
   results: ['Status do processo', 'Pendências', 'Histórico', 'Integrações relacionadas'],
 })
 
+/**
+ * Capturas reais do sistema publicado. Enquanto a foto não existe, a moldura do navegador
+ * mostra a réplica DOM montada com o vocabulário visual do próprio ERP (TelaVitrine), que e a
+ * unica tela que de fato existe hoje. Quando o proprietario enviar o print do sistema, o arquivo
+ * entra em public/images/telas/<chave>.png e e registrado abaixo: a replica dessa tela para de ser
+ * desenhada e a foto ocupa o mesmo lugar dentro da mesma moldura.
+ */
+const capturasReais: Partial<Record<TelaVitrine['key'], string>> = {}
+
 function ScreenShot({ screen, compacta = false }: { screen: Screen; compacta?: boolean }) {
   const tela = telasVitrine[screen.key]
+  const captura = capturasReais[screen.key]
   return (
     <div className="ph-shot ph-shot--hero">
       <div className="ph-shot-bar" aria-hidden="true"><i /><i /><i /><span>sysnqra.app{tela.rota}</span></div>
-      <TelaVitrineReplica tela={tela} compacta={compacta} />
+      {captura ? (
+        <img
+          src={captura}
+          alt={`Tela real do SYSNQRA — ${screen.title}`}
+          className="ph-shot-foto"
+          width={1280}
+          height={720}
+          loading="lazy"
+          decoding="async"
+        />
+      ) : (
+        <TelaVitrineReplica tela={tela} compacta={compacta} />
+      )}
     </div>
   )
 }
