@@ -65,6 +65,8 @@ type Produto = { id: string; codigo: string; nome: string; unidade: string | nul
 type Item = { produto_id: string; codigo_produto: string; descricao_produto: string; ncm: string; cfop: string; origem: string; cst_csosn: string; unidade: string; quantidade: string; valor_unitario: string; valor_desconto: string; icms_aliquota: string; ipi_aliquota: string; pis_aliquota: string; cofins_aliquota: string; pis_cst: string; cofins_cst: string; lote: string }
 type Pagamento = { forma: string; forma_descricao: string; condicao: 'a_vista' | 'a_prazo'; valor: string; troco: string; bandeira: string; observacao: string }
 type Emitente = { razao_social: string; nome_fantasia: string; cnpj: string; ie: string; endereco: string; cidade: string; uf: string; cep: string }
+type Transportadora = { id: string; codigo: string | null; razao_social: string | null; cnpj: string | null; uf: string | null }
+type ConfigFiscal = { ambiente: string; provedor: string; regime: string; habilitada: boolean; serie: string }
 type Situacao = { status: string; ambiente: string; chave: string; protocolo: string; mensagem: string; xml_path: string; pdf_path: string; emissao: string; autorizacao: string }
 type Problema = { campo: string; aba: Aba; mensagem: string }
 type DocumentoLinha = { id: string; serie: number | null; numero: number | null; status: string; ambiente: string | null; data_emissao: string | null; destinatario_nome: string | null; destinatario_documento: string | null; destinatario_uf: string | null; chave_acesso: string | null; valor_total: number | null; autorizada_em: string; xml_path: string; pdf_path: string }
@@ -189,9 +191,12 @@ export default function NFeEmissao() {
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [emitente, setEmitente] = useState<Emitente | null>(null)
+  const [transportadoras, setTransportadoras] = useState<Transportadora[]>([])
+  const [configFiscal, setConfigFiscal] = useState<ConfigFiscal | null>(null)
   const [empresaId, setEmpresaId] = useState('')
   const [buscaCliente, setBuscaCliente] = useState('')
   const [buscaProduto, setBuscaProduto] = useState('')
+  const [transportadoraSel, setTransportadoraSel] = useState('')
   const [documentoId, setDocumentoId] = useState('')
   const [situacao, setSituacao] = useState<Situacao | null>(null)
   const [documentos, setDocumentos] = useState<DocumentoLinha[]>([])
@@ -229,9 +234,34 @@ export default function NFeEmissao() {
       }
       const idEmpresa = String(empresa.data)
       setEmpresaId(idEmpresa)
-      const dados = await supabase.from('erp_empresas')
-        .select('razao_social,nome_fantasia,cnpj,endereco,cidade,uf,cep,inscricao_estadual')
-        .eq('id', idEmpresa).maybeSingle()
+      const [dados, transportes, configuracao] = await Promise.all([
+        supabase.from('erp_empresas')
+          .select('razao_social,nome_fantasia,cnpj,endereco,cidade,uf,cep,inscricao_estadual')
+          .eq('id', idEmpresa).maybeSingle(),
+        supabase.from('erp_transportadoras')
+          .select('id,codigo,razao_social,cnpj,uf')
+          .eq('empresa_id', idEmpresa).eq('ativo', true).order('razao_social').limit(500),
+        supabase.from('erp_config_fiscal')
+          .select('ambiente,provedor,regime_tributario,habilitado_nfe,serie_nfe')
+          .eq('empresa_id', idEmpresa).maybeSingle(),
+      ])
+      if (transportes.error) setErro(`O cadastro de transportadoras não pôde ser lido: ${transportes.error.message}`)
+      if (configuracao.error) setErro(`A configuração fiscal não pôde ser lida: ${configuracao.error.message}`)
+      setTransportadoras(((transportes.data ?? []) as unknown) as Transportadora[])
+      const cfg = (configuracao.data ?? null) as Record<string, unknown> | null
+      if (cfg) {
+        const ambienteCfg = String(cfg.ambiente ?? '').toLowerCase()
+        setConfigFiscal({
+          ambiente: ambienteCfg,
+          provedor: String(cfg.provedor ?? ''),
+          regime: String(cfg.regime_tributario ?? ''),
+          habilitada: cfg.habilitado_nfe === true,
+          serie: String(cfg.serie_nfe ?? ''),
+        })
+        const serieCfg = digits(String(cfg.serie_nfe ?? ''))
+        if (serieCfg) set('serie', serieCfg.slice(0, 3))
+        if (ambienteCfg === 'homologacao' || ambienteCfg === 'producao') set('ambiente', ambienteCfg)
+      }
       const linha = (dados.data ?? {}) as Record<string, unknown>
       setEmitente({
         razao_social: String(linha.razao_social ?? ''),
@@ -318,8 +348,15 @@ export default function NFeEmissao() {
       })
       if (redondo(pagamentosTotais) !== redondo(totais.total)) push('soma_pagamentos', 'cobranca', `A soma dos pagamentos (${money(pagamentosTotais)}) precisa ser igual ao total da nota (${money(totais.total)}).`)
     }
+    if (!configFiscal) push('config_fiscal', 'status', 'A empresa ainda não tem configuração fiscal gravada: sem ela o integrador recusa a transmissão com "Configuração fiscal não encontrada".')
+    else {
+      if (!configFiscal.habilitada) push('habilitado_nfe', 'status', 'NF-e não está habilitada na configuração fiscal da empresa.')
+      if (!configFiscal.regime) push('regime_tributario', 'status', 'CONFIGURAÇÃO FISCAL PENDENTE: informe o regime tributário do emitente antes de transmitir.')
+      if (configFiscal.provedor.toLowerCase() !== 'notaas') push('provedor', 'status', `O provedor fiscal configurado é "${configFiscal.provedor || 'vazio'}"; o adaptador disponível é Notaas.`)
+      if (configFiscal.ambiente && configFiscal.ambiente !== form.ambiente) push('ambiente', 'status', `O rascunho está em "${form.ambiente}" mas o ambiente fiscal da empresa é "${configFiscal.ambiente}": a transmissão é recusa até igualar.`)
+    }
     return lista
-  }, [form, itens, pagamentos, pagamentosTotais, totais, documentoId, totalItem])
+  }, [form, itens, pagamentos, pagamentosTotais, totais, documentoId, configFiscal, totalItem])
 
   const erroDe = useCallback((campo: string): string => problemas.find(p => p.campo === campo)?.mensagem ?? '', [problemas])
   const pendenciasPorAba = useMemo(() => {
@@ -327,6 +364,12 @@ export default function NFeEmissao() {
     problemas.forEach(p => mapa.set(p.aba, (mapa.get(p.aba) ?? 0) + 1))
     return mapa
   }, [problemas])
+
+  // Pendência de "status" é do ambiente fiscal (configuração da empresa). Ela não impede gravar o
+  // rascunho — o rascunho é justamente onde se arruma a nota — mas impede a transmissão, que o
+  // integrador recusaria.
+  const bloqueiosRascunho = useMemo(() => problemas.filter(p => p.aba !== 'cobranca' && p.aba !== 'status'), [problemas])
+  const bloqueiosTransmissao = useMemo(() => problemas.filter(p => p.aba !== 'cobranca'), [problemas])
 
   const clienteFiltrado = useMemo(() => {
     const q = buscaCliente.trim().toLowerCase()
@@ -345,6 +388,14 @@ export default function NFeEmissao() {
     set('destinatario_cidade', c.cidade ?? '')
     set('destinatario_uf', (c.estado ?? '').slice(0, 2).toUpperCase())
     setBuscaCliente(c.nome ?? '')
+  }
+
+  const escolherTransportadora = (id: string) => {
+    setTransportadoraSel(id)
+    const t = transportadoras.find(x => x.id === id)
+    if (!t) return
+    set('transportadora', t.razao_social ?? '')
+    set('uf_transportadora', (t.uf ?? '').slice(0, 2).toUpperCase())
   }
 
   const adicionarItem = (p: Produto) => {
@@ -470,10 +521,9 @@ export default function NFeEmissao() {
     setBusy(true); setErro(''); setAviso(''); setPendenciaBanco('')
     try {
       if (!empresaId) { setErro('A empresa da sessão ainda não foi resolvida pelo banco: recarregue a tela ou faça login novamente. Nada foi gravado.'); return null }
-      const bloqueios = problemas.filter(p => p.aba !== 'cobranca')
-      if (bloqueios.length) {
-        setErro(`Nada foi gravado. ${bloqueios.length} pendência(ões) antes de salvar: ${bloqueios[0].mensagem}`)
-        setAba(bloqueios[0].aba)
+      if (bloqueiosRascunho.length) {
+        setErro(`Nada foi gravado. ${bloqueiosRascunho.length} pendência(ões) antes de salvar: ${bloqueiosRascunho[0].mensagem}`)
+        setAba(bloqueiosRascunho[0].aba)
         return null
       }
       let numero = form.numero
@@ -501,7 +551,7 @@ export default function NFeEmissao() {
     } finally {
       setBusy(false)
     }
-  }, [empresaId, problemas, form.numero, form.serie, documentoId, montarCabecalho, montarItens, recarregarSituacao, set])
+  }, [empresaId, bloqueiosRascunho, form.numero, form.serie, documentoId, montarCabecalho, montarItens, recarregarSituacao, set])
 
   const gravarPagamentos = useCallback(async () => {
     if (!documentoId) { setErro('Salve o rascunho antes de gravar a cobrança.'); return }
@@ -575,12 +625,17 @@ export default function NFeEmissao() {
   }, [recarregarSituacao])
 
   const solicitarTransmissao = useCallback(async () => {
-    const bloqueios = problemas.filter(p => p.aba !== 'cobranca')
+    const bloqueios = [...bloqueiosTransmissao]
+    if (!documentoId) pagamentos.forEach((p, indice) => {
+      const codigo = digits(p.forma)
+      if (codigo.length < 1 || codigo.length > 2 || num(codigo) < 1 || num(codigo) > 99) bloqueios.push({ campo: `forma_${indice}`, aba: 'cobranca', mensagem: `A linha ${indice + 1} de cobrança tem forma de pagamento inválida e ainda não foi gravada no documento.` })
+    })
     if (bloqueios.length) { setErro(`Transmissão bloqueada pela tela: ${bloqueios[0].mensagem}`); setAba(bloqueios[0].aba); return }
     const id = documentoId || await salvarRascunho()
     if (!id) { setErro('Não foi possível gravar o rascunho; a transmissão não foi solicitada.'); return }
+    if (!pagamentos.length) { setErro('O documento foi gravado como rascunho, mas sem cobrança não há transmissão: preencha a aba Cobrança e grave a cobrança.'); setAba('cobranca'); return }
     await transmitir(id)
-  }, [problemas, documentoId, salvarRascunho, transmitir])
+  }, [bloqueiosTransmissao, documentoId, pagamentos, salvarRascunho, transmitir])
 
   const novoDocumento = () => {
     setVisao('emissao')
@@ -590,6 +645,7 @@ export default function NFeEmissao() {
     setPagamentos([novoPagamento()])
     setBuscaCliente('')
     setBuscaProduto('')
+    setTransportadoraSel('')
     setDocumentoId('')
     setSituacao(null)
     setErro(''); setAviso(''); setPendenciaBanco('')
@@ -625,6 +681,7 @@ export default function NFeEmissao() {
         valor_pis: String(c.valor_pis ?? 0), valor_cofins: String(c.valor_cofins ?? 0),
       })
       if (itensLidos.error) setErro(`Os itens do documento não puderam ser lidos: ${itensLidos.error.message}`)
+      setTransportadoraSel('')
       setItens(((itensLidos.data ?? []) as unknown as Record<string, unknown>[]).map(r => ({
         produto_id: String(r.produto_id ?? ''), codigo_produto: String(r.codigo_produto ?? ''),
         descricao_produto: String(r.descricao_produto ?? ''), ncm: String(r.ncm ?? ''), cfop: String(r.cfop ?? ''),
@@ -979,7 +1036,8 @@ export default function NFeEmissao() {
               <Bloco titulo="Transporte">
                 <div className="flex flex-wrap items-start gap-2">
                   <Campo rotulo="Modalidade do frete" valor={form.modalidade_frete} largura="erp-field-xl" onChange={v => set('modalidade_frete', v)} dica="Escolha real: 9 é somente quando não há transporte." opcoes={MODALIDADES_FRETE.map(m => ({ value: m.codigo, label: m.descricao }))} />
-                  <Campo rotulo="Transportadora" valor={form.transportadora} largura="erp-field-name" onChange={v => set('transportadora', v)} />
+                  <Campo rotulo="Do cadastro de transportadoras" valor={transportadoraSel} largura="erp-field-name" onChange={escolherTransportadora} dica={transportadoras.length ? `${transportadoras.length} transportadora(s) ativa(s) no cadastro desta empresa.` : 'Nenhuma transportadora ativa cadastrada: digite os dados manualmente.'} opcoes={[{ value: '', label: transportadoras.length ? '— digitar manualmente —' : '— sem cadastro —' }, ...transportadoras.map(t => ({ value: t.id, label: [t.codigo, t.razao_social, t.uf].filter(Boolean).join(' · ') }))]} />
+                  <Campo rotulo="Transportadora" valor={form.transportadora} largura="erp-field-name" onChange={v => set('transportadora', v)} dica="Nome, placa e UF ficam gravados no rascunho; o integrador atual transmite somente o valor do frete." />
                   <Campo rotulo="Placa" valor={form.placa} largura="erp-field-series" onChange={v => set('placa', v.toUpperCase().slice(0, 8))} />
                   <Campo rotulo="UF transportadora" valor={form.uf_transportadora} largura="erp-field-uf" onChange={v => set('uf_transportadora', v.toUpperCase().slice(0, 2))} />
                   <Campo rotulo="Valor do frete" tipo="number" valor={form.valor_frete} largura="erp-field-money" onChange={v => set('valor_frete', v)} dica="Soma ao total da nota." />
@@ -1082,6 +1140,22 @@ export default function NFeEmissao() {
                     <button type="button" className={acaoBotao} disabled={!situacao?.xml_path} onClick={() => situacao?.xml_path && void baixarArquivo(situacao.xml_path, `xml-${situacao.chave || documentoId}.xml`)}><Download size={12} /> XML autorizado</button>
                   </div>
                   <p className="mt-1 text-[10px] text-slate-500">Só há autorização quando o integrador devolve chave de 44 dígitos e protocolo; enquanto isso a nota permanece em processamento e o DANFE não é impresso.</p>
+                </Bloco>
+                <Bloco titulo="Impedimentos do ambiente fiscal">
+                  {(() => {
+                    const doStatus = problemas.filter(p => p.aba === 'status')
+                    if (!doStatus.length) return <p className="text-[11px] text-[#2f7a4f]">Configuração fiscal da empresa lida e compatível com a transmissão. O rascunho pode ser salvo e transmitido neste ambiente.</p>
+                    return (
+                      <ul className="space-y-1">
+                        {doStatus.map(p => (
+                          <li key={p.campo} className="flex items-start gap-1.5 border border-amber-200 bg-amber-50 px-2 py-1 text-[11px] leading-snug text-[#8a5a12]">
+                            <ShieldAlert size={12} className="mt-0.5 shrink-0" /><span>{p.mensagem}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )
+                  })()}
+                  <p className="mt-1.5 text-[10px] text-slate-500">Estes itens não impedem salvar o rascunho — impedem a transmissão. Ajustam-se no cadastro da empresa, não nesta tela.</p>
                 </Bloco>
                 <Bloco titulo="Resumo para transmissão">
                   <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
