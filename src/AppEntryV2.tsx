@@ -1,7 +1,43 @@
-import { Suspense, lazy, type ReactNode } from 'react'
+import { Suspense, lazy, type ComponentType, type ReactNode } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import ERPHorizontalShell from './components/layout/ERPHorizontalShell'
 import QualityPlanGate from './components/quality/QualityPlanGate'
+type LazyModule<P extends object> = { default?: ComponentType<P>; [key: string]: unknown }
+
+function recoverStaleChunk(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error)
+  if (!/failed to fetch dynamically imported module|importing a module script failed|loading chunk|chunkloaderror/i.test(message)) return
+  try {
+    const key = 'erp-industrial-chunk-recovery-at:' + window.location.pathname
+    const lastAttempt = Number(window.sessionStorage.getItem(key) || '0')
+    if (Date.now() - lastAttempt > 20000) {
+      window.sessionStorage.setItem(key, String(Date.now()))
+      window.location.replace(window.location.pathname + window.location.search + (window.location.search ? '&' : '?') + '__chunk_recovery=' + Date.now())
+    }
+  } catch {
+    // If browser storage is blocked, the route boundary below offers manual recovery.
+  }
+}
+
+function lazyPage<P extends object>(
+  loader: () => Promise<LazyModule<P>>,
+  exportName: string,
+) {
+  return lazy(async () => {
+    let module: LazyModule<P>
+    try {
+      module = await loader()
+    } catch (error) {
+      recoverStaleChunk(error)
+      throw error
+    }
+    const component = module.default ?? module[exportName]
+    if (typeof component !== 'function' && typeof component !== 'object') {
+      throw new Error('LAZY_EXPORT_MISSING: ' + exportName)
+    }
+    return { default: component as ComponentType<P> }
+  })
+}
 import './styles/rh-industrial-theme.css'
 import './styles/industrial-login.css'
 import './styles/forms-premium.css'
@@ -10,6 +46,8 @@ import './styles/synqra-app-shell.css'
 import './styles/synqra-workspace-standard.css'
 import './styles/compras-workspace.css'
 import './styles/erp-global-consistency-20261030.css'
+import './styles/erp-active-gold-20261101.css'
+import './styles/erp-action-contract-20261101.css'
 
 const PagePrincipal = lazy(() => import('./pages/PagePrincipal'))
 const AppIndustrial = lazy(() => import('./AppIndustrialV7'))
@@ -24,6 +62,20 @@ const ComprasRequisicoes = lazy(() => import('./pages/ComprasRequisicoes'))
 const RHIndustrial = lazy(() => import('./pages/RHIndustrial'))
 const FichaProcesso = lazy(() => import('./features/pcp/FichaProcesso'))
 const QualidadeRPNC = lazy(() => import('./pages/QualidadeRPNC'))
+// Telas do preview que nao tinham rota — registro feito no transplant de 2026-11-02
+const AcompanhamentoNaoConformidade = lazyPage(() => import('./pages/AcompanhamentoNaoConformidade'), 'AcompanhamentoNaoConformidade')
+const ComercialSuprimentos = lazyPage(() => import('./pages/ComercialSuprimentos'), 'ComercialSuprimentos')
+const ComprasAjuda = lazyPage(() => import('./pages/ComprasAjuda'), 'ComprasAjuda')
+const ComprasAnalisePrecos = lazyPage(() => import('./pages/ComprasAnalisePrecos'), 'ComprasAnalisePrecos')
+const ComprasIndustrial = lazyPage(() => import('./pages/ComprasIndustrial'), 'ComprasIndustrial')
+const ComprasRelatorios = lazyPage(() => import('./pages/ComprasRelatorios'), 'ComprasRelatorios')
+const ComprasRFQ = lazyPage(() => import('./pages/ComprasRFQ'), 'ComprasRFQ')
+const EngenhariaBOM = lazyPage(() => import('./pages/EngenhariaBOM'), 'EngenhariaBOM')
+const FiscalCompras = lazyPage(() => import('./pages/FiscalCompras'), 'FiscalCompras')
+const PCPFichasProcesso = lazyPage(() => import('./pages/PCPFichasProcesso'), 'PCPFichasProcesso')
+const PCPIndustrial = lazyPage(() => import('./pages/PCPIndustrial'), 'PCPIndustrial')
+const PedidoCompra = lazyPage(() => import('./pages/PedidoCompra'), 'PedidoCompra')
+const QualidadeRPNCMultiorigem = lazyPage(() => import('./pages/QualidadeRPNCMultiorigem'), 'QualidadeRPNCMultiorigem')
 // Formulário RPNC (Ishikawa / 5 Porquês / CAPA / recorrência) e grade de auditorias — prompts SGQ de 2026-10-31
 const QualityRpncForm = lazy(() => import('./pages/QualityRpncForm'))
 const QualityAuditsList = lazy(() => import('./pages/QualityAuditsList'))
@@ -71,14 +123,142 @@ const HelpParametrosCodigo = lazy(() => import('./pages/cadastro-produtos/HelpPa
 // Razão Geral: a main publicou o painel em controladoria; o módulo fiscal mantém a própria versão.
 // As duas rotas existem, então as duas origens ficam registradas com nomes distintos.
 const PainelRazaoGeralControladoria = lazy(() => import('./features/controladoria/PainelRazaoGeral'))
-// Experiecircncia publica nova (home com carrossel, planos, cadastro de empresa, blog, contato) — comando de 2026-11-02
+// Experiencia publica nova (home com carrossel, planos, cadastro de empresa, blog, contato) — comando de 2026-11-02
 const PlanosIndustrial = lazy(() => import('./pages/PlanosIndustrial'))
 const CadastroEmpresa = lazy(() => import('./pages/CadastroEmpresa'))
 const Blog = lazy(() => import('./pages/Blog'))
 const Contato = lazy(() => import('./pages/Contato'))
+// Telas novas transplantadas de preview-layout-20261030 para a branch viva — comando de 2026-11-02
+const RecuperarSenha = lazyPage(() => import('./pages/RecuperarSenha'), 'RecuperarSenha')
+const TabletDashboard = lazyPage(() => import('./pages/TabletDashboard'), 'TabletDashboard')
+const DashboardComercial = lazyPage(() => import('./pages/DashboardComercial'), 'DashboardComercial')
+const VendasPDV = lazyPage(() => import('./pages/VendasPDV'), 'VendasPDV')
+const VendasTablet = lazyPage(() => import('./pages/VendasTablet'), 'VendasTablet')
+const PedidoVendaCompleto = lazyPage(() => import('./pages/NovoPedido'), 'NovoPedido')
+const VendasAnaliseCustos = lazyPage(() => import('./pages/VendasAnaliseCustos'), 'VendasAnaliseCustos')
+const TabelaPrecos = lazyPage(() => import('./pages/TabelaPrecos'), 'TabelaPrecos')
+const FinanceiroFluxoCaixa = lazyPage(() => import('./pages/FinanceiroFluxoCaixa'), 'FinanceiroFluxoCaixa')
+const FinanceiroContasPagar = lazyPage(() => import('./pages/FinancasContasPagar'), 'FinanceiroContasPagar')
+const FinanceiroContasReceber = lazyPage(() => import('./pages/FinanceiroTitulos'), 'FinanceiroContasReceber')
+const FinanceiroDashboardCaixa = lazyPage(() => import('./pages/FinanceiroDashboardCaixa'), 'FinanceiroDashboardCaixa')
+const VendasCentral = lazyPage(() => import('./pages/VendasCentral'), 'VendasCentral')
+const VendasPedidoStatus = lazyPage(() => import('./pages/VendasPedidoStatus'), 'VendasPedidoStatus')
+const VendasCatalogoDigitalGestao = lazyPage(() => import('./pages/VendasCatalogoDigitalGestao'), 'VendasCatalogoDigitalGestao')
+const VendasClientesPage = lazyPage(() => import('./pages/VendasClientes'), 'VendasClientesPage')
+const FornecedoresIndustrial = lazyPage(() => import('./pages/FornecedoresIndustrial'), 'FornecedoresIndustrial')
+const VendasCatalogoDigital = lazyPage(() => import('./pages/VendasCatalogoDigital'), 'VendasCatalogoDigital')
+const VendasDashboardGraficos = lazyPage(() => import('./pages/VendasDashboardGraficos'), 'VendasDashboardGraficos')
+const VendasMetas = lazyPage(() => import('./pages/VendasMetas'), 'VendasMetas')
+const VendasRelatorios = lazyPage(() => import('./pages/VendasRelatorios'), 'VendasRelatorios')
+const ConfiguracoesADMPage = lazyPage(() => import('./pages/configuracoes/ConfiguracoesADM'), 'ConfiguracoesADMPage')
+const EstoqueAlmoxarifado = lazyPage(() => import('./pages/EstoqueAlmoxarifadoCompact'), 'EstoqueAlmoxarifado')
+const ExpedicaoPortaria = lazyPage(() => import('./pages/ExpedicaoPortaria'), 'ExpedicaoPortaria')
+const EngenhariaCentral = lazyPage(() => import('./pages/EngenhariaCentral'), 'EngenhariaCentral')
+const CentraisIndustriais = lazyPage(() => import('./pages/CentraisIndustriais'), 'CentraisIndustriais')
+const MRPIndustrial = lazyPage(() => import('./pages/MRPIndustrial'), 'MRPIndustrial')
+const OperacaoIndustrial = lazyPage(() => import('./pages/OperacaoIndustrial'), 'OperacaoIndustrial')
+const QualidadeIndustrial = lazyPage(() => import('./pages/QualidadeIndustrial'), 'QualidadeIndustrial')
+const QualidadeRNC = lazyPage(() => import('./pages/QualidadeRNC'), 'QualidadeRNC')
+const IndustrialDataWorkspace = lazyPage(() => import('./pages/IndustrialDataWorkspace'), 'IndustrialDataWorkspace')
+const QualidadeEspecificacoesTecnicas = lazyPage(() => import('./pages/QualidadeEspecificacoesTecnicas'), 'QualidadeEspecificacoesTecnicas')
+const QualidadeFMEA = lazyPage(() => import('./pages/qualidade/FMEA'), 'QualidadeFMEA')
+const QualidadeCEP = lazyPage(() => import('./pages/qualidade/CEP'), 'QualidadeCEP')
+const GEDDocumentos = lazyPage(() => import('./pages/qualidade/GEDDocumentos'), 'GEDDocumentos')
+const ControleDesenhos = lazyPage(() => import('./pages/qualidade/ControleDesenhos'), 'ControleDesenhos')
+const PCPExecucaoIndustrial = lazyPage(() => import('./pages/PCPExecucaoIndustrial'), 'PCPExecucaoIndustrial')
+const CentralCustosIndustrial = lazyPage(() => import('./pages/CentralCustosIndustrial'), 'CentralCustosIndustrial')
+const PCPOrdens = lazyPage(() => import('./pages/PCPOrdens'), 'PCPOrdens')
+const PCPPedidosPendentes = lazyPage(() => import('./pages/PCPPedidosPendentes'), 'PCPPedidosPendentes')
+const PCPValidaFluxo = lazyPage(() => import('./pages/PCPValidaFluxo'), 'PCPValidaFluxo')
+const PCPParadas = lazyPage(() => import('./pages/PCPParadasMaquina'), 'PCPParadas')
+const PCPSequenciamento = lazyPage(() => import('./pages/PCPSequenciamento'), 'PCPSequenciamento')
+const PCPPlanejamentoIndustrial = lazyPage(() => import('./pages/PCPPlanejamentoIndustrial'), 'PCPPlanejamentoIndustrial')
+const PCPProgramacaoGantt = lazyPage(() => import('./pages/PCPProgramacaoGantt'), 'PCPProgramacaoGantt')
+const PCPAgendaMaquinas = lazyPage(() => import('./pages/PCPAgendaMaquinas'), 'PCPAgendaMaquinas')
+const HelpPCPFichas = lazyPage(() => import('./pages/HelpPCPFichas'), 'HelpPCPFichas')
+const PCPDashboardOEE = lazyPage(() => import('./pages/PCPDashboardOEE'), 'PCPDashboardOEE')
+const PCPTabletOperador = lazyPage(() => import('./pages/PCPTabletOperador'), 'PCPTabletOperador')
+const PCPAuditoria = lazyPage(() => import('./pages/pcp/PCPAuditoria'), 'PCPAuditoria')
+const QualidadeDashboardSGQ = lazyPage(() => import('./pages/QualidadeDashboardSGQ'), 'QualidadeDashboardSGQ')
+const QualidadeAuditoriasPlanta = lazyPage(() => import('./pages/QualidadeAuditoriasPlanta'), 'QualidadeAuditoriasPlanta')
+const QualidadeInstrumentosCadastro = lazyPage(() => import('./pages/QualidadeInstrumentosCadastro'), 'QualidadeInstrumentosCadastro')
+const QualidadeLiberacaoLotes = lazyPage(() => import('./pages/qualidade/QualidadeLiberacaoLotes'), 'QualidadeLiberacaoLotes')
+const QualidadeDashboardRNC = lazyPage(() => import('./pages/QualidadeDashboardRNC'), 'QualidadeDashboardRNC')
+const QualidadePFMEA = lazyPage(() => import('./pages/QualidadePFMEA'), 'QualidadePFMEA')
+const DocumentosQualidadeControle = lazyPage(() => import('./pages/DocumentosQualidadeControle'), 'DocumentosQualidadeControle')
+const QualidadeInspecaoProcesso = lazyPage(() => import('./pages/QualidadeInspecaoProcesso'), 'QualidadeInspecaoProcesso')
+const QualidadeFichasProcesso = lazyPage(() => import('./pages/qualidade/FichasProcesso'), 'QualidadeFichasProcesso')
+const QualidadeInspecoesIndustrial = lazyPage(() => import('./pages/QualidadeInspecoesIndustrial'), 'QualidadeInspecoesIndustrial')
+const QualidadeCentralTablet = lazyPage(() => import('./pages/QualidadeCentralTablet'), 'QualidadeCentralTablet')
+const QualidadeMetodologia8D = lazyPage(() => import('./pages/QualidadeMetodologia8D'), 'QualidadeMetodologia8D')
+const QualidadeAuditoria5S = lazyPage(() => import('./pages/QualidadeAuditoria5S'), 'QualidadeAuditoria5S')
+const QualidadeListaMestre = lazyPage(() => import('./pages/QualidadeListaMestre'), 'QualidadeListaMestre')
+const QualidadeRelatoriosDocumentos = lazyPage(() => import('./pages/QualidadeRelatoriosDocumentos'), 'QualidadeRelatoriosDocumentos')
+const CalibracaoIndustrial = lazyPage(() => import('./pages/CalibracaoIndustrial'), 'CalibracaoIndustrial')
+const QualidadeEditorIT = lazyPage(() => import('./pages/qualidade/QualidadeEditorIT'), 'QualidadeEditorIT')
+const QualidadeProcedimentos = lazyPage(() => import('./pages/qualidade/QualidadeProcedimentos'), 'QualidadeProcedimentos')
+const QualidadeAssinaturaIT = lazyPage(() => import('./pages/qualidade/QualidadeAssinaturaIT'), 'QualidadeAssinaturaIT')
+const QualidadeGenealogiaLote = lazyPage(() => import('./pages/qualidade/QualidadeGenealogiaLote'), 'QualidadeGenealogiaLote')
+const QualidadeQuarentena = lazyPage(() => import('./pages/qualidade/QualidadeQuarentena'), 'QualidadeQuarentena')
+const EstoqueAjustes = lazyPage(() => import('./pages/EstoqueAjustes'), 'EstoqueAjustes')
+const EstoqueSeparacao = lazyPage(() => import('./pages/EstoqueSeparacao'), 'EstoqueSeparacao')
+const EstoqueEtiquetas = lazyPage(() => import('./pages/EstoqueEtiquetas'), 'EstoqueEtiquetas')
+const EstoqueRecebimentoLotes = lazyPage(() => import('./pages/estoque/EstoqueRecebimentoLotes'), 'EstoqueRecebimentoLotes')
+const InventarioValidade = lazyPage(() => import('./pages/estoque/InventarioValidade'), 'InventarioValidade')
+const AlmoxarifadoInventario = lazyPage(() => import('./pages/AlmoxarifadoInventario'), 'AlmoxarifadoInventario')
+const HelpEstoqueRecebimento = lazyPage(() => import('./pages/estoque/HelpEstoqueRecebimento'), 'HelpEstoqueRecebimento')
+const EstoqueCurvaABC = lazyPage(() => import('./pages/EstoqueCurvaABC'), 'EstoqueCurvaABC')
+const HelpBackups = lazyPage(() => import('./pages/configuracoes/HelpBackups'), 'HelpBackups')
+const MoldesFerramentaria = lazyPage(() => import('./pages/MoldesFerramentaria'), 'MoldesFerramentaria')
+const FichaEngenharia = lazyPage(() => import('./pages/FichaEngenharia'), 'FichaEngenharia')
+const QualidadeRefugos = lazyPage(() => import('./pages/QualidadeRefugos'), 'QualidadeRefugos')
+const QualidadeGraficosRefugo = lazyPage(() => import('./pages/QualidadeGraficosRefugo'), 'QualidadeGraficosRefugo')
+const ExpedicaoRoteirizacao = lazyPage(() => import('./pages/ExpedicaoRoteirizacao'), 'ExpedicaoRoteirizacao')
+const ExpedicaoNFe = lazyPage(() => import('./pages/logistica/ExpedicaoNFe'), 'ExpedicaoNFe')
+const RomaneioCarga = lazyPage(() => import('./pages/logistica/RomaneioCarga'), 'RomaneioCarga')
+const ImpressaoEtiquetas = lazyPage(() => import('./pages/logistica/ImpressaoEtiquetas'), 'ImpressaoEtiquetas')
+const EngenhariaRevisoesBOM = lazyPage(() => import('./pages/EngenhariaRevisoesBOM'), 'EngenhariaRevisoesBOM')
+const FichasProcesso = lazyPage(() => import('./pages/FichasProcesso'), 'FichasProcesso')
+const FinanceiroGraficoDesvios = lazyPage(() => import('./pages/FinanceiroGraficoDesvios'), 'FinanceiroGraficoDesvios')
+const FinanceiroCustoPadrao = lazyPage(() => import('./pages/FinanceiroCustoPadrao'), 'FinanceiroCustoPadrao')
+const AdminLogs = lazyPage(() => import('./pages/AdminLogs'), 'AdminLogs')
+const OutlookConfiguracao = lazyPage(() => import('./pages/OutlookConfiguracao'), 'OutlookConfiguracao')
+const OutlookCaixaEntrada = lazyPage(() => import('./pages/OutlookCaixaEntrada'), 'OutlookCaixaEntrada')
+const ClientesIndustrial = lazyPage(() => import('./pages/ClientesIndustrial'), 'ClientesIndustrial')
+const AjusteGlobal = lazyPage(() => import('./pages/AjusteGlobal'), 'AjusteGlobal')
+const CatalogoDigital = lazyPage(() => import('./pages/CatalogoDigital'), 'CatalogoDigital')
+const DiretoriaDashboard = lazyPage(() => import('./pages/DiretoriaDashboard'), 'DiretoriaDashboard')
+const FiscalPrevisaoCaixa = lazyPage(() => import('./pages/FiscalPrevisaoCaixa'), 'FiscalPrevisaoCaixa')
+const FiscalCarteiraNFe = lazyPage(() => import('./pages/FiscalCarteiraNFe'), 'FiscalCarteiraNFe')
+const FiscalImpostos = lazyPage(() => import('./pages/FiscalImpostos'), 'FiscalImpostos')
+const FiscalPendencias = lazyPage(() => import('./pages/FiscalPendencias'), 'FiscalPendencias')
+const TesteERP = lazyPage(() => import('./pages/TesteERP'), 'TesteERP')
+const UsuariosAdmin = lazyPage(() => import('./pages/UsuariosAdmin'), 'UsuariosAdmin')
+const RecebimentoMateriais = lazyPage(() => import('./pages/RecebimentoMateriais'), 'RecebimentoMateriais')
+const ManualUsuario = lazyPage(() => import('./pages/ManualUsuario'), 'ManualUsuario')
+const ModuloMestreIndustrial = lazyPage(() => import('./pages/layout/ModuloMestreIndustrial'), 'ModuloMestreIndustrial')
+const ModuleOverviewIndustrial = lazyPage(() => import('./pages/ModuleOverviewIndustrial'), 'ModuleOverviewIndustrial')
+const ConfiguracaoLote = lazyPage(() => import('./pages/ConfiguracaoLote'), 'ConfiguracaoLote')
+const ConfiguracaoLotePCP = lazyPage(() => import('./pages/ConfiguracaoLotePCP'), 'ConfiguracaoLotePCP')
+const AssistenteAjudaERP = lazyPage(() => import('./pages/AssistenteAjudaERP'), 'AssistenteAjudaERP')
+const ComprasSolicitacaoManual = lazyPage(() => import('./pages/ComprasSolicitacaoManual'), 'ComprasSolicitacaoManual')
+const ManutencaoCentral = lazyPage(() => import('./pages/ManutencaoCentral'), 'ManutencaoCentral')
+const ManutencaoCronograma = lazyPage(() => import('./pages/ManutencaoCronograma'), 'ManutencaoCronograma')
+const ManutencaoPlanoMestre = lazyPage(() => import('./pages/ManutencaoPlanoMestre'), 'ManutencaoPlanoMestre')
+const ManutencaoIndicadores = lazyPage(() => import('./pages/manutencao/ManutencaoIndicadores'), 'ManutencaoIndicadores')
+const ManutencaoOrdens = lazyPage(() => import('./pages/ManutencaoOrdens'), 'ManutencaoOrdens')
+const SalaRNC = lazyPage(() => import('./pages/qualidade/sala-rnc'), 'SalaRNC')
+const ControleProcessoInjetora = lazyPage(() => import('./pages/pcp/ControleProcessoInjetora'), 'ControleProcessoInjetora')
+const InjecaoIndustrial = lazyPage(() => import('./pages/InjecaoIndustrial'), 'InjecaoIndustrial')
+const ProcessoIndustrialPage = lazyPage(() => import('./pages/ProcessoIndustrialPage'), 'ProcessoIndustrialPage')
 
 function LoadingWorkspace() {
   return <main role="status" aria-live="polite" style={{ minHeight: '50vh', display: 'grid', placeItems: 'center', color: '#123b50', fontFamily: 'Inter,system-ui,sans-serif' }}>Carregando SYSNQRA ERP INDUSTRIAL…</main>
+}
+
+// O espaco de trabalho de Compras usa densidade propria; as telas transplantadas do preview vem com essa classe.
+function ComprasRoute({ children }: { children: ReactNode }) {
+  return <div className="compras-compact">{children}</div>
 }
 
 function PublicPage({ children }: { children: ReactNode }) {
@@ -87,6 +267,13 @@ function PublicPage({ children }: { children: ReactNode }) {
       <div className="erp-global-surface">{children}</div>
     </Suspense>
   )
+}
+
+// As telas transplantadas navegam por caminhos planos (/pcp/ordens, /estoque/saldos…).
+// Aqui cada caminho plano desconhecido entra na área de trabalho, sem perder a busca original.
+function FlatWorkspaceRedirect() {
+  const { pathname, search } = useLocation()
+  return <Navigate to={`/pageprincipal${pathname}${search}`} replace />
 }
 
 export default function AppEntryV2() {
@@ -169,6 +356,193 @@ export default function AppEntryV2() {
               <Route path="cadastros/ajuda/ficha-tecnica" element={<HelpFichaTecnica />} />
               <Route path="cadastros/ajuda/listagem-produtos" element={<HelpListagemProdutos />} />
               <Route path="cadastros/ajuda/parametros-codigo" element={<HelpParametrosCodigo />} />
+<Route path="recuperar-senha" element={<RecuperarSenha />} />
+              <Route path="tablet/dashboard" element={<TabletDashboard />} />
+              <Route path="tablet/home" element={<TabletDashboard />} />
+              <Route path="vendas" element={<DashboardComercial />} />
+              <Route path="vendas/dashboard" element={<DashboardComercial />} />
+              <Route path="vendas/pdv" element={<VendasPDV />} />
+              <Route path="vendas/tablet" element={<VendasTablet />} />
+              <Route path="vendas/novo-pedido" element={<PedidoVendaCompleto />} />
+              <Route path="vendas/orcamentos" element={<VendasAnaliseCustos />} />
+              <Route path="vendas/reajuste" element={<TabelaPrecos />} />
+              <Route path="financeiro/fluxo-caixa" element={<QualityPlanGate><FinanceiroFluxoCaixa /></QualityPlanGate>} />
+              <Route path="financeiro/contas-pagar" element={<QualityPlanGate><FinanceiroContasPagar kind="PAGAR" /></QualityPlanGate>} />
+              <Route path="financeiro/contas-receber" element={<QualityPlanGate><FinanceiroContasReceber kind="RECEBER" /></QualityPlanGate>} />
+              <Route path="financeiro/caixa" element={<QualityPlanGate><FinanceiroDashboardCaixa /></QualityPlanGate>} />
+              <Route path="vendas/status" element={<VendasCentral />} />
+              <Route path="vendas/pedido/:id" element={<VendasPedidoStatus />} />
+              <Route path="vendas/catalogo-digital/gestao" element={<VendasCatalogoDigitalGestao />} />
+              <Route path="vendas/clientes" element={<VendasClientesPage />} />
+              <Route path="cadastros/clientes" element={<VendasClientesPage />} />
+              <Route path="cadastros/fornecedores" element={<FornecedoresIndustrial />} />
+              <Route path="vendas/catalogo-digital" element={<VendasCatalogoDigital />} />
+              <Route path="vendas/analise-custos" element={<QualityPlanGate><VendasAnaliseCustos /></QualityPlanGate>} />
+              <Route path="vendas/dashboard-graficos" element={<VendasDashboardGraficos />} />
+              <Route path="vendas/metas" element={<VendasMetas />} />
+              <Route path="vendas/relatorios" element={<VendasRelatorios />} />
+              <Route path="vendas/configuracoes" element={<ConfiguracoesADMPage />} />
+              <Route path="vendas/estoque" element={<EstoqueAlmoxarifado />} />
+              <Route path="vendas/expedicao" element={<ExpedicaoPortaria />} />
+              <Route path="vendas/engenharia" element={<QualityPlanGate><EngenhariaCentral /></QualityPlanGate>} />
+              <Route path="vendas/materiais" element={<QualityPlanGate><CentraisIndustriais module="materiais" /></QualityPlanGate>} />
+              <Route path="vendas/mrp" element={<QualityPlanGate><MRPIndustrial /></QualityPlanGate>} />
+              <Route path="vendas/chao-de-fabrica" element={<QualityPlanGate><OperacaoIndustrial /></QualityPlanGate>} />
+              <Route path="vendas/qualidade" element={<QualityPlanGate><QualidadeIndustrial /></QualityPlanGate>} />
+              <Route path="vendas/sgq" element={<QualityPlanGate><QualidadeRNC /></QualityPlanGate>} />
+              <Route path="vendas/fluxo-caixa" element={<QualityPlanGate><FinanceiroFluxoCaixa /></QualityPlanGate>} />
+              <Route path="engenharia/produtos" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
+              <Route path="engenharia/bom" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
+              <Route path="engenharia/roteiros" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
+              <Route path="estoque/enderecos" element={<IndustrialDataWorkspace />} />
+              <Route path="estoque/movimentacoes" element={<IndustrialDataWorkspace />} />
+              <Route path="qualidade/especificacoes" element={<QualityPlanGate><QualidadeEspecificacoesTecnicas /></QualityPlanGate>} />
+              <Route path="qualidade/fmea" element={<QualityPlanGate><QualidadeFMEA /></QualityPlanGate>} />
+              <Route path="qualidade/ishikawa" element={<QualityPlanGate><QualidadeRNC initialTab="ishikawa" /></QualityPlanGate>} />
+              <Route path="qualidade/capa" element={<QualityPlanGate><QualidadeRNC initialTab="capa" /></QualityPlanGate>} />
+              <Route path="qualidade/cep" element={<QualityPlanGate><QualidadeCEP /></QualityPlanGate>} />
+              <Route path="qualidade/ged-documentos" element={<QualityPlanGate><GEDDocumentos /></QualityPlanGate>} />
+              <Route path="qualidade/controle-desenhos" element={<QualityPlanGate><ControleDesenhos /></QualityPlanGate>} />
+              <Route path="qualidade/ged-documentos/nova" element={<QualityPlanGate><GEDDocumentos /></QualityPlanGate>} />
+              <Route path="qualidade/ged-documentos/:id" element={<QualityPlanGate><GEDDocumentos /></QualityPlanGate>} />
+              <Route path="pcp/ordens-industriais" element={<QualityPlanGate><PCPExecucaoIndustrial /></QualityPlanGate>} />
+              <Route path="pcp/apontamentos" element={<QualityPlanGate><PCPExecucaoIndustrial /></QualityPlanGate>} />
+              <Route path="fiscal/parametros" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
+              <Route path="fiscal/nfe-entradas" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
+              <Route path="fiscal/custos-industriais" element={<QualityPlanGate><CentralCustosIndustrial /></QualityPlanGate>} />
+              <Route path="rh/funcionarios" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
+              <Route path="rh/turnos" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
+              <Route path="rh/epis" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
+              <Route path="rh/epis/entregas" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
+              <Route path="pcp/ordens" element={<QualityPlanGate><PCPOrdens /></QualityPlanGate>} />
+              <Route path="pcp/pedidos-pendentes" element={<QualityPlanGate><PCPPedidosPendentes /></QualityPlanGate>} />
+              <Route path="pcp/valida-fluxo" element={<QualityPlanGate><PCPValidaFluxo /></QualityPlanGate>} />
+              <Route path="pcp/paradas" element={<QualityPlanGate><PCPParadas /></QualityPlanGate>} />
+              <Route path="pcp/sequenciamento" element={<QualityPlanGate><PCPSequenciamento /></QualityPlanGate>} />
+              <Route path="pcp/planejamento" element={<QualityPlanGate><PCPPlanejamentoIndustrial /></QualityPlanGate>} />
+              <Route path="pcp/programacao-gantt" element={<QualityPlanGate><PCPProgramacaoGantt /></QualityPlanGate>} />
+              <Route path="pcp/agenda-maquinas" element={<QualityPlanGate><PCPAgendaMaquinas /></QualityPlanGate>} />
+              <Route path="ajuda/pcp-fichas-processo" element={<HelpPCPFichas />} />
+              <Route path="pcp/mrp-ii" element={<QualityPlanGate><MRPIndustrial /></QualityPlanGate>} />
+              <Route path="pcp/execucao-industrial" element={<QualityPlanGate><PCPExecucaoIndustrial /></QualityPlanGate>} />
+              <Route path="pcp/dashboard-oee" element={<QualityPlanGate><PCPDashboardOEE /></QualityPlanGate>} />
+              <Route path="pcp/tablet-operador" element={<QualityPlanGate><PCPTabletOperador /></QualityPlanGate>} />
+              <Route path="pcp/auditoria" element={<QualityPlanGate><PCPAuditoria /></QualityPlanGate>} />
+              <Route path="qualidade/industrial" element={<QualityPlanGate><QualidadeIndustrial /></QualityPlanGate>} />
+              <Route path="qualidade" element={<QualityPlanGate><QualidadeDashboardSGQ /></QualityPlanGate>} />
+              <Route path="qualidade/auditorias-planta" element={<QualityPlanGate><QualidadeAuditoriasPlanta /></QualityPlanGate>} />
+              <Route path="qualidade/instrumentos" element={<QualityPlanGate><QualidadeInstrumentosCadastro /></QualityPlanGate>} />
+              <Route path="qualidade/liberacao-lote" element={<QualityPlanGate><QualidadeLiberacaoLotes /></QualityPlanGate>} />
+              <Route path="qualidade/dashboard-rnc" element={<QualityPlanGate><QualidadeDashboardRNC /></QualityPlanGate>} />
+              <Route path="qualidade/pfmea" element={<QualityPlanGate><QualidadePFMEA /></QualityPlanGate>} />
+              <Route path="qualidade/documentos" element={<QualityPlanGate><DocumentosQualidadeControle /></QualityPlanGate>} />
+              <Route path="qualidade/inspecao-processo" element={<QualityPlanGate><QualidadeInspecaoProcesso /></QualityPlanGate>} />
+              <Route path="qualidade/fichas-processo" element={<QualityPlanGate><QualidadeFichasProcesso /></QualityPlanGate>} />
+              <Route path="qualidade/inspecoes" element={<QualityPlanGate><QualidadeInspecoesIndustrial /></QualityPlanGate>} />
+              <Route path="qualidade/tablet" element={<QualityPlanGate><QualidadeCentralTablet /></QualityPlanGate>} />
+              <Route path="qualidade/metodologia-8d" element={<QualityPlanGate><QualidadeMetodologia8D /></QualityPlanGate>} />
+              <Route path="qualidade/auditoria-5s" element={<QualityPlanGate><QualidadeAuditoria5S /></QualityPlanGate>} />
+              <Route path="qualidade/lista-mestre" element={<QualityPlanGate><QualidadeListaMestre /></QualityPlanGate>} />
+              <Route path="qualidade/relatorios-documentos" element={<QualityPlanGate><QualidadeRelatoriosDocumentos /></QualityPlanGate>} />
+              <Route path="qualidade/metrologia" element={<QualityPlanGate><CentraisIndustriais module="metrologia" /></QualityPlanGate>} />
+              <Route path="qualidade/calibracao" element={<QualityPlanGate><CalibracaoIndustrial /></QualityPlanGate>} />
+              <Route path="qualidade/editor-it" element={<QualityPlanGate><QualidadeEditorIT /></QualityPlanGate>} />
+              <Route path="qualidade/procedimentos" element={<QualityPlanGate><QualidadeProcedimentos /></QualityPlanGate>} />
+              <Route path="qualidade/assinatura-it" element={<QualityPlanGate><QualidadeAssinaturaIT /></QualityPlanGate>} />
+              <Route path="qualidade/genealogia-lote" element={<QualityPlanGate><QualidadeGenealogiaLote /></QualityPlanGate>} />
+              <Route path="qualidade/quarentena" element={<QualityPlanGate><QualidadeQuarentena /></QualityPlanGate>} />
+              <Route path="estoque" element={<EstoqueAlmoxarifado />} />
+              <Route path="almoxarifado" element={<EstoqueAlmoxarifado />} />
+              <Route path="estoque/saldos" element={<EstoqueAlmoxarifado />} />
+              <Route path="estoque/ajustes" element={<EstoqueAjustes />} />
+              <Route path="estoque/separacao" element={<EstoqueSeparacao />} />
+              <Route path="estoque/etiquetas" element={<EstoqueEtiquetas />} />
+              <Route path="estoque/recebimento-lotes" element={<EstoqueRecebimentoLotes />} />
+              <Route path="estoque/validade" element={<InventarioValidade />} />
+              <Route path="almoxarifado/inventario-mestre" element={<AlmoxarifadoInventario />} />
+              <Route path="ajuda/estoque-recebimento" element={<HelpEstoqueRecebimento />} />
+              <Route path="estoque/curva-abc" element={<EstoqueCurvaABC />} />
+              <Route path="ajuda/backups" element={<HelpBackups />} />
+              <Route path="operacao-industrial" element={<QualityPlanGate><OperacaoIndustrial /></QualityPlanGate>} />
+              <Route path="moldes-injecao" element={<QualityPlanGate><MoldesFerramentaria /></QualityPlanGate>} />
+              <Route path="ficha-engenharia" element={<QualityPlanGate><FichaEngenharia /></QualityPlanGate>} />
+              <Route path="mrp" element={<QualityPlanGate><MRPIndustrial /></QualityPlanGate>} />
+              <Route path="qualidade/refugos" element={<QualityPlanGate><QualidadeRefugos /></QualityPlanGate>} />
+              <Route path="qualidade/graficos-refugo" element={<QualityPlanGate><QualidadeGraficosRefugo /></QualityPlanGate>} />
+              <Route path="central-custos-industrial" element={<QualityPlanGate><CentralCustosIndustrial /></QualityPlanGate>} />
+              <Route path="expedicao/roteirizacao" element={<ExpedicaoRoteirizacao />} />
+              <Route path="expedicao/portaria" element={<ExpedicaoPortaria />} />
+              <Route path="logistica/expedicao-nfe" element={<ExpedicaoNFe />} />
+              <Route path="logistica/romaneio-carga" element={<RomaneioCarga />} />
+              <Route path="logistica/impressao-etiquetas" element={<ImpressaoEtiquetas />} />
+              <Route path="engenharia" element={<QualityPlanGate><EngenhariaCentral /></QualityPlanGate>} />
+              <Route path="engenharia/revisoes-bom" element={<QualityPlanGate><EngenhariaRevisoesBOM /></QualityPlanGate>} />
+              <Route path="engenharia/ficha" element={<QualityPlanGate><FichaEngenharia /></QualityPlanGate>} />
+              <Route path="engenharia/fichas-processo" element={<QualityPlanGate><FichasProcesso /></QualityPlanGate>} />
+              <Route path="financeiro/grafico-desvios" element={<QualityPlanGate><FinanceiroGraficoDesvios /></QualityPlanGate>} />
+              <Route path="financeiro/custo-padrao" element={<QualityPlanGate><FinanceiroCustoPadrao /></QualityPlanGate>} />
+              <Route path="admin/logs" element={<AdminLogs />} />
+              <Route path="outlook/configuracao" element={<OutlookConfiguracao />} />
+              <Route path="outlook/caixa-entrada" element={<OutlookCaixaEntrada />} />
+              <Route path="fornecedores" element={<FornecedoresIndustrial />} />
+              <Route path="clientes" element={<ClientesIndustrial />} />
+              <Route path="tabela-precos" element={<AjusteGlobal />} />
+              <Route path="tabelas-preco" element={<AjusteGlobal />} />
+              <Route path="catalogo" element={<CatalogoDigital />} />
+              <Route path="relatorios" element={<DiretoriaDashboard />} />
+              <Route path="fiscal/previsao-caixa" element={<QualityPlanGate><FiscalPrevisaoCaixa /></QualityPlanGate>} />
+              <Route path="fiscal/carteira-nfe" element={<QualityPlanGate><FiscalCarteiraNFe /></QualityPlanGate>} />
+              <Route path="fiscal/impostos" element={<QualityPlanGate><FiscalImpostos /></QualityPlanGate>} />
+              <Route path="fiscal/pendencias" element={<QualityPlanGate><FiscalPendencias /></QualityPlanGate>} />
+              <Route path="teste-erp" element={<TesteERP />} />
+              <Route path="usuarios-admin" element={<UsuariosAdmin />} />
+              <Route path="usuarios" element={<UsuariosAdmin />} />
+              <Route path="configuracoes-adm/*" element={<ConfiguracoesADMPage />} />
+              <Route path="documentos-qualidade" element={<QualityPlanGate><DocumentosQualidadeControle /></QualityPlanGate>} />
+              <Route path="recebimento-materiais" element={<RecebimentoMateriais />} />
+              <Route path="manual-usuario" element={<ManualUsuario />} />
+              <Route path="industrial/modulo-mestre" element={<QualityPlanGate><ModuloMestreIndustrial /></QualityPlanGate>} />
+              <Route path="module-overview" element={<ModuleOverviewIndustrial module="erp" />} />
+              <Route path="configuracao-lote" element={<ConfiguracaoLote />} />
+              <Route path="configuracao-lote-pcp" element={<QualityPlanGate><ConfiguracaoLotePCP /></QualityPlanGate>} />
+              <Route path="custos" element={<QualityPlanGate><CentralCustosIndustrial /></QualityPlanGate>} />
+              <Route path="ajuda/assistente" element={<AssistenteAjudaERP />} />
+              <Route path="compras-solicitacao" element={<ComprasSolicitacaoManual />} />
+              <Route path="manutencao" element={<QualityPlanGate><ManutencaoCentral /></QualityPlanGate>} />
+              <Route path="manutencao/cronograma" element={<QualityPlanGate><ManutencaoCronograma /></QualityPlanGate>} />
+              <Route path="manutencao/plano-mestre" element={<QualityPlanGate><ManutencaoPlanoMestre /></QualityPlanGate>} />
+              <Route path="manutencao/indicadores" element={<QualityPlanGate><ManutencaoIndicadores /></QualityPlanGate>} />
+              <Route path="manutencao/ordens" element={<QualityPlanGate><ManutencaoOrdens /></QualityPlanGate>} />
+              <Route path="fiscal/carteira" element={<QualityPlanGate><FiscalCarteiraNFe /></QualityPlanGate>} />
+              <Route path="qualidade/rnc" element={<QualityPlanGate><SalaRNC /></QualityPlanGate>} />
+              <Route path="qualidade/sala-rnc" element={<QualityPlanGate><SalaRNC /></QualityPlanGate>} />
+              <Route path="pcp/controle-injetora" element={<ControleProcessoInjetora />} />
+              <Route path="estoque/recebimento" element={<EstoqueRecebimentoLotes />} />
+              <Route path="fichas-processo" element={<QualityPlanGate><FichasProcesso /></QualityPlanGate>} />
+              <Route path="processos/injecao" element={<QualityPlanGate><InjecaoIndustrial /></QualityPlanGate>} />
+              <Route path="processos/prensados" element={<QualityPlanGate><ProcessoIndustrialPage /></QualityPlanGate>} />
+              <Route path="processos/estamparia" element={<QualityPlanGate><ProcessoIndustrialPage /></QualityPlanGate>} />
+              <Route path="processos/ferramentaria" element={<QualityPlanGate><ProcessoIndustrialPage /></QualityPlanGate>} />
+              <Route path="processos/extrusao" element={<QualityPlanGate><ProcessoIndustrialPage /></QualityPlanGate>} />
+              <Route path="processos/usinagem" element={<QualityPlanGate><ProcessoIndustrialPage /></QualityPlanGate>} />
+              <Route path="processos/soldagem" element={<QualityPlanGate><ProcessoIndustrialPage /></QualityPlanGate>} />
+              <Route path="processos/montagem" element={<QualityPlanGate><ProcessoIndustrialPage /></QualityPlanGate>} />
+              <Route path="processos/corte" element={<QualityPlanGate><ProcessoIndustrialPage /></QualityPlanGate>} />
+              <Route path="processos/pintura" element={<QualityPlanGate><ProcessoIndustrialPage /></QualityPlanGate>} />
+              <Route path="qualidade/acompanhamento-rnc" element={<QualityPlanGate><AcompanhamentoNaoConformidade /></QualityPlanGate>} />
+              <Route path="compras/suprimentos" element={<QualityPlanGate><ComercialSuprimentos /></QualityPlanGate>} />
+              <Route path="compras/ajuda" element={<ComprasRoute><ComprasAjuda /></ComprasRoute>} />
+              <Route path="compras/analise-precos" element={<ComprasRoute><ComprasAnalisePrecos /></ComprasRoute>} />
+              <Route path="compras/industrial" element={<ComprasRoute><ComprasIndustrial /></ComprasRoute>} />
+              <Route path="compras/relatorios" element={<ComprasRoute><ComprasRelatorios /></ComprasRoute>} />
+              <Route path="compras/rfq" element={<ComprasRoute><ComprasRFQ /></ComprasRoute>} />
+              <Route path="engenharia/bom-mestre" element={<QualityPlanGate><EngenhariaBOM /></QualityPlanGate>} />
+              <Route path="fiscal/compras" element={<QualityPlanGate><ComprasRoute><FiscalCompras /></ComprasRoute></QualityPlanGate>} />
+              <Route path="pcp/fichas-processo-mestre" element={<QualityPlanGate><PCPFichasProcesso /></QualityPlanGate>} />
+              <Route path="pcp/industrial" element={<QualityPlanGate><PCPIndustrial /></QualityPlanGate>} />
+              <Route path="compras/pedido" element={<ComprasRoute><PedidoCompra /></ComprasRoute>} />
+              <Route path="qualidade/rpnc-multiorigem" element={<QualityPlanGate><QualidadeRPNCMultiorigem /></QualityPlanGate>} />
+              <Route path="*" element={<Navigate to="/pageprincipal" replace />} />
             </Route>
             <Route path="/ajuda" element={<Navigate to="/pageprincipal/ajuda" replace />} />
             <Route path="/financeiro" element={<Navigate to="/pageprincipal/financeiro" replace />} />
@@ -220,7 +594,7 @@ export default function AppEntryV2() {
             <Route path="/pcp/portal-operador" element={<Navigate to="/pageprincipal/chao-de-fabrica/portal-operador" replace />} />
             <Route path="/area-funcionario" element={<Navigate to="/pageprincipal/chao-de-fabrica/portal-operador" replace />} />
             <Route path="/master" element={<Navigate to="/pageprincipal/master" replace />} />
-            <Route path="*" element={<Navigate to="/pageprincipal" replace />} />
+            <Route path="/*" element={<FlatWorkspaceRedirect />} />
           </Routes>
         </ERPHorizontalShell>
       </div>

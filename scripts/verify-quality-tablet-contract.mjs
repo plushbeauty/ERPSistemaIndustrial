@@ -3,7 +3,9 @@ import { readFileSync } from 'node:fs'
 const shell = readFileSync('src/components/layout/ERPHorizontalShell.tsx', 'utf8')
 const app = readFileSync('src/AppEntryV2.tsx', 'utf8')
 const checks = [
-  [shell.includes("label: 'Principal'") && shell.includes("label: 'Engenharia e PCP'") && shell.includes("label: 'Qualidade / Paquímetro'") && shell.includes("label: 'Fiscal'") && shell.includes("label: 'Compras'") && shell.includes("label: 'Configurações'") && !shell.includes("label: 'Vendas'"), 'O menu padrão deve preservar os módulos existentes Compras e Configurações junto aos módulos autorizados nesta fase.'],
+  // A proibicao de 'Vendas' no menu era da fase 1. Ordem do proprietario (2026-11-02): trocar
+  // todas as pages de ponta a ponta, entao toda tela registrada precisa entrar pelo Iniciar.
+  [shell.includes("label: 'Principal'") && shell.includes("label: 'Engenharia e PCP'") && shell.includes("label: 'Qualidade / Paquímetro'") && shell.includes("label: 'Fiscal'") && shell.includes("label: 'Compras'") && shell.includes("label: 'Configurações'"), 'O menu padrão deve preservar os módulos existentes Compras e Configurações junto aos módulos autorizados nesta fase.'],
   [!shell.includes('BarraWindows11'), 'A barra Windows 11 da base foi deletada por ordem do proprietário (2026-11-02) e não pode voltar.'],
   [!shell.includes('isUpdated') && !shell.includes('is-updated-orange'), 'O destaque laranja do menu foi removido por ordem do proprietário e não pode voltar.'],
   [app.includes('path="/erp-industrial"'), 'O dashboard principal deve permanecer acessível.'],

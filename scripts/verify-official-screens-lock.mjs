@@ -11,6 +11,10 @@ import path from 'node:path'
  * 2. Toda tela em src/pages, src/features e src/modules precisa ser alcancavel a partir do entry
  *    (src/AppBootstrap.tsx + src/AppEntryV2.tsx) por import literal: tela sem rota nao pode voltar a existir.
  * 3. As telas antigas ja deletadas estao banidas: recriar um desses caminhos reprova o build.
+ * Revisao 2026-11-02: a NF-e em etapas (1207 linhas, abas do emissor, numacao reservada pelo banco)
+ * substitui o rascunho de 106 linhas, por ordem explicita do proprietario ("terminar sistema de
+ * emissao de nota fiscal" / "nem a nota fiscal e tela nova"). Na mesma ordem, as telas do preview
+ * foram transplantadas e o Iniciar passou a expor todos os modulos registrados.
  * Mudanca neste contrato exige ordem explicita do proprietario.
  */
 
@@ -31,7 +35,7 @@ const oficiais = [
   { path: 'src/pages/QualityAuditsList.tsx', sha: '34d4247238acaa0cab346056b56953a049c4ec2d', label: 'Qualidade / Painel de auditorias' },
   { path: 'src/pages/AccessControlSettings.tsx', sha: '0161ef8ffd66d5f35213668b989353dc8d9637e5', label: 'Configuracoes / Controle de acesso por setor' },
   { path: 'src/pages/PCPCapacidade.tsx', sha: '7b26fa34132d8ffcf116d53e780e372383280f5a', label: 'PCP / Capacidade de maquinas' },
-  { path: 'src/pages/NFeEmissao.tsx', sha: '5a3244463751bce45a1a112d755435482c60c408', label: 'Fiscal / Emissao de NF-e (transacional, na prod)' },
+  { path: 'src/pages/NFeEmissao.tsx', sha: '42d900235de282a042c0352ad37c871f622ac40e', label: 'Fiscal / Emissao de NF-e em etapas (transacional, na prod)' },
 ]
 
 // Telas antigas deletadas do sistema. Recriar qualquer um destes caminhos reprova o build.

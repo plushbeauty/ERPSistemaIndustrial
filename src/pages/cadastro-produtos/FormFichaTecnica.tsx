@@ -14,8 +14,9 @@ import { useEffect, useState } from 'react'
 import { AlertTriangle, Building2, CheckCircle2, Cpu, HelpCircle, Save, Tag } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
+import { erroBancoNaoInstalado, MIGRACAO_CODIGO_PRODUTO } from '../../lib/supabaseRpcStatus'
 
-type C = { id: string; prefixo: string; digitos_produto: number }
+type C = { id: string; prefixo: string; separador: string | null; modo_numeracao: string; sequencia_atual: number; digitos_produto: number }
 type P = { id: string; codigo: string; nome: string; categoria: string | null; unidade: string; cliente: string | null; molde_codigo: string | null; cavidades: number | null; resina_tipo: string | null; cor_resina: string | null; temp_bico_padrao: number | null; tempo_ciclo_padrao: number | null }
 
 const baseInput = 'h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] font-semibold text-slate-800 outline-none transition-colors placeholder:text-slate-400 focus:border-sky-600 focus:ring-1 focus:ring-sky-100 disabled:cursor-not-allowed disabled:bg-slate-50'
@@ -56,7 +57,7 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
         if (r.error) throw r.error
         if (!r.data?.empresa_id) throw new Error('Empresa não identificada para o usuário autenticado.')
         const empresaId = r.data.empresa_id
-        const c = await supabase.from('erp_codigos').select('id,prefixo,digitos_produto').eq('empresa_id', empresaId).order('prefixo')
+        const c = await supabase.from('erp_codigos').select('id,prefixo,separador,modo_numeracao,sequencia_atual,digitos_produto').eq('empresa_id', empresaId).order('prefixo')
         if (c.error) throw c.error
         let product: P | null = null
         if (productId) {
@@ -93,7 +94,13 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
 
   const currentCfg = cfg.find(x => x.id === configId)
   const digits = Math.max(3, Math.min(6, currentCfg?.digitos_produto || 3))
-  const preview = (currentCfg?.prefixo || 'PL') + tipo + '0'.repeat(digits)
+  // Espelha erp_gerar_codigo_produto: prefixo + separador + sigla (só no modo PS) + sequência com N casas.
+  const preview = currentCfg
+    ? (currentCfg.prefixo || '').toUpperCase()
+      + (currentCfg.separador || '').trim()
+      + ((currentCfg.modo_numeracao || 'PS').toUpperCase() === 'PS' ? tipo : '')
+      + String((currentCfg.sequencia_atual || 0) + 1).padStart(digits, '0')
+    : 'PL' + tipo + '0'.repeat(digits)
 
   const save = async () => {
     setError('')
@@ -111,7 +118,10 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
       if (!codigo) {
         if (!configId) throw new Error('Cadastre uma regra de numeração em Regras do Código primeiro.')
         const r = await supabase.rpc('erp_gerar_codigo_produto', { p_config_id: configId, p_tipo_sigla: tipo })
-        if (r.error) throw r.error
+        if (r.error) {
+          throw new Error(erroBancoNaoInstalado(r.error, 'erp_gerar_codigo_produto', MIGRACAO_CODIGO_PRODUTO)
+            ?? `Não foi possível gerar o SKU: ${r.error.message}`)
+        }
         if (r.data === null || r.data === undefined || String(r.data).trim() === '') throw new Error('A rotina de numeração não retornou um SKU válido.')
         codigo = String(r.data)
       }
@@ -142,7 +152,7 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
           <h2 className="text-sm font-black uppercase tracking-tight text-slate-900">Ficha Técnica do Item</h2>
           <p className="mt-0.5 text-[10px] text-slate-500">Cadastro persistido no tenant autenticado.</p>
         </div>
-        <Link to="/pageprincipal/cadastros/ajuda/ficha-tecnica" className="inline-flex h-8 items-center gap-1.5 rounded border border-slate-300 bg-white px-3 text-[10px] font-bold uppercase text-slate-700 hover:bg-slate-50"><HelpCircle size={13} /> POP / Ajuda</Link>
+        <Link to="/ajuda/ficha-tecnica" className="inline-flex h-8 items-center gap-1.5 rounded border border-slate-300 bg-white px-3 text-[10px] font-bold uppercase text-slate-700 hover:bg-slate-50"><HelpCircle size={13} /> POP / Ajuda</Link>
       </header>
 
       {error && <div role="alert" className="flex items-start gap-1.5 rounded border border-rose-200 bg-rose-50 p-2 text-[10px] font-bold text-rose-800"><AlertTriangle size={13} className="mt-0.5 shrink-0" /> <span>{error}</span></div>}

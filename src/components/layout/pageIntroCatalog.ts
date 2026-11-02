@@ -42,6 +42,7 @@ const introCatalog: Record<string, PageIntro> = {
   'fiscal/auditoria-documental': { module: 'Fiscal', title: 'Auditoria Documental', description: 'Documentos fiscais pendentes, inconsistências e evidências organizados por período.' },
   'fiscal/estorno': { module: 'Fiscal', title: 'Estorno de Lançamentos', description: 'Solicitação e aprovação de estornos contábeis com justificativa e trilha de auditoria.' },
   'fiscal/razao': { module: 'Fiscal', title: 'Painel Razão Geral', description: 'Lançamentos consultados por conta, período e centro de custo no razão geral.' },
+  'fiscal/emissao': { module: 'Fiscal', title: 'Emissão de NF-e (modelo 55)', description: 'Monte a nota nas abas do emissor, confira as advertências antes de gravar e acompanhe a transmissão na grade de gerenciamento. A numeração é reservada pelo banco, o documento trava ao sair de Rascunho e nada é declarado autorizado sem chave de 44 dígitos e protocolo devolvidos pelo integrador.' },
 
   'financeiro/conciliacao': { module: 'Financeiro', title: 'Conciliação Bancária', description: 'Extratos importados confrontados com os lançamentos do sistema, diferença por diferença.' },
   'financeiro/extrato': { module: 'Financeiro', title: 'Importação de Extrato', description: 'Importação de arquivos de extrato e registro dos lançamentos bancários da empresa.' },
@@ -52,7 +53,7 @@ const introCatalog: Record<string, PageIntro> = {
   'financeiro/auditoria-comissoes': { module: 'Financeiro', title: 'Auditoria de Comissões', description: 'Base de cálculo, valores pagos e divergências conferidos antes do fechamento da comissão.' },
   'financeiro/decimais': { module: 'Financeiro', title: 'Cadastro de Precisão Decimal', description: 'Casas decimais, cubagem e arredondamento usados nas medições e cálculos industriais.' },
   'financeiro/lucratividade': { module: 'Financeiro', title: 'Painel de Lucratividade', description: 'Custos, margens industriais e resultado por produto, cliente ou pedido.' },
-  'financeiro/retificacao': { module: 'Financeiro', title: 'Retificação de Pedido', description: 'Ajustos de quantidades, valores e impostos em pedidos já faturados, com histórico auditável.' },
+  'financeiro/retificacao': { module: 'Financeiro', title: 'Retificação de Pedido', description: 'Corrige referência do cliente, vendedor, condição de pagamento e descrição dos itens em pedido já faturado, com histórico auditável; quantidades, preços e impostos permanecem bloqueados.' },
   'financeiro/retificacao-assistente': { module: 'Financeiro', title: 'Assistente de Retificação', description: 'Passo a passo orientado da retificação de pedido e dos ajustes contábeis associados.' },
   'financeiro/notas-debito': { module: 'Financeiro', title: 'Notas de Débito', description: 'Emissão e acompanhamento de notas de débito por cliente, inclusive comprovantes de entrega (POD).' },
   'financeiro/notas-debito/configuracoes': { module: 'Financeiro', title: 'Configurações de Notas de Débito', description: 'Séries, impostos e regras de emissão das notas de débito da empresa.' },
