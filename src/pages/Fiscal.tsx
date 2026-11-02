@@ -21,6 +21,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, CheckCircle2, FileCheck2, FileText, Landmark, RefreshCw, Receipt, Search, ShieldCheck, Send } from 'lucide-react'
 import { supabase, invokeSecureEdgeFunction } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import { erroBancoNaoInstalado, MIGRACAO_LIBERACAO_ITEM_FISCAL } from '../lib/supabaseRpcStatus'
 import FiscalSidebar from '../components/fiscal/FiscalSidebar'
 
 type Tab = 'liberacao' | 'notas' | 'receber' | 'pagar' | 'relatorios'
@@ -51,6 +52,9 @@ export default function Fiscal() {
   const [documentsPage, setDocumentsPage] = useState(1)
   const [accountsPage, setAccountsPage] = useState(1)
   const [items, setItems] = useState<Item[]>([])
+  const [liberado, setLiberado] = useState<Record<string, number>>({})
+  const [observacao, setObservacao] = useState('')
+  const [saldoAviso, setSaldoAviso] = useState('')
   const [docs, setDocs] = useState<Doc[]>([])
   const [receber, setReceber] = useState<Conta[]>([])
   const [pagar, setPagar] = useState<Conta[]>([])
@@ -99,23 +103,42 @@ export default function Fiscal() {
     setSelected(id)
     setMessage('')
     setError('')
+    setSaldoAviso('')
     try {
       if (!companyId) throw new Error('Empresa da sessão não identificada.')
-      const rows = await fetchAllPages<Item>((from, to) => supabase
-        .from('erp_pedidos_venda_itens')
-        .select('id,pedido_id,produto_id,descricao,quantidade,valor_unitario,total', { count: 'exact' })
-        .eq('empresa_id', companyId).eq('pedido_id', id).order('id').range(from, to))
+      const [rows, ledger] = await Promise.all([
+        fetchAllPages<Item>((from, to) => supabase
+          .from('erp_pedidos_venda_itens')
+          .select('id,pedido_id,produto_id,descricao,quantidade,valor_unitario,total', { count: 'exact' })
+          .eq('empresa_id', companyId).eq('pedido_id', id).order('id').range(from, to)),
+        supabase.from('erp_fiscal_liberacoes_pedido_item')
+          .select('pedido_item_id,quantidade')
+          .eq('empresa_id', companyId).eq('pedido_id', id)
+      ])
+      if (ledger.error) {
+        setLiberado({})
+        setSaldoAviso(erroBancoNaoInstalado(ledger.error, 'erp_fiscal_liberacoes_pedido_item', MIGRACAO_LIBERACAO_ITEM_FISCAL)
+          ?? `Não foi possível ler as liberações já registradas: ${ledger.error.message}`)
+      } else {
+        const soma: Record<string, number> = {}
+        for (const row of (ledger.data ?? []) as { pedido_item_id: string; quantidade: number }[]) {
+          soma[row.pedido_item_id] = (soma[row.pedido_item_id] ?? 0) + Number(row.quantidade || 0)
+        }
+        setLiberado(soma)
+      }
       setItems(rows)
     } catch (cause) {
       setItems([])
+      setLiberado({})
       setError(cause instanceof Error ? cause.message : 'Não foi possível carregar os itens do pedido.')
     }
   }
 
   async function release(item: Item): Promise<void> {
     const value = Number(qty[item.id] ?? 0)
-    if (!Number.isFinite(value) || value <= 0 || value > item.quantidade) {
-      setError('Informe uma quantidade válida, maior que zero e não superior ao saldo do item.')
+    const saldo = item.quantidade - (liberado[item.id] ?? 0)
+    if (!Number.isFinite(value) || value <= 0 || value > saldo) {
+      setError(`Informe uma quantidade maior que zero e não superior ao saldo pendente de ${saldo.toLocaleString('pt-BR')} deste item.`)
       return
     }
 
@@ -125,16 +148,22 @@ export default function Fiscal() {
       const { data, error: rpcError } = await supabase.rpc('erp_liberar_item_fiscal', {
         p_pedido_item_id: item.id,
         p_quantidade: value,
-        p_tipo: value === item.quantidade ? 'total' : 'parcial',
-        p_observacao: 'Liberação homologada pelo setor Fiscal'
+        p_tipo: value >= saldo ? 'total' : 'parcial',
+        p_observacao: observacao.trim() || 'Liberação homologada pelo setor Fiscal'
       })
-      if (rpcError) throw rpcError
+      if (rpcError) {
+        throw new Error(erroBancoNaoInstalado(rpcError, 'erp_liberar_item_fiscal', MIGRACAO_LIBERACAO_ITEM_FISCAL)
+          ?? `Não foi possível liberar o item: ${rpcError.message}`)
+      }
+      if (data === null || data === undefined) throw new Error('A rotina de liberação não confirmou o saldo; nenhum registro foi gravado.')
 
-      const result = data as { saldo_restante?: number } | null
-      const saldo = Number(result?.saldo_restante ?? 0)
-      setMessage('Item liberado: ' + value.toLocaleString('pt-BR') + '. Saldo pendente: ' + saldo.toLocaleString('pt-BR') + '.')
+      const result = data as { saldo_restante?: number; liberado_total?: number; tipo?: string } | null
+      const restante = Number(result?.saldo_restante ?? 0)
+      const totalLiberado = Number(result?.liberado_total ?? (liberado[item.id] ?? 0) + value)
+      setMessage('Item liberado: ' + value.toLocaleString('pt-BR') + ' (' + (result?.tipo === 'total' ? 'liberação total' : 'liberação parcial')
+        + '). Já liberado: ' + totalLiberado.toLocaleString('pt-BR') + '. Saldo pendente: ' + restante.toLocaleString('pt-BR') + '.')
       setQty(previous => ({ ...previous, [item.id]: '' }))
-      await load()
+      setObservacao('')
       if (selected) await openOrder(selected)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível concluir a liberação fiscal.')
@@ -309,29 +338,47 @@ export default function Fiscal() {
               <h2 className="text-[13px] font-bold text-[#0f172a]">Itens do Pedido</h2>
               <p className="mt-1 text-base text-slate-500">Pedido selecionado: {selected ? '#' + (orders.find(order => order.id === selected)?.numero ?? '') : '—'}</p>
               <div className="mt-5 space-y-4">
-                {items.map(item => (
+                {saldoAviso && <p role="status" className="rounded-[2px] border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">{saldoAviso}</p>}
+                {items.map(item => {
+                  const jaLiberado = liberado[item.id] ?? 0
+                  const saldoItem = item.quantidade - jaLiberado
+                  return (
                   <article key={item.id} className="rounded-[2px] border border-slate-200 bg-slate-50 p-4">
                     <strong className="block text-base">{item.descricao}</strong>
-                    <span className="mt-1 block text-sm text-slate-600">Quantidade: {item.quantidade} • Total: {money(item.total)}</span>
+                    <span className="mt-1 block text-sm text-slate-600">Quantidade: {item.quantidade} · Já liberado: {jaLiberado} · Saldo pendente: {saldoItem} · Total: {money(item.total)}</span>
+                    {saldoItem <= 0 && <span className="mt-1 block text-sm font-bold text-emerald-700">Saldo totalmente liberado para faturamento</span>}
                     <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
                       <label className="text-base font-semibold">Qtd. a liberar
                         <input
                           type="number"
                           min="0"
-                          max={item.quantidade}
+                          max={saldoItem}
                           step="any"
+                          disabled={busy || saldoItem <= 0}
                           className="mt-1 min-h-11 w-full rounded-[2px] border bg-white p-2 text-base outline-none focus:ring-2 focus:ring-[#2563eb]"
                           value={qty[item.id] ?? ''}
                           onChange={event => setQty(previous => ({ ...previous, [item.id]: event.target.value }))}
                           placeholder="0"
                         />
                       </label>
-                      <button className="mt-6 flex min-h-11 items-center justify-center gap-2 rounded-[2px] bg-emerald-600 px-4 py-2.5 text-base font-bold text-white hover:bg-emerald-700 disabled:opacity-60" disabled={busy} onClick={() => void release(item)}>
-                        <CheckCircle2 size={17} /> Liberar
+                      <button className="mt-6 flex min-h-11 items-center justify-center gap-2 rounded-[2px] bg-emerald-600 px-4 py-2.5 text-base font-bold text-white hover:bg-emerald-700 disabled:opacity-60" disabled={busy || saldoItem <= 0} onClick={() => void release(item)}>
+                        <CheckCircle2 size={17} /> {saldoItem <= 0 ? 'Sem saldo' : 'Liberar'}
                       </button>
                     </div>
                   </article>
-                ))}
+                  )
+                })}
+                {!!items.length && (
+                  <label className="block text-base font-semibold">Observação da liberação (opcional)
+                    <input
+                      maxLength={300}
+                      className="mt-1 min-h-11 w-full rounded-[2px] border bg-white p-2 text-base outline-none focus:ring-2 focus:ring-[#2563eb]"
+                      value={observacao}
+                      placeholder="Vai para o registro do item liberado e para a trilha do sistema"
+                      onChange={event => setObservacao(event.target.value)}
+                    />
+                  </label>
+                )}
                 {!items.length && <p className="rounded-[2px] border border-dashed border-slate-300 p-6 text-center text-base text-slate-500">Selecione um pedido na tabela para detalhar os itens.</p>}
               </div>
             </aside>
