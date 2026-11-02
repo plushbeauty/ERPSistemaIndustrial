@@ -6,7 +6,7 @@
  */
 /**
  * @REVISAO: REV-EDIT-UNIFORME-20261101-01 — botao "Editar" da lista passa a usar a classe do contrato unico
- * de acao (erp-edit-button, 30px e raio 2px). Autorizado pelo proprietario no pente fino de 2026-11-01.
+ * de acao (erp-edit-button, 30px e raio 2px). Autorizado pelo proprietario na auditoria visual de 2026-11-01.
  */
 /**
  * @REVISAO: REV-RH-UM-CARD-E-CAMPO-COMPACTO-20261101-01 — 01/11/2026, por determinacao do proprietario.

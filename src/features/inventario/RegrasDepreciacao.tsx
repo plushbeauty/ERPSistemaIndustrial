@@ -6,7 +6,7 @@
  */
 /**
  * @REVISAO: REV-EDIT-UNIFORME-20261101-01 — acao "Editar" na grade, altura e raio do contrato unico de 30px,
- * gravacao pela mesma RPC de upsert (erp_depreciacao_salvar_regra). Autorizado pelo proprietario no pente fino de 2026-11-01.
+ * gravacao pela mesma RPC de upsert (erp_depreciacao_salvar_regra). Autorizado pelo proprietario na auditoria visual de 2026-11-01.
  */
 import { ArrowLeft, Save, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
