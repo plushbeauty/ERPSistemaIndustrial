@@ -567,8 +567,8 @@ export default function AccessControlSettings() {
               </form>
 
               <div className="overflow-auto rounded-md border border-slate-200 bg-white shadow-sm">
-                <table className="w-full min-w-[860px] border-collapse text-[10px]">
-                  <thead><tr className="h-7 bg-[#123B50] text-white"><th className="px-2 text-left font-normal">Acesso do setor</th><th className="px-2 text-left font-normal">E-mail / login</th><th className="w-[90px] px-2 text-center font-normal">Nível</th><th className="w-[110px] px-2 text-center font-normal">Matrícula</th><th className="w-[110px] px-2 text-center font-normal">Status</th><th className="w-[210px] px-2 text-center font-normal">Ações</th></tr></thead>
+                <table className="w-full min-w-[1040px] border-collapse text-[10px]">
+                  <thead><tr className="h-7 bg-[#123B50] text-white"><th className="px-2 text-left font-normal">Acesso do setor</th><th className="px-2 text-left font-normal">E-mail / login</th><th className="w-[90px] px-2 text-center font-normal">Nível</th><th className="w-[110px] px-2 text-center font-normal">Matrícula</th><th className="w-[110px] px-2 text-center font-normal">Status</th><th className="w-[330px] px-2 text-center font-normal">Ações</th></tr></thead>
                   <tbody>
                     {sectorUsers.map(user => (
                       <tr key={user.id} className="h-[30px] border-b border-slate-100 even:bg-slate-50">
@@ -578,7 +578,7 @@ export default function AccessControlSettings() {
                         <td className="px-2 text-center">{user.matricula || '—'}</td>
                         <td className="px-2 text-center"><span className={`rounded px-1.5 py-0.5 text-[9px] font-bold ${user.ativo ? 'bg-[#e5f3ee] text-[#256c52]' : 'bg-slate-100 text-slate-500'}`}>{user.ativo ? 'ATIVO' : 'BLOQUEADO'}</span></td>
                         <td className="px-2">
-                          <div className="flex justify-center gap-1">
+                          <div className="flex flex-wrap justify-center gap-1">
                             <button type="button" className={lightButton} disabled={busyUser === user.id} onClick={() => beginEditUser(user)}><Pencil size={11}/>Editar</button>
                             <button type="button" className={lightButton} disabled={busyUser === user.id} onClick={() => void runUserAction(user, 'set_active', { ativo: !user.ativo })}><ShieldCheck size={11}/>{user.ativo ? 'Bloquear' : 'Ativar'}</button>
                             <button type="button" className={lightButton} disabled={busyUser === user.id} onClick={() => void runUserAction(user, 'reset_password')}><KeyRound size={11}/>Nova senha</button>
