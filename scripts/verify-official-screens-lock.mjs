@@ -39,12 +39,13 @@ const oficiais = [
   { path: 'src/pages/Contato.tsx', sha: '770de58912bee0ed0e3e0bc4cddd7262c729ec80', label: 'Publica / Contato' },
   { path: 'src/IndustrialLoginDirect.tsx', sha: '556ae8ec80125f74358fc03a6e7e386fce2cf3b6', label: 'Login / tela sobre a foto da planta com cartao flutuante' },
   { path: 'src/styles/industrial-login.css', sha: '15dd26d59fe8b3a4c78f205d49ede035b081169c', label: 'Login / estilos da tela sobre a foto da planta (REV-LOGIN-BLOCO-DIREITA-20261102-02)' },
-  { path: 'src/pages/QualityRpncForm.tsx', sha: '381b3765b81513ce5f9da39fc33e6d5b678f4960', label: 'Qualidade / RPNC com Ishikawa, 5 Porques e CAPA' },
+  { path: 'src/pages/QualityRpncForm.tsx', sha: '50452b68f2663eb27ec2cfae7120d4c58d4b3478', label: 'Qualidade / RPNC com Ishikawa, 5 Porques e CAPA' },
+  { path: 'src/pages/QualityRpncUnified.tsx', sha: 'fec24d027d3848674b74a78abbc89a195af5546e', label: 'Qualidade / RPNC unificada em abas' },
   { path: 'src/pages/QualityAuditsList.tsx', sha: '34d4247238acaa0cab346056b56953a049c4ec2d', label: 'Qualidade / Painel de auditorias' },
   { path: 'src/pages/AccessControlSettings.tsx', sha: '0161ef8ffd66d5f35213668b989353dc8d9637e5', label: 'Configuracoes / Controle de acesso por setor' },
   { path: 'src/pages/PCPCapacidade.tsx', sha: '7b26fa34132d8ffcf116d53e780e372383280f5a', label: 'PCP / Capacidade de maquinas' },
   { path: 'src/pages/NFeEmissao.tsx', sha: '42d900235de282a042c0352ad37c871f622ac40e', label: 'Fiscal / Emissao de NF-e em etapas (transacional, na prod)' },
-  { path: 'src/pages/FichasProcesso.tsx', sha: '60170b29cee5059b85d7f8f64ad5d9b0f78aab18', label: 'PCP / Ficha de processo em 4 abas com materia-prima do cadastro e aba de molde (REV-PCP-FICHA-ABAS-20261102-01)' },
+  { path: 'src/pages/FichasProcesso.tsx', sha: '0a7ba99d8f78bf0d47b449cfb908ff2ee1f8db7c', label: 'PCP / Ficha de processo com descrições por categoria e seletor laranja (REV-PCP-FICHA-CATEGORIA-20261102-01)' },
   { path: 'src/pages/AtivarAcesso.tsx', sha: '6cf46c1875094bdb3ba3082bac3f2d1518cbb9cc', label: 'Acesso / Ativacao do convite por e-mail (REV-ATIVAR-ACESSO-OPERADOR-20261102-01)' },
 ]
 

@@ -56,9 +56,8 @@ const menus: MenuItem[] = [
     { label: 'Balanço de Estoque', route: '/pageprincipal/estoque/balanco', icon: Archive },
     { label: 'Regras de Depreciação', route: '/pageprincipal/estoque/depreciacao', icon: Percent },
   ] },  { label: 'Qualidade / Paquímetro', route: '/pageprincipal/paquimetro', icon: Ruler, children: [
-    { label: 'Paquímetro Digital', route: '/pageprincipal/paquimetro', icon: Ruler },
-    { label: 'RPNC', route: '/pageprincipal/qualidade/rpnc', icon: ClipboardList },
-    { label: 'Formulário RPNC (Ishikawa / 5 Porquês / CAPA)', route: '/pageprincipal/qualidade/rpnc-formulario', icon: FileText },
+    { label: 'Equipamentos de Medição', route: '/pageprincipal/paquimetro', icon: Ruler },
+    { label: 'RPNC · formulário único', route: '/pageprincipal/qualidade/rpnc', icon: ClipboardList },
     { label: 'Auditorias da Qualidade', route: '/pageprincipal/qualidade/auditorias', icon: ShieldCheck },
     { label: 'GED / Documentos da Qualidade', route: '/pageprincipal/qualidade/ged', icon: FolderOpen },
   ] },  { label: 'Compras', route: '/pageprincipal/compras', icon: ShoppingCart, children: [
@@ -131,9 +130,7 @@ const menus: MenuItem[] = [
     { label: 'Inspeção em processo', route: '/pageprincipal/qualidade/inspecao-processo' },
     { label: 'Especificações técnicas', route: '/pageprincipal/qualidade/especificacoes' },
     { label: 'FMEA / PFMEA', route: '/pageprincipal/qualidade/fmea' },
-    { label: 'RNC / CAPA', route: '/pageprincipal/qualidade/rnc-capa' },
-    { label: 'Central RPNC multiorigem', route: '/pageprincipal/qualidade/rpnc' },
-    { label: 'Formulário RPNC (Ishikawa / 5 Porquês / CAPA)', route: '/pageprincipal/qualidade/formulario-rpnc' },
+    { label: 'RPNC / CAPA · formulário único', route: '/pageprincipal/qualidade/rpnc' },
     { label: 'Auditorias da Qualidade', route: '/pageprincipal/qualidade/auditorias' },
     { label: 'CEP / medições', route: '/pageprincipal/qualidade/cep' },
     { label: 'Cadastro de documentos (GED)', route: '/pageprincipal/qualidade/ged-documentos' },

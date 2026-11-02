@@ -61,7 +61,6 @@ const SolicitacaoCompra = lazy(() => import('./pages/SolicitacaoCompra'))
 const ComprasRequisicoes = lazy(() => import('./pages/ComprasRequisicoes'))
 const RHIndustrial = lazy(() => import('./pages/RHIndustrial'))
 const FichaProcesso = lazy(() => import('./features/pcp/FichaProcesso'))
-const QualidadeRPNC = lazy(() => import('./pages/QualidadeRPNC'))
 // Telas do preview que nao tinham rota — registro feito no transplant de 2026-11-02
 const AcompanhamentoNaoConformidade = lazyPage(() => import('./pages/AcompanhamentoNaoConformidade'), 'AcompanhamentoNaoConformidade')
 const ComercialSuprimentos = lazyPage(() => import('./pages/ComercialSuprimentos'), 'ComercialSuprimentos')
@@ -75,9 +74,8 @@ const FiscalCompras = lazyPage(() => import('./pages/FiscalCompras'), 'FiscalCom
 const PCPFichasProcesso = lazyPage(() => import('./pages/PCPFichasProcesso'), 'PCPFichasProcesso')
 const PCPIndustrial = lazyPage(() => import('./pages/PCPIndustrial'), 'PCPIndustrial')
 const PedidoCompra = lazyPage(() => import('./pages/PedidoCompra'), 'PedidoCompra')
-const QualidadeRPNCMultiorigem = lazyPage(() => import('./pages/QualidadeRPNCMultiorigem'), 'QualidadeRPNCMultiorigem')
 // Formulário RPNC (Ishikawa / 5 Porquês / CAPA / recorrência) e grade de auditorias — prompts SGQ de 2026-10-31
-const QualityRpncForm = lazy(() => import('./pages/QualityRpncForm'))
+const QualidadeRPNC = lazy(() => import('./pages/QualityRpncUnified'))
 const QualityAuditsList = lazy(() => import('./pages/QualityAuditsList'))
 const AdministracaoConfiguracoesGlobais = lazy(() => import('./pages/AdministracaoConfiguracoesGlobais'))
 // Controle de acesso do chão de fábrica — visível apenas para nível 8 e 9 (comando de 2026-10-30)
@@ -304,7 +302,9 @@ export default function AppEntryV2() {
               <Route path="pcp/fichas-processo" element={<QualityPlanGate><FichasProcesso /></QualityPlanGate>} />
               <Route path="pcp/roteiro-producao" element={<QualityPlanGate><FichaProcesso /></QualityPlanGate>} />
               <Route path="qualidade/rpnc" element={<QualityPlanGate><QualidadeRPNC /></QualityPlanGate>} />
-              <Route path="qualidade/rpnc-formulario" element={<QualityPlanGate><QualityRpncForm /></QualityPlanGate>} />
+              <Route path="qualidade/rpnc-formulario" element={<Navigate to="/pageprincipal/qualidade/rpnc" replace />} />
+              <Route path="qualidade/formulario-rpnc" element={<Navigate to="/pageprincipal/qualidade/rpnc" replace />} />
+              <Route path="qualidade/rnc-capa" element={<Navigate to="/pageprincipal/qualidade/rpnc" replace />} />
               <Route path="qualidade/auditorias" element={<QualityPlanGate><QualityAuditsList /></QualityPlanGate>} />
               <Route path="comissoes" element={<Navigate to="/pageprincipal/comissoes/regras" replace />} />
               <Route path="comissoes/regras" element={<CadastroRegras />} />
@@ -547,7 +547,7 @@ export default function AppEntryV2() {
               <Route path="pcp/fichas-processo-mestre" element={<QualityPlanGate><PCPFichasProcesso /></QualityPlanGate>} />
               <Route path="pcp/industrial" element={<QualityPlanGate><PCPIndustrial /></QualityPlanGate>} />
               <Route path="compras/pedido" element={<ComprasRoute><PedidoCompra /></ComprasRoute>} />
-              <Route path="qualidade/rpnc-multiorigem" element={<QualityPlanGate><QualidadeRPNCMultiorigem /></QualityPlanGate>} />
+              <Route path="qualidade/rpnc-multiorigem" element={<Navigate to="/pageprincipal/qualidade/rpnc" replace />} />
               <Route path="*" element={<Navigate to="/pageprincipal" replace />} />
             </Route>
             <Route path="/ajuda" element={<Navigate to="/pageprincipal/ajuda" replace />} />

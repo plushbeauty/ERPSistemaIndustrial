@@ -1,8 +1,8 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-31
- * @REVISAO: REV-SGQ-RPNC-FORMULARIO-20261031-01 — formulário RPNC modelo MGF3657 (SoftExpert), pasta virtual de evidências, CAPA dinâmica e relatório A4
- * @STATUS_APROVACAO: AGUARDA APLICAÇÃO DA MIGRATION 20261031100000_...SQL PELO PROPRIETÁRIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-02
+ * @REVISAO: REV-SGQ-RPNC-ABAS-20261102-01 — três telas reunidas no formulário único com abas, Ishikawa editável e campos em cinco colunas
+ * @STATUS_APROVACAO: FORMULÁRIO REAL; AGUARDA APLICAÇÃO DA MIGRATION 20261031100000_...SQL PELO PROPRIETÁRIO
  */
 /**
  * SYSNQRA ERP INDUSTRIAL — Qualidade · Formulário RPNC (QualityRpncForm).
@@ -23,6 +23,7 @@ import '../styles/quality-rpnc-form.css'
 type Severidade = 'Critica' | 'Maior' | 'Menor'
 type TipoRegistro = 'INTERNO' | 'EXTERNO' | 'RPNC_CLIENTE' | 'AUDITORIA_INTERNA' | 'AUDITORIA_EXTERNA'
 type CauseKey = keyof Ishikawa6MData
+type AbaRPNC = 'abertura' | 'investigacao' | 'ishikawa' | 'porques' | 'capa' | 'eficacia' | 'evidencias'
 type Setor = { id: string; nome: string; codigo: string | null }
 type Usuario = { id: string; nome: string }
 type Cliente = { id: string; nome: string }
@@ -196,6 +197,7 @@ export default function QualityRpncForm() {
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [auditorias, setAuditorias] = useState<AuditoriaOpcao[]>([])
   const [registros, setRegistros] = useState<RegistroRPNC[]>([])
+  const [aba, setAba] = useState<AbaRPNC>('abertura')
 
   const [rpnc, setRpnc] = useState<RegistroRPNC | null>(null)
   const [pasta, setPasta] = useState('')
@@ -347,6 +349,7 @@ export default function QualityRpncForm() {
 
   const novoFormulario = () => {
     setRpnc(null)
+    setAba('abertura')
     setPasta('')
     setAcoes([])
     setEvidencias([])
@@ -637,9 +640,28 @@ export default function QualityRpncForm() {
         </div>
       </section>
 
-      <form onSubmit={(event) => void abrir(event)} className="qrf-screen-only qrf-block">
+      <nav className="qrf-screen-only flex flex-wrap gap-1 rounded-[2px] border border-slate-200 bg-white p-1" role="tablist" aria-label="Etapas do tratamento RPNC">
+        {([
+          ['abertura', '1 · Abertura'],
+          ['investigacao', '2 · Investigação e equipe'],
+          ['ishikawa', '3 · Ishikawa 6M'],
+          ['porques', '4 · 5 Porquês'],
+          ['capa', '5 · CAPA'],
+          ['eficacia', '6 · Eficácia e padronização'],
+          ['evidencias', '7 · Evidências'],
+        ] as Array<[AbaRPNC, string]>).map(([value, label]) => (
+          <button key={value} type="button" role="tab" aria-selected={aba === value} disabled={value !== 'abertura' && !rpnc}
+            onClick={() => setAba(value)}
+            className={`rounded-[2px] px-3 py-2 text-[10px] font-extrabold uppercase tracking-wide disabled:cursor-not-allowed disabled:opacity-40 ${aba === value ? 'bg-[#123B50] text-white' : 'bg-white text-slate-600 hover:bg-slate-100'}`}>
+            {label}
+          </button>
+        ))}
+        {rpnc && <button type="button" className="erp-btn-primary ml-auto" disabled={saving} onClick={() => void salvarFormulario()}><Save size={13} /> Salvar formulário</button>}
+      </nav>
+
+      {aba === 'abertura' && <form onSubmit={(event) => void abrir(event)} className="qrf-screen-only qrf-block">
         <div className="qrf-block-title">1 · Relato do problema — identificação da ocorrência</div>
-        <div className="grid grid-cols-1 gap-3 p-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 p-3 md:grid-cols-2 xl:grid-cols-5">
           <label className="qrf-field">Origem (obrigatória)
             <select className="erp-input" value={origem} onChange={(e) => setOrigem(e.target.value as TipoRegistro)} disabled={saving}>
               {ORIGENS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -699,7 +721,7 @@ export default function QualityRpncForm() {
           <label className="qrf-field">Requisito violado
             <input className="erp-input" placeholder="desenho, plano de controle, norma" value={tratamento.requisito_violado} onChange={(e) => setTratamento({ ...tratamento, requisito_violado: e.target.value })} disabled={saving} />
           </label>
-          <label className="qrf-field md:col-span-2 xl:col-span-4">Descrição da não conformidade (produto / local / máquina / quantidades)
+          <label className="qrf-field md:col-span-2 xl:col-span-5">Descrição da não conformidade (produto / local / máquina / quantidades)
             <textarea required minLength={10} className="erp-input qrf-textarea" rows={3} value={descricao}
               onChange={(e) => setDescricao(e.target.value)} disabled={saving || Boolean(rpnc)}
               placeholder="Descreva o desvio observado, o requisito não atendido e o impacto identificado." />
@@ -717,9 +739,9 @@ export default function QualityRpncForm() {
             <Save size={14} /> {rpnc ? 'RPNC aberta' : 'Abrir RPNC e criar pasta'}
           </button>
         </div>
-      </form>
+      </form>}
 
-      {recorrencia.length > 0 && (
+      {aba === 'abertura' && recorrencia.length > 0 && (
         <div role="alert" className="qrf qrf-screen-only qrf-recorrencia flex flex-wrap items-center gap-2 rounded-[2px] border border-warning/40 bg-warning/10 p-3 text-xs text-warning">
           <AlertCircle size={15} />
           <strong>Atenção:</strong>
@@ -733,25 +755,26 @@ export default function QualityRpncForm() {
           </button>
         </div>
       )}
-      {varrendo && <p className="qrf-screen-only text-[11px] text-slate-500">Varrendo recorrência no banco…</p>}
+      {aba === 'abertura' && varrendo && <p className="qrf-screen-only text-[11px] text-slate-500">Varrendo recorrência no banco…</p>}
 
       {rpnc && (
         <>
-          <section className="qrf-screen-only qrf-block">
-            <div className="qrf-block-title">2 · Investigação — resultados, Ishikawa 6M e 5 Porquês</div>
+          {(aba === 'investigacao' || aba === 'ishikawa' || aba === 'porques') && <section className="qrf-screen-only qrf-block">
+            <div className="qrf-block-title">{aba === 'investigacao' ? '2 · Investigação — resultados e análise do problema' : aba === 'ishikawa' ? '3 · Diagrama de Ishikawa / Espinha de Peixe — 6M' : '4 · Análise de causa raiz — 5 Porquês'}</div>
             <div className="grid grid-cols-1 gap-3 p-3">
-              <label className="qrf-field">Descrição dos resultados da investigação (o que levou o problema a ocorrer, por que não foi detectado, por que não foi previsto)
+              {aba === 'investigacao' && <label className="qrf-field">Descrição dos resultados da investigação (o que levou o problema a ocorrer, por que não foi detectado, por que não foi previsto)
                 <textarea className="erp-input qrf-textarea" rows={3} value={tratamento.investigacao} disabled={bloqueado}
                   onChange={(e) => setTratamento({ ...tratamento, investigacao: e.target.value })} />
-              </label>
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+              </label>}
+              {aba === 'ishikawa' && <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {GRUPOS_6M.map((grupo) => (
                   <EditorCausa key={grupo.key} rotulo={grupo.label} valores={fishbone[grupo.key]} desabilitado={bloqueado}
                     onAdicionar={(v) => addCausa(grupo.key, v)}
                     onRemover={(index) => setFishbone((old) => ({ ...old, [grupo.key]: old[grupo.key].filter((_, i) => i !== index) }))} />
                 ))}
-              </div>
+              </div>}
 
+              {aba === 'porques' && <>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="erp-label">Desdobrar cada causa imediata até a causa raiz (5 Porquês)</p>
                 <button type="button" className="erp-btn" disabled={bloqueado}
@@ -770,12 +793,13 @@ export default function QualityRpncForm() {
                   onCausa={(v) => setTratamento({ ...tratamento, cadeas: tratamento.cadeas.map((c, i) => (i === index ? { ...c, causa: v } : c)) })}
                   onChange={(pIndex, valor) => setTratamento({ ...tratamento, cadeas: tratamento.cadeas.map((c, i) => (i === index ? { ...c, porques: c.porques.map((p, j) => (j === pIndex ? valor : p)) } : c)) })} />
               ))}
+              </>}
             </div>
-          </section>
+          </section>}
 
-          <section className="qrf-screen-only qrf-block">
-            <div className="qrf-block-title">3 · Equipe de tratamento</div>
-            <div className="grid grid-cols-1 gap-2 p-3 md:grid-cols-3">
+          {aba === 'investigacao' && <section className="qrf-screen-only qrf-block">
+            <div className="qrf-block-title">Equipe de tratamento</div>
+            <div className="grid grid-cols-1 gap-2 p-3 md:grid-cols-3 xl:grid-cols-5">
               {tratamento.equipe.map((membro, index) => (
                 <div key={index} className="grid grid-cols-1 gap-2 rounded-[2px] border border-slate-200 p-2 md:col-span-1">
                   <label className="qrf-field">Nome {index + 1}
@@ -803,10 +827,10 @@ export default function QualityRpncForm() {
                 <Trash2 size={13} /> Remover último
               </button>
             </div>
-          </section>
+          </section>}
 
-          <section className="qrf-screen-only qrf-block">
-            <div className="qrf-block-title">4 · Ações corretivas integradas (CAPA) · CONTENÇÃO / CORRETIVA / PREVENTIVA</div>
+          {aba === 'capa' && <section className="qrf-screen-only qrf-block">
+            <div className="qrf-block-title">5 · Ações corretivas integradas (CAPA) · CONTENÇÃO / CORRETIVA / PREVENTIVA</div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
@@ -892,11 +916,11 @@ export default function QualityRpncForm() {
                 <button type="button" className="erp-btn" onClick={() => setFileParaAcao(null)}><X size={13} /> Cancelar</button>
               </div>
             )}
-          </section>
+          </section>}
 
-          <section className="qrf-screen-only qrf-block">
-            <div className="qrf-block-title">5 · Padronização, eficácia e vínculo com auditoria</div>
-            <div className="grid grid-cols-1 gap-3 p-3 md:grid-cols-2 xl:grid-cols-3">
+          {aba === 'eficacia' && <section className="qrf-screen-only qrf-block">
+            <div className="qrf-block-title">6 · Padronização, eficácia e vínculo com auditoria</div>
+            <div className="grid grid-cols-1 gap-3 p-3 md:grid-cols-2 xl:grid-cols-5">
               <label className="qrf-field">Foi estabelecido sistema à-prova-de-erro?
                 <select className="erp-input" value={tratamento.padronizacao.poka_yoke} disabled={bloqueado}
                   onChange={(e) => setTratamento({ ...tratamento, padronizacao: { ...tratamento.padronizacao, poka_yoke: e.target.value as 'sim' | 'nao' } })}>
@@ -915,12 +939,12 @@ export default function QualityRpncForm() {
                   <Save size={13} /> Gravar vínculo junto do formulário
                 </button>
               </label>
-              <label className="qrf-field md:col-span-2 xl:col-span-3">
+              <label className="qrf-field md:col-span-2 xl:col-span-5">
                 {tratamento.padronizacao.poka_yoke === 'sim' ? 'Qual sistema à-prova-de-erro?' : 'Motivo da não aplicação de poka-yoke'}
                 <textarea className="erp-input qrf-textarea" rows={2} value={tratamento.padronizacao.justificativa} disabled={bloqueado}
                   onChange={(e) => setTratamento({ ...tratamento, padronizacao: { ...tratamento.padronizacao, justificativa: e.target.value } })} />
               </label>
-              <label className="qrf-field md:col-span-2 xl:col-span-3">Documentos revisados (FMEA, plano de controle, instruções, lições aprendidas)
+              <label className="qrf-field md:col-span-2 xl:col-span-5">Documentos revisados (FMEA, plano de controle, instruções, lições aprendidas)
                 <div className="grid gap-1">
                   {tratamento.padronizacao.documentos.map((doc, index) => (
                     <div key={index} className="flex flex-wrap gap-1">
@@ -938,7 +962,7 @@ export default function QualityRpncForm() {
                   </button>
                 </div>
               </label>
-              <label className="qrf-field md:col-span-2 xl:col-span-3">Relato de confirmação de eficácia (o fluxo formal de carência 30/60 dias permanece na tela RPNC aprovada)
+              <label className="qrf-field md:col-span-2 xl:col-span-5">Relato de confirmação de eficácia (o fluxo formal de carência 30/60 dias permanece na tela RPNC aprovada)
                 <textarea className="erp-input qrf-textarea" rows={3} value={tratamento.eficacia_relato} disabled={bloqueado}
                   onChange={(e) => setTratamento({ ...tratamento, eficacia_relato: e.target.value })} />
               </label>
@@ -950,10 +974,10 @@ export default function QualityRpncForm() {
                 <button type="button" className="erp-btn-primary" disabled={saving} onClick={() => void salvarFormulario()}><Save size={14} /> Salvar formulário</button>
               </div>
             </footer>
-          </section>
+          </section>}
 
-          <section className="qrf-screen-only qrf-block">
-            <div className="qrf-block-title">Evidências arquivadas em {pasta}</div>
+          {aba === 'evidencias' && <section className="qrf-screen-only qrf-block">
+            <div className="qrf-block-title">7 · Evidências arquivadas em {pasta}</div>
             <ul className="divide-y divide-slate-100">
               {evidencias.map((e) => (
                 <li key={e.id} className="flex flex-wrap items-center gap-2 p-2 text-xs">
@@ -966,7 +990,7 @@ export default function QualityRpncForm() {
               ))}
               {!evidencias.length && <li className="p-3 text-xs italic text-slate-500">Nenhum arquivo na pasta desta RPNC.</li>}
             </ul>
-          </section>
+          </section>}
         </>
       )}
 
@@ -1171,7 +1195,7 @@ function CadeiaPorques({ rotulo, causa, porques, desabilitado, onCausa, onChange
       <label className="qrf-field">Causa imediata
         <input className="erp-input" value={causa ?? ''} disabled={desabilitado} onChange={(e) => onCausa(e.target.value)} />
       </label>
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-5">
         {porques.map((porque, index) => (
           <label key={index} className="qrf-field">
             {index + 1}º porquê{index === 4 ? ' · causa raiz' : ''}

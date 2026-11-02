@@ -6,6 +6,8 @@
  *           (erp_produtos.foto_url, bucket público erp-produtos) ao clicar na descrição; aba do Molde passa a trazer
  *           número/desenho/foto do ferramental. Dados de exemplo do print foram removidos: a tela não pode
  *           prefabricar dosagem, temperatura, desenho ou plano de inspeção que não existam no banco.
+ * @REVISAO_2: REV-PCP-FICHA-CATEGORIA-20261102-01 — categoria passa a trocar as descrições dos campos de
+ *           processo; seletor de ficha em laranja com rótulo orientado pelo proprietário.
  * @STATUS_APROVACAO: COLUNAS CONFERIDAS NAS MIGRATIONS (erp_produtos.foto_url/unidade,
  *           erp_ferramentas_industriais.desenho_referencia/numero_cavidades, erp_fichas_processo.parametros_tecnicos jsonb)
  *           · VALIDAÇÃO ESTÁTICA (TYPECHECK, LINT, GUARDS, BUILD) · BUCKET erp-fichas-processo CRIADO NA MIGRATION
@@ -275,6 +277,95 @@ const guiaCategoria: Record<string, string[]> = {
   ],
 }
 
+const textosInjetados = {
+  recurso: 'MÁQUINA / INJETORA *',
+  cicloTitulo: 'CICLO DE INJEÇÃO & RENDIMENTO',
+  etapa: 'Injeção (s)',
+  etapaFinal: 'Resfriamento (s)',
+  forca: 'Fechamento (Ton)',
+  pesoResiduo: 'Peso Canal / Galho (kg)',
+  temperaturaTitulo: 'TEMPERATURAS DO CANHÃO & MOLDE (°C)',
+  perfilTermico: 'Perfil Térmico do Canhão de Plastificação',
+  zonas: ['Bico (°C)', 'Zona 1 (°C)', 'Zona 2 (°C)', 'Zona 3 (°C)', 'Zona 4 (°C)', 'Molde (°C)'],
+  diagrama: ['Bico', 'Z1 (Frente)', 'Z2 (Meio)', 'Z3 (Alim.)', 'Z4 (Funil)'],
+  pressaoTitulo: 'PRESSÕES & TEMPERATURA DE PROCESSAMENTO',
+  pressoes: ['Injeção (bar)', 'Recalque / packing (bar)', 'Contrapressão (bar)', 'Hidráulica / trabalho (bar)', 'Temperatura de processo (°C)'],
+  pressaoAjuda: 'Pressão de injeção e recalque definem preenchimento e combate a rechupes; a contrapressão controla homogeneidade da plastificação (ar na massa). Valores fora da janela do material devem ser comunicados à Engenharia de Processo.',
+  aviso: 'Ex: Aplicar desmoldante a cada 100 injetadas',
+}
+
+const textosCategoria: Record<string, typeof textosInjetados> = {
+  INJETADOS: textosInjetados,
+  PRENSADOS: {
+    ...textosInjetados,
+    recurso: 'PRENSA / RECURSO *',
+    cicloTitulo: 'CICLO DE VULCANIZAÇÃO & RENDIMENTO',
+    etapa: 'Vulcanização (s)',
+    etapaFinal: 'Cura / estabilização (s)',
+    forca: 'Força da prensa (Ton)',
+    pesoResiduo: 'Peso Rebarba / Corte (kg)',
+    temperaturaTitulo: 'TEMPERATURAS DOS PLATÔS & MOLDE (°C)',
+    perfilTermico: 'Perfil Térmico dos Platôs e do Molde',
+    zonas: ['Platô superior (°C)', 'Platô inferior (°C)', 'Zona 2 (°C)', 'Zona 3 (°C)', 'Zona 4 (°C)', 'Molde (°C)'],
+    diagrama: ['Platô sup.', 'Platô inf.', 'Z2', 'Z3', 'Z4'],
+    pressaoTitulo: 'PRESSÕES & TEMPERATURA DE VULCANIZAÇÃO',
+    pressoes: ['Prensagem (bar)', 'Manutenção (bar)', 'Escape (bar)', 'Hidráulica / trabalho (bar)', 'Temperatura dos platôs (°C)'],
+    pressaoAjuda: 'Pressão de prensagem, tempo de vulcanização e escapes controlam enchimento, bolhas e cura da borracha. Ajustes fora da janela validada do composto devem ser comunicados à Engenharia de Processo.',
+    aviso: 'Ex: Realizar 2 escapes antes de iniciar a vulcanização',
+  },
+  ESTAMPARIA: {
+    ...textosInjetados,
+    recurso: 'PRENSA / RECURSO *',
+    cicloTitulo: 'CICLO DE ESTAMPAGEM & RENDIMENTO',
+    etapa: 'Avanço (s)',
+    etapaFinal: 'Retorno (s)',
+    forca: 'Ton. da prensa',
+    pesoResiduo: 'Peso Refugo / Recorte (kg)',
+    temperaturaTitulo: 'TEMPERATURAS DE PROCESSO & FERRAMENTAL (°C)',
+    perfilTermico: 'Temperaturas Monitoradas do Ferramental',
+    zonas: ['Matriz (°C)', 'Punção (°C)', 'Zona 2 (°C)', 'Zona 3 (°C)', 'Zona 4 (°C)', 'Ferramental (°C)'],
+    diagrama: ['Matriz', 'Punção', 'Z2', 'Z3', 'Z4'],
+    pressaoTitulo: 'PRESSÕES & TEMPERATURA DE ESTAMPAGEM',
+    pressoes: ['Estampagem (bar)', 'Manutenção (bar)', 'Contra-punção (bar)', 'Hidráulica / trabalho (bar)', 'Temperatura do ferramental (°C)'],
+    pressaoAjuda: 'Tonagem, curso e avanço devem respeitar a folha de setup da prensa e do ferramental. Valores fora da janela aprovada devem ser comunicados à Engenharia de Processo.',
+    aviso: 'Ex: Lubrificar a matriz conforme frequência do setup',
+  },
+  ACABAMENTO: {
+    ...textosInjetados,
+    recurso: 'BANCADA / MÁQUINA *',
+    cicloTitulo: 'CICLO DE ACABAMENTO & RENDIMENTO',
+    etapa: 'Rebarbação (s)',
+    etapaFinal: 'Inspeção (s)',
+    forca: 'Força / capacidade (Ton)',
+    pesoResiduo: 'Peso Rebarba / Refugo (kg)',
+    temperaturaTitulo: 'TEMPERATURAS DE PROCESSO & AMBIENTE (°C)',
+    perfilTermico: 'Temperaturas Monitoradas no Acabamento',
+    zonas: ['Entrada (°C)', 'Processo 1 (°C)', 'Processo 2 (°C)', 'Processo 3 (°C)', 'Processo 4 (°C)', 'Ambiente (°C)'],
+    diagrama: ['Entrada', 'P1', 'P2', 'P3', 'P4'],
+    pressaoTitulo: 'PRESSÕES & TEMPERATURA DE ACABAMENTO',
+    pressoes: ['Corte (bar)', 'Fixação (bar)', 'Retorno (bar)', 'Hidráulica / trabalho (bar)', 'Temperatura de processo (°C)'],
+    pressaoAjuda: 'Força de corte, fixação e ferramenta especificada devem preservar a peça e eliminar arestas cortantes. Desvios do padrão aprovado devem ser comunicados à Engenharia de Processo.',
+    aviso: 'Ex: Inspecionar arestas com luva antes da liberação',
+  },
+  MONTAGEM_EMBALAGEM: {
+    ...textosInjetados,
+    recurso: 'LINHA / MÁQUINA *',
+    cicloTitulo: 'CICLO DE MONTAGEM & RENDIMENTO',
+    etapa: 'Montagem (s)',
+    etapaFinal: 'Embalagem (s)',
+    forca: 'Capacidade (Ton)',
+    pesoResiduo: 'Peso Embalagem / Refugo (kg)',
+    temperaturaTitulo: 'TEMPERATURAS DE PROCESSO & AMBIENTE (°C)',
+    perfilTermico: 'Temperaturas Monitoradas na Montagem',
+    zonas: ['Entrada (°C)', 'Processo 1 (°C)', 'Processo 2 (°C)', 'Processo 3 (°C)', 'Processo 4 (°C)', 'Ambiente (°C)'],
+    diagrama: ['Entrada', 'P1', 'P2', 'P3', 'P4'],
+    pressaoTitulo: 'PRESSÕES & TEMPERATURA DE MONTAGEM',
+    pressoes: ['Montagem (bar)', 'Fixação (bar)', 'Retorno (bar)', 'Hidráulica / trabalho (bar)', 'Temperatura de processo (°C)'],
+    pressaoAjuda: 'Torque, quantidade por embalagem e integridade do fechamento devem seguir o padrão aprovado. Desvios devem ser comunicados à Engenharia de Processo antes da liberação.',
+    aviso: 'Ex: Conferir quantidade e etiqueta antes de fechar a caixa',
+  },
+}
+
 export function FichasProcesso() {
   const [form, setForm] = useState<FormState>(blank)
   const [activeTab, setActiveTab] = useState<ActiveTab>('PROCESSO')
@@ -424,6 +515,7 @@ export function FichasProcesso() {
   const selectedProduct = products.find(x => x.id === form.produto_id)
   const selectedTool = tools.find(x => x.id === form.ferramenta_id)
   const selectedMachine = machines.find(x => x.id === form.maquina_id)
+  const textos = textosCategoria[form.categoria_processo] ?? textosInjetados
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm(x => ({ ...x, [key]: value }))
@@ -928,9 +1020,30 @@ export function FichasProcesso() {
             {/* Sidebar Esquerda: Fichas Cadastradas */}
             <aside className="rounded-[2px] border border-slate-200 bg-white shadow-xs h-fit">
               <div className="border-b border-slate-200 p-2.5">
-                <span className="text-[9px] font-black uppercase tracking-wider text-slate-500">
-                  FICHAS CADASTRADAS ({filtered.length})
-                </span>
+                <label htmlFor="seletor-ficha-processo" className="block text-[10px] font-black uppercase tracking-wide text-[#9A4600]">
+                  Escolha sua Ficha de Processo
+                </label>
+                <select
+                  id="seletor-ficha-processo"
+                  value={form.id}
+                  onChange={e => {
+                    const ficha = rows.find(x => x.id === e.target.value)
+                    if (ficha) openFicha(ficha)
+                  }}
+                  className="mt-1.5 h-[34px] w-full rounded-[2px] border border-[#9A4600] !bg-[#C65D00] px-2 text-[11px] font-black !text-white outline-none focus:ring-2 focus:ring-[#C65D00]/30"
+                >
+                  <option value="" className="bg-white text-slate-800">Selecione uma ficha cadastrada</option>
+                  {rows.map(x => (
+                    <option key={x.id} value={x.id} className="bg-white text-slate-800">
+                      {x.codigo_ficha} — Rev. {x.revisao} — {x.categoria_processo}
+                    </option>
+                  ))}
+                </select>
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  <span className="text-[9px] font-black uppercase tracking-wider text-slate-500">
+                    FICHAS CADASTRADAS ({filtered.length})
+                  </span>
+                </div>
                 <div className="mt-2 relative">
                   <Search size={13} className="absolute left-2.5 top-2 text-slate-400" />
                   <input
@@ -1112,7 +1225,7 @@ export function FichasProcesso() {
 
                       <div>
                         <EntityCodeLookup
-                          label="MÁQUINA / INJETORA *"
+                          label={textos.recurso}
                           value={form.maquina_id}
                           records={machines.map(m => ({
                             id: m.id,
@@ -1167,7 +1280,7 @@ export function FichasProcesso() {
                           SEÇÃO 3A
                         </span>
                         <h2 className="text-xs font-black uppercase tracking-wider text-[#123B50]">
-                          CICLO DE INJEÇÃO &amp; RENDIMENTO
+                          {textos.cicloTitulo}
                         </h2>
                       </div>
 
@@ -1184,7 +1297,7 @@ export function FichasProcesso() {
                           />
                         </div>
                         <div>
-                          <label className={labelClass}>Injeção (s)</label>
+                          <label className={labelClass}>{textos.etapa}</label>
                           <input
                             type="number"
                             step="any"
@@ -1195,7 +1308,7 @@ export function FichasProcesso() {
                           />
                         </div>
                         <div>
-                          <label className={labelClass}>Resfriamento (s)</label>
+                          <label className={labelClass}>{textos.etapaFinal}</label>
                           <input
                             type="number"
                             step="any"
@@ -1206,7 +1319,7 @@ export function FichasProcesso() {
                           />
                         </div>
                         <div>
-                          <label className={labelClass}>Fechamento (Ton)</label>
+                          <label className={labelClass}>{textos.forca}</label>
                           <input
                             type="number"
                             step="any"
@@ -1248,7 +1361,7 @@ export function FichasProcesso() {
                           />
                         </div>
                         <div>
-                          <label className={labelClass}>Peso Canal / Galho (kg)</label>
+                          <label className={labelClass}>{textos.pesoResiduo}</label>
                           <input
                             type="number"
                             step="any"
@@ -1269,7 +1382,7 @@ export function FichasProcesso() {
                             SEÇÃO 3B
                           </span>
                           <h2 className="text-xs font-black uppercase tracking-wider text-[#123B50]">
-                            TEMPERATURAS DO CANHÃO &amp; MOLDE (°C)
+                            {textos.temperaturaTitulo}
                           </h2>
                         </div>
                         <span className="text-[9px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
@@ -1279,7 +1392,7 @@ export function FichasProcesso() {
 
                       <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
                         <div>
-                          <label className={labelClass}>Bico (°C)</label>
+                          <label className={labelClass}>{textos.zonas[0]}</label>
                           <input
                             type="number"
                             value={form.bico}
@@ -1288,7 +1401,7 @@ export function FichasProcesso() {
                           />
                         </div>
                         <div>
-                          <label className={labelClass}>Zona 1 (°C)</label>
+                          <label className={labelClass}>{textos.zonas[1]}</label>
                           <input
                             type="number"
                             value={form.zona1}
@@ -1297,7 +1410,7 @@ export function FichasProcesso() {
                           />
                         </div>
                         <div>
-                          <label className={labelClass}>Zona 2 (°C)</label>
+                          <label className={labelClass}>{textos.zonas[2]}</label>
                           <input
                             type="number"
                             value={form.zona2}
@@ -1306,7 +1419,7 @@ export function FichasProcesso() {
                           />
                         </div>
                         <div>
-                          <label className={labelClass}>Zona 3 (°C)</label>
+                          <label className={labelClass}>{textos.zonas[3]}</label>
                           <input
                             type="number"
                             value={form.zona3}
@@ -1315,7 +1428,7 @@ export function FichasProcesso() {
                           />
                         </div>
                         <div>
-                          <label className={labelClass}>Zona 4 (°C)</label>
+                          <label className={labelClass}>{textos.zonas[4]}</label>
                           <input
                             type="number"
                             value={form.zona4}
@@ -1324,7 +1437,7 @@ export function FichasProcesso() {
                           />
                         </div>
                         <div>
-                          <label className={labelClass}>Molde (°C)</label>
+                          <label className={labelClass}>{textos.zonas[5]}</label>
                           <input
                             type="number"
                             value={form.zona_molde}
@@ -1337,31 +1450,31 @@ export function FichasProcesso() {
                       {/* Diagrama Visual Esquemático do Canhão de Injeção */}
                       <div className="mt-3 rounded-[2px] border border-slate-200 bg-slate-900 p-2.5 text-white">
                         <div className="text-[9px] font-bold uppercase tracking-wider text-[#48B7C7] mb-1">
-                          Perfil Térmico do Canhão de Plastificação
+                          {textos.perfilTermico}
                         </div>
                         <div className="flex items-center justify-between text-center gap-1 font-mono text-[10px]">
                           <div className="flex-1 bg-slate-800 p-1 rounded border border-rose-500/40">
-                            <span className="text-[8px] text-slate-400 block">Bico</span>
+                            <span className="text-[8px] text-slate-400 block">{textos.diagrama[0]}</span>
                             <strong className="text-rose-400">{tempC(form.bico)}</strong>
                           </div>
                           <span className="text-slate-600">→</span>
                           <div className="flex-1 bg-slate-800 p-1 rounded border border-amber-500/40">
-                            <span className="text-[8px] text-slate-400 block">Z1 (Frente)</span>
+                            <span className="text-[8px] text-slate-400 block">{textos.diagrama[1]}</span>
                             <strong className="text-amber-400">{tempC(form.zona1)}</strong>
                           </div>
                           <span className="text-slate-600">→</span>
                           <div className="flex-1 bg-slate-800 p-1 rounded border border-yellow-500/40">
-                            <span className="text-[8px] text-slate-400 block">Z2 (Meio)</span>
+                            <span className="text-[8px] text-slate-400 block">{textos.diagrama[2]}</span>
                             <strong className="text-yellow-400">{tempC(form.zona2)}</strong>
                           </div>
                           <span className="text-slate-600">→</span>
                           <div className="flex-1 bg-slate-800 p-1 rounded border border-sky-500/40">
-                            <span className="text-[8px] text-slate-400 block">Z3 (Alim.)</span>
+                            <span className="text-[8px] text-slate-400 block">{textos.diagrama[3]}</span>
                             <strong className="text-sky-400">{tempC(form.zona3)}</strong>
                           </div>
                           <span className="text-slate-600">→</span>
                           <div className="flex-1 bg-slate-800 p-1 rounded border border-teal-500/40">
-                            <span className="text-[8px] text-slate-400 block">Z4 (Funil)</span>
+                            <span className="text-[8px] text-slate-400 block">{textos.diagrama[4]}</span>
                             <strong className="text-teal-400">{tempC(form.zona4)}</strong>
                           </div>
                         </div>
@@ -1376,13 +1489,13 @@ export function FichasProcesso() {
                         SEÇÃO 3C
                       </span>
                       <h2 className="text-xs font-black uppercase tracking-wider text-[#123B50]">
-                        PRESSÕES &amp; TEMPERATURA DE PROCESSAMENTO
+                        {textos.pressaoTitulo}
                       </h2>
                     </div>
 
                     <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-5">
                       <div>
-                        <label className={labelClass}>Injeção (bar)</label>
+                        <label className={labelClass}>{textos.pressoes[0]}</label>
                         <input
                           type="number"
                           step="any"
@@ -1394,7 +1507,7 @@ export function FichasProcesso() {
                         />
                       </div>
                       <div>
-                        <label className={labelClass}>Recalque / packing (bar)</label>
+                        <label className={labelClass}>{textos.pressoes[1]}</label>
                         <input
                           type="number"
                           step="any"
@@ -1406,7 +1519,7 @@ export function FichasProcesso() {
                         />
                       </div>
                       <div>
-                        <label className={labelClass}>Contrapressão (bar)</label>
+                        <label className={labelClass}>{textos.pressoes[2]}</label>
                         <input
                           type="number"
                           step="any"
@@ -1418,7 +1531,7 @@ export function FichasProcesso() {
                         />
                       </div>
                       <div>
-                        <label className={labelClass}>Hidráulica / trabalho (bar)</label>
+                        <label className={labelClass}>{textos.pressoes[3]}</label>
                         <input
                           type="number"
                           step="any"
@@ -1430,7 +1543,7 @@ export function FichasProcesso() {
                         />
                       </div>
                       <div>
-                        <label className={labelClass}>Temperatura de processo (°C)</label>
+                        <label className={labelClass}>{textos.pressoes[4]}</label>
                         <input
                           type="number"
                           step="any"
@@ -1444,9 +1557,7 @@ export function FichasProcesso() {
                     </div>
 
                     <p className="mt-2 text-[9px] italic text-slate-500">
-                      Pressão de injeção e recalque definem preenchimento e combate a rechupes; a contrapressão
-                      controla homogeneidade da plastificação (ar na massa). Valores fora da janela do material
-                      devem ser comunicados à Engenharia de Processo.
+                      {textos.pressaoAjuda}
                     </p>
                   </section>
 
@@ -1478,7 +1589,7 @@ export function FichasProcesso() {
                         type="text"
                         value={form.aviso_destaque}
                         onChange={e => update('aviso_destaque', e.target.value)}
-                        placeholder="Ex: Aplicar desmoldante a cada 100 injetadas"
+                        placeholder={textos.aviso}
                         className="mt-1 h-[28px] w-full rounded border border-rose-300 bg-white px-2 text-[11px] font-bold text-rose-900 outline-none"
                       />
                     </div>
