@@ -15,6 +15,9 @@ import path from 'node:path'
  * substitui o rascunho de 106 linhas, por ordem explicita do proprietario ("terminar sistema de
  * emissao de nota fiscal" / "nem a nota fiscal e tela nova"). Na mesma ordem, as telas do preview
  * foram transplantadas e o Iniciar passou a expor todos os modulos registrados.
+ * Revisao 2026-11-02 (#82): industrial-login.css re-travado por ordem explicita do proprietario —
+ * texto preto nos campos (fundo branco), caixa mais estreita, bloco encostado a direita e escala de
+ * abertura menor. IndustrialLoginDirect.tsx continua no mesmo hash: so o CSS mudou.
  * Mudanca neste contrato exige ordem explicita do proprietario.
  */
 
@@ -30,7 +33,7 @@ const oficiais = [
   { path: 'src/pages/Blog.tsx', sha: 'aebf301d6e049f459f5c403527c7010e0b7eabf7', label: 'Publica / Blog' },
   { path: 'src/pages/Contato.tsx', sha: '770de58912bee0ed0e3e0bc4cddd7262c729ec80', label: 'Publica / Contato' },
   { path: 'src/IndustrialLoginDirect.tsx', sha: '556ae8ec80125f74358fc03a6e7e386fce2cf3b6', label: 'Login / tela sobre a foto da planta com cartao flutuante' },
-  { path: 'src/styles/industrial-login.css', sha: '7fb567609b0ab04d8db75262fc1158a5425ff8af', label: 'Login / estilos da tela sobre a foto da planta' },
+  { path: 'src/styles/industrial-login.css', sha: '3adc7dff21e043fa803bd2597bfe640ed8c98117', label: 'Login / estilos da tela sobre a foto da planta (REV-LOGIN-CAMPOS-PRETOS-20261102-01)' },
   { path: 'src/pages/QualityRpncForm.tsx', sha: '381b3765b81513ce5f9da39fc33e6d5b678f4960', label: 'Qualidade / RPNC com Ishikawa, 5 Porques e CAPA' },
   { path: 'src/pages/QualityAuditsList.tsx', sha: '34d4247238acaa0cab346056b56953a049c4ec2d', label: 'Qualidade / Painel de auditorias' },
   { path: 'src/pages/AccessControlSettings.tsx', sha: '0161ef8ffd66d5f35213668b989353dc8d9637e5', label: 'Configuracoes / Controle de acesso por setor' },

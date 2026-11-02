@@ -9,7 +9,7 @@
 | Vendas → Novo Pedido — `src/pages/NovoPedido.tsx` | APROV-005, controles compactos; revisão expressamente autorizada em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | Vendas → Status do pedido — `src/pages/VendasCentral.tsx` | APROV-006, alinhamento dos cards e legenda visível; revisão autorizada em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | Cadastro de Produtos — `src/pages/ProdutosVendasIndustrial.tsx` | Referência aprovada anterior | Hash Git do arquivo verificado no CI |
-| Login institucional — `src/styles/industrial-login.css` | APROV-005, texto institucional branco com contorno escuro | Hash Git do arquivo verificado no CI |
+| Login institucional — `src/styles/industrial-login.css` | APROV-005 / REV-LOGIN-CAMPOS-PRETOS-20261102-01: campos brancos com texto preto, caixa estreita e bloco à direita | Hash Git do arquivo verificado no CI |
 | PCP → Submenu de fichas — `src/components/PCPTabletMenuModal.tsx` | Submenu de fichas aprovado em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | Shell horizontal — `src/components/layout/ERPHorizontalShell.tsx` | APROV-014: menu SGQ direto e Paquímetro Digital visível; Central de Compras abre em `/compras` | Hash Git do arquivo verificado no CI |
 | Dashboard industrial — `src/components/IndustrialCommandDashboard.tsx` | Restaurado da referência aprovada em 2026-10-18 | Hash Git do arquivo verificado no CI |
@@ -76,3 +76,12 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - Tablet PCP do operador: registra a revisão do código operacional enviada em 20/10, sem substituir os fluxos reais de apontamento e sessão.
 - Modal do PCP: registra a inclusão do atalho de Programação Gantt solicitada pelo usuário; os módulos e destinos permanecem congelados após esta revisão.
 - O protótipo separado `/pcp/ficha-processo-teste` não substitui a ficha aprovada.
+
+
+## Registro da revisão REV-LOGIN-CAMPOS-PRETOS-20261102-01 — 2026-11-02
+
+- Ordem explícita do proprietário (tarefa #82): texto preto nos campos da tela de login, caixa mais estreita, bloco encostado à direita e escala de abertura menor.
+- `src/styles/industrial-login.css`: campos passam de vidro translúcido com texto branco para fundo branco com texto `#0B1F2A` (inclusive autofill), ícones e alternador de senha escuros; coluna do cartão reduzida de `380–452px` para `300–360px`, conteúdo interno de 396px para 312px, `justify-self: end`; título de 24–29px para 18–21px, campos de 52px para 42px e alturas/margens das pilares, avisos e botões secundários reduzidos.
+- `src/IndustrialLoginDirect.tsx` permanece com o mesmo hash: nenhum markup nem contrato de autenticação mudou — só o CSS.
+- `src/components/auth/FloatingLoginModal.css` recebeu as cores escuras do cartão branco que faltavam (título, labels, pilares, divisor, botões secundários e avisos estavam em texto claro sobre fundo branco no modal).
+- Abaixo de 1040px o cartão volta a ser centralizado, com largura máxima de 380px.

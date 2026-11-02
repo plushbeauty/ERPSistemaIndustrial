@@ -21,7 +21,29 @@
 .floating-login-dialog .auth-panel{position:relative!important;z-index:1!important;width:100%!important;height:auto!important;min-height:0!important;margin:0!important;overflow:visible!important;border:0!important;border-radius:14px!important;background:#fff!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 .floating-login-dialog .auth-panel-inner{width:100%!important;max-width:460px!important;margin:auto!important;padding:48px 34px 30px!important;border:0!important;border-radius:14px!important;background:#fff!important;box-shadow:none!important}
 .floating-login-dialog .auth-panel h1{padding-right:24px;font-size:clamp(25px,5vw,34px)!important}
+/* O cartão do modal é branco: o texto claro da tela cheia precisa inverter aqui,
+   senão título, labels e pilares ficam invisíveis sobre o fundo branco. */
+.floating-login-dialog .auth-panel h1{color:#123b50!important}
+.floating-login-dialog .auth-panel h1 em{color:#2d8db8!important}
+.floating-login-dialog .auth-overline{color:#2d8db8!important}
+.floating-login-dialog .auth-status{color:#617985!important}
+.floating-login-dialog .auth-form>label,
+.floating-login-dialog .auth-label-row label{color:#123b50!important}
+.floating-login-dialog .auth-text-button{color:#2d8db8!important}
 .floating-login-dialog .auth-description{font-size:13px}
+.floating-login-dialog .auth-divider{color:#8ba1ad!important}
+.floating-login-dialog .auth-divider:before,
+.floating-login-dialog .auth-divider:after{background:#dce7ec!important}
+.floating-login-dialog .auth-register{border-color:#cfe4ea!important;background:#f4fbfd!important;color:#123b50!important}
+.floating-login-dialog .auth-register:hover{border-color:#2d8db8!important;background:#eaf7fa!important}
+.floating-login-dialog .auth-trial{border-color:#b7e3cd!important;background:#eefaf3!important;color:#067647!important}
+.floating-login-dialog .auth-trial:hover{background:#dff5e8!important}
+.floating-login-dialog .auth-pillars li{border-color:#dce7ec!important;background:#f8fbfc!important;color:#3f5967!important}
+.floating-login-dialog .auth-security-note{border-color:#dce7ec!important;background:#f8fbfc!important;color:#617985!important}
+.floating-login-dialog .auth-footer{color:#8ba1ad!important}
+.floating-login-dialog .auth-footer a{color:#123b50!important}
+.floating-login-dialog .auth-message.auth-error{border-color:#fecaca!important;background:#fff7f7!important;color:#b42318!important}
+.floating-login-dialog .auth-message.auth-notice{border-color:#a7e3c4!important;background:#ecf9f1!important;color:#067647!important}
 .floating-login-dialog .auth-security-note{margin-top:18px}
 @keyframes floating-login-fade-in{from{opacity:0}to{opacity:1}}
 @keyframes floating-login-pop-in{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
