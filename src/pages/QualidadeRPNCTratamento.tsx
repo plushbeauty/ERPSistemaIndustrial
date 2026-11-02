@@ -9,7 +9,7 @@ import { AlertCircle, CheckCircle2, Save, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import IshikawaDiagrama from '../components/qualidade/IshikawaDiagrama'
 import type { Ishikawa6MData, IshikawaBruto } from '../types/qualidade'
-import { ishikawaVazio, normalizarIshikawa, serializarIshikawa } from '../types/qualidade'
+import { cadeiaDoBanco, cadeiaVazia, ishikawaVazio, MAXIMO_PORQUES, MINIMO_PORQUES, normalizarIshikawa, serializarIshikawa } from '../types/qualidade'
 import '../styles/quality-rpnc-form.css'
 
 type RPNCRef = { id: string; numero_rpnc: string; descricao_nao_conformidade: string; status: string; criado_em: string }
@@ -23,7 +23,7 @@ const message = (e: unknown) => e instanceof Error ? e.message : 'Operação nã
 export default function QualidadeRPNCTratamento({companyId,record,onClose,onSaved}: Props) {
  const [row,setRow] = useState<Row|null>(null)
  const [fishbone,setFishbone] = useState<Ishikawa6MData>(ishikawaVazio)
- const [whys,setWhys] = useState<string[]>(['','','','',''])
+ const [whys,setWhys] = useState<string[]>(cadeiaVazia)
  const [days,setDays] = useState<30|60>(30)
  const [parecer,setParecer] = useState('')
  const [eficaz,setEficaz] = useState(true)
@@ -41,7 +41,7 @@ export default function QualidadeRPNCTratamento({companyId,record,onClose,onSave
    if (result.error) throw result.error
    const current = result.data as Row
    setRow(current); setFishbone(normalizarIshikawa(current.ishikawa_data))
-   setWhys(Array.from({length:5},(_,i)=>current.cinco_porques?.[i] ?? ''))
+   setWhys(cadeiaDoBanco(current.cinco_porques))
    setDays(current.prazo_eficacia_dias === 60 ? 60 : 30)
    setParecer(current.parecer_eficacia ?? ''); setEficaz(current.eficacia_aprovada ?? true)
   } catch(e) { setError(message(e)) } finally { setLoading(false) }
@@ -91,8 +91,9 @@ export default function QualidadeRPNCTratamento({companyId,record,onClose,onSave
    <form onSubmit={event=>void saveAnalysis(event)} className="space-y-3">
     <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-xs font-extrabold">Tela B · Ishikawa 6M e 5 Porquês</h3><label className={labelClass}>Carência de eficácia<select className={inputClass} value={days} onChange={event=>setDays(Number(event.target.value) as 30|60)}><option value={30}>30 dias</option><option value={60}>60 dias</option></select></label></div>
     <IshikawaDiagrama dados={fishbone} efeito={record.descricao_nao_conformidade} editavel={!saving} onChange={setFishbone} />
-    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">{whys.map((why,index)=><label key={index} className={labelClass}>Por quê {index+1}{index===4?' · causa raiz':''}<textarea className="min-h-20 w-full rounded-lg border border-slate-200 p-2 text-xs font-normal normal-case text-slate-800" value={why} onChange={event=>setWhys(old=>old.map((v,i)=>i===index?event.target.value:v))} minLength={3} required disabled={saving || (index > 0 && whys.slice(0,index).some(value => value.trim().length < 3))} placeholder={index===0?'Por que o desvio ocorreu?':'Por que a resposta anterior aconteceu?'}/></label>)}</div>
-    <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3"><p className="text-[10px] text-slate-500">Cinco respostas obrigatórias; o PostgreSQL valida empresa, permissão, status e JSONB.</p><div className="flex flex-wrap gap-2">{stageTarget && <button type="button" onClick={() => void advanceStage()} disabled={saving} className={buttonClass}>Avançar para {stageTarget}</button>}<button type="submit" disabled={saving||whys.some(v=>v.trim().length<3)} className="inline-flex h-[30px] items-center gap-2 rounded-[2px] bg-[#123B50] px-4 text-xs font-extrabold text-white disabled:opacity-50"><Save size={14}/>Salvar investigação</button></div></footer>
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">{whys.map((why,index)=><label key={index} className={labelClass}>Por quê {index+1}{index===whys.length-1?' · causa raiz':''}<textarea className="min-h-20 w-full rounded-lg border border-slate-200 p-2 text-xs font-normal normal-case text-slate-800" value={why} onChange={event=>setWhys(old=>old.map((v,i)=>i===index?event.target.value:v))} minLength={3} required disabled={saving || (index > 0 && whys.slice(0,index).some(value => value.trim().length < 3))} placeholder={index===0?'Por que o desvio ocorreu?':'Por que a resposta anterior aconteceu?'}/></label>)}</div>
+    <div className="flex flex-wrap items-center gap-2"><button type="button" className={buttonClass} disabled={saving||whys.length>=MAXIMO_PORQUES||whys.some(value=>value.trim().length<3)} onClick={()=>setWhys(old=>[...old,''])}>+ Nível de porquê</button><button type="button" className={buttonClass} disabled={saving||whys.length<=MINIMO_PORQUES} onClick={()=>setWhys(old=>old.slice(0,-1))}>− Último nível</button><span className="text-[10px] text-slate-500">{`${whys.length} níveis · mínimo ${MINIMO_PORQUES}, máximo ${MAXIMO_PORQUES}`}</span></div>
+    <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3"><p className="text-[10px] text-slate-500">{`De ${MINIMO_PORQUES} a ${MAXIMO_PORQUES} respostas obrigatórias; o PostgreSQL valida empresa, permissão, status e JSONB.`}</p><div className="flex flex-wrap gap-2">{stageTarget && <button type="button" onClick={() => void advanceStage()} disabled={saving} className={buttonClass}>Avançar para {stageTarget}</button>}<button type="submit" disabled={saving||whys.some(v=>v.trim().length<3)} className="inline-flex h-[30px] items-center gap-2 rounded-[2px] bg-[#123B50] px-4 text-xs font-extrabold text-white disabled:opacity-50"><Save size={14}/>Salvar investigação</button></div></footer>
    </form>
    <form onSubmit={event=>void saveEfficacy(event)} className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
     <div className="flex flex-wrap items-start justify-between gap-2"><div><h3 className="text-xs font-extrabold">Tela C · Verificação de eficácia</h3><p className="text-[11px] text-slate-500">Abertura: {new Date(row.criado_em).toLocaleDateString('pt-BR')} · Data mínima: {dueDate?new Date(dueDate+'T12:00:00').toLocaleDateString('pt-BR'):'salve a investigação'}</p></div><span className={'rounded-md px-2 py-1 text-[10px] font-bold '+(canVerify?'bg-emerald-100 text-emerald-800':'bg-amber-100 text-amber-800')}>{canVerify?'Prazo cumprido':'Em carência'}</span></div>

@@ -1,15 +1,16 @@
 /**
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-01
- * @REVISAO: REV-SGQ-ISHIKAWA-EDITAVEL-20261101-01 — diagrama de Ishikawa 6M em SVG onde o desenho é a própria interface de edição
- * @STATUS_APROVACAO: SUBCAUSAS SÓ GRAVAM APÓS A MIGRATION 20261101220000_...SQL SER APLICADA PELO PROPRIETÁRIO
+ * @REVISAO: REV-SGQ-ISHIKAWA-EDITAVEL-20261101-02 — diagrama de Ishikawa 6M em SVG onde o desenho é a própria interface de edição
+ * @STATUS_APROVACAO: SUBCAUSAS E CADEIA ACIMA DE CINCO PORQUES SÓ GRAVAM APÓS A MIGRATION 20261101220000_...SQL SER APLICADA PELO PROPRIETÁRIO
  */
 /**
  * SYSNQRA ERP INDUSTRIAL — Qualidade · Ishikawa editável no desenho.
  * Clicar na espinha cria a causa; clicar no texto edita ali mesmo; o sinal de
  * mais abre a subcausa. Nada de campo de texto que "gera um desenho" depois:
  * o SVG é o editor, e o estado é exatamente o payload de erp_rpnc.ishikawa_data.
- * Cada bloco reserva altura fixa, então digitar não desloca as outras causas.
+ * Cada bloco reserva altura fixa e cresce para longe da espinha, então digitar
+ * não desloca as outras causas nem joga texto sobre a linha central.
  */
 import { useState } from 'react'
 import type { Ishikawa6MData, IshikawaCausa, IshikawaChave } from '../../types/qualidade'
@@ -135,6 +136,11 @@ export default function IshikawaDiagrama({ dados, efeito, editavel = true, onCha
   const adicionarSubcausa = (grupo: IshikawaChave, causa: number) => {
     const atual = dados[grupo][causa]
     if (!atual) return
+    // O servidor descarta causa sem texto, e a subcausa morre junto: melhor avisar do que perder o que foi digitado.
+    if (atual.texto.trim() === '') {
+      setAviso('Escreva o texto da causa antes de abrir a subcausa — sem causa, o servidor descarta a subcausa.')
+      return
+    }
     if (atual.subcausas.length >= MAXIMO_SUBCAUSAS) {
       setAviso(`Cada causa tem o limite de ${MAXIMO_SUBCAUSAS} subcausas, o mesmo limite que o banco aplica.`)
       return

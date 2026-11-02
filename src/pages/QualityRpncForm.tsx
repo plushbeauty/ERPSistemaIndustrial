@@ -1,7 +1,7 @@
 /**
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-01
- * @REVISAO: REV-SGQ-RPNC-FORMULARIO-20261101-02 — formulário RPNC modelo MGF3657 (SoftExpert), pasta virtual de evidências, CAPA dinâmica, Ishikawa editável no desenho e relatório A4
+ * @REVISAO: REV-SGQ-RPNC-FORMULARIO-20261101-03 — formulário RPNC modelo MGF3657 (SoftExpert), pasta virtual de evidências, CAPA dinâmica, Ishikawa editável no desenho, 5 Porquês de 5 a 12 níveis e relatório A4
  * @STATUS_APROVACAO: AGUARDA APLICAÇÃO DAS MIGRATIONS 20261031100000_...SQL E 20261101220000_...SQL PELO PROPRIETÁRIO
  */
 /**
@@ -20,7 +20,7 @@ import {
 import { supabase } from '../lib/supabaseClient'
 import IshikawaDiagrama from '../components/qualidade/IshikawaDiagrama'
 import type { Ishikawa6MData, IshikawaBruto } from '../types/qualidade'
-import { ishikawaVazio, normalizarIshikawa, serializarIshikawa, totalDeCausas } from '../types/qualidade'
+import { cadeiaDoBanco, cadeiaParaGravar, cadeiaVazia, ishikawaVazio, MAXIMO_PORQUES, MINIMO_PORQUES, normalizarIshikawa, serializarIshikawa, totalDeCausas } from '../types/qualidade'
 import '../styles/quality-rpnc-form.css'
 
 type Severidade = 'Critica' | 'Maior' | 'Menor'
@@ -117,7 +117,6 @@ const GRUPOS_6M: Array<{ key: CauseKey; label: string }> = [
 ]
 const TIPOS_ACAO: Array<AcaoForm['tipo']> = ['Contencao', 'Corretiva', 'Preventiva']
 
-const cadeiaVazia = (): string[] => ['', '', '', '', '']
 const tratamentoVazio = (): TratamentoForm => ({
   numero_controle: '', hora_ocorrencia: '', hora_restauracao: '', duracao: '',
   tipo_ocorrencia: 'inicial', quantidade_afetada: '', requisito_violado: '', investigacao: '', causa_imediata: '',
@@ -148,7 +147,7 @@ const normalizarTratamento = (bruto: Partial<TratamentoForm> | null): Tratamento
     cadeas: Array.isArray(bruto.cadeas)
       ? bruto.cadeas.map((c) => ({
         causa: texto(c?.causa, ''),
-        porques: Array.isArray(c?.porques) && c.porques.length === 5 ? c.porques.map((p) => texto(p, '')) : cadeiaVazia(),
+        porques: cadeiaDoBanco(c?.porques),
       }))
       : [],
     barreira_falhou: bruto.barreira_falhou && typeof bruto.barreira_falhou === 'object'
@@ -294,7 +293,7 @@ export default function QualityRpncForm() {
       setPasta(registro.sgq_pasta_evidencias ?? `${tenantId}/rpnc_${registro.numero_rpnc}`)
       setTratamento(normalizarTratamento(registro.sgq_tratamento_anomalia))
       setFishbone(normalizarIshikawa(registro.ishikawa_data))
-      setPorques(Array.isArray(registro.cinco_porques) && registro.cinco_porques.length === 5 ? registro.cinco_porques : cadeiaVazia())
+      setPorques(cadeiaDoBanco(registro.cinco_porques))
       setDescricao(registro.descricao_nao_conformidade)
       setOrigem(registro.sgq_tipo_registro ?? 'INTERNO')
       setSeveridade(registro.sgq_severidade ?? 'Menor')
@@ -446,7 +445,7 @@ export default function QualityRpncForm() {
         p_rpnc_id: rpnc.id,
         p_tratamento: tratamento,
         p_ishikawa: serializarIshikawa(fishbone),
-        p_cinco_porques: porques,
+        p_cinco_porques: cadeiaParaGravar(porques),
         p_auditoria_id: auditoriaId || null,
         p_codigo_produto: codigoProduto.trim() || null,
         p_lote: lote.trim() || null,
@@ -782,12 +781,14 @@ export default function QualityRpncForm() {
 
               <CadeiaPorques rotulo="Causa 01 · principal (grava em cinco_porques)" causa={tratamento.causa_imediata} porques={porques} desabilitado={bloqueado}
                 onCausa={(v) => setTratamento({ ...tratamento, causa_imediata: v })}
+                onNiveis={(proximo) => setPorques(proximo)}
                 onChange={(index, valor) => setPorques((old) => old.map((p, i) => (i === index ? valor : p)))} />
 
               {tratamento.cadeas.map((cadeia, index) => (
                 <CadeiaPorques key={index} rotulo={`Causa ${String(index + 2).padStart(2, '0')}`} causa={cadeia.causa} porques={cadeia.porques} desabilitado={bloqueado}
                   onRemover={() => setTratamento({ ...tratamento, cadeas: tratamento.cadeas.filter((_, i) => i !== index) })}
                   onCausa={(v) => setTratamento({ ...tratamento, cadeas: tratamento.cadeas.map((c, i) => (i === index ? { ...c, causa: v } : c)) })}
+                  onNiveis={(proximo) => setTratamento({ ...tratamento, cadeas: tratamento.cadeas.map((c, i) => (i === index ? { ...c, porques: proximo } : c)) })}
                   onChange={(pIndex, valor) => setTratamento({ ...tratamento, cadeas: tratamento.cadeas.map((c, i) => (i === index ? { ...c, porques: c.porques.map((p, j) => (j === pIndex ? valor : p)) } : c)) })} />
               ))}
             </div>
@@ -1121,7 +1122,7 @@ export default function QualityRpncForm() {
           <div className="qrf-grid-2">
             <div className="qrf-box">
               <h3>Causa 01</h3>
-              {porques.map((p, i) => <p key={i}><strong>{i + 1}º porquê{p || i < 4 ? '' : ' (causa raiz)'}:</strong> {p || '—'}</p>)}
+              {porques.map((p, i) => <p key={i}><strong>{`${i + 1}º porquê${i === porques.length - 1 ? ' (causa raiz)' : ''}`}</strong> {p || '—'}</p>)}
             </div>
             {tratamento.cadeas.map((c, index) => (
               <div key={index} className="qrf-box">
@@ -1181,15 +1182,26 @@ export default function QualityRpncForm() {
   )
 }
 
-function CadeiaPorques({ rotulo, causa, porques, desabilitado, onCausa, onChange, onRemover }: {
+function CadeiaPorques({ rotulo, causa, porques, desabilitado, onCausa, onChange, onNiveis, onRemover }: {
   rotulo: string; causa?: string; porques: string[]; desabilitado: boolean;
-  onCausa: (value: string) => void; onChange: (index: number, value: string) => void; onRemover?: () => void
+  onCausa: (value: string) => void; onChange: (index: number, value: string) => void;
+  onNiveis: (proximo: string[]) => void; onRemover?: () => void
 }) {
+  const ultimo = porques.length - 1
   return (
     <section className="space-y-2 rounded-[2px] border border-slate-200 p-3">
       <div className="flex flex-wrap items-center gap-2">
         <strong className="text-xs font-extrabold">{rotulo}</strong>
-        {onRemover && <button type="button" className="erp-btn ml-auto" disabled={desabilitado} onClick={onRemover}><Trash2 size={13} /> Remover cadeia</button>}
+        <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+          {`${porques.length} níveis · mínimo ${MINIMO_PORQUES}, máximo ${MAXIMO_PORQUES}`}
+        </span>
+        <div className="ml-auto flex flex-wrap gap-1">
+          <button type="button" className="erp-btn" disabled={desabilitado || porques.length >= MAXIMO_PORQUES}
+            onClick={() => onNiveis([...porques, ''])}><Plus size={13} /> Nível</button>
+          <button type="button" className="erp-btn" disabled={desabilitado || porques.length <= MINIMO_PORQUES}
+            onClick={() => onNiveis(porques.slice(0, -1))}>− Nível</button>
+          {onRemover && <button type="button" className="erp-btn" disabled={desabilitado} onClick={onRemover}><Trash2 size={13} /> Remover cadeia</button>}
+        </div>
       </div>
       <label className="qrf-field">Causa imediata
         <input className="erp-input" value={causa ?? ''} disabled={desabilitado} onChange={(e) => onCausa(e.target.value)} />
@@ -1197,7 +1209,7 @@ function CadeiaPorques({ rotulo, causa, porques, desabilitado, onCausa, onChange
       <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
         {porques.map((porque, index) => (
           <label key={index} className="qrf-field">
-            {index + 1}º porquê{index === 4 ? ' · causa raiz' : ''}
+            {index + 1}º porquê{index === ultimo ? ' · causa raiz' : ''}
             <textarea className="erp-input qrf-textarea" value={porque} disabled={desabilitado}
               placeholder={index === 0 ? 'Por que o desvio ocorreu?' : 'Por que a resposta anterior aconteceu?'}
               onChange={(e) => onChange(index, e.target.value)} />

@@ -1,7 +1,7 @@
 /**
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-01
- * @REVISAO: REV-SGQ-ISHIKAWA-EDITAVEL-20261101-01 — Ishikawa 6M editável no desenho: causas com subcausas aceitas e normalizadas no servidor
+ * @REVISAO: REV-SGQ-ISHIKAWA-EDITAVEL-20261101-02 — Ishikawa com subcausas aceito no servidor e cadeia de porquês de 5 a 12 níveis
  * @STATUS_APROVACAO: AGUARDA APLICAÇÃO DESTE ARQUIVO SQL PELO PROPRIETÁRIO (só a anon key existe no frontend)
  */
 
@@ -14,11 +14,15 @@
 --     (20261031100000:294-303) — recusam qualquer item de grupo que não seja
 --     string. Enquanto isso, sub-causa aninhada é impossível de gravar, e a
 --     tela teria que fingir o dado.
+--   * As mesmas duas funções travavam a cadeia em exatamente cinco porquês.
+--     A ordem de serviço pede "5 Porquês" com cinco OU MAIS níveis, então o
+--     piso de cinco continua obrigatório e o teto passa a ser doze.
 --   * Este arquivo redefine as duas funções com o MESMO corpo de segurança
 --     (empresa da sessão, auth.uid(), erp_has_permission, FOR UPDATE, RLS) e
---     troca apenas a validação do Ishikawa pela chamada do normalizador.
---   * Nada aqui toca em cinco_porques, prazo de eficácia, status ou storage:
---     o contrato aprovado dessas partes permanece igual.
+--     troca apenas: a validação do Ishikawa pela chamada do normalizador e a
+--     contagem da cadeia de porquês.
+--   * Nada aqui toca em prazo de eficácia, status ou storage: o contrato
+--     aprovado dessas partes permanece igual.
 -- ---------------------------------------------------------------------------
 
 -- ---------------------------------------------------------------------------
@@ -152,8 +156,10 @@ begin
 
   v_ishikawa := public.erp_sgq_normalizar_ishikawa(p_ishikawa);
 
-  if jsonb_typeof(p_cinco_porques) is distinct from 'array' or jsonb_array_length(p_cinco_porques) <> 5 then
-    raise exception 'A cadeia principal deve conter exatamente cinco porquês.';
+  if jsonb_typeof(p_cinco_porques) is distinct from 'array'
+     or jsonb_array_length(p_cinco_porques) < 5
+     or jsonb_array_length(p_cinco_porques) > 12 then
+    raise exception 'A cadeia principal deve conter de 5 a 12 porquês (mínimo de cinco níveis).';
   end if;
   if exists (select 1 from jsonb_array_elements(p_cinco_porques) as item(value) where jsonb_typeof(item.value) <> 'string') then
     raise exception 'Cada porquê deve ser um texto.';
@@ -227,12 +233,14 @@ begin
 
   v_ishikawa := public.erp_sgq_normalizar_ishikawa(p_ishikawa);
 
-  if jsonb_typeof(p_cinco_porques) is distinct from 'array' or jsonb_array_length(p_cinco_porques) <> 5 then
-    raise exception 'É obrigatório informar as cinco perguntas de causa raiz.';
+  if jsonb_typeof(p_cinco_porques) is distinct from 'array'
+     or jsonb_array_length(p_cinco_porques) < 5
+     or jsonb_array_length(p_cinco_porques) > 12 then
+    raise exception 'É obrigatório informar pelo menos cinco perguntas de causa raiz (máximo de doze níveis).';
   end if;
   for v_why in select value from jsonb_array_elements(p_cinco_porques) loop
     if jsonb_typeof(v_why) <> 'string' or length(btrim(v_why #>> '{}')) < 3 then
-      raise exception 'Cada um dos cinco porquês deve conter uma resposta de pelo menos 3 caracteres.';
+      raise exception 'Cada porquê da cadeia deve conter uma resposta de pelo menos 3 caracteres.';
     end if;
   end loop;
 

@@ -1,8 +1,8 @@
 /**
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-01
- * @REVISAO: REV-SGQ-ISHIKAWA-EDITAVEL-20261101-01 — Ishikawa 6M com causa e subcausa, com leitura do formato legado
- * @STATUS_APROVACAO: SUBCAUSAS GRAVAM SOMENTE APOS A MIGRATION 20261101220000_...SQL (o servidor é a fonte da estrutura)
+ * @REVISAO: REV-SGQ-ISHIKAWA-EDITAVEL-20261101-02 — Ishikawa 6M com causa e subcausa, leitura do formato legado e contrato da cadeia de porquês
+ * @STATUS_APROVACAO: SUBCAUSAS E PORQUÊS ACIMA DE CINCO NÍVEIS GRAVAM SOMENTE APOS A MIGRATION 20261101220000_...SQL (o servidor é a fonte da estrutura)
  */
 
 /**
@@ -13,6 +13,13 @@
  * subcausa, então o diagrama continua compatível com a função já implantada.
  */
 export type IshikawaChave = 'Metodo' | 'Maquina' | 'Medida' | 'MeioAmbiente' | 'MaoDeObra' | 'Material'
+
+/**
+ * Cadeia de causa raiz (5 Porquês). Cinco níveis é o piso do método e doze é o
+ * teto que public.erp_sgq_salvar_analise_rpnc aceita — as duas telas leem daqui.
+ */
+export const MINIMO_PORQUES = 5
+export const MAXIMO_PORQUES = 12
 
 export type IshikawaCausa = {
   texto: string
@@ -36,6 +43,23 @@ export const ishikawaVazio = (): Ishikawa6MData => ({
 })
 
 const textoLimpo = (valor: unknown): string => (typeof valor === 'string' ? valor.trim() : typeof valor === 'number' ? String(valor) : '')
+
+export const cadeiaVazia = (): string[] => Array.from({ length: MINIMO_PORQUES }, () => '')
+
+/** Cadeia lida do banco: cinco é o piso, doze o teto. Nenhum nível já preenchido é descartado na reabertura. */
+export const cadeiaDoBanco = (valores: unknown): string[] => {
+  if (!Array.isArray(valores)) return cadeiaVazia()
+  const niveis = valores.slice(0, MAXIMO_PORQUES).map(textoLimpo)
+  while (niveis.length < MINIMO_PORQUES) niveis.push('')
+  return niveis
+}
+
+/** Nível extra ainda em branco não vai para o servidor: a RPC recusa texto vazio na cadeia. */
+export const cadeiaParaGravar = (valores: string[]): string[] => {
+  let fim = valores.length
+  while (fim > MINIMO_PORQUES && valores[fim - 1].trim() === '') fim -= 1
+  return valores.slice(0, fim)
+}
 
 /** Normaliza qualquer JSONB lido do banco para o shape de dois níveis. */
 export const normalizarIshikawa = (bruto: IshikawaBruto): Ishikawa6MData => {
