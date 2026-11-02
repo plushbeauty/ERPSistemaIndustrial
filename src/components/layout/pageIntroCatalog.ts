@@ -56,7 +56,7 @@ const introCatalog: Record<string, PageIntro> = {
   'controladoria/cadastro-decimais': { module: 'Controladoria', title: 'Cadastro de Precisão Decimal', description: 'Casas decimais, cubagem e arredondamento usados nas medições e cálculos industriais.' },
   'controladoria/lucratividade': { module: 'Controladoria', title: 'Lucratividade e Margens', description: 'Custos, margens industriais e resultado por produto, cliente ou pedido.' },
   'controladoria/razao-geral': { module: 'Controladoria', title: 'Razão Geral', description: 'Lançamentos contábeis e saldos bancários consolidados por conta e período.' },
-  'financeiro/retificacao': { module: 'Financeiro', title: 'Retificação de Pedido', description: 'Ajustos de quantidades, valores e impostos em pedidos já faturados, com histórico auditável.' },
+  'financeiro/retificacao': { module: 'Financeiro', title: 'Retificação de Pedido', description: 'Corrige referência do cliente, vendedor, condição de pagamento e descrição dos itens em pedido já faturado, com histórico auditável; quantidades, preços e impostos permanecem bloqueados.' },
   'controladoria/retificacao-assistente': { module: 'Controladoria', title: 'Estorno Documental', description: 'Passo a passo orientado da retificação de pedido e dos ajustes contábeis associados.' },
   'financeiro/notas-debito': { module: 'Financeiro', title: 'Notas de Débito', description: 'Emissão e acompanhamento de notas de débito por cliente, inclusive comprovantes de entrega (POD).' },
   'financeiro/notas-debito/configuracoes': { module: 'Financeiro', title: 'Configurações de Notas de Débito', description: 'Séries, impostos e regras de emissão das notas de débito da empresa.' },
