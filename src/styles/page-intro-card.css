@@ -4,6 +4,8 @@
 .erp-page-intro-text{display:flex;flex-direction:column;min-width:0}
 .erp-horizontal-workspace .erp-page-intro h1{margin:0 0 2px;color:#fff!important;font-size:18px!important;line-height:1.2!important;font-weight:800!important;letter-spacing:-.025em!important}
 .erp-horizontal-workspace .erp-page-intro p{margin:0}
-.erp-horizontal-workspace .erp-page-intro .erp-page-intro-module{color:#9dd9e8!important;font-size:9px!important;line-height:1.3!important;font-weight:800!important;letter-spacing:.13em!important;text-transform:uppercase!important}
-.erp-horizontal-workspace .erp-page-intro .erp-page-intro-description{color:#f3c969!important;font-size:10px!important;line-height:1.4!important;font-weight:700!important}
+.erp-horizontal-workspace .erp-page-intro .erp-page-intro-module{color:#BFE6F1!important;font-size:9px!important;line-height:1.3!important;font-weight:800!important;letter-spacing:.13em!important;text-transform:uppercase!important}
+/* Descricao do card navy em branco puro: o dourado (#f3c969) competia com o titulo e foi
+   reservado apenas para a aba ativa (contrato erp-active-gold). Ordem do proprietario 2026-11-01. */
+.erp-horizontal-workspace .erp-page-intro .erp-page-intro-description{color:#fff!important;font-size:10px!important;line-height:1.45!important;font-weight:600!important}
 @media print{.erp-page-intro{display:none!important}}

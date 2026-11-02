@@ -1,0 +1,138 @@
+/*
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-11-01
+ * @REVISAO: REV-CONTRATO-ATIVO-DOURADO-20261101-01 — aba/botão ativo dourado em todo o ERP
+ * @STATUS_APROVACAO: DETERMINADO PELO PROPRIETARIO EM 2026-11-01 ("clicar neles muda para dourado,
+ *   ficar visível que ele que está ativo das abas — arruma todos os botões do sistema")
+ *
+ * Defeito que esta folha corrige: cada tela carregava a propria regra de aba ativa e o
+ * erp-global-consistency-20261030.css pintava a ativa de BRANCO sobre barra branca. Ao clicar, o
+ * rotulo deixava de ter fundo proprio e a descricao "sumia". O estado ativo passa a ser um so
+ * dourado institucional, com tinta azul-marinho por cima, em toda area operacional.
+ *
+ * Escopo: apenas controles de aba/segmento. O rail azul dos modulos premium (.smp-rail-item),
+ * o menu superior Windows 11 (.erp-windows-*) e os links de navegacao lateral ficam de fora
+ * de proposito — o estado ativo deles foi aprovado em 2026-11-01 com texto branco.
+ * Os seletores levam !important porque duas telas ainda pinta a aba ativa com style={{}} inline.
+ */
+:root {
+  --erp-active-gold: #C9961C;
+  --erp-active-gold-deep: #A87B12;
+  --erp-active-gold-soft: #F7EBC8;
+  --erp-active-ink: #123B50;
+  --erp-active-filete: #C9961C;
+}
+
+/* 1) Padrão WAI-ARIA de aba e de Radix (tabs, toggle group, segmented). */
+.erp-global-surface [role="tab"][aria-selected="true"],
+.erp-global-surface button[data-state="active"],
+.erp-global-surface [class*="segmented"] button[aria-pressed="true"],
+.erp-global-surface [role="group"] button[aria-pressed="true"],
+.erp-global-surface .rpnc-tab[aria-selected="true"],
+.erp-global-surface .sales-filter-tab.is-active {
+  background: var(--erp-active-gold) !important;
+  border-color: var(--erp-active-gold-deep) !important;
+  color: var(--erp-active-ink) !important;
+  box-shadow: inset 0 -2px 0 var(--erp-active-gold-deep) !important;
+  font-weight: 800 !important;
+}
+
+/* 2) Famílias de classe próprias de cada módulo (todas as abas nomeadas do repositório). */
+.erp-global-surface .erp-tab-active,
+.erp-global-surface .mw3-tabs button.active,
+.erp-global-surface .industrial-tabs button.active,
+.erp-global-surface .quality-tabs button.active,
+.erp-global-surface .sgq-adv-tabs button.active,
+.erp-global-surface .user-admin-tabs button.is-active,
+.erp-global-surface .rh-tab.active,
+.erp-global-surface .fiscal-tab.active,
+.erp-global-surface .fiscal-report-tab.active,
+.erp-global-surface .utd-tab.active,
+.erp-global-surface .compras-tab.is-active {
+  background: var(--erp-active-gold) !important;
+  border-color: var(--erp-active-gold-deep) !important;
+  color: var(--erp-active-ink) !important;
+  box-shadow: inset 0 -2px 0 var(--erp-active-gold-deep) !important;
+  font-weight: 800 !important;
+}
+
+/* 3) Abas feitas com utilitário Tailwind dentro de um <nav> de abas (ex.: RH, PCP, Capacity). */
+.erp-global-surface nav button[aria-selected="true"],
+.erp-global-surface nav button.is-active {
+  background: var(--erp-active-gold) !important;
+  color: var(--erp-active-ink) !important;
+  box-shadow: inset 0 -2px 0 var(--erp-active-gold-deep) !important;
+}
+
+/* 4) Aba com sub-linha de descricao: o texto secundario tambem recebe a tinta do estado ativo,
+      senao a descricao fica cinza-claro sobre o dourado e continua "sumindo" ao clicar. */
+.erp-global-surface [role="tab"][aria-selected="true"] span:not([class*="text-white"]),
+.erp-global-surface button[data-state="active"] span,
+.erp-global-surface .mw3-tabs button.active span,
+.erp-global-surface .compras-tab.is-active span {
+  color: var(--erp-active-ink) !important;
+  opacity: 1 !important;
+}
+
+/* 5) Aba inativa: sempre legível sobre a barra, com filete dourado no hover para anunciar o clique. */
+.erp-global-surface [role="tab"],
+.erp-global-surface .mw3-tabs button,
+.erp-global-surface .compras-tab,
+.erp-global-surface .fiscal-tab,
+.erp-global-surface .rh-tab,
+.erp-global-surface nav button {
+  transition: background-color .12s ease, color .12s ease, box-shadow .12s ease;
+}
+
+.erp-global-surface [role="tab"]:hover,
+.erp-global-surface .mw3-tabs button:hover,
+.erp-global-surface .compras-tab:hover,
+.erp-global-surface .fiscal-tab:hover,
+.erp-global-surface nav button:hover {
+  box-shadow: inset 0 -2px 0 var(--erp-active-gold-soft);
+}
+
+/* 6) Abas montadas com utilitario Tailwind por ternario, sem classe propria (PCP workspace,
+      Financeiro, Cadastro de Produtos, Controle de Acesso, Conciliacao Bancaria). O seletor
+      [class~="..."] casa o token EXATO, entao o navy de cabecalho e de <th> nao e atingido.
+      `nav`/`[role=tablist]`/`[class*="tabs"]` limitam a regra a barra de abas de proposito. */
+.erp-global-surface :is(nav, [role="tablist"], [class*="tabs"]) button[class~="bg-[#123B50]"],
+.erp-global-surface :is(nav, [role="tablist"], [class*="tabs"]) button[class~="bg-[#123b50]"],
+.erp-global-surface :is(nav, [role="tablist"]) button[aria-pressed="true"],
+.erp-global-surface .scroll-fade-x button[class~="bg-slate-100"],
+.erp-global-surface button[aria-current="page"]:not(.erp-windows-menu-row):not(.erp-horizontal-menu-button) {
+  background: var(--erp-active-gold) !important;
+  border-color: var(--erp-active-gold-deep) !important;
+  color: var(--erp-active-ink) !important;
+  box-shadow: inset 0 -2px 0 var(--erp-active-gold-deep) !important;
+  font-weight: 800 !important;
+}
+
+/* Foco visível dentro do dourado, sem depender só da cor. */
+.erp-global-surface [role="tab"][aria-selected="true"]:focus-visible,
+.erp-global-surface button[data-state="active"]:focus-visible {
+  outline: 2px solid var(--erp-active-ink);
+  outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .erp-global-surface [role="tab"],
+  .erp-global-surface .mw3-tabs button,
+  .erp-global-surface .compras-tab,
+  .erp-global-surface .fiscal-tab,
+  .erp-global-surface .rh-tab,
+  .erp-global-surface nav button {
+    transition: none !important;
+  }
+}
+
+@media print {
+  .erp-global-surface [role="tab"][aria-selected="true"],
+  .erp-global-surface button[data-state="active"],
+  .erp-global-surface .mw3-tabs button.active,
+  .erp-global-surface .compras-tab.is-active {
+    background: #fff !important;
+    color: #000 !important;
+    box-shadow: none !important;
+  }
+}
