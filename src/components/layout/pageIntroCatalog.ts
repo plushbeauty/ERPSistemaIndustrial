@@ -31,7 +31,8 @@ const introCatalog: Record<string, PageIntro> = {
   'qualidade/rpnc': { module: 'Qualidade / SGQ', title: 'RPNC · Registro de Não Conformidade', description: 'Abertura, triagem e acompanhamento de não conformidades com causa raiz, plano de ação e evidências.' },
   'qualidade/rpnc-formulario': { module: 'Qualidade / SGQ', title: 'Formulário de Tratamento de Não Conformidade', description: 'Relato da ocorrência, Ishikawa e 5 Porquês, plano de ação CAPA com responsáveis e prazos, alerta de recorrência por peça/lote e impressão do relatório do SGQ.' },
   'qualidade/auditorias': { module: 'Qualidade / SGQ', title: 'Auditorias da Qualidade', description: 'Programa de auditorias por norma e período, com líder, status e as RPNCs vinculadas como constatações.' },
-  'qualidade/ged': { module: 'Qualidade / SGQ', title: 'GED · Documentos da Qualidade', description: 'Repositório controlado de procedimentos, instruções de trabalho e registros do sistema de gestão.' },
+  'qualidade/ged': { module: 'Qualidade / SGQ', title: 'Controle de Documentos da Qualidade', description: 'Página única de oito abas: cadastro, revisões e histórico, aprovação e distribuição por setor, obsoletos, anexos versionados no Storage, versões de anexo, pesquisa com relatório e trilha de auditoria.' },
+  'qualidade/evidencias': { module: 'Qualidade / SGQ', title: 'Central de Evidências das RPNCs', description: 'Árvore de evidências anexadas a cada Registro de Não Conformidade, lida do bucket privado qualidade-evidencias.' },
 
   'compras/solicitacao': { module: 'Compras', title: 'Solicitação de Compra', description: 'Necessidade interna formalizada com itens, urgência e aprovação antes de ir para cotação.' },
   'compras/requisicoes': { module: 'Compras', title: 'Requisições de Compra', description: 'Fila de requisições abertas pelos setores, com andamento, responsável e vínculo com a cotação.' },

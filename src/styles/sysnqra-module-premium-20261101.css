@@ -259,6 +259,29 @@
 .smp-event span { flex: 1 1 auto; min-width: 0; color: var(--smp-ink); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .smp-event b { color: var(--smp-muted); font-weight: 800; font-size: 11px; }
 
+/* -------------------------------------------------------------------- abas */
+/** Barra de abas do padrão SGQ. O estado ativo é pintado pelo contrato dourado
+    global (erp-active-gold-20261101.css), que casa [role="tab"][aria-selected].
+    Aqui fica apenas a base inativa, legível sobre a barra branca. */
+.smp-tabs { display: flex; flex-wrap: wrap; gap: 2px; padding: 5px 8px 0; border: 1px solid var(--smp-line); border-radius: var(--smp-radius); background: var(--smp-surface); box-shadow: var(--smp-shadow); }
+.smp-shell .smp-tab { display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 0 12px; border: 1px solid transparent; border-bottom: 0; border-radius: 3px 3px 0 0; background: transparent; color: var(--smp-muted); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+.smp-shell .smp-tab svg { flex: 0 0 auto; opacity: .85; }
+.smp-shell .smp-tab:hover { color: var(--smp-ink); background: #F2FAFC; }
+.smp-tabpanel { display: grid; gap: 14px; min-width: 0; }
+
+/* ------------------------------------------------------- formulário denso */
+/** Dois campos por linha: a régua de tamanho aprovada em 2026-11-01 derruba
+    .smp-field de linha inteira quando o formulário é denso. */
+.smp-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 14px; }
+.smp-form-grid > .is-wide { grid-column: 1 / -1; }
+.smp-textarea { width: 100%; min-height: 116px; padding: 8px 10px; border: 1px solid var(--smp-line); border-radius: 3px; background: #fff; color: var(--smp-ink); font: inherit; font-size: 12px; font-weight: 600; line-height: 1.55; resize: vertical; }
+.smp-textarea:focus { outline: 2px solid rgba(72, 183, 199, .45); outline-offset: 1px; border-color: var(--smp-cyan); }
+.smp-checks { display: flex; flex-wrap: wrap; gap: 7px; }
+.smp-check { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 10px; border: 1px solid var(--smp-line); border-radius: 3px; background: #fff; color: var(--smp-ink); font-size: 12px; font-weight: 700; cursor: pointer; }
+.smp-check:hover { border-color: var(--smp-blue); }
+.smp-check.is-on { border-color: var(--smp-blue); background: #EDF7FB; color: var(--smp-navy); font-weight: 900; }
+.smp-check input { width: 14px; height: 14px; margin: 0; accent-color: var(--smp-blue); }
+
 /* ------------------------------------------------------------------ modal */
 .smp-backdrop { position: fixed; inset: 0; z-index: 1200; display: grid; place-items: center; padding: 18px; background: rgba(10, 32, 43, .48); }
 .smp-modal { display: grid; gap: 0; width: min(760px, 100%); max-height: calc(100dvh - 36px); overflow: auto; border: 1px solid var(--smp-line); border-radius: var(--smp-radius); background: #fff; box-shadow: 0 30px 70px rgba(10, 32, 43, .32); }
@@ -317,6 +340,20 @@
 .smp-tile > .smp-chip, .smp-tile > .smp-tile-go { flex: 0 0 auto; }
 .smp-tile-go { color: #9DB4BF; }
 .smp-tile:hover .smp-tile-go { color: var(--smp-blue); }
+/* Item selecionado em lista master–detail (ex.: acervo do Controle de Documentos). Recebe o
+   mesmo dourado institucional das abas, com tinta navy por cima: sem isso a descrição do card
+   continuava cinza-claro sobre o fundo e "sumia" ao clicar. */
+.smp-tile.is-on {
+  border-color: var(--erp-active-gold-deep, #A87B12);
+  background: var(--erp-active-gold, #C9961C);
+  color: var(--erp-active-ink, #123B50);
+  box-shadow: inset 0 -2px 0 var(--erp-active-gold-deep, #A87B12);
+}
+.smp-tile.is-on::before { background: var(--erp-active-gold-deep, #A87B12); }
+.smp-tile.is-on .smp-tile-main strong,
+.smp-tile.is-on .smp-tile-main span { color: var(--erp-active-ink, #123B50); }
+.smp-tile.is-on .smp-tile-icon { background: rgba(255, 255, 255, .58); color: var(--erp-active-ink, #123B50); }
+.smp-tile.is-on .smp-chip { background: rgba(255, 255, 255, .62); color: #4A3708; }
 
 /* ------------------------------------------------------------- responsivo */
 @media (max-width: 1420px) {
@@ -341,6 +378,7 @@
   .smp-kpis { grid-template-columns: minmax(0, 1fr); }
   .smp-panel-actions { margin-left: 0; width: 100%; }
   .smp-kpi-value { font-size: 26px; }
+  .smp-form-grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) {
   .smp-shell .smp-btn, .smp-shell .smp-rail-item, .smp-shell .smp-block { transition: none; }

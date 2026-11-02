@@ -35,6 +35,9 @@ const CentralAjuda = lazy(() => import('./pages/CentralAjuda'))
 const FinanceiroWorkspace = lazy(() => import('./modules/financeiro/pages/FinanceiroWorkspace'))
 // Páginas existentes sem rota — integradas ao menu em 2026-10-30 (comando de integração global)
 const FileTreeGED = lazy(() => import('./pages/FileTreeGED'))
+// Controle de Documentos da Qualidade — página única de 8 abas (comando de 2026-11-01).
+// O FileTreeGED, que era o acervo de evidências anexado a esta rota, passou a ter rota própria.
+const QualidadeControleDocumentos = lazy(() => import('./pages/QualidadeControleDocumentos'))
 const PostosTrabalho = lazy(() => import('./features/pcp/PostosTrabalho'))
 const RoteiroOperacoes = lazy(() => import('./features/pcp/RoteiroOperacoes'))
 const AuditoriaSaldos = lazy(() => import('./features/inventario/AuditoriaSaldos'))
@@ -128,7 +131,8 @@ export default function AppEntryV2() {
               <Route path="chao-de-fabrica/postos" element={<QualityPlanGate><PostosTrabalho /></QualityPlanGate>} />
               <Route path="chao-de-fabrica/portal-operador" element={<PCPAreaFuncionario />} />
               <Route path="paquimetro" element={<QualityPlanGate><Paquimetro /></QualityPlanGate>} />
-              <Route path="qualidade/ged" element={<QualityPlanGate><FileTreeGED /></QualityPlanGate>} />
+              <Route path="qualidade/ged" element={<QualityPlanGate><QualidadeControleDocumentos /></QualityPlanGate>} />
+              <Route path="qualidade/evidencias" element={<QualityPlanGate><FileTreeGED /></QualityPlanGate>} />
               <Route path="estoque/almoxarifado" element={<QualityPlanGate><EstoqueAlmoxarifado /></QualityPlanGate>} />
               <Route path="estoque/auditoria-saldos" element={<QualityPlanGate><AuditoriaSaldos /></QualityPlanGate>} />
               <Route path="estoque/balanco" element={<QualityPlanGate><BalancoEstoque /></QualityPlanGate>} />
@@ -210,6 +214,7 @@ export default function AppEntryV2() {
             <Route path="/paquimetro" element={<Navigate to="/pageprincipal/paquimetro" replace />} />
             <Route path="/qualidade/paquimetro" element={<Navigate to="/pageprincipal/paquimetro" replace />} />
             <Route path="/qualidade/ged-documentos" element={<Navigate to="/pageprincipal/qualidade/ged" replace />} />
+            <Route path="/qualidade/evidencias" element={<Navigate to="/pageprincipal/qualidade/evidencias" replace />} />
             <Route path="/qualidade/documentos" element={<Navigate to="/pageprincipal/qualidade/ged" replace />} />
             <Route path="/documentos-qualidade" element={<Navigate to="/pageprincipal/qualidade/ged" replace />} />
             <Route path="/pcp/roteiros" element={<Navigate to="/pageprincipal/pcp/roteiros" replace />} />

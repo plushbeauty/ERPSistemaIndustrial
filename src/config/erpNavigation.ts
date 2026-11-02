@@ -79,7 +79,8 @@ const menuSeeds: MenuSeed[] = [
     { label: 'RPNC', route: '/pageprincipal/qualidade/rpnc', icon: ClipboardList },
     { label: 'Formulário RPNC (Ishikawa / 5 Porquês / CAPA)', route: '/pageprincipal/qualidade/rpnc-formulario', icon: FileText },
     { label: 'Auditorias da Qualidade', route: '/pageprincipal/qualidade/auditorias', icon: ShieldCheck },
-    { label: 'GED / Documentos da Qualidade', route: '/pageprincipal/qualidade/ged', icon: FolderOpen },
+    { label: 'Controle de Documentos', route: '/pageprincipal/qualidade/ged', icon: FolderOpen },
+    { label: 'Central de Evidências', route: '/pageprincipal/qualidade/evidencias', icon: Archive },
   ] },
   { label: 'Compras', route: '/pageprincipal/compras', icon: ShoppingCart, children: [
     { label: 'Central de Compras', route: '/pageprincipal/compras', icon: ShoppingCart },
