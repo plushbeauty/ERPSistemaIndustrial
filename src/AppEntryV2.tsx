@@ -498,6 +498,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/carteira" element={<Navigate to="/vendas/status" replace />} />
       <Route path="/vendas/status" element={<VendasCentral />} />
       <Route path="/controladoria/retificacao-pedido/:pedidoId" element={<QualityPlanGate>{<RetificacaoPedido />}</QualityPlanGate>} />
+      <Route path="/financeiro/retificacao" element={<QualityPlanGate>{<RetificacaoPedido />}</QualityPlanGate>} />
       <Route path="/comissoes" element={<QualityPlanGate>{<Navigate to="/comissoes/regras" replace />}</QualityPlanGate>} />
       <Route path="/comissoes/regras" element={<QualityPlanGate>{<CadastroRegrasComissao />}</QualityPlanGate>} />
       <Route path="/comissoes/calculo" element={<QualityPlanGate>{<CalculoComissao />}</QualityPlanGate>} />

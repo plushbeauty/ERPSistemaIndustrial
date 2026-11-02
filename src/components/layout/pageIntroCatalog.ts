@@ -52,7 +52,7 @@ const introCatalog: Record<string, PageIntro> = {
   'financeiro/auditoria-comissoes': { module: 'Financeiro', title: 'Auditoria de Comissões', description: 'Base de cálculo, valores pagos e divergências conferidos antes do fechamento da comissão.' },
   'financeiro/decimais': { module: 'Financeiro', title: 'Cadastro de Precisão Decimal', description: 'Casas decimais, cubagem e arredondamento usados nas medições e cálculos industriais.' },
   'financeiro/lucratividade': { module: 'Financeiro', title: 'Painel de Lucratividade', description: 'Custos, margens industriais e resultado por produto, cliente ou pedido.' },
-  'financeiro/retificacao': { module: 'Financeiro', title: 'Retificação de Pedido', description: 'Ajustos de quantidades, valores e impostos em pedidos já faturados, com histórico auditável.' },
+  'financeiro/retificacao': { module: 'Financeiro', title: 'Retificação de Pedido', description: 'Corrige referência do cliente, vendedor, condição de pagamento e descrição dos itens em pedido já faturado, com histórico auditável; quantidades, preços e impostos permanecem bloqueados.' },
   'financeiro/retificacao-assistente': { module: 'Financeiro', title: 'Assistente de Retificação', description: 'Passo a passo orientado da retificação de pedido e dos ajustes contábeis associados.' },
   'financeiro/notas-debito': { module: 'Financeiro', title: 'Notas de Débito', description: 'Emissão e acompanhamento de notas de débito por cliente, inclusive comprovantes de entrega (POD).' },
   'financeiro/notas-debito/configuracoes': { module: 'Financeiro', title: 'Configurações de Notas de Débito', description: 'Séries, impostos e regras de emissão das notas de débito da empresa.' },
