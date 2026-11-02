@@ -81,7 +81,7 @@ export default function FinanceiroWorkspace(){
  const totalPay=installments.filter(p=>p.saldo>0&&titles.some(t=>t.id===p.titulo_id&&t.tipo==='PAGAR'&&t.status!=='CANCELADO')).reduce((s,p)=>s+Number(p.saldo),0)
  const totalReceive=installments.filter(p=>p.saldo>0&&titles.some(t=>t.id===p.titulo_id&&t.tipo==='RECEBER'&&t.status!=='CANCELADO')).reduce((s,p)=>s+Number(p.saldo),0)
  const totalOpen=openParts.reduce((s,p)=>s+Number(p.saldo),0)
- const partnerLabel=(id:string)=>{const p=partners.find(x=>x.id===id);return p?.nome_fantasia||p?.razao_social||p?.nome||p?.codigo||'Parceiro cadastrado'}
+ const partnerLabel=(id:string)=>{const p=partners.find(x=>x.id===id);return p?.nome_fantasia||p?.razao_social||p?.codigo||'Parceiro cadastrado'}
  const beginCreate=(k:Kind)=>{setKind(k);setPartner('');setDescription('');setDocument('');setCategory('');setCostCenter('');setIssueDate(localDate());setDueDate(localDate());setAmount('');setShowForm(true);setError('');setMessage('')}
  async function saveTitle(e:FormEvent){
   e.preventDefault();setError('');setMessage('')
