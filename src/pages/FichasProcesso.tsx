@@ -1,8 +1,15 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-02
+ * @REVISAO: REV-PCP-FICHA-ABAS-20261102-01 — ordem do proprietário: ficha em abas com aba própria de Matéria-prima
+ *           (Item, Cód. MP, Descrição, %, Qtde, Unid e botão +) e foto puxada do cadastro de produtos
+ *           (erp_produtos.foto_url, bucket público erp-produtos) ao clicar na descrição; aba do Molde passa a trazer
+ *           número/desenho/foto do ferramental. Dados de exemplo do print foram removidos: a tela não pode
+ *           prefabricar dosagem, temperatura, desenho ou plano de inspeção que não existam no banco.
+ * @STATUS_APROVACAO: COLUNAS CONFERIDAS NAS MIGRATIONS (erp_produtos.foto_url/unidade,
+ *           erp_ferramentas_industriais.desenho_referencia/numero_cavidades, erp_fichas_processo.parametros_tecnicos jsonb)
+ *           · VALIDAÇÃO ESTÁTICA (TYPECHECK, LINT, GUARDS, BUILD) · BUCKET erp-fichas-processo CRIADO NA MIGRATION
+ *           20261102100000 E AGUARDANDO APLICAÇÃO PELO PROPRIETÁRIO
  */
 /**
  * =========================================================================
@@ -10,10 +17,11 @@
  * Módulo: Ficha Técnica de Processo Industrial (Injetados & Prensados)
  * Arquivo: src/pages/FichasProcesso.tsx
  * Padrão Visual: SYSNQRA Industrial Compacto (#F4FBFD, #123B50, #2D8DB8, #48B7C7)
- * Estrutura em 3 Abas:
- *   Aba 1 (1/3) — Processo & Mistura (Parâmetros de Injeção, Ciclo, Temperaturas e Setup)
- *   Aba 2 (2/3) — Fotos do Molde & Ferramental (Setup, Fixação e Refrigeração)
- *   Aba 3 (3/3) — Qualidade & Desenho (Especificações Técnicas, Desenho e SGQ)
+ * Estrutura em 4 Abas:
+ *   Aba 1 (1/4) — Processo (Parâmetros de Injeção, Ciclo, Temperaturas e Setup)
+ *   Aba 2 (2/4) — Matéria-prima (componentes da batelada com foto do cadastro de produtos)
+ *   Aba 3 (3/4) — Molde (número, desenho e galeria fotográfica do ferramental)
+ *   Aba 4 (4/4) — Qualidade & SGQ (especificações e plano de inspeção)
  * =========================================================================
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -23,6 +31,7 @@ import {
   ImagePlus,
   Layers,
   Maximize2,
+  Package,
   Plus,
   Printer,
   RotateCcw,
@@ -43,6 +52,8 @@ type Product = {
   codigo: string
   nome: string
   descricao?: string | null
+  unidade?: string | null
+  foto_url?: string | null
 }
 
 type Client = {
@@ -59,6 +70,7 @@ type Tool = {
   tipo: string
   numero_cavidades: number | null
   cavidades_ativas?: number | null
+  desenho_referencia?: string | null
 }
 
 type Machine = {
@@ -70,15 +82,45 @@ type Machine = {
 }
 
 type Status = 'RASCUNHO' | 'EM_ANALISE' | 'APROVADA' | 'LIBERADA' | 'OBSOLETA'
-type ActiveTab = 'PROCESSO' | 'MOLDE' | 'QUALIDADE'
+type ActiveTab = 'PROCESSO' | 'MATERIA_PRIMA' | 'MOLDE' | 'QUALIDADE'
 
 export type MaterialMixtureItem = {
   id: string
-  tipo: string
-  descricao: string
+  produto_id: string
   codigo: string
-  dosagem_kg: number
-  proporcao_pct: number
+  descricao: string
+  quantidade: number
+  unidade: string
+}
+
+const UNIDADES_MISTURA = ['KG', 'G', 'TON', 'L', 'ML', 'UN']
+
+// Fator de conversão para gramas. Proporção da batelada só faz sentido somando massa;
+// componentes contados em unidades (UN) ficam fora do total e mostram "%" vazio.
+const FATOR_GRAMA: Record<string, number> = { KG: 1000, G: 1, TON: 1_000_000, L: 1000, ML: 1 }
+
+function gramas(m: MaterialMixtureItem): number | null {
+  const f = FATOR_GRAMA[m.unidade]
+  if (!f) return null
+  return (Number(m.quantidade) || 0) * f
+}
+
+// Fichas antigas gravaram a mistura com { tipo, dosagem_kg, proporcao_pct }.
+// O jsonb aceita as duas formas; a leitura converte para o layout atual (Qtde + Unid).
+function normalizeMistura(raw: unknown): MaterialMixtureItem[] {
+  if (!Array.isArray(raw)) return []
+  return raw.map((item, i) => {
+    const m = (item ?? {}) as Record<string, unknown>
+    const quantidade = Number(m.quantidade ?? m.dosagem_kg ?? 0) || 0
+    return {
+      id: String(m.id ?? `mp-${i + 1}`),
+      produto_id: String(m.produto_id ?? ''),
+      codigo: String(m.codigo ?? ''),
+      descricao: String(m.descricao ?? ''),
+      quantidade,
+      unidade: String(m.unidade ?? 'KG')
+    }
+  })
 }
 
 export type MoldPhoto = {
@@ -142,54 +184,9 @@ type FormState = {
   inspecoes: InspectionItem[]
 }
 
-const defaultMistura: MaterialMixtureItem[] = [
-  {
-    id: 'mat-1',
-    tipo: 'Polímero Base',
-    descricao: 'Polipropileno Copolímero Fluidez 40%',
-    codigo: '20082',
-    dosagem_kg: 25.0,
-    proporcao_pct: 98.04
-  },
-  {
-    id: 'mat-2',
-    tipo: 'Masterbatch / Cor',
-    descricao: 'Master Color Preto',
-    codigo: '20023',
-    dosagem_kg: 0.5,
-    proporcao_pct: 1.96
-  }
-]
-
-const defaultInspecoes: InspectionItem[] = [
-  {
-    id: 'insp-1',
-    caracteristica: 'Visual: Rebarba no fechamento da partição',
-    instrumento: 'Inspeção Visual / Lupa 10x',
-    frequencia: '1ª peça no setup / A cada 1 hora',
-    criterio: 'Isento de rebarbas cortantes',
-    status_aprovacao: 'CONFORME'
-  },
-  {
-    id: 'insp-2',
-    caracteristica: 'Massa líquida unitária da peça',
-    instrumento: 'Balança Analítica 0.01g',
-    frequencia: 'A cada início de turno (5 peças)',
-    criterio: 'Peso nominal ± 2.0%',
-    tolerancia: '± 0.20 g',
-    status_aprovacao: 'CONFORME'
-  },
-  {
-    id: 'insp-3',
-    caracteristica: 'Cota crítica A (Encaixe / Dimensional)',
-    instrumento: 'Paquímetro Digital Calibrado',
-    frequencia: 'Início de lote e a cada 4 horas',
-    criterio: 'Conforme desenho de engenharia',
-    tolerancia: '± 0.05 mm',
-    status_aprovacao: 'CONFORME'
-  }
-]
-
+// As fichas começam vazias. Dosagem, temperaturas, desenho, especificações e plano de
+// inspeção são informações do processo real: prefabricá-las aqui gravaria dado inventado
+// no banco e enganaria o operador. Regra do proprietário: "não inventar dados".
 const blank: FormState = {
   id: '',
   codigo_ficha: '',
@@ -212,27 +209,26 @@ const blank: FormState = {
   tempo_resfriamento_seg: '',
   peso_peca: '',
   peso_canal: '',
-  tolerancia_temp: '5',
-  bico: '210',
-  zona1: '200',
-  zona2: '190',
-  zona3: '180',
-  zona4: '170',
-  zona_molde: '35',
+  tolerancia_temp: '',
+  bico: '',
+  zona1: '',
+  zona2: '',
+  zona3: '',
+  zona4: '',
+  zona_molde: '',
   imagem_url: '',
-  observacoes_setup:
-    '1 - Realizar Check List para liberação da máquina. Verificar se toda documentação se encontra na mesma. A falta de qualquer informação deve ser comunicada ao responsável da produção ou da qualidade.\n2 - Peças de início de processo, ou seja ajuste de máquina, que saírem com defeito devem ser separadas para reciclagem e não devem ser contadas como refugo operacional.\n3 - Na troca da matéria prima ou material de cor diferente, é necessário efetuar limpeza do canhão, para que não haja contaminação. Após a limpeza é necessário injetar algumas peças para total limpeza do canhão. Essas peças devem ser separadas para posterior reciclagem.\n4 - Após a validação do processo pela Qualidade, as peças com defeito devem ser separadas e encaminhadas junto com o cartão ao setor de acabamento para contagem e finalização.',
+  observacoes_setup: '',
   observacoes: '',
-  aviso_destaque: 'Aplicar desmoldante a cada 100 injetadas',
-  desenho_numero: 'TPA01201',
+  aviso_destaque: '',
+  desenho_numero: '',
   desenho_url: '',
-  formulario_sgq: 'FPT-1J-010/2 • FPT-1J-010/3',
-  especificacoes_acabamento: 'VDI 24 / Polimento espelhado na cavidade',
-  especificacoes_cor: 'Preto Técnico Fosco (Master 20023)',
-  especificacoes_gravacao: 'Datador ano/mês e gravação da cavidade em alto relevo 0.3mm',
-  mistura: defaultMistura,
+  formulario_sgq: '',
+  especificacoes_acabamento: '',
+  especificacoes_cor: '',
+  especificacoes_gravacao: '',
+  mistura: [],
   fotos_molde: [],
-  inspecoes: defaultInspecoes
+  inspecoes: []
 }
 
 const inputClass =
@@ -292,8 +288,11 @@ export function FichasProcesso() {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [selectedPhotoZoom, setSelectedPhotoZoom] = useState<string | null>(null)
+  const [mpPhoto, setMpPhoto] = useState<Product | null>(null)
+  const [mpPickerIdx, setMpPickerIdx] = useState<number | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const moldPhotoRef = useRef<HTMLInputElement>(null)
+  const desenhoRef = useRef<HTMLInputElement>(null)
 
   // Carrega registros da empresa atual com RLS
   const load = useCallback(async () => {
@@ -308,7 +307,7 @@ export function FichasProcesso() {
       const [p, c, t, m, f] = await Promise.all([
         supabase
           .from('erp_produtos')
-          .select('id,codigo,nome,descricao')
+          .select('id,codigo,nome,descricao,unidade,foto_url')
           .eq('empresa_id', empresaId)
           .eq('ativo', true)
           .order('codigo')
@@ -322,7 +321,7 @@ export function FichasProcesso() {
           .limit(3000),
         supabase
           .from('erp_ferramentas_industriais')
-          .select('id,codigo,nome,tipo,numero_cavidades,parametros')
+          .select('id,codigo,nome,tipo,numero_cavidades,desenho_referencia,parametros')
           .eq('empresa_id', empresaId)
           .eq('ativo', true)
           .order('codigo')
@@ -382,26 +381,26 @@ export function FichasProcesso() {
       tempo_resfriamento_seg: String(pt.tempo_resfriamento_seg ?? ''),
       peso_peca: String(x.peso_peca ?? ''),
       peso_canal: String(x.peso_canal ?? ''),
-      tolerancia_temp: String(z.tolerancia ?? '5'),
-      bico: String(z.bico ?? '210'),
-      zona1: String(z.zona1 ?? '200'),
-      zona2: String(z.zona2 ?? '190'),
-      zona3: String(z.zona3 ?? '180'),
-      zona4: String(z.zona4 ?? '170'),
-      zona_molde: String(z.molde ?? '35'),
+      tolerancia_temp: String(z.tolerancia ?? ''),
+      bico: String(z.bico ?? ''),
+      zona1: String(z.zona1 ?? ''),
+      zona2: String(z.zona2 ?? ''),
+      zona3: String(z.zona3 ?? ''),
+      zona4: String(z.zona4 ?? ''),
+      zona_molde: String(z.molde ?? ''),
       imagem_url: String(x.imagem_url ?? ''),
-      observacoes_setup: String(x.observacoes_setup ?? blank.observacoes_setup),
+      observacoes_setup: String(x.observacoes_setup ?? ''),
       observacoes: String(x.observacoes ?? ''),
-      aviso_destaque: String(pt.aviso_destaque ?? blank.aviso_destaque),
-      desenho_numero: String(pt.desenho_numero ?? blank.desenho_numero),
+      aviso_destaque: String(pt.aviso_destaque ?? ''),
+      desenho_numero: String(pt.desenho_numero ?? ''),
       desenho_url: String(pt.desenho_url ?? ''),
-      formulario_sgq: String(pt.formulario_sgq ?? blank.formulario_sgq),
-      especificacoes_acabamento: String(pt.especificacoes_acabamento ?? blank.especificacoes_acabamento),
-      especificacoes_cor: String(pt.especificacoes_cor ?? blank.especificacoes_cor),
-      especificacoes_gravacao: String(pt.especificacoes_gravacao ?? blank.especificacoes_gravacao),
-      mistura: Array.isArray(pt.mistura) ? (pt.mistura as MaterialMixtureItem[]) : defaultMistura,
+      formulario_sgq: String(pt.formulario_sgq ?? ''),
+      especificacoes_acabamento: String(pt.especificacoes_acabamento ?? ''),
+      especificacoes_cor: String(pt.especificacoes_cor ?? ''),
+      especificacoes_gravacao: String(pt.especificacoes_gravacao ?? ''),
+      mistura: normalizeMistura(pt.mistura),
       fotos_molde: Array.isArray(pt.fotos_molde) ? (pt.fotos_molde as MoldPhoto[]) : [],
-      inspecoes: Array.isArray(pt.inspecoes) ? (pt.inspecoes as InspectionItem[]) : defaultInspecoes
+      inspecoes: Array.isArray(pt.inspecoes) ? (pt.inspecoes as InspectionItem[]) : []
     }
   }
 
@@ -448,6 +447,23 @@ export function FichasProcesso() {
     setError('')
   }
 
+  // Upload para o bucket erp-fichas-processo (criado na migration 20261102100000).
+  // A URL pública é gravada na ficha: URL assinada expira e quebraria a imagem do chão de fábrica.
+  async function uploadDaFicha(file: File, prefixo: string): Promise<string> {
+    const company = await supabase.rpc('erp_current_empresa_id')
+    if (company.error || !company.data) {
+      throw company.error || new Error('Empresa ERP não identificada.')
+    }
+    const caminhoSeguro = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+    const path = `${company.data}/${prefixo}-${crypto.randomUUID()}-${caminhoSeguro}`
+    const upload = await supabase.storage.from('erp-fichas-processo').upload(path, file, {
+      upsert: false,
+      contentType: file.type
+    })
+    if (upload.error) throw upload.error
+    return supabase.storage.from('erp-fichas-processo').getPublicUrl(path).data.publicUrl
+  }
+
   // Upload de Imagem Técnica Geral / Matéria-Prima
   async function handleFile(file?: File) {
     if (!file) return
@@ -463,22 +479,8 @@ export function FichasProcesso() {
     setBusy(true)
     setError('')
     try {
-      const company = await supabase.rpc('erp_current_empresa_id')
-      if (company.error || !company.data) {
-        throw company.error || new Error('Empresa ERP não identificada.')
-      }
-      const path = `${company.data}/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
-      const upload = await supabase.storage.from('erp-fichas-processo').upload(path, file, {
-        upsert: false,
-        contentType: file.type
-      })
-      if (upload.error) throw upload.error
-
-      const signed = await supabase.storage.from('erp-fichas-processo').createSignedUrl(path, 60 * 60 * 24 * 30)
-      if (signed.error) throw signed.error
-
-      update('imagem_url', signed.data.signedUrl)
-      // set preview
+      const url = await uploadDaFicha(file, 'pca')
+      update('imagem_url', url)
       setMessage('Imagem técnica vinculada à ficha com sucesso.')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Falha ao enviar a imagem técnica.')
@@ -487,36 +489,28 @@ export function FichasProcesso() {
     }
   }
 
-  // Upload específico para fotos do molde na Aba 2
+  // Upload específico para fotos do molde na aba do Molde
   async function handleMoldPhotoUpload(file?: File, tipo: MoldPhoto['tipo'] = 'CAVIDADE') {
     if (!file) return
     if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
       setError('A foto do molde deve ser PNG, JPG ou WEBP.')
       return
     }
+    if (file.size > 8 * 1024 * 1024) {
+      setError('A foto do molde deve ter no máximo 8 MB.')
+      return
+    }
 
     setBusy(true)
     setError('')
     try {
-      const company = await supabase.rpc('erp_current_empresa_id')
-      if (company.error || !company.data) {
-        throw company.error || new Error('Empresa ERP não identificada.')
-      }
-      const path = `${company.data}/molde-${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
-      const upload = await supabase.storage.from('erp-fichas-processo').upload(path, file, {
-        upsert: false,
-        contentType: file.type
-      })
-      if (upload.error) throw upload.error
-
-      const signed = await supabase.storage.from('erp-fichas-processo').createSignedUrl(path, 60 * 60 * 24 * 30)
-      if (signed.error) throw signed.error
+      const url = await uploadDaFicha(file, 'molde')
 
       const newPhoto: MoldPhoto = {
         id: crypto.randomUUID(),
         titulo: file.name.replace(/\.[^/.]+$/, ''),
         tipo,
-        url: signed.data.signedUrl
+        url
       }
 
       setForm(prev => ({
@@ -526,6 +520,31 @@ export function FichasProcesso() {
       setMessage('Foto do molde adicionada à galeria.')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Falha ao enviar a foto do molde.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  // Upload do desenho do molde (PNG/JPG/WEBP ou PDF)
+  async function handleDesenhoUpload(file?: File) {
+    if (!file) return
+    if (!['image/png', 'image/jpeg', 'image/webp', 'application/pdf'].includes(file.type)) {
+      setError('O desenho do molde deve ser PNG, JPG, WEBP ou PDF.')
+      return
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setError('O desenho do molde deve ter no máximo 8 MB.')
+      return
+    }
+
+    setBusy(true)
+    setError('')
+    try {
+      const url = await uploadDaFicha(file, 'desenho')
+      update('desenho_url', url)
+      setMessage('Desenho do molde anexado à ficha.')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Falha ao enviar o desenho do molde.')
     } finally {
       setBusy(false)
     }
@@ -650,7 +669,23 @@ export function FichasProcesso() {
   const cavitiesNum = Number(form.cavidades_ativas) || 1
   const pcsPerHour = cycleSec > 0 ? ((3600 / cycleSec) * cavitiesNum).toFixed(0) : '—'
   const cyclesPerHour = cycleSec > 0 ? (3600 / cycleSec).toFixed(0) : '—'
-  const totalBateladaKg = form.mistura.reduce((acc, m) => acc + (Number(m.dosagem_kg) || 0), 0)
+
+  // Proporção da batelada: só itens medidos em massa entram no somatório.
+  const bateladaGramas = form.mistura.reduce((acc, m) => acc + (gramas(m) ?? 0), 0)
+  const totalBateladaKg = bateladaGramas / 1000
+  const itensSemUnidadeMassa = form.mistura.filter(m => gramas(m) === null).length
+
+  function proporcaoPct(m: MaterialMixtureItem): string {
+    const g = gramas(m)
+    if (g === null || bateladaGramas <= 0) return '—'
+    return `${((g / bateladaGramas) * 100).toFixed(2)}%`
+  }
+
+  // Foto do componente: vem do cadastro de produtos, nunca da ficha.
+  function produtoDaMateriaPrima(m: MaterialMixtureItem): Product | null {
+    if (m.produto_id) return products.find(p => p.id === m.produto_id) ?? null
+    return products.find(p => p.codigo === m.codigo) ?? null
+  }
 
   return (
     <>
@@ -791,11 +826,11 @@ export function FichasProcesso() {
             </div>
           )}
 
-          {/* Barra de Abas Industriais (1/3, 2/3, 3/3) */}
+          {/* Barra de Abas Industriais (1/4, 2/4, 3/4, 4/4) */}
           <nav className="flex flex-wrap items-center justify-between gap-3 rounded-[2px] border border-slate-200 bg-white p-2 shadow-xs">
             <div className="flex flex-wrap items-center gap-1.5">
               
-              {/* Aba 1: Processo & Mistura (1/3) */}
+              {/* Aba 1: Processo (1/4) */}
               <button
                 type="button"
                 onClick={() => setActiveTab('PROCESSO')}
@@ -805,12 +840,32 @@ export function FichasProcesso() {
                     : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                 }`}
               >
-                <span className="rounded bg-sky-500/20 px-1.5 py-0.5 font-mono text-[9px] text-[#48B7C7]">1 / 3</span>
+                <span className="rounded bg-sky-500/20 px-1.5 py-0.5 font-mono text-[9px] text-[#48B7C7]">1 / 4</span>
                 <Sliders size={13} />
-                <span>Processo &amp; Mistura</span>
+                <span>Processo</span>
               </button>
 
-              {/* Aba 2: Fotos do Molde & Ferramental (2/3) */}
+              {/* Aba 2: Matéria-prima (2/4) */}
+              <button
+                type="button"
+                onClick={() => setActiveTab('MATERIA_PRIMA')}
+                className={`flex h-[32px] items-center gap-2 rounded-[2px] px-3.5 text-[10px] font-black uppercase tracking-wider transition-all ${
+                  activeTab === 'MATERIA_PRIMA'
+                    ? 'bg-[#123B50] text-white shadow-xs'
+                    : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <span className="rounded bg-sky-500/20 px-1.5 py-0.5 font-mono text-[9px] text-[#48B7C7]">2 / 4</span>
+                <Package size={13} />
+                <span>Matéria-prima</span>
+                {form.mistura.length > 0 && (
+                  <span className="rounded-full bg-[#2D8DB8] px-1.5 py-0.2 text-[8px] text-white">
+                    {form.mistura.length}
+                  </span>
+                )}
+              </button>
+
+              {/* Aba 3: Molde — número, desenho e fotos (3/4) */}
               <button
                 type="button"
                 onClick={() => setActiveTab('MOLDE')}
@@ -820,9 +875,9 @@ export function FichasProcesso() {
                     : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                 }`}
               >
-                <span className="rounded bg-sky-500/20 px-1.5 py-0.5 font-mono text-[9px] text-[#48B7C7]">2 / 3</span>
+                <span className="rounded bg-sky-500/20 px-1.5 py-0.5 font-mono text-[9px] text-[#48B7C7]">3 / 4</span>
                 <Wrench size={13} />
-                <span>Fotos do Molde &amp; Setup</span>
+                <span>Molde, Desenho &amp; Fotos</span>
                 {form.fotos_molde.length > 0 && (
                   <span className="rounded-full bg-[#2D8DB8] px-1.5 py-0.2 text-[8px] text-white">
                     {form.fotos_molde.length}
@@ -830,7 +885,7 @@ export function FichasProcesso() {
                 )}
               </button>
 
-              {/* Aba 3: Qualidade, Especificações & Desenho (3/3) */}
+              {/* Aba 4: Qualidade, Especificações & SGQ (4/4) */}
               <button
                 type="button"
                 onClick={() => setActiveTab('QUALIDADE')}
@@ -840,9 +895,9 @@ export function FichasProcesso() {
                     : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                 }`}
               >
-                <span className="rounded bg-sky-500/20 px-1.5 py-0.5 font-mono text-[9px] text-[#48B7C7]">3 / 3</span>
+                <span className="rounded bg-sky-500/20 px-1.5 py-0.5 font-mono text-[9px] text-[#48B7C7]">4 / 4</span>
                 <ShieldCheck size={13} />
-                <span>Qualidade, Desenho &amp; SGQ</span>
+                <span>Qualidade &amp; SGQ</span>
               </button>
             </div>
 
@@ -928,7 +983,7 @@ export function FichasProcesso() {
             <div className="space-y-3">
               
               {/* ========================================================================= */}
-              {/* ABA 1 (1/3): PROCESSO & MISTURA (Ciclo, Parâmetros, Temperaturas e Setup) */}
+              {/* ABA 1 (1/4): PROCESSO (Ciclo, Parâmetros, Temperaturas e Setup) */}
               {/* ========================================================================= */}
               {activeTab === 'PROCESSO' && (
                 <div className="space-y-3">
@@ -1097,162 +1152,6 @@ export function FichasProcesso() {
                       <div>
                         <strong>Máquina:</strong> {selectedMachine ? `${selectedMachine.codigo} — ${selectedMachine.nome}` : 'Nenhuma alocada'}
                       </div>
-                    </div>
-                  </section>
-
-                  {/* Bloco 2: Matéria-Prima & Mistura do Material (Conforme Modelo do PDF) */}
-                  <section className={cardClass}>
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="rounded bg-[#123B50] px-1.5 py-0.5 text-[8.5px] font-black text-white uppercase">
-                          SEÇÃO 2
-                        </span>
-                        <h2 className="text-xs font-black uppercase tracking-wider text-[#123B50]">
-                          COMPOSIÇÕES &amp; MISTURA DO MATERIAL (DOSAGEM DA BATELADA)
-                        </h2>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          ref={fileRef}
-                          type="file"
-                          accept="image/png,image/jpeg,image/webp"
-                          className="hidden"
-                          onChange={e => void handleFile(e.target.files?.[0])}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => fileRef.current?.click()}
-                          className="h-7 px-2.5 text-[10px] font-bold uppercase rounded-[2px] border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 flex items-center gap-1 cursor-pointer"
-                        >
-                          <ImagePlus size={12} />
-                          <span>Foto Material/Resina</span>
-                        </button>
-                      </div>
-                      <span className="text-[10px] font-mono font-bold text-slate-600">
-                        Total Batelada: <strong className="text-[#123B50]">{totalBateladaKg.toFixed(3)} kg</strong>
-                      </span>
-                    </div>
-
-                    {/* Tabela de Componentes da Mistura */}
-                    <div className="overflow-x-auto rounded-[2px] border border-slate-200">
-                      <table className="w-full border-collapse text-[11px]">
-                        <thead className="bg-[#123B50] text-white">
-                          <tr className="h-[28px]">
-                            <th className="px-2 text-left font-bold uppercase text-[9px] w-[140px]">Tipo Componente</th>
-                            <th className="px-2 text-left font-bold uppercase text-[9px]">Descrição do Material</th>
-                            <th className="px-2 text-left font-bold uppercase text-[9px] w-[100px]">Cód. MP</th>
-                            <th className="px-2 text-right font-bold uppercase text-[9px] w-[110px]">Dosagem (kg)</th>
-                            <th className="px-2 text-right font-bold uppercase text-[9px] w-[90px]">Proporção (%)</th>
-                            <th className="px-2 text-center font-bold uppercase text-[9px] w-[50px]">Ação</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200 bg-white">
-                          {form.mistura.map((mat, idx) => (
-                            <tr key={mat.id} className="hover:bg-slate-50">
-                              <td className="p-1.5">
-                                <input
-                                  type="text"
-                                  value={mat.tipo}
-                                  onChange={e => {
-                                    const next = [...form.mistura]
-                                    next[idx].tipo = e.target.value
-                                    update('mistura', next)
-                                  }}
-                                  className="h-7 w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-[11px] font-bold outline-none focus:border-[#2D8DB8]"
-                                />
-                              </td>
-                              <td className="p-1.5">
-                                <input
-                                  type="text"
-                                  value={mat.descricao}
-                                  onChange={e => {
-                                    const next = [...form.mistura]
-                                    next[idx].descricao = e.target.value
-                                    update('mistura', next)
-                                  }}
-                                  className="h-7 w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-[11px] outline-none focus:border-[#2D8DB8]"
-                                />
-                              </td>
-                              <td className="p-1.5">
-                                <input
-                                  type="text"
-                                  value={mat.codigo}
-                                  onChange={e => {
-                                    const next = [...form.mistura]
-                                    next[idx].codigo = e.target.value
-                                    update('mistura', next)
-                                  }}
-                                  className="h-7 w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-[11px] font-mono font-bold outline-none focus:border-[#2D8DB8]"
-                                />
-                              </td>
-                              <td className="p-1.5">
-                                <input
-                                  type="number"
-                                  step="any"
-                                  value={mat.dosagem_kg}
-                                  onChange={e => {
-                                    const val = Number(e.target.value) || 0
-                                    const next = [...form.mistura]
-                                    next[idx].dosagem_kg = val
-                                    const newTotal = next.reduce((acc, m) => acc + (m.dosagem_kg || 0), 0)
-                                    if (newTotal > 0) {
-                                      next.forEach(m => {
-                                        m.proporcao_pct = Number(((m.dosagem_kg / newTotal) * 100).toFixed(2))
-                                      })
-                                    }
-                                    update('mistura', next)
-                                  }}
-                                  className="h-7 w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-right text-[11px] font-mono font-bold text-[#123B50] outline-none focus:border-[#2D8DB8]"
-                                />
-                              </td>
-                              <td className="p-1.5 text-right font-mono font-bold text-slate-700">
-                                {mat.proporcao_pct}%
-                              </td>
-                              <td className="p-1.5 text-center">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const next = form.mistura.filter((_, i) => i !== idx)
-                                    update('mistura', next)
-                                  }}
-                                  className="text-slate-400 hover:text-rose-600"
-                                  title="Remover componente"
-                                >
-                                  <X size={14} />
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-
-                    <div className="mt-2 flex items-center justify-between">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const next = [
-                            ...form.mistura,
-                            {
-                              id: crypto.randomUUID(),
-                              tipo: 'Aditivo / Moído',
-                              descricao: 'Material Moído Reutilizável',
-                              codigo: 'MOIDO-01',
-                              dosagem_kg: 1.0,
-                              proporcao_pct: 0
-                            }
-                          ]
-                          update('mistura', next)
-                        }}
-                        className="h-7 px-2.5 text-[10px] font-bold uppercase rounded-[2px] border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 flex items-center gap-1 cursor-pointer"
-                      >
-                        <Plus size={12} />
-                        <span>Adicionar Componente à Mistura</span>
-                      </button>
-
-                      <span className="text-[9px] text-slate-500 italic">
-                        Proporções recalculadas automaticamente com base no peso de cada componente.
-                      </span>
                     </div>
                   </section>
 
@@ -1441,27 +1340,27 @@ export function FichasProcesso() {
                         <div className="flex items-center justify-between text-center gap-1 font-mono text-[10px]">
                           <div className="flex-1 bg-slate-800 p-1 rounded border border-rose-500/40">
                             <span className="text-[8px] text-slate-400 block">Bico</span>
-                            <strong className="text-rose-400">{form.bico}°C</strong>
+                            <strong className="text-rose-400">{tempC(form.bico)}</strong>
                           </div>
                           <span className="text-slate-600">→</span>
                           <div className="flex-1 bg-slate-800 p-1 rounded border border-amber-500/40">
                             <span className="text-[8px] text-slate-400 block">Z1 (Frente)</span>
-                            <strong className="text-amber-400">{form.zona1}°C</strong>
+                            <strong className="text-amber-400">{tempC(form.zona1)}</strong>
                           </div>
                           <span className="text-slate-600">→</span>
                           <div className="flex-1 bg-slate-800 p-1 rounded border border-yellow-500/40">
                             <span className="text-[8px] text-slate-400 block">Z2 (Meio)</span>
-                            <strong className="text-yellow-400">{form.zona2}°C</strong>
+                            <strong className="text-yellow-400">{tempC(form.zona2)}</strong>
                           </div>
                           <span className="text-slate-600">→</span>
                           <div className="flex-1 bg-slate-800 p-1 rounded border border-sky-500/40">
                             <span className="text-[8px] text-slate-400 block">Z3 (Alim.)</span>
-                            <strong className="text-sky-400">{form.zona3}°C</strong>
+                            <strong className="text-sky-400">{tempC(form.zona3)}</strong>
                           </div>
                           <span className="text-slate-600">→</span>
                           <div className="flex-1 bg-slate-800 p-1 rounded border border-teal-500/40">
                             <span className="text-[8px] text-slate-400 block">Z4 (Funil)</span>
-                            <strong className="text-teal-400">{form.zona4}°C</strong>
+                            <strong className="text-teal-400">{tempC(form.zona4)}</strong>
                           </div>
                         </div>
                       </div>
@@ -1623,17 +1522,442 @@ export function FichasProcesso() {
               )}
 
               {/* ========================================================================= */}
-              {/* ABA 2 (2/3): FOTOS DO MOLDE & FERRAMENTAL (Setup, Cavidade e Refrigeração) */}
+              {/* ABA 2 (2/4): MATÉRIA-PRIMA — componentes da batelada com foto do cadastro */}
+              {/* ========================================================================= */}
+              {activeTab === 'MATERIA_PRIMA' && (
+                <div className="space-y-3">
+                  <section className={cardClass}>
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2 mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="rounded bg-[#123B50] px-1.5 py-0.5 text-[8.5px] font-black text-white uppercase">
+                          SEÇÃO 2
+                        </span>
+                        <h2 className="text-xs font-black uppercase tracking-wider text-[#123B50]">
+                          MATÉRIA-PRIMA DA BATELADA
+                        </h2>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <input
+                          ref={fileRef}
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp"
+                          className="hidden"
+                          onChange={e => void handleFile(e.target.files?.[0])}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => fileRef.current?.click()}
+                          className="h-7 px-2.5 text-[10px] font-bold uppercase rounded-[2px] border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 flex items-center gap-1 cursor-pointer"
+                        >
+                          <ImagePlus size={12} />
+                          <span>Foto da Peça (ficha)</span>
+                        </button>
+                        <span className="text-[10px] font-mono font-bold text-slate-600">
+                          Total batelada: <strong className="text-[#123B50]">{totalBateladaKg.toFixed(3)} kg</strong>
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mb-2 flex items-start gap-2 rounded-[2px] border border-sky-200 bg-sky-50 px-2.5 py-1.5 text-[10px] font-semibold text-[#123B50]">
+                      <Search size={13} className="mt-0.5 shrink-0 text-[#2D8DB8]" />
+                      <span>
+                        Clique na <strong>descrição</strong> de um componente para abrir o card flutuante com a
+                        foto. A foto não é anexada aqui: ela vem do <strong>Cadastro de Produtos</strong>
+                        (coluna <code className="font-mono text-[9px]">erp_produtos.foto_url</code>).
+                        O campo &quot;%&quot; é calculado pelo sistema sobre a massa informada.
+                      </span>
+                    </div>
+
+                    <div className="overflow-x-auto rounded-[2px] border border-slate-200">
+                      <table className="w-full border-collapse text-[11px]">
+                        <thead className="bg-[#123B50] text-white">
+                          <tr className="h-[28px]">
+                            <th className="w-[44px] px-2 text-center font-bold uppercase text-[9px]">Item</th>
+                            <th className="w-[150px] px-2 text-left font-bold uppercase text-[9px]">Código MP</th>
+                            <th className="px-2 text-left font-bold uppercase text-[9px]">Descrição</th>
+                            <th className="w-[80px] px-2 text-right font-bold uppercase text-[9px]">%</th>
+                            <th className="w-[110px] px-2 text-right font-bold uppercase text-[9px]">Qtde</th>
+                            <th className="w-[90px] px-2 text-left font-bold uppercase text-[9px]">Unid</th>
+                            <th className="w-[74px] px-2 text-center font-bold uppercase text-[9px]">Ação</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 bg-white">
+                          {form.mistura.map((mat, idx) => {
+                            const prod = produtoDaMateriaPrima(mat)
+                            return (
+                              <tr key={mat.id} className="hover:bg-slate-50">
+                                <td className="px-2 text-center font-mono text-[10px] font-bold text-slate-500">
+                                  {String(idx + 1).padStart(2, '0')}
+                                </td>
+                                <td className="p-1.5">
+                                  <div className="flex items-center gap-1">
+                                    <input
+                                      type="text"
+                                      value={mat.codigo}
+                                      readOnly={!!prod}
+                                      onChange={e => {
+                                        const next = [...form.mistura]
+                                        next[idx] = { ...next[idx], codigo: e.target.value }
+                                        update('mistura', next)
+                                      }}
+                                      placeholder="Cód. MP"
+                                      className={`h-7 w-full min-w-0 rounded-[2px] border px-2 font-mono text-[11px] font-bold outline-none focus:border-[#2D8DB8] ${
+                                        prod ? 'border-slate-200 bg-slate-50 text-slate-700' : 'border-slate-300 text-slate-800'
+                                      }`}
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => setMpPickerIdx(idx)}
+                                      title="Buscar produto do cadastro"
+                                      className="grid h-7 w-7 shrink-0 place-items-center rounded-[2px] border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 hover:text-[#2D8DB8] cursor-pointer"
+                                    >
+                                      <Search size={12} />
+                                    </button>
+                                  </div>
+                                </td>
+                                <td className="p-1.5">
+                                  {prod ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => setMpPhoto(prod)}
+                                      title="Clique para ver a foto do cadastro de produtos"
+                                      className="flex w-full items-center gap-1.5 text-left text-[11px] text-slate-800 hover:text-[#2D8DB8]"
+                                    >
+                                      <ImagePlus size={12} className="shrink-0 text-[#2D8DB8]" />
+                                      <span className="truncate underline decoration-dotted underline-offset-2">
+                                        {mat.descricao || prod.nome || '(sem descrição no cadastro)'}
+                                      </span>
+                                    </button>
+                                  ) : (
+                                    <input
+                                      type="text"
+                                      value={mat.descricao}
+                                      onChange={e => {
+                                        const next = [...form.mistura]
+                                        next[idx] = { ...next[idx], descricao: e.target.value }
+                                        update('mistura', next)
+                                      }}
+                                      placeholder="Descrição da matéria-prima"
+                                      className="h-7 w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-[11px] outline-none focus:border-[#2D8DB8]"
+                                    />
+                                  )}
+                                </td>
+                                <td className="px-2 text-right font-mono text-[11px] font-bold text-slate-700">
+                                  {proporcaoPct(mat)}
+                                </td>
+                                <td className="p-1.5">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    step="any"
+                                    value={mat.quantidade === 0 ? '' : mat.quantidade}
+                                    onChange={e => {
+                                      const next = [...form.mistura]
+                                      next[idx] = { ...next[idx], quantidade: Number(e.target.value) || 0 }
+                                      update('mistura', next)
+                                    }}
+                                    className="h-7 w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-right font-mono text-[11px] font-bold text-[#123B50] outline-none focus:border-[#2D8DB8]"
+                                  />
+                                </td>
+                                <td className="p-1.5">
+                                  <input
+                                    type="text"
+                                    list="unidades-mistura"
+                                    value={mat.unidade}
+                                    onChange={e => {
+                                      const next = [...form.mistura]
+                                      next[idx] = { ...next[idx], unidade: e.target.value.toUpperCase() }
+                                      update('mistura', next)
+                                    }}
+                                    className="h-7 w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-[11px] font-bold uppercase outline-none focus:border-[#2D8DB8]"
+                                  />
+                                </td>
+                                <td className="p-1.5 text-center">
+                                  <div className="flex items-center justify-center gap-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => setMpPickerIdx(idx)}
+                                      title="Vincular produto do cadastro"
+                                      className="grid h-7 w-7 place-items-center rounded-[2px] border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 cursor-pointer"
+                                    >
+                                      <Layers size={12} />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => update('mistura', form.mistura.filter((_, i) => i !== idx))}
+                                      className="text-slate-400 hover:text-rose-600"
+                                      title="Remover componente"
+                                    >
+                                      <X size={14} />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            )
+                          })}
+                          {form.mistura.length === 0 && (
+                            <tr>
+                              <td colSpan={7} className="p-6 text-center text-[11px] font-semibold text-slate-400">
+                                Nenhum componente cadastrado. Use &quot;+ Adicionar matéria-prima&quot; e vincule o
+                                produto do cadastro para liberar a foto.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <datalist id="unidades-mistura">
+                      {UNIDADES_MISTURA.map(u => (
+                        <option key={u} value={u} />
+                      ))}
+                    </datalist>
+
+                    <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          update('mistura', [
+                            ...form.mistura,
+                            { id: crypto.randomUUID(), produto_id: '', codigo: '', descricao: '', quantidade: 0, unidade: 'KG' }
+                          ])
+                        }
+                        className="h-7 px-2.5 text-[10px] font-bold uppercase rounded-[2px] border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 flex items-center gap-1 cursor-pointer"
+                      >
+                        <Plus size={12} />
+                        <span>Adicionar matéria-prima</span>
+                      </button>
+
+                      <span className="text-[9px] italic text-slate-500">
+                        {itensSemUnidadeMassa > 0
+                          ? `${itensSemUnidadeMassa} item(ns) em unidade avulsa (UN) ficam fora do somatório de massa.`
+                          : 'Proporção recalculada sobre a massa (KG, G, TON, L, ML) informada em cada linha.'}
+                      </span>
+                    </div>
+                  </section>
+
+                  {/* Card flutuante com a foto da matéria-prima (origem: cadastro de produtos) */}
+                  {mpPhoto && (
+                    <div
+                      className="fixed inset-0 z-[10060] flex items-center justify-center bg-slate-950/60 p-4"
+                      role="dialog"
+                      aria-modal="true"
+                      aria-label={`Foto da matéria-prima ${mpPhoto.codigo}`}
+                      onMouseDown={e => {
+                        if (e.target === e.currentTarget) setMpPhoto(null)
+                      }}
+                    >
+                      <section className="w-full max-w-[440px] overflow-hidden rounded-[2px] border border-slate-300 bg-white shadow-2xl">
+                        <header className="flex items-center justify-between border-b border-slate-200 bg-[#123B50] px-3 py-2">
+                          <div className="min-w-0">
+                            <span className="block text-[8.5px] font-black uppercase tracking-widest text-[#48B7C7]">
+                              Matéria-prima · cadastro de produtos
+                            </span>
+                            <strong className="block truncate text-[12px] text-white">
+                              {mpPhoto.codigo} — {mpPhoto.nome}
+                            </strong>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setMpPhoto(null)}
+                            aria-label="Fechar foto da matéria-prima"
+                            className="grid h-7 w-7 shrink-0 place-items-center rounded-[2px] border border-slate-500 bg-slate-800 text-slate-200 hover:bg-slate-700 cursor-pointer"
+                          >
+                            <X size={14} />
+                          </button>
+                        </header>
+
+                        <div className="grid h-[300px] place-items-center bg-slate-100 p-3">
+                          {mpPhoto.foto_url ? (
+                            <img
+                              src={mpPhoto.foto_url}
+                              alt={`Foto de ${mpPhoto.nome}`}
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          ) : (
+                            <div className="max-w-[300px] text-center">
+                              <ImagePlus size={30} className="mx-auto text-slate-400" />
+                              <p className="mt-2 text-[11px] font-bold text-slate-600">
+                                Sem foto no cadastro de produtos
+                              </p>
+                              <p className="mt-1 text-[10px] text-slate-500">
+                                Abra <strong>Cadastro de Produtos</strong> e envie a imagem do item{' '}
+                                <strong className="font-mono">{mpPhoto.codigo}</strong>. A ficha passa a exibir a
+                                foto automaticamente, sem anexar nada aqui.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
+                        <footer className="flex items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-3 py-2 text-[10px] text-slate-600">
+                          <span>
+                            {mpPhoto.descricao ? <span className="truncate">{mpPhoto.descricao}</span> : 'Sem descrição complementar.'}
+                          </span>
+                          <span className="shrink-0 font-mono font-bold text-slate-700">
+                            Unid.: {mpPhoto.unidade ?? '—'}
+                          </span>
+                        </footer>
+                      </section>
+                    </div>
+                  )}
+
+                  {/* Seleção de produto do cadastro para a linha da mistura */}
+                  {mpPickerIdx !== null && (
+                    <MateriaPrimaPicker
+                      produtos={products}
+                      onFechar={() => setMpPickerIdx(null)}
+                      onEscolher={p => {
+                        const next = [...form.mistura]
+                        next[mpPickerIdx] = {
+                          ...next[mpPickerIdx],
+                          produto_id: p.id,
+                          codigo: p.codigo,
+                          descricao: p.nome || p.descricao || '',
+                          unidade: (p.unidade || 'KG').toUpperCase()
+                        }
+                        update('mistura', next)
+                        setMpPickerIdx(null)
+                        setMessage(`Matéria-prima ${p.codigo} vinculada ao cadastro de produtos.`)
+                      }}
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* ABA 3 (3/4): MOLDE — número, desenho e galeria fotográfica               */}
               {/* ========================================================================= */}
               {activeTab === 'MOLDE' && (
                 <div className="space-y-3">
-                  
+
+                  {/* Identificação do molde: número, cavidades e desenho (origem erp_ferramentas_industriais) */}
+                  <section className={cardClass}>
+                    <div className="flex items-center gap-2 border-b border-slate-200 pb-2 mb-3">
+                      <span className="rounded bg-[#123B50] px-1.5 py-0.5 text-[8.5px] font-black text-white uppercase">
+                        MOLDE 3/4
+                      </span>
+                      <h2 className="text-xs font-black uppercase tracking-wider text-[#123B50]">
+                        NÚMERO DO MOLDE &amp; DESENHO TÉCNICO
+                      </h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+                      <EntityCodeLookup
+                        label="Nº DO MOLDE / FERRAMENTAL"
+                        value={form.ferramenta_id}
+                        records={tools.map(t => ({
+                          id: t.id,
+                          codigo: t.codigo,
+                          nome: t.nome,
+                          dimensoes: t.tipo
+                        }))}
+                        onChange={v => update('ferramenta_id', v)}
+                        onSelect={r => {
+                          const tHit = tools.find(x => x.id === r.id)
+                          if (!tHit) return
+                          update('ferramenta_id', tHit.id)
+                          if (tHit.numero_cavidades) update('cavidades_ativas', String(tHit.numero_cavidades))
+                          if (tHit.desenho_referencia && !form.desenho_numero) {
+                            update('desenho_numero', tHit.desenho_referencia)
+                          }
+                        }}
+                        compact
+                        placeholder="Buscar molde..."
+                      />
+
+                      <div>
+                        <label className={labelClass}>Número de cavidades do molde</label>
+                        <input
+                          type="text"
+                          readOnly
+                          value={selectedTool ? String(selectedTool.numero_cavidades ?? '') : ''}
+                          placeholder={selectedTool ? 'Não informado no cadastro' : 'Selecione o molde'}
+                          className={`${inputClass} bg-slate-50 text-slate-600`}
+                        />
+                      </div>
+
+                      <div>
+                        <label className={labelClass}>Desenho nº (referência)</label>
+                        <input
+                          type="text"
+                          value={form.desenho_numero}
+                          onChange={e => update('desenho_numero', e.target.value)}
+                          placeholder="Ex.: 01201"
+                          className={inputClass}
+                        />
+                      </div>
+
+                      <div className="flex items-end">
+                        <input
+                          ref={desenhoRef}
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp,application/pdf"
+                          className="hidden"
+                          onChange={e => {
+                            void handleDesenhoUpload(e.target.files?.[0])
+                            e.target.value = ''
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => desenhoRef.current?.click()}
+                          className={`${btnClass} w-full border border-slate-300 bg-white text-slate-700 hover:bg-slate-50`}
+                        >
+                          <FileDown size={13} />
+                          <span>Anexar desenho (PDF/PNG/JPG)</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="mt-2.5 rounded-[2px] border border-slate-200 bg-slate-50 p-2 text-[10px] text-slate-700">
+                      <strong>Molde selecionado:</strong>{' '}
+                      {selectedTool
+                        ? `${selectedTool.codigo} — ${selectedTool.nome} (${selectedTool.tipo})`
+                        : 'Nenhum molde vinculado. O número acima é o do cadastro de ferramental, não da peça.'}
+                    </div>
+
+                    {form.desenho_url && (
+                      <div className="mt-2.5 flex items-center gap-2 rounded-[2px] border border-slate-200 bg-white p-2">
+                        {form.desenho_url.toLowerCase().endsWith('.pdf') || form.desenho_url.includes('.pdf?') ? (
+                          <span className="grid h-[46px] w-[38px] shrink-0 place-items-center rounded border border-slate-300 bg-slate-100 text-[8px] font-black text-slate-600">
+                            PDF
+                          </span>
+                        ) : (
+                          <img
+                            src={form.desenho_url}
+                            alt="Desenho do molde"
+                            className="h-[64px] w-[64px] shrink-0 rounded border border-slate-200 object-contain"
+                          />
+                        )}
+                        <span className="min-w-0 flex-1 truncate text-[10px] font-semibold text-slate-700">
+                          {form.desenho_numero ? `Desenho ${form.desenho_numero} · ` : 'Desenho anexado · '}
+                          <a
+                            href={form.desenho_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-[#2D8DB8] underline"
+                          >
+                            abrir em nova aba
+                          </a>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => update('desenho_url', '')}
+                          className="shrink-0 text-slate-400 hover:text-rose-600"
+                          title="Remover vínculo do desenho"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    )}
+                  </section>
+
                   {/* Seção Superior de Upload de Fotos do Molde */}
                   <section className={cardClass}>
                     <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
                       <div className="flex items-center gap-2">
                         <span className="rounded bg-[#123B50] px-1.5 py-0.5 text-[8.5px] font-black text-white uppercase">
-                          MOLDE 2/3
+                          FOTOS 3/4
                         </span>
                         <h2 className="text-xs font-black uppercase tracking-wider text-[#123B50]">
                           GALERIA FOTOGRÁFICA DO MOLDE &amp; FERRAMENTAL
@@ -1772,7 +2096,7 @@ export function FichasProcesso() {
                       <div className="rounded border border-slate-200 bg-slate-50 p-2 space-y-1">
                         <strong className="text-slate-800 block text-[11px]">1. Refrigeração</strong>
                         <div>• Circuito de água conectado</div>
-                        <div>• Temperatura do molde: {form.zona_molde || '35'}°C</div>
+                        <div>• Temperatura do molde: {form.zona_molde ? `${tempC(form.zona_molde)}` : 'não informada'}</div>
                         <div>• Mangueiras de engate rápido conferidas</div>
                       </div>
                       <div className="rounded border border-slate-200 bg-slate-50 p-2 space-y-1">
@@ -1790,7 +2114,7 @@ export function FichasProcesso() {
                       <div className="rounded border border-slate-200 bg-slate-50 p-2 space-y-1">
                         <strong className="text-slate-800 block text-[11px]">4. Desmoldante &amp; Bico</strong>
                         <div>• Raio da bucha compatível com o bico</div>
-                        <div>• Desmoldante: {form.aviso_destaque}</div>
+                        <div>• Desmoldante: {form.aviso_destaque || 'não definido na ficha'}</div>
                         <div>• Canal de injeção polido e desobstruído</div>
                       </div>
                     </div>
@@ -1799,32 +2123,25 @@ export function FichasProcesso() {
               )}
 
               {/* ========================================================================= */}
-              {/* ABA 3 (3/3): QUALIDADE, DESENHO TÉCNICO & ESPECIFICAÇÕES SGQ              */}
+              {/* ABA 4 (4/4): QUALIDADE, ESPECIFICAÇÕES TÉCNICAS & ESPECIFICAÇÕES SGQ      */}
               {/* ========================================================================= */}
               {activeTab === 'QUALIDADE' && (
                 <div className="space-y-3">
                   
-                  {/* Seção Superior: Desenho Técnico & Documentos Relacionados */}
+                  {/* Seção Superior: Especificações da Peça & Documentos Relacionados */}
                   <section className={cardClass}>
                     <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
                       <div className="flex items-center gap-2">
                         <span className="rounded bg-[#123B50] px-1.5 py-0.5 text-[8.5px] font-black text-white uppercase">
-                          DESENHO 3/3
+                          SGQ 4/4
                         </span>
                         <h2 className="text-xs font-black uppercase tracking-wider text-[#123B50]">
-                          DESENHO TÉCNICO DA PEÇA &amp; DOCUMENTOS DA QUALIDADE
+                          ESPECIFICAÇÕES DA PEÇA &amp; DOCUMENTOS DA QUALIDADE
                         </h2>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold text-slate-500">Desenho nº:</span>
-                        <input
-                          type="text"
-                          value={form.desenho_numero}
-                          onChange={e => update('desenho_numero', e.target.value)}
-                          placeholder="Ex: TPA01201"
-                          className="h-[30px] w-40 rounded-[2px] border border-slate-300 px-2 text-[11px] font-mono font-bold outline-none focus:border-[#2D8DB8]"
-                        />
-                      </div>
+                      <span className="text-[9.5px] font-semibold text-slate-500">
+                        Número e desenho do molde: aba 3 (Molde)
+                      </span>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -2046,8 +2363,9 @@ export function FichasProcesso() {
         <div style={{ marginTop: '10px', fontSize: '9pt', lineHeight: 1.5 }}>
           <div><strong>Produto:</strong> {selectedProduct ? `${selectedProduct.codigo} — ${selectedProduct.nome}` : '—'}</div>
           <div><strong>Molde / Ferramental:</strong> {selectedTool ? `${selectedTool.codigo} (${form.cavidades_ativas} cavidades ativas)` : '—'}</div>
+          <div><strong>Desenho do molde:</strong> {form.desenho_numero || 'não informado'}{form.desenho_url ? ' · arquivo anexado na ficha (aba Molde)' : ' · sem arquivo anexado'}</div>
           <div><strong>Máquina / Recurso:</strong> {selectedMachine ? `${selectedMachine.codigo} — ${selectedMachine.nome}` : '—'}</div>
-          <div><strong>Alerta Operacional:</strong> <span style={{ color: '#b91c1c', fontWeight: 'bold' }}>{form.aviso_destaque}</span></div>
+          <div><strong>Alerta Operacional:</strong> <span style={{ color: '#b91c1c', fontWeight: 'bold' }}>{form.aviso_destaque || 'Sem alerta operacional definido.'}</span></div>
         </div>
 
         <table style={{ marginTop: '10px' }}>
@@ -2061,7 +2379,7 @@ export function FichasProcesso() {
           </thead>
           <tbody>
             <tr>
-              <td>{form.bico}°C</td><td>{form.zona1}°C</td><td>{form.zona2}°C</td><td>{form.zona3}°C</td><td>{form.zona4}°C</td><td>{form.zona_molde}°C</td>
+              <td>{tempC(form.bico)}</td><td>{tempC(form.zona1)}</td><td>{tempC(form.zona2)}</td><td>{tempC(form.zona3)}</td><td>{tempC(form.zona4)}</td><td>{tempC(form.zona_molde)}</td>
             </tr>
           </tbody>
         </table>
@@ -2069,25 +2387,48 @@ export function FichasProcesso() {
         <table style={{ marginTop: '10px' }}>
           <thead>
             <tr>
-              <th colSpan={5} style={{ textAlign: 'center', background: '#e2e8f0' }}>COMPOSIÇÃO E MISTURA DE MATÉRIA-PRIMA</th>
+              <th colSpan={6} style={{ textAlign: 'center', background: '#e2e8f0' }}>COMPOSIÇÃO E MISTURA DE MATÉRIA-PRIMA</th>
             </tr>
             <tr>
-              <th>Tipo</th><th>Material</th><th>Código</th><th style={{ textAlign: 'right' }}>Dosagem</th><th style={{ textAlign: 'right' }}>Proporção</th>
+              <th>Item</th><th>Cód. MP</th><th>Descrição</th><th style={{ textAlign: 'right' }}>%</th><th style={{ textAlign: 'right' }}>Qtde</th><th>Unid</th>
             </tr>
           </thead>
           <tbody>
-            {form.mistura.map(m => (
+            {form.mistura.map((m, i) => (
               <tr key={m.id}>
-                <td>{m.tipo}</td><td>{m.descricao}</td><td>{m.codigo}</td><td style={{ textAlign: 'right' }}>{m.dosagem_kg} kg</td><td style={{ textAlign: 'right' }}>{m.proporcao_pct}%</td>
+                <td>{i + 1}</td><td>{m.codigo}</td><td>{m.descricao}</td>
+                <td style={{ textAlign: 'right' }}>{proporcaoPct(m)}</td>
+                <td style={{ textAlign: 'right' }}>{m.quantidade}</td>
+                <td>{m.unidade}</td>
               </tr>
             ))}
           </tbody>
         </table>
 
+        {form.fotos_molde.length > 0 && (
+          <div style={{ marginTop: '10px' }}>
+            <div style={{ fontSize: '8pt', fontWeight: 'bold', borderBottom: '1px solid #0f172a', paddingBottom: '2px' }}>
+              FOTOS DO MOLDE / FERRAMENTAL ({form.fotos_molde.length})
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '4px' }}>
+              {form.fotos_molde.slice(0, 4).map(foto => (
+                <div key={foto.id} style={{ width: '110px', border: '1px solid #cbd5e1', padding: '2px' }}>
+                  <img
+                    src={foto.url}
+                    alt={foto.titulo}
+                    style={{ width: '106px', height: '80px', objectFit: 'contain', background: '#f8fafc' }}
+                  />
+                  <div style={{ fontSize: '6.5pt', textAlign: 'center' }}>{foto.titulo || foto.tipo}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div style={{ marginTop: '12px', fontSize: '8pt', border: '1px solid #cbd5e1', padding: '6px', background: '#f8fafc' }}>
           <strong>INSTRUÇÕES OBRIGATÓRIAS DO SGQ:</strong>
           <pre style={{ fontFamily: 'inherit', whiteSpace: 'pre-wrap', margin: '4px 0 0 0', fontSize: '7.5pt' }}>
-            {form.observacoes_setup}
+            {form.observacoes_setup || 'Sem instruções de setup registradas para esta ficha.'}
           </pre>
         </div>
       </section>
@@ -2097,6 +2438,140 @@ export function FichasProcesso() {
 
 function noticeMessage(error: string, message: string): string {
   return error || message
+}
+
+// Temperatura sem valor: mostra traço em vez de "°C" solto (o print e o perfil térmico usam isso).
+function tempC(v: string): string {
+  return v.trim() ? `${v}°C` : '—'
+}
+
+// Modal de escolha da matéria-prima dentro do cadastro de produtos da empresa (RLS).
+function MateriaPrimaPicker({
+  produtos,
+  onFechar,
+  onEscolher
+}: {
+  produtos: Product[]
+  onFechar: () => void
+  onEscolher: (p: Product) => void
+}) {
+  const [filtro, setFiltro] = useState('')
+
+  const lista = useMemo(() => {
+    const q = filtro.trim().toLowerCase()
+    const base = q
+      ? produtos.filter(p => [p.codigo, p.nome, p.descricao].join(' ').toLowerCase().includes(q))
+      : produtos
+    return base.slice(0, 200)
+  }, [produtos, filtro])
+
+  return (
+    <div
+      className="fixed inset-0 z-[10070] flex items-center justify-center bg-slate-950/60 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Seleção de matéria-prima do cadastro de produtos"
+      onMouseDown={e => {
+        if (e.target === e.currentTarget) onFechar()
+      }}
+    >
+      <section className="flex max-h-[80vh] w-full max-w-[720px] flex-col overflow-hidden rounded-[2px] border border-slate-300 bg-white shadow-2xl">
+        <header className="flex items-center justify-between gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2">
+          <div>
+            <span className="block text-[8.5px] font-black uppercase tracking-widest text-[#2D8DB8]">
+              Cadastro de produtos
+            </span>
+            <h2 className="text-[13px] font-black uppercase tracking-wider text-[#123B50]">
+              Vincular matéria-prima à linha
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onFechar}
+            aria-label="Fechar seleção"
+            className="grid h-7 w-7 place-items-center rounded-[2px] border border-slate-300 bg-white text-slate-600 hover:bg-slate-100 cursor-pointer"
+          >
+            <X size={14} />
+          </button>
+        </header>
+
+        <div className="border-b border-slate-200 p-2.5">
+          <div className="relative">
+            <Search size={13} className="absolute left-2.5 top-2 text-slate-400" />
+            <input
+              type="text"
+              autoFocus
+              value={filtro}
+              onChange={e => setFiltro(e.target.value)}
+              placeholder="Buscar por código ou descrição..."
+              className="h-[30px] w-full rounded-[2px] border border-slate-300 bg-white pl-8 pr-2 text-[11px] font-semibold text-slate-800 outline-none focus:border-[#2D8DB8]"
+            />
+          </div>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <table className="w-full border-collapse text-[11px]">
+            <thead className="sticky top-0 bg-[#123B50] text-white">
+              <tr className="h-[26px]">
+                <th className="w-[120px] px-2 text-left font-bold uppercase text-[9px]">Código</th>
+                <th className="px-2 text-left font-bold uppercase text-[9px]">Descrição</th>
+                <th className="w-[70px] px-2 text-center font-bold uppercase text-[9px]">Unid</th>
+                <th className="w-[70px] px-2 text-center font-bold uppercase text-[9px]">Foto</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 bg-white">
+              {lista.map(p => (
+                <tr
+                  key={p.id}
+                  tabIndex={0}
+                  onClick={() => onEscolher(p)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') onEscolher(p)
+                  }}
+                  className="cursor-pointer hover:bg-sky-50"
+                >
+                  <td className="px-2 py-1.5 font-mono font-bold text-[#123B50]">{p.codigo}</td>
+                  <td className="px-2 py-1.5 text-slate-700">{p.nome}</td>
+                  <td className="px-2 py-1.5 text-center font-bold text-slate-600">{p.unidade ?? '—'}</td>
+                  <td className="px-2 py-1.5 text-center">
+                    {p.foto_url ? (
+                      <img
+                        src={p.foto_url}
+                        alt=""
+                        className="mx-auto h-7 w-7 rounded-[2px] border border-slate-200 object-contain"
+                      />
+                    ) : (
+                      <span className="text-[9px] font-bold uppercase text-slate-400">sem foto</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {lista.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="p-8 text-center text-[11px] font-semibold text-slate-400">
+                    Nenhum produto encontrado no cadastro desta empresa.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <footer className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-3 py-2 text-[10px] font-semibold text-slate-600">
+          <span>
+            {lista.length} de {produtos.length} produto(s){lista.length >= 200 ? ' — refine a busca' : ''}
+          </span>
+          <button
+            type="button"
+            onClick={onFechar}
+            className="h-7 rounded-[2px] border border-slate-300 bg-white px-3 text-[10px] font-bold uppercase text-slate-700 hover:bg-slate-100 cursor-pointer"
+          >
+            Cancelar
+          </button>
+        </footer>
+      </section>
+    </div>
+  )
 }
 
 export default FichasProcesso

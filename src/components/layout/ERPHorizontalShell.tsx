@@ -121,6 +121,7 @@ const menus: MenuItem[] = [
     { label: 'Sequenciamento', route: '/pageprincipal/pcp/sequenciamento' },
     { label: 'Planejamento', route: '/pageprincipal/pcp/planejamento' },
     { label: 'Fichas de processo', route: '/pageprincipal/pcp/fichas-processo' },
+    { label: 'Roteiro de Produção (tela anterior)', route: '/pageprincipal/pcp/roteiro-producao' },
     { label: 'Paradas / setup', route: '/pageprincipal/pcp/paradas' },
     { label: 'Auditoria PCP', route: '/pageprincipal/pcp/auditoria' },
     { label: 'PCP Tablet', route: '/pageprincipal/pcp' },

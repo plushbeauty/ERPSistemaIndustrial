@@ -296,7 +296,8 @@ export default function AppEntryV2() {
               <Route path="compras/solicitacao" element={<SolicitacaoCompra />} />
               <Route path="compras/requisicoes" element={<ComprasRequisicoes />} />
               <Route path="rh" element={<RHIndustrial />} />
-              <Route path="pcp/fichas-processo" element={<FichaProcesso />} />
+              <Route path="pcp/fichas-processo" element={<QualityPlanGate><FichasProcesso /></QualityPlanGate>} />
+              <Route path="pcp/roteiro-producao" element={<QualityPlanGate><FichaProcesso /></QualityPlanGate>} />
               <Route path="qualidade/rpnc" element={<QualityPlanGate><QualidadeRPNC /></QualityPlanGate>} />
               <Route path="qualidade/rpnc-formulario" element={<QualityPlanGate><QualityRpncForm /></QualityPlanGate>} />
               <Route path="qualidade/auditorias" element={<QualityPlanGate><QualityAuditsList /></QualityPlanGate>} />

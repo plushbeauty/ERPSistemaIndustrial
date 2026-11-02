@@ -15,8 +15,9 @@ const introCatalog: Record<string, PageIntro> = {
   'ajuda': { module: 'SYSNQRA ERP · SGQ INDUSTRIAL', title: 'Central de Ajuda', description: 'Procedimentos operacionais, POPs e orientação contextual de todas as rotinas do sistema.' },
 
   'pcp': { module: 'Engenharia e PCP', title: 'Central PCP', description: 'Planejamento e controle da produção: ordens, apontamentos, necessidade de materiais e agenda de máquinas.' },
-  'pcp/fichas-processo': { module: 'Engenharia e PCP', title: 'Fichas de Processo', description: 'Engenharia do injetado, prensado, acabamento e montagem de caixa, com parâmetros e sequências de operação.' },
+  'pcp/fichas-processo': { module: 'Engenharia e PCP', title: 'Fichas de Processo', description: 'Ficha em 4 abas: Processo, Matéria-prima (Item, Cód. MP, Descrição, %, Qtde, Unid, com foto puxada do cadastro de produtos ao clicar na descrição), Molde (número, desenho e fotos) e Qualidade & SGQ.' },
   'pcp/roteiros': { module: 'Engenharia e PCP', title: 'Roteiro de Operações', description: 'Sequência de operações, máquinas e tempos padrão que cada produto percorre na fábrica.' },
+  'pcp/roteiro-producao': { module: 'Engenharia e PCP', title: 'Roteiro de Produção (tela anterior)', description: 'Grade simples de operações, postos e tempos por produto. A ficha de processo em 4 abas está em Fichas de Processo.' },
   'pcp/capacidade': { module: 'Engenharia e PCP', title: 'Carga e Capacidade', description: 'Capacidade cadastrada por máquina confrontada com a carga real das ordens de produção abertas.' },
   'chao-de-fabrica/portal-operador': { module: 'Chão de Fábrica', title: 'Portal do Operador', description: 'Entrada do operador para apontar produção, consultar a OP em execução e registrar ocorrências.' },
   'chao-de-fabrica/postos': { module: 'Chão de Fábrica', title: 'Postos de Trabalho', description: 'Cadastro de postos e setores com responsável, turno e recursos vinculados à produção.' },
