@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, UserCog, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, FolderOpen, Warehouse, Percent, Scale, ShieldCheck, BookOpen, Landmark, Calculator, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode, Database, Package, Wrench } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, UserCog, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, FolderOpen, Warehouse, Percent, Scale, ShieldCheck, BookOpen, Landmark, Calculator, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode, Database, Package, Wrench, Clock, Calendar, CalendarDays, ListOrdered, PauseCircle } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -43,31 +43,50 @@ const menus: MenuItem[] = [
     { label: 'Cadastro de Produtos', route: '/pageprincipal/cadastros/produtos', icon: Boxes },
     { label: 'Ficha Técnica e Etiquetas', route: '/pageprincipal/cadastros/produtos/ficha-tecnica', icon: FileText },
     { label: 'Parâmetros de Código', route: '/pageprincipal/cadastros/produtos/parametros-codigo', icon: Barcode },
-  ] },  { label: 'RH / Departamento Pessoal', route: '/pageprincipal/rh', icon: Users },  { label: 'Engenharia e PCP', route: '/pageprincipal/pcp', icon: Factory, children: [
+  ] },  { label: 'RH / Departamento Pessoal', route: '/pageprincipal/rh', icon: Users, children: [
+    { label: 'Gestão de pessoas', route: '/pageprincipal/rh', icon: Users },
+    { label: 'Funcionários', route: '/pageprincipal/rh/funcionarios', icon: UserRound },
+    { label: 'Turnos e escalas', route: '/pageprincipal/rh/turnos', icon: Clock },
+    { label: 'EPIs', route: '/pageprincipal/rh/epis', icon: ShieldCheck },
+    { label: 'Entregas de EPI', route: '/pageprincipal/rh/epis/entregas', icon: ClipboardList },
+  ] },  { label: 'Engenharia e PCP', route: '/pageprincipal/pcp', icon: Factory, children: [
     { label: 'Central PCP', route: '/pageprincipal/pcp', icon: ClipboardList },
     { label: 'Fichas de Processo', route: '/pageprincipal/pcp/fichas-processo', icon: ClipboardList },
     { label: 'Roteiro de Operações', route: '/pageprincipal/pcp/roteiros', icon: Route },
     { label: 'Carga e Capacidade', route: '/pageprincipal/pcp/capacidade', icon: BarChart3 },
+    { label: 'Ordens de produção', route: '/pageprincipal/pcp/ordens', icon: Factory },
+    { label: 'Programação Gantt', route: '/pageprincipal/pcp/programacao-gantt', icon: CalendarDays },
+    { label: 'Agenda de máquinas', route: '/pageprincipal/pcp/agenda-maquinas', icon: Calendar },
+    { label: 'Sequenciamento', route: '/pageprincipal/pcp/sequenciamento', icon: ListOrdered },
+    { label: 'Planejamento', route: '/pageprincipal/pcp/planejamento', icon: ClipboardList },
+    { label: 'MRP II', route: '/pageprincipal/pcp/mrp-ii', icon: Calculator },
+    { label: 'Apontamentos', route: '/pageprincipal/pcp/apontamentos', icon: Monitor },
+    { label: 'Paradas / setup', route: '/pageprincipal/pcp/paradas', icon: PauseCircle },
+    { label: 'Auditoria PCP', route: '/pageprincipal/pcp/auditoria', icon: ShieldCheck },
+    { label: 'Roteiro de Produção (tela anterior)', route: '/pageprincipal/pcp/roteiro-producao', icon: Route },
   ] },  { label: 'Chão de Fábrica', route: '/pageprincipal/chao-de-fabrica/portal-operador', icon: Monitor, children: [
     { label: 'Portal do Operador', route: '/pageprincipal/chao-de-fabrica/portal-operador', icon: Monitor },
     { label: 'Postos de Trabalho', route: '/pageprincipal/chao-de-fabrica/postos', icon: ClipboardList },
-  ] },  { label: 'Estoque e Almoxarifado', route: '/pageprincipal/estoque/auditoria-saldos', icon: Warehouse, children: [
-    { label: 'Auditoria de Saldos', route: '/pageprincipal/estoque/auditoria-saldos', icon: Scale },
-    { label: 'Balanço de Estoque', route: '/pageprincipal/estoque/balanco', icon: Archive },
-    { label: 'Regras de Depreciação', route: '/pageprincipal/estoque/depreciacao', icon: Percent },
   ] },  { label: 'Qualidade / Paquímetro', route: '/pageprincipal/paquimetro', icon: Ruler, children: [
     { label: 'Equipamentos de Medição', route: '/pageprincipal/paquimetro', icon: Ruler },
+    { label: 'Visual geral da Qualidade', route: '/pageprincipal/qualidade', icon: ShieldCheck },
     { label: 'RPNC · formulário único', route: '/pageprincipal/qualidade/rpnc', icon: ClipboardList },
     { label: 'Auditorias da Qualidade', route: '/pageprincipal/qualidade/auditorias', icon: ShieldCheck },
-    { label: 'GED / Documentos da Qualidade', route: '/pageprincipal/qualidade/ged', icon: FolderOpen },
+    { label: 'Controle de Alteração de Documentos', route: '/pageprincipal/qualidade/documentos', icon: FolderOpen },
+    { label: 'Inspeções de lotes', route: '/pageprincipal/qualidade/inspecoes', icon: Search },
+    { label: 'Inspeção em processo', route: '/pageprincipal/qualidade/inspecao-processo', icon: Monitor },
+    { label: 'Especificações técnicas', route: '/pageprincipal/qualidade/especificacoes', icon: FileText },
+    { label: 'FMEA / PFMEA', route: '/pageprincipal/qualidade/fmea', icon: ShieldCheck },
+    { label: 'CEP / medições', route: '/pageprincipal/qualidade/cep', icon: BarChart3 },
+    { label: 'Controle de desenhos técnicos', route: '/pageprincipal/qualidade/controle-desenhos', icon: FileText },
   ] },  { label: 'Compras', route: '/pageprincipal/compras', icon: ShoppingCart, children: [
     { label: 'Central de Compras', route: '/pageprincipal/compras', icon: ShoppingCart },
     { label: 'Solicitação de Compra', route: '/pageprincipal/compras/solicitacao', icon: FilePlus2 },
     { label: 'Requisições de Compra', route: '/pageprincipal/compras/requisicoes', icon: ClipboardList },
     { label: 'Central de compras / RFQ', route: '/pageprincipal/compras/rfq' },
-    { label: 'Solicitações', route: '/pageprincipal/compras/solicitacao-manual' },
+    { label: 'Solicitações internas', route: '/pageprincipal/compras-solicitacao' },
     { label: 'Pedido de compra', route: '/pageprincipal/compras/pedido' },
-    { label: 'Recebimentos', route: '/pageprincipal/compras/recebimentos' },
+    { label: 'Recebimentos', route: '/pageprincipal/recebimento-materiais' },
     { label: 'Relatórios', route: '/pageprincipal/compras/relatorios' }  ] },  { label: 'Configurações', route: '/pageprincipal/administracao-configuracoes', icon: Settings },  { label: 'Configurações de Usuário', route: '/pageprincipal/configuracoes-usuario', icon: UserCog, minNivel: 8 },  { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText, children: [
     { label: 'Central Fiscal', route: '/pageprincipal/fiscal', icon: FileText },
     { label: 'Ano Fiscal', route: '/pageprincipal/fiscal/ano', icon: BookOpen },
@@ -87,8 +106,7 @@ const menus: MenuItem[] = [
     { label: 'PDV / venda rápida', route: '/pageprincipal/vendas/pdv' },
     { label: 'Catálogo digital', route: '/pageprincipal/vendas/catalogo-digital' },
     { label: 'Gestão do catálogo', route: '/pageprincipal/vendas/catalogo-digital/gestao' },
-    { label: 'Orçamentos e custos', route: '/pageprincipal/vendas/orcamentos' },
-    { label: 'Análise de custos', route: '/pageprincipal/vendas/analise-custos' },
+    { label: 'Orçamentos e análise de custos', route: '/pageprincipal/vendas/orcamentos' },
     { label: 'Metas', route: '/pageprincipal/vendas/metas' },
     { label: 'Relatórios', route: '/pageprincipal/vendas/relatorios' },
   ] },  { label: 'Estoque', route: '/pageprincipal/estoque', icon: Package, children: [
@@ -98,62 +116,30 @@ const menus: MenuItem[] = [
     { label: 'Ajustes', route: '/pageprincipal/estoque/ajustes' },
     { label: 'Separação', route: '/pageprincipal/estoque/separacao' },
     { label: 'Recebimento de lotes', route: '/pageprincipal/estoque/recebimento-lotes' },
+    { label: 'Auditoria de Saldos', route: '/pageprincipal/estoque/auditoria-saldos', icon: Scale },
+    { label: 'Balanço de Estoque', route: '/pageprincipal/estoque/balanco', icon: Archive },
+    { label: 'Regras de Depreciação', route: '/pageprincipal/estoque/depreciacao', icon: Percent },
+    { label: 'Rastreabilidade de Lotes', route: '/pageprincipal/estoque/rastreabilidade', icon: Search },
   ] },  { label: 'Almoxarifado', route: '/pageprincipal/almoxarifado/inventario-mestre', icon: Warehouse, children: [
     { label: 'Inventário mestre / FIFO e lotes', route: '/pageprincipal/almoxarifado/inventario-mestre' },
-  ] },  { label: 'Engenharia', route: '/pageprincipal/engenharia', icon: Database, children: [
+    { label: 'Controle e Saída de Material', route: '/pageprincipal/almoxarifado/saida-material', icon: LogOut },
+  ] },  { label: 'Engenharia de Produto (BOM)', route: '/pageprincipal/engenharia', icon: Database, children: [
     { label: 'Central de Engenharia', route: '/pageprincipal/engenharia' },
     { label: 'Catálogo de itens', route: '/pageprincipal/engenharia/produtos' },
     { label: 'Estrutura BOM', route: '/pageprincipal/engenharia/bom' },
     { label: 'Roteiros de fabricação', route: '/pageprincipal/engenharia/roteiros' },
     { label: 'Revisões BOM', route: '/pageprincipal/engenharia/revisoes-bom' },
-    { label: 'Fichas de processo', route: '/pageprincipal/engenharia/fichas-processo' },
-  ] },  { label: 'Manufatura / PCP', route: '/pageprincipal/pcp/ordens', icon: Factory, children: [
-    { label: 'Ordens de produção', route: '/pageprincipal/pcp/ordens' },
-    { label: 'Ordens industriais', route: '/pageprincipal/pcp/ordens-industriais' },
-    { label: 'Chão de Fábrica · Portal do Funcionário', route: '/pageprincipal/pcp/portal-operador' },
-    { label: 'Apontamentos', route: '/pageprincipal/pcp/apontamentos' },
-    { label: 'Demanda', route: '/pageprincipal/pcp/demanda' },
-    { label: 'Capacidade / Gantt', route: '/pageprincipal/pcp/capacidade' },
-    { label: 'Programação Gantt', route: '/pageprincipal/pcp/programacao-gantt' },
-    { label: 'MRP II', route: '/pageprincipal/pcp/mrp-ii' },
-    { label: 'Agenda de máquinas', route: '/pageprincipal/pcp/agenda-maquinas' },
-    { label: 'Sequenciamento', route: '/pageprincipal/pcp/sequenciamento' },
-    { label: 'Planejamento', route: '/pageprincipal/pcp/planejamento' },
-    { label: 'Fichas de processo', route: '/pageprincipal/pcp/fichas-processo' },
-    { label: 'Roteiro de Produção (tela anterior)', route: '/pageprincipal/pcp/roteiro-producao' },
-    { label: 'Paradas / setup', route: '/pageprincipal/pcp/paradas' },
-    { label: 'Auditoria PCP', route: '/pageprincipal/pcp/auditoria' },
-    { label: 'PCP Tablet', route: '/pageprincipal/pcp' },
-  ] },  { label: 'Qualidade', route: '/pageprincipal/qualidade', icon: ShieldCheck, children: [
-    { label: 'Visual geral da Qualidade', route: '/pageprincipal/qualidade' },
-    { label: 'Inspeções de lotes', route: '/pageprincipal/qualidade/inspecoes' },
-    { label: 'Inspeção em processo', route: '/pageprincipal/qualidade/inspecao-processo' },
-    { label: 'Especificações técnicas', route: '/pageprincipal/qualidade/especificacoes' },
-    { label: 'FMEA / PFMEA', route: '/pageprincipal/qualidade/fmea' },
-    { label: 'RPNC / CAPA · formulário único', route: '/pageprincipal/qualidade/rpnc' },
-    { label: 'Auditorias da Qualidade', route: '/pageprincipal/qualidade/auditorias' },
-    { label: 'CEP / medições', route: '/pageprincipal/qualidade/cep' },
-    { label: 'Cadastro de documentos (GED)', route: '/pageprincipal/qualidade/ged-documentos' },
-    { label: 'Qualidade Tablet', route: '/pageprincipal/qualidade' },
   ] },  { label: 'Manutenção', route: '/pageprincipal/manutencao', icon: Wrench, children: [
     { label: 'Central de manutenção', route: '/pageprincipal/manutencao' },
     { label: 'Ordens de manutenção', route: '/pageprincipal/manutencao/ordens' },
     { label: 'Cronograma', route: '/pageprincipal/manutencao/cronograma' },
     { label: 'Plano mestre', route: '/pageprincipal/manutencao/plano-mestre' },
     { label: 'Indicadores', route: '/pageprincipal/manutencao/indicadores' },
-  ] },  { label: 'Recursos Humanos', route: '/pageprincipal/rh/funcionarios', icon: UserRound, children: [
-    { label: 'Funcionários', route: '/pageprincipal/rh/funcionarios' },
-    { label: 'Turnos e escalas', route: '/pageprincipal/rh/turnos' },
-    { label: 'EPIs', route: '/pageprincipal/rh/epis' },
-    { label: 'Entregas de EPI', route: '/pageprincipal/rh/epis/entregas' },
   ] },  { label: 'Relatórios', route: '/pageprincipal/relatorios', icon: BarChart3, children: [
     { label: 'Painel da diretoria', route: '/pageprincipal/relatorios' },
     { label: 'Vendas · gráficos', route: '/pageprincipal/vendas/dashboard-graficos' },
-    { label: 'Vendas · relatórios', route: '/pageprincipal/vendas/relatorios' },
-    { label: 'Compras · relatórios', route: '/pageprincipal/compras/relatorios' },
     { label: 'PCP · dashboard OEE', route: '/pageprincipal/pcp/dashboard-oee' },
     { label: 'Qualidade · RNC', route: '/pageprincipal/qualidade/dashboard-rnc' },
-    { label: 'Manutenção · indicadores', route: '/pageprincipal/manutencao/indicadores' },
   ] }
 ]
 
@@ -242,7 +228,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     : pathname.startsWith('/pageprincipal/controladoria') || pathname.startsWith('/controladoria') ? 'Controladoria'
     : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
     : pathname.startsWith('/pageprincipal/chao-de-fabrica') ? 'Chão de Fábrica'
-    : pathname.startsWith('/pageprincipal/estoque') ? 'Estoque e Almoxarifado'
+    : pathname.startsWith('/pageprincipal/estoque') ? 'Estoque'
+    : pathname.startsWith('/pageprincipal/almoxarifado') ? 'Almoxarifado'
+    : pathname.startsWith('/pageprincipal/engenharia') ? 'Engenharia de Produto (BOM)'
     : pathname.startsWith('/pageprincipal/qualidade') ? 'Qualidade / Paquímetro'
     : pathname.startsWith('/pageprincipal/rh') || pathname.startsWith('/rh') ? 'RH / Departamento Pessoal'
     : pathname.startsWith('/pageprincipal/paquimetro') ? 'Qualidade / Paquímetro'
@@ -256,7 +244,10 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const currentModuleMenu = moduleLabel
     ? visibleMenus.find(menu => menu.label === moduleLabel) ?? { label: moduleLabel, route: '/' + pathname.split('/')[1], icon: Home }
     : undefined
-  const current = currentModuleMenu ?? visibleMenus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
+  const routeMenu = visibleMenus.find(menu => menu.children?.some(child => child.route === pathname))
+    ?? visibleMenus.find(menu => menu.route === pathname)
+    ?? visibleMenus.find(menu => pathname.startsWith(menu.route + '/'))
+  const current = routeMenu ?? currentModuleMenu
   const normalizedSearch = moduleSearch.trim().toLocaleLowerCase('pt-BR')
   const searchedMenus = normalizedSearch ? visibleMenus.map(menu => ({ ...menu, children: menu.children?.filter(child => child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)) })).filter(menu => menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.route.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || Boolean(menu.children?.length)) : visibleMenus
   useEffect(() => {
@@ -296,9 +287,11 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   // para telas de menu ainda sem verbete, o rótulo do menu + a finalidade da ajuda.
   const menuLeafLabel = current?.children?.find(child => child.route === pathname)?.label ?? current?.label
   const contextualPurpose = contextualHelp.title === 'Ajuda da tela atual' ? undefined : contextualHelp.purpose
+  // O grupo do menu manteve o rótulo histórico 'Qualidade / Paquímetro'; no card de abertura o módulo é Qualidade.
+  const introModule = current?.label === 'Qualidade / Paquímetro' ? 'Qualidade' : current?.label
   const pageIntro = hasNativeIntroCard(pathname)
     ? null
-    : resolvePageIntro(pathname) ?? fallbackPageIntro({ module: current?.label, label: menuLeafLabel, purpose: contextualPurpose })
+    : resolvePageIntro(pathname) ?? fallbackPageIntro({ module: introModule, label: menuLeafLabel, purpose: contextualPurpose })
 
   const logout = async () => {
     await supabase.auth.signOut()

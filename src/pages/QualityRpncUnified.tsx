@@ -6,6 +6,7 @@
  */
 import { lazy, Suspense, useState } from 'react'
 import { AlertTriangle, ClipboardCheck, ClipboardList, Layers } from 'lucide-react'
+import '../styles/quality-rpnc-unified.css'
 
 const QualidadeRPNC = lazy(() => import('./QualidadeRPNC'))
 const QualityRpncForm = lazy(() => import('./QualityRpncForm'))
@@ -36,17 +37,17 @@ export default function QualityRpncUnified() {
           </div>
         </header>
 
-        <nav className="grid gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-sm sm:grid-cols-3" role="tablist" aria-label="Abas do tratamento RPNC">
+        <nav className="erp-rpnc-abas grid gap-2 rounded-lg border border-slate-200 bg-white p-2 shadow-sm sm:grid-cols-3" role="tablist" aria-label="Abas do tratamento RPNC">
           {abas.map((item) => {
             const Icon = item.icon
             const active = aba === item.value
             return (
               <button key={item.value} type="button" role="tab" aria-selected={active} onClick={() => setAba(item.value)}
-                className={`flex min-h-14 items-start gap-2 rounded-md border p-2.5 text-left transition ${active ? 'border-[#2D8DB8] bg-[#E8F4F9] text-[#123B50]' : 'border-transparent bg-white text-slate-600 hover:bg-slate-50'}`}>
-                <Icon size={16} className="mt-0.5 shrink-0" />
+                className={`flex items-start gap-2.5 rounded-lg border p-3 text-left transition ${active ? 'border-[#2D8DB8] bg-[#E8F4F9] text-[#123B50]' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}>
+                <Icon className="shrink-0" />
                 <span className="min-w-0">
-                  <strong className="block text-xs font-extrabold">{item.label}</strong>
-                  <span className="block text-[10px] leading-4">{item.description}</span>
+                  <strong className="font-extrabold">{item.label}</strong>
+                  <span className="text-slate-500">{item.description}</span>
                 </span>
               </button>
             )

@@ -22,15 +22,19 @@ const introCatalog: Record<string, PageIntro> = {
   'chao-de-fabrica/portal-operador': { module: 'Chão de Fábrica', title: 'Portal do Operador', description: 'Entrada do operador para apontar produção, consultar a OP em execução e registrar ocorrências.' },
   'chao-de-fabrica/postos': { module: 'Chão de Fábrica', title: 'Postos de Trabalho', description: 'Cadastro de postos e setores com responsável, turno e recursos vinculados à produção.' },
 
-  'estoque/auditoria-saldos': { module: 'Estoque e Almoxarifado', title: 'Auditoria de Saldos e Inventário', description: 'Saldo do sistema confrontado com a contagem física, por item, lote e endereço de armazenagem.' },
-  'estoque/balanco': { module: 'Estoque e Almoxarifado', title: 'Balanço e Valoração de Estoque', description: 'Quantidades e valores de estoque para a valoração contábil do período apurado.' },
-  'estoque/depreciacao': { module: 'Estoque e Almoxarifado', title: 'Regras de Depreciação de Estoque', description: 'Métodos, taxas e critérios de desvalorização aplicados aos itens em armazenagem.' },
+  'estoque/auditoria-saldos': { module: 'Estoque', title: 'Auditoria de Saldos e Inventário', description: 'Saldo do sistema confrontado com a contagem física, por item, lote e endereço de armazenagem.' },
+  'estoque/balanco': { module: 'Estoque', title: 'Balanço e Valoração de Estoque', description: 'Quantidades e valores de estoque para a valoração contábil do período apurado.' },
+  'estoque/depreciacao': { module: 'Estoque', title: 'Regras de Depreciação de Estoque', description: 'Métodos, taxas e critérios de desvalorização aplicados aos itens em armazenagem.' },
+  'estoque/rastreabilidade': { module: 'Estoque', title: 'Rastreabilidade de Lotes', description: 'Cadeia do lote consultada no banco: fornecedor e NF-e de entrada, componentes consumidos, retenções de qualidade e o destino por OP, pedido de venda e cliente.' },
+  'almoxarifado/saida-material': { module: 'Almoxarifado', title: 'Controle e Saída de Material', description: 'Baixa de material do almoxarifado por setor, endereço e finalidade, gravada pela RPC de movimento com saldo e bloqueio de negativo calculados no servidor.' },
 
   'paquimetro': { module: 'Qualidade / Metrologia', title: 'Paquímetro Digital', description: 'Medição dimensional com leitura, tolerância e evidência da inspeção registrada no lote.' },
   'qualidade/rpnc': { module: 'Qualidade / SGQ', title: 'RPNC · Registro de Não Conformidade', description: 'Abertura, triagem e acompanhamento de não conformidades com causa raiz, plano de ação e evidências.' },
   'qualidade/rpnc-formulario': { module: 'Qualidade / SGQ', title: 'Formulário de Tratamento de Não Conformidade', description: 'Relato da ocorrência, Ishikawa e 5 Porquês, plano de ação CAPA com responsáveis e prazos, alerta de recorrência por peça/lote e impressão do relatório do SGQ.' },
   'qualidade/auditorias': { module: 'Qualidade / SGQ', title: 'Auditorias da Qualidade', description: 'Programa de auditorias por norma e período, com líder, status e as RPNCs vinculadas como constatações.' },
-  'qualidade/ged': { module: 'Qualidade / SGQ', title: 'GED · Documentos da Qualidade', description: 'Repositório controlado de procedimentos, instruções de trabalho e registros do sistema de gestão.' },
+  'qualidade/documentos': { module: 'Qualidade', title: 'Controle de Alteração de Documentos da Qualidade', description: 'Página única em 7 abas do controle documental do SGQ: cadastro, anexos em PDF versionados, obsoletos com alerta de referência, revisões e aprovações, visualização, distribuição com ciência de leitura e impressão de cópias controladas.' },
+  'qualidade/ged': { module: 'Qualidade', title: 'GED · Documentos da Qualidade', description: 'Repositório controlado de procedimentos, instruções de trabalho e registros do sistema de gestão.' },
+  'qualidade/ged-documentos': { module: 'Qualidade', title: 'Editor de Documentos do SGQ', description: 'Emissão e revisão do corpo textual do procedimento no acervo legado do SGQ; o controle documental com anexos, distribuição e ciência de leitura está em Controle de Alteração de Documentos.' },
 
   'compras/solicitacao': { module: 'Compras', title: 'Solicitação de Compra', description: 'Necessidade interna formalizada com itens, urgência e aprovação antes de ir para cotação.' },
   'compras/requisicoes': { module: 'Compras', title: 'Requisições de Compra', description: 'Fila de requisições abertas pelos setores, com andamento, responsável e vínculo com a cotação.' },

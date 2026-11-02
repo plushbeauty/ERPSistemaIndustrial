@@ -208,6 +208,8 @@ const InventarioValidade = lazyPage(() => import('./pages/estoque/InventarioVali
 const AlmoxarifadoInventario = lazyPage(() => import('./pages/AlmoxarifadoInventario'), 'AlmoxarifadoInventario')
 const HelpEstoqueRecebimento = lazyPage(() => import('./pages/estoque/HelpEstoqueRecebimento'), 'HelpEstoqueRecebimento')
 const EstoqueCurvaABC = lazyPage(() => import('./pages/EstoqueCurvaABC'), 'EstoqueCurvaABC')
+const EstoqueRastreabilidadeLotes = lazyPage(() => import('./pages/EstoqueRastreabilidadeLotes'), 'EstoqueRastreabilidadeLotes')
+const AlmoxarifadoSaidaMaterial = lazyPage(() => import('./pages/AlmoxarifadoSaidaMaterial'), 'AlmoxarifadoSaidaMaterial')
 const HelpBackups = lazyPage(() => import('./pages/configuracoes/HelpBackups'), 'HelpBackups')
 const MoldesFerramentaria = lazyPage(() => import('./pages/MoldesFerramentaria'), 'MoldesFerramentaria')
 const FichaEngenharia = lazyPage(() => import('./pages/FichaEngenharia'), 'FichaEngenharia')
@@ -466,6 +468,8 @@ export default function AppEntryV2() {
               <Route path="estoque/recebimento-lotes" element={<EstoqueRecebimentoLotes />} />
               <Route path="estoque/validade" element={<InventarioValidade />} />
               <Route path="almoxarifado/inventario-mestre" element={<AlmoxarifadoInventario />} />
+              <Route path="estoque/rastreabilidade" element={<EstoqueRastreabilidadeLotes />} />
+              <Route path="almoxarifado/saida-material" element={<AlmoxarifadoSaidaMaterial />} />
               <Route path="ajuda/estoque-recebimento" element={<HelpEstoqueRecebimento />} />
               <Route path="estoque/curva-abc" element={<EstoqueCurvaABC />} />
               <Route path="ajuda/backups" element={<HelpBackups />} />

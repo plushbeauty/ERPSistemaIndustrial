@@ -15,7 +15,6 @@ import { useLocation, useParams } from 'react-router-dom'
 import { CircleHelp, ExternalLink, FilePlus2, FileText, History, Paperclip, RefreshCw, Save, Search, ShieldCheck, Upload, X } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { fetchAllPages } from '../../lib/supabasePagination'
-import QualitySidebar from '../../components/quality/QualitySidebar'
 
 type Revision = {
   id: string
@@ -312,7 +311,7 @@ export default function GEDDocumentos() {
   const activeDoc = selected ?? (codigo ? revisions.find(row => row.codigo_documento === codigo) ?? null : null)
   const history = revisions.filter(row => row.codigo_documento === (selected?.codigo_documento ?? codigo)).sort((a, b) => b.revisao - a.revisao)
 
-  return <main className="min-h-screen bg-[#F4FBFD] text-neutral-800"><div className="mx-auto max-w-[1800px] space-y-3 p-3"><QualitySidebar active="/qualidade/ged-documentos" />
+  return <main className="min-h-screen bg-[#F4FBFD] text-neutral-800"><div className="mx-auto max-w-[1800px] space-y-3 p-3">
     <div className="min-h-[calc(100vh-96px)] bg-[#F7F9FC] text-neutral-800">
       <div className="flex min-h-[42px] flex-wrap items-center justify-between gap-2 border-b border-neutral-200 bg-white px-3 py-1">
         <div className="flex min-w-0 items-center gap-2">

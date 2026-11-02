@@ -26,6 +26,10 @@ import path from 'node:path'
  * Revisao 2026-11-02 (#CRUD-usuarios): preserva a tela com editar/arquivar acessos
  * na tabela; somente o hash oficial foi atualizado apos a validacao do Vercel.
  * A estrutura visual industrial existente nao foi redesenhada.
+ * Revisao 2026-11-02 (telas novas da Qualidade e do Estoque): ordem do proprietario — "quero que envie
+ * sempre para o GitHub direito, nao para o PC". Entram no contrato o Controle de Alteracao de Documentos
+ * (7 abas), a Rastreabilidade de Lotes e o Controle e Saida de Material; o RPNC unificado e a NF-e sao
+ * re-travados porque o card das abas ganhou altura e o campo UF do transportador foi alinhado.
  * Mudanca neste contrato exige ordem explicita do proprietario.
  */
 
@@ -43,11 +47,15 @@ const oficiais = [
   { path: 'src/IndustrialLoginDirect.tsx', sha: '556ae8ec80125f74358fc03a6e7e386fce2cf3b6', label: 'Login / tela sobre a foto da planta com cartao flutuante' },
   { path: 'src/styles/industrial-login.css', sha: '15dd26d59fe8b3a4c78f205d49ede035b081169c', label: 'Login / estilos da tela sobre a foto da planta (REV-LOGIN-BLOCO-DIREITA-20261102-02)' },
   { path: 'src/pages/QualityRpncForm.tsx', sha: '50452b68f2663eb27ec2cfae7120d4c58d4b3478', label: 'Qualidade / RPNC com Ishikawa, 5 Porques e CAPA' },
-  { path: 'src/pages/QualityRpncUnified.tsx', sha: 'fec24d027d3848674b74a78abbc89a195af5546e', label: 'Qualidade / RPNC unificada em abas' },
+  { path: 'src/pages/QualityRpncUnified.tsx', sha: '95335212fcf40881e37a37cc063f326d58335235', label: 'Qualidade / RPNC unificada em abas (REV-RPNC-ABAS-CARD-20261102-01: card das abas maior, descricao visivel)' },
+  { path: 'src/styles/quality-rpnc-unified.css', sha: '6462e55f4804cb76ba9ecc277439c045c5634d05', label: 'Qualidade / estilos das abas do RPNC unificado (isengao da regula de 30px)' },
   { path: 'src/pages/QualityAuditsList.tsx', sha: '34d4247238acaa0cab346056b56953a049c4ec2d', label: 'Qualidade / Painel de auditorias' },
+  { path: 'src/pages/DocumentosQualidadeControle.tsx', sha: 'e4fbb85f9dad9fc2ad457567cba27185f0695e9b', label: 'Qualidade / Controle de Alteracao de Documentos em 7 abas (anexo pela URL assinada, nenhum status inventado)' },
   { path: 'src/pages/AccessControlSettings.tsx', sha: '64fbe7d0a0cb14e2aff8565f14fd713de2b13a00', label: 'Configuracoes / Controle de acesso por setor (CRUD de usuarios preservado; sem redesign)' },
   { path: 'src/pages/PCPCapacidade.tsx', sha: '7b26fa34132d8ffcf116d53e780e372383280f5a', label: 'PCP / Capacidade de maquinas' },
-  { path: 'src/pages/NFeEmissao.tsx', sha: '42d900235de282a042c0352ad37c871f622ac40e', label: 'Fiscal / Emissao de NF-e em etapas (transacional, na prod)' },
+  { path: 'src/pages/NFeEmissao.tsx', sha: 'ab04bc518c81140a5bc5de9a0aab9cbe291beb98', label: 'Fiscal / Emissao de NF-e em etapas (transacional, na prod) + UF do transportador alinhado a regula de 72px' },
+  { path: 'src/pages/EstoqueRastreabilidadeLotes.tsx', sha: 'a0b53bb0823af4468f0b70d91f68845c8bd495ed', label: 'Estoque / Rastreabilidade de lotes (lote > OP > pedido > cliente, so tabelas reais)' },
+  { path: 'src/pages/AlmoxarifadoSaidaMaterial.tsx', sha: '4350d550481a0836ee2ffb900619c26203de2df4', label: 'Almoxarifado / Controle e Saida de Material (RPC de movimento, saldo no servidor)' },
   { path: 'src/pages/FichasProcesso.tsx', sha: '0a7ba99d8f78bf0d47b449cfb908ff2ee1f8db7c', label: 'PCP / Ficha de processo com descrições por categoria e seletor laranja (REV-PCP-FICHA-CATEGORIA-20261102-01)' },
   { path: 'src/pages/AtivarAcesso.tsx', sha: '6cf46c1875094bdb3ba3082bac3f2d1518cbb9cc', label: 'Acesso / Ativacao do convite por e-mail (REV-ATIVAR-ACESSO-OPERADOR-20261102-01)' },
 ]
