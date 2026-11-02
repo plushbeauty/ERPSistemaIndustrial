@@ -17,7 +17,7 @@ import { supabase } from '../../../lib/supabaseClient'
 type Kind = 'PAGAR' | 'RECEBER'
 type Title = { id:string; tipo:Kind; parceiro_tipo:string; parceiro_id:string; descricao:string; documento:string|null; categoria:string|null; centro_custo:string|null; data_emissao:string; valor_total:number; status:string; criado_em:string }
 type Installment = { id:string; titulo_id:string; numero:number; vencimento:string; valor:number; saldo:number; status:string }
-type Partner = { id:string; tipo_parceiro:Kind; nome?:string; razao_social?:string; nome_fantasia?:string; codigo?:string }
+type Partner = { id:string; tipo_parceiro:Kind; razao_social?:string; nome_fantasia?:string; codigo?:string }
 const input='h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-800 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100'
 const label='mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-500'
 const button='inline-flex h-9 items-center justify-center gap-2 rounded-md px-3 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-50'
@@ -59,8 +59,8 @@ export default function FinanceiroWorkspace(){
    const empresa=companyResult.data;setCompany(empresa)
    const [t,p,r]=await Promise.all([
     supabase.from('erp_financeiro_titulos').select('id,tipo,parceiro_tipo,parceiro_id,descricao,documento,categoria,centro_custo,data_emissao,valor_total,status,criado_em').eq('empresa_id',empresa).order('criado_em',{ascending:false}).limit(1000),
-    supabase.from('erp_fornecedores').select('id,nome,razao_social,nome_fantasia,codigo').eq('empresa_id',empresa).eq('ativo',true).order('nome').limit(2000),
-    supabase.from('erp_clientes').select('id,nome,razao_social,nome_fantasia,codigo').eq('empresa_id',empresa).eq('ativo',true).order('nome').limit(2000)
+    supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia,codigo').eq('empresa_id',empresa).eq('ativo',true).order('razao_social').limit(2000),
+    supabase.from('erp_clientes').select('id,razao_social,nome_fantasia,codigo').eq('empresa_id',empresa).eq('ativo',true).order('razao_social').limit(2000)
    ])
    if(t.error)throw t.error
    setTitles((t.data??[]) as Title[])
@@ -81,7 +81,7 @@ export default function FinanceiroWorkspace(){
  const totalPay=installments.filter(p=>p.saldo>0&&titles.some(t=>t.id===p.titulo_id&&t.tipo==='PAGAR'&&t.status!=='CANCELADO')).reduce((s,p)=>s+Number(p.saldo),0)
  const totalReceive=installments.filter(p=>p.saldo>0&&titles.some(t=>t.id===p.titulo_id&&t.tipo==='RECEBER'&&t.status!=='CANCELADO')).reduce((s,p)=>s+Number(p.saldo),0)
  const totalOpen=openParts.reduce((s,p)=>s+Number(p.saldo),0)
- const partnerLabel=(id:string)=>{const p=partners.find(x=>x.id===id);return p?.nome_fantasia||p?.razao_social||p?.nome||p?.codigo||'Parceiro cadastrado'}
+ const partnerLabel=(id:string)=>{const p=partners.find(x=>x.id===id);return p?.nome_fantasia||p?.razao_social||p?.codigo||'Parceiro cadastrado'}
  const beginCreate=(k:Kind)=>{setKind(k);setPartner('');setDescription('');setDocument('');setCategory('');setCostCenter('');setIssueDate(localDate());setDueDate(localDate());setAmount('');setShowForm(true);setError('');setMessage('')}
  async function saveTitle(e:FormEvent){
   e.preventDefault();setError('');setMessage('')
