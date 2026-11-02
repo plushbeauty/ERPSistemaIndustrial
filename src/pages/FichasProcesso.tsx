@@ -704,6 +704,8 @@ export function FichasProcesso() {
             background: #fff !important;
             color: #0f172a !important;
             font-family: Arial, sans-serif !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
           }
           .ficha-print-sheet table {
             width: 100%;
