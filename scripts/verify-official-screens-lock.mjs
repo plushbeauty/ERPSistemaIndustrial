@@ -109,6 +109,21 @@ const banidos = [
   'src/pages/financeiro/IncorrectlyClearedEntries.tsx',
   'src/pages/manutencao/ManutencaoOrdens.tsx',
   'src/pages/manutencao/ManutencaoPreventivas.tsx',
+  // Codigo morto achado na auditoria de 2026-11-02 (#83): nenhum importador em src.
+  // Sao shells antigos de login/menu/tablet e uma segunda origem de autenticacao; recriar reprova.
+  'src/auth/AuthProvider.tsx',
+  'src/auth/authTypes.ts',
+  'src/components/ERPHeaderActions.tsx',
+  'src/components/TabletLaunchpad.tsx',
+  'src/components/TabletMenuModal.tsx',
+  'src/components/UnifiedTabletDashboard.tsx',
+  'src/components/auth/FloatingLoginModal.tsx',
+  'src/components/auth/FloatingLoginModal.css',
+  'src/components/layout/ERPModuleSidebar.tsx',
+  'src/components/layout/ERPStatusLegend.tsx',
+  'src/layout/AppHeader.tsx',
+  'src/layout/Backdrop.tsx',
+  'src/layout/Sidebar.tsx',
 ]
 
 const TELAS = ['src/pages/', 'src/features/', 'src/modules/']
