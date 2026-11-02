@@ -20,6 +20,9 @@ import path from 'node:path'
  * abertura menor. IndustrialLoginDirect.tsx continua no mesmo hash: so o CSS mudou.
  * Revisao 2026-11-02 (#82, r2): o painel passou a ser fixado na trilha 2 do grid. Em auto-place ele
  * herda a trilha larga (a marca fica oculta na tela cheia) e media 582px a 398px da borda direita.
+ * Revisao 2026-11-02 (#85): ordem do proprietario para travar os codigos novos. Entram no contrato a
+ * ficha de processo em 4 abas (#80) e a ativacao do convite por e-mail (#81) — sem essa segunda tela,
+ * o link que a erp-user-admin envia por e-mail apontava para uma rota inexistente nesta branch.
  * Mudanca neste contrato exige ordem explicita do proprietario.
  */
 
@@ -41,6 +44,8 @@ const oficiais = [
   { path: 'src/pages/AccessControlSettings.tsx', sha: '0161ef8ffd66d5f35213668b989353dc8d9637e5', label: 'Configuracoes / Controle de acesso por setor' },
   { path: 'src/pages/PCPCapacidade.tsx', sha: '7b26fa34132d8ffcf116d53e780e372383280f5a', label: 'PCP / Capacidade de maquinas' },
   { path: 'src/pages/NFeEmissao.tsx', sha: '42d900235de282a042c0352ad37c871f622ac40e', label: 'Fiscal / Emissao de NF-e em etapas (transacional, na prod)' },
+  { path: 'src/pages/FichasProcesso.tsx', sha: '60170b29cee5059b85d7f8f64ad5d9b0f78aab18', label: 'PCP / Ficha de processo em 4 abas com materia-prima do cadastro e aba de molde (REV-PCP-FICHA-ABAS-20261102-01)' },
+  { path: 'src/pages/AtivarAcesso.tsx', sha: '6cf46c1875094bdb3ba3082bac3f2d1518cbb9cc', label: 'Acesso / Ativacao do convite por e-mail (REV-ATIVAR-ACESSO-OPERADOR-20261102-01)' },
 ]
 
 // Telas antigas deletadas do sistema. Recriar qualquer um destes caminhos reprova o build.
