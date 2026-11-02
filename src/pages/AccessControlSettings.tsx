@@ -526,7 +526,7 @@ export default function AccessControlSettings() {
             <section className="space-y-2">
               <form className="rounded-md border border-slate-200 bg-white p-2 shadow-sm" onSubmit={event => void (editingUserId ? updateUser(event) : createUser(event, 'create_user'))}>
                 <div className="mb-2 flex items-center gap-2 text-[11px] font-bold text-[#123B50]"><KeyRound size={13}/>{editingUserId ? 'Editar acesso de usuário' : 'Novo acesso de setor'}
-                  <span className="font-normal text-slate-500">— {selectedSector ? `${selectedSector.codigo} · ${selectedSector.nome}` : 'selecione o setor na aba Matriz'}</span>
+                  <span className="font-normal text-slate-500">— {selectedSector ? `${selectedSector.codigo} · ${selectedSector.nome}` : 'vínculo com setor opcional'}</span>
                 </div>
                 <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
                   <div className="md:col-span-2"><span className={label}>Nome do acesso (setor ou posto)</span><input className={input} value={formNome} onChange={event => setFormNome(event.target.value)} placeholder="CQ — Inspeção de entrada" /></div>
@@ -554,8 +554,8 @@ export default function AccessControlSettings() {
                   <div className="md:col-span-2"><span className={label}>Senha (mín. 12 com A-Z, a-z, 0-9 e símbolo)</span><input type="password" className={input} value={formSenha} disabled={Boolean(editingUserId)} onChange={event => setFormSenha(event.target.value)} placeholder="em branco = senha temporária gerada pelo servidor" /></div>
                 </div>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <button type="submit" className={primaryButton} disabled={saving || (!editingUserId && !setorId)}>{editingUserId ? <Save size={12}/> : <UserPlus size={12}/>}{saving ? 'Salvando…' : editingUserId ? 'Salvar alterações' : 'Criar acesso do setor'}</button>
-                  {editingUserId ? <button type="button" className={lightButton} disabled={saving} onClick={cancelEditUser}>Cancelar edição</button> : <button type="button" className={lightButton} disabled={saving || !setorId} onClick={event => { event.preventDefault(); void createUser(event, 'invite_user') }}>Enviar convite por e-mail</button>}
+                  <button type="submit" className={primaryButton} disabled={saving}>{editingUserId ? <Save size={12}/> : <UserPlus size={12}/>}{saving ? 'Salvando…' : editingUserId ? 'Salvar alterações' : 'Criar acesso do setor'}</button>
+                  {editingUserId ? <button type="button" className={lightButton} disabled={saving} onClick={cancelEditUser}>Cancelar edição</button> : <button type="button" className={lightButton} disabled={saving} onClick={event => { event.preventDefault(); void createUser(event, 'invite_user') }}>Enviar convite por e-mail</button>}
                   <span className="text-[9px] text-slate-500">{editingUserId ? 'O e-mail de autenticação não é alterado nesta rotina. Toda mudança é validada no servidor e auditada.' : 'A identidade Auth é criada pela Edge Function erp-user-admin com service role no servidor; o navegador nunca recebe credencial privada.'}</span>
                 </div>
                 {generatedPassword && (
