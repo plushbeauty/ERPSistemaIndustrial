@@ -70,7 +70,15 @@ const menus: MenuItem[] = [
     { label: 'Fluxo de caixa', route: '/financeiro/fluxo-caixa' },
     { label: 'Caixa', route: '/financeiro/caixa' },
   ] },
-  { label: 'Fiscal', route: '/fiscal', icon: FileText },
+  { label: 'Fiscal', route: '/fiscal', icon: FileText, children: [
+    { label: 'Painel fiscal', route: '/fiscal' },
+    { label: 'Emissão de NF-e', route: '/fiscal/emissao' },
+    { label: 'Carteira de NF-e', route: '/fiscal/carteira-nfe' },
+    { label: 'NF-e de entradas', route: '/fiscal/nfe-entradas' },
+    { label: 'Previsão de caixa', route: '/fiscal/previsao-caixa' },
+    { label: 'Parâmetros fiscais', route: '/fiscal/parametros' },
+    { label: 'Pendências fiscais', route: '/fiscal/pendencias' },
+  ] },
   { label: 'Manufatura / PCP', route: '/pcp/ordens', icon: Factory, children: [
     { label: 'Ordens de produção', route: '/pcp/ordens' },
     { label: 'Ordens industriais', route: '/pcp/ordens-industriais' },
@@ -284,6 +292,10 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     ? { title: 'PCP — Planejamento e controle da produção', purpose: 'Transformar demanda em ordens, acompanhar execução, apontamentos e necessidades de materiais.', steps: ['Consulte demanda e ordens abertas.', 'Confira materiais e capacidade.', 'Programe e libere somente ordens válidas.', 'Registre quantidades boas, refugo, setup e paradas na execução.'], fields: ['Produto e quantidade: definem o que fabricar.', 'Data prevista/prioridade: orientam a fila.', 'Máquina/centro: recurso responsável.', 'Status: etapa real da ordem; altere apenas após a operação correspondente.'] }
     : pathname.startsWith('/vendas/novo-pedido')
     ? { title: 'Novo pedido de venda', purpose: 'Registrar a solicitação comercial e os itens do cliente com valores e prazo conferidos.', steps: ['Selecione o cliente cadastrado.', 'Adicione produtos e quantidades.', 'Confira preço, desconto, total e entrega.', 'Salve e acompanhe o status do pedido.'], fields: ['Cliente: cadastro da empresa compradora.', 'Produto: item cadastrado e vendável.', 'Quantidade: volume solicitado.', 'Preço/desconto: valores autorizados comercialmente.', 'Entrega: data prometida acordada com o cliente.'] }
+    : pathname.startsWith('/fiscal/emissao') || pathname === '/vendas/fiscal'
+    ? { title: 'Emissão de NF-e (modelo 55)', purpose: 'Montar a nota fiscal nas abas do emissor, validar cada campo antes de gravar o rascunho no banco e acompanhar a transmissão na grade de gerenciamento de notas.', steps: ['Preencha Identificação, Destinatário, Produtos, Transporte, Volumens e Cobrança; o painel Advertências lista cada pendência com o botão da aba correspondente.', 'Clique em Salvar rascunho: o banco reserva o número (erp_reservar_numero_nfe) e grava cabeçalho e itens pela RPC transacional.', 'Transmitir envia o documento à Edge Function emitir-nfe. Só há NF-e autorizada quando a resposta traz chave de 44 dígitos e protocolo de autorização; qualquer outro estado permanece em processamento.', 'Use Gerenciar notas para filtrar por período, situação, destinatário ou chave, marcar várias notas e transmitir, imprimir DANFE ou exportar XML em lote.'], fields: ['Série/Número: a série é digitada; o número é reservado pelo banco e não é editável.', 'CFOP, NCM e CST/CSOSN: formato conferido na tela; a apuração final é do motor fiscal e da SEFAZ.', 'Modalidade do frete: escolha real do transporte; 9 significa somente ausência de ocorrência de transporte.', 'Cobrança (tPag): soma dos pagamentos precisa fechar com o total da nota, gravada por erp_nfe_pagamento_salvar.', 'DANFE/XML: habilitados apenas quando o arquivo existe no armazenamento documentos-erp.'] }
+    : pathname.startsWith('/fiscal')
+    ? { title: 'Fiscal', purpose: 'Consultar apuração, documentos fiscais e obrigações acessórias da empresa autenticada.', steps: ['Filtre por período e documento antes de conferir os valores.', 'Abra o documento para ver itens, tributos e retorno do integrador.', 'Regularize cadastros (produto, cliente, configuração fiscal) antes de reprocessar.'], fields: ['Documento fiscal: NF-e, NFS-e ou outro registro do módulo.', 'Status: etapa do documento (rascunho, autorizado, processando, rejeitado).', 'Ambiente: homologação não tem valor fiscal; produção exige certificado.'] }
     : pathname.startsWith('/vendas')
     ? { title: 'Vendas', purpose: 'Consultar pedidos, clientes, prazos e andamento comercial.', steps: ['Use a pesquisa para localizar pedido ou cliente.', 'Aplique filtros de status e período.', 'Abra o pedido para conferir itens e histórico.'], fields: ['Pesquisa: número do pedido ou nome/código.', 'Status: etapa atual do fluxo.', 'Período: intervalo usado no relatório.', 'Cliente: referência ao cadastro comercial.'] }
     : pathname.startsWith('/compras')
