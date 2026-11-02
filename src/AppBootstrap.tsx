@@ -26,7 +26,7 @@ const PublicIndustrialHome = lazyPage(() => import('./PublicIndustrialHome'), 'P
 const AppEntryV2 = lazyPage(() => import('./AppEntryV2'), 'AppEntryV2')
 const SetupADMInicial = lazyPage(() => import('./pages/SetupADMInicial'), 'SetupADMInicial')
 const StaffOperatorLogin = lazyPage(() => import('./pages/StaffOperatorLogin'), 'StaffOperatorLogin')
-const publicPaths = new Set(['/','/home','/login','/login-operador','/planos','/cadastro-empresa','/blog','/contato'])
+const publicPaths = new Set(['/','/home','/login','/login-operador','/planos','/cadastro-empresa','/ativar-acesso','/blog','/contato'])
 
 class BootstrapBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state = { error: null as Error | null }

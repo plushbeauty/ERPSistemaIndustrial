@@ -128,6 +128,8 @@ const PlanosIndustrial = lazy(() => import('./pages/PlanosIndustrial'))
 const CadastroEmpresa = lazy(() => import('./pages/CadastroEmpresa'))
 const Blog = lazy(() => import('./pages/Blog'))
 const Contato = lazy(() => import('./pages/Contato'))
+// Convite por e-mail: o link gerado por erp-user-admin aponta para /ativar-acesso.
+const AtivarAcesso = lazyPage(() => import('./pages/AtivarAcesso'), 'AtivarAcesso')
 // Telas novas transplantadas de preview-layout-20261030 para a branch viva — comando de 2026-11-02
 const RecuperarSenha = lazyPage(() => import('./pages/RecuperarSenha'), 'RecuperarSenha')
 const TabletDashboard = lazyPage(() => import('./pages/TabletDashboard'), 'TabletDashboard')
@@ -280,6 +282,9 @@ export default function AppEntryV2() {
   const path = useLocation().pathname
   if (path === '/planos') return <PublicPage><PlanosIndustrial /></PublicPage>
   if (path === '/cadastro-empresa') return <PublicPage><CadastroEmpresa /></PublicPage>
+  // Fora de .erp-global-surface: a grade compacta global reduziria os campos desta tela para 30px,
+  // e o operador digita o código no celular do chão de fábrica (mesma régua da tela de login).
+  if (path === '/ativar-acesso') return <Suspense fallback={<LoadingWorkspace />}><AtivarAcesso /></Suspense>
   if (path === '/blog') return <PublicPage><Blog /></PublicPage>
   if (path === '/contato') return <PublicPage><Contato /></PublicPage>
   return (
