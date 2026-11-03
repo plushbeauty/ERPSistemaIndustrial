@@ -4,8 +4,8 @@
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
-import { useCallback, useEffect, useState, type ReactNode } from 'react'
-import { BarChart3, BookOpen, ClipboardList, FilePlus2, LayoutDashboard, PackagePlus, PackageSearch, RefreshCw, Settings2, ShoppingCart, Target, Users } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { BarChart3, BookOpen, ClipboardList, FilePlus2, LayoutDashboard, PackagePlus, PackageSearch, Settings2, ShoppingCart, Target, Users } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
@@ -19,17 +19,56 @@ const normalizeStatus=(v:string)=>v.normalize('NFD').replace(/[\u0300-\u036f]/g,
 const initialVendasStatus:VendasStatus={atrasados:0,producao:0,acabamento:0,almoxarifado:0,liberadoNF:0,totalPendente:0}
 
 export function useVendasStatus(){
- const [status,setStatus]=useState(initialVendasStatus); const [loading,setLoading]=useState(false)
- const load=useCallback(async()=>{setLoading(true);try{
-  const empresa=await supabase.rpc('erp_current_empresa_id')
-  if(empresa.error||!empresa.data)throw empresa.error??new Error('Empresa não identificada.')
-  const rows=await fetchAllPages<{status:string|null;data_entrega_prometida:string|null}>((from,to)=>supabase.from('erp_pedidos_venda').select('status,data_entrega_prometida').eq('empresa_id',String(empresa.data)).range(from,to))
-  const today=new Date();today.setHours(0,0,0,0)
-  let atrasados=0,producao=0,acabamento=0,almoxarifado=0,liberadoNF=0,totalPendente=0
-  for(const row of rows){const s=normalizeStatus(String(row.status??''));const finalizado=s.includes('fatur')||s.includes('cancel')||s.includes('conclu');const due=row.data_entrega_prometida?new Date(String(row.data_entrega_prometida).slice(0,10)+'T00:00:00'):null;if(due&&due<today&&!finalizado)atrasados++;if(s.includes('produc')||s.includes('fabric'))producao++;if(s.includes('acab'))acabamento++;if(s.includes('almox')||s.includes('mater'))almoxarifado++;if((s.includes('liber')&&s.includes('nf'))||s.includes('fatur'))liberadoNF++;if(!finalizado)totalPendente++}
-  setStatus({atrasados,producao,acabamento,almoxarifado,liberadoNF,totalPendente})
- }finally{setLoading(false)}},[])
- return {status,loading,load}
+ const [status,setStatus]=useState(initialVendasStatus)
+ const [loading,setLoading]=useState(false)
+ const [error,setError]=useState<string|null>(null)
+ const requestId=useRef(0)
+
+ const load=useCallback(async()=>{
+  const currentRequest=++requestId.current
+  setLoading(true)
+  setError(null)
+  try{
+   const empresa=await supabase.rpc('erp_current_empresa_id')
+   if(empresa.error)throw empresa.error
+   if(!empresa.data)throw new Error('Empresa não identificada na sessão.')
+
+   const rows=await fetchAllPages<{status:string|null;data_entrega_prometida:string|null}>(
+    (from,to)=>supabase.from('erp_pedidos_venda')
+     .select('status,data_entrega_prometida')
+     .eq('empresa_id',String(empresa.data))
+     .range(from,to)
+   )
+
+   const today=new Date()
+   today.setHours(0,0,0,0)
+   let atrasados=0,producao=0,acabamento=0,almoxarifado=0,liberadoNF=0,totalPendente=0
+
+   for(const row of rows){
+    const s=normalizeStatus(String(row.status??''))
+    const finalizado=s.includes('fatur')||s.includes('cancel')||s.includes('conclu')
+    const due=row.data_entrega_prometida?new Date(String(row.data_entrega_prometida).slice(0,10)+'T00:00:00'):null
+    if(due&&!Number.isNaN(due.getTime())&&due<today&&!finalizado)atrasados++
+    if(s.includes('produc')||s.includes('fabric'))producao++
+    if(s.includes('acab'))acabamento++
+    if(s.includes('almox')||s.includes('mater'))almoxarifado++
+    if((s.includes('liber')&&s.includes('nf'))||s.includes('fatur'))liberadoNF++
+    if(!finalizado)totalPendente++
+   }
+
+   if(currentRequest!==requestId.current)return
+   setStatus({atrasados,producao,acabamento,almoxarifado,liberadoNF,totalPendente})
+  }catch(cause){
+   if(currentRequest!==requestId.current)return
+   setError(cause instanceof Error?cause.message:'Falha ao carregar indicadores comerciais.')
+  }finally{
+   if(currentRequest===requestId.current)setLoading(false)
+  }
+ },[])
+
+ useEffect(()=>()=>{requestId.current++},[])
+
+ return {status,loading,error,load}
 }
 
 export function VendasStatusCards({status,loading}:{status:VendasStatus;loading:boolean}){
@@ -65,21 +104,23 @@ export default function VendasLayout({children,title,subtitle,onRefresh,topConte
  const {pathname}=useLocation()
  const isVendas=pathname.startsWith('/vendas')
  const vendas=useVendasStatus()
- useEffect(()=>{if(isVendas)void vendas.load().catch(()=>undefined)},[isVendas,vendas.load])
 
- useEffect(() => {
-  if (!onRefresh) return
-  const refreshCurrentModule = (event: Event) => { event.preventDefault(); onRefresh() }
-  window.addEventListener('erp:refresh-current-module', refreshCurrentModule)
-  return () => window.removeEventListener('erp:refresh-current-module', refreshCurrentModule)
- }, [onRefresh])
+ useEffect(()=>{if(isVendas)void vendas.load()},[isVendas,vendas.load])
 
- const showCards=showStatusCards ?? true
+ useEffect(()=>{
+  if(!onRefresh)return
+  const refreshCurrentModule=(event:Event)=>{event.preventDefault();onRefresh()}
+  window.addEventListener('erp:refresh-current-module',refreshCurrentModule)
+  return ()=>window.removeEventListener('erp:refresh-current-module',refreshCurrentModule)
+ },[onRefresh])
+
+ const showCards=showStatusCards??true
 
  return <SynqraLayoutProvider>
   <main className="synqra-workspace-main">
-    {isVendas&&showCards&&<VendasStatusCards status={vendas.status} loading={vendas.loading}/>} 
-    {(title || subtitle || titleActions) && <div className="synqra-workspace-title">{titleActions&&<div className="synqra-title-actions">{titleActions}</div>}<div className="synqra-title-main">{title&&<h1>{title}</h1>}{subtitle&&<p>{subtitle}</p>}</div></div>}
+    {isVendas&&showCards&&<VendasStatusCards status={vendas.status} loading={vendas.loading}/>}
+    {isVendas&&showCards&&vendas.error&&<div role="alert" className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">Não foi possível carregar os indicadores comerciais: {vendas.error}</div>}
+    {(title||subtitle||titleActions)&&<div className="synqra-workspace-title">{titleActions&&<div className="synqra-title-actions">{titleActions}</div>}<div className="synqra-title-main">{title&&<h1>{title}</h1>}{subtitle&&<p>{subtitle}</p>}</div></div>}
     {topContent}{children}
   </main>
  </SynqraLayoutProvider>
