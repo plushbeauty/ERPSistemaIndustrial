@@ -1,16 +1,20 @@
 /**
- * APROVADO — tela principal restaurada do arquivo enviado em 2026-10-18.
+ * @AUTOR: Fernando Schuinsekel
+ * @REVISAO: REV-HOME-PREMIUM-20261102-01 — tela principal reconstruida sobre a fundacao premium (#63)
+ * @STATUS_APROVACAO: ORDEM EXPRESSA DO PROPRIETARIO (#63) — mesma regua dos tokens, sem <style> inline
+ * APROVADO — indicadores conectados ao Supabase com isolamento por empresa/RLS.
  * Autorização expressa do usuário em 2026-10-26: incluir atalho ao Portal do Operador.
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  Activity, CheckCircle, AlertTriangle, BarChart3
+  Activity, CheckCircle, AlertTriangle, BarChart3, ClipboardList, RefreshCw, Wrench
 } from 'lucide-react'
 import {
   Bar, BarChart, CartesianGrid, Legend, Line, LineChart,
   ResponsiveContainer, Tooltip, XAxis, YAxis
 } from 'recharts'
 import { supabase } from '../lib/supabaseClient'
+import '../styles/home-premium-20261102.css'
 
 type Props = { onNavigate: (route: string) => void }
 type Machine = { id: string; codigo: string; nome: string; status: string }
@@ -19,14 +23,19 @@ type Product = { id: string; codigo: string | null; nome: string | null }
 type Pointing = { id: string; ordem_producao_id: string | null; maquina_id: string | null; quantidade_planejada: number | null; quantidade_boa: number | null; quantidade_refugada: number | null; created_at: string | null; criado_em?: string | null }
 type Program = { id: string; ordem_producao_id: string | null; maquina_id: string | null; inicio_planejado: string; fim_planejado: string; quantidade_planejada: number | null; quantidade_produzida: number | null; quantidade_refugada: number | null; status: string }
 type Stop = { maquina_id: string | null; inicio: string | null; fim: string | null; status: string | null }
-type QueueRow = { op: string; workstation: string; product: string; lastPointing: string; status: string }
+type QueueRow = { op: string; workstation: string; product: string; lastPointing: string; status: string; planned: number; produced: number }
 type Daily = { day: string; previsto: number; realizado: number }
 type MachineShift = { maquina: string; eficiencia: number }
 type Equipment = { id: string; codigo: string; descricao: string; status: string; proxima_calibracao: string | null; certificado_validade: string | null }
 
+type Snapshot = { machines: Machine[]; ops: OP[]; products: Product[]; pointings: Pointing[]; programs: Program[]; stops: Stop[]; equipment: Equipment[]; rpnc: number; rpncClosed: number }
+const emptySnapshot: Snapshot = { machines: [], ops: [], products: [], pointings: [], programs: [], stops: [], equipment: [], rpnc: 0, rpncClosed: 0 }
 const n = (v: unknown) => Number.isFinite(Number(v)) ? Number(v) : 0
 const fmt = (v: number) => new Intl.NumberFormat('pt-BR').format(Math.round(v))
 const dateKey = (d: Date) => d.toISOString().slice(0, 10)
+const ACCENT_STRIP = /[\u0300-\u036f]/g
+const CHART_COLORS = { primary: '#2D8DB8', good: '#3A9D78', bad: '#D65B61', cyan: '#48B7C7', muted: '#94a3b8' }
+const TOOLTIP_STYLE = { borderRadius: 2, border: '1px solid #d6dee3', fontSize: 11 }
 
 function statusText(value: string) {
   const s = value.toLowerCase()
@@ -39,99 +48,102 @@ function statusText(value: string) {
   return value || 'Sem status'
 }
 
+function statusTone(value: string) {
+  const s = String(value).toLowerCase()
+  if (s.includes('concl') || s.includes('liber')) return 'is-good'
+  if (s.includes('cancel') || s.includes('paus')) return 'is-bad'
+  return ''
+}
+
 export default function DashboardPrincipal({ onNavigate }: Props) {
-  const [machines, setMachines] = useState<Machine[]>([])
-  const [ops, setOps] = useState<OP[]>([])
-  const [products, setProducts] = useState<Product[]>([])
-  const [pointings, setPointings] = useState<Pointing[]>([])
-  const [programs, setPrograms] = useState<Program[]>([])
-  const [stops, setStops] = useState<Stop[]>([])
-  const [equipment, setEquipment] = useState<Equipment[]>([])
-  const [rpnc, setRpnc] = useState(0)
-  const [rpncClosed, setRpncClosed] = useState(0)
+  const [data, setData] = useState<Snapshot>(emptySnapshot)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [clock, setClock] = useState(new Date())
+  const [loadedAt, setLoadedAt] = useState<Date | null>(null)
+  const [tick, setTick] = useState(() => new Date())
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
-    const timer = window.setInterval(() => setClock(new Date()), 1000)
+    const timer = window.setInterval(() => setTick(new Date()), 60000)
     return () => window.clearInterval(timer)
+  }, [])
+
+  const fetchSnapshot = useCallback(async (): Promise<Snapshot> => {
+    const { data: auth, error: authError } = await supabase.auth.getUser()
+    if (authError) throw authError
+    if (!auth.user) throw new Error('Sessão não encontrada.')
+
+    const { data: p, error: profileError } = await supabase
+      .from('erp_usuarios')
+      .select('nome,empresa_id,nivel_admin,is_master,perfil,auth_user_id')
+      .eq('auth_user_id', auth.user.id)
+      .eq('ativo', true)
+      .is('deleted_at', null)
+      .maybeSingle()
+    if (profileError) throw profileError
+    if (!p) throw new Error('Perfil ERP não encontrado.')
+
+    const master = p.is_master === true &&
+      Number(p.nivel_admin ?? 0) === 100 &&
+      String(p.perfil ?? '').toUpperCase() === 'MASTER' &&
+      p.empresa_id === null
+    if (!master && !p.empresa_id) throw new Error('Empresa do usuário não identificada.')
+
+    const empresaId = p.empresa_id as string | null
+    const machineQ = supabase.from('erp_maquinas').select('id,codigo,nome,status').eq('ativo', true).order('codigo')
+    const opQ = supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status,quantidade_planejada,quantidade,created_at,criado_em').order('created_at', { ascending: false }).limit(500)
+    const prodQ = supabase.from('erp_produtos').select('id,codigo,nome').limit(3000)
+    const pointingQ = supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,quantidade_planejada,quantidade_boa,quantidade_refugada,created_at').order('created_at', { ascending: false }).limit(5000)
+    const programQ = supabase.from('erp_pcp_programacoes').select('id,ordem_producao_id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,quantidade_produzida,quantidade_refugada,status').neq('status', 'cancelada').limit(3000)
+    const stopQ = supabase.from('erp_producao_paradas').select('maquina_id,inicio,fim,status').limit(5000)
+    const rpncQ = supabase.from('erp_rpnc').select('id,status').limit(5000)
+    const equipmentQ = supabase.from('erp_equipamentos_medicao').select('id,codigo,descricao,status,proxima_calibracao,certificado_validade').limit(3000)
+
+    if (!master && empresaId) {
+      machineQ.eq('empresa_id', empresaId)
+      opQ.eq('empresa_id', empresaId)
+      prodQ.eq('empresa_id', empresaId)
+      pointingQ.eq('empresa_id', empresaId)
+      programQ.eq('empresa_id', empresaId)
+      stopQ.eq('empresa_id', empresaId)
+      rpncQ.eq('empresa_id', empresaId)
+      equipmentQ.eq('empresa_id', empresaId)
+    }
+
+    const [m, o, pr, pt, pg, st, rn, eq] = await Promise.all([machineQ, opQ, prodQ, pointingQ, programQ, stopQ, rpncQ, equipmentQ])
+    for (const result of [m, o, pr, pt, pg, st, rn, eq]) if (result.error) throw result.error
+
+    const closedRncStates = new Set(['encerrada', 'fechada', 'concluida', 'concluido', 'fechado', 'cancelada', 'cancelado'])
+    const rncRows = (rn.data ?? []) as Array<{ status?: unknown }>
+    const closedRncCount = rncRows.filter(row => closedRncStates.has(String(row.status ?? '').normalize('NFD').replace(ACCENT_STRIP, '').toLowerCase())).length
+
+    return {
+      machines: (m.data ?? []) as Machine[],
+      ops: (o.data ?? []) as OP[],
+      products: (pr.data ?? []) as Product[],
+      pointings: (pt.data ?? []) as Pointing[],
+      programs: (pg.data ?? []) as Program[],
+      stops: (st.data ?? []) as Stop[],
+      equipment: (eq.data ?? []) as Equipment[],
+      rpnc: Math.max(0, rncRows.length - closedRncCount),
+      rpncClosed: closedRncCount
+    }
   }, [])
 
   useEffect(() => {
     let alive = true
-    async function load() {
-      setLoading(true)
-      setError('')
-      try {
-        const { data: auth, error: authError } = await supabase.auth.getUser()
-        if (authError) throw authError
-        if (!auth.user) throw new Error('Sessão não encontrada.')
-
-        const { data: p, error: profileError } = await supabase
-          .from('erp_usuarios')
-          .select('nome,empresa_id,nivel_admin,is_master,perfil,auth_user_id')
-          .eq('auth_user_id', auth.user.id)
-          .eq('ativo', true)
-          .is('deleted_at', null)
-          .maybeSingle()
-        if (profileError) throw profileError
-        if (!p) throw new Error('Perfil ERP não encontrado.')
-
-        const master = p.is_master === true &&
-          Number(p.nivel_admin ?? 0) === 100 &&
-          String(p.perfil ?? '').toUpperCase() === 'MASTER' &&
-          p.empresa_id === null
-        if (!master && !p.empresa_id) throw new Error('Empresa do usuário não identificada.')
-
-        const empresaId = p.empresa_id as string | null
-        const machineQ = supabase.from('erp_maquinas').select('id,codigo,nome,status').eq('ativo', true).order('codigo')
-        const opQ = supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status,quantidade_planejada,quantidade,created_at,criado_em').order('created_at', { ascending: false }).limit(500)
-        const prodQ = supabase.from('erp_produtos').select('id,codigo,nome').limit(3000)
-        const pointingQ = supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,quantidade_planejada,quantidade_boa,quantidade_refugada,created_at').order('created_at', { ascending: false }).limit(5000)
-        const programQ = supabase.from('erp_pcp_programacoes').select('id,ordem_producao_id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,quantidade_produzida,quantidade_refugada,status').neq('status', 'cancelada').limit(3000)
-        const stopQ = supabase.from('erp_producao_paradas').select('maquina_id,inicio,fim,status').limit(5000)
-        const rpncQ = supabase.from('erp_rpnc').select('id,status').limit(5000)
-        const equipmentQ = supabase.from('erp_equipamentos_medicao').select('id,codigo,descricao,status,proxima_calibracao,certificado_validade').limit(3000)
-
-        if (!master && empresaId) {
-          machineQ.eq('empresa_id', empresaId)
-          opQ.eq('empresa_id', empresaId)
-          prodQ.eq('empresa_id', empresaId)
-          pointingQ.eq('empresa_id', empresaId)
-          programQ.eq('empresa_id', empresaId)
-          stopQ.eq('empresa_id', empresaId)
-          rpncQ.eq('empresa_id', empresaId)
-          equipmentQ.eq('empresa_id', empresaId)
-        }
-
-        const [m, o, pr, pt, pg, st, rn, eq] = await Promise.all([machineQ, opQ, prodQ, pointingQ, programQ, stopQ, rpncQ, equipmentQ])
-        for (const result of [m, o, pr, pt, pg, st, rn, eq]) if (result.error) throw result.error
-
-        if (!alive) return
-        setMachines((m.data ?? []) as Machine[])
-        setOps((o.data ?? []) as OP[])
-        setProducts((pr.data ?? []) as Product[])
-        setPointings((pt.data ?? []) as Pointing[])
-        setPrograms((pg.data ?? []) as Program[])
-        setStops((st.data ?? []) as Stop[])
-        const closedRncStates = new Set(['encerrada', 'fechada', 'concluida', 'concluido', 'fechado', 'cancelada', 'cancelado'])
-        const rncRows = (rn.data ?? []) as Array<{ status?: unknown }>
-        const closedRncCount = rncRows.filter(row => closedRncStates.has(String(row.status ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())).length
-        setRpnc(Math.max(0, rncRows.length - closedRncCount))
-        setRpncClosed(closedRncCount)
-        setEquipment((eq.data ?? []) as Equipment[])
-      } catch (e) {
-        if (alive) setError(e instanceof Error ? e.message : 'Não foi possível carregar o dashboard.')
-      } finally {
-        if (alive) setLoading(false)
-      }
-    }
-    void load()
+    setLoading(true)
+    setError('')
+    fetchSnapshot()
+      .then(snapshot => { if (!alive) return; setData(snapshot); setLoadedAt(new Date()) })
+      .catch((e: unknown) => { if (alive) setError(e instanceof Error ? e.message : 'Não foi possível carregar o dashboard.') })
+      .finally(() => { if (alive) setLoading(false) })
     return () => { alive = false }
-  }, [])
+  }, [fetchSnapshot, reloadKey])
 
-  const today = dateKey(clock)
+  const { machines, ops, products, pointings, programs, stops, equipment, rpnc, rpncClosed } = data
+
+  const today = dateKey(tick)
   const activeOps = ops.filter(o => !['concluida', 'concluído', 'cancelada', 'cancelado'].includes(String(o.status).toLowerCase()))
   const todayPointings = pointings.filter(p => String(p.criado_em ?? p.created_at ?? '').slice(0, 10) === today)
   const producedToday = todayPointings.reduce((s, p) => s + n(p.quantidade_boa) + n(p.quantidade_refugada), 0)
@@ -161,7 +173,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
   const weekly = useMemo<Daily[]>(() => {
     const days: Daily[] = []
     for (let i = 6; i >= 0; i--) {
-      const d = new Date(clock)
+      const d = new Date(tick)
       d.setHours(0, 0, 0, 0)
       d.setDate(d.getDate() - i)
       const key = dateKey(d)
@@ -170,21 +182,21 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
       days.push({ day: d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''), previsto, realizado })
     }
     return days
-  }, [clock, programs, pointings])
+  }, [tick, programs, pointings])
 
   const overduePieces = useMemo(() => programs.reduce((sum, p) => {
     const due = new Date(p.fim_planejado).getTime()
     const produced = n(p.quantidade_produzida)
     const planned = n(p.quantidade_planejada)
-    return due < clock.getTime() && produced < planned ? sum + Math.max(0, planned - produced) : sum
-  }, 0), [programs, clock])
+    return due < tick.getTime() && produced < planned ? sum + Math.max(0, planned - produced) : sum
+  }, 0), [programs, tick])
 
   const onTimePieces = useMemo(() => programs.reduce((sum, p) => {
     const due = new Date(p.fim_planejado).getTime()
     const produced = n(p.quantidade_produzida)
     const planned = n(p.quantidade_planejada)
-    return due >= clock.getTime() && produced < planned ? sum + Math.max(0, planned - produced) : sum
-  }, 0), [programs, clock])
+    return due >= tick.getTime() && produced < planned ? sum + Math.max(0, planned - produced) : sum
+  }, 0), [programs, tick])
 
   const equipmentValidity = useMemo(() => {
     const invalidStates = new Set(['vencido', 'bloqueado', 'inativo', 'reprovado', 'fora de uso'])
@@ -193,7 +205,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
     let withoutValidity = 0
     for (const item of equipment) {
       const dates = [item.proxima_calibracao, item.certificado_validade].filter((date): date is string => Boolean(date))
-      const status = String(item.status ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+      const status = String(item.status ?? '').normalize('NFD').replace(ACCENT_STRIP, '').toLowerCase()
       if (invalidStates.has(status) || dates.some(date => date.slice(0, 10) < today)) expired++
       else if (dates.length > 0 && dates.every(date => date.slice(0, 10) >= today)) valid++
       else withoutValidity++
@@ -211,7 +223,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
       const hours = Math.max(0, (new Date(s.fim).getTime() - new Date(s.inicio).getTime()) / 3600000)
       grouped.set(day, (grouped.get(day) ?? 0) + hours)
     })
-    return Array.from(grouped.entries()).sort((a,b) => a[0].localeCompare(b[0])).slice(-7).map(([day, horas]) => ({ day: new Date(day + 'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short'}).replace('.',''), horas: Number(horas.toFixed(1)) }))
+    return Array.from(grouped.entries()).sort((a, b) => a[0].localeCompare(b[0])).slice(-7).map(([day, horas]) => ({ day: new Date(day + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''), horas: Number(horas.toFixed(1)) }))
   }, [stops])
 
   const opStatus = useMemo(() => {
@@ -233,144 +245,122 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         workstation: machine ? `${machine.codigo} · ${machine.nome}` : 'Posto não definido',
         product: product ? `${product.codigo ?? ''} · ${product.nome ?? ''}`.replace(/^ · | · $/g, '') : 'Produto não informado',
         lastPointing: last?.created_at ? new Date(last.created_at).toLocaleString('pt-BR') : 'Sem apontamento',
-        status: statusText(op.status)
+        status: statusText(op.status),
+        planned: n(op.quantidade_planejada),
+        produced: n(op.quantidade)
       }
     })
   }, [activeOps, pointings, products, machines])
 
   const cards = [
-    { label: 'OPs EM ANDAMENTO', value: fmt(activeOps.length), icon: Activity },
-    { label: 'PRODUÇÃO DO DIA', value: fmt(producedToday), suffix: 'un', icon: CheckCircle },
-    { label: 'RNC ABERTAS / FECHADAS', value: `${fmt(rpnc)} / ${fmt(rpncClosed)}`, icon: AlertTriangle },
-    { label: 'EFICIÊNCIA (OEE)', value: oee === null ? '—' : `${oee.toFixed(1).replace('.', ',')}%`, icon: BarChart3 }
+    { label: 'OPs EM ANDAMENTO', value: fmt(activeOps.length), suffix: '', icon: Activity, tone: '' },
+    { label: 'PRODUÇÃO DO DIA', value: fmt(producedToday), suffix: 'un', icon: CheckCircle, tone: '' },
+    { label: 'RNC ABERTAS / FECHADAS', value: `${fmt(rpnc)} / ${fmt(rpncClosed)}`, suffix: '', icon: AlertTriangle, tone: rpnc > 0 ? 'is-bad' : 'is-good' },
+    { label: 'EFICIÊNCIA (OEE)', value: oee === null ? '—' : `${oee.toFixed(1).replace('.', ',')}%`, suffix: '', icon: BarChart3, tone: '' }
   ]
 
   const attentionCards = [
-    { label: 'PEÇAS EM ATRASO', value: fmt(overduePieces), suffix: 'un', tone: 'danger', icon: AlertTriangle },
-    { label: 'PEÇAS NO PRAZO', value: fmt(onTimePieces), suffix: 'un', tone: 'success', icon: CheckCircle },
-    { label: 'EQUIPAMENTOS VÁLIDOS', value: fmt(validEquipment), suffix: 'un', tone: 'success', icon: CheckCircle },
-    { label: 'EQUIPAMENTOS VENCIDOS / BLOQUEADOS', value: fmt(expiredEquipment), suffix: 'un', tone: 'danger', icon: AlertTriangle }
+    { label: 'PEÇAS EM ATRASO', value: fmt(overduePieces), suffix: 'un', tone: 'is-bad', icon: AlertTriangle },
+    { label: 'PEÇAS NO PRAZO', value: fmt(onTimePieces), suffix: 'un', tone: 'is-good', icon: CheckCircle },
+    { label: 'EQUIPAMENTOS VÁLIDOS', value: fmt(validEquipment), suffix: 'un', tone: 'is-good', icon: Wrench },
+    { label: 'EQUIPAMENTOS VENCIDOS / BLOQUEADOS', value: fmt(expiredEquipment), suffix: 'un', tone: 'is-bad', icon: AlertTriangle }
   ]
 
   return (
-    <div className="dp-shell min-h-screen bg-slate-50 text-slate-900 font-sans">
-      <style>{`
-        .dp-shell{min-height:100%;background:#f8fafc}
-        .dp-main{width:100%;max-width:1700px;margin:0 auto;padding:18px 24px 34px}
-        .dp-context{padding:11px 0 13px;border-bottom:1px solid #dbe3ea}.dp-context>div{display:flex;align-items:center;justify-content:space-between;gap:12px}.dp-context strong{color:#123B50;font-size:10px;font-weight:950;letter-spacing:.08em}.dp-context p{margin:0;color:#475569;font-size:10px;font-weight:950;letter-spacing:.12em}
-        .dp-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}
-        .dp-kpi{position:relative;display:flex;align-items:center;gap:13px;padding:12px 14px;min-height:76px;background:linear-gradient(135deg,#17445A,#0B3042);border:1px solid #082838;border-radius:14px;box-shadow:0 10px 24px rgba(8,40,56,.28);overflow:hidden}
-        .dp-kpi::after{content:"";position:absolute;right:-26px;bottom:-38px;width:104px;height:104px;border-radius:50%;background:rgba(72,183,199,.32);pointer-events:none}
-        .dp-kpi-icon{position:relative;z-index:1;display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:linear-gradient(145deg,#2D8DB8 0%,#17445A 58%,#0B3042 100%);color:#fff!important;flex:none;border:1px solid rgba(255,255,255,.42);box-shadow:0 11px 0 rgba(5,28,39,.55),0 17px 24px rgba(5,28,39,.34),inset 0 2px 2px rgba(255,255,255,.55),inset 0 -7px 10px rgba(0,0,0,.25);transform:perspective(180px) rotateX(4deg);text-shadow:0 2px 2px rgba(0,0,0,.38)}
-        .dp-kpi small,.dp-kpi strong,.dp-kpi em,.dp-kpi-label{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 1px 2px rgba(0,0,0,.55)}.dp-kpi small{display:block!important;font-size:13px;font-weight:950;letter-spacing:.04em;line-height:1.2}.dp-kpi strong{display:block!important;font-size:29px;font-weight:950;line-height:1.08;margin-top:5px}.dp-kpi em{font-style:normal!important;font-size:12px;font-weight:900}
-        .dp-kpi:nth-child(2){background:linear-gradient(135deg,#0F6748,#063C2A);border-color:#052E21}.dp-kpi:nth-child(2)::after{background:rgba(72,183,199,.18)}.dp-kpi:nth-child(2) .dp-kpi-icon{color:#fff!important;background:linear-gradient(145deg,#31B982 0%,#0F6748 58%,#063C2A 100%)}
-        .dp-kpi:nth-child(3){background:linear-gradient(135deg,#A94F00,#6E2F00);border-color:#542300}.dp-kpi:nth-child(3)::after{background:rgba(255,255,255,.14)}.dp-kpi:nth-child(3) .dp-kpi-icon{color:#fff!important;background:linear-gradient(145deg,#E58A36 0%,#A94F00 58%,#6E2F00 100%)}
-        .dp-kpi:nth-child(4){background:linear-gradient(135deg,#247E91,#145564);border-color:#0F4652}.dp-kpi:nth-child(4)::after{background:rgba(18,59,80,.20)}.dp-kpi:nth-child(4) .dp-kpi-icon{color:#fff!important;background:linear-gradient(145deg,#48B7C7 0%,#247E91 58%,#145564 100%)}
-        .dp-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
-        .dp-panel{background:#fff;border:1px solid #d7e5ea;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(18,59,80,.07)}
-        .dp-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 17px;border-bottom:1px solid #edf4f6;background:linear-gradient(180deg,#fff,#fbfeff)}.dp-head span{color:#2D8DB8;font-size:10px;font-weight:950;letter-spacing:.1em}.dp-head h2{margin:3px 0 0;color:#123B50;font-size:16px;font-weight:950}
-        .dp-chart{height:250px;padding:12px 12px 10px}.dp-chart-compact{height:220px}.dp-empty{height:220px;display:grid;place-items:center;padding:20px;text-align:center;color:#64748b;font-size:12px;font-weight:700}.dp-empty-compact{height:220px}
-        .dp-attention-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:12px 0}.dp-attention{position:relative;min-width:0;min-height:72px;padding:12px 14px;display:flex;align-items:center;gap:12px;border-radius:14px;overflow:hidden;box-shadow:0 8px 20px rgba(18,59,80,.10);border:1px solid}.dp-attention::after{content:"";position:absolute;right:-22px;bottom:-28px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.16)}.dp-attention-icon{display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:13px;background:linear-gradient(145deg,rgba(255,255,255,.30),rgba(255,255,255,.08));color:#fff!important;border:1px solid rgba(255,255,255,.48);box-shadow:0 8px 0 rgba(0,0,0,.20),0 12px 18px rgba(0,0,0,.18),inset 0 2px 2px rgba(255,255,255,.48),inset 0 -5px 8px rgba(0,0,0,.18);transform:perspective(160px) rotateX(5deg);text-shadow:0 2px 2px rgba(0,0,0,.38)}.dp-attention small,.dp-attention strong,.dp-attention em{color:#fff!important;-webkit-text-fill-color:#fff!important}.dp-attention small{display:block!important;font-size:11px;font-weight:950;letter-spacing:.04em;line-height:1.2}.dp-attention strong{display:inline-block!important;font-size:24px;font-weight:950;line-height:1.05;margin-top:7px}.dp-attention em{font-size:10px;font-weight:850;font-style:normal;margin-left:6px}.dp-attention-danger{background:linear-gradient(135deg,#B83A45,#74212A);border-color:#642029}.dp-attention-success{background:linear-gradient(135deg,#16805C,#0A4D38);border-color:#083F2E}.dp-attention-warning{background:linear-gradient(135deg,#B96A09,#7A4300);border-color:#613400}.dp-status-panel{margin-top:12px}
+    <div className="hp-shell">
+      <main className="hp-main">
+        <div className="flex items-center justify-end gap-2">
+          <span className="text-[10px] uppercase tracking-wider text-slate-500">
+            {loading ? 'Carregando dados da empresa...' : loadedAt ? `Última carga ${loadedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : 'Sem carga'}
+          </span>
+          <button type="button" className="hp-btn" onClick={() => setReloadKey(k => k + 1)} disabled={loading}>
+            <RefreshCw size={13} /> Atualizar
+          </button>
+        </div>
 
-        .dp-kpi-icon svg,.dp-attention-icon svg{color:#fff!important;stroke:#fff!important;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}.dp-table-wrap{overflow:auto}.dp-table{width:100%;border-collapse:collapse;font-size:12px}.dp-table th{background:#f8fafc;color:#475569;text-align:left;font-size:10px;font-weight:950;padding:10px 12px;border-bottom:1px solid #e2e8f0}.dp-table td{padding:11px 12px;border-bottom:1px solid #edf2f7;color:#334155;font-weight:650;white-space:nowrap}.dp-table tr:last-child td{border-bottom:0}.dp-status{display:inline-flex;padding:4px 8px;border-radius:999px;background:#ecfdf5;color:#065f46;font-size:10px;font-weight:900}.dp-error{margin:0 0 12px;padding:10px 12px;border:1px solid #fecaca;background:#fef2f2;color:#991b1b;border-radius:7px;font-size:12px;font-weight:700}
-                @media(max-width:1050px){.dp-kpis,.dp-attention-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dp-grid{grid-template-columns:1fr}.dp-main{padding:16px}}
-        @media(max-width:650px){.dp-kpis,.dp-attention-grid{grid-template-columns:1fr}.dp-main{padding:12px}}
-                .dp-shell{--dp-navy:#071522;--dp-petrol:#0d2638;--dp-blue:#2d8db8;--dp-cyan:#48b7c7;--dp-ink:#123b50;--dp-muted:#627985;--dp-line:#d8e4ea;background:radial-gradient(ellipse at 90% 0,rgba(72,183,199,.08),transparent 30rem),#f3f7fa;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
-                .dp-main{max-width:1600px;padding:clamp(16px,2.5vw,32px)}
-                .dp-kpi{min-height:102px;padding:17px;background:linear-gradient(145deg,#fff,#f7fbfd)!important;border:1px solid var(--dp-line)!important;border-radius:18px!important;box-shadow:0 10px 28px rgba(18,59,80,.07)!important;transition:transform .16s ease,box-shadow .16s ease}
-                .dp-kpi:hover{transform:translateY(-2px);box-shadow:0 16px 34px rgba(18,59,80,.11)!important}
-                .dp-kpi::after{width:120px;height:120px;right:-48px;bottom:-55px;background:rgba(72,183,199,.10)!important}
-                .dp-kpi-icon{width:46px;height:46px;border:1px solid #c6e7ed!important;border-radius:13px!important;background:#eaf7fa!important;color:var(--dp-blue)!important;box-shadow:none!important;transform:none!important;text-shadow:none!important}
-                .dp-kpi-icon svg{color:var(--dp-blue)!important;stroke:currentColor!important;filter:none!important}
-                .dp-kpi small,.dp-kpi strong,.dp-kpi em,.dp-kpi-label{color:var(--dp-ink)!important;-webkit-text-fill-color:var(--dp-ink)!important;text-shadow:none!important}
-                .dp-kpi small{font-size:11px!important;font-weight:800!important;letter-spacing:.07em!important}
-                .dp-kpi strong{font-size:clamp(22px,2vw,29px)!important;font-weight:850!important;line-height:1.15!important}
-                .dp-kpi em{font-size:12px!important}
-                .dp-kpi:nth-child(2),.dp-kpi:nth-child(3),.dp-kpi:nth-child(4){background:linear-gradient(145deg,#fff,#f7fbfd)!important;border-color:var(--dp-line)!important}
-                .dp-kpi:nth-child(2)::after,.dp-kpi:nth-child(3)::after,.dp-kpi:nth-child(4)::after{background:rgba(72,183,199,.10)!important}
-                .dp-kpi:nth-child(2) .dp-kpi-icon,.dp-kpi:nth-child(3) .dp-kpi-icon,.dp-kpi:nth-child(4) .dp-kpi-icon{background:#eaf7fa!important;color:var(--dp-blue)!important}
-                .dp-grid{gap:16px}
-                .dp-panel{border:1px solid var(--dp-line)!important;border-radius:18px!important;box-shadow:0 10px 30px rgba(18,59,80,.06)!important}
-                .dp-head{min-height:68px;padding:16px 19px;background:linear-gradient(180deg,#fff,#f9fcfd)!important}
-                .dp-head span{font-size:10px!important;letter-spacing:.12em!important;color:#39758c!important}
-                .dp-head h2{font-size:17px!important;line-height:1.3;color:var(--dp-ink)!important}
-                .dp-chart,.dp-chart-compact{height:250px;padding:16px 16px 12px}
-                .dp-chart-note{margin:0;padding:0 18px 14px;color:var(--dp-muted);font-size:12px;line-height:1.5}
-                .dp-attention{min-height:88px;padding:15px 16px;background:#fff!important;border:1px solid var(--dp-line)!important;border-left:4px solid var(--dp-cyan)!important;border-radius:16px!important;box-shadow:0 8px 22px rgba(18,59,80,.06)!important}
-                .dp-attention::after{display:none}
-                .dp-attention-icon{width:42px;height:42px;border:1px solid #c6e7ed!important;border-radius:13px!important;background:#eaf7fa!important;color:var(--dp-blue)!important;box-shadow:none!important;transform:none!important;text-shadow:none!important}
-                .dp-attention-icon svg{color:var(--dp-blue)!important;stroke:currentColor!important;filter:none!important}
-                .dp-attention small,.dp-attention strong,.dp-attention em{color:var(--dp-ink)!important;-webkit-text-fill-color:var(--dp-ink)!important}
-                .dp-attention small{font-size:10px!important;letter-spacing:.06em!important;line-height:1.4!important}
-                .dp-attention strong{font-size:24px!important;line-height:1.15!important}
-                .dp-attention-danger{border-left-color:#d65b61!important}.dp-attention-danger .dp-attention-icon{border-color:#f0d3d5!important;background:#fff4f4!important;color:#b6424a!important}.dp-attention-danger .dp-attention-icon svg{color:#b6424a!important}
-                .dp-attention-success{border-left-color:#3a9d78!important}.dp-attention-success .dp-attention-icon{border-color:#cce8dc!important;background:#f0faf5!important;color:#287954!important}.dp-attention-success .dp-attention-icon svg{color:#287954!important}
-                .dp-attention-warning{border-left-color:#e6a34a!important}.dp-attention-warning .dp-attention-icon{border-color:#f2dfc2!important;background:#fff9ee!important;color:#a86a16!important}.dp-attention-warning .dp-attention-icon svg{color:#a86a16!important}
-                .dp-status{border-radius:8px!important}
-                @media(max-width:650px){.dp-main{padding:14px}.dp-kpi{min-height:88px}.dp-head{padding:14px}.dp-chart,.dp-chart-compact{height:230px;padding:12px 8px 8px}}
-                @media(prefers-reduced-motion:reduce){.dp-shell *{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}}
-      `}</style>
+        {error && <div className="hp-alert" role="alert">{error}</div>}
 
-      <main className="dp-main">
-        {error && <div className="dp-error">{error}</div>}
-
-        
-
-        <section className="dp-kpis">
-          {cards.map(({ label, value, suffix, icon: Icon }) => (
-            <article key={label} className="dp-kpi">
-              <span className="dp-kpi-icon"><Icon size={19}/></span>
-              <div><small className="dp-kpi-label">{label}</small><strong>{loading ? '…' : value} {suffix && <em>{suffix}</em>}</strong></div>
+        <section className="hp-kpis" aria-label="Indicadores do dia">
+          {cards.map(({ label, value, suffix, icon: Icon, tone }) => (
+            <article key={label} className={`hp-kpi ${tone}`}>
+              <span className="hp-kpi-icon"><Icon /></span>
+              <div className="hp-kpi-body">
+                <small className="hp-kpi-label">{label}</small>
+                <strong className="hp-kpi-value">{loading ? '—' : value}{suffix && !loading && <em>{suffix}</em>}</strong>
+              </div>
             </article>
           ))}
         </section>
 
-        <section className="dp-attention-grid">{attentionCards.map(card => { const Icon = card.icon; return <article key={card.label} className={`dp-attention dp-attention-${card.tone}`}><span className="dp-attention-icon"><Icon size={18}/></span><div><small>{card.label}</small><strong>{loading ? '…' : card.value}</strong><em>{card.suffix}</em></div></article> })}
+        <section className="hp-kpis" aria-label="Pontos de atenção">
+          {attentionCards.map(card => { const Icon = card.icon; return (
+            <article key={card.label} className={`hp-kpi ${card.tone}`}>
+              <span className="hp-kpi-icon"><Icon /></span>
+              <div className="hp-kpi-body">
+                <small className="hp-kpi-label">{card.label}</small>
+                <strong className="hp-kpi-value">{loading ? '—' : card.value}<em>{card.suffix}</em></strong>
+              </div>
+            </article>
+          ) })}
         </section>
 
-        <section className="dp-grid dp-chart-grid">
-          <article className="dp-panel">
-            <div className="dp-head"><span>PCP · MÁQUINAS</span><h2>Eficiência por máquina</h2></div>
-            {machineShift.length ? <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={machineShift} barCategoryGap="26%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="maquina" axisLine={false} tickLine={false}/><YAxis domain={[0,100]} unit="%" axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="eficiencia" name="Eficiência" fill="#2D8DB8" radius={[7,7,2,2]} maxBarSize={36}/></BarChart></ResponsiveContainer></div> : <div className="dp-empty dp-empty-compact">Sem dados reais de eficiência.</div>}
+        <section className="hp-grid">
+          <article className="hp-card">
+            <div className="hp-head"><span>PCP · MÁQUINAS</span><h2>Eficiência por máquina</h2></div>
+            {machineShift.length ? <div className="hp-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={machineShift} barCategoryGap="26%"><CartesianGrid stroke="#e6ebef" strokeDasharray="4 4" vertical={false} /><XAxis dataKey="maquina" axisLine={false} tickLine={false} /><YAxis domain={[0, 100]} unit="%" axisLine={false} tickLine={false} width={38} /><Tooltip contentStyle={TOOLTIP_STYLE} /><Bar dataKey="eficiencia" name="Eficiência" fill={CHART_COLORS.primary} maxBarSize={28} /></BarChart></ResponsiveContainer></div> : <div className="hp-empty">Sem apontamentos reais com plano por máquina.</div>}
           </article>
-          <article className="dp-panel">
-            <div className="dp-head"><span>PCP · ENTREGA</span><h2>Peças no prazo × em atraso</h2></div>
-            <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{categoria:'No prazo',quantidade:onTimePieces},{categoria:'Em atraso',quantidade:overduePieces}]} barCategoryGap="38%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="categoria" axisLine={false} tickLine={false}/><YAxis axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="quantidade" name="Peças" fill="#3A9D78" radius={[8,8,3,3]} maxBarSize={48}/></BarChart></ResponsiveContainer></div>
+          <article className="hp-card">
+            <div className="hp-head"><span>PCP · ENTREGA</span><h2>Peças no prazo × em atraso</h2></div>
+            <div className="hp-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{ categoria: 'No prazo', quantidade: onTimePieces }, { categoria: 'Em atraso', quantidade: overduePieces }]} barCategoryGap="38%"><CartesianGrid stroke="#e6ebef" strokeDasharray="4 4" vertical={false} /><XAxis dataKey="categoria" axisLine={false} tickLine={false} /><YAxis axisLine={false} tickLine={false} width={38} /><Tooltip contentStyle={TOOLTIP_STYLE} /><Bar dataKey="quantidade" name="Peças" fill={CHART_COLORS.good} maxBarSize={40} /></BarChart></ResponsiveContainer></div>
           </article>
-          <article className="dp-panel">
-            <div className="dp-head"><span>PRODUÇÃO · SEMANA</span><h2>Previsto × realizado</h2></div>
-            {weekly.some(x => x.previsto || x.realizado) ? <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><LineChart data={weekly}><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="day" axisLine={false} tickLine={false}/><YAxis axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Legend verticalAlign="top" height={24}/><Line type="monotone" dataKey="previsto" name="Previsto" stroke="#94a3b8" strokeWidth={2} strokeDasharray="6 5" dot={false}/><Line type="monotone" dataKey="realizado" name="Realizado" stroke="#2D8DB8" strokeWidth={3} dot={{r:3,strokeWidth:2,fill:"#fff"}}/></LineChart></ResponsiveContainer></div> : <div className="dp-empty dp-empty-compact">Sem dados reais nos últimos 7 dias.</div>}
+          <article className="hp-card">
+            <div className="hp-head"><span>PRODUÇÃO · SEMANA</span><h2>Previsto × realizado</h2></div>
+            {weekly.some(x => x.previsto || x.realizado) ? <div className="hp-chart"><ResponsiveContainer width="100%" height="100%"><LineChart data={weekly}><CartesianGrid stroke="#e6ebef" strokeDasharray="4 4" vertical={false} /><XAxis dataKey="day" axisLine={false} tickLine={false} /><YAxis axisLine={false} tickLine={false} width={38} /><Tooltip contentStyle={TOOLTIP_STYLE} /><Legend verticalAlign="top" height={22} iconSize={8} wrapperStyle={{ fontSize: 10 }} /><Line type="monotone" dataKey="previsto" name="Previsto" stroke={CHART_COLORS.muted} strokeWidth={1.5} strokeDasharray="6 5" dot={false} /><Line type="monotone" dataKey="realizado" name="Realizado" stroke={CHART_COLORS.primary} strokeWidth={2} dot={{ r: 2, strokeWidth: 1.5, fill: '#fff' }} /></LineChart></ResponsiveContainer></div> : <div className="hp-empty">Sem dados reais nos últimos 7 dias.</div>}
           </article>
-          <article className="dp-panel">
-            <div className="dp-head"><span>PARADAS · CHÃO DE FÁBRICA</span><h2>Horas de parada por dia</h2></div>
-            {stopSummary.length ? <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={stopSummary} barCategoryGap="30%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="day" axisLine={false} tickLine={false}/><YAxis unit="h" axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="horas" name="Parada" fill="#D65B61" radius={[7,7,2,2]} maxBarSize={34}/></BarChart></ResponsiveContainer></div> : <div className="dp-empty dp-empty-compact">Sem paradas registradas.</div>}
+          <article className="hp-card">
+            <div className="hp-head"><span>PARADAS · CHÃO DE FÁBRICA</span><h2>Horas de parada por dia</h2></div>
+            {stopSummary.length ? <div className="hp-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={stopSummary} barCategoryGap="30%"><CartesianGrid stroke="#e6ebef" strokeDasharray="4 4" vertical={false} /><XAxis dataKey="day" axisLine={false} tickLine={false} /><YAxis unit="h" axisLine={false} tickLine={false} width={38} /><Tooltip contentStyle={TOOLTIP_STYLE} /><Bar dataKey="horas" name="Parada" fill={CHART_COLORS.bad} maxBarSize={26} /></BarChart></ResponsiveContainer></div> : <div className="hp-empty">Sem paradas registradas.</div>}
           </article>
-        </section>
-
-        <section className="dp-grid dp-chart-grid" aria-label="Indicadores de qualidade e metrologia">
-          <article className="dp-panel">
-            <div className="dp-head"><span>SGQ · NÃO CONFORMIDADES</span><h2>Abertas × fechadas</h2></div>
-            <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{categoria:'Abertas',quantidade:rpnc},{categoria:'Fechadas',quantidade:rpncClosed}]} barCategoryGap="38%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="categoria" axisLine={false} tickLine={false}/><YAxis allowDecimals={false} axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="quantidade" name="Não conformidades" fill="#D65B61" radius={[7,7,2,2]} maxBarSize={48}/></BarChart></ResponsiveContainer></div>
+          <article className="hp-card">
+            <div className="hp-head"><span>SGQ · NÃO CONFORMIDADES</span><h2>Abertas × fechadas</h2></div>
+            <div className="hp-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{ categoria: 'Abertas', quantidade: rpnc }, { categoria: 'Fechadas', quantidade: rpncClosed }]} barCategoryGap="38%"><CartesianGrid stroke="#e6ebef" strokeDasharray="4 4" vertical={false} /><XAxis dataKey="categoria" axisLine={false} tickLine={false} /><YAxis allowDecimals={false} axisLine={false} tickLine={false} width={38} /><Tooltip contentStyle={TOOLTIP_STYLE} /><Bar dataKey="quantidade" name="Não conformidades" fill={CHART_COLORS.bad} maxBarSize={40} /></BarChart></ResponsiveContainer></div>
           </article>
-          <article className="dp-panel">
-            <div className="dp-head"><span>SGQ · METROLOGIA</span><h2>Equipamentos válidos × vencidos</h2></div>
-            <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{categoria:'Válidos',quantidade:validEquipment},{categoria:'Vencidos / bloqueados',quantidade:expiredEquipment}]} barCategoryGap="38%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="categoria" axisLine={false} tickLine={false}/><YAxis allowDecimals={false} axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="quantidade" name="Equipamentos" fill="#3A9D78" radius={[7,7,2,2]} maxBarSize={48}/></BarChart></ResponsiveContainer></div>
-            {equipmentValidity.withoutValidity > 0 && <p className="dp-chart-note">{fmt(equipmentValidity.withoutValidity)} equipamento(s) sem data de validade cadastrada; não contabilizados como válidos.</p>}
+          <article className="hp-card">
+            <div className="hp-head"><span>SGQ · METROLOGIA</span><h2>Equipamentos válidos × vencidos</h2></div>
+            <div className="hp-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{ categoria: 'Válidos', quantidade: validEquipment }, { categoria: 'Vencidos / bloqueados', quantidade: expiredEquipment }]} barCategoryGap="38%"><CartesianGrid stroke="#e6ebef" strokeDasharray="4 4" vertical={false} /><XAxis dataKey="categoria" axisLine={false} tickLine={false} /><YAxis allowDecimals={false} axisLine={false} tickLine={false} width={38} /><Tooltip contentStyle={TOOLTIP_STYLE} /><Bar dataKey="quantidade" name="Equipamentos" fill={CHART_COLORS.good} maxBarSize={40} /></BarChart></ResponsiveContainer></div>
+            {equipmentValidity.withoutValidity > 0 && <p className="hp-note">{fmt(equipmentValidity.withoutValidity)} equipamento(s) sem data de validade cadastrada; não contabilizados como válidos.</p>}
           </article>
         </section>
 
-        <section className="dp-panel dp-status-panel">
-          <div className="dp-head"><span>STATUS DOS SETORES · PCP</span><h2>Distribuição das ordens de produção</h2></div>
-          {opStatus.length ? <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={opStatus} layout="vertical" margin={{left:16,right:18}}><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" horizontal={false}/><XAxis type="number" axisLine={false} tickLine={false}/><YAxis type="category" dataKey="status" width={105} axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="quantidade" name="OPs" fill="#48B7C7" radius={[0,7,7,0]} maxBarSize={26}/></BarChart></ResponsiveContainer></div> : <div className="dp-empty dp-empty-compact">Sem ordens de produção reais para distribuir.</div>}
-        </section>
+        <article className="hp-card">
+          <div className="hp-head"><span>STATUS DOS SETORES · PCP</span><h2>Distribuição das ordens de produção</h2></div>
+          {opStatus.length ? <div className="hp-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={opStatus} layout="vertical" margin={{ left: 12, right: 16 }}><CartesianGrid stroke="#e6ebef" strokeDasharray="4 4" horizontal={false} /><XAxis type="number" axisLine={false} tickLine={false} /><YAxis type="category" dataKey="status" width={96} axisLine={false} tickLine={false} /><Tooltip contentStyle={TOOLTIP_STYLE} /><Bar dataKey="quantidade" name="OPs" fill={CHART_COLORS.cyan} maxBarSize={18} /></BarChart></ResponsiveContainer></div> : <div className="hp-empty">Sem ordens de produção reais para distribuir.</div>}
+        </article>
 
-        <button type="button" onClick={() => onNavigate('/pcp/portal-operador')} style={{display:'flex',alignItems:'center',gap:16,width:'100%',marginTop:14,padding:'12px 16px',textAlign:'left',background:'#fff',border:'1px solid #d7e5ea',borderRadius:16,boxShadow:'0 8px 22px rgba(18,59,80,.07)',cursor:'pointer'}}>
-          <img src="/icons/portal-operador-industrial.png" alt="" style={{width:64,height:64,objectFit:'contain',flex:'none'}} />
-          <span><strong style={{display:'block',color:'#123B50',fontSize:14,fontWeight:900}}>Portal do Operador</strong><small style={{display:'block',marginTop:4,color:'#627985',fontSize:11}}>Chão de fábrica · programação, ordens e apontamentos</small></span>
-          <span style={{marginLeft:'auto',padding:'9px 14px',borderRadius:8,background:'#123B50',color:'#fff',fontSize:11,fontWeight:850,whiteSpace:'nowrap'}}>Acessar portal</span>
+        <article className="hp-card">
+          <div className="hp-head"><span>FILEIRA · OPs EM ANDAMENTO</span><h2>Ordens abertas e último apontamento</h2></div>
+          {queue.length ? <div className="hp-table-wrap"><table className="hp-table"><thead><tr><th scope="col">OP</th><th scope="col">Máquina / posto</th><th scope="col">Produto</th><th scope="col">Plano</th><th scope="col">Realizado</th><th scope="col">Último apontamento</th><th scope="col">Status</th></tr></thead><tbody>{queue.map(row => (
+            <tr key={row.op}>
+              <td><strong>{row.op}</strong></td>
+              <td>{row.workstation}</td>
+              <td className="hp-dim">{row.product}</td>
+              <td>{fmt(row.planned)}</td>
+              <td>{fmt(row.produced)}</td>
+              <td className="hp-dim">{row.lastPointing}</td>
+              <td><span className={`hp-chip ${statusTone(row.status)}`}>{row.status}</span></td>
+            </tr>
+          ))}</tbody></table></div> : <div className="hp-empty">Nenhuma ordem de produção em andamento.</div>}
+        </article>
+
+        <button type="button" className="hp-portal" onClick={() => onNavigate('/pcp/portal-operador')}>
+          <img src="/icons/portal-operador-industrial.png" alt="" />
+          <span>
+            <strong>Portal do Operador</strong>
+            <small>Chão de fábrica · programação, ordens e apontamentos</small>
+          </span>
+          <span className="hp-go hp-chip"><ClipboardList size={11} /> Acessar portal</span>
         </button>
       </main>
-
     </div>
   )
 }

@@ -10,7 +10,7 @@
 import type { PageIntro } from './PageIntroCard'
 
 const introCatalog: Record<string, PageIntro> = {
-  '': { module: 'SYSNQRA ERP · SGQ INDUSTRIAL', title: 'Central de Comando Industrial', description: 'Painel executivo com indicadores reais de produção, qualidade, compras, fiscal e financeiro da empresa autenticada.' },
+  '': { module: 'SYSNQRA ERP · SGQ INDUSTRIAL', title: 'Central de Comando Industrial', description: 'Painel executivo com os números reais da empresa autenticada: OPs em andamento, produção do dia, OEE, peças no prazo e em atraso, RNCs abertas, metrologia e a fileira das ordens em execução.' },
   'cadastro-master': { module: 'Implantação', title: 'Cadastro Master da Empresa', description: 'Configuração inicial do tenant: empresa emissora, plano de acesso e primeiro usuário administrador.' },
   'ajuda': { module: 'SYSNQRA ERP · SGQ INDUSTRIAL', title: 'Central de Ajuda', description: 'Procedimentos operacionais, POPs e orientação contextual de todas as rotinas do sistema.' },
 

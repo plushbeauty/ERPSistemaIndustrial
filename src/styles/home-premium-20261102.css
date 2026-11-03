@@ -1,0 +1,64 @@
+/*
+ * SYSNQRA ERP INDUSTRIAL — TELA PRINCIPAL sobre a fundacao premium (REV-HOME-PREMIUM-20261102-01).
+ * Ordem do proprietario (#63): refazer a tela inicial sobre os tokens premium, na mesma regua
+ * do resto do sistema — raio 2px, superficie plana, filete de 1px, rotulo em caixa alta 10px.
+ * Substitui o bloco <style> inline que tinha dois jogos de regras se sobrescrevendo (raios 14-18px,
+ * gradientes e sombras) e que brigava com a fundacao.
+ * NAO pinta estado ativo/dourado: o dourado pertence a erp-active-gold-20261101.css.
+ */
+.hp-shell{min-height:100%;background:var(--color-background);color:var(--color-foreground);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+.hp-main{width:100%;max-width:1560px;margin:0 auto;padding:clamp(14px,2vw,26px);display:grid;gap:14px}
+
+/* cartoes base */
+.hp-card{border:1px solid var(--color-border);border-radius:2px;background:var(--color-card);overflow:hidden}
+.hp-head{display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:9px 12px;border-bottom:1px solid var(--color-border);background:var(--color-secondary)}
+.hp-head span{font-size:9px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--color-muted-foreground)}
+.hp-head h2{margin:0;font-size:13px;font-weight:700;letter-spacing:-.01em;color:var(--color-card-foreground)}
+.hp-note{margin:0;padding:8px 12px;border-top:1px solid var(--color-border);color:var(--color-muted-foreground);font-size:10px;line-height:1.45}
+
+/* KPIs */
+.hp-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.hp-kpi{display:flex;align-items:center;gap:11px;min-height:66px;padding:11px 13px;border:1px solid var(--color-border);border-left:2px solid var(--color-primary);border-radius:2px;background:var(--color-card)}
+.hp-kpi-icon{display:grid;place-items:center;flex:none;width:30px;height:30px;border:1px solid var(--color-border);border-radius:2px;background:var(--color-secondary);color:var(--color-primary)}
+.hp-kpi-icon svg{width:15px;height:15px}
+.hp-kpi-body{min-width:0}
+.hp-kpi-label{display:block;font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--color-muted-foreground);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hp-kpi-value{display:block;margin-top:3px;font-size:21px;font-weight:700;line-height:1.1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--color-card-foreground)}
+.hp-kpi-value em{margin-left:4px;font-size:10px;font-weight:600;font-style:normal;color:var(--color-muted-foreground)}
+.hp-kpi.is-good{border-left-color:var(--color-success)}
+.hp-kpi.is-bad{border-left-color:var(--color-danger)}
+
+/* grades */
+.hp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.hp-chart{height:216px;padding:8px 10px 6px}
+.hp-empty{display:grid;min-height:120px;place-items:center;padding:18px 12px;text-align:center;font-size:11px;font-weight:600;color:var(--color-muted-foreground)}
+
+/* tabela */
+.hp-table-wrap{overflow:auto}
+.hp-table{width:100%;border-collapse:collapse}
+.hp-table th{height:28px;padding:0 10px;border-bottom:1px solid var(--color-border);background:var(--color-secondary);text-align:left;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--color-muted-foreground);white-space:nowrap;position:sticky;top:0}
+.hp-table td{height:30px;padding:0 10px;border-bottom:1px solid color-mix(in oklch,var(--color-border) 70%,transparent);font-size:11px;color:var(--color-card-foreground);white-space:nowrap;font-variant-numeric:tabular-nums}
+.hp-table tbody tr:hover td{background:color-mix(in oklch,var(--color-primary) 5%,var(--color-card))}
+.hp-table td.hp-dim{color:var(--color-muted-foreground)}
+.hp-chip{display:inline-flex;align-items:center;height:18px;padding:0 7px;border:1px solid var(--color-border);border-radius:2px;background:var(--color-secondary);font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--color-muted-foreground)}
+.hp-chip.is-good{border-color:color-mix(in oklch,var(--color-success) 40%,var(--color-border));background:color-mix(in oklch,var(--color-success) 12%,var(--color-card));color:color-mix(in oklch,var(--color-success) 80%,black)}
+.hp-chip.is-bad{border-color:color-mix(in oklch,var(--color-danger) 40%,var(--color-border));background:color-mix(in oklch,var(--color-danger) 12%,var(--color-card));color:color-mix(in oklch,var(--color-danger) 80%,black)}
+
+/* botoes e avisos */
+.hp-btn{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border:1px solid var(--color-border);border-radius:2px;background:var(--color-card);color:var(--color-foreground);font-size:11px!important;font-weight:700;cursor:pointer}
+.hp-btn:hover{background:var(--color-muted)}
+.hp-btn:disabled{cursor:not-allowed;opacity:.55}
+.hp-portal{display:flex;align-items:center;gap:12px;width:100%;padding:11px 13px;border:1px solid var(--color-border);border-radius:2px;background:var(--color-card);text-align:left;cursor:pointer}
+.hp-portal:hover{background:var(--color-muted)}
+.hp-portal img{width:46px;height:46px;flex:none;object-fit:contain;border:1px solid var(--color-border);border-radius:2px;background:var(--color-secondary)}
+.hp-portal strong{display:block;font-size:12px;font-weight:700;color:var(--color-card-foreground)}
+.hp-portal small{display:block;margin-top:2px;font-size:10px;color:var(--color-muted-foreground)}
+.hp-portal .hp-go{margin-left:auto;flex:none}
+.hp-alert{padding:9px 12px;border:1px solid color-mix(in oklch,var(--color-danger) 45%,var(--color-border));border-radius:2px;background:color-mix(in oklch,var(--color-danger) 8%,var(--color-card));color:color-mix(in oklch,var(--color-danger) 82%,black);font-size:11px;font-weight:600}
+
+/* recharts dentro da regua */
+.hp-chart text{font-size:10px!important;fill:var(--color-muted-foreground)}
+
+@media(max-width:1050px){.hp-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.hp-grid{grid-template-columns:1fr}}
+@media(max-width:640px){.hp-kpis{grid-template-columns:1fr}.hp-main{padding:12px}}
+@media(prefers-reduced-motion:reduce){.hp-shell *{transition-duration:.01ms!important;animation-duration:.01ms!important}}
