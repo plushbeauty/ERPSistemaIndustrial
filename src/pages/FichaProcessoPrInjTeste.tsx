@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import * as Tabs from '@radix-ui/react-tabs'
 import { Activity, ClipboardList, Factory, Gauge, Thermometer, Waves } from 'lucide-react'
 
@@ -29,7 +29,7 @@ const pressParameters: Param[] = [
   { label: 'Número de respiros', value: '2 ciclos' }, { label: 'Tempo até 1º respiro', value: '15 s' },
   { label: 'Tempo de alívio', value: '5 s' }, { label: 'Pré-aquecimento da matéria-prima', value: '30 s' },
 ]
-function Panel({ title, children }: { title: string; children: React.ReactNode }) {
+function Panel({ title, children }: { title: string; children: ReactNode }) {
   return <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"><h3 className="border-b border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800">{title}</h3>{children}</section>
 }
 function Rows({ rows }: { rows: Param[] }) {
