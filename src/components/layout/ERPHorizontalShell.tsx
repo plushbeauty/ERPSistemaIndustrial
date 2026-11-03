@@ -294,8 +294,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
             <h2>{contextualHelp.title}</h2><p>{contextualHelp.purpose}</p>
             <strong>Como usar</strong><ol>{contextualHelp.steps.map((step, index) => <li key={index}>{step}</li>)}</ol>
             <strong>Campos e preenchimento</strong><ul>{contextualHelp.fields.map((field, index) => <li key={index}>{field}</li>)}</ul>
-            {contextualHelp.buttons?.length ? <><strong>Botões e ações</strong><ul>{contextualHelp.buttons.map((button, index) => <li key={index}>{button}</li>)}</ul> : null}
-            {contextualHelp.tips?.length ? <><strong>Cuidados importantes</strong><ul>{contextualHelp.tips.map((tip, index) => <li key={index}>{tip}</li>)}</ul> : null}
+            {contextualHelp.buttons?.length ? <><strong>Botões e ações</strong><ul>{contextualHelp.buttons.map((button, index) => <li key={index}>{button}</li>)}</ul></> : null}
+            {contextualHelp.tips?.length ? <><strong>Cuidados importantes</strong><ul>{contextualHelp.tips.map((tip, index) => <li key={index}>{tip}</li>)}</ul></> : null}
             <small className="erp-help-status">{contextualHelp.verified ? 'Orientação cadastrada para esta rotina' : 'Orientação pendente de validação específica'} · {pathname}</small>
             <button className="erp-help-center-link" type="button" onClick={() => { setHelpOpen(false); navigate('/pageprincipal/ajuda') }}>Abrir Central de Ajuda</button>
           </div>
