@@ -388,3 +388,18 @@
   .ph-carousel-grid { animation: none; }
   .ph-carousel-bg img, .ph-carousel-dot, .ph-carousel-arrow { transition: none; }
 }
+
+
+/* Ajustes solicitados em 2026-11-02: menu superior uniforme e carrossel sem controles visíveis. */
+.sgq-public-home .sgq-nav-links .sgq-nav-link,
+.sgq-public-home .sgq-nav-links .sgq-product-button,
+.sgq-public-home .sgq-nav-actions .sgq-login,
+.sgq-public-home .sgq-nav-actions .sgq-trial,
+.sgq-public-home .sgq-nav-actions a {
+  font-size: 12px;
+}
+
+/* Oculta setas, indicadores e controles do carrossel sem remover os slides. */
+.sgq-public-home .sgq-dots {
+  display: none !important;
+}

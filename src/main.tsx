@@ -81,7 +81,7 @@ createRoot(rootElement).render(
   </StrictMode>,
 )
 
-const LEGACY_PWA_CLEANUP_KEY = 'erp-industrial-legacy-pwa-cleanup-v2'
+const LEGACY_PWA_CLEANUP_KEY = 'erp-industrial-legacy-pwa-cleanup-v3'
 
 async function limparAplicacaoPwaLegadaUmaVez() {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return
