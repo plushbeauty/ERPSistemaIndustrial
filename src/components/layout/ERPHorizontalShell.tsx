@@ -56,6 +56,7 @@ const menus: MenuItem[] = [
   ] },
   { label: 'Chão de Fábrica', route: '/pageprincipal/chao-de-fabrica/portal-operador', icon: Monitor, isUpdated: true, children: [
     { label: 'Portal do Operador', route: '/pageprincipal/chao-de-fabrica/portal-operador', icon: Monitor, isUpdated: true },
+    { label: 'Apontamento de Produção', route: '/pageprincipal/chao-de-fabrica/apontamento-operador', icon: ClipboardList, isUpdated: true },
     { label: 'Postos de Trabalho', route: '/pageprincipal/chao-de-fabrica/postos', icon: ClipboardList, isUpdated: true },
   ] },
   { label: 'Estoque e Almoxarifado', route: '/pageprincipal/estoque/auditoria-saldos', icon: Warehouse, isUpdated: true, children: [
