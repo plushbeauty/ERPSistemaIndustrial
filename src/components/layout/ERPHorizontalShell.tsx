@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, UserCog, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, FolderOpen, Warehouse, Percent, Scale, ShieldCheck, BookOpen, Landmark, Calculator, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode } from 'lucide-react'
+import { Bot, CircleHelp, ChevronDown, UserRound, UserCog, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, FolderOpen, Warehouse, Percent, Scale, ShieldCheck, BookOpen, Landmark, Calculator, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -7,6 +7,7 @@ import { BarraWindows11 } from './BarraWindows11'
 import PCPTabletMenuModal from '../PCPTabletMenuModal'
 import PageIntroCard from './PageIntroCard'
 import { fallbackPageIntro, hasNativeIntroCard, resolvePageIntro } from './pageIntroCatalog'
+import { resolveContextualHelp } from '../../help/contextualHelpCatalog'
 
 type MenuItem = {
   label: string
@@ -203,28 +204,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     go(item.route)
   }
 
-  const contextualHelp = pathname.startsWith('/pcp/mrp-ii')
-    ? { title: 'MRP II — Planejamento de materiais', purpose: 'Calcular necessidades de materiais a partir da demanda, estrutura dos produtos, estoque e ordens existentes. Esta tela não é a agenda de máquinas.', steps: ['Confirme que produtos, fichas técnicas/estruturas e saldos de estoque estão atualizados.', 'Execute o cálculo MRP e confira as necessidades líquidas por componente.', 'Revise as sugestões de comprar ou produzir antes de gerar ordens planejadas.'], fields: ['Produto/demanda: item acabado e quantidade a planejar.', 'Horizonte/data: período considerado no planejamento.', 'Necessidade líquida: quantidade que falta após estoque e reservas.', 'Sugestão: comprar ou produzir; confira antes de confirmar.'] }
-    : pathname.startsWith('/pcp/agenda-maquinas')
-    ? { title: 'Agenda de máquinas', purpose: 'Distribuir ordens de produção por máquina e horário, respeitando jornada e conflitos de programação.', steps: ['Escolha a semana e a máquina.', 'Selecione uma célula do calendário para abrir a programação.', 'Informe OP, quantidade e início/fim dentro da jornada configurada.', 'Salve e confira o bloco da OP no calendário.'], fields: ['Ordem de produção: selecione uma OP aberta real.', 'Molde: escolha o ferramental cadastrado quando aplicável.', 'Quantidade programada: peças previstas para este intervalo.', 'Início/fim: horários dentro do mesmo dia e da jornada.', 'Calendário: dias e horários habituais da empresa.'] }
-    : pathname.startsWith('/pcp/capacidade') || pathname.endsWith('/pcp/capacidade')
-    ? { title: 'Carga de máquina e capacidade', purpose: 'Comparar a capacidade semanal cadastrada por equipamento com a carga real das OPs abertas da empresa autenticada.', steps: ['Confira horas por dia e dias por semana de cada máquina ativa.', 'Grave a capacidade por equipamento e valide a capacidade semanal calculada.', 'Compare a carga das OPs abertas e a ocupação antes de replanejar a agenda.', 'Exporte a auditoria em CSV quando precisar do registro do levantamento.'], fields: ['Horas/dia: horas produtivas planejadas por dia (0,01 a 24).', 'Dias/semana: dias planejados por semana (1 a 7).', 'Capacidade semanal: horas/dia × dias/semana.', 'Carga: soma do tempo estimado das OPs abertas vinculadas à máquina.', 'Ocupação: carga ÷ capacidade semanal; âmbar a partir de 85% e vermelho acima de 100%.'] }
-    : pathname.startsWith('/pcp')
-    ? { title: 'PCP — Planejamento e controle da produção', purpose: 'Transformar demanda em ordens, acompanhar execução, apontamentos e necessidades de materiais.', steps: ['Consulte demanda e ordens abertas.', 'Confira materiais e capacidade.', 'Programe e libere somente ordens válidas.', 'Registre quantidades boas, refugo, setup e paradas na execução.'], fields: ['Produto e quantidade: definem o que fabricar.', 'Data prevista/prioridade: orientam a fila.', 'Máquina/centro: recurso responsável.', 'Status: etapa real da ordem; altere apenas após a operação correspondente.'] }
-    : pathname.startsWith('/vendas/novo-pedido')
-    ? { title: 'Novo pedido de venda', purpose: 'Registrar a solicitação comercial e os itens do cliente com valores e prazo conferidos.', steps: ['Selecione o cliente cadastrado.', 'Adicione produtos e quantidades.', 'Confira preço, desconto, total e entrega.', 'Salve e acompanhe o status do pedido.'], fields: ['Cliente: cadastro da empresa compradora.', 'Produto: item cadastrado e vendável.', 'Quantidade: volume solicitado.', 'Preço/desconto: valores autorizados comercialmente.', 'Entrega: data prometida acordada com o cliente.'] }
-    : pathname.startsWith('/vendas')
-    ? { title: 'Vendas', purpose: 'Consultar pedidos, clientes, prazos e andamento comercial.', steps: ['Use a pesquisa para localizar pedido ou cliente.', 'Aplique filtros de status e período.', 'Abra o pedido para conferir itens e histórico.'], fields: ['Pesquisa: número do pedido ou nome/código.', 'Status: etapa atual do fluxo.', 'Período: intervalo usado no relatório.', 'Cliente: referência ao cadastro comercial.'] }
-    : pathname.startsWith('/compras')
-    ? { title: 'Compras', purpose: 'Gerir solicitações, cotações, pedidos, aprovações e recebimentos.', steps: ['Confira fornecedor e especificação.', 'Informe itens, quantidades, preços e prazo.', 'Envie para aprovação conforme permissão.', 'Acompanhe recebimento e conferência fiscal.'], fields: ['Fornecedor: parceiro cadastrado.', 'Item/quantidade/unidade: o que será comprado.', 'Preço e condição: termos negociados.', 'Prazo: entrega acordada.', 'Centro de custo/local: destino da compra.'] }
-    : pathname.includes('/cadastros')
-    ? { title: 'Cadastro mestre de produtos', purpose: 'Manter identificação, dados fiscais, estoque, dimensional e produção do produto, sempre isolados pela empresa autenticada.', steps: ['Pesquise o produto por código, nome ou referência.', 'Selecione o registro e ative a edição antes de alterar campos.', 'Preencha os campos com valores já cadastrados nas fontes oficiais (grupo, unidade, NCM, máquina).', 'Grave e confirme a mensagem de resultado; use IMPRIMIR FICHA TÉCNICA para o documento em A4.'], fields: ['Código/nome: identificação do produto na empresa.', 'Unidade de compra/venda: como o item entra e sai do estoque.', 'NCM, CEST, CST/CSOSN e CFOP: classificação usada pelo módulo Fiscal.', 'Estoque atual, ponto de reposição e máximo: saldos e gatilhos de compra.', 'Peso e dimensões: base para logística e custo de transporte.'] }
-    : pathname.startsWith('/qualidade')
-    ? { title: 'Qualidade', purpose: 'Registrar não conformidades, evidências, causa raiz, ações corretivas e validação.', steps: ['Identifique produto, lote, processo e ocorrência.', 'Descreva o problema e a contenção imediata.', 'Registre causa raiz e plano de ação.', 'Anexe evidências e conclua após validar eficácia.'], fields: ['RPNC: registro da não conformidade.', 'Lote/produto: rastreabilidade afetada.', 'Causa raiz: causa comprovada, não apenas o sintoma.', 'Ação/responsável/prazo: plano verificável.', 'Evidência: documento ou registro que comprova a eficácia.'] }
-    : { title: 'Ajuda da tela atual', purpose: 'Use esta ajuda para entender a finalidade da tela e o preenchimento dos campos mais comuns.', steps: ['Leia a finalidade antes de alterar dados.', 'Preencha campos obrigatórios com registros existentes.', 'Revise os dados e salve; confirme a mensagem de resultado.', 'Use a Central de Ajuda para consultar procedimentos do módulo.'], fields: ['Pesquisa: localiza registros existentes.', 'Filtros: limitam os resultados exibidos.', 'Status: indica a etapa do processo.', 'Salvar: grava dados reais; se houver erro, corrija a mensagem apresentada.'] }
-
-  // Card de abertura obrigatório de toda tela: catálogo curado primeiro e,
-  // para telas de menu ainda sem verbete, o rótulo do menu + a finalidade da ajuda.
+  const contextualHelp = resolveContextualHelp(pathname)
   const menuLeafLabel = current?.children?.find(child => child.route === pathname)?.label ?? current?.label
   const contextualPurpose = contextualHelp.title === 'Ajuda da tela atual' ? undefined : contextualHelp.purpose
   const pageIntro = hasNativeIntroCard(pathname)
@@ -301,17 +281,29 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           <button type="button" className="erp-windows-help" title="Ajuda da tela atual" aria-expanded={helpOpen} onClick={() => setHelpOpen(value => !value)}><CircleHelp size={15} /></button>
           <button type="button" className="erp-windows-logout" onClick={() => void logout()} title="Sair da sessão"><LogOut size={13} /></button>
         </div>
-        {helpOpen && <div className="erp-windows-help-panel" role="dialog" aria-label="Ajuda contextual da tela">
-          <strong>{contextualHelp.title}</strong><p>{contextualHelp.purpose}</p><strong>Como usar</strong>
-          <ol>{contextualHelp.steps.map((step, index) => <li key={index}>{step}</li>)}</ol><strong>Campos e preenchimento</strong>
-          <ul>{contextualHelp.fields.map((field, index) => <li key={index}>{field}</li>)}</ul>
-          <small>Tela atual: {pathname}</small><button type="button" onClick={() => { setHelpOpen(false); navigate('/ajuda') }}>Abrir Central de Ajuda</button>
-        </div>}
+
       </header>
       <main key={`erp-workspace-${dataEpoch}`} className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {pageIntro && <PageIntroCard {...pageIntro} />}
         {children}
       </main>
+      <div className="erp-help-assistant">
+        {helpOpen && <section className="erp-help-assistant-panel" role="dialog" aria-label={`Ajuda contextual: ${contextualHelp.title}`} aria-modal="false">
+          <header><div className="erp-help-avatar"><Bot size={17}/></div><div><strong>Assistente SYSNQRA</strong><small>Ajuda desta tela</small></div><button type="button" aria-label="Fechar ajuda" onClick={() => setHelpOpen(false)}><X size={16}/></button></header>
+          <div className="erp-help-assistant-content">
+            <h2>{contextualHelp.title}</h2><p>{contextualHelp.purpose}</p>
+            <strong>Como usar</strong><ol>{contextualHelp.steps.map((step, index) => <li key={index}>{step}</li>)}</ol>
+            <strong>Campos e preenchimento</strong><ul>{contextualHelp.fields.map((field, index) => <li key={index}>{field}</li>)}</ul>
+            {contextualHelp.buttons?.length ? <><strong>Botões e ações</strong><ul>{contextualHelp.buttons.map((button, index) => <li key={index}>{button}</li>)}</ul> : null}
+            {contextualHelp.tips?.length ? <><strong>Cuidados importantes</strong><ul>{contextualHelp.tips.map((tip, index) => <li key={index}>{tip}</li>)}</ul> : null}
+            <small className="erp-help-status">{contextualHelp.verified ? 'Orientação cadastrada para esta rotina' : 'Orientação pendente de validação específica'} · {pathname}</small>
+            <button className="erp-help-center-link" type="button" onClick={() => { setHelpOpen(false); navigate('/pageprincipal/ajuda') }}>Abrir Central de Ajuda</button>
+          </div>
+        </section>}
+        <button type="button" className="erp-help-floating-button" title="Ajuda desta tela" aria-label="Abrir assistente de ajuda desta tela" aria-expanded={helpOpen} onClick={() => setHelpOpen(value => !value)}>
+          <span className="erp-help-floating-avatar"><Bot size={20}/></span><span className="erp-help-floating-label">Ajuda</span>
+        </button>
+      </div>
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
       <BarraWindows11
         ativo={pathname.startsWith('/pageprincipal/comissoes') || pathname.startsWith('/comissoes') ? 'comissoes' : pathname.startsWith('/pageprincipal/controladoria') || pathname.startsWith('/controladoria') ? 'controladoria' : pathname.startsWith('/pageprincipal/financeiro') || pathname.startsWith('/financeiro') ? 'financeiro' : pathname.startsWith('/pageprincipal/rh') ? 'rh' : pathname.startsWith('/pageprincipal/pcp/fichas-processo') ? 'fichas' : pathname.startsWith('/pageprincipal/compras/solicitacao') ? 'solicitacao' : pathname.startsWith('/pageprincipal/compras/requisicoes') ? 'requisicoes' : pathname.startsWith('/pageprincipal/compras') ? 'compras' : pathname.startsWith('/pageprincipal/qualidade/rpnc') ? 'rpnc' : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/pageprincipal/paquimetro') ? 'paq' : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'fiscal' : pathname.startsWith('/pageprincipal') ? 'home' : ''}
@@ -386,6 +378,29 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-windows-help-panel{position:absolute;right:40px;top:46px;z-index:1800;width:min(370px,90vw);max-height:75vh;overflow:auto;padding:10px 12px;border:1px solid #b9cbd3;background:#fff;box-shadow:0 6px 16px rgba(18,59,80,.16);font-size:10px;line-height:1.45;color:#173b4a}
         .erp-windows-help-panel p{margin:5px 0}.erp-windows-help-panel ol,.erp-windows-help-panel ul{margin:4px 0 8px;padding-left:17px}.erp-windows-help-panel li{margin-bottom:3px}.erp-windows-help-panel small{display:block;border-top:1px solid #e2e8f0;padding-top:7px;color:#647b85}
         .erp-windows-help-panel>button{margin-top:7px;height:28px;padding:0 9px;border:1px solid #2d8db8;background:#2d8db8;color:#fff;border-radius:2px;cursor:pointer}
+        .erp-help-assistant{position:fixed;right:18px;bottom:82px;z-index:2200;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+        .erp-help-floating-button{display:flex;align-items:center;gap:7px;height:42px;padding:0 12px 0 6px;border:1px solid #1d6688;border-radius:24px;background:#123b50;color:#fff;box-shadow:0 4px 14px rgba(18,59,80,.25);cursor:pointer;transition:transform .15s,box-shadow .15s}
+        .erp-help-floating-button:hover{transform:translateY(-2px);box-shadow:0 7px 18px rgba(18,59,80,.3)}
+        .erp-help-floating-avatar{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:#48b7c7;color:#123b50}
+        .erp-help-floating-label{font-size:11px;font-weight:800;letter-spacing:.02em}
+        .erp-help-assistant-panel{width:min(390px,calc(100vw - 28px));max-height:min(72vh,680px);display:flex;flex-direction:column;overflow:hidden;border:1px solid #b9d4df;border-radius:12px;background:#fff;box-shadow:0 12px 36px rgba(18,59,80,.24);color:#173b4a}
+        .erp-help-assistant-panel>header{display:flex;align-items:center;gap:9px;padding:12px 14px;background:#123b50;color:#fff}
+        .erp-help-avatar{width:32px;height:32px;display:grid;place-items:center;border-radius:50%;background:#48b7c7;color:#123b50}
+        .erp-help-assistant-panel>header>div:nth-child(2){display:flex;flex:1;flex-direction:column;gap:2px}
+        .erp-help-assistant-panel>header strong{font-size:12px}.erp-help-assistant-panel>header small{font-size:10px;color:#d5eaf0}
+        .erp-help-assistant-panel>header>button{width:28px;height:28px;display:grid;place-items:center;border:0;border-radius:6px;background:transparent;color:#fff;cursor:pointer}
+        .erp-help-assistant-panel>header>button:hover{background:rgba(255,255,255,.14)}
+        .erp-help-assistant-content{overflow:auto;padding:13px 15px;font-size:11px;line-height:1.5}
+        .erp-help-assistant-content h2{margin:0 0 6px;font-size:14px;font-weight:800;color:#123b50}
+        .erp-help-assistant-content p{margin:0 0 11px;color:#475569}
+        .erp-help-assistant-content strong{display:block;margin:10px 0 4px;font-size:11px;color:#123b50}
+        .erp-help-assistant-content ol,.erp-help-assistant-content ul{margin:4px 0 9px;padding-left:19px}
+        .erp-help-assistant-content li{margin-bottom:4px;color:#334155}
+        .erp-help-assistant-content .erp-help-status{display:block;margin-top:10px;padding-top:9px;border-top:1px solid #e2e8f0;color:#64748b;font-size:9px}
+        .erp-help-center-link{margin-top:10px;padding:7px 10px;border:1px solid #2d8db8;border-radius:5px;background:#2d8db8;color:#fff;font-size:10px;font-weight:700;cursor:pointer}
+        @media(max-width:650px){.erp-help-assistant{right:12px;bottom:76px}.erp-help-floating-button{height:40px}.erp-help-assistant-panel{max-height:68vh}}
+        @media print{.erp-help-assistant{display:none!important}}
+
         .erp-horizontal-workspace{width:100%;max-width:100%;min-width:0;min-height:calc(100vh - 48px);padding:8px;box-sizing:border-box;background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%)}
         .erp-horizontal-workspace .bg-white{background-color:#f8fcfe!important}.erp-horizontal-workspace .bg-slate-50{background-color:#edf6fa!important}.erp-horizontal-workspace .bg-slate-100{background-color:#e7f1f6!important}
         .erp-horizontal-workspace .border-slate-200{border-color:#c9dde5!important}.erp-horizontal-workspace .border-slate-300{border-color:#b9d0dc!important}.erp-horizontal-workspace .text-slate-900{color:#123b50!important}.erp-horizontal-workspace .text-slate-700{color:#315466!important}
