@@ -200,6 +200,8 @@ export default function AppEntryV2() {
             <Route path="/pcp/roteiros" element={<Navigate to="/pageprincipal/pcp/roteiros" replace />} />
             <Route path="/pcp/capacidade" element={<Navigate to="/pageprincipal/pcp/capacidade" replace />} />
             <Route path="/pcp/portal-operador" element={<Navigate to="/pageprincipal/chao-de-fabrica/portal-operador" replace />} />
+            <Route path="/tablet/dashboard" element={<Navigate to="/pageprincipal/chao-de-fabrica/portal-operador" replace />} />
+            <Route path="/diretoria/dashboard" element={<Navigate to="/pageprincipal" replace />} />
             <Route path="/area-funcionario" element={<Navigate to="/pageprincipal/chao-de-fabrica/portal-operador" replace />} />
             <Route path="/master" element={<Navigate to="/pageprincipal/master" replace />} />
             <Route path="*" element={<Navigate to="/pageprincipal" replace />} />
