@@ -520,7 +520,7 @@ export default function PlanosIndustrial() {
 
     <footer className="ph-footer">
       <div className="ph-footer-brand">
-        <img src="/logo/logo.png" alt="" aria-hidden="true" />
+        <img src="/logo/logo-marca.png" alt="" aria-hidden="true" />
         <div><strong>SYSNQRA</strong><br />ERP &amp; SGQ Industrial</div>
       </div>
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>

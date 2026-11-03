@@ -39,7 +39,7 @@ function AuthFrame({ children }: { children: ReactNode }) {
       <div className="auth-shell">
         <header className="auth-brand">
           <span className="auth-brand-logo">
-            <img src="/logo/logo.png" alt="" />
+            <img src="/logo/logo-marca.png" alt="" />
             <span>SYSNQRA</span>
           </span>
           <div className="auth-brand-copy">

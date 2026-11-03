@@ -24,6 +24,37 @@ const approvedAssets = [
 ]
 const approvedLogoRefs = new Set(['/logo/logo.png', '/logo/logo-marca.png'])
 
+// Slots quadrados (menos de 80px de largura) esmagam o lockup horizontal. Cada um deles e travado
+// aqui: reescrever o src para /logo/logo.png reprova o CI. O cartao de cadastro fica fora desta
+// lista porque o CSS efetivo dele e width:180px/height:auto (company-signup.css), ou seja, slot largo.
+const squareSlots = [
+  { file: 'src/IndustrialLoginDirect.tsx', anchor: 'auth-brand-logo' },
+  { file: 'src/PublicIndustrialHome.tsx', anchor: 'ph-brand-mark' },
+  { file: 'src/PublicIndustrialHome.tsx', anchor: 'ph-footer-brand' },
+  { file: 'src/pages/PlanosIndustrial.tsx', anchor: 'ph-footer-brand' },
+  { file: 'src/pages/ComprasIndustrial.tsx', anchor: '"buy-brand"><img' },
+]
+const SQUARE_SLOT_WINDOW = 260
+
+function checkSquareSlots(file, relative) {
+  const slots = squareSlots.filter(slot => slot.file === relative)
+  if (!slots.length) return
+  const text = readFileSync(file, 'utf8')
+  for (const slot of slots) {
+    let index = text.indexOf(slot.anchor)
+    if (index === -1) {
+      problems.push(`Slot quadrado da marca sumiu de ${relative}: ${slot.anchor}`)
+      continue
+    }
+    while (index !== -1) {
+      const window = text.slice(index, index + SQUARE_SLOT_WINDOW)
+      if (!window.includes('/logo/logo-marca.png'))
+        problems.push(`Slot quadrado ${slot.anchor} em ${relative} deve usar a marca /logo/logo-marca.png (o lockup horizontal fica esmagado)`)
+      index = text.indexOf(slot.anchor, index + slot.anchor.length)
+    }
+  }
+}
+
 function sha256(file) {
   return createHash('sha256').update(readFileSync(file)).digest('hex')
 }
@@ -31,6 +62,7 @@ function sha256(file) {
 function checkFile(file) {
   const source = readFileSync(file, 'utf8')
   const relative = file.slice(root.length + 1).split('\\').join('/')
+  checkSquareSlots(file, relative)
   for (const reference of forbiddenReferences) {
     if (source.includes(reference)) problems.push(`Unused or broken logo reference ${reference} in ${relative}`)
   }

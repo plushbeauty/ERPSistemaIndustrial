@@ -302,7 +302,7 @@ export default function PublicIndustrialHome() {
   return <main className="sgq-public-home">
     <header className="ph-nav">
       <a href="/" className="ph-brand" aria-label="SYSNQRA ERP & SGQ INDUSTRIAL">
-        <img className="ph-brand-mark" src="/logo/logo.png" alt="" aria-hidden="true" />
+        <img className="ph-brand-mark" src="/logo/logo-marca.png" alt="" aria-hidden="true" />
         <span className="ph-brand-text"><strong>SYSNQRA</strong><span>ERP &amp; SGQ Industrial</span></span>
       </a>
       <nav className="ph-nav-links" aria-label="Navegação principal">
@@ -428,7 +428,7 @@ export default function PublicIndustrialHome() {
 
     <footer className="ph-footer">
       <div className="ph-footer-brand">
-        <img src="/logo/logo.png" alt="" aria-hidden="true" />
+        <img src="/logo/logo-marca.png" alt="" aria-hidden="true" />
         <div><strong>SYSNQRA</strong><br />ERP &amp; SGQ Industrial · FernandoSch_System</div>
       </div>
       <div><a href="/contato">Contato</a> · <a href="/blog">Blog</a> · <a href="/planos">Planos</a> · <a href="/login">Entrar</a></div>

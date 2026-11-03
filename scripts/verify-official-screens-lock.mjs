@@ -30,6 +30,15 @@ import path from 'node:path'
  * sempre para o GitHub direito, nao para o PC". Entram no contrato o Controle de Alteracao de Documentos
  * (7 abas), a Rastreabilidade de Lotes e o Controle e Saida de Material; o RPNC unificado e a NF-e sao
  * re-travados porque o card das abas ganhou altura e o campo UF do transportador foi alinhado.
+ * Revisao 2026-11-03 (#103): ordem explicita do proprietario — "esse e o novo logo do sistema para voce
+ * trocar ele de todas as pages ... criar travas para nao deixar voltar telas antigas". Home, planos e
+ * login re-travados porque o slot quadrado (menos de 80px) passou a usar /logo/logo-marca.png: o lockup
+ * horizontal de 900x265 ficava esmagado em 34x34. O cartao de cadastro ficou com o lockup porque o CSS
+ * efetivo dele e um slot largo (180px/auto). O contrato da marca esta em scripts/verify-logo-assets.mjs.
+ * Revisao 2026-11-03 (#105): ordem do proprietario para integrar as telas de C:\Users\Dri\Documents\
+ * Qoder\2026-11-01. Entram a aba "Instalação do sistema" (SystemInstallationSettings) e o prototipo
+ * visual do apontamento; AppEntryV2, shell e catalogo de cards foram mesclados por adicao, sem
+ * sobrescrever as versoes desta branch.
  * Mudanca neste contrato exige ordem explicita do proprietario.
  */
 
@@ -37,14 +46,14 @@ const ROOT = path.resolve(import.meta.dirname, '..')
 const read = rel => readFileSync(path.join(ROOT, rel), 'utf8')
 
 const oficiais = [
-  { path: 'src/PublicIndustrialHome.tsx', sha: '8c75adb51525461520740693af89ab4725fbdf71', label: 'Publica / Home com carrossel da vitrine' },
+  { path: 'src/PublicIndustrialHome.tsx', sha: 'e8558c8befcc09d8b175d079f231372e3dbbe7e0', label: 'Publica / Home com carrossel da vitrine' },
   { path: 'src/components/marketing/TelaVitrine.tsx', sha: 'befc9424504e57fcfb85ff3d593fa4172aedfe10', label: 'Publica / Replica de tela do sistema na vitrine' },
   { path: 'src/styles/public-home-premium-20261101.css', sha: '775ed1d1dd8df5a2d347b1c3dc1885f99d74333d', label: 'Publica / estilos do carrossel e vitrine' },
-  { path: 'src/pages/PlanosIndustrial.tsx', sha: '539c08c5496f6674512f733a98d684b715fb980d', label: 'Publica / Planos' },
+  { path: 'src/pages/PlanosIndustrial.tsx', sha: '1070b2cc87cacb249390e69d99c5c11dcfd411a6', label: 'Publica / Planos' },
   { path: 'src/pages/CadastroEmpresa.tsx', sha: 'a860dc1434ece03bf9e60803d929d16bddd7f90b', label: 'Publica / Cadastro da empresa' },
   { path: 'src/pages/Blog.tsx', sha: 'aebf301d6e049f459f5c403527c7010e0b7eabf7', label: 'Publica / Blog' },
   { path: 'src/pages/Contato.tsx', sha: '770de58912bee0ed0e3e0bc4cddd7262c729ec80', label: 'Publica / Contato' },
-  { path: 'src/IndustrialLoginDirect.tsx', sha: '556ae8ec80125f74358fc03a6e7e386fce2cf3b6', label: 'Login / tela sobre a foto da planta com cartao flutuante' },
+  { path: 'src/IndustrialLoginDirect.tsx', sha: '8e42f60fe545793e4382f049c490bb3289ea88d6', label: 'Login / tela sobre a foto da planta com cartao flutuante' },
   { path: 'src/styles/industrial-login.css', sha: '15dd26d59fe8b3a4c78f205d49ede035b081169c', label: 'Login / estilos da tela sobre a foto da planta (REV-LOGIN-BLOCO-DIREITA-20261102-02)' },
   { path: 'src/pages/QualityRpncForm.tsx', sha: '50452b68f2663eb27ec2cfae7120d4c58d4b3478', label: 'Qualidade / RPNC com Ishikawa, 5 Porques e CAPA' },
   { path: 'src/pages/QualityRpncUnified.tsx', sha: '95335212fcf40881e37a37cc063f326d58335235', label: 'Qualidade / RPNC unificada em abas (REV-RPNC-ABAS-CARD-20261102-01: card das abas maior, descricao visivel)' },
