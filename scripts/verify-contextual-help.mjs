@@ -16,6 +16,7 @@ const checks = [
   [app.includes('path="ajuda" element={<CentralAjuda />}'), 'A Central de Ajuda deve permanecer registrada no roteador principal.'],
   [login.includes("return '/pageprincipal/master'") && login.includes("return '/pageprincipal'") , 'O login deve encaminhar Master e perfis desktop para rotas canônicas existentes.'],
   [login.includes("return '/pageprincipal/chao-de-fabrica/portal-operador'"), 'O login do operador deve abrir o Portal do Operador real.'],
+  [app.includes('path="/tablet/dashboard"') && app.includes('path="/diretoria/dashboard"') && app.includes('to="/pageprincipal/chao-de-fabrica/portal-operador"') && app.includes('to="/pageprincipal"'), 'URLs antigas de dashboard devem redirecionar para as telas canônicas atuais.'],
 ]
 
 const failures = checks.filter(([ok]) => !ok)
