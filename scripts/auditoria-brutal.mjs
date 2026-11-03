@@ -107,7 +107,9 @@ for (const page of pagePaths) {
   const taskMarkerPattern = /(?<![A-Za-zÀ-ÿ0-9_])(?:TODO|FIXME)(?![A-Za-zÀ-ÿ0-9_])/g
   const fakeMarkers = [...t.matchAll(markerPattern), ...t.matchAll(taskMarkerPattern)].filter(match => {
     const context = t.slice(Math.max(0, (match.index ?? 0) - 35), Math.min(t.length, (match.index ?? 0) + match[0].length + 35))
-    return !/nenhum dado fict[ií]cio (?:foi )?(?:inclu[ií]do|criado)|n[aã]o cria dados fict[ií]cios/i.test(context)
+    const before = t.slice(Math.max(0, (match.index ?? 0) - 160), match.index ?? 0)
+    const legitimateEmploymentOption = match[0].toLocaleLowerCase('pt-BR') === 'temporário' && /options:\s*\[[\s\S]*$/i.test(before)
+    return !legitimateEmploymentOption && !/nenhum dado fict[ií]cio (?:foi )?(?:inclu[ií]do|criado)|n[aã]o cria dados fict[ií]cios/i.test(context)
   }).length
   const alias = /^import [A-Za-z0-9_]+ from ['"][.][/]\S+['"]\s*\nexport default [A-Za-z0-9_]+/m.test(t)
   pageAudit.push({page, buttons, controls, editWords, editActions, editButtons, largeControls, fakeMarkers, compact: t.includes('erp-compact'), alias})
