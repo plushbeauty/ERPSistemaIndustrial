@@ -46,7 +46,7 @@ export function useVendasStatus(){
 
    for(const row of rows){
     const s=normalizeStatus(String(row.status??''))
-    const finalizado=s.includes('fatur')||s.includes('cancel')||s.includes('conclu')
+    const finalizado=s.includes('fatur')||s.includes('cancel')||s.includes('conclu')||s.includes('finaliz')
     const due=row.data_entrega_prometida?new Date(String(row.data_entrega_prometida).slice(0,10)+'T00:00:00'):null
     if(due&&!Number.isNaN(due.getTime())&&due<today&&!finalizado)atrasados++
     if(s.includes('produc')||s.includes('fabric'))producao++
