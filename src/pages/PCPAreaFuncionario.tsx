@@ -1,15 +1,15 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-11-02
- * @REVISAO: REV-PORTAL-OPERADOR-DESCRICAO-E-SEMANA-20261102-01 — Portal do Operador em uma só abertura
- * @STATUS_APROVACAO: DETERMINADO PELO PROPRIETARIO EM 2026-11-02 ("os cards estao pequenos fazendo os
- *   numero ficarem grandes para eles e tem um card a mais tirar so e para ter um card para descricao da tela")
+ * @DATA_REVISAO_APROVACAO: 2026-11-03
+ * @REVISAO: REV-MES-APONTAMENTO-SERVIDOR-20261103-01 — apontamento gravado pelo servidor
+ * @STATUS_APROVACAO: DETERMINADO PELO PROPRIETARIO ("O prazo deve ser calculado pelo servidor, e não pelo
+ *   relógio do navegador" + "Tela Chão de Fábrica · Apontamento gravando de verdade", 2026-11-03)
+ * Início e fim saem do relógio do banco (erp_apontamento_iniciar / erp_apontamento_finalizar), a ficha aprovada é
+ * conferida no banco e a finalização dá baixa em erp_pcp_programacoes na mesma transação. Sem migration aplicada o
+ * erro é declarado na tela; não há fallback para o horário do navegador.
  *
- * O header navy proprio da tela foi removido: o card de abertura do shell (PageIntroCard, verbete
- * 'chao-de-fabrica/portal-operador') ja cumpre esse papel e a tela ficava com dois cabecalhos. O botao
- * Atualizar passou para o topo de "Minha semana" e entrou um card que diz o que a tela faz e como usar.
- * Os sete dias deixaram de dividir a largura em qualquer tela (2/4/7 colunas por breakpoint) e o numero
- * do dia perdeu o text-4xl, que era maior que o proprio card.
+ * @REVISAO_ANTERIOR: REV-PORTAL-OPERADOR-DESCRICAO-E-SEMANA-20261102-01 — Portal do Operador em uma só abertura
+ * (header navy proprio removido, card de descricao adicionado, sete dias por breakpoint 2/4/7 colunas)
  */
 /**
  * SYSNQRA ERP · Área do Funcionário / CPP
@@ -30,6 +30,20 @@ type Machine = { id: string; codigo: string; nome: string; status?: string }
 type Recipe = { id: string; processo_id: string; produto_id: string | null; maquina_id: string | null; ferramenta_id: string | null; versao: number; status: string; parametros: Record<string, unknown>; ciclo_seg: number | null; setup_min: number | null; observacoes: string | null }
 type ProcessEntry = { id: string; ordem_producao_id: string; operador_id: string | null; inicio_em: string; fim_em: string | null; quantidade_boa: number; quantidade_refugada: number; motivo_parada: string | null; observacoes: string | null }
 type Material = { id: string; produto_pai_id: string; sku_insumo: string; qtd: number; unidade: string }
+type StartedEntry = { id: string; ordem_producao_id: string; operador_id: string; inicio_em: string; fim_em: string | null; quantidade_boa: number | null; quantidade_refugada: number | null }
+type FinishedEntry = { id: string; fim_em: string; duracao_seg: number | null; quantidade_boa: number | null; quantidade_refugada: number | null }
+const MIGRATION_APONTAMENTO_SERVIDOR = '20261103100000_mes_apontamento_gravado_no_servidor.sql'
+
+/** O erro do PostgREST chega com a mensagem do raise no banco; PGRST202 significa migration ainda não aplicada. */
+function falhaDoApontamento(cause: unknown, fallback: string): string {
+  if (cause instanceof Error) {
+    if ((cause as Error & { code?: string }).code === 'PGRST202') {
+      return 'O banco ainda não tem as funções de apontamento com horário do servidor. Aplique a migration ' + MIGRATION_APONTAMENTO_SERVIDOR + ' no Supabase e toque em Atualizar.'
+    }
+    return cause.message || fallback
+  }
+  return fallback
+}
 const input = 'h-[36px] w-full min-w-0 rounded-[3px] border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20'
 const smallButton = 'inline-flex min-h-[36px] items-center justify-center gap-2 rounded-[3px] border px-3 text-xs font-black disabled:cursor-not-allowed disabled:opacity-50'
 const localDate = (date: Date) => {
@@ -173,26 +187,36 @@ export default function PCPAreaFuncionario() {
     try {
       const { data: tenantData, error: tenantError } = await supabase.rpc('erp_current_empresa_id')
       if (tenantError || tenantData !== companyId) throw tenantError ?? new Error('A empresa da sessão mudou. Atualize a página.')
-      const response = await supabase.from('erp_apontamentos_processo').insert({
-        empresa_id: companyId,
-        processo_id: recipe.processo_id,
-        receita_id: recipe.id,
-        ordem_producao_id: order.id,
-        maquina_id: machine.id,
-        ferramenta_id: recipe.ferramenta_id,
-        inicio_em: new Date().toISOString(),
-        quantidade_planejada: Number(program.quantidade_planejada || order.quantidade_planejada || order.quantidade || 0),
-        quantidade_boa: 0,
-        quantidade_refugada: 0,
-        operador_id: employee.id,
-        criado_por: userId,
-        parametros_reais: { origem: 'AREA_FUNCIONARIO_CPP', programacao_id: program.id, revisao_receita: recipe.versao }
-      }).select('id,ordem_producao_id,operador_id,inicio_em,fim_em,quantidade_boa,quantidade_refugada,motivo_parada,observacoes').single()
+      // O horário de início é carimbado pelo banco (erp_apontamento_iniciar): o relógio do posto não define prazo nem duração.
+      const response = await supabase.rpc('erp_apontamento_iniciar', {
+        p_programacao_id: program.id,
+        p_ordem_producao_id: order.id,
+        p_processo_id: recipe.processo_id,
+        p_receita_id: recipe.id,
+        p_maquina_id: machine.id,
+        p_ferramenta_id: recipe.ferramenta_id,
+        p_operador_id: employee.id,
+        p_quantidade_planejada: Number(program.quantidade_planejada || order.quantidade_planejada || order.quantidade || 0)
+      })
       if (response.error) throw response.error
-      setEntries(current => [response.data as ProcessEntry, ...current])
-      setMessage('Início de produção registrado. Ao terminar, informe peças boas, refugos e eventuais paradas.')
+      const started = response.data as StartedEntry | null
+      if (!started || typeof started.id !== 'string' || typeof started.inicio_em !== 'string') {
+        throw new Error('O servidor não confirmou o apontamento criado. Atualize a tela antes de iniciar novamente.')
+      }
+      setEntries(current => [{
+        id: started.id,
+        ordem_producao_id: started.ordem_producao_id,
+        operador_id: started.operador_id,
+        inicio_em: started.inicio_em,
+        fim_em: started.fim_em,
+        quantidade_boa: Number(started.quantidade_boa ?? 0),
+        quantidade_refugada: Number(started.quantidade_refugada ?? 0),
+        motivo_parada: null,
+        observacoes: null
+      }, ...current])
+      setMessage('Início de produção registrado pelo servidor. Ao terminar, informe peças boas, refugos e eventuais paradas.')
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Falha ao registrar início da produção.')
+      setError(falhaDoApontamento(cause, 'Falha ao registrar início da produção.'))
     } finally {
       setSaving(false)
     }
@@ -211,23 +235,32 @@ export default function PCPAreaFuncionario() {
     setError('')
     setMessage('')
     try {
-      const response = await supabase.from('erp_apontamentos_processo').update({
-        fim_em: new Date().toISOString(),
-        quantidade_boa: good,
-        quantidade_refugada: scrap,
-        motivo_parada: stopReason.trim() || null,
-        observacoes: observations.trim() || null
-      }).eq('empresa_id', companyId).eq('id', activeEntry.id).eq('operador_id', employee.id).is('fim_em', null).select('id').maybeSingle()
+      // Fim, duração e baixa da programação acontecem em uma única transação no banco, com o horário do servidor.
+      const response = await supabase.rpc('erp_apontamento_finalizar', {
+        p_apontamento_id: activeEntry.id,
+        p_operador_id: employee.id,
+        p_programacao_id: program.id,
+        p_quantidade_boa: good,
+        p_quantidade_refugada: scrap,
+        p_motivo_parada: stopReason.trim() || null,
+        p_observacoes: observations.trim() || null
+      })
       if (response.error) throw response.error
-      if (!response.data) throw new Error('Nenhum apontamento foi atualizado. Confirme se o registro ainda está aberto e pertence ao seu usuário.')
-      setMessage('Apontamento gravado e enviado ao PCP para conferência.')
+      const finished = response.data as FinishedEntry | null
+      if (!finished || typeof finished.fim_em !== 'string') {
+        throw new Error('O servidor não confirmou a finalização do apontamento. Confira abaixo antes de repetir.')
+      }
+      const minutos = Math.round(Number(finished.duracao_seg ?? 0) / 60)
+      const resumo = 'Apontamento gravado com horário do servidor e baixado na programação do PCP (' + numberLabel(good) + ' peças boas, duração ' + numberLabel(minutos) + ' min).'
       setGoodQty('')
       setScrapQty('')
       setStopReason('')
       setObservations('')
       await load()
+      // load() limpa o aviso da tela: a confirmação precisa vir depois do recarregamento.
+      setMessage(resumo)
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Falha ao finalizar o apontamento.')
+      setError(falhaDoApontamento(cause, 'Falha ao finalizar o apontamento.'))
     } finally {
       setSaving(false)
     }
@@ -236,8 +269,8 @@ export default function PCPAreaFuncionario() {
   return <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900 md:p-5">
     <div className="mx-auto w-full max-w-[1560px] space-y-4">
       <section aria-label="Descrição e uso da tela" className="grid items-start gap-4 border border-[#C8E3EE] bg-white p-4 shadow-[0_2px_8px_rgba(18,59,80,.04)] md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <div><h2 className="text-sm font-black uppercase text-[#123B50]">O que esta tela faz</h2><p className="mt-2 text-sm leading-relaxed text-slate-600">Mostra a programação semanal do PCP que pertence a você — o operador autenticado, vinculado ao cadastro do RH pelo e-mail da sessão — e abre o Cartão de Processo Produtivo (CPP) da tarefa escolhida: OP, produto, máquina, quantidades planejadas, ficha de processo aprovada e insumos da estrutura.</p><p className="mt-2 text-sm leading-relaxed text-slate-600">É desta tela que sai o apontamento real de produção gravado em <strong>erp_apontamentos_processo</strong>: horário de início, fim, peças boas, refugo e motivo de parada, já enviados ao PCP para conferência.</p></div>
-        <div><h2 className="text-sm font-black uppercase text-[#123B50]">Como usar</h2><ol className="mt-2 space-y-1.5 text-sm leading-relaxed text-slate-600"><li><strong>1.</strong> Toque no dia da semana para listar as tarefas programadas para você.</li><li><strong>2.</strong> Toque na tarefa para abrir o CPP e conferir OP, produto, máquina e ficha aprovada.</li><li><strong>3.</strong> Pressione <strong>Iniciar produção</strong>; o sistema registra o horário e o vínculo com a OP.</li><li><strong>4.</strong> Ao terminar, informe peças boas, refugo e ocorrências e pressione <strong>Finalizar e enviar ao PCP</strong>.</li></ol><p className="mt-3 text-xs font-bold text-slate-500">Sem tarefa no dia? O PCP é quem atribui a programação e o operador — o botão Atualizar recarrega a agenda.</p></div>
+        <div><h2 className="text-sm font-black uppercase text-[#123B50]">O que esta tela faz</h2><p className="mt-2 text-sm leading-relaxed text-slate-600">Mostra a programação semanal do PCP que pertence a você — o operador autenticado, vinculado ao cadastro do RH pelo e-mail da sessão — e abre o Cartão de Processo Produtivo (CPP) da tarefa escolhida: OP, produto, máquina, quantidades planejadas, ficha de processo aprovada e insumos da estrutura.</p><p className="mt-2 text-sm leading-relaxed text-slate-600">É desta tela que sai o apontamento real de produção: o servidor carimba início e fim no relógio do banco — não no relógio do posto — grava <strong>erp_apontamentos_processo</strong> com peças boas, refugo e motivo de parada, e baixa a programação do PCP na mesma gravação.</p></div>
+        <div><h2 className="text-sm font-black uppercase text-[#123B50]">Como usar</h2><ol className="mt-2 space-y-1.5 text-sm leading-relaxed text-slate-600"><li><strong>1.</strong> Toque no dia da semana para listar as tarefas programadas para você.</li><li><strong>2.</strong> Toque na tarefa para abrir o CPP e conferir OP, produto, máquina e ficha aprovada.</li><li><strong>3.</strong> Pressione <strong>Iniciar produção</strong>; o servidor carimba o horário e o vínculo com OP, máquina e ficha aprovada.</li><li><strong>4.</strong> Ao terminar, informe peças boas, refugo e ocorrências e pressione <strong>Finalizar e enviar ao PCP</strong>.</li></ol><p className="mt-3 text-xs font-bold text-slate-500">Sem tarefa no dia? O PCP é quem atribui a programação e o operador — o botão Atualizar recarrega a agenda.</p></div>
       </section>
       {(error || message) && <p role={error?'alert':'status'} className={'border p-4 text-sm font-bold '+(error?'border-rose-200 bg-rose-50 text-rose-800':'border-emerald-200 bg-emerald-50 text-emerald-800')}>{error||message}</p>}
       {!loading && !employee && !error && <p className="border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">Conta ainda não vinculada a um funcionário no RH.</p>}

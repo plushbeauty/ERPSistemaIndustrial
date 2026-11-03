@@ -352,7 +352,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
           ))}</tbody></table></div> : <div className="hp-empty">Nenhuma ordem de produção em andamento.</div>}
         </article>
 
-        <button type="button" className="hp-portal" onClick={() => onNavigate('/pcp/portal-operador')}>
+        <button type="button" className="hp-portal" onClick={() => onNavigate('/pageprincipal/chao-de-fabrica/portal-operador')}>
           <img src="/icons/portal-operador-industrial.png" alt="" />
           <span>
             <strong>Portal do Operador</strong>
