@@ -136,6 +136,10 @@ const banidos = [
   'src/layout/AppHeader.tsx',
   'src/layout/Backdrop.tsx',
   'src/layout/Sidebar.tsx',
+  // Entradas avulsas recebidas em 2026-11-03 (codigo-tablet-sgq.zip) que fariam o sistema servir
+  // uma tela fora do gate de autenticacao e da shell compartilhada. Recriar reprova o build.
+  'operator-preview.html',
+  'src/operator-preview.tsx',
 ]
 
 const TELAS = ['src/pages/', 'src/features/', 'src/modules/']

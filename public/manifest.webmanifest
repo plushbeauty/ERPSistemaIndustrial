@@ -9,6 +9,6 @@
   "theme_color":"#0f766e",
   "lang":"pt-BR",
   "icons":[
-    {"src":"/logo/logo.png","sizes":"any","type":"image/png","purpose":"any maskable"}
+    {"src":"/logo/logo-marca.png","sizes":"any","type":"image/png","purpose":"any maskable"}
   ]
 }
