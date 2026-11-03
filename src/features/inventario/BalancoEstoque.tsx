@@ -28,7 +28,7 @@ export default function BalancoEstoque(){
  const total=rows.reduce((s,r)=>s+r.total,0)
  return <main data-synqra-density="30px" className="min-h-screen bg-slate-50 p-3 text-gray-800">
   <div className="mx-auto max-w-[1600px] space-y-2">
-   <div className="flex items-center gap-2"><button type="button" onClick={()=>navigate('/estoque')} className={button+' border border-gray-200 bg-white text-gray-600'}><ArrowLeft size={12}/>Voltar</button><p className="text-[9px] font-black uppercase tracking-wider text-slate-500">Valoração contábil de estoque</p></div>
+   <div className="flex items-center gap-2"><button type="button" onClick={()=>navigate('/pageprincipal/estoque/saldos')} className={button+' border border-gray-200 bg-white text-gray-600'}><ArrowLeft size={12}/>Voltar</button><p className="text-[9px] font-black uppercase tracking-wider text-slate-500">Valoração contábil de estoque</p></div>
    {error&&<div className="border border-red-200 bg-red-50 px-2 py-1 text-[10px] text-red-700">{error}</div>}
    <section className="rounded-md border border-gray-200 bg-white p-2 shadow-sm"><div className="flex items-end gap-2">
     <div className="w-[110px] shrink-0"><label className={label}>Data Inventário</label><input className={input+' w-[110px]'} type="date" value={cut} onChange={e=>setCut(e.target.value)}/></div>

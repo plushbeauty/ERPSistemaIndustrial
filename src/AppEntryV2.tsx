@@ -313,7 +313,7 @@ export default function AppEntryV2() {
               <Route path="comissoes/regras" element={<CadastroRegras />} />
               <Route path="comissoes/calculo" element={<CalculoComissao />} />
               <Route path="comissoes/perfil" element={<PerfilVendedor />} />
-              <Route path="comissoes/auditoria" element={<AuditoriaComissoes />} />
+              <Route path="comissoes/auditoria" element={<Navigate to="/pageprincipal/controladoria/auditoria-comissoes" replace />} />
               <Route path="controladoria" element={<Navigate to="/pageprincipal/controladoria/lucratividade" replace />} />
               <Route path="controladoria/retificacao-assistente" element={<AssistenteRetificacao />} />
               <Route path="controladoria/auditoria-comissoes" element={<AuditoriaComissoes />} />
@@ -338,17 +338,18 @@ export default function AppEntryV2() {
               <Route path="estoque/auditoria-saldos" element={<QualityPlanGate><AuditoriaSaldos /></QualityPlanGate>} />
               <Route path="estoque/balanco" element={<QualityPlanGate><BalancoEstoque /></QualityPlanGate>} />
               <Route path="estoque/depreciacao" element={<QualityPlanGate><RegrasDepreciacao /></QualityPlanGate>} />
-              <Route path="financeiro/conciliacao" element={<QualityPlanGate><BankReconciliation /></QualityPlanGate>} />
-              <Route path="financeiro/extrato" element={<QualityPlanGate><BankStatementImporter /></QualityPlanGate>} />
-              <Route path="financeiro/lista-precos" element={<QualityPlanGate><ListaPrecosCliente /></QualityPlanGate>} />
-              <Route path="financeiro/comissoes" element={<QualityPlanGate><CalculoComissao /></QualityPlanGate>} />
-              <Route path="financeiro/comissoes/regras" element={<QualityPlanGate><CadastroRegras /></QualityPlanGate>} />
-              <Route path="financeiro/comissoes/perfil" element={<QualityPlanGate><PerfilVendedor /></QualityPlanGate>} />
-              <Route path="financeiro/auditoria-comissoes" element={<QualityPlanGate><AuditoriaComissoes /></QualityPlanGate>} />
-              <Route path="financeiro/decimais" element={<QualityPlanGate><CadastroDecimais /></QualityPlanGate>} />
-              <Route path="financeiro/lucratividade" element={<QualityPlanGate><PainelLucratividade /></QualityPlanGate>} />
+              {/* Atalhos antigos do Financeiro: a tela oficial vive no caminho canônico abaixo. Redirecionamos em vez de montar a mesma tela duas vezes. */}
+              <Route path="financeiro/conciliacao" element={<Navigate to="/pageprincipal/financeiro/conciliacao-bancaria" replace />} />
+              <Route path="financeiro/extrato" element={<Navigate to="/pageprincipal/financeiro/importar-extratos" replace />} />
+              <Route path="financeiro/lista-precos" element={<Navigate to="/pageprincipal/financeiro/lista-precos-cliente" replace />} />
+              <Route path="financeiro/comissoes" element={<Navigate to="/pageprincipal/comissoes/calculo" replace />} />
+              <Route path="financeiro/comissoes/regras" element={<Navigate to="/pageprincipal/comissoes/regras" replace />} />
+              <Route path="financeiro/comissoes/perfil" element={<Navigate to="/pageprincipal/comissoes/perfil" replace />} />
+              <Route path="financeiro/auditoria-comissoes" element={<Navigate to="/pageprincipal/controladoria/auditoria-comissoes" replace />} />
+              <Route path="financeiro/decimais" element={<Navigate to="/pageprincipal/controladoria/cadastro-decimais" replace />} />
+              <Route path="financeiro/lucratividade" element={<Navigate to="/pageprincipal/controladoria/lucratividade" replace />} />
               <Route path="financeiro/retificacao" element={<QualityPlanGate><RetificacaoPedido /></QualityPlanGate>} />
-              <Route path="financeiro/retificacao-assistente" element={<QualityPlanGate><AssistenteRetificacao /></QualityPlanGate>} />
+              <Route path="financeiro/retificacao-assistente" element={<Navigate to="/pageprincipal/controladoria/retificacao-assistente" replace />} />
               <Route path="financeiro/notas-debito" element={<QualityPlanGate><CustomerDnList /></QualityPlanGate>} />
               <Route path="financeiro/notas-debito/configuracoes" element={<QualityPlanGate><CustomerDnSettings /></QualityPlanGate>} />
               <Route path="financeiro/notas-debito/:id/pod" element={<QualityPlanGate><CustomerDnPod /></QualityPlanGate>} />
@@ -391,7 +392,7 @@ export default function AppEntryV2() {
               <Route path="vendas/metas" element={<VendasMetas />} />
               <Route path="vendas/relatorios" element={<VendasRelatorios />} />
               <Route path="vendas/configuracoes" element={<ConfiguracoesADMPage />} />
-              <Route path="vendas/estoque" element={<EstoqueAlmoxarifado />} />
+              <Route path="vendas/estoque" element={<Navigate to="/pageprincipal/estoque/saldos" replace />} />
               <Route path="vendas/expedicao" element={<ExpedicaoPortaria />} />
               <Route path="vendas/engenharia" element={<QualityPlanGate><EngenhariaCentral /></QualityPlanGate>} />
               <Route path="vendas/materiais" element={<QualityPlanGate><CentraisIndustriais module="materiais" /></QualityPlanGate>} />
@@ -399,7 +400,7 @@ export default function AppEntryV2() {
               <Route path="vendas/chao-de-fabrica" element={<QualityPlanGate><OperacaoIndustrial /></QualityPlanGate>} />
               <Route path="vendas/qualidade" element={<QualityPlanGate><QualidadeIndustrial /></QualityPlanGate>} />
               <Route path="vendas/sgq" element={<QualityPlanGate><QualidadeRNC /></QualityPlanGate>} />
-              <Route path="vendas/fluxo-caixa" element={<QualityPlanGate><FinanceiroFluxoCaixa /></QualityPlanGate>} />
+              <Route path="vendas/fluxo-caixa" element={<Navigate to="/pageprincipal/financeiro/fluxo-caixa" replace />} />
               <Route path="engenharia/produtos" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
               <Route path="engenharia/bom" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
               <Route path="engenharia/roteiros" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
@@ -460,8 +461,8 @@ export default function AppEntryV2() {
               <Route path="qualidade/assinatura-it" element={<QualityPlanGate><QualidadeAssinaturaIT /></QualityPlanGate>} />
               <Route path="qualidade/genealogia-lote" element={<QualityPlanGate><QualidadeGenealogiaLote /></QualityPlanGate>} />
               <Route path="qualidade/quarentena" element={<QualityPlanGate><QualidadeQuarentena /></QualityPlanGate>} />
-              <Route path="estoque" element={<EstoqueAlmoxarifado />} />
-              <Route path="almoxarifado" element={<EstoqueAlmoxarifado />} />
+              <Route path="estoque" element={<Navigate to="/pageprincipal/estoque/saldos" replace />} />
+              <Route path="almoxarifado" element={<Navigate to="/pageprincipal/almoxarifado/inventario-mestre" replace />} />
               <Route path="estoque/saldos" element={<EstoqueAlmoxarifado />} />
               <Route path="estoque/ajustes" element={<EstoqueAjustes />} />
               <Route path="estoque/separacao" element={<EstoqueSeparacao />} />
@@ -528,7 +529,7 @@ export default function AppEntryV2() {
               <Route path="qualidade/rnc" element={<QualityPlanGate><SalaRNC /></QualityPlanGate>} />
               <Route path="qualidade/sala-rnc" element={<QualityPlanGate><SalaRNC /></QualityPlanGate>} />
               <Route path="pcp/controle-injetora" element={<ControleProcessoInjetora />} />
-              <Route path="estoque/recebimento" element={<EstoqueRecebimentoLotes />} />
+              <Route path="estoque/recebimento" element={<Navigate to="/pageprincipal/estoque/recebimento-lotes" replace />} />
               <Route path="fichas-processo" element={<QualityPlanGate><FichasProcesso /></QualityPlanGate>} />
               <Route path="processos/injecao" element={<QualityPlanGate><InjecaoIndustrial /></QualityPlanGate>} />
               <Route path="processos/prensados" element={<QualityPlanGate><ProcessoIndustrialPage /></QualityPlanGate>} />
