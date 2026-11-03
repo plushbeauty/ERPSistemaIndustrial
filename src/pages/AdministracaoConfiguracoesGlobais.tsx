@@ -12,10 +12,11 @@
  * Não cria usuários Auth diretamente nem simula instalação de módulos.
  */
 import { useCallback, useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
-import { Building2, ShieldCheck, Users, Puzzle, ScrollText, Save, RefreshCw, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { Building2, ShieldCheck, Users, Puzzle, ScrollText, Save, RefreshCw, CheckCircle2, AlertTriangle, HardDrive } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import SystemInstallationSettings from '../components/administration/SystemInstallationSettings'
 
-type Section = 'empresa' | 'usuarios' | 'modulos' | 'logs'
+type Section = 'empresa' | 'usuarios' | 'modulos' | 'logs' | 'instalacao'
 type CompanyRow = Record<string, unknown> & { id: string }
 type UserRow = {
   id: string; nome: string | null; email: string | null; login_nome: string | null
@@ -31,6 +32,7 @@ const sections: { id: Section; label: string; description: string; icon: typeof 
   { id: 'usuarios', label: 'Usuários e RBAC', description: 'Perfis e níveis de acesso', icon: Users },
   { id: 'modulos', label: 'Módulos e permissões', description: 'Catálogo real de permissões', icon: Puzzle },
   { id: 'logs', label: 'Auditoria e logs', description: 'Histórico gravado no banco', icon: ScrollText },
+  { id: 'instalacao', label: 'Instalação do sistema', description: 'Pastas locais/rede e preparo offline', icon: HardDrive },
 ]
 const companyFields = [
   { key: 'razao_social', label: 'Razão social', span: 'md:col-span-8' },
@@ -141,8 +143,8 @@ export default function AdministracaoConfiguracoesGlobais() {
 
   return <main className="compras-page" aria-label="Administração e Configurações Globais">
     <header className="compras-header"><div><h1>Administração e Configurações Globais</h1><p>Empresa emissora, usuários, permissões por módulo e trilha de auditoria.</p></div><div className="compras-header-actions"><button type="button" className="compras-button compras-button--light" onClick={() => void load()} disabled={loading}><RefreshCw size={14}/> Atualizar</button></div></header>
-    {error && <div className="compras-notice compras-notice--error" role="alert"><AlertTriangle size={15}/>{error}</div>}
-    {message && <div className="compras-notice compras-notice--success" role="status"><CheckCircle2 size={15}/>{message}</div>}
+    {section !== 'instalacao' && error && <div className="compras-notice compras-notice--error" role="alert"><AlertTriangle size={15}/>{error}</div>}
+    {section !== 'instalacao' && message && <div className="compras-notice compras-notice--success" role="status"><CheckCircle2 size={15}/>{message}</div>}
     <div className="admin-global-layout">
       <aside className="admin-global-sidebar" aria-label="Seções de administração">
         <div className="admin-global-sidebar-title">PAINEL ADMINISTRATIVO<span>Configurações globais</span></div>
@@ -150,7 +152,7 @@ export default function AdministracaoConfiguracoesGlobais() {
         <div className="admin-global-sidebar-foot"><ShieldCheck size={15}/> Controle de acesso validado pelo Supabase/RLS</div>
       </aside>
       <section className="admin-global-content">
-        {loading ? <div className="compras-loading">Carregando configurações reais do ERP…</div> : <>
+        {section === 'instalacao' ? <SystemInstallationSettings /> : loading ? <div className="compras-loading">Carregando configurações reais do ERP…</div> : <>
           {section === 'empresa' && <form onSubmit={saveCompany} className="compras-panel admin-global-panel">
             <div className="compras-panel-heading"><div><h2>Perfil corporativo da empresa</h2><p>Dados usados como fonte para identificação corporativa e documentos de saída.</p></div></div>
             {!company ? <div className="compras-empty"><Building2 size={22}/><strong>Empresa não encontrada</strong><span>Confirme o vínculo da sessão com erp_empresas.</span></div> : <>

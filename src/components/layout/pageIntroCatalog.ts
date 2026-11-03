@@ -92,7 +92,7 @@ const introCatalog: Record<string, PageIntro> = {
 const pagePrincipalPrefix = '/pageprincipal'
 
 /** Telas que já desenham o próprio card navy aprovado; o shell não adiciona outro acima. */
-const nativeIntroCardPaths = ['/compras', '/financeiro', '/administracao-configuracoes']
+const nativeIntroCardPaths = ['/compras', '/financeiro', '/administracao-configuracoes', '/chao-de-fabrica/apontamento-operador']
 
 export function hasNativeIntroCard(pathname: string): boolean {
   return nativeIntroCardPaths.includes(normalizeWorkspacePath(pathname))

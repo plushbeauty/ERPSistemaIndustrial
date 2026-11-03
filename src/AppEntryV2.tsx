@@ -111,6 +111,8 @@ const CustomerDnSettings = lazy(() => import('./pages/CustomerDnSettings'))
 const CustomerDnPod = lazy(() => import('./pages/CustomerDnPod'))
 const Master = lazy(() => import('./pages/Master'))
 const PCPAreaFuncionario = lazy(() => import('./pages/PCPAreaFuncionario'))
+// Protótipo visual do apontamento do operador (recebido em 2026-11-03): vitrine de layout, sem gravação no banco.
+const ChaoDeFabricaOperadorDemo = lazy(() => import('./pages/ChaoDeFabricaOperadorDemo'))
 const PCPCapacidade = lazy(() => import('./pages/PCPCapacidade'))
 // Cadastro de Produtos — migrado em 2026-10-30 da branch legada para a origem única de código
 const ProdutosVendasIndustrial = lazy(() => import('./pages/ProdutosVendasIndustrial'))
@@ -333,6 +335,7 @@ export default function AppEntryV2() {
               <Route path="pcp/capacidade" element={<QualityPlanGate><PCPCapacidade /></QualityPlanGate>} />
               <Route path="chao-de-fabrica/postos" element={<QualityPlanGate><PostosTrabalho /></QualityPlanGate>} />
               <Route path="chao-de-fabrica/portal-operador" element={<PCPAreaFuncionario />} />
+              <Route path="chao-de-fabrica/apontamento-operador" element={<ChaoDeFabricaOperadorDemo />} />
               <Route path="paquimetro" element={<QualityPlanGate><Paquimetro /></QualityPlanGate>} />
               <Route path="qualidade/ged" element={<QualityPlanGate><FileTreeGED /></QualityPlanGate>} />
               <Route path="estoque/auditoria-saldos" element={<QualityPlanGate><AuditoriaSaldos /></QualityPlanGate>} />
@@ -604,6 +607,7 @@ export default function AppEntryV2() {
             <Route path="/pcp/roteiros" element={<Navigate to="/pageprincipal/pcp/roteiros" replace />} />
             <Route path="/pcp/capacidade" element={<Navigate to="/pageprincipal/pcp/capacidade" replace />} />
             <Route path="/pcp/portal-operador" element={<Navigate to="/pageprincipal/chao-de-fabrica/portal-operador" replace />} />
+            <Route path="/chao-de-fabrica/apontamento-operador" element={<Navigate to="/pageprincipal/chao-de-fabrica/apontamento-operador" replace />} />
             <Route path="/area-funcionario" element={<Navigate to="/pageprincipal/chao-de-fabrica/portal-operador" replace />} />
             <Route path="/master" element={<Navigate to="/pageprincipal/master" replace />} />
             <Route path="/*" element={<FlatWorkspaceRedirect />} />

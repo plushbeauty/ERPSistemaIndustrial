@@ -66,6 +66,7 @@ const menus: MenuItem[] = [
     { label: 'Roteiro de Produção (tela anterior)', route: '/pageprincipal/pcp/roteiro-producao', icon: Route },
   ] },  { label: 'Chão de Fábrica', route: '/pageprincipal/chao-de-fabrica/portal-operador', icon: Monitor, children: [
     { label: 'Portal do Operador', route: '/pageprincipal/chao-de-fabrica/portal-operador', icon: Monitor },
+    { label: 'Apontamento · protótipo visual', route: '/pageprincipal/chao-de-fabrica/apontamento-operador', icon: Clock },
     { label: 'Postos de Trabalho', route: '/pageprincipal/chao-de-fabrica/postos', icon: ClipboardList },
   ] },  { label: 'Qualidade / Paquímetro', route: '/pageprincipal/paquimetro', icon: Ruler, children: [
     { label: 'Equipamentos de Medição', route: '/pageprincipal/paquimetro', icon: Ruler },
