@@ -56,15 +56,15 @@ const ROOT = path.resolve(import.meta.dirname, '..')
 const read = rel => readFileSync(path.join(ROOT, rel), 'utf8')
 
 const oficiais = [
-  { path: 'src/PublicIndustrialHome.tsx', sha: 'da0347d9ce223b0d268d05ba0e19b97ceee3479d', label: 'Publica / Home com carrossel da vitrine (REV-20261103-01: sem a moldura pequena no slide)' },
+  { path: 'src/PublicIndustrialHome.tsx', sha: '4c0cbca91d2f84e5101f90c12eac647d4ca9872f', label: 'Publica / Home com carrossel da vitrine (REV-20261104-01: ordem do proprietario — topo com letras do mesmo tamanho, fundo mais claro e sem as setas de mudanca de slide)' },
   { path: 'src/components/marketing/TelaVitrine.tsx', sha: 'befc9424504e57fcfb85ff3d593fa4172aedfe10', label: 'Publica / Replica de tela do sistema na vitrine' },
-  { path: 'src/styles/public-home-premium-20261101.css', sha: '05a8d17def7c36b37c03781314cffec0eed1aa3b', label: 'Publica / estilos do carrossel e vitrine (texto do slide em coluna unica)' },
+  { path: 'src/styles/public-home-premium-20261101.css', sha: '9f71236549982e6c472d6d944c55a5a12990bccd', label: 'Publica / estilos do carrossel e vitrine (REV-20261104-01: ordem do proprietario — topo com letras do mesmo tamanho, fundo do carrossel mais claro e as regras das setas deletas junto dos botoes)' },
   { path: 'src/pages/PlanosIndustrial.tsx', sha: '1070b2cc87cacb249390e69d99c5c11dcfd411a6', label: 'Publica / Planos' },
   { path: 'src/pages/CadastroEmpresa.tsx', sha: 'a860dc1434ece03bf9e60803d929d16bddd7f90b', label: 'Publica / Cadastro da empresa' },
   { path: 'src/pages/Blog.tsx', sha: 'aebf301d6e049f459f5c403527c7010e0b7eabf7', label: 'Publica / Blog' },
   { path: 'src/pages/Contato.tsx', sha: '770de58912bee0ed0e3e0bc4cddd7262c729ec80', label: 'Publica / Contato' },
   { path: 'src/IndustrialLoginDirect.tsx', sha: '8e42f60fe545793e4382f049c490bb3289ea88d6', label: 'Login / tela sobre a foto da planta com cartao flutuante' },
-  { path: 'src/styles/industrial-login.css', sha: 'b8924498059b298c44ccd58899c3358fe67735de', label: 'Login / estilos da tela sobre a foto da planta (REV-LOGIN-ZOOM-MENOR-20261103-01)' },
+  { path: 'src/styles/industrial-login.css', sha: 'ab70c62276a2a9e2ce0dac770255ed346798e1ee', label: 'Login / estilos da tela sobre a foto da planta (REV-LOGIN-FOTO-MAIOR-20261104-01: ordem do proprietario — faixa da foto aumentada de 74vw/116vh para 80vw/128vh porque ficou pequena demais)' },
   { path: 'src/pages/CertificadoQualidade.tsx', sha: 'f83e55451a90c5867297cff6f4f532bcfb45cd91', label: 'Qualidade / Certificado de Qualidade com cotas dimensionais e desenho anexado (recebido em 2026-11-01; REV-CERTIFICADO-CARIMBO-20261103-01 so adicionou o cabecalho de autoria/aprovacao)' },
   { path: 'src/components/layout/ModuleTabletMenuModal.tsx', sha: '0e7259b7f3fb74769f32d0dc2b97125c09ee2554', label: 'Tablet / painel flutuante de módulos (entrada única do Sistema SGQ)' },
   { path: 'src/components/quality/qualityTabletModules.ts', sha: 'a1fc2eb3713c465e1a851204d5300490c1a257cd', label: 'Tablet / catálogo das rotinas do SGQ com cada rota conferida no roteador' },

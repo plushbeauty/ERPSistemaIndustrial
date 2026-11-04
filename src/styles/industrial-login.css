@@ -1,6 +1,6 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-11-02
+ * @DATA_REVISAO_APROVACAO: 2026-11-04
  * @REVISAO: REV-LOGIN-FOTO-INDUSTRIAL-20261101-01 — tela de acesso sobre foto da planta com cartão flutuante à direita
  * @REVISAO_2: REV-LOGIN-CAMPOS-PRETOS-20261102-01 — ordem do proprietário (#82): texto preto nos campos,
  *             caixa mais estreita, bloco encostado à direita e escala de abertura menor.
@@ -8,6 +8,9 @@
  *             caía na trilha larga (marca oculta) e media 582px a 398px da borda em vez de encostar à direita.
  * @REVISAO_4: REV-LOGIN-ZOOM-MENOR-20261103-01 — ordem do proprietário (#106): a foto do fundo continuava
  *             grande demais; deixa de cobrir o palco e passa a ser uma faixa de no máximo 65% da altura.
+ * @REVISAO_5: REV-LOGIN-FOTO-MAIOR-20261104-01 — ordem do proprietário: "a imagem do login você deixou
+ *             menor demais, aumentar mais um pouco". A faixa passa de min(74vw, 116vh) para
+ *             min(80vw, 128vh); a máscara radial continua dissolvendo a borda direita no navy do palco.
  * @STATUS_APROVACAO: LAYOUT APROVADO PELO PROPRIETÁRIO EM 2026-11-01; AJUSTES DE 2026-11-02 ORDENADOS PELO PROPRIETÁRIO
  */
 
@@ -57,7 +60,7 @@
   top: 50%;
   transform: translateY(-50%);
   z-index: 0;
-  width: min(74vw, 116vh);
+  width: min(80vw, 128vh);
   aspect-ratio: 1920 / 1081;
   pointer-events: none;
   background: var(--lg-photo) left center / cover no-repeat;

@@ -1,7 +1,11 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-11-01
+ * @DATA_REVISAO_APROVACAO: 2026-11-04
  * @REVISAO: REV-VITRINE-PUBLICA-20261101-01 — home pública em fundo branco com vitrine de telas
+ * @REVISAO_2: REV-VITRINE-PUBLICA-20261104-01 — ordem do proprietário ("as letras do top não estão do
+ *             mesmo padrão, deixar elas no mesmo tamanho; a imagem do fundo deixar um pouco mais clara"):
+ *             o index.css global impõe font-size:16px!important em todo <button>, então "Produtos do
+ *             sistema" ficava maior que os links de 13px; a camada escura do carrossel caiu ~15 pontos.
  * @STATUS_APROVACAO: REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01 ("TIRAR O FUNDO AZUL E DEIXAR FUNDO BRANCO", "ARRUMAR TAMANHO PADRAO 13PX" NO MENU DO TOPO)
  *
  * Mesma paleta do sistema (navy #123B50, azul #2D8DB8, ciano #48B7C7, verde #3A9D78,
@@ -64,6 +68,10 @@
   font: inherit; font-size: 13px; font-weight: 800; white-space: nowrap; cursor: pointer;
 }
 .ph-nav-link:hover, .ph-product-button:hover, .ph-nav-link[aria-current="true"] { background: #EAF6FA; color: #0B2837; }
+/* Ordem do proprietario em 2026-11-04: "as letras do top nao estao do mesmo padrao, deixar elas no mesmo
+   tamanho". O "Produtos do sistema" e um <button>, e o index.css global impoe font-size:16px!important e
+   min-height:42px em todo botao — por isso ele ficava maior que os links de 13px do mesmo menu. */
+.ph-nav-links .ph-product-button { font-size: 13px !important; min-height: 0 !important; }
 .ph-product { position: relative; }
 .ph-product-menu {
   position: absolute; top: 46px; left: 0; z-index: 95;
@@ -311,12 +319,15 @@
 }
 .ph-carousel-bg img.is-active { opacity: 1; }
 
-/* rgba(0,0,0,.5) e mais: a foto da fábrica é detalhada demais para texto cru. */
+/* rgba(0,0,0,.5) e mais: a foto da fábrica é detalhada demais para texto cru.
+   Ordem do proprietario em 2026-11-04: "a imagem do fundo deixar um pouco mais clara". A camada
+   caiu cerca de 15 pontos em toda a largura; o lado esquerdo continua escuro o suficiente para o
+   h1 branco e o paragrafo permanecerem legiveis sobre a maquina. */
 .ph-carousel-scrim {
   position: absolute; inset: 0; z-index: -1;
   background:
-    linear-gradient(90deg, rgba(6, 24, 34, .88) 0%, rgba(6, 24, 34, .7) 42%, rgba(6, 24, 34, .42) 72%, rgba(6, 24, 34, .58) 100%),
-    rgba(0, 0, 0, .5);
+    linear-gradient(90deg, rgba(6, 24, 34, .74) 0%, rgba(6, 24, 34, .56) 42%, rgba(6, 24, 34, .3) 72%, rgba(6, 24, 34, .44) 100%),
+    rgba(0, 0, 0, .34);
 }
 
 /* Ordem do proprietario em 2026-11-03: saem as imagens pequenas (moldura de navegador) do
@@ -362,25 +373,9 @@
 .ph-carousel-count { font-size: 11px; font-weight: 900; letter-spacing: .14em; color: rgba(238, 248, 252, .9); }
 .ph-carousel-count span { color: rgba(238, 248, 252, .45); font-weight: 800; }
 
-.ph-carousel-arrow {
-  position: absolute; top: 50%; z-index: 2;
-  display: grid; place-items: center;
-  width: 40px; height: 40px; margin-top: -20px; padding: 0;
-  border: 1px solid rgba(255, 255, 255, .26); border-radius: 50%;
-  background: rgba(6, 24, 34, .4); color: #fff;
-  cursor: pointer;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  transition: background .18s ease, border-color .18s ease;
-}
-.ph-carousel-arrow:hover { background: rgba(6, 24, 34, .72); border-color: #7FDCEF; }
-.ph-carousel-arrow.is-prev { left: clamp(10px, 2vw, 28px); }
-.ph-carousel-arrow.is-next { right: clamp(10px, 2vw, 28px); }
-
 @media (max-width: 1080px) {
   .ph-carousel-grid { grid-template-columns: minmax(0, 1fr); }
   .ph-hero--carousel { padding-top: clamp(44px, 8vw, 64px); }
-  .ph-carousel-arrow { display: none; }
 }
 @media (max-width: 560px) {
   .ph-carousel-bar { width: calc(100% - 26px); }
@@ -389,5 +384,5 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .ph-carousel-grid { animation: none; }
-  .ph-carousel-bg img, .ph-carousel-dot, .ph-carousel-arrow { transition: none; }
+  .ph-carousel-bg img, .ph-carousel-dot { transition: none; }
 }

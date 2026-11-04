@@ -13,11 +13,11 @@
     },
     {
       "path": "src/PublicIndustrialHome.tsx",
-      "sha": "da0347d9ce223b0d268d05ba0e19b97ceee3479d",
+      "sha": "4c0cbca91d2f84e5101f90c12eac647d4ca9872f",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-VITRINE-PUBLICA-20261103-01 — carrossel da tela principal sem as imagens pequenas",
-      "aprovadaEm": "2026-11-03",
-      "statusAprovacao": "REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01"
+      "revisao": "REV-VITRINE-PUBLICA-20261104-01 — letras do topo uniformes, fundo do carrossel mais claro e setas de navegação removidas",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01; ajustes de 2026-11-04 ordenados pelo proprietário"
     },
     {
       "path": "src/components/layout/ModuleTabletMenuModal.tsx",
@@ -1765,10 +1765,10 @@
     },
     {
       "path": "src/styles/industrial-login.css",
-      "sha": "b8924498059b298c44ccd58899c3358fe67735de",
+      "sha": "ab70c62276a2a9e2ce0dac770255ed346798e1ee",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-LOGIN-FOTO-INDUSTRIAL-20261101-01 — tela de acesso sobre foto da planta com cartão flutuante à direita",
-      "aprovadaEm": "2026-11-02",
+      "aprovadaEm": "2026-11-04",
       "statusAprovacao": "LAYOUT APROVADO PELO PROPRIETÁRIO EM 2026-11-01; AJUSTES DE 2026-11-02 ORDENADOS PELO PROPRIETÁRIO"
     },
     {
@@ -1781,10 +1781,10 @@
     },
     {
       "path": "src/styles/public-home-premium-20261101.css",
-      "sha": "05a8d17def7c36b37c03781314cffec0eed1aa3b",
+      "sha": "9f71236549982e6c472d6d944c55a5a12990bccd",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-VITRINE-PUBLICA-20261101-01 — home pública em fundo branco com vitrine de telas",
-      "aprovadaEm": "2026-11-01",
+      "aprovadaEm": "2026-11-04",
       "statusAprovacao": "REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01 (\"TIRAR O FUNDO AZUL E DEIXAR FUNDO BRANCO\", \"ARRUMAR TAMANHO PADRAO 13PX\" NO MENU DO TOPO)"
     },
     {

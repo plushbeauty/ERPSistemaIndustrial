@@ -1,8 +1,13 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-11-03
- * @REVISAO: REV-VITRINE-PUBLICA-20261103-01 — carrossel da tela principal sem as imagens pequenas
- * @STATUS_APROVACAO: REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01
+ * @DATA_REVISAO_APROVACAO: 2026-11-04
+ * @REVISAO: REV-VITRINE-PUBLICA-20261104-01 — letras do topo uniformes, fundo do carrossel mais claro e setas de navegação removidas
+ * @STATUS_APROVACAO: REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01; ajustes de 2026-11-04 ordenados pelo proprietário
+ *
+ * Ordem do proprietario em 2026-11-04: "as letras do top nao estao do mesmo padrao, deixar elas no mesmo
+ * tamanho; a imagem do fundo deixar um pouco mais clara; deixar elas como carrossel mudando automatico e
+ * tirar os botoes de mudanca de pagina, ocultar elas". O carrossel ja trocava sozinho a cada 7s (continua);
+ * as setas laterais saem do JSX e o tamanho do topo e corrigido no CSS da vitrine.
  *
  * Ordem do proprietario em 2026-11-03: "tirar do carrossel da tela principal aquelas das imagens
  * pequenas, so deixar as imagens grandes de traz". A moldura de navegador com a replica DOM sai do
@@ -22,9 +27,9 @@
  * réplicas montadas com o vocabulário visual do próprio sistema (TelaVitrine), cada uma com
  * a rota real na barra do navegador, em vez de arte desenhada à parte.
  */
-import { ArrowRight, BarChart3, Boxes, Bot, Check, ChevronDown, ChevronLeft, ChevronRight, ClipboardCheck, Factory, FileText, PackageCheck, Receipt, Settings, ShieldCheck, Truck, Users, Wrench, X } from 'lucide-react'
+import { ArrowRight, BarChart3, Boxes, Bot, Check, ChevronDown, ClipboardCheck, Factory, FileText, PackageCheck, Receipt, Settings, ShieldCheck, Truck, Users, Wrench, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { telasVitrine, TelaVitrineReplica, type TelaVitrine } from './components/marketing/TelaVitrine'
 import './styles/public-home-premium-20261101.css'
 
@@ -219,8 +224,6 @@ function HeroCarousel() {
   const [pausado, setPausado] = useState(false)
   const total = heroSlides.length
 
-  const irPara = useCallback((passo: number) => setIndice(atual => (atual + passo + total) % total), [total])
-
   useEffect(() => {
     if (pausado) return undefined
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
@@ -285,8 +288,6 @@ function HeroCarousel() {
         </span>
       </div>
 
-      <button type="button" className="ph-carousel-arrow is-prev" onClick={() => irPara(-1)} aria-label="Slide anterior"><ChevronLeft size={20} /></button>
-      <button type="button" className="ph-carousel-arrow is-next" onClick={() => irPara(1)} aria-label="Próximo slide"><ChevronRight size={20} /></button>
     </section>
   )
 }
