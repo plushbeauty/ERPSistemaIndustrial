@@ -13,9 +13,9 @@
     },
     {
       "path": "src/PublicIndustrialHome.tsx",
-      "sha": "4c0cbca91d2f84e5101f90c12eac647d4ca9872f",
+      "sha": "efc9e69d4cae1584cf63abf3f03f362ce624b4a4",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-VITRINE-PUBLICA-20261104-01 — letras do topo uniformes, fundo do carrossel mais claro e setas de navegação removidas",
+      "revisao": "REV-VITRINE-PUBLICA-20261104-02 — botão de teste grátis no azul do login e barra de indicadores do carrossel removida",
       "aprovadaEm": "2026-11-04",
       "statusAprovacao": "REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01; ajustes de 2026-11-04 ordenados pelo proprietário"
     },
@@ -565,7 +565,7 @@
     },
     {
       "path": "src/pages/EngenhariaBOM.tsx",
-      "sha": "6b13d14d2c5422c608b52651d3f802b75e14e821",
+      "sha": "5731f2d98539359337bed6f41b4d34db1a26e214",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
       "aprovadaEm": "2026-11-04",
@@ -1029,7 +1029,7 @@
     },
     {
       "path": "src/pages/PCPValidaFluxo.tsx",
-      "sha": "dcf60c7d98eda62339037d9eb7308ab26ab6c9a3",
+      "sha": "2b0291495a40071e5957165aad98b13e6175c944",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
       "aprovadaEm": "2026-11-04",
@@ -1133,7 +1133,7 @@
     },
     {
       "path": "src/pages/QualidadeGraficosRefugo.tsx",
-      "sha": "75e0403ba491a86e1dd3eafa941df88a8e5c3b43",
+      "sha": "f99cbdc6c147cc1184c2a5d4fdd847e56d267ddf",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
       "aprovadaEm": "2026-11-04",
@@ -1157,7 +1157,7 @@
     },
     {
       "path": "src/pages/QualidadeInspecoesIndustrial.tsx",
-      "sha": "3674e0e58d3671d61531e26b2ba6617350d476b4",
+      "sha": "cf5d65853b694d8c5f1a92bacf75699a6df393f1",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
       "aprovadaEm": "2026-11-04",
@@ -1237,7 +1237,7 @@
     },
     {
       "path": "src/pages/QualidadeRefugos.tsx",
-      "sha": "4c57120b7e1a7e3e0561432a924cb1313ac56a3e",
+      "sha": "4a06fef90d9536300ef021fcc6cb8cbfb1cb56a5",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
       "aprovadaEm": "2026-11-04",
@@ -1661,7 +1661,7 @@
     },
     {
       "path": "src/pages/pcp/ControleProcessoInjetora.tsx",
-      "sha": "ebfe3ac6fb0fe32cb5dd91b3a1543cae1901347f",
+      "sha": "af5bdde6778def1abe1d560b6c82db205a1c3c6a",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-COLUNAS-BANCO-20261104-01 — ordem do proprietário \"telas travadas vc destrava\": o seletor de OPs ordenava por 'criado_em', coluna que não existe em erp_ordens_producao; o Promise.all lançava e a tela não carregava. Leitura corrigida para 'created_at'.",
       "aprovadaEm": "2026-11-04",
@@ -1725,7 +1725,7 @@
     },
     {
       "path": "src/pages/qualidade/QualidadeGenealogiaLote.tsx",
-      "sha": "080aa43af34c88d839009750ba2eee69629f47ee",
+      "sha": "390c00abf691ab99e0ff4ef481028d1a549dd11d",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
       "aprovadaEm": "2026-11-04",
@@ -1749,7 +1749,7 @@
     },
     {
       "path": "src/pages/qualidade/QualidadeQuarentena.tsx",
-      "sha": "0605a84a7ed17fb854bf6972276844a1673d2f56",
+      "sha": "c3f5ada44c554324af25c26bcfefabe3e42bd974",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
       "aprovadaEm": "2026-11-04",
@@ -1781,7 +1781,7 @@
     },
     {
       "path": "src/styles/public-home-premium-20261101.css",
-      "sha": "9f71236549982e6c472d6d944c55a5a12990bccd",
+      "sha": "b44ab4a728b593b6bbcd64ac00728d7ed01b41a8",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-VITRINE-PUBLICA-20261101-01 — home pública em fundo branco com vitrine de telas",
       "aprovadaEm": "2026-11-04",

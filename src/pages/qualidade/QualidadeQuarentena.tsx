@@ -33,7 +33,7 @@ type Lot = {
 type Product = { codigo: string; nome: string }
 type Quarantine = { id: string; lote_id: string; motivo: string; status: string; created_at: string }
 
-const inputClass = 'h-8 w-full rounded-none border border-slate-300 bg-[#EAF6FA] px-2.5 text-[10px] font-mono font-bold text-[#123B50] outline-none placeholder:text-slate-500 focus:border-[#2D8DB8] disabled:cursor-not-allowed disabled:opacity-60'
+const inputClass = 'h-8 w-full rounded-none border border-slate-300 bg-[#EAF6FA] px-2.5 text-[10px] font-bold text-[#123B50] outline-none placeholder:text-slate-500 focus:border-[#2D8DB8] disabled:cursor-not-allowed disabled:opacity-60'
 const labelClass = 'mb-1 block text-[9px] font-black uppercase tracking-widest text-slate-500'
 const panelClass = 'min-w-0 border border-[#CFE1E7] bg-white shadow-sm'
 
@@ -166,7 +166,7 @@ export default function QualidadeQuarentena() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F4FBFD] p-2.5 font-mono text-[#123B50] antialiased sm:p-3">
+    <main className="min-h-screen bg-[#F4FBFD] p-2.5 text-[#123B50] antialiased sm:p-3">
       <div className="mx-auto max-w-[1600px] space-y-3">
         <header className="flex flex-wrap items-center justify-between gap-3 border border-[#CFE1E7] bg-white p-3">
           <div className="flex min-w-0 items-center gap-2.5">

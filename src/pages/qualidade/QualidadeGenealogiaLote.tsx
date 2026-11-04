@@ -40,7 +40,7 @@ type GenealogiaRow = {
   prod_filho: Product | null
 }
 
-const inputClass = 'h-8 w-full rounded-none border border-[#CFE1E7] bg-[#F8FAFC] px-2.5 text-xs font-mono font-bold text-[#123B50] outline-none transition-colors placeholder:text-slate-500 focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/30 disabled:opacity-50'
+const inputClass = 'h-8 w-full rounded-none border border-[#CFE1E7] bg-[#F8FAFC] px-2.5 text-xs font-bold text-[#123B50] outline-none transition-colors placeholder:text-slate-500 focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/30 disabled:opacity-50'
 const labelClass = 'mb-1 block text-[9px] font-black uppercase tracking-widest text-slate-500'
 const panelClass = 'border border-[#CFE1E7] bg-white'
 const buttonClass = 'inline-flex h-8 items-center justify-center gap-1.5 rounded-none border border-[#CFE1E7] px-3 text-[9px] font-black uppercase tracking-wider transition-colors disabled:cursor-not-allowed disabled:opacity-50'
@@ -223,7 +223,7 @@ export default function QualidadeGenealogiaLote() {
 
   return (
     <main className="min-h-screen bg-[#F4FBFD] p-2.5 text-[#123B50] antialiased md:p-3">
-      <div className="mx-auto mt-2 max-w-[1800px] space-y-3 font-mono">
+      <div className="mx-auto mt-2 max-w-[1800px] space-y-3">
         <header className="flex flex-wrap items-center justify-between gap-3 border border-[#CFE1E7] bg-white px-3 py-2.5">
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center border border-[#CFE1E7] bg-[#EAF6FA] text-[#176487]"><GitBranch size={19} /></div>

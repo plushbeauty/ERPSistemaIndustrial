@@ -1,8 +1,12 @@
 /**
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-04
- * @REVISAO: REV-VITRINE-PUBLICA-20261104-01 — letras do topo uniformes, fundo do carrossel mais claro e setas de navegação removidas
+ * @REVISAO: REV-VITRINE-PUBLICA-20261104-02 — botão de teste grátis no azul do login e barra de indicadores do carrossel removida
  * @STATUS_APROVACAO: REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01; ajustes de 2026-11-04 ordenados pelo proprietário
+ *
+ * Ordem do proprietario em 2026-11-04, print com seta no botão do topo ("MUDAR A COR DEIXAR AZUL QUE
+ * NEM DO BOTÃO DO LOGIN AZUL") e caixa sobre os quadradinhos do carrossel ("TIRAR"): o .ph-solid passou
+ * a usar o gradiente azul do botão do login e a barra de indicadores + contador saiu do JSX.
  *
  * Ordem do proprietario em 2026-11-04: "as letras do top nao estao do mesmo padrao, deixar elas no mesmo
  * tamanho; a imagem do fundo deixar um pouco mais clara; deixar elas como carrossel mudando automatico e
@@ -269,25 +273,8 @@ function HeroCarousel() {
         </div>
       </div>
 
-      <div className="ph-carousel-bar">
-        <div className="ph-carousel-dots" role="tablist" aria-label="Slides do carrossel">
-          {heroSlides.map((item, i) => (
-            <button
-              key={item.key}
-              type="button"
-              role="tab"
-              aria-selected={i === indice}
-              aria-label={`Slide ${i + 1} de ${total}: ${item.eyebrow}`}
-              className={i === indice ? 'ph-carousel-dot is-active' : 'ph-carousel-dot'}
-              onClick={() => setIndice(i)}
-            />
-          ))}
-        </div>
-        <span className="ph-carousel-count">
-          {String(indice + 1).padStart(2, '0')} <span>/ {String(total).padStart(2, '0')}</span>
-        </span>
-      </div>
-
+      {/* Ordem do proprietario em 2026-11-04, sobre print com "TIRAR" nos quadradinhos: a barra de
+          indicadores do carrossel sai da tela. O slide continua trocando sozinho a cada 7s. */}
     </section>
   )
 }

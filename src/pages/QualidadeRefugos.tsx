@@ -26,7 +26,7 @@ type Product = { id: string; codigo: string; nome: string }
 type Defect = { id: string; codigo_defeito: string; descricao: string; classificacao: 'CRÍTICO' | 'MAIOR' | 'MENOR' }
 type Scrap = { id: string; ordem_producao_id: string; defeito_id: string; quantidade_refugada: number; peso_refugo_kg: number | null; turno: string; operador: string; disposicao_material: 'RETRABALHO' | 'SUCATAMENTO' | 'SEGREGADO'; observacoes: string | null; created_at: string }
 
-const field = 'h-[30px] w-full min-w-0 rounded-[2px] border border-[#CFE1E7] bg-[#F8FAFC] px-2.5 text-xs font-mono font-bold text-[#123B50] outline-none focus:border-[#2D8DB8] disabled:opacity-50'
+const field = 'h-[30px] w-full min-w-0 rounded-[2px] border border-[#CFE1E7] bg-[#F8FAFC] px-2.5 text-xs font-bold text-[#123B50] outline-none focus:border-[#2D8DB8] disabled:opacity-50'
 const label = 'mb-1 block text-[9px] font-black uppercase tracking-wider text-slate-500'
 const button = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] border px-3 text-[10px] font-black uppercase disabled:opacity-50'
 
@@ -102,7 +102,7 @@ export default function QualidadeRefugos() {
   const selectedProduct=selectedOp?.produto_id?productMap.get(selectedOp.produto_id):undefined
   const selectedDefect=defectMap.get(printRecord?.defeito_id ?? '')
 
-  return <main className="min-h-screen bg-[#F4FBFD] p-3 font-mono text-[#123B50] md:p-5 print:bg-white print:p-0">
+  return <main className="min-h-screen bg-[#F4FBFD] p-3 text-[#123B50] md:p-5 print:bg-white print:p-0">
     <div className="mx-auto max-w-[1600px] space-y-4 print:hidden">
       <header className="flex flex-wrap items-center gap-3 border border-[#CFE1E7] border-l-4 border-l-[#D65B61] bg-white p-4 shadow-xl">
         <span className="flex h-11 w-11 items-center justify-center border border-[#D65B61]/40 bg-[#123B50] text-[#D65B61]"><AlertTriangle size={22}/></span>

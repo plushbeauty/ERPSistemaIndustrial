@@ -574,7 +574,13 @@ const introCatalog: Record<string, PageIntro> = {
 const pagePrincipalPrefix = '/pageprincipal'
 
 /** Telas que já desenham o próprio cabeçalho de abertura; o shell não adiciona card acima (evita título duplicado). */
-const nativeIntroCardPaths = ['/compras', '/financeiro', '/administracao-configuracoes', '/ajuda']
+// Ordem do proprietario em 2026-11-04, print de /qualidade/dashboard-rnc com dois cards navy:
+// "TEM DOIS CARDS AZUL TIRAR". As quatro telas abaixo desenham a própria faixa de abertura e
+// faltavam nesta lista, então o shell injetava uma segunda faixa idêntica acima delas.
+const nativeIntroCardPaths = [
+  '/compras', '/financeiro', '/administracao-configuracoes', '/ajuda',
+  '/qualidade/dashboard-rnc', '/qualidade/auditoria-5s', '/qualidade/especificacoes', '/compras/requisicoes',
+]
 
 export function hasNativeIntroCard(pathname: string): boolean {
   return nativeIntroCardPaths.includes(normalizeWorkspacePath(pathname))

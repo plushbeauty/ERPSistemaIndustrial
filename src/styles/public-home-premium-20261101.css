@@ -102,8 +102,14 @@
 }
 .ph-ghost { border: 1px solid var(--ph-line); background: #fff; color: var(--ph-navy); }
 .ph-ghost:hover { border-color: var(--ph-blue); background: #F4FBFD; }
-.ph-solid { border: 1px solid var(--ph-green); background: var(--ph-green); color: #fff; }
-.ph-solid:hover { background: #2F8767; }
+.ph-solid {
+  /* Ordem do proprietario em 2026-11-04, sobre print com seta para o botao do topo:
+     "MUDAR A COR DEIXAR AZUL QUE NEM DO BOTAO DO LOGIN AZUL". O verde saiu e o botao passou a
+     usar exatamente o gradiente azul do .auth-submit (industrial-login.css:199), tinta escura. */
+  border: 1px solid #1E9BD4; background: linear-gradient(135deg, #22A9DE 0%, #31C6E8 48%, #5FE0D0 100%); color: #04222F;
+  box-shadow: 0 12px 26px rgba(31, 160, 210, .3);
+}
+.ph-solid:hover { background: linear-gradient(135deg, #22A9DE 0%, #31C6E8 48%, #5FE0D0 100%); filter: brightness(1.04); box-shadow: 0 20px 40px rgba(31, 160, 210, .44); }
 
 /* ---------- abertura ---------- */
 .ph-hero { position: relative; padding: clamp(34px, 5vw, 74px) 0 clamp(30px, 4vw, 56px); background: #fff; }
@@ -354,35 +360,14 @@
 .ph-slide-copy .ph-assurance svg { color: #6FD3AE; }
 .ph-hero--carousel .ph-shot { border-color: rgba(255, 255, 255, .2); box-shadow: 0 34px 70px rgba(3, 15, 22, .55); }
 
-.ph-carousel-bar {
-  position: relative; z-index: 2;
-  display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  width: min(1280px, calc(100% - 40px));
-  margin: clamp(26px, 3vw, 40px) auto 0;
-}
-.ph-carousel-dots { display: flex; align-items: center; gap: 8px; }
-.ph-carousel-dot {
-  width: 34px; height: 4px; padding: 0;
-  border: 0; border-radius: 2px;
-  background: rgba(255, 255, 255, .3);
-  cursor: pointer;
-  transition: background .2s ease, width .2s ease;
-}
-.ph-carousel-dot:hover { background: rgba(255, 255, 255, .55); }
-.ph-carousel-dot.is-active { width: 56px; background: #7FDCEF; }
-.ph-carousel-count { font-size: 11px; font-weight: 900; letter-spacing: .14em; color: rgba(238, 248, 252, .9); }
-.ph-carousel-count span { color: rgba(238, 248, 252, .45); font-weight: 800; }
+/* Ordem do proprietario em 2026-11-04, print com "TIRAR": a barra de indicadores do carrossel
+   (quadradinhos + contador 05/05) saiu do JSX e saiu daqui junto. Sem CSS morto. */
 
 @media (max-width: 1080px) {
   .ph-carousel-grid { grid-template-columns: minmax(0, 1fr); }
   .ph-hero--carousel { padding-top: clamp(44px, 8vw, 64px); }
 }
-@media (max-width: 560px) {
-  .ph-carousel-bar { width: calc(100% - 26px); }
-  .ph-carousel-dot { width: 22px; }
-  .ph-carousel-dot.is-active { width: 36px; }
-}
 @media (prefers-reduced-motion: reduce) {
   .ph-carousel-grid { animation: none; }
-  .ph-carousel-bg img, .ph-carousel-dot { transition: none; }
+  .ph-carousel-bg img { transition: none; }
 }

@@ -34,7 +34,7 @@ function BarList({ title, subtitle, empty, children }: { title: string; subtitle
   </section>
 }
 
-const field = 'h-[30px] w-full min-w-0 rounded-[2px] border border-[#CFE1E7] bg-[#F8FAFC] px-2.5 text-xs font-mono font-bold text-[#123B50] outline-none focus:border-[#2D8DB8]'
+const field = 'h-[30px] w-full min-w-0 rounded-[2px] border border-[#CFE1E7] bg-[#F8FAFC] px-2.5 text-xs font-bold text-[#123B50] outline-none focus:border-[#2D8DB8]'
 const label = 'mb-1 block text-[9px] font-black uppercase tracking-wider text-slate-500'
 const dateISO = (date: Date) => {
   const y = date.getFullYear()
@@ -139,7 +139,7 @@ export default function QualidadeGraficosRefugo() {
     }
   }, [records, startDate, endDate, orderMap, productMap, defectMap])
 
-  return <main className="min-h-screen bg-[#F4FBFD] p-3 font-mono text-[#123B50] antialiased md:p-5">
+  return <main className="min-h-screen bg-[#F4FBFD] p-3 text-[#123B50] antialiased md:p-5">
     <div className="mx-auto max-w-[1700px] space-y-4">
       <header className="flex flex-wrap items-center gap-3 border border-[#CFE1E7] border-l-4 border-l-[#2D8DB8] bg-white p-4 shadow-xl">
         <span className="flex h-11 w-11 items-center justify-center border border-[#2D8DB8]/30 bg-[#123B50] text-[#48B7C7]"><BarChart3 size={22}/></span>

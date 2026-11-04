@@ -59,7 +59,7 @@ function parseSpecParameters(value: unknown): SpecParameter[] {
 }
 
 const buttonClass = 'inline-flex h-8 items-center justify-center gap-1 rounded-none border border-[#CFE1E7] bg-[#123B50] px-3 text-[10px] font-black uppercase text-white hover:bg-[#18506A] disabled:opacity-50'
-const steelInput = 'h-8 min-w-0 w-full rounded-none border border-[#CFE1E7] bg-white px-2.5 text-xs font-mono font-bold text-[#123B50] outline-none placeholder:text-slate-500 focus:border-[#2D8DB8] disabled:cursor-not-allowed disabled:opacity-60'
+const steelInput = 'h-8 min-w-0 w-full rounded-none border border-[#CFE1E7] bg-white px-2.5 text-xs font-bold text-[#123B50] outline-none placeholder:text-slate-500 focus:border-[#2D8DB8] disabled:cursor-not-allowed disabled:opacity-60'
 const steelLabel = 'mb-1 block text-[9px] font-black uppercase tracking-wider text-slate-500'
 const gridTitleClass = 'mb-2.5 block border-b border-[#CFE1E7] pb-1 text-[9px] font-black uppercase tracking-widest text-[#176487]'
 
@@ -280,7 +280,7 @@ export default function QualidadeInspecoesIndustrial() {
   }), [rows])
 
   return (
-    <main className="min-h-full bg-[#F4FBFD] p-3 font-mono text-[#123B50] antialiased">
+    <main className="min-h-full bg-[#F4FBFD] p-3 text-[#123B50] antialiased">
       <header className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-[#CFE1E7] pb-2">
         <div className="flex items-center gap-2">
           <ShieldCheck size={18} className="text-[#176487]" />

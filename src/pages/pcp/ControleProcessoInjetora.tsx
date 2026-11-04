@@ -64,7 +64,7 @@ const emptyForm = (): FormState => ({
   checklist_maquina_ok: false, molde_verificado: false, comparacao_amostra_padrao: false,
   liberacao_qualidade: false, liberacao_provisoria: false, responsavel_liberacao_id: '', observacoes: ''
 })
-const inputClass = 'h-8 w-full min-w-0 rounded-none border border-[#CFE1E7] bg-white px-2.5 text-xs font-mono font-bold text-[#123B50] outline-none transition-all placeholder:text-slate-500 focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20'
+const inputClass = 'h-8 w-full min-w-0 rounded-none border border-[#CFE1E7] bg-white px-2.5 text-xs font-bold text-[#123B50] outline-none transition-all placeholder:text-slate-500 focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20'
 const areaClass = 'min-h-[62px] w-full min-w-0 rounded-none border border-[#CFE1E7] bg-white p-2 text-xs leading-4 text-[#123B50] outline-none focus:border-[#2D8DB8]'
 const labelClass = 'mb-1 block text-[9px] font-black uppercase tracking-widest text-slate-500'
 const buttonClass = 'inline-flex h-8 items-center justify-center gap-1.5 rounded-none border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-black uppercase tracking-wide text-white transition-colors hover:bg-[#236f91] disabled:opacity-50'
@@ -266,7 +266,7 @@ export default function ControleProcessoInjetora() {
   )
 
   return <ERPHorizontalShell>
-    <main className="pcp-injetora-page min-h-screen bg-[#F4FBFD] p-3 font-mono text-[#123B50] antialiased">
+    <main className="pcp-injetora-page min-h-screen bg-[#F4FBFD] p-3 text-[#123B50] antialiased">
       <style>{'@media print{.no-print{display:none!important}.pcp-injetora-page{background:#fff!important;color:#111827!important;padding:0!important}.pcp-injetora-page *{color:#111827!important;box-shadow:none!important}.pcp-injetora-page section,.pcp-injetora-page form,.pcp-injetora-page aside,.pcp-injetora-page header{background:#fff!important;border-color:#cbd5e1!important}.pcp-injetora-page input,.pcp-injetora-page select,.pcp-injetora-page textarea{background:#fff!important;border-color:#cbd5e1!important;color:#111827!important}.pcp-injetora-page{font-family:Arial,sans-serif!important}@page{size:A4 landscape;margin:10mm}}'}</style>
       <div className="mx-auto max-w-[1600px] space-y-3">
         <div className="hidden print:block border-b-2 border-slate-900 pb-2 text-[#123B50]"><h1 className="text-base font-black uppercase">MOLDPLÁS ERP INDUSTRIAL — Controle de Processo da Injetora</h1><p className="text-[9px]">Emitido em {new Date().toLocaleString()} • Desenvolvedor FernandoSch • Registro controlado do SGQ</p></div>

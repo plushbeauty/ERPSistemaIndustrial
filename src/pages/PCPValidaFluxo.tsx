@@ -112,7 +112,7 @@ export default function PCPValidaFluxo() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F4FBFD] p-3 font-mono text-[#123B50] antialiased md:p-5">
+    <main className="min-h-screen bg-[#F4FBFD] p-3 text-[#123B50] antialiased md:p-5">
       <div className="mx-auto max-w-[1600px] space-y-4">
         <header className="flex flex-wrap items-center gap-3 rounded-[3px] border border-[#CFE1E7] border-l-4 border-l-[#E6A34A] bg-white p-4 shadow-xl">
           <span className="flex h-11 w-11 items-center justify-center rounded-[2px] border border-[#E6A34A]/30 bg-[#123B50] text-[#E6A34A]"><ShieldCheck size={22}/></span>

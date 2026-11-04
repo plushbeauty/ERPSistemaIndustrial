@@ -67,9 +67,9 @@ const ROOT = path.resolve(import.meta.dirname, '..')
 const read = rel => readFileSync(path.join(ROOT, rel), 'utf8')
 
 const oficiais = [
-  { path: 'src/PublicIndustrialHome.tsx', sha: '4c0cbca91d2f84e5101f90c12eac647d4ca9872f', label: 'Publica / Home com carrossel da vitrine (REV-20261104-01: ordem do proprietario — topo com letras do mesmo tamanho, fundo mais claro e sem as setas de mudanca de slide)' },
+  { path: 'src/PublicIndustrialHome.tsx', sha: 'efc9e69d4cae1584cf63abf3f03f362ce624b4a4', label: 'Publica / Home com carrossel da vitrine (REV-VITRINE-PUBLICA-20261104-02: ordem do proprietario sobre print — "TIRAR" da barra de indicadores do carrossel)' },
   { path: 'src/components/marketing/TelaVitrine.tsx', sha: 'befc9424504e57fcfb85ff3d593fa4172aedfe10', label: 'Publica / Replica de tela do sistema na vitrine' },
-  { path: 'src/styles/public-home-premium-20261101.css', sha: '9f71236549982e6c472d6d944c55a5a12990bccd', label: 'Publica / estilos do carrossel e vitrine (REV-20261104-01: ordem do proprietario — topo com letras do mesmo tamanho, fundo do carrossel mais claro e as regras das setas deletas junto dos botoes)' },
+  { path: 'src/styles/public-home-premium-20261101.css', sha: 'b44ab4a728b593b6bbcd64ac00728d7ed01b41a8', label: 'Publica / estilos do carrossel e vitrine (REV-VITRINE-PUBLICA-20261104-02: ordem do proprietario sobre print — "MUDAR A COR DEIXAR AZUL QUE NEM DO BOTAO DO LOGIN" no .ph-solid e as regras dos indicadores deletas junto da barra)' },
   { path: 'src/pages/PlanosIndustrial.tsx', sha: '1070b2cc87cacb249390e69d99c5c11dcfd411a6', label: 'Publica / Planos' },
   { path: 'src/pages/CadastroEmpresa.tsx', sha: 'a860dc1434ece03bf9e60803d929d16bddd7f90b', label: 'Publica / Cadastro da empresa' },
   { path: 'src/pages/Blog.tsx', sha: 'aebf301d6e049f459f5c403527c7010e0b7eabf7', label: 'Publica / Blog' },
