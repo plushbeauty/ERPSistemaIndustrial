@@ -1,4 +1,5 @@
 /**
+ * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — o faturamento do relatório somava apenas os últimos 2000 pedidos; empresa acima disso via o total menor que o real, sem aviso. A leitura passou a cobrir todos os pedidos da empresa por paginação.
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
@@ -38,16 +39,16 @@ export default function VendasRelatorios() {
     try {
       const company = await supabase.rpc('erp_current_empresa_id')
       if (company.error || !company.data) throw company.error ?? new Error('Empresa não identificada.')
-      const result = await supabase
-        .from('erp_pedidos_venda')
-        .select('id,numero,status,total,data_entrada,data_entrega_prometida,pedido_cliente,cliente_id,erp_clientes(nome)')
-        .eq('empresa_id', String(company.data))
-        .order('numero', { ascending: false })
-        .limit(2000)
-
-      if (result.error) throw result.error
+      const rows = await fetchAllPages<Order & { erp_clientes: { nome: string } | { nome: string }[] | null }>((from, to) =>
+        supabase
+          .from('erp_pedidos_venda')
+          .select('id,numero,status,total,data_entrada,data_entrega_prometida,pedido_cliente,cliente_id,erp_clientes(nome)', { count: 'exact' })
+          .eq('empresa_id', String(company.data))
+          .order('numero', { ascending: false })
+          .range(from, to),
+      )
       setOrders(
-        ((result.data ?? []) as Array<Order & { erp_clientes: { nome: string } | { nome: string }[] | null }>).map(row => ({
+        rows.map(row => ({
           ...row,
           cliente_nome: Array.isArray(row.erp_clientes) ? row.erp_clientes[0]?.nome : row.erp_clientes?.nome,
         })),

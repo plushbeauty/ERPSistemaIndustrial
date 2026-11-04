@@ -84,7 +84,7 @@ const oficiais = [
   { path: 'src/pages/QualityRpncUnified.tsx', sha: '95335212fcf40881e37a37cc063f326d58335235', label: 'Qualidade / RPNC unificada em abas (REV-RPNC-ABAS-CARD-20261102-01: card das abas maior, descricao visivel)' },
   { path: 'src/styles/quality-rpnc-unified.css', sha: '38e62419f0b2e3798847abd7f2bbd6622a9acaa3', label: 'Qualidade / estilos das abas do RPNC unificado (isengao da regula de 30px)' },
   { path: 'src/pages/QualityAuditsList.tsx', sha: '34d4247238acaa0cab346056b56953a049c4ec2d', label: 'Qualidade / Painel de auditorias' },
-  { path: 'src/pages/DocumentosQualidadeControle.tsx', sha: 'e4fbb85f9dad9fc2ad457567cba27185f0695e9b', label: 'Qualidade / Controle de Alteracao de Documentos em 7 abas (anexo pela URL assinada, nenhum status inventado)' },
+  { path: 'src/pages/DocumentosQualidadeControle.tsx', sha: 'f782c93e5c386329f1a8df21187101d75bf93c4d', label: 'Qualidade / Controle de Alteracao de Documentos em 7 abas (anexo pela URL assinada, nenhum status inventado) (REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03: distribuicoes e leituras deixaram de ser cortadas em 2000/5000; so a leitura paginada mudou)' },
   { path: 'src/pages/AccessControlSettings.tsx', sha: '64fbe7d0a0cb14e2aff8565f14fd713de2b13a00', label: 'Configuracoes / Controle de acesso por setor (CRUD de usuarios preservado; sem redesign)' },
   { path: 'src/pages/PCPCapacidade.tsx', sha: '7b26fa34132d8ffcf116d53e780e372383280f5a', label: 'PCP / Capacidade de maquinas' },
   { path: 'src/pages/NFeEmissao.tsx', sha: 'ab04bc518c81140a5bc5de9a0aab9cbe291beb98', label: 'Fiscal / Emissao de NF-e em etapas (transacional, na prod) + UF do transportador alinhado a regula de 72px' },

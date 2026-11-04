@@ -1,4 +1,5 @@
 /**
+ * @REVISAO: REV-GED-ARVORE-LARGA-20261104-01 — ordem do proprietário: "a barra lateral dos documentos está uma bagunça, muito apertado para caber os nomes dos procedimentos". Coluna da árvore ampliada (250-280px → 340-380px) e título do procedimento com três linhas legíveis em vez de duas linhas cortadas.
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
@@ -332,7 +333,7 @@ export default function GEDDocumentos() {
       {helpOpen && <section aria-label="Ajuda do controle documental" className="mx-3 mt-3 border border-sky-200 bg-sky-50 px-3 py-3 text-[10px] leading-5 text-slate-700">
         <div className="flex items-start justify-between gap-3"><div><h2 className="font-bold text-[#123B50]">Como usar o GED</h2><p>1. Pesquise e selecione um documento na árvore. 2. Confira código, título e departamento. 3. Para alterar um documento controlado, informe o motivo e salve uma nova revisão. 4. A revisão precisa ser aprovada antes de entrar em vigor. Use imprimir para gerar uma cópia da tela; a distribuição controlada de cópias deve ser registrada no controle documental.</p><p className="mt-1 text-slate-600">Não substitua uma especificação aprovada apenas alterando o texto: registre a mudança e valide a revisão antes de liberar para uso.</p></div><button type="button" aria-label="Fechar ajuda" onClick={() => setHelpOpen(false)} className="shrink-0 p-1 text-slate-500 hover:bg-white"><X size={14}/></button></div>
       </section>}
-      <div className="grid min-h-[calc(100vh-138px)] grid-cols-1 xl:grid-cols-[minmax(250px,280px)_minmax(0,1fr)_minmax(220px,240px)] 2xl:grid-cols-[300px_minmax(0,1fr)_260px]">
+      <div className="grid min-h-[calc(100vh-138px)] grid-cols-1 xl:grid-cols-[minmax(340px,360px)_minmax(0,1fr)_minmax(230px,250px)] 2xl:grid-cols-[380px_minmax(0,1fr)_270px]">
         <aside className="flex min-h-0 flex-col border-b border-neutral-200 bg-neutral-50/80 xl:border-b-0 xl:border-r xl:border-neutral-200/70">
           <div className="flex h-[44px] items-center justify-between px-3">
             <span className="text-[9px] font-bold uppercase tracking-[.13em] text-neutral-500">ÁRVORE DE DOCUMENTOS</span>
@@ -358,7 +359,7 @@ export default function GEDDocumentos() {
                     <span className="block min-w-0 break-words text-[10px] font-bold leading-4">{doc.codigo_documento}</span>
                     <span className={'inline-flex max-w-full shrink-0 items-center rounded-[2px] px-1.5 py-0.5 text-[8px] font-bold leading-3 ' + stateColor}>{doc.status.replaceAll('_',' ')}</span>
                   </span>
-                  <span className="mt-0.5 block max-h-[28px] w-full overflow-hidden break-words text-[10px] font-medium leading-[1.35] text-neutral-700" title={doc.titulo_documento}>{doc.titulo_documento}</span>
+                  <span className="mt-0.5 block w-full break-words text-[10px] font-semibold leading-[1.4] text-neutral-800 line-clamp-3" title={doc.titulo_documento}>{doc.titulo_documento}</span>
                   <span className="mt-0.5 block w-full truncate border-t border-slate-100 pt-0.5 text-[8px] leading-3 text-neutral-500" title={doc.departamento || 'QUALIDADE'}>REV. {String(doc.revisao).padStart(2,'0')} <span aria-hidden="true">·</span> {doc.departamento || 'QUALIDADE'}</span>{doc.nome_arquivo && <span className="mt-0.5 block w-full truncate text-[8px] leading-3 text-amber-700" title={doc.nome_arquivo}>FONTE: {doc.nome_arquivo} · {doc.url_anexo ? 'anexado' : 'anexo pendente'}</span>}
                 </span>
               </button>

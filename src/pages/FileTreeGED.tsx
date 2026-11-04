@@ -1,4 +1,5 @@
 /**
+ * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — a árvore do GED mostrava só as 1000 RPNC mais recentes e 5000 evidências: processo antigo simplesmente desaparecia da pasta sem aviso. As duas leituras passaram a cobrir todo o histórico da empresa por paginação.
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
@@ -7,6 +8,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertCircle, ChevronDown, ChevronRight, FileText, Folder, FolderOpen, Image as ImageIcon, RefreshCw, Search } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 
 type RpncRow = {
   id: string
@@ -42,20 +44,18 @@ export default function FileTreeGED() {
     setCarregando(true)
     setErro('')
     try {
-      const { data: rpncData, error: rpncError } = await supabase
+      const rows = await fetchAllPages<RpncRow>((from, to) => supabase
         .from('erp_rpnc')
-        .select('id, numero_rpnc, lote_producao, descricao_nao_conformidade, criado_em, cliente_id, equipamento_codigo')
+        .select('id, numero_rpnc, lote_producao, descricao_nao_conformidade, criado_em, cliente_id, equipamento_codigo', { count: 'exact' })
         .order('criado_em', { ascending: false })
-        .limit(1000)
-      if (rpncError) throw rpncError
-      const rows = (rpncData ?? []) as unknown as RpncRow[]
-      const { data: evidenceData, error: evidenceError } = await supabase
+        .order('id')
+        .range(from, to))
+      const evidenceRows = await fetchAllPages<EvidenceRow>((from, to) => supabase
         .from('erp_qualidade_rpnc_evidencias')
-        .select('id, rpnc_id, nome_arquivo, storage_path, mime_type, created_at')
+        .select('id, rpnc_id, nome_arquivo, storage_path, mime_type, created_at', { count: 'exact' })
         .order('created_at', { ascending: false })
-        .limit(5000)
-      if (evidenceError) throw evidenceError
-      const evidenceRows = (evidenceData ?? []) as unknown as EvidenceRow[]
+        .order('id')
+        .range(from, to))
       const clientIds = [...new Set(rows.map(row => row.cliente_id).filter((id): id is string => Boolean(id)))]
       let clientNames = new Map<string, string>()
       if (clientIds.length) {

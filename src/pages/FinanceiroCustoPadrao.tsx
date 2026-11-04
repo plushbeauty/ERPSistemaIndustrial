@@ -1,4 +1,5 @@
 /**
+ * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — o custo BOM buscava o custo de cada componente numa lista de produtos truncada em 3000: componente fora do trecho carregado entrava como R$ 0,00 no "Custo fábrica total" e no preço sugerido. Produtos e necessidades do MRP agora são lidos por paginação completa e a falha da carga é exibida em vez de passar como custo zero.
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
@@ -7,6 +8,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Calculator, Printer, Save } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import EntityCodeLookup, { type LookupRecord } from '../components/industrial/EntityCodeLookup'
 type Product=LookupRecord & { custo_ultimo:number; custo_fabricacao:number; preco_venda:number; margem_percentual:number; descricao?:string|null }
 type Machine={id:string;codigo:string;nome:string;custo_hora:number}
@@ -14,9 +16,9 @@ type Need={id:string;componente_id:string;quantidade_bruta:number;necessidade_li
 const input='h-[54px] w-full rounded-md border border-slate-300 bg-white px-3 text-base font-semibold text-slate-900'
 export default function FinanceiroCustoPadrao(){
  const[products,setProducts]=useState<Product[]>([]),[machines,setMachines]=useState<Machine[]>([]),[product,setProduct]=useState(''),[machineId,setMachineId]=useState(''),[cycle,setCycle]=useState(''),[margin,setMargin]=useState('50'),[qty,setQty]=useState('1'),[needs,setNeeds]=useState<Need[]>([]),[error,setError]=useState(''),[message,setMessage]=useState(''),[busy,setBusy]=useState(false)
- useEffect(()=>{void(async()=>{const t=await supabase.rpc('erp_current_empresa_id');if(t.error||!t.data){setError('Empresa ERP não identificada.');return}const[p,m]=await Promise.all([supabase.from('erp_produtos').select('id,codigo,nome,descricao,custo_ultimo,custo_fabricacao,preco_venda,margem_percentual').eq('empresa_id',t.data).eq('ativo',true).order('codigo').limit(3000),supabase.from('erp_maquinas').select('id,codigo,nome,custo_hora').eq('empresa_id',t.data).eq('ativo',true).order('codigo')]);if(p.error)setError(p.error.message);else setProducts((p.data??[]) as Product[]);if(m.error)setError(m.error.message);else setMachines((m.data??[]) as Machine[])})()},[])
+ useEffect(()=>{void(async()=>{try{const t=await supabase.rpc('erp_current_empresa_id');if(t.error||!t.data){setError('Empresa ERP não identificada.');return}const empresaId=String(t.data);const[pm,m]=await Promise.all([fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,descricao,custo_ultimo,custo_fabricacao,preco_venda,margem_percentual',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').order('id').range(from,to)),supabase.from('erp_maquinas').select('id,codigo,nome,custo_hora').eq('empresa_id',empresaId).eq('ativo',true).order('codigo')]);setProducts(pm);if(m.error)throw m.error;setMachines((m.data??[]) as Machine[])}catch(e){setProducts([]);setMachines([]);setError(e instanceof Error?e.message:'Não foi possível carregar produtos e máquinas do cadastro.')}})()},[])
  const selected=products.find(p=>p.id===product),machine=machines.find(m=>m.id===machineId)
- useEffect(()=>{if(!selected)return;void(async()=>{setBusy(true);setError('');try{const r=await supabase.rpc('erp_mrp_explodir',{p_produto_id:selected.id,p_quantidade:Number(qty)||1,p_demanda_ref:'CUSTO_PADRAO'});if(r.error)throw r.error;const n=await supabase.from('erp_mrp_necessidades').select('id,componente_id,quantidade_bruta,necessidade_liquida').eq('run_id',String(r.data)).order('nivel');if(n.error)throw n.error;setNeeds((n.data??[]) as Need[])}catch(e){setNeeds([]);setError(e instanceof Error?e.message:'Não foi possível calcular a BOM real.')}finally{setBusy(false)}})()},[product,qty,selected])
+ useEffect(()=>{if(!selected)return;void(async()=>{setBusy(true);setError('');try{const r=await supabase.rpc('erp_mrp_explodir',{p_produto_id:selected.id,p_quantidade:Number(qty)||1,p_demanda_ref:'CUSTO_PADRAO'});if(r.error)throw r.error;const n=await fetchAllPages<Need>((from,to)=>supabase.from('erp_mrp_necessidades').select('id,componente_id,quantidade_bruta,necessidade_liquida',{count:'exact'}).eq('run_id',String(r.data)).order('nivel').order('id').range(from,to));setNeeds(n)}catch(e){setNeeds([]);setError(e instanceof Error?e.message:'Não foi possível calcular a BOM real.')}finally{setBusy(false)}})()},[product,qty,selected])
  const materialCost=useMemo(()=>needs.reduce((sum,n)=>{const p=products.find(x=>x.id===n.componente_id);return sum+Number(n.quantidade_bruta||0)*Number(p?.custo_ultimo||0)},0),[needs,products])
  const machineCost=machine&&Number(cycle)>0?machine.custo_hora*(Number(cycle)/3600):0
  const total=Math.max(0,Number(selected?.custo_fabricacao||0)>0?Number(selected?.custo_fabricacao):materialCost+machineCost)

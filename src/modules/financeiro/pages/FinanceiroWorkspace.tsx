@@ -1,4 +1,5 @@
 /**
+ * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — "A pagar/A receber" somavam apenas as parcelas cujo título estava dentro do teto de 1000 títulos e 5000 parcelas carregados: carteira maior que isso mostrava valor menor que o real, sem aviso. Títulos, parcelas, fornecedores e clientes passam a ser lidos por paginação completa.
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
@@ -13,11 +14,13 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { ArrowDownLeft, ArrowUpRight, Banknote, CircleHelp, FilePlus2, RefreshCw, Search, Wallet } from 'lucide-react'
 import { supabase } from '../../../lib/supabaseClient'
+import { fetchAllPages } from '../../../lib/supabasePagination'
 
 type Kind = 'PAGAR' | 'RECEBER'
 type Title = { id:string; tipo:Kind; parceiro_tipo:string; parceiro_id:string; descricao:string; documento:string|null; categoria:string|null; centro_custo:string|null; data_emissao:string; valor_total:number; status:string; criado_em:string }
 type Installment = { id:string; titulo_id:string; numero:number; vencimento:string; valor:number; saldo:number; status:string }
 type Partner = { id:string; tipo_parceiro:Kind; razao_social?:string; nome_fantasia?:string; codigo?:string }
+type PartnerRow = { id:string; razao_social:string; nome_fantasia:string|null; codigo:string|null }
 const input='h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-800 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100'
 const label='mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-500'
 const button='inline-flex h-9 items-center justify-center gap-2 rounded-md px-3 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-50'
@@ -58,20 +61,21 @@ export default function FinanceiroWorkspace(){
    if(typeof companyResult.data!=='string'||!companyResult.data)throw new Error('Empresa ativa não identificada. Confira a sessão e o vínculo do usuário.')
    const empresa=companyResult.data;setCompany(empresa)
    const [t,p,r]=await Promise.all([
-    supabase.from('erp_financeiro_titulos').select('id,tipo,parceiro_tipo,parceiro_id,descricao,documento,categoria,centro_custo,data_emissao,valor_total,status,criado_em').eq('empresa_id',empresa).order('criado_em',{ascending:false}).limit(1000),
-    supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia,codigo').eq('empresa_id',empresa).eq('ativo',true).order('razao_social').limit(2000),
-    supabase.from('erp_clientes').select('id,razao_social,nome_fantasia,codigo').eq('empresa_id',empresa).eq('ativo',true).order('razao_social').limit(2000)
+    fetchAllPages<Title>((from,to)=>supabase.from('erp_financeiro_titulos').select('id,tipo,parceiro_tipo,parceiro_id,descricao,documento,categoria,centro_custo,data_emissao,valor_total,status,criado_em',{count:'exact'}).eq('empresa_id',empresa).order('criado_em',{ascending:false}).order('id',{ascending:false}).range(from,to)),
+    fetchAllPages<PartnerRow>((from,to)=>supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia,codigo',{count:'exact'}).eq('empresa_id',empresa).eq('ativo',true).order('razao_social').order('id').range(from,to)),
+    fetchAllPages<PartnerRow>((from,to)=>supabase.from('erp_clientes').select('id,razao_social,nome_fantasia,codigo',{count:'exact'}).eq('empresa_id',empresa).eq('ativo',true).order('razao_social').order('id').range(from,to))
    ])
-   if(t.error)throw t.error
-   setTitles((t.data??[]) as Title[])
+   setTitles(t)
    const [parts,baixas]=await Promise.all([
-    supabase.from('erp_financeiro_parcelas').select('id,titulo_id,numero,vencimento,valor,saldo,status').eq('empresa_id',empresa).order('vencimento').limit(5000),
+    fetchAllPages<Installment>((from,to)=>supabase.from('erp_financeiro_parcelas').select('id,titulo_id,numero,vencimento,valor,saldo,status',{count:'exact'}).eq('empresa_id',empresa).order('vencimento').order('id').range(from,to)),
     supabase.from('erp_financeiro_baixas').select('id,titulo_id,parcela_id,valor,ocorrido_em,forma_pagamento,referencia').eq('empresa_id',empresa).order('ocorrido_em',{ascending:false}).limit(1000)
    ])
-   if(parts.error)throw parts.error
    if(baixas.error)throw baixas.error
-   setInstallments((parts.data??[]) as Installment[])
-   const partnerRows=[...(p.data??[]).map(row=>({...row,tipo_parceiro:'PAGAR' as const})),...(r.data??[]).map(row=>({...row,tipo_parceiro:'RECEBER' as const}))] as Partner[]
+   setInstallments(parts)
+   const partnerRows: Partner[] = [
+    ...p.map(row=>({ id:row.id, tipo_parceiro:'PAGAR' as const, razao_social:row.razao_social, nome_fantasia:row.nome_fantasia??undefined, codigo:row.codigo??undefined })),
+    ...r.map(row=>({ id:row.id, tipo_parceiro:'RECEBER' as const, razao_social:row.razao_social, nome_fantasia:row.nome_fantasia??undefined, codigo:row.codigo??undefined }))
+   ]
    setPartners(partnerRows)
   }catch(e){setError(errText(e))}finally{setLoading(false)}
  },[])

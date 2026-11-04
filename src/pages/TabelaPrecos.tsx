@@ -1,4 +1,5 @@
 /**
+ * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — a tabela parava em 5000 SKUs e o reajuste em lote alcançava só o trecho carregado. Agora percorre todos os SKUs ativos da empresa por paginação.
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
@@ -7,6 +8,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight, ShieldCheck } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
 
 type Produto = { id: string; codigo: string; nome: string; grupo: string | null; preco_venda: number | null }
@@ -29,16 +31,18 @@ export default function TabelaPrecos() {
       const empresa = await supabase.rpc('erp_current_empresa_id')
       if (empresa.error || !empresa.data) throw empresa.error ?? new Error('Empresa não identificada.')
 
-      const resultado = await supabase
-        .from('erp_produtos')
-        .select('id,codigo,nome,grupo,preco_venda')
-        .eq('empresa_id', String(empresa.data))
-        .eq('ativo', true)
-        .order('codigo')
-        .limit(5000)
-      if (resultado.error) throw resultado.error
+      const produtos = await fetchAllPages<Produto>((from, to) =>
+        supabase
+          .from('erp_produtos')
+          .select('id,codigo,nome,grupo,preco_venda', { count: 'exact' })
+          .eq('empresa_id', String(empresa.data))
+          .eq('ativo', true)
+          .order('codigo')
+          .order('id')
+          .range(from, to),
+      )
 
-      setProdutos((resultado.data ?? []) as Produto[])
+      setProdutos(produtos)
     } catch (cause) {
       setErro(cause instanceof Error ? cause.message : 'Falha ao carregar a tabela de preços.')
     }

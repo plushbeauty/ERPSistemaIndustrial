@@ -1,4 +1,5 @@
 /**
+ * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — distribuições (2000) e leituras (5000) eram cortadas no topo da lista e o percentual de conformidade de leitura era calculado sobre o trecho carregado, parecendo maior que o real. As duas tabelas de crescimento contínuo agora são lidas por paginação completa.
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-02
  * @REVISAO: REV-SGQ-DOCUMENTOS-7ABAS-20261102-01 — ordem do proprietário: Controle de Documentos da Qualidade em página única com 7 abas
@@ -14,6 +15,7 @@
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from 'react'
 import { AlertTriangle, Archive, CheckCircle2, FileText, Paperclip, Printer, RefreshCw, Save, Search, Send, ShieldCheck, Upload, Users, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 
 type Aba = 'cadastro' | 'anexos' | 'obsoletos' | 'revisoes' | 'visualizacao' | 'distribuicao' | 'impressao'
 
@@ -209,13 +211,13 @@ export default function DocumentosQualidadeControle() {
         supabase.from('erp_documentos_qualidade_anexos').select('id,documento_id,nome_arquivo,storage_path,tipo_mime,tamanho_bytes,revisao,status,data_vigencia,motivo_obsolescencia,substituido_por,criado_por,criado_em').eq('empresa_id', empresa).order('revisao', { ascending: false }),
         supabase.from('erp_documentos_qualidade_solicitacoes').select('id,documento_id,solicitante_id,motivo,prioridade,status,criada_em').eq('empresa_id', empresa).order('criada_em', { ascending: false }).limit(500),
         supabase.from('erp_documentos_qualidade_aprovacoes').select('id,documento_id,revisao_id,aprovador_id,etapa,decisao,decidido_em').eq('empresa_id', empresa).order('decidido_em', { ascending: false }).limit(500),
-        supabase.from('erp_documentos_qualidade_distribuicoes').select('id,documento_id,revisao_id,setor_id,distribuido_em').eq('empresa_id', empresa).order('distribuido_em', { ascending: false }).limit(2000),
-        supabase.from('erp_documentos_qualidade_leituras').select('id,documento_id,revisao_id,distribuicao_id,usuario_id,leitura_obrigatoria,lido_em').eq('empresa_id', empresa).order('id').limit(5000),
+        fetchAllPages<Distribuicao>((from, to) => supabase.from('erp_documentos_qualidade_distribuicoes').select('id,documento_id,revisao_id,setor_id,distribuido_em', { count: 'exact' }).eq('empresa_id', empresa).order('distribuido_em', { ascending: false }).order('id', { ascending: false }).range(from, to)),
+        fetchAllPages<Leitura>((from, to) => supabase.from('erp_documentos_qualidade_leituras').select('id,documento_id,revisao_id,distribuicao_id,usuario_id,leitura_obrigatoria,lido_em', { count: 'exact' }).eq('empresa_id', empresa).order('id').range(from, to)),
         supabase.from('erp_setores').select('id,nome').eq('empresa_id', empresa).eq('ativo', true).order('nome'),
         supabase.from('erp_usuarios').select('id,nome').eq('empresa_id', empresa).eq('ativo', true).is('deleted_at', null).order('nome').limit(2000),
         supabase.from('erp_permissoes_modulos').select('usuario_id,setor_id,visualizar,criar,editar,excluir,solicitar_alteracao,revisar,aprovar,liberar,bloquear').eq('empresa_id', empresa).eq('modulo', 'qualidade_documentos'),
       ])
-      const primeira = [doc, rev, anexo, req, apr, dist, read, set_, usr, perm].find((r) => r.error)
+      const primeira = [doc, rev, anexo, req, apr, set_, usr, perm].find((r) => r.error)
       if (primeira?.error) throw primeira.error
 
       const listaDocs = (doc.data ?? []) as Documento[]
@@ -224,8 +226,8 @@ export default function DocumentosQualidadeControle() {
       setAnexos((anexo.data ?? []) as Anexo[])
       setSolicitacoes((req.data ?? []) as Solicitacao[])
       setAprovacoes((apr.data ?? []) as Aprovacao[])
-      setDistribuicoes((dist.data ?? []) as Distribuicao[])
-      setLeituras((read.data ?? []) as Leitura[])
+      setDistribuicoes(dist)
+      setLeituras(read)
       setSetores((set_.data ?? []) as Setor[])
       setUsuarios((usr.data ?? []) as Usuario[])
 

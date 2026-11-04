@@ -189,9 +189,9 @@
     },
     {
       "path": "src/features/inventario/BalancoEstoque.tsx",
-      "sha": "cb69deb4ef7aee7af12973658511167ac08cd966",
+      "sha": "d379987860b823cb8c7ed742012ced71e1a58f8c",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: \"todos os edits do módulo estoque estão desalinhados e fora de tamanho\". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).",
+      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — a valoração parava em 5000 SKUs e o rodapé \"Custo Total Ativo\" somava só o trecho carregado. Agora percorre todos os SKUs ativos da empresa por paginação.",
       "aprovadaEm": "2026-11-02",
       "statusAprovacao": "CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela"
     },
@@ -253,9 +253,9 @@
     },
     {
       "path": "src/modules/financeiro/pages/FinanceiroWorkspace.tsx",
-      "sha": "94a42143896ed3a0c6b7aeb13654a8a7b57e2714",
+      "sha": "1f613f61d11c5693d5dd3cd458fc42d097785961",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — \"A pagar/A receber\" somavam apenas as parcelas cujo título estava dentro do teto de 1000 títulos e 5000 parcelas carregados: carteira maior que isso mostrava valor menor que o real, sem aviso. Títulos, parcelas, fornecedores e clientes passam a ser lidos por paginação completa.",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
@@ -557,9 +557,9 @@
     },
     {
       "path": "src/pages/DocumentosQualidadeControle.tsx",
-      "sha": "e4fbb85f9dad9fc2ad457567cba27185f0695e9b",
+      "sha": "f782c93e5c386329f1a8df21187101d75bf93c4d",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-SGQ-DOCUMENTOS-7ABAS-20261102-01 — ordem do proprietário: Controle de Documentos da Qualidade em página única com 7 abas",
+      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — distribuições (2000) e leituras (5000) eram cortadas no topo da lista e o percentual de conformidade de leitura era calculado sobre o trecho carregado, parecendo maior que o real. As duas tabelas de crescimento contínuo agora são lidas por paginação completa.",
       "aprovadaEm": "2026-11-02",
       "statusAprovacao": "ESTRUTURA DE 7 ABAS AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-02"
     },
@@ -669,9 +669,9 @@
     },
     {
       "path": "src/pages/FileTreeGED.tsx",
-      "sha": "b58186661678000e795f8d9e61f7544d5fcb153b",
+      "sha": "727b1dc9c39da2d437273f96441f17fe83e6d2b6",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — a árvore do GED mostrava só as 1000 RPNC mais recentes e 5000 evidências: processo antigo simplesmente desaparecia da pasta sem aviso. As duas leituras passaram a cobrir todo o histórico da empresa por paginação.",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
@@ -685,9 +685,9 @@
     },
     {
       "path": "src/pages/FinanceiroCustoPadrao.tsx",
-      "sha": "6b09ee4b5d61db640590d712dc453badc1c07936",
+      "sha": "646609268775278679df6c7ad3db20f98fcb5006",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — o custo BOM buscava o custo de cada componente numa lista de produtos truncada em 3000: componente fora do trecho carregado entrava como R$ 0,00 no \"Custo fábrica total\" e no preço sugerido. Produtos e necessidades do MRP agora são lidos por paginação completa e a falha da carga é exibida em vez de passar como custo zero.",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
@@ -1325,9 +1325,9 @@
     },
     {
       "path": "src/pages/TabelaPrecos.tsx",
-      "sha": "15cf54e3194b11b1b79b8ca5e0c58e8bc13ebff1",
+      "sha": "a08300a59cedb3e3dc2425bb1b184941ff36894b",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — a tabela parava em 5000 SKUs e o reajuste em lote alcançava só o trecho carregado. Agora percorre todos os SKUs ativos da empresa por paginação.",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
@@ -1437,9 +1437,9 @@
     },
     {
       "path": "src/pages/VendasRelatorios.tsx",
-      "sha": "a9518aa6bda7223acd2b3949d8a038bab291bcca",
+      "sha": "84eee9828f191a48e594e90624c12847c3c7a19e",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — o faturamento do relatório somava apenas os últimos 2000 pedidos; empresa acima disso via o total menor que o real, sem aviso. A leitura passou a cobrir todos os pedidos da empresa por paginação.",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
@@ -1493,9 +1493,9 @@
     },
     {
       "path": "src/pages/cadastro-produtos/ListagemProdutos.tsx",
-      "sha": "7109f62433710ac4ecc5df6bed39d8ed863fca4a",
+      "sha": "ed5f038124d32aefab28429e17839fb686aa8d22",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — o catálogo mestre parava em 2000 SKUs: produto acima disso sumia da listagem, da impressão e das opções de categoria/unidade/cliente. Leitura agora percorre todos os SKUs da empresa por paginação.",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
@@ -1701,9 +1701,9 @@
     },
     {
       "path": "src/pages/qualidade/GEDDocumentos.tsx",
-      "sha": "ce81ef638cd06c27f599e0a991f6db9a57b7382e",
+      "sha": "3a99478d5b6747a39f85fb024f06a942703265ac",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-GED-ARVORE-LARGA-20261104-01 — ordem do proprietário: \"a barra lateral dos documentos está uma bagunça, muito apertado para caber os nomes dos procedimentos\". Coluna da árvore ampliada (250-280px → 340-380px) e título do procedimento com três linhas legíveis em vez de duas linhas cortadas.",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
