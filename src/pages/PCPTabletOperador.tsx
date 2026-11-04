@@ -1,12 +1,13 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @DATA_REVISAO_APROVACAO: 2026-11-03
+ * @REVISAO: REV-CONTRATO-BANCO-20261103-01 — o vencimento da calibração passou a ser conferido contra o relógio do servidor
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 import { useCallback, useEffect, useState } from 'react'
 import { CheckCircle, CloudOff, LogOut, RefreshCw, ShieldAlert, Wifi } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { relogioDoServidor } from '../lib/serverClock'
 import { cn } from '../utils/cn'
 import '../styles/synqra-premium.css'
 
@@ -187,9 +188,14 @@ export default function PCPTabletOperador() {
 
     if (instrumentResult.error) throw instrumentResult.error
     const instrumentData = instrumentResult.data
+    // O vencimento é conferido contra o relógio do Postgres: o tablet pode estar com a data adiantada ou atrasada.
+    const relogio = await relogioDoServidor()
+    if (!relogio.agora) {
+      throw new Error(relogio.aviso || 'Relógio do servidor indisponível; a calibração do instrumento não pôde ser conferida.')
+    }
     const calibrationExpired = Boolean(
       instrumentData?.proxima_calibracao &&
-      new Date(instrumentData.proxima_calibracao + 'T23:59:59') < new Date(),
+      new Date(instrumentData.proxima_calibracao + 'T23:59:59') < relogio.agora,
     )
     const calibrationStatus = String(instrumentData?.status ?? '').trim().toUpperCase()
     if (!instrumentData || calibrationStatus !== 'APROVADO' || calibrationExpired) {
@@ -314,9 +320,11 @@ export default function PCPTabletOperador() {
 
       if (result.error) throw result.error
 
+      const relogio = await relogioDoServidor()
+      if (!relogio.agora) throw new Error(relogio.aviso || 'Relógio do servidor indisponível.')
       const expired = Boolean(
         result.data?.proxima_calibracao &&
-        new Date(result.data.proxima_calibracao + 'T23:59:59') < new Date(),
+        new Date(result.data.proxima_calibracao + 'T23:59:59') < relogio.agora,
       )
       const approved = String(result.data?.status ?? '').trim().toUpperCase() === 'APROVADO'
       const valid = Boolean(result.data) && approved && !expired

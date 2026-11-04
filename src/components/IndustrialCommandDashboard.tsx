@@ -2,6 +2,7 @@
  * @AUTOR: Fernando Schuinsekel
  * @REVISAO: REV-HOME-PREMIUM-20261102-01 — tela principal reconstruida sobre a fundacao premium (#63)
  * @STATUS_APROVACAO: ORDEM EXPRESSA DO PROPRIETARIO (#63) — mesma regua dos tokens, sem <style> inline
+ * @REVISAO: REV-CONTRATO-BANCO-20261103-01 — "hoje", atraso e vencimentos passam a usar o relógio do Postgres (regra do proprietário)
  * APROVADO — indicadores conectados ao Supabase com isolamento por empresa/RLS.
  * Autorização expressa do usuário em 2026-10-26: incluir atalho ao Portal do Operador.
  */
@@ -14,6 +15,7 @@ import {
   ResponsiveContainer, Tooltip, XAxis, YAxis
 } from 'recharts'
 import { supabase } from '../lib/supabaseClient'
+import { relogioDoServidor } from '../lib/serverClock'
 import '../styles/home-premium-20261102.css'
 
 type Props = { onNavigate: (route: string) => void }
@@ -61,12 +63,28 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
   const [error, setError] = useState('')
   const [loadedAt, setLoadedAt] = useState<Date | null>(null)
   const [tick, setTick] = useState(() => new Date())
+  const [avisoRelogio, setAvisoRelogio] = useState('')
   const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
-    const timer = window.setInterval(() => setTick(new Date()), 60000)
+    // O relógio exibido avança a partir da última leitura do banco, nunca do relógio do navegador.
+    const timer = window.setInterval(() => setTick(prev => new Date(prev.getTime() + 60000)), 60000)
     return () => window.clearInterval(timer)
   }, [])
+
+  useEffect(() => {
+    let alive = true
+    void relogioDoServidor().then(rel => {
+      if (!alive) return
+      if (rel.agora) {
+        setTick(rel.agora)
+        setAvisoRelogio('')
+      } else {
+        setAvisoRelogio(rel.aviso)
+      }
+    })
+    return () => { alive = false }
+  }, [reloadKey])
 
   const fetchSnapshot = useCallback(async (): Promise<Snapshot> => {
     const { data: auth, error: authError } = await supabase.auth.getUser()
@@ -279,6 +297,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         </div>
 
         {error && <div className="hp-alert" role="alert">{error}</div>}
+        {avisoRelogio && <div className="hp-alert" role="alert">{avisoRelogio}</div>}
 
         <section className="hp-kpis" aria-label="Indicadores do dia">
           {cards.map(({ label, value, suffix, icon: Icon, tone }) => (

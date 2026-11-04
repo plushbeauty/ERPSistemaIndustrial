@@ -1,7 +1,7 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @DATA_REVISAO_APROVACAO: 2026-11-03
+ * @REVISAO: REV-CONTRATO-BANCO-20261103-01 — nomes citados na tela passaram a ser a rotina real erp_gerar_codigo
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 /**
@@ -32,7 +32,7 @@ export default function HelpParametrosCodigo() {
             <li><strong>Separador:</strong> até dois caracteres colocados entre o prefixo e o resto do SKU. Deixe vazio para código contínuo.</li>
             <li><strong>Modo:</strong> <strong>PS</strong> monta prefixo + separador + sigla do tipo (PA, MP, SA, IN) + sequência; <strong>NUM</strong> monta prefixo + separador + sequência, sem sigla; <strong>PGR</strong> está bloqueado porque não existe cadastro de grupo de produto vinculado à regra.</li>
             <li><strong>Dígitos:</strong> largura numérica de 3 a 6 posições. O valor exibido não altera retroativamente SKUs já emitidos.</li>
-            <li><strong>Sequência atual:</strong> contador do banco, incrementado pela rotina <code>erp_gerar_codigo_produto</code> a cada SKU emitido; esta tela não permite editá-lo diretamente.</li>
+            <li><strong>Sequência atual:</strong> contador do banco, incrementado pela rotina <code>erp_gerar_codigo</code> a cada SKU emitido; esta tela não permite editá-lo diretamente.</li>
             <li><strong>Prévia do próximo SKU:</strong> exatamente a composição que a rotina aplica ao prefixo, separador, modo, sigla PA e sequência + 1.</li>
           </ul>
         </section>

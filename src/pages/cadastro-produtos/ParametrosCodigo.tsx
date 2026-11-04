@@ -1,7 +1,7 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @DATA_REVISAO_APROVACAO: 2026-11-03
+ * @REVISAO: REV-CONTRATO-BANCO-20261103-01 — nomes citados na tela passaram a ser a rotina real erp_gerar_codigo
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 /**
@@ -87,7 +87,7 @@ export default function ParametrosCodigo() {
         throw new Error('A quantidade de dígitos deve ser um número inteiro entre 3 e 6.')
       }
       if (regra.modo_numeracao.toUpperCase() === 'PGR') {
-        throw new Error('O modo PGR está indisponível: não existe cadastro de grupo de produto vinculado à regra, então a rotina erp_gerar_codigo_produto recusaria o SKU. Use PS ou NUM.')
+        throw new Error('O modo PGR está indisponível: não existe cadastro de grupo de produto vinculado à regra, então a rotina erp_gerar_codigo recusaria o SKU. Use PS ou NUM.')
       }
 
       const result = await supabase
@@ -148,7 +148,7 @@ export default function ParametrosCodigo() {
 
   const inputClass = 'h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] font-semibold text-slate-800 outline-none transition focus:border-sky-600 focus:ring-1 focus:ring-sky-100'
 
-  // Espelha erp_gerar_codigo_produto para a prévia não prometer um SKU diferente do que o banco vai gerar.
+  // Espelha erp_gerar_codigo para a prévia não prometer um SKU diferente do que o banco vai gerar.
   const proximoCodigo = (regra: C): string => {
     const digitos = Math.max(3, Math.min(6, regra.digitos_produto || 3))
     const sigla = regra.modo_numeracao.toUpperCase() === 'PS' ? 'PA' : ''
@@ -230,7 +230,7 @@ export default function ParametrosCodigo() {
         </div>
         <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-3 py-2 text-[9px] text-slate-500">
           <span>{regras.length} regra(s) carregada(s)</span>
-          <span>Prévia espelha a rotina erp_gerar_codigo_produto · gravação por linha · escopo por empresa</span>
+          <span>Prévia espelha a rotina erp_gerar_codigo · gravação por linha · escopo por empresa</span>
         </footer>
       </div>
     </section>

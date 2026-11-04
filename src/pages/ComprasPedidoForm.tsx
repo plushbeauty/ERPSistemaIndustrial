@@ -1,12 +1,13 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @DATA_REVISAO_APROVACAO: 2026-11-03
+ * @REVISAO: REV-CONTRATO-BANCO-20261103-01 — grava via erp_compras_salvar_pedido_completo e declara a migration quando a rotina ainda não existe no banco
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Plus, Trash2, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { erroBancoNaoInstalado, MIGRACAO_PEDIDO_COMPRA_COMPLETO } from '../lib/supabaseRpcStatus'
 
 type Row = Record<string, unknown>
 type Item = { key: string; produtoId: string; quantidade: string; unidade: string; preco: string; ncm: string; entrega: string; ordemProducaoId: string; centroCusto: string; ipi: string; icms: string }
@@ -104,7 +105,10 @@ export default function ComprasPedidoForm({ onCancel, onSaved }: { onCancel: () 
           observacoes_recebimento: header.recebimento.trim() || null,
         },
       })
-      if (saveError) throw saveError
+      if (saveError) {
+        throw new Error(erroBancoNaoInstalado(saveError, 'erp_compras_salvar_pedido_completo', MIGRACAO_PEDIDO_COMPRA_COMPLETO)
+          ?? `Não foi possível gravar o pedido de compra: ${saveError.message}`)
+      }
       const record = Array.isArray(data) ? data[0] as Row | undefined : data as Row | null
       if (!record || typeof record.id !== 'string') throw new Error('O banco não retornou o pedido criado.')
       onSaved('Pedido PC-' + String(record.numero ?? '').padStart(4, '0') + ' salvo com ' + validItems.length + ' item(ns). Status: ' + (header.status === 'RASCUNHO' ? 'Rascunho' : 'Aguardando aprovação') + '.')

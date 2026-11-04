@@ -1,7 +1,7 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @DATA_REVISAO_APROVACAO: 2026-11-03
+ * @REVISAO: REV-CONTRATO-BANCO-20261103-01 — o SKU passa a ser gerado pela rotina erp_gerar_codigo (a existente no banco) e a prévia respeita digitos_produto
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 /**
@@ -93,14 +93,15 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
   }, [productId])
 
   const currentCfg = cfg.find(x => x.id === configId)
-  const digits = Math.max(3, Math.min(6, currentCfg?.digitos_produto || 3))
-  // Espelha erp_gerar_codigo_produto: prefixo + separador + sigla (só no modo PS) + sequência com N casas.
-  const preview = currentCfg
-    ? (currentCfg.prefixo || '').toUpperCase()
-      + (currentCfg.separador || '').trim()
-      + ((currentCfg.modo_numeracao || 'PS').toUpperCase() === 'PS' ? tipo : '')
-      + String((currentCfg.sequencia_atual || 0) + 1).padStart(digits, '0')
-    : 'PL' + tipo + '0'.repeat(digits)
+  const digits = Math.max(3, Math.min(6, currentCfg?.digitos_produto || 4))
+  const modo = (currentCfg?.modo_numeracao || 'PS').toUpperCase()
+  const sep = (currentCfg?.separador || '').trim()
+  // Espelha erp_gerar_codigo: base = prefixo (+ separador + grupo no modo PGR) e o código final é
+  // base + separador + sequência com as casas de digitos_produto. No modo NUM só sai a sequência.
+  // A sequência mostrada aqui é uma aproximação (sequencia_atual + 1); o número definitivo é o do banco.
+  const base = modo === 'NUM' ? '' : (currentCfg?.prefixo || '').toUpperCase() + (modo === 'PGR' ? sep + tipo.toUpperCase() : '')
+  const sequencia = String((currentCfg?.sequencia_atual || 0) + 1).padStart(digits, '0')
+  const preview = modo === 'NUM' ? sequencia : base + sep + sequencia
 
   const save = async () => {
     setError('')
@@ -117,9 +118,9 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
       let codigo = p?.codigo || ''
       if (!codigo) {
         if (!configId) throw new Error('Cadastre uma regra de numeração em Regras do Código primeiro.')
-        const r = await supabase.rpc('erp_gerar_codigo_produto', { p_config_id: configId, p_tipo_sigla: tipo })
+        const r = await supabase.rpc('erp_gerar_codigo', { p_config_id: configId, p_grupo_codigo: tipo })
         if (r.error) {
-          throw new Error(erroBancoNaoInstalado(r.error, 'erp_gerar_codigo_produto', MIGRACAO_CODIGO_PRODUTO)
+          throw new Error(erroBancoNaoInstalado(r.error, 'erp_gerar_codigo', MIGRACAO_CODIGO_PRODUTO)
             ?? `Não foi possível gerar o SKU: ${r.error.message}`)
         }
         if (r.data === null || r.data === undefined || String(r.data).trim() === '') throw new Error('A rotina de numeração não retornou um SKU válido.')

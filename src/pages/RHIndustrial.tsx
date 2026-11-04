@@ -34,13 +34,14 @@
  */
 /**
  * SYSNQRA ERP INDUSTRIAL — RH operacional
- * @DATA_REVISAO_APROVACAO 30/10/2026
+ * @DATA_REVISAO_APROVACAO 03/11/2026
  * @STATUS_APROVACAO Em validação
- * @REVISAO REV-RH-20261030
+ * @REVISAO REV-CONTRATO-BANCO-20261103-01 — o carimbo atualizado_em passou a vir do relógio do servidor
  * Dados persistidos no Supabase; isolamento por empresa/RLS; sem dados fictícios.
  */
 import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { relogioDoServidor } from '../lib/serverClock'
 import { CalendarDays, Camera, CheckCircle2, Clock3, FileText, GraduationCap, RefreshCw, Save, Search, UserRound, Users, X } from 'lucide-react'
 
 type Staff = {
@@ -305,7 +306,9 @@ export default function RHIndustrial() {
     if (!empresaId) return
     setBusy(true); setMessage('')
     try {
-      const payload: Record<string, unknown> = { empresa_id: empresaId, nome: form.nome_completo.trim(), nome_completo: form.nome_completo.trim(), atualizado_em: new Date().toISOString() }
+      const relogio = await relogioDoServidor()
+      if (!relogio.agora) throw new Error(relogio.aviso || 'Relógio do servidor indisponível; nenhum cadastro foi gravado.')
+      const payload: Record<string, unknown> = { empresa_id: empresaId, nome: form.nome_completo.trim(), nome_completo: form.nome_completo.trim(), atualizado_em: relogio.agora.toISOString() }
       for (const field of employeeFields) {
         const value = (form[field.key] ?? '').trim()
         if (field.required && !value) throw new Error('Preencha: ' + field.label)

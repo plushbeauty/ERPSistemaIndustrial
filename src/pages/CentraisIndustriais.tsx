@@ -1,11 +1,12 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @DATA_REVISAO_APROVACAO: 2026-11-03
+ * @REVISAO: REV-CONTRATO-BANCO-20261103-01 — as janelas de vencimento saíram do relógio do navegador e passaram a usar o relógio do servidor
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { relogioDoServidor } from '../lib/serverClock'
 import { ArrowDownCircle, ArrowUpCircle, ClipboardCheck, Factory, FileText, Gauge, Plus, RefreshCw, Truck, Users, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -17,7 +18,7 @@ const money=(v:unknown)=>new Intl.NumberFormat('pt-BR',{style:'currency',currenc
 const date=(v:unknown)=>v?new Date(String(v)).toLocaleDateString('pt-BR'):'—'
 
 export default function CentraisIndustriais({module}:{module:Module}){
- const [profile,setProfile]=useState<Profile|null>(null),[rows,setRows]=useState<Row[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[refresh,setRefresh]=useState(0),[query,setQuery]=useState(''),[form,setForm]=useState(false)
+ const [profile,setProfile]=useState<Profile|null>(null),[rows,setRows]=useState<Row[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[refresh,setRefresh]=useState(0),[query,setQuery]=useState(''),[form,setForm]=useState(false),[hoje,setHoje]=useState<Date|null>(null),[avisoRelogio,setAvisoRelogio]=useState('')
  useEffect(()=>{let alive=true;void(async()=>{try{
   const {data:u}=await supabase.auth.getUser(); if(!u.user) throw new Error('Sessão não encontrada.')
   const {data:p,error:pe}=await supabase.from('erp_usuarios').select('empresa_id,is_master').eq('auth_user_id',u.user.id).eq('ativo',true).is('deleted_at',null).maybeSingle(); if(pe)throw pe
@@ -36,7 +37,9 @@ export default function CentraisIndustriais({module}:{module:Module}){
     {table:'erp_auditorias',select:'id,auditor,criterio,data_auditoria,resultado,evidencia,created_at',order:'data_auditoria',ascending:false}
    let q=supabase.from(config.table).select(config.select).order(config.order,{ascending:config.ascending??true}).limit(500)
    if(!profile.is_master)q=q.eq('empresa_id',profile.empresa_id as string)
-   const {data,error:e}=await q;if(e)throw e;if(alive)setRows((data??[]) as unknown as Row[])
+   const {data,error:e}=await q;if(e)throw e
+   const relogio=await relogioDoServidor()
+   if(alive){setRows((data??[]) as unknown as Row[]);setHoje(relogio.agora);setAvisoRelogio(relogio.aviso)}
   }catch(e){if(alive)setError(e instanceof Error?e.message:'Falha ao carregar os dados.')}finally{if(alive)setLoading(false)}
  })();return()=>{alive=false}},[profile,module,refresh])
  const filtered=useMemo(()=>rows.filter(r=>JSON.stringify(r).toLowerCase().includes(query.toLowerCase())),[rows,query])
@@ -53,7 +56,8 @@ export default function CentraisIndustriais({module}:{module:Module}){
    <Kpi icon={module==='financeiro'?ArrowDownCircle:module==='expedicao'?Truck:module==='metrologia'?Gauge:module==='treinamentos'?Users:ClipboardCheck} label="Registros" value={loading?'…':filtered.length.toString()}/>
    {module==='financeiro'&&<Kpi icon={ArrowUpCircle} label="Total a pagar" value={money(rows.reduce((s,r)=>s+Number(r.valor||0),0))}/>}
    {module==='expedicao'&&<Kpi icon={Truck} label="Em trânsito" value={rows.filter(r=>/transito|transporte/i.test(String(r.status))).length.toString()}/>}
-   {module==='metrologia'&&<Kpi icon={Gauge} label="Próximas calibrações" value={rows.filter(r=>r.proxima_calibracao&&new Date(String(r.proxima_calibracao))<=new Date(Date.now()+30*86400000)).length.toString()}/>}
+   {module==='metrologia'&&<Kpi icon={Gauge} label="Próximas calibrações (30 dias pelo servidor)" value={hoje?rows.filter(r=>r.proxima_calibracao&&new Date(String(r.proxima_calibracao))<=new Date(hoje.getTime()+30*86400000)).length.toString():'—'}/>}
+   {module==='metrologia'&&avisoRelogio&&<p style={{gridColumn:'span 3',margin:0,fontSize:10,fontWeight:700,color:'#B45309'}}>{avisoRelogio}</p>}
    {module==='treinamentos'&&<Kpi icon={Users} label="Concluídos" value={rows.filter(r=>/conclu/i.test(String(r.status))).length.toString()}/>}
    {module==='paradas'&&<Kpi icon={Factory} label="Paradas abertas" value={rows.filter(r=>!r.fim).length.toString()}/>} {module==='refugos'&&<Kpi icon={ClipboardCheck} label="Quantidade" value={rows.reduce((s,r)=>s+Number(r.quantidade||0),0).toString()}/>} {module==='auditoria'&&<Kpi icon={ClipboardCheck} label="Conformes" value={rows.filter(r=>/conforme/i.test(String(r.resultado))).length.toString()}/>}
   </section>
