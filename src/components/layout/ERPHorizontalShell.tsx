@@ -51,6 +51,7 @@ const menus: MenuItem[] = [
   { label: 'RH / Departamento Pessoal', route: '/pageprincipal/rh', icon: Users, isUpdated: true },
   { label: 'Engenharia e PCP', route: '/pageprincipal/pcp', icon: Factory, children: [
     { label: 'Central PCP', route: '/pageprincipal/pcp', icon: ClipboardList },
+    { label: 'Fluxo Industrial da Fábrica', route: '/pageprincipal/pcp/fluxo-industrial', icon: Factory, isUpdated: true },
     { label: 'Fichas de Processo', route: '/pageprincipal/pcp/fichas-processo', icon: ClipboardList, isUpdated: true },
     { label: 'Roteiro de Operações', route: '/pageprincipal/pcp/roteiros', icon: Route, isUpdated: true },
     { label: 'Carga e Capacidade', route: '/pageprincipal/pcp/capacidade', icon: BarChart3, isUpdated: true },
