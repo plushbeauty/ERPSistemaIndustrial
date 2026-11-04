@@ -712,6 +712,30 @@ export default function QualityRpncForm() {
     }
   }
 
+  const transicionarRPNC = async (status: 'em tratamento' | 'aguardando eficácia') => {
+    if (!rpnc) return
+    setSaving(true)
+    setError('')
+    setNotice('')
+    try {
+      if (status === 'aguardando eficácia') {
+        const pendentes = acoes.filter((acao) => acao.status !== 'Verificada' || acao.resultado_eficacia !== 'Eficaz' || !acao.causa_raiz.trim())
+        if (!acoes.length || pendentes.length) throw new Error('Antes de encaminhar para eficácia, todas as ações CAPA precisam estar verificadas como eficazes e possuir causa raiz.')
+      }
+      const result = await supabase.rpc('erp_sgq_transicionar_rpnc', { p_rpnc_id: rpnc.id, p_status: status })
+      if (result.error) throw result.error
+      if (!result.data) throw new Error('A RPC não retornou o novo estado da RPNC.')
+      const atualizada = result.data as unknown as RegistroRPNC
+      setRpnc((atual) => atual ? { ...atual, ...atualizada } : atualizada)
+      setRegistros((atuais) => atuais.map((registro) => registro.id === rpnc.id ? { ...registro, ...atualizada } : registro))
+      setNotice(`RPNC ${rpnc.numero_rpnc} avançou para "${status}".`)
+    } catch (cause) {
+      setError(mensagem(cause))
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const atualizarEtapaAcao = async (acao: AcaoSalva, status: string, evidencia?: string) => {
     if (!rpnc) return
     setSaving(true)
@@ -1146,23 +1170,23 @@ export default function QualityRpncForm() {
                   {acoes.map((acao, index) => (
                     <tr key={acao.id} className="erp-tr">
                       <td className="erp-td">
-                        <select className="erp-input" value={acao.tipo} disabled={bloqueado}
+                        <select className="erp-input" value={acao.tipo} disabled={bloqueado || ['Aprovada', 'Verificada'].includes(acao.status ?? '')}
                           onChange={(e) => void atualizarAcao(index, 'tipo', e.target.value)}>
                           {TIPOS_ACAO.map((t) => <option key={t} value={t}>{t}</option>)}
                         </select>
                       </td>
-                      <td className="erp-td"><textarea className="erp-input qrf-textarea min-w-64" rows={2} value={acao.descricao} disabled={bloqueado}
+                      <td className="erp-td"><textarea className="erp-input qrf-textarea min-w-64" rows={2} value={acao.descricao} disabled={bloqueado || ['Aprovada', 'Verificada'].includes(acao.status ?? '')}
                         onChange={(e) => void atualizarAcao(index, 'descricao', e.target.value)} /></td>
-                      <td className="erp-td"><input className="erp-input min-w-40" value={acao.causa_raiz} disabled={bloqueado}
+                      <td className="erp-td"><input className="erp-input min-w-40" value={acao.causa_raiz} disabled={bloqueado || ['Aprovada', 'Verificada'].includes(acao.status ?? '')}
                         onChange={(e) => void atualizarAcao(index, 'causa_raiz', e.target.value)} /></td>
                       <td className="erp-td">
-                        <select className="erp-input min-w-40" value={acao.responsavel_id} disabled={bloqueado}
+                        <select className="erp-input min-w-40" value={acao.responsavel_id} disabled={bloqueado || ['Aprovada', 'Verificada'].includes(acao.status ?? '')}
                           onChange={(e) => void atualizarAcao(index, 'responsavel_id', e.target.value)}>
                           <option value="">Selecionar</option>
                           {usuarios.map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
                         </select>
                       </td>
-                      <td className="erp-td"><input type="date" className="erp-input" value={acao.prazo} disabled={bloqueado}
+                      <td className="erp-td"><input type="date" className="erp-input" value={acao.prazo} disabled={bloqueado || ['Aprovada', 'Verificada'].includes(acao.status ?? '')}
                         onChange={(e) => void atualizarAcao(index, 'prazo', e.target.value)} /></td>
                       <td className="erp-td"><span className="rounded-[2px] bg-slate-100 px-2 py-1 text-[10px] font-bold">{acao.status ?? 'Planejada'}</span></td>
                       <td className="erp-td">
@@ -1187,7 +1211,7 @@ export default function QualityRpncForm() {
                           {acao.status === 'Concluida' && <button type="button" className="erp-btn" disabled={bloqueado || !evidenciaAcao[acao.id]?.trim()} onClick={() => void atualizarEtapaAcao(acao, 'Aguardando aprovacao', evidenciaAcao[acao.id])}>Enviar para aprovação</button>}
                           {acao.status === 'Aguardando aprovacao' && <div className="flex gap-1"><button type="button" className="erp-btn" disabled={bloqueado} onClick={() => void decidirAcao(acao, 'aprovar')}>Aprovar</button><button type="button" className="erp-btn" disabled={bloqueado} onClick={() => void decidirAcao(acao, 'reprovar')}>Reprovar</button></div>}
                           {acao.status === 'Aprovada' && <div className="flex flex-wrap gap-1"><button type="button" className="erp-btn" disabled={bloqueado || (evidenciaAcao[acao.id] ?? '').trim().length < 10} onClick={() => void decidirAcao(acao, 'verificar_eficaz')}>Eficaz</button><button type="button" className="erp-btn" disabled={bloqueado || (evidenciaAcao[acao.id] ?? '').trim().length < 10} onClick={() => void decidirAcao(acao, 'verificar_ineficaz')}>Ineficaz</button></div>}
-                          {['Planejada', 'Reprovada'].includes(acao.status ?? '') && <button type="button" className="erp-btn" disabled={bloqueado} onClick={() => void removerAcao(index)}><Trash2 size={13} /> Remover</button>}
+                          {acao.status === 'Planejada' && <button type="button" className="erp-btn" disabled={bloqueado} onClick={() => void removerAcao(index)}><Trash2 size={13} /> Remover</button>}
                         </div>
                       </td>
                     </tr>
@@ -1353,6 +1377,10 @@ export default function QualityRpncForm() {
                 <div>
                   <p className="text-xs font-bold text-slate-800">{rpnc.prazo_eficacia_dias ? `Carência: ${rpnc.prazo_eficacia_dias} dias` : 'Investigação ainda não programada'}</p>
                   <p className="text-[11px] text-slate-600">Data mínima para verificação: {dataEficacia ? dataBR(dataEficacia) : 'salve a investigação na aba “Investigação e equipe”'} · Status atual: {rpnc.status}</p>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {rpnc.status === 'em análise' && <button type="button" className="erp-btn" disabled={saving} onClick={() => void transicionarRPNC('em tratamento')}>Iniciar tratamento</button>}
+                  {rpnc.status === 'em tratamento' && <button type="button" className="erp-btn" disabled={saving} onClick={() => void transicionarRPNC('aguardando eficácia')}>Encaminhar para eficácia</button>}
                 </div>
                 <span className={`px-2 py-1 text-[10px] font-bold ${eficaciaPodeSerVerificada ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
                   {eficaciaPodeSerVerificada ? 'Prazo cumprido' : 'Aguardando carência'}
