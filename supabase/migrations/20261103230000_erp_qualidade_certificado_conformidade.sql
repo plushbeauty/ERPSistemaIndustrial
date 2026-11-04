@@ -254,7 +254,7 @@ create policy qualidade_certificados_upload on storage.objects
     bucket_id = 'qualidade-certificados'
     and (storage.foldername(name))[1] = public.erp_current_empresa_id()::text
     and (storage.foldername(name))[2] ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-    and public.erp_has_permission('qualidade','criar')
+    and (public.erp_has_permission('qualidade','criar') or public.erp_has_permission('qualidade','editar'))
   );
 
 drop policy if exists qualidade_certificados_select on storage.objects;
@@ -266,7 +266,7 @@ create policy qualidade_certificados_select on storage.objects
       select 1 from public.erp_qualidade_certificados c
        where c.empresa_id = public.erp_current_empresa_id()
          and c.desenho_storage_path = storage.objects.name
-         and public.erp_has_permission('qualidade','ver')
+         and (public.erp_has_permission('qualidade','ver') or public.erp_has_permission('qualidade','criar') or public.erp_has_permission('qualidade','editar'))
     )
   );
 
@@ -275,7 +275,7 @@ create policy qualidade_certificados_delete on storage.objects
   for delete to authenticated using (
     bucket_id = 'qualidade-certificados'
     and (storage.foldername(name))[1] = public.erp_current_empresa_id()::text
-    and public.erp_has_permission('qualidade','criar')
+    and (public.erp_has_permission('qualidade','criar') or public.erp_has_permission('qualidade','editar'))
   );
 
 notify pgrst, 'reload schema';
