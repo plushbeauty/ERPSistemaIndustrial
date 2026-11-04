@@ -17,9 +17,10 @@ export default function CentraisIndustriais({module}:{module:Module}){
  const alertas = useRealtimeAlerts(profile?.empresa_id ?? null)
  useEffect(()=>{let alive=true;void(async()=>{try{
   const {data:u}=await supabase.auth.getUser();if(!u.user)throw new Error('Sessão não encontrada.')
-  const {data:p,error:pe}=await supabase.from('erp_usuarios').select('empresa_id,is_master').eq('auth_user_id',u.user.id).eq('ativo',true).is('deleted_at',null).maybeSingle();if(pe)throw pe
-  if(!p?.empresa_id&&!p?.is_master)throw new Error('Empresa não identificada.')
-  if(alive)setProfile(p as Profile)
+  const {data:p,error:pe}=await supabase.from('erp_usuarios').select('empresa_id,is_master,nivel_admin').eq('auth_user_id',u.user.id).eq('ativo',true).is('deleted_at',null).maybeSingle();if(pe)throw pe
+  const isMaster = p?.is_master === true && Number(p.nivel_admin) === 100 && p.empresa_id === null && u.user.app_metadata?.role === 'SUPER_ADMIN'
+  if(!p?.empresa_id&&!isMaster)throw new Error('Empresa não identificada ou sessão master não autorizada.')
+  if(alive)setProfile({empresa_id:p.empresa_id,is_master:isMaster})
  }catch(e){if(alive)setError(errText(e))}})();return()=>{alive=false}},[])
  useEffect(()=>{if(!profile)return;let alive=true;void(async()=>{setLoading(true);setError('')
   try{
