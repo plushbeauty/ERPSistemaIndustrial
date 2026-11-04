@@ -12,7 +12,8 @@ type MenuItem = {
   label: string
   route: string
   icon?: LucideIcon
-  action?: 'pcpTablet' | 'sgqTablet'
+  action?: 'pcpTablet' | 'sgqTablet' | 'moduleTablet'
+  tabletKey?: ModuleTabletKey
   minNivel?: number
   children?: MenuItem[]
 }
@@ -93,7 +94,8 @@ const menus: MenuItem[] = [
     { label: 'NF-e de entradas', route: '/pageprincipal/fiscal/nfe-entradas' },
     { label: 'Previsão de caixa', route: '/pageprincipal/fiscal/previsao-caixa' },
     { label: 'Parâmetros fiscais', route: '/pageprincipal/fiscal/parametros' },
-    { label: 'Pendências fiscais', route: '/pageprincipal/fiscal/pendencias' }  ] },  { label: 'Central de Ajuda', route: '/pageprincipal/ajuda', icon: CircleHelp },  { label: 'Vendas', route: '/pageprincipal/vendas', icon: ShoppingCart, children: [
+    { label: 'Pendências fiscais', route: '/pageprincipal/fiscal/pendencias' },
+    { label: 'Tablet Fiscal (painel flutuante)', route: '/pageprincipal/fiscal', icon: Monitor, action: 'moduleTablet', tabletKey: 'fiscal' }  ] },  { label: 'Central de Ajuda', route: '/pageprincipal/ajuda', icon: CircleHelp },  { label: 'Vendas', route: '/pageprincipal/vendas', icon: ShoppingCart, children: [
     { label: 'Dashboard comercial', route: '/pageprincipal/vendas' },
     { label: 'Status do pedido', route: '/pageprincipal/vendas/status' },
     { label: 'Novo pedido', route: '/pageprincipal/vendas/novo-pedido' },
@@ -117,6 +119,7 @@ const menus: MenuItem[] = [
     { label: 'Balanço de Estoque', route: '/pageprincipal/estoque/balanco', icon: Archive },
     { label: 'Regras de Depreciação', route: '/pageprincipal/estoque/depreciacao', icon: Percent },
     { label: 'Rastreabilidade de Lotes', route: '/pageprincipal/estoque/rastreabilidade', icon: Search },
+    { label: 'Tablet Estoque (painel flutuante)', route: '/pageprincipal/estoque', icon: Monitor, action: 'moduleTablet', tabletKey: 'estoque' },
   ] },  { label: 'Almoxarifado', route: '/pageprincipal/almoxarifado/inventario-mestre', icon: Warehouse, children: [
     { label: 'Inventário mestre / FIFO e lotes', route: '/pageprincipal/almoxarifado/inventario-mestre' },
     { label: 'Controle e Saída de Material', route: '/pageprincipal/almoxarifado/saida-material', icon: LogOut },
@@ -132,6 +135,7 @@ const menus: MenuItem[] = [
     { label: 'Cronograma', route: '/pageprincipal/manutencao/cronograma' },
     { label: 'Plano mestre', route: '/pageprincipal/manutencao/plano-mestre' },
     { label: 'Indicadores', route: '/pageprincipal/manutencao/indicadores' },
+    { label: 'Tablet Manutenção (painel flutuante)', route: '/pageprincipal/manutencao', icon: Monitor, action: 'moduleTablet', tabletKey: 'manutencao' },
   ] },  { label: 'Relatórios', route: '/pageprincipal/relatorios', icon: BarChart3, children: [
     { label: 'Painel da diretoria', route: '/pageprincipal/relatorios' },
     { label: 'Vendas · gráficos', route: '/pageprincipal/vendas/dashboard-graficos' },
@@ -252,7 +256,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     setOpenMenu(null)
     setStartMenuOpen(false)
   }, [pathname])
-  const openMenuItem = (item: Pick<MenuItem, 'route' | 'action'>) => {
+  const openMenuItem = (item: Pick<MenuItem, 'route' | 'action' | 'tabletKey'>) => {
     if (item.action === 'pcpTablet') {
       setPcpTabletOpen(true)
       setOpenMenu(null)
@@ -261,6 +265,12 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     // Ordem do proprietário (#108): o clique no módulo abre o tablet do SGQ em vez de navegar direto.
     if (item.action === 'sgqTablet') {
       setSgqTabletKey('sgq')
+      setOpenMenu(null)
+      return
+    }
+    // Ordem do proprietário (#104): cada módulo do menu ganha o seu painel flutuante com as rotinas do setor.
+    if (item.action === 'moduleTablet') {
+      setSgqTabletKey(item.tabletKey ?? 'sgq')
       setOpenMenu(null)
       return
     }

@@ -80,7 +80,7 @@ export default function IndustrialPageShell({ module, title, subtitle, children,
         {footer ?? (
           <footer className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold text-slate-500 shadow-sm">
             <span>SYSNQRA ERP & SGQ INDUSTRIAL</span>
-            <span>Dados reais • RLS por empresa • Sem dados fictícios</span>
+            <span>RLS por empresa · os números exibidos vêm das consultas feitas por esta tela</span>
           </footer>
         )}
       </div>
