@@ -554,7 +554,7 @@
   border-radius: 4px;
   background: #fbfcfe;
   color: var(--operator-navy);
-  font-size: 13px;
+  font-size: 13px !important;
   font-weight: 650;
   text-align: center;
   cursor: pointer;

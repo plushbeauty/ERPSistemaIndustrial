@@ -21,8 +21,9 @@
   text-transform: uppercase;
   letter-spacing: .04em;
 }
-/* O painel flutuante do tablet (cards-modulo) fica fora da régua: são botões-cartão, não controles de 30px. */
-.erp-global-surface button:not(.module-tablet-panel *) {
+/* O painel flutuante do tablet, o Portal do Operador, as abas do RPNC e os cards de módulo ficam fora da régua:
+   são botões-cartão com geometria própria, não controles de 30px. Nenhuma regra de componente vence estes !important. */
+.erp-global-surface button:not(.module-tablet-panel *):not(.operator-demo *):not(.erp-rpnc-abas *):not(.synqra-module-card) {
   border-radius: 2px !important;
 }
 .erp-global-surface .erp-compact button:not(.nfe-primary):not(.nfe-secondary):not(.nfe-action) {
