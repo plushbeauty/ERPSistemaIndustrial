@@ -49,6 +49,17 @@ import path from 'node:path'
  * Revisao 2026-11-03 (carrossel): ordem "tirar do carrossel da tela principal aquelas das imagens
  * pequenas, so deixar as imagens grandes de traz" — PublicIndustrialHome e a folha de estilo do
  * carrossel sao re-travados sem a moldura de navegador dentro do slide; a secao "Telas" segue igual.
+ * Revisao 2026-11-04 (padrao de cor + central de ajuda): ordem explicita do proprietario — "verificar
+ * todas as pendencias e arrumar ... enviar todas as telas novas e melhoradas para o sistema fazer todas
+ * as telas padrao", "fazer auditoria direito no sistema ver pagina por pagina ver se todas estao no
+ * mesmo padrao de cor, eu andei vendo que tinha telas todas pretas, nao pode acontecer isso" e
+ * "todas as telas ... nao tem nada para explicar para que serve aquela pagina, como preencher, como
+ * usar". Datas: o console do tablet do SGQ e mais nove telas operacionais foram convertidas do tema
+ * escuro para o padrao industrial claro (REV-PADRAO-COR-CLARO-20261104-01), o header/carrossel do
+ * workspace e o dialog passaram ao mesmo padrao, e o card de abertura ganhou o bloco de ajuda
+ * "como preencher / como usar" com o catalogo curado por rota; CentralAjuda passou a indexar esse
+ * catalogo. Escopo: exclusivamente classNames, CSS e texto de ajuda — nenhuma consulta, RPC ou regra
+ * de negocio foi tocada. Manifesto re-gerado com npm run telas:manifest.
  * Mudanca neste contrato exige ordem explicita do proprietario.
  */
 

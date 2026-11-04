@@ -373,11 +373,11 @@
     },
     {
       "path": "src/pages/CentralAjuda.tsx",
-      "sha": "712866275405f972cefad11fde0fa07c5da80a1b",
+      "sha": "0db3d0309c3e9eefa82058f8319b0f8bd33e11ac",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-CENTRAL-AJUDA-TELAS-20261104-01 — central passou a indexar o catalogo oficial de telas (busca + para que serve + como preencher + como usar)",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-04: \"todas as telas tem que explicar para que serve, como preencher e como usar\""
     },
     {
       "path": "src/pages/CentralCustosIndustrial.tsx",
@@ -565,11 +565,11 @@
     },
     {
       "path": "src/pages/EngenhariaBOM.tsx",
-      "sha": "ed86267b1351aee67022c97eb10b7f9dc1237c49",
+      "sha": "6b13d14d2c5422c608b52651d3f802b75e14e821",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
     },
     {
       "path": "src/pages/EngenhariaCentral.tsx",
@@ -1029,11 +1029,11 @@
     },
     {
       "path": "src/pages/PCPValidaFluxo.tsx",
-      "sha": "d93d0f34beeaa89c83b4009c5be90f21b664921e",
+      "sha": "dcf60c7d98eda62339037d9eb7308ab26ab6c9a3",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
     },
     {
       "path": "src/pages/PCPWorkspace.tsx",
@@ -1101,11 +1101,11 @@
     },
     {
       "path": "src/pages/QualidadeCentralTablet.tsx",
-      "sha": "08a700d770d01dff37a58478afb17fbc290512e2",
+      "sha": "ec5641ec3118031b80317fa11481e23ef381ff7f",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO (correção do cronograma de 2026-11-04; sem chave real no PC, a conferência visual autenticada não foi feita)"
+      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — console do tablet convertido do tema escuro para o padrão industrial claro (fundo #F4FBFD, painéis brancos, texto #123B50) e marca alinhada para SYSNQRA; nenhuma alteração de lógica ou de consulta",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
     },
     {
       "path": "src/pages/QualidadeDashboardRNC.tsx",
@@ -1133,11 +1133,11 @@
     },
     {
       "path": "src/pages/QualidadeGraficosRefugo.tsx",
-      "sha": "422a9ed0a7df664a93793b2dd305facbbbab8f80",
+      "sha": "75e0403ba491a86e1dd3eafa941df88a8e5c3b43",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
     },
     {
       "path": "src/pages/QualidadeIndustrial.tsx",
@@ -1157,11 +1157,11 @@
     },
     {
       "path": "src/pages/QualidadeInspecoesIndustrial.tsx",
-      "sha": "644abf72a2b0eb84207e0bd100cbbd52de97f12a",
+      "sha": "3674e0e58d3671d61531e26b2ba6617350d476b4",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
     },
     {
       "path": "src/pages/QualidadeInstrumentosCadastro.tsx",
@@ -1237,11 +1237,11 @@
     },
     {
       "path": "src/pages/QualidadeRefugos.tsx",
-      "sha": "d139a71fa6a4dc1b17a7fa8a87099cee058ea48b",
+      "sha": "4c57120b7e1a7e3e0561432a924cb1313ac56a3e",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
     },
     {
       "path": "src/pages/QualidadeRelatoriosDocumentos.tsx",
@@ -1661,11 +1661,11 @@
     },
     {
       "path": "src/pages/pcp/ControleProcessoInjetora.tsx",
-      "sha": "98a0004b6dedf2505c762d91b1b94c6d2b1f2fba",
+      "sha": "ec509a78a9afa2caf5c95fcac0ef8c9437d25391",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
     },
     {
       "path": "src/pages/pcp/PCPAuditoria.tsx",
@@ -1725,19 +1725,19 @@
     },
     {
       "path": "src/pages/qualidade/QualidadeGenealogiaLote.tsx",
-      "sha": "d591e730df274482aabafac9f8ef4b4f3927fae0",
+      "sha": "080aa43af34c88d839009750ba2eee69629f47ee",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
     },
     {
       "path": "src/pages/qualidade/QualidadeLiberacaoLotes.tsx",
-      "sha": "86e0120a352e614f44c6c64945129305caf6db50",
+      "sha": "0d36e7558e08af7fad91582a08c8e241097e3675",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
     },
     {
       "path": "src/pages/qualidade/QualidadeProcedimentos.tsx",
@@ -1749,11 +1749,11 @@
     },
     {
       "path": "src/pages/qualidade/QualidadeQuarentena.tsx",
-      "sha": "01270b3aa46ccd0e2a83cdc4a512850c6c4874e2",
+      "sha": "0605a84a7ed17fb854bf6972276844a1673d2f56",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
     },
     {
       "path": "src/pages/qualidade/sala-rnc.tsx",
