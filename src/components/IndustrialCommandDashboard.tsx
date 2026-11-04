@@ -1,4 +1,5 @@
 /**
+ * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-01 — a home soma KPIs sobre listas com teto de linhas (500 OPs, 5000 apontamentos, 3000 programações/produtos/equipamentos, 5000 paradas/RPNC). O excedente desaparecia sem aviso. Cada consulta agora pede count:'exact' e a tela assume publicamente o truncamento.
  * @AUTOR: Fernando Schuinsekel
  * @REVISAO: REV-HOME-PREMIUM-20261102-01 — tela principal reconstruida sobre a fundacao premium (#63)
  * @STATUS_APROVACAO: ORDEM EXPRESSA DO PROPRIETARIO (#63) — mesma regua dos tokens, sem <style> inline
@@ -31,8 +32,8 @@ type Daily = { day: string; previsto: number; realizado: number }
 type MachineShift = { maquina: string; eficiencia: number }
 type Equipment = { id: string; codigo: string; descricao: string; status: string; proxima_calibracao: string | null; certificado_validade: string | null }
 
-type Snapshot = { machines: Machine[]; ops: OP[]; products: Product[]; pointings: Pointing[]; programs: Program[]; stops: Stop[]; equipment: Equipment[]; rpnc: number; rpncClosed: number }
-const emptySnapshot: Snapshot = { machines: [], ops: [], products: [], pointings: [], programs: [], stops: [], equipment: [], rpnc: 0, rpncClosed: 0 }
+type Snapshot = { machines: Machine[]; ops: OP[]; products: Product[]; pointings: Pointing[]; programs: Program[]; stops: Stop[]; equipment: Equipment[]; rpnc: number; rpncClosed: number; avisos: string[] }
+const emptySnapshot: Snapshot = { machines: [], ops: [], products: [], pointings: [], programs: [], stops: [], equipment: [], rpnc: 0, rpncClosed: 0, avisos: [] }
 const n = (v: unknown) => Number.isFinite(Number(v)) ? Number(v) : 0
 const fmt = (v: number) => new Intl.NumberFormat('pt-BR').format(Math.round(v))
 const dateKey = (d: Date) => d.toISOString().slice(0, 10)
@@ -110,13 +111,13 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
 
     const empresaId = p.empresa_id as string | null
     const machineQ = supabase.from('erp_maquinas').select('id,codigo,nome,status').eq('ativo', true).order('codigo')
-    const opQ = supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status,quantidade_planejada,quantidade,created_at').order('created_at', { ascending: false }).limit(500)
-    const prodQ = supabase.from('erp_produtos').select('id,codigo,nome').limit(3000)
-    const pointingQ = supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,quantidade_planejada,quantidade_boa,quantidade_refugada,criado_em').order('criado_em', { ascending: false }).limit(5000)
-    const programQ = supabase.from('erp_pcp_programacoes').select('id,ordem_producao_id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,quantidade_produzida,quantidade_refugada,status').neq('status', 'cancelada').limit(3000)
-    const stopQ = supabase.from('erp_producao_paradas').select('maquina_id,inicio,fim,status').limit(5000)
-    const rpncQ = supabase.from('erp_rpnc').select('id,status').limit(5000)
-    const equipmentQ = supabase.from('erp_equipamentos_medicao').select('id,codigo,descricao,status,proxima_calibracao,certificado_validade').limit(3000)
+    const opQ = supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status,quantidade_planejada,quantidade,created_at', { count: 'exact' }).order('created_at', { ascending: false }).limit(500)
+    const prodQ = supabase.from('erp_produtos').select('id,codigo,nome', { count: 'exact' }).limit(3000)
+    const pointingQ = supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,quantidade_planejada,quantidade_boa,quantidade_refugada,criado_em', { count: 'exact' }).order('criado_em', { ascending: false }).limit(5000)
+    const programQ = supabase.from('erp_pcp_programacoes').select('id,ordem_producao_id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,quantidade_produzida,quantidade_refugada,status', { count: 'exact' }).neq('status', 'cancelada').limit(3000)
+    const stopQ = supabase.from('erp_producao_paradas').select('maquina_id,inicio,fim,status', { count: 'exact' }).limit(5000)
+    const rpncQ = supabase.from('erp_rpnc').select('id,status', { count: 'exact' }).limit(5000)
+    const equipmentQ = supabase.from('erp_equipamentos_medicao').select('id,codigo,descricao,status,proxima_calibracao,certificado_validade', { count: 'exact' }).limit(3000)
 
     if (!master && empresaId) {
       machineQ.eq('empresa_id', empresaId)
@@ -136,6 +137,21 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
     const rncRows = (rn.data ?? []) as Array<{ status?: unknown }>
     const closedRncCount = rncRows.filter(row => closedRncStates.has(String(row.status ?? '').normalize('NFD').replace(ACCENT_STRIP, '').toLowerCase())).length
 
+    // Cada consulta da home tem um teto de linhas; sem medir o total do banco, o excedente
+    // sumia em silencio e os KPIs eram apresentados como se fossem o período inteiro.
+    const limites: Array<[string, number, number]> = [
+      ['ordens de produção', (o.data ?? []).length, n(o.count)],
+      ['apontamentos de produção', (pt.data ?? []).length, n(pt.count)],
+      ['programações do PCP', (pg.data ?? []).length, n(pg.count)],
+      ['paradas de produção', (st.data ?? []).length, n(st.count)],
+      ['produtos cadastrados', (pr.data ?? []).length, n(pr.count)],
+      ['registros de RPNC', rncRows.length, n(rn.count)],
+      ['equipamentos de medição', (eq.data ?? []).length, n(eq.count)],
+    ]
+    const avisos = limites
+      .filter(([nome, lidas, total]) => total > lidas)
+      .map(([nome, lidas, total]) => `${lidas} de ${fmt(total)} ${nome}`)
+
     return {
       machines: (m.data ?? []) as Machine[],
       ops: (o.data ?? []) as OP[],
@@ -145,7 +161,8 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
       stops: (st.data ?? []) as Stop[],
       equipment: (eq.data ?? []) as Equipment[],
       rpnc: Math.max(0, rncRows.length - closedRncCount),
-      rpncClosed: closedRncCount
+      rpncClosed: closedRncCount,
+      avisos
     }
   }, [])
 
@@ -299,6 +316,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
 
         {error && <div className="hp-alert" role="alert">{error}</div>}
         {avisoRelogio && <div className="hp-alert" role="alert">{avisoRelogio}</div>}
+        {!!data.avisos.length && <div className="hp-alert" role="alert">{`Lista truncada nesta carga (${data.avisos.join(', ')}). Os indicadores abaixo consideram apenas o trecho carregado; a agregação definitiva no banco está pendente.`}</div>}
 
         <section className="hp-kpis" aria-label="Indicadores do dia">
           {cards.map(({ label, value, suffix, icon: Icon, tone }) => (

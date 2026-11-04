@@ -1,4 +1,5 @@
 /**
+ * @REVISAO: REV-MRP-SEM-TRUNCAMENTO-20261104-01 — a geração de ordens planejadas lia as necessidades do MRP com .limit(3000) e somava no navegador: run maior que isso gravava ordem com quantidade menor que a real. Agregação e gravação movidas para a RPC erp_pcp_gerar_ordens_planejadas_do_mrp (migration 20261104172000), sobre todas as linhas do último run da empresa.
  * @REVISAO: REV-COLUNAS-BANCO-20261104-02 — a aba de alertas leu 'created_at', coluna inexistente em erp_pcp_alertas (a tabela só tem 'criado_em'); a query falhava e derrubava toda a carga da tela. Leitura e tipos alinhados ao banco.
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-10-30
@@ -78,28 +79,22 @@ export default function PCPPlanejamentoIndustrial(){
   }catch(e){setError(e instanceof Error?e.message:'Não foi possível criar o plano mestre.')}finally{setBusy(false)}
  }
 
+ type MrpPlannedResult={ok:boolean;run_id:string|null;criadas:number;quantidade_total:number;necessidades_produzir?:number;aviso?:string}
+
  async function generatePlanned(){
   setBusy(true);setError('');setMessage('')
   try{
-   const tenant=await supabase.rpc('erp_current_empresa_id')
-   if(tenant.error||typeof tenant.data!=='string'||!tenant.data) throw tenant.error??new Error('Empresa da sessão não identificada.')
-   const empresaId=tenant.data
-   const latestRun=await supabase.from('erp_mrp_runs').select('id').eq('empresa_id',empresaId).order('created_at',{ascending:false}).limit(1).maybeSingle()
-   if(latestRun.error) throw latestRun.error
-   if(!latestRun.data){setMessage('Execute o MRP primeiro; não existe cálculo de necessidades para esta empresa.');return}
-   const needs=await supabase.from('erp_mrp_necessidades').select('componente_id,necessidade_liquida,sugestao').eq('empresa_id',empresaId).eq('run_id',latestRun.data.id).gt('necessidade_liquida',0).eq('sugestao','PRODUZIR').limit(3000)
-   if(needs.error) throw needs.error
-   const aggregated=new Map<string,number>()
-   for(const row of needs.data??[]) aggregated.set(row.componente_id,(aggregated.get(row.componente_id)??0)+Number(row.necessidade_liquida))
-   if(!aggregated.size){setMessage('O último MRP não contém necessidades líquidas classificadas como PRODUZIR.');return}
-   const existing=await supabase.from('erp_pcp_ordens_planejadas').select('produto_id').eq('empresa_id',empresaId).eq('origem','MRP').eq('status','PLANEJADA')
-   if(existing.error) throw existing.error
-   const alreadyPlanned=new Set((existing.data??[]).map(row=>row.produto_id))
-   const rows=[...aggregated.entries()].filter(([productId])=>!alreadyPlanned.has(productId)).map(([productId,quantity])=>({empresa_id:empresaId,produto_id:productId,quantidade:quantity,data_necessaria:today(),origem:'MRP',status:'PLANEJADA'}))
-   if(!rows.length){setMessage('As necessidades do último MRP já possuem ordens planejadas abertas; nenhuma duplicata foi criada.');return}
-   const ins=await supabase.from('erp_pcp_ordens_planejadas').insert(rows)
-   if(ins.error) throw ins.error
-   setMessage(rows.length+' ordens planejadas criadas a partir do último MRP; necessidades por componente agregadas e duplicatas abertas evitadas.')
+   const r=await supabase.rpc('erp_pcp_gerar_ordens_planejadas_do_mrp',{p_data_necessaria:today()})
+   if(r.error){
+    if(r.error.code==='PGRST202'||/does not exist|not found/i.test(r.error.message))
+     setError('Função erp_pcp_gerar_ordens_planejadas_do_mrp ainda não está no banco. Aplique supabase/migrations/20261104172000_erp_pcp_gerar_ordens_planejadas_do_mrp.sql no SQL Editor do Supabase.')
+    else throw r.error
+    return
+   }
+   const out=(r.data ?? {ok:false,run_id:null,criadas:0,quantidade_total:0}) as MrpPlannedResult
+   if(out.aviso==='MRP_NAO_EXECUTADO'){setMessage('Execute o MRP primeiro; não existe cálculo de necessidades para esta empresa.');return}
+   if(!out.criadas){setMessage('As necessidades do último MRP já possuem ordens planejadas abertas; nenhuma duplicata foi criada.');return}
+   setMessage(out.criadas+' ordens planejadas criadas a partir do último MRP ('+Number(out.quantidade_total).toLocaleString('pt-BR',{maximumFractionDigits:3})+' unidades agregadas no banco, sobre todas as linhas do run).')
    await load()
   }catch(e){setError(e instanceof Error?e.message:'Não foi possível gerar ordens planejadas.')}finally{setBusy(false)}
  }

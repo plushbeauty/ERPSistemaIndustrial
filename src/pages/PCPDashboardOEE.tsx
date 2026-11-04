@@ -1,4 +1,5 @@
 /**
+ * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-01 — as três consultas do OEE tinham teto de 10.000 linhas e o excedente sumia em silêncio, inflando ou murchando os índices sem aviso. Agora cada consulta pede count:'exact' e a tela assume o truncamento numa faixa âmbar, em vez de apresentar número parcial como se fosse o período inteiro.
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-04
  * @REVISAO: REV-OEE-TABELA-REAL-20261104-01 — o OEE passou a ler erp_apontamentos_processo e erp_producao_paradas (tabelas reais); a janela do período é medida pelo relógio do servidor
@@ -51,10 +52,12 @@ export default function PCPDashboardOEE() {
   const [agoraServidor, setAgoraServidor] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [aviso, setAviso] = useState('')
 
   const load = async () => {
     setLoading(true)
     setError('')
+    setAviso('')
     // A janela do período é medida pelo relógio do Postgres, não pelo do tablet/navegador.
     const relogio = await relogioDoServidor()
     if (!relogio.agora) {
@@ -68,15 +71,15 @@ export default function PCPDashboardOEE() {
     const [a, p, o] = await Promise.all([
       supabase
         .from('erp_apontamentos_processo')
-        .select('id,ordem_producao_id,maquina_id,inicio_em,fim_em,quantidade_planejada,quantidade_boa,quantidade_refugada,quantidade_reprocessada')
+        .select('id,ordem_producao_id,maquina_id,inicio_em,fim_em,quantidade_planejada,quantidade_boa,quantidade_refugada,quantidade_reprocessada', { count: 'exact' })
         .gte('inicio_em', since)
         .limit(10000),
       supabase
         .from('erp_producao_paradas')
-        .select('id,ordem_producao_id,maquina_id,inicio,fim')
+        .select('id,ordem_producao_id,maquina_id,inicio,fim', { count: 'exact' })
         .gte('inicio', since)
         .limit(10000),
-      supabase.from('erp_ordens_producao').select('id,quantidade_planejada,velocidade_nominal_hora,tempo_estimado_horas').limit(10000),
+      supabase.from('erp_ordens_producao').select('id,quantidade_planejada,velocidade_nominal_hora,tempo_estimado_horas', { count: 'exact' }).limit(10000),
     ])
     if (a.error || p.error || o.error) {
       setError(a.error?.message ?? p.error?.message ?? o.error?.message ?? 'Falha ao carregar o OEE.')
@@ -84,11 +87,22 @@ export default function PCPDashboardOEE() {
       setParadas([])
       setOrdens([])
       setAgoraServidor('')
+      setAviso('')
     } else {
-      setRows((a.data ?? []) as Apontamento[])
-      setParadas((p.data ?? []) as Parada[])
-      setOrdens((o.data ?? []) as Ordem[])
+      const apontamentos = (a.data ?? []) as Apontamento[]
+      const paradasLidas = (p.data ?? []) as Parada[]
+      const ordensLidas = (o.data ?? []) as Ordem[]
+      setRows(apontamentos)
+      setParadas(paradasLidas)
+      setOrdens(ordensLidas)
       setAgoraServidor(agora.toISOString())
+      const excedentes: string[] = []
+      if (typeof a.count === 'number' && a.count > apontamentos.length) excedentes.push(`${apontamentos.length} de ${a.count} apontamentos`)
+      if (typeof p.count === 'number' && p.count > paradasLidas.length) excedentes.push(`${paradasLidas.length} de ${p.count} paradas`)
+      if (typeof o.count === 'number' && o.count > ordensLidas.length) excedentes.push(`${ordensLidas.length} de ${o.count} ordens de produção`)
+      setAviso(excedentes.length
+        ? `Lista truncada: o cálculo usou ${excedentes.join(', ')} (limite de 10.000 linhas por consulta). Os índices abaixo representam apenas o trecho carregado — reduza o período ou peça a agregação no banco.`
+        : '')
     }
     setLoading(false)
   }
@@ -199,6 +213,7 @@ export default function PCPDashboardOEE() {
 
       <div className="mx-auto max-w-[1800px] space-y-5 p-5">
         {error && <div className="rounded-[2px] border border-rose-200 bg-rose-50 p-4 font-bold text-rose-900">{error}</div>}
+        {aviso && <div className="rounded-[2px] border border-amber-200 bg-amber-50 p-4 font-bold text-amber-900">{aviso}</div>}
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
             { label: 'OEE GLOBAL', value: pct(metrics.oee), icon: Gauge, note: 'Índice composto' },

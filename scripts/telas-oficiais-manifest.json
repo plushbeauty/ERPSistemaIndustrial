@@ -805,9 +805,9 @@
     },
     {
       "path": "src/pages/MRPIndustrial.tsx",
-      "sha": "a6b19436de1233353b958185b1445c5c0c59e605",
+      "sha": "ab8f03a923615b6077ab7a400329bbc7f822a671",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-MRP-SEM-TRUNCAMENTO-20261104-01 — a lista de produtos do seletor parava em 3000 por causa do .limit(): em cadastro maior, itens deixavam de aparecer para o cálculo e o nome caía no código bruto. Passa a usar fetchAllPages, a mesma origem paginada das outras telas de PCP.",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
@@ -941,9 +941,9 @@
     },
     {
       "path": "src/pages/PCPDashboardOEE.tsx",
-      "sha": "aafc39e00401154401682b42c93c1437205cb890",
+      "sha": "45869b35cc269b67a82035ae6b6f1cfba9c19a80",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-OEE-TABELA-REAL-20261104-01 — o OEE passou a ler erp_apontamentos_processo e erp_producao_paradas (tabelas reais); a janela do período é medida pelo relógio do servidor",
+      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-01 — as três consultas do OEE tinham teto de 10.000 linhas e o excedente sumia em silêncio, inflando ou murchando os índices sem aviso. Agora cada consulta pede count:'exact' e a tela assume o truncamento numa faixa âmbar, em vez de apresentar número parcial como se fosse o período inteiro.",
       "aprovadaEm": "2026-11-04",
       "statusAprovacao": "AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO (correção do cronograma de 2026-11-03; sem chave real no PC, a conferência visual autenticada não foi feita)"
     },
@@ -997,9 +997,9 @@
     },
     {
       "path": "src/pages/PCPPlanejamentoIndustrial.tsx",
-      "sha": "cfb1320a26ae443a988c70ee7e72c479d90761f5",
+      "sha": "edac9ac7201c2947fe59ca653bf43c01a9a3e870",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-COLUNAS-BANCO-20261104-02 — a aba de alertas leu 'created_at', coluna inexistente em erp_pcp_alertas (a tabela só tem 'criado_em'); a query falhava e derrubava toda a carga da tela. Leitura e tipos alinhados ao banco.",
+      "revisao": "REV-MRP-SEM-TRUNCAMENTO-20261104-01 — a geração de ordens planejadas lia as necessidades do MRP com .limit(3000) e somava no navegador: run maior que isso gravava ordem com quantidade menor que a real. Agregação e gravação movidas para a RPC erp_pcp_gerar_ordens_planejadas_do_mrp (migration 20261104172000), sobre todas as linhas do último run da empresa.",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },

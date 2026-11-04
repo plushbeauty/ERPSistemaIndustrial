@@ -1,4 +1,5 @@
 /**
+ * @REVISAO: REV-MRP-SEM-TRUNCAMENTO-20261104-01 — a lista de produtos do seletor parava em 3000 por causa do .limit(): em cadastro maior, itens deixavam de aparecer para o cálculo e o nome caía no código bruto. Passa a usar fetchAllPages, a mesma origem paginada das outras telas de PCP.
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
@@ -7,6 +8,7 @@
 import { useEffect, useState } from 'react'
 import { Boxes, RefreshCw, Play, ArrowLeft } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 
 type Product={id:string;codigo:string;nome:string;estoque_atual:number;fabricado:boolean}
 type Need={id:string;componente_id:string;nivel:number;quantidade_bruta:number;estoque_atual:number;reservado:number;quantidade_disponivel:number;necessidade_liquida:number;sugestao:string}
@@ -28,12 +30,12 @@ export default function MRPIndustrial(){
    const company = await supabase.rpc('erp_current_empresa_id')
    if (company.error || !company.data) throw company.error ?? new Error('Empresa da sessão não identificada.')
    const empresaId = String(company.data)
-   const[p,r]=await Promise.all([
-    supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual,fabricado').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(3000),
+   const [p,r]=await Promise.all([
+    fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual,fabricado',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').range(from,to)),
     supabase.from('erp_mrp_runs').select('id,produto_raiz_id,quantidade_raiz,demanda_ref,status,created_at').eq('empresa_id',empresaId).order('created_at',{ascending:false}).limit(100)
    ])
-   if(p.error)throw p.error;if(r.error)throw r.error
-   setProducts((p.data??[]) as Product[]);setRuns((r.data??[]) as Run[])
+   if(r.error)throw r.error
+   setProducts(p);setRuns((r.data??[]) as Run[])
    if(!selectedRun&&r.data?.[0]){setSelectedRun(r.data[0].id);await loadNeeds(r.data[0].id)}
   }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar MRP.')}finally{setBusy(false)}
  }
