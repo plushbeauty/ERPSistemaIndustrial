@@ -43,6 +43,7 @@ const menus: MenuItem[] = [
     { label: 'Auditoria de Comissões', route: '/pageprincipal/controladoria/auditoria-comissoes', icon: Calculator, isUpdated: true },
   ] },
   { label: 'Centrais Operacionais', route: '/pageprincipal/centrais-industriais/expedicao', icon: Factory, isUpdated: true, children: [
+    { label: 'Central Financeira Operacional', route: '/pageprincipal/centrais-industriais/financeiro', icon: Wallet, isUpdated: true },
     { label: 'Expedição e Logística', route: '/pageprincipal/centrais-industriais/expedicao', icon: Truck, isUpdated: true },
     { label: 'Metrologia e Calibração', route: '/pageprincipal/centrais-industriais/metrologia', icon: Gauge, isUpdated: true },
     { label: 'Treinamentos e Competências', route: '/pageprincipal/centrais-industriais/treinamentos', icon: Users, isUpdated: true },
