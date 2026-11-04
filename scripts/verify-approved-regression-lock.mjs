@@ -51,7 +51,8 @@ if (existsSync('src/components/PCPTabletMenuModal.tsx')) failures.push('Modal an
 if (shell.includes('BarraWindows11') || shell.includes('PCPTabletMenuModal')) failures.push('Shell voltou a importar navegação/modal legado.')
 if (shell.includes('is-updated-orange') || shell.includes('isUpdated: true')) failures.push('Marcadores laranja de atualização foram reintroduzidos.')
 if (!shell.includes("label: 'Sistema SGQ'") || !shell.includes("tabletModule: 'sgq'")) failures.push('A entrada Sistema SGQ deixou de abrir o tablet compartilhado.')
-if (!readFileSync('src/main.tsx', 'utf8').includes('erp-industrial-legacy-pwa-cleanup-v3')) failures.push('Chave de limpeza do cache PWA legado foi revertida.')
+const bootstrap = readFileSync('src/main.tsx', 'utf8')
+if (!bootstrap.includes('erp-industrial-legacy-pwa-cleanup-v3') || !bootstrap.includes('window.location.reload()') || !bootstrap.includes("if ('caches' in window)")) failures.push('A limpeza única do cache PWA e a recarga do bundle atual foram revertidas.')
 
 for (const failure of failures) console.error('FAIL — ' + failure)
 if (failures.length) process.exit(1)
