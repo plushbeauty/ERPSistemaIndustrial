@@ -1,4 +1,5 @@
 /**
+ * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-02 — as três contagens passaram a head/count exato (o teto de linhas truncava o número mostrado); o faturamento usava as 500 NF-e MAIS ANTIGAS, agora lê a janela de 6 meses do relógio do servidor sem teto; o truncamento do OEE deixou de ser silencioso.
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-04
  * @REVISAO: REV-DIRETORIA-TABELAS-REAIS-20261104-03 — OEE lê erp_apontamentos_processo e erp_producao_paradas; RNC lê erp_rpnc; OPs abertas contadas por "não finalizada" em qualquer grafia; calibração de 30 dias pelo relógio do servidor
@@ -9,6 +10,7 @@ import { AlertTriangle, ClipboardList, PackageX, RefreshCw, ShieldAlert } from "
 import { supabase } from "../lib/supabaseClient";
 import { relogioDoServidor } from "../lib/serverClock";
 import { LISTA_STATUS_OP_FECHADAS } from "../lib/statusOrdemProducao";
+import { fetchAllPages } from "../lib/supabasePagination";
 import { useRealtimeAlerts } from "../hooks/useRealtimeAlerts";
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 
@@ -31,6 +33,7 @@ type ApontamentoRow = {
 };
 type ParadaRow = { ordem_producao_id: string | null; maquina_id: string | null; inicio: string; fim: string | null };
 type OrderRow = { id: string; velocidade_nominal_hora: number | null };
+type NfeRow = { id: string; valor_total: number | null; status: string | null; data_emissao: string | null };
 
 function numberValue(value: unknown): number {
   const parsed = Number(value);
@@ -66,31 +69,56 @@ export default function DiretoriaDashboard() {
     // Os 30 dias da metrologia e o fechamento de apontamentos abertos são medidos pelo relógio do Postgres.
     const relogio = await relogioDoServidor();
     const limiteCalibracao = relogio.agora ? new Date(relogio.agora.getTime() + 30 * 86400000).toISOString().slice(0, 10) : null;
+    const inicioMeses = relogio.agora ? new Date(relogio.agora.getFullYear(), relogio.agora.getMonth() - 5, 1).toISOString().slice(0, 10) : null;
     const [opsResult, rncResult, calibrationResult, nfeResult, apontamentosResult, reservationsResult, paradasResult] = await Promise.all([
-      supabase.from("erp_ordens_producao").select("id,status").not("status", "in", LISTA_STATUS_OP_FECHADAS).limit(5000),
-      supabase.from("erp_rpnc").select("id,status").not("status", "in", "(encerrada,Encerrada,Cancelada,cancelada)"),
+      supabase.from("erp_ordens_producao").select("id", { count: "exact", head: true }).not("status", "in", LISTA_STATUS_OP_FECHADAS),
+      supabase.from("erp_rpnc").select("id", { count: "exact", head: true }).not("status", "in", "(encerrada,Encerrada,Cancelada,cancelada)"),
       limiteCalibracao
-        ? supabase.from("erp_equipamentos_medicao").select("id").lte("proxima_calibracao", limiteCalibracao)
-        : Promise.resolve({ data: null, error: { message: relogio.aviso || "Relógio do servidor indisponível." } as unknown as Error }),
-      supabase.from("erp_documentos_fiscais").select("id,valor_total,status,data_emissao").eq("empresa_id", empresaAtual ?? "").eq("status", "Autorizada").order("data_emissao", { ascending: true }).limit(500),
-      supabase.from("erp_apontamentos_processo").select("ordem_producao_id,maquina_id,quantidade_boa,quantidade_refugada,inicio_em,fim_em").order("inicio_em", { ascending: false }).limit(500),
+        ? supabase.from("erp_equipamentos_medicao").select("id", { count: "exact", head: true }).lte("proxima_calibracao", limiteCalibracao)
+        : Promise.resolve({ data: null, count: null, error: { message: relogio.aviso || "Relógio do servidor indisponível." } as unknown as Error }),
+      // Faturamento dos últimos 6 meses, pela janela do relógio do servidor e sem teto de
+      // linhas: antes a consulta pegava as 500 NF-e MAIS ANTIGAS e o gráfico da diretoria
+      // mostrava meses de cinco anos atrás como se fossem o faturamento corrente.
+      // fetchAllPages lança em erro de consulta, então a falha é capturada aqui para não
+      // derrubar o resto da carga da tela.
+      inicioMeses
+        ? fetchAllPages<NfeRow>((from, to) => supabase
+          .from("erp_documentos_fiscais")
+          .select("id,valor_total,status,data_emissao", { count: "exact" })
+          .eq("empresa_id", empresaAtual ?? "")
+          .eq("status", "Autorizada")
+          .gte("data_emissao", inicioMeses)
+          .order("data_emissao", { ascending: false })
+          .range(from, to))
+          .then((rows) => ({ rows, error: null as Error | null }))
+          .catch((error: unknown) => ({ rows: [] as NfeRow[], error: error instanceof Error ? error : new Error(String(error)) }))
+        : Promise.resolve({ rows: [] as NfeRow[], error: null as Error | null }),
+      supabase.from("erp_apontamentos_processo").select("ordem_producao_id,maquina_id,quantidade_boa,quantidade_refugada,inicio_em,fim_em", { count: "exact" }).order("inicio_em", { ascending: false }).limit(500),
       supabase.from("erp_estoque_reservas").select("id,quantidade, status, pedido_item_id").eq("status", "ATIVA").order("created_at", { ascending: false }).limit(20),
-      supabase.from("erp_producao_paradas").select("id,ordem_producao_id,maquina_id,inicio,fim").order("inicio", { ascending: false }).limit(1000),
+      supabase.from("erp_producao_paradas").select("id,ordem_producao_id,maquina_id,inicio,fim", { count: "exact" }).order("inicio", { ascending: false }).limit(1000),
     ]);
 
     const queryErrors = [opsResult.error, rncResult.error, calibrationResult.error, nfeResult.error, apontamentosResult.error, reservationsResult.error, paradasResult.error].filter(Boolean);
-    setNotice(queryErrors.length > 0 ? "Alguns indicadores não estão disponíveis para o perfil atual; nenhum valor fictício foi criado." : "");
+    const limites: string[] = [];
+    if (typeof apontamentosResult.count === "number" && (apontamentosResult.data ?? []).length < apontamentosResult.count)
+      limites.push(`${(apontamentosResult.data ?? []).length} de ${apontamentosResult.count} apontamentos`);
+    if (typeof paradasResult.count === "number" && (paradasResult.data ?? []).length < paradasResult.count)
+      limites.push(`${(paradasResult.data ?? []).length} de ${paradasResult.count} paradas`);
+    setNotice([
+      queryErrors.length > 0 ? "Alguns indicadores não estão disponíveis para o perfil atual; nenhum valor fictício foi criado." : "",
+      limites.length > 0 ? `OEE da diretoria calculado sobre lista truncada (${limites.join(", ")}): o índice reflete apenas o trecho carregado, não o período inteiro.` : ""
+    ].filter(Boolean).join(" "));
 
-    setOpsAbertas((opsResult.data ?? []).length);
-    setRncCount((rncResult.data ?? []).length);
-    setCalibracoesVencendo((calibrationResult.data ?? []).length);
+    setOpsAbertas(opsResult.count ?? (opsResult.data ?? []).length);
+    setRncCount(rncResult.count ?? (rncResult.data ?? []).length);
+    setCalibracoesVencendo(calibrationResult.count ?? (calibrationResult.data ?? []).length);
 
     const monthly = new Map<string, number>();
-    for (const row of nfeResult.data ?? []) {
+    for (const row of nfeResult.rows) {
       const month = monthLabel(String(row.data_emissao ?? ""));
       if (month) monthly.set(month, (monthly.get(month) ?? 0) + numberValue(row.valor_total));
     }
-    setRevenue([...monthly.entries()].slice(-6).map(([name, value]) => ({ name, value })));
+    setRevenue([...monthly.entries()].sort(([a], [b]) => a.localeCompare(b)).slice(-6).map(([name, value]) => ({ name, value })));
 
     const apontamentos = (apontamentosResult.data ?? []) as ApontamentoRow[];
     const paradas = (paradasResult.data ?? []) as ParadaRow[];
