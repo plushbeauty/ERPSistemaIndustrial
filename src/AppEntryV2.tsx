@@ -17,6 +17,7 @@ const Fiscal = lazy(() => import('./pages/Fiscal'))
 const NFeEmissao = lazy(() => import('./pages/NFeEmissao'))
 const SetupADMInicial = lazy(() => import('./pages/SetupADMInicial'))
 const PCPWorkspace = lazy(() => import('./pages/PCPWorkspace'))
+const MoldesFerramentaria = lazy(() => import('./pages/MoldesFerramentaria'))
 const Paquimetro = lazy(() => import('./pages/QualidadePaquimetroDigital'))
 const ComprasWorkspace = lazy(() => import('./pages/ComprasWorkspace'))
 const SolicitacaoCompra = lazy(() => import('./pages/SolicitacaoCompra'))
@@ -92,6 +93,7 @@ export default function AppEntryV2() {
               <Route path="compras/requisicoes" element={<ComprasRequisicoes />} />
               <Route path="rh" element={<RHIndustrial />} />
               <Route path="pcp/fichas-processo" element={<FichaProcesso />} />
+              <Route path="pcp/ferramentaria" element={<MoldesFerramentaria />} />
               <Route path="qualidade/rpnc" element={<QualityPlanGate><QualidadeRPNC /></QualityPlanGate>} />
               <Route path="qualidade/rpnc-formulario" element={<QualityPlanGate><QualityRpncForm /></QualityPlanGate>} />
               <Route path="qualidade/auditorias" element={<QualityPlanGate><QualityAuditsList /></QualityPlanGate>} />
@@ -157,6 +159,7 @@ export default function AppEntryV2() {
             <Route path="/compras" element={<Navigate to="/pageprincipal/compras" replace />} />
             <Route path="/rh" element={<Navigate to="/pageprincipal/rh" replace />} />
             <Route path="/pcp/fichas-processo" element={<Navigate to="/pageprincipal/pcp/fichas-processo" replace />} />
+            <Route path="/pcp/ferramentaria" element={<Navigate to="/pageprincipal/pcp/ferramentaria" replace />} />
             <Route path="/compras/solicitacao" element={<Navigate to="/pageprincipal/compras/solicitacao" replace />} />
             <Route path="/compras/requisicoes" element={<Navigate to="/pageprincipal/compras/requisicoes" replace />} />
             <Route path="/qualidade/rpnc" element={<Navigate to="/pageprincipal/qualidade/rpnc" replace />} />
