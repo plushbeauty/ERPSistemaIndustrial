@@ -1,7 +1,7 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @DATA_REVISAO_APROVACAO: 2026-11-03
+ * @REVISAO: REV-TENANT-COMPRAS-20261103-01 — consultas explicitamente filtradas pela empresa autenticada
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
@@ -108,9 +108,18 @@ export default function ComprasWorkspace() {
   const [refreshKey, setRefreshKey] = useState(0)
 
   const load = useCallback(async () => {
+    const { data: empresaId, error: tenantError } = await supabase.rpc('erp_current_empresa_id')
+    if (tenantError || typeof empresaId !== 'string' || !empresaId) {
+      const message = tenantError?.message || 'Empresa da sessão autenticada não identificada.'
+      setRfqs({ rows: [], loading: false, error: message })
+      setRequisitions({ rows: [], loading: false, error: message })
+      setOrders({ rows: [], loading: false, error: message })
+      setReceipts({ rows: [], loading: false, error: message })
+      return
+    }
     const loadTable = async (table: string, setter: (data: TableData) => void, orderColumn: string) => {
       setter({ rows: [], loading: true, error: null })
-      const { data, error } = await supabase.from(table).select('*').order(orderColumn, { ascending: false }).limit(100)
+      const { data, error } = await supabase.from(table).select('*').eq('empresa_id', empresaId).order(orderColumn, { ascending: false }).limit(100)
       if (error) setter({ rows: [], loading: false, error: error.message })
       else setter({ rows: (data ?? []) as DbRow[], loading: false, error: null })
     }
@@ -120,7 +129,7 @@ export default function ComprasWorkspace() {
       loadTable('erp_pedidos_compra', setOrders, 'created_at'),
       (async () => {
         setReceipts({ rows: [], loading: true, error: null })
-        const { data, error } = await supabase.from('erp_pedidos_compra').select('*').in('status', ['RECEBIMENTO_PARCIAL', 'RECEBIDO']).order('created_at', { ascending: false }).limit(100)
+        const { data, error } = await supabase.from('erp_pedidos_compra').select('*').eq('empresa_id', empresaId).in('status', ['RECEBIMENTO_PARCIAL', 'RECEBIDO']).order('created_at', { ascending: false }).limit(100)
         if (error) setReceipts({ rows: [], loading: false, error: error.message })
         else setReceipts({ rows: (data ?? []) as DbRow[], loading: false, error: null })
       })(),
