@@ -1,24 +1,36 @@
 /**
- * Mensagens acionáveis para contratos RPC do Supabase ainda não implantados.
- * Não substitui a migration: apenas identifica o erro e orienta a aplicação.
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-11-03
+ * @REVISAO: REV-CONTRATO-BANCO-20261103-01 — nomes de migration citados pelo frontend devem existir no repositório
+ * @STATUS_APROVACAO: REGRAS DE NEGÓCIO AUTORIZADAS PELO PROPRIETÁRIO · AGUARDA APLICAÇÃO DAS MIGRATIONS CITADAS
  */
-export const MIGRACAO_PEDIDO_COMPRA_COMPLETO =
-  'supabase/migrations/20261103190000_erp_compras_pedido_completo_atomic.sql'
+
+type ErroBanco = { code?: string; message?: string } | null | undefined
+
+export const MIGRACAO_CODIGO_PRODUTO = '20261103110000_erp_codigo_digitos_produto_v1.sql'
+export const MIGRACAO_LIBERACAO_ITEM_FISCAL = '20261102031000_erp_fiscal_liberacao_item_pedido_v1.sql'
+export const MIGRACAO_PEDIDO_COMPRA_COMPLETO = '20261103190000_erp_compras_pedido_completo_atomic.sql'
+export const MIGRACAO_NFE_PAGAMENTO = '20261102013000_erp_nfe_pagamento_v1.sql'
+export const MIGRACAO_MOLDES_MANUTENCAO = '20261103112000_erp_moldes_manutencao_historico_v1.sql'
+export const MIGRACAO_DATA_SERVIDOR = '20261103113000_erp_data_servidor_v1.sql'
+
+// PGRST202 = RPC fora do schema cache; PGRST205 = tabela/visão ausente; 42P01 = relação inexistente no Postgres.
+function objetoAusente(erro: ErroBanco): boolean {
+  const codigo = String(erro?.code ?? '')
+  const mensagem = String(erro?.message ?? '').toLowerCase()
+  return codigo === 'PGRST202'
+    || codigo === 'PGRST205'
+    || codigo === '42P01'
+    || mensagem.includes('could not find the function')
+    || mensagem.includes('could not find the table')
+    || mensagem.includes('does not exist')
+}
 
 export function erroBancoNaoInstalado(
-  error: { code?: string; message?: string; details?: string; hint?: string } | null | undefined,
-  functionName: string,
-  migration: string,
+  erro: ErroBanco,
+  nomeObjeto: string,
+  arquivoMigration: string
 ): string | null {
-  if (!error) return null
-  const code = error.code ?? ''
-  const message = [error.message, error.details, error.hint].filter(Boolean).join(' ').toLowerCase()
-  const missingFunction =
-    code === 'PGRST202' ||
-    code === '42883' ||
-    (message.includes(functionName.toLowerCase()) &&
-      (message.includes('not found') || message.includes('does not exist') || message.includes('schema cache')))
-  return missingFunction
-    ? `A rotina ${functionName} ainda não está disponível no banco conectado. Aplique a migration ${migration} no projeto Supabase correto e atualize o schema da API.`
-    : null
+  if (!objetoAusente(erro)) return null
+  return `${nomeObjeto} ainda não existe neste banco. Aplique a migration ${arquivoMigration} e tente novamente; nenhum registro foi gravado ou alterado.`
 }
