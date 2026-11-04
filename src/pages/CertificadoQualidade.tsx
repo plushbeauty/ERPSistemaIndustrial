@@ -203,7 +203,7 @@ export default function CertificadoQualidade() {
                 </tbody></table></div><div className="border-t bg-slate-50 px-4 py-2 text-[9px] text-slate-600">Faixa inclusiva: mínimo ≤ medida ≤ máximo. Cotas sem medição permanecem pendentes.</div>
               </section>
               <section className="border border-slate-200 bg-white p-4 shadow-sm"><label className={labelClass}>Observações da inspeção<textarea rows={3} maxLength={2000} className="mt-1 w-full border border-slate-300 px-3 py-2 text-xs" value={form.observacoes} onChange={e=>setForm({...form,observacoes:e.target.value})}/></label>
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t pt-3"><span className="text-[9px] text-slate-500">Dados gravados no Supabase da empresa autenticada.</span><button type="submit" disabled={saving} className="inline-flex h-9 items-center gap-2 bg-[#123b50] px-4 text-[10px] font-extrabold uppercase text-white disabled:opacity-60">{saving?<LoaderCircle size={14} className="animate-spin"/>:<Check size={14}/ >}{saving?'Gravando…':'Salvar certificado'}</button></div>
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t pt-3"><span className="text-[9px] text-slate-500">Dados gravados no Supabase da empresa autenticada.</span><button type="submit" disabled={saving} className="inline-flex h-9 items-center gap-2 bg-[#123b50] px-4 text-[10px] font-extrabold uppercase text-white disabled:opacity-60">{saving?<LoaderCircle size={14} className="animate-spin"/>:<Check size={14}/>}{saving?'Gravando…':'Salvar certificado'}</button></div>
               </section>
             </form>
             <aside className="cq-no-print space-y-4">
