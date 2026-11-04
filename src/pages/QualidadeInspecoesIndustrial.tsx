@@ -1,9 +1,16 @@
 /**
+ * @DATA_REVISAO_APROVACAO: 2026-11-04
+ * @REVISAO: REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta
+ * @AUTOR: Fernando Schuinsekel
+ * @STATUS_APROVACAO: PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04
+ */
+/**
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
+
 /**
  * ERPSis — CONTROLE DE REVISÃO VISUAL
  * @DATA_REVISAO_ANTERIOR: 2026-10-19
@@ -51,10 +58,10 @@ function parseSpecParameters(value: unknown): SpecParameter[] {
   }))
 }
 
-const buttonClass = 'inline-flex h-8 items-center justify-center gap-1 rounded-none border border-[#2E4A62] bg-[#123B50] px-3 text-[10px] font-black uppercase text-white hover:bg-[#18506A] disabled:opacity-50'
-const steelInput = 'h-8 min-w-0 w-full rounded-none border border-[#2E4A62] bg-[#0E1E2F] px-2.5 text-xs font-mono font-bold text-[#F4FBFD] outline-none placeholder:text-white focus:border-[#48B7C7] disabled:cursor-not-allowed disabled:opacity-60'
-const steelLabel = 'mb-1 block text-[9px] font-black uppercase tracking-wider text-white'
-const gridTitleClass = 'mb-2.5 block border-b border-[#2E4A62] pb-1 text-[9px] font-black uppercase tracking-widest text-[#48B7C7]'
+const buttonClass = 'inline-flex h-8 items-center justify-center gap-1 rounded-none border border-[#CFE1E7] bg-[#123B50] px-3 text-[10px] font-black uppercase text-white hover:bg-[#18506A] disabled:opacity-50'
+const steelInput = 'h-8 min-w-0 w-full rounded-none border border-[#CFE1E7] bg-white px-2.5 text-xs font-mono font-bold text-[#123B50] outline-none placeholder:text-slate-500 focus:border-[#2D8DB8] disabled:cursor-not-allowed disabled:opacity-60'
+const steelLabel = 'mb-1 block text-[9px] font-black uppercase tracking-wider text-slate-500'
+const gridTitleClass = 'mb-2.5 block border-b border-[#CFE1E7] pb-1 text-[9px] font-black uppercase tracking-widest text-[#176487]'
 
 export default function QualidadeInspecoesIndustrial() {
   const [companyId, setCompanyId] = useState('')
@@ -273,13 +280,13 @@ export default function QualidadeInspecoesIndustrial() {
   }), [rows])
 
   return (
-    <main className="min-h-full bg-[#0E1E2F] p-3 font-mono text-[#F4FBFD] antialiased">
-      <header className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-[#2E4A62] pb-2">
+    <main className="min-h-full bg-[#F4FBFD] p-3 font-mono text-[#123B50] antialiased">
+      <header className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-[#CFE1E7] pb-2">
         <div className="flex items-center gap-2">
-          <ShieldCheck size={18} className="text-[#48B7C7]" />
+          <ShieldCheck size={18} className="text-[#176487]" />
           <div>
-            <p className="text-[9px] font-black uppercase tracking-[.18em] text-white">MOLDPLÁS ERP INDUSTRIAL / SGQ</p><h1 className="text-sm font-black text-white">Controle de inspeção de lotes</h1>
-            <p className="text-[10px] text-white">Amostragem, critérios técnicos aprovados, laudos e rastreabilidade</p>
+            <p className="text-[9px] font-black uppercase tracking-[.18em] text-slate-500">MOLDPLÁS ERP INDUSTRIAL / SGQ</p><h1 className="text-sm font-black text-[#123B50]">Controle de inspeção de lotes</h1>
+            <p className="text-[10px] text-slate-500">Amostragem, critérios técnicos aprovados, laudos e rastreabilidade</p>
           </div>
         </div>
         <button className={buttonClass} onClick={() => void load()} disabled={loading}><RefreshCw size={13} /> Atualizar</button>
@@ -287,13 +294,13 @@ export default function QualidadeInspecoesIndustrial() {
 
       <section className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
         {[['INSPEÇÕES', counts.total], ['APROVADAS', counts.approved], ['REPROVADAS', counts.rejected]].map(([label, value]) => (
-          <div key={String(label)} className="border border-[#2E4A62] bg-[#0D2638] px-3 py-2">
+          <div key={String(label)} className="border border-[#CFE1E7] bg-white px-3 py-2">
             <div className={steelLabel}>{label}</div><div className="text-base font-semibold tabular-nums">{value}</div>
           </div>
         ))}
       </section>
 
-      <div className="grid grid-cols-1 items-start gap-3 xl:grid-cols-12"><section className="mb-3 min-w-0 border border-[#2E4A62] bg-[#0D2638] p-3 xl:col-span-6">
+      <div className="grid grid-cols-1 items-start gap-3 xl:grid-cols-12"><section className="mb-3 min-w-0 border border-[#CFE1E7] bg-white p-3 xl:col-span-6">
         <h2 className="mb-2 flex items-center gap-1 text-xs font-semibold"><ClipboardCheck size={14} /> Registrar inspeção</h2>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-12">
           <label className="lg:col-span-3" title="Selecione a etapa de inspeção: recebimento, processo produtivo ou produto final."><span className={steelLabel}>TIPO</span><select className={steelInput} value={tipo} onChange={event => setTipo(event.target.value as InspectionRow['tipo'])}><option value="recebimento">Recebimento</option><option value="processo">Processo</option><option value="produto_final">Produto final</option></select></label>
@@ -304,35 +311,35 @@ export default function QualidadeInspecoesIndustrial() {
           <label className="lg:col-span-3" title="Quantidade total de unidades do lote, em unidade de estoque."><span className={steelLabel}>QUANTIDADE TOTAL</span><input className={steelInput} type="number" min="0.001" step="0.001" value={quantidade} onChange={event => setQuantidade(event.target.value)} /></label>
           <label className="lg:col-span-3" title="Número inteiro de unidades inspecionadas do lote."><span className={steelLabel}>TAMANHO DA AMOSTRA</span><input className={steelInput} type="number" min="1" step="1" value={amostra} onChange={event => setAmostra(event.target.value)} /></label>
           <label className="lg:col-span-6" title="Registre evidências, condição observada e informação necessária para rastreabilidade."><span className={steelLabel}>OBSERVAÇÕES TÉCNICAS</span><input className={steelInput} value={observacoes} onChange={event => setObservacoes(event.target.value)} maxLength={2000} /></label><label className="lg:col-span-3" title="Característica técnica selecionada na especificação ou informada para registrar a não conformidade."><span className={steelLabel}>PARÂMETRO / COTA</span><input className={steelInput} value={parametro} onChange={event => setParametro(event.target.value)} placeholder="Ex.: índice de fluidez, diâmetro" readOnly={Boolean(selectedSpecificationParameter)} /></label>{isNonNumericReview ? <>{isCertificateReview && <><label className="lg:col-span-3" title="Identificação do certificado emitido pelo fornecedor."><span className={steelLabel}>Nº CERTIFICADO</span><input className={steelInput} value={certificadoNumero} onChange={event => setCertificadoNumero(event.target.value)} placeholder="Nº do certificado" /></label><label className="lg:col-span-3" title="Conclusão da conferência do certificado contra a especificação aprovada."><span className={steelLabel}>CONFERÊNCIA DO CERTIFICADO</span><select className={steelInput} value={certificadoConclusao} onChange={event => setCertificadoConclusao(event.target.value === 'conforme' || event.target.value === 'nao_conforme' ? event.target.value : '')}><option value="">Selecionar conclusão…</option><option value="conforme">Conforme</option><option value="nao_conforme">Não conforme</option></select></label></>}<label className="lg:col-span-3" title="Evidência observada na conferência documental ou visual."><span className={steelLabel}>EVIDÊNCIA / OBSERVAÇÃO</span><input className={steelInput} value={evidenciaTexto} onChange={event => setEvidenciaTexto(event.target.value)} placeholder={isCertificateReview ? 'Conferência contra critério aprovado' : 'Descreva o observado'} /></label></> : <><label className="lg:col-span-3" title="Valor de referência da especificação, na unidade da característica medida."><span className={steelLabel}>VALOR NOMINAL</span><input className={steelInput} type="number" step="any" value={nominal} onChange={event => setNominal(event.target.value)} /></label><label className="lg:col-span-3" title="Desvio positivo permitido acima do valor nominal, na mesma unidade da cota."><span className={steelLabel}>TOLERÂNCIA +</span><input className={steelInput} type="number" min="0" step="any" value={tolMais} onChange={event => setTolMais(event.target.value)} /></label><label className="lg:col-span-3" title="Desvio absoluto permitido abaixo do valor nominal, na mesma unidade da cota."><span className={steelLabel}>TOLERÂNCIA −</span><input className={steelInput} type="number" min="0" step="any" value={tolMenos} onChange={event => setTolMenos(event.target.value)} /></label><label className="lg:col-span-3" title="Valor lido no instrumento calibrado, na mesma unidade do nominal e das tolerâncias."><span className={steelLabel}>VALOR MEDIDO</span><input className={steelInput} type="number" step="any" value={medido} onChange={event => setMedido(event.target.value)} /></label></>}
-          <div className="flex items-end lg:col-span-12"><button className="h-8 w-full rounded-none border border-[#48B7C7] bg-[#12627A] px-3 text-[10px] font-black uppercase text-white hover:bg-[#16758E] disabled:opacity-50" onClick={() => void saveInspection()} disabled={saving || loading}>{saving ? 'Salvando…' : 'Salvar inspeção'}</button></div>
+          <div className="flex items-end lg:col-span-12"><button className="h-8 w-full rounded-none border border-[#2D8DB8] bg-[#12627A] px-3 text-[10px] font-black uppercase text-white hover:bg-[#16758E] disabled:opacity-50" onClick={() => void saveInspection()} disabled={saving || loading}>{saving ? 'Salvando…' : 'Salvar inspeção'}</button></div>
         </div>
         {error && <p role="alert" className="mt-2 flex items-center gap-1 text-[10px] text-red-700"><AlertTriangle size={13} /> {error}</p>}
-        {produtoId && <div className={`mt-3 border p-2 text-[10px] ${selectedSpecification ? 'border-[#2E4A62] bg-[#0B1726] text-white' : 'border-amber-500 bg-amber-950 text-amber-100'}`}>
+        {produtoId && <div className={`mt-3 border p-2 text-[10px] ${selectedSpecification ? 'border-[#CFE1E7] bg-[#EAF6FA] text-[#123B50]' : 'border-amber-200 bg-amber-50 text-amber-800'}`}>
           {selectedSpecification ? <><strong>Especificação ativa: Rev. {selectedSpecification.revisao}</strong> · vigente desde {selectedSpecification.vigente_desde}{selectedSpecification.vigente_ate ? ' até ' + selectedSpecification.vigente_ate : ''}. Para aprovar, use o critério aprovado desta revisão e mantenha os limites originais.</> : <><strong>Sem especificação técnica ativa e vigente para este produto.</strong> Não aprove o lote sem uma fonte técnica aprovada. Cadastre a revisão em Especificações Técnicas.</>}
           {selectedSpecificationParameter && selectedSpecificationParameter.tipo !== 'numerico' && <p className="mt-1">Este critério é do tipo {selectedSpecificationParameter.tipo}. Registre a evidência observada ou a conferência do certificado neste formulário; não trate este critério como medição dimensional.</p>}
         </div>}
       </section>
 
-      <section className="min-w-0 overflow-hidden border border-[#2E4A62] bg-[#0D2638] xl:col-span-6">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2E4A62] bg-[#0B1726] p-2">
-          <h2 className="text-xs font-black text-white">Histórico de inspeções</h2>
-          <div className="relative w-64 max-w-full"><Search size={13} className="absolute left-2 top-2 text-white" /><input className={steelInput + ' pl-7'} value={search} onChange={event => setSearch(event.target.value)} placeholder="Buscar item, lote ou resultado…" /></div>
+      <section className="min-w-0 overflow-hidden border border-[#CFE1E7] bg-white xl:col-span-6">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#CFE1E7] bg-[#EAF6FA] p-2">
+          <h2 className="text-xs font-black text-[#123B50]">Histórico de inspeções</h2>
+          <div className="relative w-64 max-w-full"><Search size={13} className="absolute left-2 top-2 text-slate-500" /><input className={steelInput + ' pl-7'} value={search} onChange={event => setSearch(event.target.value)} placeholder="Buscar item, lote ou resultado…" /></div>
         </div>
         <div className="overflow-auto">
-          <table className="w-full border-collapse text-left text-[10px] text-white [&_td]:h-8 [&_td]:border-b [&_td]:border-[#2E4A62] [&_td]:px-2 [&_td]:py-1 [&_td]:align-middle [&_td]:font-semibold">
-            <thead className="sticky top-0 bg-[#071522] text-white [&_th]:border-b [&_th]:border-[#2E4A62] [&_th]:px-2 [&_th]:text-[9px] [&_th]:font-black [&_th]:uppercase [&_th]:tracking-wider [&_th]:align-middle"><tr className="h-8">{['Data/hora','Tipo','Item','Lote','Qtd.','Amostra','Resultado','Observações'].map(title => <th key={title} className="h-8 whitespace-nowrap border-b border-[#2E4A62] px-2 text-[10px] font-black uppercase tracking-wider">{title}</th>)}</tr></thead>
+          <table className="w-full border-collapse text-left text-[10px] text-[#123B50] [&_td]:h-8 [&_td]:border-b [&_td]:border-[#CFE1E7] [&_td]:px-2 [&_td]:py-1 [&_td]:align-middle [&_td]:font-semibold">
+            <thead className="sticky top-0 bg-[#F8FAFC] text-[#123B50] [&_th]:border-b [&_th]:border-[#CFE1E7] [&_th]:px-2 [&_th]:text-[9px] [&_th]:font-black [&_th]:uppercase [&_th]:tracking-wider [&_th]:align-middle"><tr className="h-8">{['Data/hora','Tipo','Item','Lote','Qtd.','Amostra','Resultado','Observações'].map(title => <th key={title} className="h-8 whitespace-nowrap border-b border-[#CFE1E7] px-2 text-[10px] font-black uppercase tracking-wider">{title}</th>)}</tr></thead>
             <tbody>
-              {loading ? <tr><td colSpan={8} className="h-16 px-3 text-center text-white">Carregando inspeções do Supabase…</td></tr>
-                : visibleRows.length === 0 ? <tr><td colSpan={8} className="h-16 px-3 text-center text-white">Nenhuma inspeção encontrada.</td></tr>
+              {loading ? <tr><td colSpan={8} className="h-16 px-3 text-center text-[#123B50]">Carregando inspeções do Supabase…</td></tr>
+                : visibleRows.length === 0 ? <tr><td colSpan={8} className="h-16 px-3 text-center text-[#123B50]">Nenhuma inspeção encontrada.</td></tr>
                 : visibleRows.map(row => {
                   const product = products.find(item => item.id === row.produto_id)
                   const lot = lots.find(item => item.id === row.lote_id)
-                  return <tr key={row.id} className="h-[32px] border-b border-[#2E4A62] hover:bg-[#123B50]">
+                  return <tr key={row.id} className="h-[32px] border-b border-[#CFE1E7] hover:bg-[#EAF6FA]">
                     <td className="whitespace-nowrap px-2 tabular-nums">{new Date(row.created_at).toLocaleString('pt-BR')}</td>
                     <td className="px-2">{row.tipo}</td><td className="px-2">{product?.codigo ?? row.produto_id}</td>
                     <td className="px-2">{lot?.numero_lote ?? row.lote_id}</td><td className="px-2 text-right tabular-nums">{row.quantidade_total}</td>
                     <td className="px-2 text-right tabular-nums">{row.tamanho_amostra}</td>
-                    <td className={'px-2 font-semibold ' + (row.resultado === 'reprovado' ? 'text-red-300' : row.resultado === 'aprovado' ? 'text-emerald-300' : 'text-amber-200')}>{row.resultado.replaceAll('_', ' ')}</td>
+                    <td className={'px-2 font-semibold ' + (row.resultado === 'reprovado' ? 'text-rose-700' : row.resultado === 'aprovado' ? 'text-emerald-700' : 'text-amber-800')}>{row.resultado.replaceAll('_', ' ')}</td>
                     <td className="max-w-64 truncate px-2">{row.observacoes ?? '—'}</td>
                   </tr>
                 })}
@@ -340,7 +347,7 @@ export default function QualidadeInspecoesIndustrial() {
           </table>
         </div>
       </section>
-      </div><p className="mt-2 text-[9px] text-white">A reprovação aciona a transação SQL de quarentena e a abertura automática de RNC configuradas na migração do SGQ.</p>
+      </div><p className="mt-2 text-[9px] text-slate-500">A reprovação aciona a transação SQL de quarentena e a abertura automática de RNC configuradas na migração do SGQ.</p>
     </main>
   )
 }

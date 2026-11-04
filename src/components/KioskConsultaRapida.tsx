@@ -4,6 +4,12 @@
  * @REVISAO: KIOSK-CONSULTA-RAPIDA-01
  * @ESCOPO: consulta real via RPC autenticada; sem resultados simulados.
  */
+/**
+ * @DATA_REVISAO_APROVACAO: 2026-11-04
+ * @REVISAO: REV-PADRAO-COR-CLARO-20261104-01 — painel de rastreabilidade convertido do tema escuro (#0E1E2F) para o padrao industrial claro (fundo branco, texto #123B50); nenhuma alteracao de logica ou de consulta
+ * @AUTOR: Fernando Schuinsekel
+ * @STATUS_APROVACAO: PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04
+ */
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { Barcode, Search, ShieldAlert, RefreshCw, Layers, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -140,11 +146,11 @@ export default function KioskConsultaRapida({ onRecordFound, onCloseKiosk }: Kio
     <section className="w-full min-w-0 border border-[#D8E4EA] bg-white p-3 text-[#123B50] shadow-sm antialiased sm:p-4" aria-label="Consulta rápida por código">
       <header className="mb-3 flex items-center justify-between gap-3 border-b border-[#D8E4EA] pb-2">
         <div className="flex min-w-0 items-center gap-2">
-          <Barcode size={18} className="shrink-0 text-[#2D8DB8]" aria-hidden="true" />
+          <Barcode size={18} className="shrink-0 text-[#176487]" aria-hidden="true" />
           <span className="truncate text-[10px] font-black uppercase tracking-widest">Consulta rápida · Leitor óptico</span>
         </div>
         {onCloseKiosk && (
-          <button type="button" onClick={onCloseKiosk} aria-label="Fechar consulta rápida" className="inline-flex h-7 w-7 shrink-0 items-center justify-center text-slate-400 transition-colors hover:text-[#D65B61] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2D8DB8]">
+          <button type="button" onClick={onCloseKiosk} aria-label="Fechar consulta rápida" className="inline-flex h-7 w-7 shrink-0 items-center justify-center text-slate-400 transition-colors hover:text-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2D8DB8]">
             <X size={16} />
           </button>
         )}
@@ -162,16 +168,16 @@ export default function KioskConsultaRapida({ onRecordFound, onCloseKiosk }: Kio
           autoComplete="off"
           spellCheck={false}
           maxLength={160}
-          className="h-8 min-w-0 w-full rounded-[2px] border border-[#48B7C7] bg-[#F4FBFD] px-2.5 text-xs font-mono font-bold text-[#123B50] outline-none focus:ring-2 focus:ring-[#48B7C7]/30"
+          className="h-8 min-w-0 w-full rounded-[2px] border border-[#2D8DB8] bg-[#F4FBFD] px-2.5 text-xs font-mono font-bold text-[#123B50] outline-none focus:ring-2 focus:ring-[#2D8DB8]/30"
         />
-        <button type="submit" disabled={loading || !barcodeInput.trim()} className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-[2px] bg-[#123B50] px-4 text-xs font-bold text-white transition-colors hover:bg-[#0E1E2F] disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#48B7C7]">
+        <button type="submit" disabled={loading || !barcodeInput.trim()} className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-[2px] bg-[#123B50] px-4 text-xs font-bold text-white transition-colors hover:bg-[#17617A] disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#48B7C7]">
           {loading ? <RefreshCw size={13} className="animate-spin text-[#48B7C7]" /> : <Search size={13} />}
           {loading ? 'CONSULTANDO' : 'CONSULTAR'}
         </button>
       </form>
 
       {error && (
-        <div role="alert" className="flex items-start gap-1.5 border-l-2 border-[#D65B61] bg-[#D65B61]/10 p-2 font-mono text-[11px] text-[#B64049]">
+        <div role="alert" className="flex items-start gap-1.5 border-l-2 border-[#D65B61] bg-[#D65B61]/10 p-2 font-mono text-[11px] text-rose-700">
           <ShieldAlert size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
@@ -182,9 +188,9 @@ export default function KioskConsultaRapida({ onRecordFound, onCloseKiosk }: Kio
           <div className="min-w-0 space-y-2 md:col-span-7">
             <div className="flex flex-wrap items-center gap-2">
               <span className={`border px-2 py-0.5 font-mono text-[8px] font-black uppercase ${
-                result.status_operacional === 'Online' ? 'border-[#3A9D78] bg-[#3A9D78]/10 text-[#3A9D78]' :
-                result.status_operacional === 'Bloqueado' ? 'border-[#D65B61] bg-[#D65B61]/10 text-[#D65B61]' :
-                'border-[#E6A34A] bg-[#E6A34A]/10 text-[#A56B15]'
+                result.status_operacional === 'Online' ? 'border-[#3A9D78] bg-[#3A9D78]/10 text-emerald-700' :
+                result.status_operacional === 'Bloqueado' ? 'border-[#D65B61] bg-[#D65B61]/10 text-rose-700' :
+                'border-[#E6A34A] bg-[#E6A34A]/10 text-amber-700'
               }`}>
                 ● {result.status_operacional}
               </span>
@@ -195,28 +201,28 @@ export default function KioskConsultaRapida({ onRecordFound, onCloseKiosk }: Kio
             <p className="break-all font-mono text-[9px] text-slate-400">CÓDIGO: {result.codigo_varrido} · REGISTRO: {result.id_registro}</p>
           </div>
 
-          <div className="min-w-0 space-y-2 border border-[#2E4A62] bg-[#0E1E2F] p-3 text-white md:col-span-5">
-            <span className="block text-[9px] font-black uppercase tracking-widest text-[#48B7C7]">Rastreabilidade retornada pelo banco</span>
+          <div className="min-w-0 space-y-2 border border-[#CFE1E7] bg-white p-3 text-[#123B50] md:col-span-5">
+            <span className="block text-[9px] font-black uppercase tracking-widest text-[#176487]">Rastreabilidade retornada pelo banco</span>
             {result.arvore_rastreabilidade.length ? (
               <div className="space-y-2 font-mono text-[10px]">
                 {result.arvore_rastreabilidade.map(node => (
-                  <div key={node.id} className="flex min-w-0 items-start justify-between gap-2 text-slate-300">
+                  <div key={node.id} className="flex min-w-0 items-start justify-between gap-2 text-[#123B50]">
                     <div className="flex min-w-0 items-start gap-1">
-                      <Layers size={11} className="mt-0.5 shrink-0 text-[#48B7C7]" />
+                      <Layers size={11} className="mt-0.5 shrink-0 text-[#176487]" />
                       <span className="break-all" title={node.codigo_lote}>{node.codigo_lote}</span>
                     </div>
                     <div className="flex shrink-0 flex-col items-end gap-1 pl-1">
-                      <span className="max-w-[120px] text-right text-[8px] text-slate-400">{node.tipo_componente}</span>
+                      <span className="max-w-[120px] text-right text-[8px] text-slate-500">{node.tipo_componente}</span>
                       <span className={`text-[8px] font-black ${
-                        node.status_inspecao === 'APROVADO' ? 'text-[#3A9D78]' :
-                        node.status_inspecao === 'REJEITADO' ? 'text-[#D65B61]' : 'text-[#E6A34A]'
+                        node.status_inspecao === 'APROVADO' ? 'text-emerald-700' :
+                        node.status_inspecao === 'REJEITADO' ? 'text-rose-700' : 'text-amber-700'
                       }`}>[{node.status_inspecao}] · QTD {node.quantidade}</span>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-[10px] text-slate-400">O banco não retornou itens de rastreabilidade para este registro.</p>
+              <p className="text-[10px] text-slate-500">O banco não retornou itens de rastreabilidade para este registro.</p>
             )}
           </div>
         </div>

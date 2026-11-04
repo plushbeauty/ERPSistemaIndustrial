@@ -1,9 +1,16 @@
 /**
+ * @DATA_REVISAO_APROVACAO: 2026-11-04
+ * @REVISAO: REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta
+ * @AUTOR: Fernando Schuinsekel
+ * @STATUS_APROVACAO: PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04
+ */
+/**
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
+
 /**
  * SYSNQRA — Gestão da Qualidade | Refugos e perdas
  * Revisão QAL-REFUGO-001 | 2026-10-21
@@ -19,8 +26,8 @@ type Product = { id: string; codigo: string; nome: string }
 type Defect = { id: string; codigo_defeito: string; descricao: string; classificacao: 'CRÍTICO' | 'MAIOR' | 'MENOR' }
 type Scrap = { id: string; ordem_producao_id: string; defeito_id: string; quantidade_refugada: number; peso_refugo_kg: number | null; turno: string; operador: string; disposicao_material: 'RETRABALHO' | 'SUCATAMENTO' | 'SEGREGADO'; observacoes: string | null; created_at: string }
 
-const field = 'h-[30px] w-full min-w-0 rounded-[2px] border border-[#3b5e7c] bg-[#091522] px-2.5 text-xs font-mono font-bold text-[#F4FBFD] outline-none focus:border-[#48B7C7] disabled:opacity-50'
-const label = 'mb-1 block text-[9px] font-black uppercase tracking-wider text-[#A8BBC8]'
+const field = 'h-[30px] w-full min-w-0 rounded-[2px] border border-[#CFE1E7] bg-[#F8FAFC] px-2.5 text-xs font-mono font-bold text-[#123B50] outline-none focus:border-[#2D8DB8] disabled:opacity-50'
+const label = 'mb-1 block text-[9px] font-black uppercase tracking-wider text-slate-500'
 const button = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] border px-3 text-[10px] font-black uppercase disabled:opacity-50'
 
 export default function QualidadeRefugos() {
@@ -95,35 +102,35 @@ export default function QualidadeRefugos() {
   const selectedProduct=selectedOp?.produto_id?productMap.get(selectedOp.produto_id):undefined
   const selectedDefect=defectMap.get(printRecord?.defeito_id ?? '')
 
-  return <main className="min-h-screen bg-[#0A111A] p-3 font-mono text-[#F4FBFD] md:p-5 print:bg-white print:p-0">
+  return <main className="min-h-screen bg-[#F4FBFD] p-3 font-mono text-[#123B50] md:p-5 print:bg-white print:p-0">
     <div className="mx-auto max-w-[1600px] space-y-4 print:hidden">
-      <header className="flex flex-wrap items-center gap-3 border border-[#2E4A62] border-l-4 border-l-[#D65B61] bg-[#0E1E2F] p-4 shadow-xl">
+      <header className="flex flex-wrap items-center gap-3 border border-[#CFE1E7] border-l-4 border-l-[#D65B61] bg-white p-4 shadow-xl">
         <span className="flex h-11 w-11 items-center justify-center border border-[#D65B61]/40 bg-[#123B50] text-[#D65B61]"><AlertTriangle size={22}/></span>
-        <div className="min-w-0 flex-1"><span className="text-[9px] font-black uppercase tracking-[0.18em] text-[#D65B61]">SYSNQRA • SGQ / IT-QAL-RNC-006</span><h1 className="text-lg font-black md:text-xl">Apontamento de Refugos &amp; Perdas</h1><p className="text-[10px] text-slate-400">Registros reais por empresa autenticada; gravação validada no PostgreSQL.</p></div>
-        <button className={button+' border-[#2E4A62]'} disabled={loading} onClick={()=>void load()}><RefreshCw size={13}/> Sincronizar</button>
+        <div className="min-w-0 flex-1"><span className="text-[9px] font-black uppercase tracking-[0.18em] text-rose-700">SYSNQRA • SGQ / IT-QAL-RNC-006</span><h1 className="text-lg font-black md:text-xl">Apontamento de Refugos &amp; Perdas</h1><p className="text-[10px] text-slate-500">Registros reais por empresa autenticada; gravação validada no PostgreSQL.</p></div>
+        <button className={button+' border-[#CFE1E7]'} disabled={loading} onClick={()=>void load()}><RefreshCw size={13}/> Sincronizar</button>
       </header>
-      {(error||message)&&<div role="status" className={'flex items-start justify-between gap-3 border px-3 py-2 text-xs '+(error?'border-rose-500 bg-rose-950/40 text-rose-200':'border-emerald-500 bg-emerald-950/40 text-emerald-200')}><span>{error||message}</span><button onClick={()=>{setError('');setMessage('')}} aria-label="Fechar"><X size={14}/></button></div>}
+      {(error||message)&&<div role="status" className={'flex items-start justify-between gap-3 border px-3 py-2 text-xs '+(error?'border-rose-200 bg-rose-50 text-rose-700':'border-emerald-200 bg-emerald-50 text-emerald-800')}><span>{error||message}</span><button onClick={()=>{setError('');setMessage('')}} aria-label="Fechar"><X size={14}/></button></div>}
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <article className="border border-rose-900 border-l-4 border-l-[#D65B61] bg-gradient-to-br from-[#3a121a] to-[#160b10] p-3"><span className="text-[9px] font-black uppercase text-rose-200">Peças refugadas</span><div className="mt-1 text-2xl font-black text-rose-300">{totalQty.toLocaleString('pt-BR')}</div></article>
-        <article className="border border-amber-900 border-l-4 border-l-[#E6A34A] bg-gradient-to-br from-[#332007] to-[#1a1003] p-3"><span className="text-[9px] font-black uppercase text-amber-200">Peso de refugo (kg)</span><div className="mt-1 text-2xl font-black text-amber-300">{totalWeight.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</div></article>
-        <article className="border border-violet-900 border-l-4 border-l-violet-500 bg-gradient-to-br from-[#241533] to-[#100a18] p-3"><span className="text-[9px] font-black uppercase text-violet-200">Registros críticos</span><div className="mt-1 text-2xl font-black text-violet-300">{critical}</div></article>
+        <article className="border border-rose-200 border-l-4 border-l-[#D65B61] bg-gradient-to-br from-rose-50 to-white p-3"><span className="text-[9px] font-black uppercase text-rose-700">Peças refugadas</span><div className="mt-1 text-2xl font-black text-rose-700">{totalQty.toLocaleString('pt-BR')}</div></article>
+        <article className="border border-amber-200 border-l-4 border-l-[#E6A34A] bg-gradient-to-br from-amber-50 to-white p-3"><span className="text-[9px] font-black uppercase text-amber-800">Peso de refugo (kg)</span><div className="mt-1 text-2xl font-black text-amber-800">{totalWeight.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</div></article>
+        <article className="border border-violet-200 border-l-4 border-l-[#123B50] bg-gradient-to-br from-violet-50 to-white p-3"><span className="text-[9px] font-black uppercase text-violet-700">Registros críticos</span><div className="mt-1 text-2xl font-black text-violet-700">{critical}</div></article>
       </section>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-        <section className="space-y-3 border border-[#2E4A62] bg-[#0D2638] p-4 lg:col-span-5">
-          <h2 className="border-b border-[#2E4A62] pb-2 text-xs font-black uppercase text-[#48B7C7]">Novo apontamento de não conformidade</h2>
+        <section className="space-y-3 border border-[#CFE1E7] bg-white p-4 lg:col-span-5">
+          <h2 className="border-b border-[#CFE1E7] pb-2 text-xs font-black uppercase text-[#176487]">Novo apontamento de não conformidade</h2>
           <div><label className={label}>Ordem de produção *</label><select value={opId} onChange={e=>setOpId(e.target.value)} className={field} disabled={loading}><option value="">Selecione a OP</option>{ops.map(o=><option key={o.id} value={o.id}>OP-{o.numero_op} — {productMap.get(o.produto_id??'')?.codigo??'Produto'}</option>)}</select></div>
-          <div><label className={label}>Motivo técnico *</label><select value={defectId} onChange={e=>setDefectId(e.target.value)} className={field} disabled={loading}><option value="">Selecione o defeito cadastrado</option>{defects.map(d=><option key={d.id} value={d.id}>[{d.codigo_defeito}] {d.descricao} ({d.classificacao})</option>)}</select>{!defects.length&&!loading&&<p className="mt-1 text-[10px] text-amber-300">Nenhum motivo ativo cadastrado para esta empresa. Cadastre os motivos antes de apontar.</p>}</div>
+          <div><label className={label}>Motivo técnico *</label><select value={defectId} onChange={e=>setDefectId(e.target.value)} className={field} disabled={loading}><option value="">Selecione o defeito cadastrado</option>{defects.map(d=><option key={d.id} value={d.id}>[{d.codigo_defeito}] {d.descricao} ({d.classificacao})</option>)}</select>{!defects.length&&!loading&&<p className="mt-1 text-[10px] text-amber-800">Nenhum motivo ativo cadastrado para esta empresa. Cadastre os motivos antes de apontar.</p>}</div>
           <div className="grid grid-cols-2 gap-2"><div><label className={label}>Quantidade refug ada (un) *</label><input className={field} type="number" min="1" step="1" value={quantity} onChange={e=>setQuantity(e.target.value)} placeholder="0"/></div><div><label className={label}>Peso do refugo (kg)</label><input className={field} type="number" min="0" step="0.0001" value={weight} onChange={e=>setWeight(e.target.value)} placeholder="0,0000"/></div></div>
           <div className="grid grid-cols-2 gap-2"><div><label className={label}>Turno</label><select className={field} value={shift} onChange={e=>setShift(e.target.value)}><option value="1">1º turno</option><option value="2">2º turno</option><option value="3">3º turno</option></select></div><div><label className={label}>Disposição *</label><select className={field} value={disposition} onChange={e=>setDisposition(e.target.value as typeof disposition)}><option value="SUCATAMENTO">Sucateamento</option><option value="RETRABALHO">Retrabalho</option><option value="SEGREGADO">Segregado</option></select></div></div>
           <div><label className={label}>Operador / inspetor *</label><input className={field} value={operator} onChange={e=>setOperator(e.target.value)} maxLength={160} placeholder="Identificação do operador"/></div>
-          <div><label className={label}>Análise de causa / observações</label><textarea className="w-full border border-[#3b5e7c] bg-[#091522] p-2 text-xs text-white outline-none focus:border-[#48B7C7]" rows={3} maxLength={4000} value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Rebarba, bolha, trinca, quebra de molde, lote de matéria-prima…"/></div>
+          <div><label className={label}>Análise de causa / observações</label><textarea className="w-full border border-[#CFE1E7] bg-[#F8FAFC] p-2 text-xs text-[#123B50] outline-none focus:border-[#2D8DB8]" rows={3} maxLength={4000} value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Rebarba, bolha, trinca, quebra de molde, lote de matéria-prima…"/></div>
           <button className={button+' h-[34px] w-full border-transparent bg-[#2D8DB8] text-white hover:bg-[#236F91]'} disabled={saving||loading||!defects.length||!ops.length} onClick={()=>void save()}><Save size={14}/>{saving?'Gravando no banco…':'Registrar não conformidade'}</button>
-          <p className="text-[9px] leading-4 text-slate-400">O apontamento não altera artificialmente a quantidade produzida da OP. Peças boas = produzido acumulado menos refugos registrados; integração ao KPI OEE exige validar o contrato do painel OEE existente.</p>
+          <p className="text-[9px] leading-4 text-slate-500">O apontamento não altera artificialmente a quantidade produzida da OP. Peças boas = produzido acumulado menos refugos registrados; integração ao KPI OEE exige validar o contrato do painel OEE existente.</p>
         </section>
-        <section className="min-w-0 space-y-3 border border-[#2E4A62] bg-[#0E1E2F] p-4 lg:col-span-7">
-          <div className="flex flex-wrap items-center justify-between gap-2"><div><h2 className="text-xs font-black uppercase text-[#48B7C7]">Histórico de refugos e perdas</h2><p className="text-[10px] text-slate-400">{filtered.length} registro(s)</p></div><button className={button+' border-[#2E4A62]'} disabled={!filtered.length} onClick={()=>{setPrintRecord(filtered[0]);window.setTimeout(()=>window.print(),0)}}><Printer size={13}/> Imprimir RNC</button></div>
+        <section className="min-w-0 space-y-3 border border-[#CFE1E7] bg-white p-4 lg:col-span-7">
+          <div className="flex flex-wrap items-center justify-between gap-2"><div><h2 className="text-xs font-black uppercase text-[#176487]">Histórico de refugos e perdas</h2><p className="text-[10px] text-slate-500">{filtered.length} registro(s)</p></div><button className={button+' border-[#CFE1E7]'} disabled={!filtered.length} onClick={()=>{setPrintRecord(filtered[0]);window.setTimeout(()=>window.print(),0)}}><Printer size={13}/> Imprimir RNC</button></div>
           <input className={field} value={query} onChange={e=>setQuery(e.target.value)} placeholder="Pesquisar OP, produto, defeito, operador…"/>
-          <div className="overflow-x-auto"><table className="w-full min-w-[620px] text-left text-[10px]"><thead><tr className="border-b border-[#2E4A62] bg-[#091522] text-[9px] uppercase text-slate-400"><th className="p-2">Data</th><th className="p-2">OP / produto</th><th className="p-2">Defeito</th><th className="p-2 text-right">Qtd.</th><th className="p-2">Disposição</th><th className="p-2">RNC</th></tr></thead><tbody>{filtered.map(r=>{const o=opMap.get(r.ordem_producao_id),d=defectMap.get(r.defeito_id),p=productMap.get(o?.produto_id??'');return <tr key={r.id} className="border-b border-[#1b3447] hover:bg-[#123B50]/30"><td className="p-2">{new Date(r.created_at).toLocaleDateString('pt-BR')}</td><td className="p-2">OP-{o?.numero_op??'—'}<div className="text-slate-400">{p?.codigo??'—'}</div></td><td className="p-2">{d?.descricao??'Motivo indisponível'}</td><td className="p-2 text-right font-black">{r.quantidade_refugada}</td><td className="p-2">{r.disposicao_material}</td><td className="p-2"><button className="text-[#48B7C7] underline" onClick={()=>{setPrintRecord(r);window.setTimeout(()=>window.print(),0)}}>Imprimir</button></td></tr>})}{!filtered.length&&<tr><td colSpan={6} className="p-8 text-center text-slate-500">{loading?'Consultando banco…':'Nenhum registro encontrado.'}</td></tr>}</tbody></table></div>
+          <div className="overflow-x-auto"><table className="w-full min-w-[620px] text-left text-[10px]"><thead><tr className="border-b border-[#CFE1E7] bg-[#F8FAFC] text-[9px] uppercase text-slate-500"><th className="p-2">Data</th><th className="p-2">OP / produto</th><th className="p-2">Defeito</th><th className="p-2 text-right">Qtd.</th><th className="p-2">Disposição</th><th className="p-2">RNC</th></tr></thead><tbody>{filtered.map(r=>{const o=opMap.get(r.ordem_producao_id),d=defectMap.get(r.defeito_id),p=productMap.get(o?.produto_id??'');return <tr key={r.id} className="border-b border-[#CFE1E7] hover:bg-[#EAF6FA]"><td className="p-2">{new Date(r.created_at).toLocaleDateString('pt-BR')}</td><td className="p-2">OP-{o?.numero_op??'—'}<div className="text-slate-500">{p?.codigo??'—'}</div></td><td className="p-2">{d?.descricao??'Motivo indisponível'}</td><td className="p-2 text-right font-black">{r.quantidade_refugada}</td><td className="p-2">{r.disposicao_material}</td><td className="p-2"><button className="text-[#176487] underline" onClick={()=>{setPrintRecord(r);window.setTimeout(()=>window.print(),0)}}>Imprimir</button></td></tr>})}{!filtered.length&&<tr><td colSpan={6} className="p-8 text-center text-slate-500">{loading?'Consultando banco…':'Nenhum registro encontrado.'}</td></tr>}</tbody></table></div>
         </section>
       </div>
     </div>
