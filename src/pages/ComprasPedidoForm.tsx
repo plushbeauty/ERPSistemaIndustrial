@@ -1,12 +1,13 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @DATA_REVISAO_APROVACAO: 2026-11-03
+ * @REVISAO: REV-CONTRATO-BANCO-20261103-01 — grava cabeçalho, dados comerciais e itens por RPC transacional
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Plus, Trash2, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { erroBancoNaoInstalado, MIGRACAO_PEDIDO_COMPRA_COMPLETO } from '../lib/supabaseRpcStatus'
 
 type Row = Record<string, unknown>
 type Item = { key: string; produtoId: string; quantidade: string; unidade: string; preco: string; ncm: string; entrega: string; ordemProducaoId: string; centroCusto: string; ipi: string; icms: string }
@@ -69,9 +70,26 @@ export default function ComprasPedidoForm({ onCancel, onSaved }: { onCancel: () 
     setSaving(true)
     setError(null)
     try {
-      const validItems = items.filter(item => item.produtoId && Number(item.quantidade) > 0 && Number(item.preco) >= 0)
       if (!header.fornecedorId) throw new Error('Selecione um fornecedor ativo.')
-      if (!validItems.length) throw new Error('Inclua ao menos um produto com quantidade maior que zero.')
+      if (!header.condicao.trim()) throw new Error('Informe a condição de pagamento.')
+      if (items.some(item => !item.produtoId || !item.ncm.trim() || !item.entrega)) {
+        throw new Error('Complete produto, NCM e data de entrega prometida em todos os itens.')
+      }
+      const validItems = items
+      if (!validItems.length) throw new Error('Inclua ao menos um produto no pedido.')
+      for (const item of validItems) {
+        const quantidade = Number(item.quantidade)
+        const preco = Number(item.preco)
+        const ipi = Number(item.ipi)
+        const icms = Number(item.icms)
+        if (!Number.isFinite(quantidade) || quantidade <= 0) throw new Error('A quantidade de cada item deve ser maior que zero.')
+        if (!Number.isFinite(preco) || preco < 0) throw new Error('O preço unitário deve ser um valor válido e não negativo.')
+        if (!Number.isFinite(ipi) || ipi < 0 || ipi > 100 || !Number.isFinite(icms) || icms < 0 || icms > 100) {
+          throw new Error('As alíquotas de IPI e ICMS devem estar entre 0 e 100%.')
+        }
+      }
+      if (!Number.isFinite(Number(header.frete)) || Number(header.frete) < 0) throw new Error('O valor do frete deve ser não negativo.')
+      if (!Number.isFinite(Number(header.desconto)) || Number(header.desconto) < 0) throw new Error('O desconto deve ser não negativo.')
       for (const item of validItems) {
         if (item.ordemProducaoId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(item.ordemProducaoId)) throw new Error('O vínculo da OP deve ser o UUID válido da ordem de produção.')
       }
@@ -104,7 +122,10 @@ export default function ComprasPedidoForm({ onCancel, onSaved }: { onCancel: () 
           observacoes_recebimento: header.recebimento.trim() || null,
         },
       })
-      if (saveError) throw saveError
+      if (saveError) {
+        throw new Error(erroBancoNaoInstalado(saveError, 'erp_compras_salvar_pedido_completo', MIGRACAO_PEDIDO_COMPRA_COMPLETO)
+          ?? `Não foi possível gravar o pedido de compra: ${saveError.message}`)
+      }
       const record = Array.isArray(data) ? data[0] as Row | undefined : data as Row | null
       if (!record || typeof record.id !== 'string') throw new Error('O banco não retornou o pedido criado.')
       onSaved('Pedido PC-' + String(record.numero ?? '').padStart(4, '0') + ' salvo com ' + validItems.length + ' item(ns). Status: ' + (header.status === 'RASCUNHO' ? 'Rascunho' : 'Aguardando aprovação') + '.')
@@ -142,7 +163,7 @@ export default function ComprasPedidoForm({ onCancel, onSaved }: { onCancel: () 
       <div className="compras-order-totals"><span>Subtotal <strong>{brl(subtotal)}</strong></span><span>IPI estimado <strong>{brl(ipiTotal)}</strong></span><span>ICMS estimado <strong>{brl(icmsTotal)}</strong></span><span>Total líquido estimado <strong>{brl(total)}</strong></span></div>
       <label className="compras-field compras-field--full"><span>Observações gerais</span><textarea rows={2} maxLength={3000} value={header.observacoes} onChange={event => setHeader(current => ({...current,observacoes:event.target.value}))} placeholder="Especificações, laudos de qualidade e instruções de entrega"/></label>
       <label className="compras-field compras-field--full"><span>Orientações para recebimento</span><textarea rows={2} maxLength={2000} value={header.recebimento} onChange={event => setHeader(current => ({...current,recebimento:event.target.value}))} placeholder="Conferência de lote, quantidade, nota fiscal e inspeção"/></label>
-      <div className="compras-form-footer"><span>O pedido e os itens são gravados por RPC autenticada, com validação de empresa, fornecedor, produtos e permissão. Impostos são estimativas informadas pelo comprador.</span><button className="compras-button compras-button--primary" type="submit" disabled={saving||loadingRefs||!suppliers.length||!products.length}>{saving?'Salvando…':'Salvar pedido de compra'}</button></div>
+      <div className="compras-form-footer"><span>Gravação transacional via Supabase RPC autenticada: cabeçalho, itens, dados comerciais, tenant, fornecedor, produtos, OP e permissões são validados no banco. IPI e ICMS são estimativas informadas pelo comprador.</span><button className="compras-button compras-button--primary" type="submit" disabled={saving||loadingRefs||!suppliers.length||!products.length}>{saving?'Salvando…':'Salvar pedido de compra'}</button></div>
     </form>
   </section>
 }
