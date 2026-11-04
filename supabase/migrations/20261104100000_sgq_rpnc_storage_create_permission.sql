@@ -20,4 +20,10 @@ create policy qualidade_evidencias_insert_protocolo on storage.objects
     )
   );
 
+-- Evidências também entram na trilha imutável do SGQ (metadados, vínculo e remoção).
+drop trigger if exists trg_sgq_rpnc_evidencias_audit on public.erp_qualidade_rpnc_evidencias;
+create trigger trg_sgq_rpnc_evidencias_audit
+  after insert or update or delete on public.erp_qualidade_rpnc_evidencias
+  for each row execute function public.erp_sgq_auditar_mutacao();
+
 commit;
