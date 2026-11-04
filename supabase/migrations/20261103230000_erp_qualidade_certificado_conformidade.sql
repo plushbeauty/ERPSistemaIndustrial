@@ -143,8 +143,10 @@ begin
             and o.name = p_desenho_storage_path) <> 1 then
     raise exception 'O desenho enviado não foi localizado no diretório privado da empresa.';
   end if;
-  if jsonb_typeof(p_cotas) is distinct from 'array'
-     or jsonb_array_length(p_cotas) < 1 or jsonb_array_length(p_cotas) > 100 then
+  if jsonb_typeof(p_cotas) is distinct from 'array' then
+    raise exception 'A lista de cotas deve ser um array JSON.';
+  end if;
+  if jsonb_array_length(p_cotas) < 1 or jsonb_array_length(p_cotas) > 100 then
     raise exception 'Informe entre 1 e 100 cotas dimensionais.';
   end if;
 
