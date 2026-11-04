@@ -260,7 +260,7 @@ export default function QualityRpncForm() {
         supabase.from('erp_sgq_auditorias').select('id,codigo_auditoria,escopo,status').eq('empresa_id', tenantId).order('data_inicio', { ascending: false }).limit(200),
         supabase.from('erp_rpnc')
           .select(SELECT_RPNC)
-          .eq('empresa_id', tenantId)
+          .eq('empresa_id', tenantId).not('sgq_origem', 'is', null)
           .order('criado_em', { ascending: false }).range(0, 29),
       ])
       const falha = setorRes.error ?? usuarioRes.error ?? clienteRes.error ?? produtoRes.error ?? auditoriaRes.error ?? registroRes.error
