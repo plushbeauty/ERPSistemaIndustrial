@@ -1,11 +1,11 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PRODUTOS-MIGRACAO-20261030-01 — migracao para a origem unica; rotas proprias e links internos remapeados
- * @STATUS_APROVACAO: MIGRACAO AUTORIZADA PELO PROPRIETARIO EM 2026-10-30 (opcao "migrar para a origem unica")
+ * @DATA_REVISAO_APROVACAO: 2026-11-04
+ * @REVISAO: REV-PRODUTOS-PAGINACAO-REAL-20261104-01 — o cadastro sai do teto silencioso de 2000 linhas e le todas as paginas com fetchAllPages (produtos, fornecedores, grupos e localizacoes); lista paginada de 25 em 25 com Anterior/Próxima, contador e selecao de linha por Enter/Espaco; removido o estado de operador que era gravado e nunca lido
+ * @STATUS_APROVACAO: CORRECAO DE DEFEITO DE LEITURA PARCIAL APLICADA POR ORDEM DO PROPRIETARIO EM 2026-11-04 ("verificar todas as pendencias e arrumar")
  * @DATA_REVISAO_ANTERIOR: 2026-10-30
- * @REVISAO_ANTERIOR: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_ANTERIOR: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @REVISAO_ANTERIOR: REV-PRODUTOS-MIGRACAO-20261030-01 — migracao para a origem unica; rotas proprias e links internos remapeados
+ * @STATUS_ANTERIOR: MIGRACAO AUTORIZADA PELO PROPRIETARIO EM 2026-10-30 (opcao "migrar para a origem unica")
  */
 /**
  * =========================================================================
@@ -22,14 +22,15 @@
  * =========================================================================
  */
 
-import React, { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation as useRouterLocation, useNavigate } from 'react-router-dom'
 import type { CSSProperties, ChangeEvent } from 'react'
 import {
-  Boxes, Check, CheckCircle2, Edit3, Factory, FileText, Image as ImageIcon,
-  Plus, Printer, RefreshCw, RotateCcw, Save, Search, ShieldCheck, Trash2, Upload, X, FileSpreadsheet
+  Boxes, Edit3, FileText, Image as ImageIcon,
+  Plus, Printer, RefreshCw, RotateCcw, Save, Search, Trash2, Upload, X, FileSpreadsheet
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 interface XlsxModule { read(buffer:ArrayBuffer,options:{type:'array'}):{SheetNames:string[];Sheets:Record<string,unknown>}; utils:{sheet_to_json<T>(sheet:unknown,options:{defval:string}):T[]} }
 declare global { interface Window { XLSX?: XlsxModule } }
 
@@ -90,7 +91,6 @@ export default function ProdutosVendasIndustrial(){
   const printMode=routerLocation.pathname===PRINT_ROUTE
   const printId=new URLSearchParams(routerLocation.search).get('id')
   const [companyId,setCompanyId]=useState('')
-  const [operatorName,setOperatorName]=useState('Usuário ERP')
   const [products,setProducts]=useState<Product[]>([])
   const [suppliers,setSuppliers]=useState<Supplier[]>([])
   const [groups,setGroups]=useState<Group[]>([])
@@ -101,6 +101,7 @@ export default function ProdutosVendasIndustrial(){
   const [editing,setEditing]=useState(false)
   const [tab,setTab]=useState<Tab>('tecnica')
   const [query,setQuery]=useState(''),[groupFilter,setGroupFilter]=useState('TODAS')
+  const [productPage,setProductPage]=useState(1)
   const [busy,setBusy]=useState(false)
   const [message,setMessage]=useState('')
   const [error,setError]=useState('')
@@ -120,28 +121,30 @@ export default function ProdutosVendasIndustrial(){
       const {data:cid,error:ce}=await supabase.rpc('erp_current_empresa_id')
       if(ce||!cid)throw ce??new Error('Empresa da sessão não identificada.')
       const id=String(cid);setCompanyId(id)
-      const [p,s,g,l]=await Promise.all([
-        supabase.from('erp_produtos').select('*').eq('empresa_id',id).order('codigo').limit(2000),
-        supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia').eq('empresa_id',id).eq('ativo',true).order('razao_social').limit(1000),
-        supabase.from('erp_grupos').select('id,codigo,nome').eq('empresa_id',id).eq('ativo',true).order('nome').limit(1000),
-        supabase.from('erp_estoque_localizacoes').select('id,codigo,nome,tipo').eq('empresa_id',id).eq('ativo',true).order('codigo').limit(1000)
+      const [loadedProducts,loadedSuppliers,loadedGroups,loadedLocations]=await Promise.all([
+        fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('*').eq('empresa_id',id).order('codigo').range(from,to)),
+        fetchAllPages<Supplier>((from,to)=>supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia').eq('empresa_id',id).eq('ativo',true).order('razao_social').range(from,to)),
+        fetchAllPages<Group>((from,to)=>supabase.from('erp_grupos').select('id,codigo,nome').eq('empresa_id',id).eq('ativo',true).order('nome').range(from,to)),
+        fetchAllPages<Location>((from,to)=>supabase.from('erp_estoque_localizacoes').select('id,codigo,nome,tipo').eq('empresa_id',id).eq('ativo',true).order('codigo').range(from,to))
       ])
-      for(const r of [p,s,g,l])if(r.error)throw r.error
-      const loadedProducts=(p.data??[]) as Product[]
-      setProducts(loadedProducts);setSuppliers((s.data??[]) as Supplier[]);setGroups((g.data??[]) as Group[]);setLocations((l.data??[]) as Location[])
+      setProducts(loadedProducts);setSuppliers(loadedSuppliers);setGroups(loadedGroups);setLocations(loadedLocations)
       setSubgroupCatalog([...new Set(loadedProducts.map(x=>String(x.subgrupo||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR')))
-      if(printMode&&printId){const printProduct=(p.data??[]).find((x:Product)=>x.id===printId);if(printProduct){setSelectedId(printProduct.id);setForm({...empty(),...printProduct})}}
-      if(selectedId){const fresh=(p.data??[]).find((x:Product)=>x.id===selectedId);if(fresh)setForm({...empty(),...fresh})}
+      if(printMode&&printId){const printProduct=loadedProducts.find(x=>x.id===printId);if(printProduct){setSelectedId(printProduct.id);setForm({...empty(),...printProduct})}}
+      if(selectedId){const fresh=loadedProducts.find(x=>x.id===selectedId);if(fresh)setForm({...empty(),...fresh})}
     }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar cadastro de produtos.')}
     finally{setBusy(false)}
   }
   useEffect(()=>{void load()},[])
-  useEffect(()=>{void supabase.auth.getUser().then(async ({data})=>{if(!data.user)return;const {data:profile}=await supabase.from('erp_usuarios').select('nome').eq('auth_user_id',data.user.id).eq('ativo',true).is('deleted_at',null).maybeSingle();setOperatorName(String(profile?.nome||data.user.email||'Usuário ERP'))})},[])
 
   const filtered=useMemo(()=>{
     const q=query.trim().toLowerCase()
     return products.filter(p=>(!q||(p.codigo+' '+p.nome+' '+(p.codigo_barras||'')+' '+(p.grupo||'')+' '+(p.subgrupo||'')+' '+(p.marca||'')+' '+(p.categoria||'')).toLowerCase().includes(q))&&(groupFilter==='TODAS'||String(p.grupo||'')===groupFilter))
   },[products,query,groupFilter])
+  const productPageSize=25
+  const productPageCount=Math.max(1,Math.ceil(filtered.length/productPageSize))
+  const visibleProducts=filtered.slice((productPage-1)*productPageSize,productPage*productPageSize)
+  useEffect(()=>setProductPage(1),[query,groupFilter])
+  useEffect(()=>{if(productPage>productPageCount)setProductPage(productPageCount)},[productPage,productPageCount])
 
   const selectProduct=(p:Product)=>{setSelectedId(p.id);setForm({...empty(),...p});setEditing(false);setTab('tecnica');setMessage('');setError('');setDetailsLoaded(false)}
   const newProduct=()=>{setSelectedId(null);setForm(empty());setEditing(true);setTab('tecnica');setMessage('');setError('');setDetailsLoaded(false)}
@@ -629,7 +632,15 @@ export default function ProdutosVendasIndustrial(){
         <label style={{...label,width:'100%'}}>FILTRAR POR GRUPO<select value={groupFilter} onChange={e=>setGroupFilter(e.target.value)} style={{...input,height:40}}><option value="TODAS">Todos os grupos</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}</select></label>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,width:'100%'}}><span style={{fontSize:13,color:'#667085'}}><b style={{color:'#123B50'}}>{filtered.length}</b> produto(s) encontrado(s)</span><button type="button" onClick={()=>void load()} disabled={busy} style={{...btn('normal'),height:36}}><RefreshCw size={13}/>Atualizar</button></div>
       </div>
-      <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',minWidth:0,tableLayout:'fixed'}}><colgroup><col style={{width:'24%'}}/><col style={{width:'42%'}}/><col style={{width:'18%'}}/><col style={{width:'16%'}}/></colgroup><thead><tr>{['Código','Descrição do produto','Grupo','Status'].map(h=><th key={h} style={{textAlign:'left',padding:'10px 8px',borderBottom:'1px solid #d9e1ea',fontSize:12,fontWeight:800,textTransform:'uppercase',background:'#f7f9fc',color:'#344054'}}>{h}</th>)}</tr></thead><tbody>{filtered.map(p=><tr key={p.id} onClick={()=>selectProduct(p)} onDoubleClick={()=>selectProduct(p)} aria-selected={selectedId===p.id} style={{background:selectedId===p.id?'#dff1f8':'#fff',cursor:'pointer',borderLeft:selectedId===p.id?'3px solid #2D8DB8':'3px solid transparent'}}><td title={p.codigo} style={{padding:'10px 8px',fontSize:13,fontWeight:800,color:'#123B50'}}>{p.codigo}</td><td title={p.nome} style={{padding:'10px 8px',fontSize:13}}>{p.nome}</td><td title={p.grupo||'—'} style={{padding:'10px 8px',fontSize:12}}>{p.grupo||'—'}</td><td style={{padding:'10px 8px',fontSize:12,fontWeight:800,color:p.ativo?'#25815f':'#b42318'}}>{p.ativo?'ATIVO':'INATIVO'}</td></tr>)}{!filtered.length&&emptyRow('Nenhum produto encontrado.',4)}</tbody></table></div>
+      <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',minWidth:0,tableLayout:'fixed'}}><colgroup><col style={{width:'24%'}}/><col style={{width:'42%'}}/><col style={{width:'18%'}}/><col style={{width:'16%'}}/></colgroup><thead><tr>{['Código','Descrição do produto','Grupo','Status'].map(h=><th key={h} style={{textAlign:'left',padding:'10px 8px',borderBottom:'1px solid #d9e1ea',fontSize:12,fontWeight:800,textTransform:'uppercase',background:'#f7f9fc',color:'#344054'}}>{h}</th>)}</tr></thead><tbody>{visibleProducts.map(p=><tr key={p.id} onClick={()=>selectProduct(p)} onDoubleClick={()=>selectProduct(p)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();selectProduct(p)}}} tabIndex={0} aria-selected={selectedId===p.id} style={{background:selectedId===p.id?'#dff1f8':'#fff',cursor:'pointer',borderLeft:selectedId===p.id?'3px solid #2D8DB8':'3px solid transparent'}}><td title={p.codigo} style={{padding:'10px 8px',fontSize:13,fontWeight:800,color:'#123B50'}}>{p.codigo}</td><td title={p.nome} style={{padding:'10px 8px',fontSize:13}}>{p.nome}</td><td title={p.grupo||'—'} style={{padding:'10px 8px',fontSize:12}}>{p.grupo||'—'}</td><td style={{padding:'10px 8px',fontSize:12,fontWeight:800,color:p.ativo?'#25815f':'#b42318'}}>{p.ativo?'ATIVO':'INATIVO'}</td></tr>)}{!filtered.length&&emptyRow('Nenhum produto encontrado.',4)}</tbody></table></div>
+      <nav aria-label="Paginação de produtos" style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:10,padding:'10px 12px',borderTop:'1px solid #e4e7ec',fontSize:12,color:'#52606d'}}>
+        <span>Exibindo {filtered.length ? (productPage-1)*productPageSize+1 : 0}–{Math.min(productPage*productPageSize,filtered.length)} de {filtered.length} produto(s)</span>
+        <div style={{display:'flex',gap:8}}>
+          <button type="button" onClick={()=>setProductPage(page=>Math.max(1,page-1))} disabled={productPage<=1} style={btn('normal')}>Anterior</button>
+          <span aria-live="polite" style={{alignSelf:'center'}}>Página {productPage} de {productPageCount}</span>
+          <button type="button" onClick={()=>setProductPage(page=>Math.min(productPageCount,page+1))} disabled={productPage>=productPageCount} style={btn('normal')}>Próxima</button>
+        </div>
+      </nav>
     </section>
     </div>
     {selectedId ? (
