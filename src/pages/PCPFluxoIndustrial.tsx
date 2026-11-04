@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Activity, AlertCircle, CalendarClock, Factory, PackageCheck, RefreshCw, ScanLine } from 'lucide-react'
+import { Activity, AlertCircle, CalendarClock, ClipboardList, Factory, PackageCheck, RefreshCw, ScanLine } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type Order = {
