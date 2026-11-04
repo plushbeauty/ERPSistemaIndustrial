@@ -224,6 +224,7 @@ export default function QualityRpncForm() {
   const [files, setFiles] = useState<File[]>([])
   const [evidenciasPendentes, setEvidenciasPendentes] = useState<File[]>([])
   const [fileParaAcao, setFileParaAcao] = useState<{ acaoId: string; file: File } | null>(null)
+  const [evidenciaAcao, setEvidenciaAcao] = useState<Record<string, string>>({})
   const [hasMoreRegistros, setHasMoreRegistros] = useState(false)
   const [loadingMoreRegistros, setLoadingMoreRegistros] = useState(false)
   const [buscaRegistros, setBuscaRegistros] = useState('')
@@ -711,6 +712,57 @@ export default function QualityRpncForm() {
     }
   }
 
+  const atualizarEtapaAcao = async (acao: AcaoSalva, status: string, evidencia?: string) => {
+    if (!rpnc) return
+    setSaving(true)
+    setError('')
+    setNotice('')
+    try {
+      if (status === 'Aguardando aprovacao') {
+        if (!acao.causa_raiz.trim()) throw new Error('Informe a causa raiz antes de enviar a ação para aprovação.')
+        if (!evidencia?.trim()) throw new Error('Registre a evidência da conclusão antes de enviar para aprovação.')
+      }
+      const result = await supabase.from('erp_sgq_capa_acoes')
+        .update({ status, ...(evidencia ? { evidencia: evidencia.trim() } : {}) })
+        .eq('id', acao.id).eq('rpnc_id', rpnc.id).eq('empresa_id', companyId)
+        .select('id').single()
+      if (result.error) throw result.error
+      await carregarRegistro(rpnc)
+      setNotice(`Ação CAPA atualizada para "${status}".`)
+    } catch (cause) {
+      setError(mensagem(cause))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const decidirAcao = async (acao: AcaoSalva, decisao: 'aprovar' | 'reprovar' | 'verificar_eficaz' | 'verificar_ineficaz') => {
+    if (!rpnc) return
+    const evidencia = (evidenciaAcao[acao.id] ?? '').trim()
+    if (decisao.startsWith('verificar_') && evidencia.length < 10) {
+      setError('Para verificar a eficácia, registre uma evidência objetiva com pelo menos 10 caracteres.')
+      return
+    }
+    setSaving(true)
+    setError('')
+    setNotice('')
+    try {
+      const result = await supabase.rpc('erp_sgq_capa_decidir', {
+        p_acao_id: acao.id,
+        p_decisao: decisao,
+        p_evidencia: evidencia || null,
+      })
+      if (result.error) throw result.error
+      await carregarRegistro(rpnc)
+      const labels = { aprovar: 'aprovada', reprovar: 'reprovada', verificar_eficaz: 'verificada como eficaz', verificar_ineficaz: 'verificada como ineficaz' }
+      setNotice(`Ação CAPA ${labels[decisao]} no workflow do Supabase.`)
+    } catch (cause) {
+      setError(mensagem(cause))
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const anexarAcao = async () => {
     if (!fileParaAcao || !rpnc) return
     setSaving(true)
@@ -1127,7 +1179,17 @@ export default function QualityRpncForm() {
                           </label>
                         </div>
                       </td>
-                      <td className="erp-td"><button type="button" className="erp-btn" disabled={bloqueado} onClick={() => void removerAcao(index)}><Trash2 size={13} /></button></td>
+                      <td className="erp-td">
+                        <div className="flex min-w-48 flex-col gap-1.5">
+                          {['Planejada', 'Reprovada'].includes(acao.status ?? '') && <button type="button" className="erp-btn" disabled={bloqueado} onClick={() => void atualizarEtapaAcao(acao, 'Em execucao')}>Iniciar execução</button>}
+                          {acao.status === 'Em execucao' && <button type="button" className="erp-btn" disabled={bloqueado} onClick={() => void atualizarEtapaAcao(acao, 'Concluida')}>Marcar concluída</button>}
+                          {['Concluida', 'Aguardando aprovacao', 'Aprovada'].includes(acao.status ?? '') && <textarea className="erp-input qrf-textarea min-w-48" rows={2} value={evidenciaAcao[acao.id] ?? ''} onChange={(event) => setEvidenciaAcao((current) => ({ ...current, [acao.id]: event.target.value }))} disabled={bloqueado} placeholder={acao.status === 'Aprovada' ? 'Evidência objetiva da eficácia' : 'Evidência / comentário da etapa'} />}
+                          {acao.status === 'Concluida' && <button type="button" className="erp-btn" disabled={bloqueado || !evidenciaAcao[acao.id]?.trim()} onClick={() => void atualizarEtapaAcao(acao, 'Aguardando aprovacao', evidenciaAcao[acao.id])}>Enviar para aprovação</button>}
+                          {acao.status === 'Aguardando aprovacao' && <div className="flex gap-1"><button type="button" className="erp-btn" disabled={bloqueado} onClick={() => void decidirAcao(acao, 'aprovar')}>Aprovar</button><button type="button" className="erp-btn" disabled={bloqueado} onClick={() => void decidirAcao(acao, 'reprovar')}>Reprovar</button></div>}
+                          {acao.status === 'Aprovada' && <div className="flex flex-wrap gap-1"><button type="button" className="erp-btn" disabled={bloqueado || (evidenciaAcao[acao.id] ?? '').trim().length < 10} onClick={() => void decidirAcao(acao, 'verificar_eficaz')}>Eficaz</button><button type="button" className="erp-btn" disabled={bloqueado || (evidenciaAcao[acao.id] ?? '').trim().length < 10} onClick={() => void decidirAcao(acao, 'verificar_ineficaz')}>Ineficaz</button></div>}
+                          {['Planejada', 'Reprovada'].includes(acao.status ?? '') && <button type="button" className="erp-btn" disabled={bloqueado} onClick={() => void removerAcao(index)}><Trash2 size={13} /> Remover</button>}
+                        </div>
+                      </td>
                     </tr>
                   ))}
                   {!acoes.length && <tr><td className="erp-td italic text-slate-500" colSpan={8}>Nenhuma ação no banco. Adicione a primeira linha abaixo.</td></tr>}
