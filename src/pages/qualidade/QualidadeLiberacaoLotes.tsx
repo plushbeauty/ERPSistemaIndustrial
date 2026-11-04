@@ -14,7 +14,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { AlertTriangle, CheckCircle2, ClipboardCheck, Plus, Printer, RefreshCw, Search, ShieldAlert, ShieldCheck, X } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
-import QualitySidebar from '../../components/quality/QualitySidebar'
 
 type Product = { id: string; codigo: string; nome: string }
 type LotStatus = 'APROVADO' | 'REPROVADO' | 'QUARENTENA'
@@ -158,7 +157,6 @@ export default function QualidadeLiberacaoLotes() {
 
   return (
     <main className="min-h-screen bg-[#0E1E2F] p-2.5 text-[#F4FBFD] md:p-3">
-      <QualitySidebar active="/qualidade/liberacao-lote" />
       <div className="mx-auto max-w-[1680px] space-y-3">
         <header className="flex flex-wrap items-center justify-between gap-3 border border-[#2E4A62] bg-[#0D2638] p-3">
           <div className="flex min-w-0 items-center gap-2.5">

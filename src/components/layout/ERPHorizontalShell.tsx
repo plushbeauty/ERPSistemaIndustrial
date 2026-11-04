@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, UserCog, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, FolderOpen, Warehouse, Percent, Scale, ShieldCheck, BookOpen, Landmark, Calculator, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode, Database, Package, Wrench, Clock, Calendar, CalendarDays, ListOrdered, PauseCircle } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, UserCog, ChevronRight, Home, FileText, Factory, LogOut, Search, X, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, Warehouse, Percent, Scale, ShieldCheck, BookOpen, Landmark, Calculator, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode, Database, Package, Wrench, Clock, Calendar, CalendarDays, ListOrdered, PauseCircle } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import PCPTabletMenuModal from '../PCPTabletMenuModal'
+import ModuleTabletMenuModal, { type ModuleTabletKey } from './ModuleTabletMenuModal'
 import PageIntroCard from './PageIntroCard'
 import { fallbackPageIntro, hasNativeIntroCard, resolvePageIntro } from './pageIntroCatalog'
 
@@ -11,7 +12,7 @@ type MenuItem = {
   label: string
   route: string
   icon?: LucideIcon
-  action?: 'pcpTablet'
+  action?: 'pcpTablet' | 'sgqTablet'
   minNivel?: number
   children?: MenuItem[]
 }
@@ -68,19 +69,11 @@ const menus: MenuItem[] = [
     { label: 'Portal do Operador', route: '/pageprincipal/chao-de-fabrica/portal-operador', icon: Monitor },
     { label: 'Apontamento · protótipo visual', route: '/pageprincipal/chao-de-fabrica/apontamento-operador', icon: Clock },
     { label: 'Postos de Trabalho', route: '/pageprincipal/chao-de-fabrica/postos', icon: ClipboardList },
-  ] },  { label: 'Qualidade / Paquímetro', route: '/pageprincipal/paquimetro', icon: Ruler, children: [
-    { label: 'Equipamentos de Medição', route: '/pageprincipal/paquimetro', icon: Ruler },
-    { label: 'Visual geral da Qualidade', route: '/pageprincipal/qualidade', icon: ShieldCheck },
-    { label: 'RPNC · formulário único', route: '/pageprincipal/qualidade/rpnc', icon: ClipboardList },
-    { label: 'Auditorias da Qualidade', route: '/pageprincipal/qualidade/auditorias', icon: ShieldCheck },
-    { label: 'Controle de Alteração de Documentos', route: '/pageprincipal/qualidade/documentos', icon: FolderOpen },
-    { label: 'Inspeções de lotes', route: '/pageprincipal/qualidade/inspecoes', icon: Search },
-    { label: 'Inspeção em processo', route: '/pageprincipal/qualidade/inspecao-processo', icon: Monitor },
-    { label: 'Especificações técnicas', route: '/pageprincipal/qualidade/especificacoes', icon: FileText },
-    { label: 'FMEA / PFMEA', route: '/pageprincipal/qualidade/fmea', icon: ShieldCheck },
-    { label: 'CEP / medições', route: '/pageprincipal/qualidade/cep', icon: BarChart3 },
-    { label: 'Controle de desenhos técnicos', route: '/pageprincipal/qualidade/controle-desenhos', icon: FileText },
-  ] },  { label: 'Compras', route: '/pageprincipal/compras', icon: ShoppingCart, children: [
+  ] },  /* Ordem do proprietario em 2026-11-03 (#108): "todos os modulos qualidade do menu vc vai alterar
+     para Sistema SGQ; quando clicar vai abrir o tablet com todos os icones referentes a qualidade".
+     O dropdown de Qualidade foi substituido pelo painel flutuante do SGQ; a lista completa das rotinas
+     (com cada rota conferida contra o roteador desta branch) esta em components/quality/qualityTabletModules.ts. */
+  { label: 'Sistema SGQ', route: '/pageprincipal/qualidade', icon: ShieldCheck, action: 'sgqTablet' },  { label: 'Compras', route: '/pageprincipal/compras', icon: ShoppingCart, children: [
     { label: 'Central de Compras', route: '/pageprincipal/compras', icon: ShoppingCart },
     { label: 'Solicitação de Compra', route: '/pageprincipal/compras/solicitacao', icon: FilePlus2 },
     { label: 'Requisições de Compra', route: '/pageprincipal/compras/requisicoes', icon: ClipboardList },
@@ -155,6 +148,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [moduleSearch, setModuleSearch] = useState('')
   const [helpOpen, setHelpOpen] = useState(false)
   const [pcpTabletOpen, setPcpTabletOpen] = useState(false)
+  const [sgqTabletKey, setSgqTabletKey] = useState<ModuleTabletKey | null>(null)
   const [now, setNow] = useState(() => new Date())
   const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
   const [dataEpoch, setDataEpoch] = useState(0)
@@ -235,9 +229,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     : pathname.startsWith('/pageprincipal/estoque') ? 'Estoque'
     : pathname.startsWith('/pageprincipal/almoxarifado') ? 'Almoxarifado'
     : pathname.startsWith('/pageprincipal/engenharia') ? 'Engenharia de Produto (BOM)'
-    : pathname.startsWith('/pageprincipal/qualidade') ? 'Qualidade / Paquímetro'
+    : pathname.startsWith('/pageprincipal/qualidade') ? 'Sistema SGQ'
     : pathname.startsWith('/pageprincipal/rh') || pathname.startsWith('/rh') ? 'RH / Departamento Pessoal'
-    : pathname.startsWith('/pageprincipal/paquimetro') ? 'Qualidade / Paquímetro'
+    : pathname.startsWith('/pageprincipal/paquimetro') ? 'Sistema SGQ'
     : pathname.startsWith('/pageprincipal/compras') || pathname.startsWith('/compras') ? 'Compras'
     : pathname.startsWith('/pageprincipal/administracao-configuracoes') || pathname.startsWith('/configuracoes-adm') || pathname.startsWith('/administracao-configuracoes') ? 'Configurações'
     : pathname.startsWith('/pageprincipal/financeiro') || pathname.startsWith('/financeiro') ? 'Financeiro'
@@ -261,6 +255,12 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const openMenuItem = (item: Pick<MenuItem, 'route' | 'action'>) => {
     if (item.action === 'pcpTablet') {
       setPcpTabletOpen(true)
+      setOpenMenu(null)
+      return
+    }
+    // Ordem do proprietário (#108): o clique no módulo abre o tablet do SGQ em vez de navegar direto.
+    if (item.action === 'sgqTablet') {
+      setSgqTabletKey('sgq')
       setOpenMenu(null)
       return
     }
@@ -291,8 +291,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   // para telas de menu ainda sem verbete, o rótulo do menu + a finalidade da ajuda.
   const menuLeafLabel = current?.children?.find(child => child.route === pathname)?.label ?? current?.label
   const contextualPurpose = contextualHelp.title === 'Ajuda da tela atual' ? undefined : contextualHelp.purpose
-  // O grupo do menu manteve o rótulo histórico 'Qualidade / Paquímetro'; no card de abertura o módulo é Qualidade.
-  const introModule = current?.label === 'Qualidade / Paquímetro' ? 'Qualidade' : current?.label
+  // O grupo do menu é 'Sistema SGQ' desde a ordem do proprietário (#108); no card de abertura o módulo é Qualidade.
+  const introModule = current?.label === 'Sistema SGQ' ? 'Qualidade' : current?.label
   const pageIntro = hasNativeIntroCard(pathname)
     ? null
     : resolvePageIntro(pathname) ?? fallbackPageIntro({ module: introModule, label: menuLeafLabel, purpose: contextualPurpose })
@@ -334,7 +334,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
                 return <div className="erp-windows-menu-group" key={menu.label}>
                   <div className={`erp-windows-menu-row ${current?.label === menu.label ? 'is-active' : ''}`}>
                     <button type="button" className="erp-windows-menu-main" onClick={() => {
-                      if (menu.action === 'pcpTablet') { setStartMenuOpen(false); openMenuItem(menu) }
+                      if (menu.action) { setStartMenuOpen(false); openMenuItem(menu) }
                       else if (hasChildren) { setOpenMenu(value => value === menu.label ? null : menu.label);  }
                       else { setStartMenuOpen(false); openMenuItem(menu) }
                     }}>
@@ -378,6 +378,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         {children}
       </main>
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
+      <ModuleTabletMenuModal moduleKey={sgqTabletKey} sessionNivel={sessionNivel} onClose={() => setSgqTabletKey(null)} onNavigate={(route) => { setSgqTabletKey(null); go(route) }} />
 
       <style>{`
         .erp-horizontal-shell{min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%);color:#123b50}

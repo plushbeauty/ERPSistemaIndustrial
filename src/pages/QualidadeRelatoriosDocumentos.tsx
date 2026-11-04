@@ -7,7 +7,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { FileText, Filter, Printer, RefreshCw, Search } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import QualitySidebar from '../components/quality/QualitySidebar'
 
 type Doc={
  id:string
@@ -94,7 +93,7 @@ export default function QualidadeRelatoriosDocumentos(){
    </div>
   </header>
   <div data-quality-workspace className="quality-report-screen mx-auto grid max-w-[1800px] grid-cols-1 gap-5 p-4 grid-cols-1">
-   <div className="quality-report-no-print"><QualitySidebar active="/qualidade/relatorios-documentos"/></div>
+   <div className="quality-report-no-print"></div>
    <section className="space-y-5">
     {error&&<div className="quality-report-no-print rounded-md border border-red-200 bg-red-50 p-4 text-base font-bold text-red-800">{error}</div>}
     <section className="quality-report-no-print rounded-md border border-slate-200 bg-white p-5 shadow-sm">

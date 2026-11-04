@@ -9,7 +9,6 @@ import { FileText, RefreshCw, Save, ShieldCheck, Upload, CheckCircle2 } from 'lu
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import { useLocation, useNavigate } from 'react-router-dom'
-import QualitySidebar from '../components/quality/QualitySidebar'
 
 type Rpn = { id: string; numero_rpnc: string; descricao_nao_conformidade: string; origem: string | null; gravidade: string | null; lote_producao: string | null; quantidade_segregada: number; bloqueia_lote: boolean; setor_envolvido_id: string | null; status: string; criado_em: string }
 type Ishikawa = { id: string; rpnc_id: string; efeito: string; metodo: string | null; mao_de_obra: string | null; material: string | null; maquina: string | null; meio_ambiente: string | null; medicao: string | null }
@@ -273,7 +272,7 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
   }
 
   return (
-    <main className="min-h-screen bg-[#F4FBFD] text-[#123B50]"><div className="mx-auto max-w-[1800px] space-y-3 p-3"><QualitySidebar active={location.pathname} /><div className="sgq-compact">
+    <main className="min-h-screen bg-[#F4FBFD] text-[#123B50]"><div className="mx-auto max-w-[1800px] space-y-3 p-3"><div className="sgq-compact">
       <div className="sgq-compact">
         {location.pathname === '/vendas/sgq' && <div className="sgq-tabs">
           <button className={tab === 'rnc' ? 'active' : ''} type="button" onClick={() => setTab('rnc')}><ShieldCheck size={13}/> 01 · RNC / ISHIKAWA 6M</button>

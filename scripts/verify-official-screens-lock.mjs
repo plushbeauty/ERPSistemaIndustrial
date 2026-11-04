@@ -39,6 +39,13 @@ import path from 'node:path'
  * Qoder\2026-11-01. Entram a aba "Instalação do sistema" (SystemInstallationSettings) e o prototipo
  * visual do apontamento; AppEntryV2, shell e catalogo de cards foram mesclados por adicao, sem
  * sobrescrever as versoes desta branch.
+ * Revisao 2026-11-03 (#106/#107/#108/#109): ordem do proprietario — "a imagem de fundo do login continua
+ * grande, diminuir mais, dar menos zoom nela", "vc nao colocou o tablet da qualidade", "a tela de certificado
+ * esta dentro desta pasta" e "na outra imagem vc vai deletar ela tela porque vamos deixar tudo no tablet
+ * qualidade". industrial-login.css re-travado com a foto em faixa de no maximo 65% da altura; entra o
+ * Certificado de Qualidade; o painel flutuante do SGQ (ModuleTabletMenuModal + qualityTabletModules) vira a
+ * entrada unica da Qualidade no lugar do dropdown; ControleDesenhos e a grade QualitySidebar (que se repetia
+ * no topo de 19 telas) sao deletados e banidos.
  * Mudanca neste contrato exige ordem explicita do proprietario.
  */
 
@@ -54,7 +61,11 @@ const oficiais = [
   { path: 'src/pages/Blog.tsx', sha: 'aebf301d6e049f459f5c403527c7010e0b7eabf7', label: 'Publica / Blog' },
   { path: 'src/pages/Contato.tsx', sha: '770de58912bee0ed0e3e0bc4cddd7262c729ec80', label: 'Publica / Contato' },
   { path: 'src/IndustrialLoginDirect.tsx', sha: '8e42f60fe545793e4382f049c490bb3289ea88d6', label: 'Login / tela sobre a foto da planta com cartao flutuante' },
-  { path: 'src/styles/industrial-login.css', sha: '15dd26d59fe8b3a4c78f205d49ede035b081169c', label: 'Login / estilos da tela sobre a foto da planta (REV-LOGIN-BLOCO-DIREITA-20261102-02)' },
+  { path: 'src/styles/industrial-login.css', sha: 'b8924498059b298c44ccd58899c3358fe67735de', label: 'Login / estilos da tela sobre a foto da planta (REV-LOGIN-ZOOM-MENOR-20261103-01)' },
+  { path: 'src/pages/CertificadoQualidade.tsx', sha: '163a7d532d1999603d278b6e99862db6b5a0a336', label: 'Qualidade / Certificado de Qualidade com cotas dimensionais e desenho anexado (recebido em 2026-11-01)' },
+  { path: 'src/components/layout/ModuleTabletMenuModal.tsx', sha: '2cba6daaf4816b8cc7ad38df42988bd56dd1af1f', label: 'Tablet / painel flutuante de módulos (entrada única do Sistema SGQ)' },
+  { path: 'src/components/quality/qualityTabletModules.ts', sha: 'dfc1260fd8a81ad7c9bbea20ea6071d8bcbb7d48', label: 'Tablet / catálogo das rotinas do SGQ com cada rota conferida no roteador' },
+  { path: 'src/styles/module-tablet-panel.css', sha: 'daea57df6920668b31c8261836bde5aad9b1dc31', label: 'Tablet / estilos do painel flutuante' },
   { path: 'src/pages/QualityRpncForm.tsx', sha: '50452b68f2663eb27ec2cfae7120d4c58d4b3478', label: 'Qualidade / RPNC com Ishikawa, 5 Porques e CAPA' },
   { path: 'src/pages/QualityRpncUnified.tsx', sha: '95335212fcf40881e37a37cc063f326d58335235', label: 'Qualidade / RPNC unificada em abas (REV-RPNC-ABAS-CARD-20261102-01: card das abas maior, descricao visivel)' },
   { path: 'src/styles/quality-rpnc-unified.css', sha: '6462e55f4804cb76ba9ecc277439c045c5634d05', label: 'Qualidade / estilos das abas do RPNC unificado (isengao da regula de 30px)' },
@@ -149,6 +160,11 @@ const banidos = [
   // uma tela fora do gate de autenticacao e da shell compartilhada. Recriar reprova o build.
   'operator-preview.html',
   'src/operator-preview.tsx',
+  // Ordem do proprietario em 2026-11-03 (#109): "na outra imagem vc vai deletar ela tela porque vamos
+  // deixar tudo no tablet qualidade". A tela de desenhos e a grade de 21 opcoes que se repetia no topo
+  // de cada tela da Qualidade saem da base; a navegacao do SGQ passa a ser o painel flutuante.
+  'src/pages/qualidade/ControleDesenhos.tsx',
+  'src/components/quality/QualitySidebar.tsx',
 ]
 
 const TELAS = ['src/pages/', 'src/features/', 'src/modules/']

@@ -17,7 +17,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, ClipboardCheck, RefreshCw, Search, ShieldCheck } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
-import QualitySidebar from '../components/quality/QualitySidebar'
 
 type InspectionRow = {
   id: string
@@ -274,7 +273,7 @@ export default function QualidadeInspecoesIndustrial() {
   }), [rows])
 
   return (
-    <main className="min-h-full bg-[#0E1E2F] p-3 font-mono text-[#F4FBFD] antialiased"><QualitySidebar active="/qualidade/inspecoes" />
+    <main className="min-h-full bg-[#0E1E2F] p-3 font-mono text-[#F4FBFD] antialiased">
       <header className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-[#2E4A62] pb-2">
         <div className="flex items-center gap-2">
           <ShieldCheck size={18} className="text-[#48B7C7]" />

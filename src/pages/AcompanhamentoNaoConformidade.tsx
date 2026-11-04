@@ -21,7 +21,6 @@
  * Escopo: corrigir cálculo de atraso para usar o status da RNC avaliada, sem alterar persistência.
  */
 import React, { useEffect, useMemo, useState } from 'react'
-import QualitySidebar from '../components/quality/QualitySidebar'
 import {
   AlertTriangle, ArrowLeft, CheckCircle2, ClipboardCheck, Clock3, FileText,
   Filter, Plus, RefreshCw, Save, Search, ShieldCheck, Target, UserRound, X
@@ -200,7 +199,7 @@ export default function AcompanhamentoNaoConformidade(){
   const selectedCauses=selected?ishikawa.filter(x=>x.rpnc_id===selected.id):[]
 
   return <main style={{minHeight:'calc(100vh - 82px)',background:'#F4FBFD',padding:'12px 12px 24px',color:'#17333f'}}>
-    <div style={{maxWidth:1800,margin:'0 auto'}}><QualitySidebar active="/qualidade/liberacao-lote" />
+    <div style={{maxWidth:1800,margin:'0 auto'}}>
       <header style={{display:'flex',justifyContent:'space-between',gap:16,alignItems:'flex-start',marginBottom:18,flexWrap:'wrap'}}>
         <div>
           <button type="button" onClick={()=>location.href='/qualidade'} style={{border:'1px solid #cbdde3',background:'#fff',borderRadius:10,padding:'9px 13px',display:'inline-flex',alignItems:'center',gap:7,cursor:'pointer',fontWeight:800,color:'#31525f'}}><ArrowLeft size={17}/> Qualidade</button>

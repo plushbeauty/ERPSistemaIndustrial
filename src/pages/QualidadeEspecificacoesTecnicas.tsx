@@ -8,7 +8,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CheckCircle2, CircleHelp, FilePlus2, Plus, RefreshCw, Save, ShieldCheck, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
-import QualitySidebar from '../components/quality/QualitySidebar'
 
 type Product = { id: string; codigo: string; descricao_tecnica: string; tipo_item: string | null }
 type SpecRow = {
@@ -260,7 +259,6 @@ export default function QualidadeEspecificacoesTecnicas() {
   return (
     <main className="min-h-screen bg-[radial-gradient(ellipse_at_top_left,_rgba(45,141,184,0.18),_transparent_38%),linear-gradient(135deg,#eaf4f8_0%,#f5f9fc_55%,#e7f1f6_100%)] p-3 text-[#123B50] md:p-4" data-quality-specifications>
       <div className="mx-auto grid max-w-[1800px] gap-3 grid-cols-1">
-        <QualitySidebar active="/qualidade/especificacoes" />
         <section className="min-w-0 space-y-3">
           <header className="flex flex-wrap items-center gap-3 rounded-md border border-[#17445A] bg-gradient-to-r from-[#123B50] via-[#185c78] to-[#2D8DB8] p-4 text-white shadow-sm">
             <div className="min-w-0 flex-1">

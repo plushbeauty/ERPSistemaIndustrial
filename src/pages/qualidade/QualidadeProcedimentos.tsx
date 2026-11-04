@@ -7,7 +7,6 @@
 import { useCallback, useEffect, useState, type ChangeEvent } from 'react'
 import { ExternalLink, RefreshCw, Upload } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
-import QualitySidebar from '../../components/quality/QualitySidebar'
 import { fetchAllPages } from '../../lib/supabasePagination'
 
 type Doc = {
@@ -133,7 +132,6 @@ export default function QualidadeProcedimentos() {
 
   return (
     <main className="min-h-screen bg-[#F4FBFD] p-3 text-[#123B50]">
-      <QualitySidebar active="/qualidade/procedimentos" />
       <div className="mx-auto max-w-[1800px] space-y-3">
         <header className="flex flex-wrap items-end gap-2 border-b border-slate-200 pb-2">
           <div className="mr-auto">

@@ -7,7 +7,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { AlertTriangle, ClipboardList, RefreshCw, Save, ShieldCheck } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
-import QualitySidebar from '../../components/quality/QualitySidebar'
 
 type FmeaRow = {
   id: string
@@ -100,7 +99,7 @@ export default function QualidadeFMEA() {
     }
   }
 
-  return <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900"><QualitySidebar active="/qualidade/fmea" />
+  return <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900">
       <header className="mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">
         <ShieldCheck size={17} className="text-[#2D8DB8}" />
         <div><h1 className="text-[13px] font-semibold text-[#123B50]">Matriz de risco de processo</h1><p className="text-[9px] text-slate-500">Escala de 1 a 10 · NPR calculado em tempo real · registros segregados por empresa</p></div>

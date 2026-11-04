@@ -17,7 +17,6 @@ import {
   Search, Server, X, Layers, Save, Eye
 } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
-import QualitySidebar from '../../components/quality/QualitySidebar'
 
 type Product = { id: string; codigo: string; nome: string }
 type GenealogiaRow = {
@@ -217,7 +216,6 @@ export default function QualidadeGenealogiaLote() {
 
   return (
     <main className="min-h-screen bg-[#0E1E2F] p-2.5 text-[#F4FBFD] antialiased md:p-3">
-      <QualitySidebar active="/qualidade/genealogia-lote" />
       <div className="mx-auto mt-2 max-w-[1800px] space-y-3 font-mono">
         <header className="flex flex-wrap items-center justify-between gap-3 border border-[#2E4A62] bg-[#0D2638] px-3 py-2.5">
           <div className="flex items-center gap-2.5">

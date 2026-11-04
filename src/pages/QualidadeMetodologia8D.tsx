@@ -8,7 +8,6 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Save, Plus, Printer, RefreshCw } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import QualitySidebar from '../components/quality/QualitySidebar'
 
 type Rnc = { id: string; numero_rpnc: string; descricao_nao_conformidade: string; origem: string | null; gravidade: string | null; lote_producao: string | null; quantidade_segregada: number | null; bloqueia_lote: boolean | null; status: string; criado_em: string; data_ocorrencia?: string | null; inspetor_id?: string | null; disposicao_fisica?: string | null; requisito_violado?: string | null; evidencias_objetivas?: unknown; investigacao?: string | null }
 type OitoD = {
@@ -175,7 +174,6 @@ export default function QualidadeMetodologia8D() {
   }
 
   return <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900"><div className="mx-auto max-w-[1800px] space-y-3">
-    <QualitySidebar active="/qualidade/metodologia-8d" />
     <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3"><div><p className="text-xs font-bold text-sky-700">QUALIDADE &gt; METODOLOGIA 8D</p><h1 className="text-xl font-bold text-slate-950">Tratativa de Anomalias — Protocolo 8D</h1></div><div className="flex flex-wrap gap-2"><button type="button" onClick={startNew} className="erp-row-action"><Plus size={14} className="mr-1"/>NOVO 8D</button><button type="button" onClick={() => void load()} disabled={busy} className="erp-row-action"><RefreshCw size={14} className="mr-1"/>ATUALIZAR</button><button type="button" onClick={() => void save()} disabled={busy} className="erp-row-action"><Save size={14} className="mr-1"/>SALVAR 8D</button><button type="button" onClick={() => window.print()} className="erp-row-action"><Printer size={14} className="mr-1"/>IMPRIMIR</button></div></header>
     {error && <p role="alert" className="border border-red-300 bg-red-50 p-3 text-sm text-red-900">{error}</p>}
     {msg && <p role="status" className="border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-900">{msg}</p>}

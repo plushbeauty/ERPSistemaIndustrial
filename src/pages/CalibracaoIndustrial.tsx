@@ -14,7 +14,6 @@ import { Download, History, LockKeyhole, Plus, Printer, RefreshCw, Save, ShieldC
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '../components/ui/dialog'
-import QualitySidebar from '../components/quality/QualitySidebar'
 
 type NumericText = string
 type Equipment = {
@@ -365,7 +364,6 @@ export default function CalibracaoIndustrial() {
 
   return <main className="min-h-screen bg-[#F4FBFD] p-3 text-[#123B50] print:bg-white print:p-0">
     <div className="mx-auto max-w-[1600px] space-y-3">
-      <QualitySidebar active="/qualidade/calibracao" />
       <header className="flex flex-wrap items-center justify-between gap-2 border-b border-[#C8E3EE] pb-3">
         <div><p className="text-[9px] font-bold uppercase tracking-[.16em] text-[#2D8DB8]">ERP INDUSTRIAL · SGQ · METROLOGIA</p><h1 className="text-[15px] font-semibold">Calibração e Equipamentos de Medição</h1><p className="text-[10px] text-slate-500">Cadastro técnico, rastreabilidade, certificados e bloqueio metrológico</p></div>
         <div className="flex flex-wrap gap-1.5 print:hidden">

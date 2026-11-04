@@ -7,7 +7,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ClipboardCheck, Plus, Printer, RefreshCw, Save } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import QualitySidebar from '../components/quality/QualitySidebar'
 
 type Score = number | ''
 type AuditRow = {
@@ -135,7 +134,6 @@ export default function QualidadeAuditoria5S() {
   return (
     <main className="min-h-screen bg-[#EAF3F7] p-3 text-[#123B50]">
       <div className="mx-auto max-w-[1500px] space-y-3">
-        <QualitySidebar active="/qualidade/auditoria-5s" />
         <header className="flex flex-wrap items-center justify-between gap-3 border-b-4 border-[#48B7C7] bg-gradient-to-r from-[#123B50] to-[#2D8DB8] p-3 text-white">
           <div className="flex items-center gap-2">
             <span className="grid size-8 place-items-center border border-[#74C8D8] bg-[#0D3448]/60 text-[#9CE8EE]"><ClipboardCheck size={17} /></span>

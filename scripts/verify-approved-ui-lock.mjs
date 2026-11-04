@@ -13,6 +13,7 @@ const app = read('src/AppEntryV2.tsx')
 const bootstrap = read('src/AppBootstrap.tsx')
 const page = read('src/pages/PagePrincipal.tsx')
 const shell = read('src/components/layout/ERPHorizontalShell.tsx')
+const sgqTablet = read('src/components/quality/qualityTabletModules.ts')
 const planGate = read('src/components/quality/QualityPlanGate.tsx')
 
 const requiredFiles = [
@@ -44,11 +45,13 @@ const checks = [
   ['Tenant isolation and Master identity contract remain present', bootstrap.includes("from('erp_usuarios')") && bootstrap.includes("from('erp_empresas')") && bootstrap.includes('empresa_id') && bootstrap.includes('nivel_admin') && bootstrap.includes('is_master')],
   ['PCP, Paquímetro, Fiscal, Compras and Configurações are nested under PagePrincipal', app.includes('path="pcp"') && app.includes('path="paquimetro"') && app.includes('path="fiscal"') && app.includes('path="compras"') && app.includes('path="administracao-configuracoes"')],
   ['RH, Compras, RPNC and Fichas de Processo remain registered after login', app.includes('path="rh"') && app.includes('path="qualidade/rpnc"') && app.includes('path="compras/solicitacao"') && app.includes('path="compras/requisicoes"') && app.includes('path="pcp/fichas-processo"')],
-  ['Start menu exposes RH, PCP Fichas, RPNC and Compras entries', shell.includes("label: 'RH / Departamento Pessoal'") && shell.includes("label: 'Fichas de Processo'") && shell.includes("label: 'RPNC · formulário único'") && shell.includes("label: 'Solicitação de Compra'")],
+  // Ordem do proprietario (#108): a Qualidade saiu do dropdown do Iniciar e passou a abrir o painel
+  // flutuante do SGQ, entao o RPNC e conferido no catalogo do tablet, nao mais no shell.
+  ['Start menu exposes RH, PCP Fichas, RPNC and Compras entries', shell.includes("label: 'RH / Departamento Pessoal'") && shell.includes("label: 'Fichas de Processo'") && sgqTablet.includes("route: '/pageprincipal/qualidade/rpnc'") && shell.includes("label: 'Solicitação de Compra'")],
   ['Barra Windows 11 da base esta morta', !shell.includes('BarraWindows11') && !existsSync('src/components/layout/BarraWindows11.tsx')],
   ['Sem destaque laranja no menu', !shell.includes('isUpdated') && !shell.includes('is-updated-orange') && !shell.includes('is-new-icon')],
   ['Legacy URLs redirect into the shared workspace', app.includes('Navigate to="/pageprincipal"') && app.includes('Navigate to="/pageprincipal/pcp"') && app.includes('Navigate to="/pageprincipal/paquimetro"') && app.includes('Navigate to="/pageprincipal/fiscal"') && app.includes('Navigate to="/pageprincipal/compras"') && app.includes('Navigate to="/pageprincipal/administracao-configuracoes"')],
-  ['Start menu preserves Principal, PCP, Qualidade, Fiscal, Compras and Configurações', shell.includes("label: 'Principal'") && shell.includes("label: 'Engenharia e PCP'") && shell.includes("label: 'Qualidade / Paquímetro'") && shell.includes("label: 'Fiscal'") && shell.includes("label: 'Compras'") && shell.includes("label: 'Configurações'")],
+  ['Start menu preserves Principal, PCP, Qualidade, Fiscal, Compras and Configurações', shell.includes("label: 'Principal'") && shell.includes("label: 'Engenharia e PCP'") && shell.includes("label: 'Sistema SGQ'") && shell.includes("label: 'Fiscal'") && shell.includes("label: 'Compras'") && shell.includes("label: 'Configurações'")],
   ['Plan access checks normalize nested PagePrincipal routes', planGate.includes("path.startsWith('/pageprincipal/')") && planGate.includes("path === '/paquimetro'")],
   ['Shared compact form, grid, table and action styles are loaded', app.includes("synqra-workspace-standard.css") && existsSync('src/styles/synqra-workspace-standard.css')],
 ]

@@ -6,7 +6,6 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import QualitySidebar from '../components/quality/QualitySidebar'
 import { ArrowDownCircle, ArrowUpCircle, ClipboardCheck, Factory, FileText, Gauge, Plus, RefreshCw, Truck, Users, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -46,8 +45,7 @@ export default function CentraisIndustriais({module}:{module:Module}){
  async function addFinance(e:React.FormEvent<HTMLFormElement>){e.preventDefault();if(!profile?.empresa_id)return;const f=new FormData(e.currentTarget);const {error}=await supabase.from('erp_contas_pagar').insert({empresa_id:profile.empresa_id,descricao:String(f.get('descricao')),documento:String(f.get('documento')||''),valor:Number(f.get('valor')),vencimento:String(f.get('vencimento')),status:'aberta'});if(error){setError(error.message);return}setForm(false);setRefresh(x=>x+1)}
  async function addExpedicao(e:React.FormEvent<HTMLFormElement>){e.preventDefault();if(!profile?.empresa_id)return;const f=new FormData(e.currentTarget);const {error}=await supabase.from('erp_expedicoes').insert({empresa_id:profile.empresa_id,numero:Number(f.get('numero')),status:'preparacao',transportadora:String(f.get('transportadora')||''),rastreio:String(f.get('rastreio')||''),observacoes:String(f.get('observacoes')||'')});if(error){setError(error.message);return}setForm(false);setRefresh(x=>x+1)}
  return <main style={{minHeight:'100vh',background:'#F4FBFD',padding:'12px',fontFamily:'Inter,system-ui,sans-serif',color:'#123B50'}}>
-  {(module==='metrologia'||module==='refugos')&&<QualitySidebar active={module==='metrologia'?'/qualidade/metrologia':'/qualidade/refugos'} />}
-  <header style={{display:'flex',justifyContent:'space-between',gap:12,alignItems:'center',marginBottom:12,flexWrap:'wrap'}}>
+    <header style={{display:'flex',justifyContent:'space-between',gap:12,alignItems:'center',marginBottom:12,flexWrap:'wrap'}}>
    <div><div style={{fontSize:10,fontWeight:800,letterSpacing:'.1em',color:'#2D8DB8'}}>ERP INDUSTRIAL / OPERAÇÃO</div><h1 style={{margin:'4px 0',fontSize:16,fontWeight:700}}>{title}</h1><p style={{margin:0,color:'#536B76',fontSize:11}}>{desc}</p></div>
    <div style={{display:'flex',gap:8}}><button onClick={()=>setRefresh(x=>x+1)} aria-label="Atualizar" style={btn(false)}><RefreshCw size={17}/></button>{(module==='financeiro'||module==='expedicao')&&!profile?.is_master&&<button onClick={()=>setForm(true)} style={btn(true)}><Plus size={17}/> Novo registro</button>}</div>
   </header>

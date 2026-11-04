@@ -8,7 +8,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ArrowRight, Printer, FileText } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
-import QualitySidebar from '../components/quality/QualitySidebar'
 
 type Doc = {
   id: string
@@ -153,7 +152,6 @@ export default function QualidadeListaMestre() {
       </header>
 
       <div data-quality-workspace className="mx-auto grid max-w-[1800px] grid-cols-1 gap-5 p-4 grid-cols-1">
-        <QualitySidebar active="/qualidade/lista-mestre" />
 
         <section className="rounded-md border border-slate-200 bg-white p-5 shadow-sm">
           {error && (

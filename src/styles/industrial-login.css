@@ -6,6 +6,8 @@
  *             caixa mais estreita, bloco encostado à direita e escala de abertura menor.
  * @REVISAO_3: REV-LOGIN-BLOCO-DIREITA-20261102-02 — painel fixado na trilha 2 do shell; em auto-place ele
  *             caía na trilha larga (marca oculta) e media 582px a 398px da borda em vez de encostar à direita.
+ * @REVISAO_4: REV-LOGIN-ZOOM-MENOR-20261103-01 — ordem do proprietário (#106): a foto do fundo continuava
+ *             grande demais; deixa de cobrir o palco e passa a ser uma faixa de no máximo 65% da altura.
  * @STATUS_APROVACAO: LAYOUT APROVADO PELO PROPRIETÁRIO EM 2026-11-01; AJUSTES DE 2026-11-02 ORDENADOS PELO PROPRIETÁRIO
  */
 
@@ -39,14 +41,30 @@
   flex-direction: column;
   overflow: hidden;
   background-color: var(--lg-navy-deep);
-  background-image: var(--lg-photo);
-  background-size: cover;
-  background-position: center left;
-  background-repeat: no-repeat;
+  /* Ordem do proprietario em 2026-11-03 (#106): "a imagem de fundo do login continua grande,
+     diminuir mais, dar menos zoom nela". A arte saiu do background do palco (cover a ampliava
+     ate a tela inteira) e virou uma faixa em :before com no maximo 65% da altura. */
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--lg-glass-text);
 }
+/* Faixa da foto: 16:9 nativo da arte, encostada a esquerda e verticalmente centralizada.
+   O mask radial dissolve a borda direita e as bordas superior/inferior no navy do palco,
+   senao a arte leria como um retangulo colado sobre o fundo. */
 .auth-screen:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 0;
+  width: min(74vw, 116vh);
+  aspect-ratio: 1920 / 1081;
+  pointer-events: none;
+  background: var(--lg-photo) left center / cover no-repeat;
+  -webkit-mask-image: radial-gradient(110% 70% at 0% 50%, #000 45%, rgba(0, 0, 0, 0) 100%);
+  mask-image: radial-gradient(110% 70% at 0% 50%, #000 45%, rgba(0, 0, 0, 0) 100%);
+}
+.auth-screen:after {
   content: "";
   position: absolute;
   inset: 0;
@@ -247,10 +265,21 @@
 }
 
 @media (max-width: 1040px) {
-  .auth-screen {
-    --lg-photo: url('/images/login-fabrica-sm.webp');
-    background-image: linear-gradient(168deg, rgba(7, 26, 40, 0.9) 0%, rgba(4, 18, 28, 0.96) 100%), var(--lg-photo);
-    background-position: center top;
+  .auth-screen { --lg-photo: url('/images/login-fabrica-sm.webp'); }
+  /* Em tablet/celular a faixa volta a cobrir o palco inteiro (a marca DOM assume o lugar da
+     marca impressa na arte), entao o mask e descartado e o escurecimento fica no :after. */
+  .auth-screen:before {
+    top: 0;
+    transform: none;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    background: var(--lg-photo) center top / cover no-repeat;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .auth-screen:after {
+    background: linear-gradient(168deg, rgba(7, 26, 40, 0.9) 0%, rgba(4, 18, 28, 0.96) 100%);
   }
   .auth-shell { grid-template-columns: minmax(0, 1fr); justify-items: center; align-content: center; gap: 22px; }
   .auth-brand { display: flex; }

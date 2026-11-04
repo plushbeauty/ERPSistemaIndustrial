@@ -9,7 +9,6 @@ import { Check, ClipboardCheck, RefreshCw, Search, ShieldCheck, TriangleAlert, X
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import { useLocation } from 'react-router-dom'
-import QualitySidebar from '../components/quality/QualitySidebar'
 import QualitySPCChart from '../components/industrial/QualitySPCChart'
 
 type Lot = { id: string; lote_interno: string; lote_fornecedor: string | null; produto_id: string; fornecedor_id: string | null; nf_numero: string | null; quantidade_recebida: number; status_inspecao: string | null }
@@ -275,7 +274,7 @@ export default function QualidadeIndustrial() {
   const supplierMap = useMemo(() => new Map(suppliers.map((supplier) => [supplier.id, supplier.razao_social])), [suppliers])
 
   return (
-    <main className="min-h-screen bg-[#F4FBFD] text-[#123B50]"><div className="mx-auto max-w-[1800px] space-y-3 p-3"><QualitySidebar active={location.pathname} /><div className="qms-compact">
+    <main className="min-h-screen bg-[#F4FBFD] text-[#123B50]"><div className="mx-auto max-w-[1800px] space-y-3 p-3"><div className="qms-compact">
       <div className="qms-compact">
         <div className="qms-tabs">
           {[

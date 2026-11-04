@@ -16,7 +16,7 @@ const checks = [
   ['Gate de sessão Supabase preservado', bootstrap.includes('function AccessGate') && bootstrap.includes('supabase.auth.getSession()')],
   ['Perfil ERP ativo e soft-delete verificados', bootstrap.includes(".from('erp_usuarios')") && bootstrap.includes(".eq('ativo', true)") && bootstrap.includes(".is('deleted_at', null)")],
   ['Isolamento por empresa e validação Master preservados', bootstrap.includes("empresa_id") && bootstrap.includes("nivel_admin") && bootstrap.includes("is_master") && bootstrap.includes("MASTER")],
-  ['Menu ativo contém os módulos preservados', shell.includes("label: 'Principal'") && shell.includes("label: 'Engenharia e PCP'") && shell.includes("label: 'Fiscal'") && shell.includes("label: 'Qualidade / Paquímetro'")],
+  ['Menu ativo contém os módulos preservados', shell.includes("label: 'Principal'") && shell.includes("label: 'Engenharia e PCP'") && shell.includes("label: 'Fiscal'") && shell.includes("label: 'Sistema SGQ'")],
 ]
 
 const failures = checks.filter(([, ok]) => !ok)
