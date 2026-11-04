@@ -51,9 +51,10 @@ const menus: MenuItem[] = [
     { label: 'Estorno Documental', route: '/pageprincipal/controladoria/retificacao-assistente', icon: FileText },
     { label: 'Auditoria de Comissões', route: '/pageprincipal/controladoria/auditoria-comissoes', icon: Calculator },
   ] },  { label: 'Principal', route: '/pageprincipal', icon: Home },  { label: 'Cadastros Mestres', route: '/pageprincipal/cadastros/produtos', icon: Boxes, children: [
+    // Um link por tela (ordem do proprietario em 2026-11-04): ficha técnica, etiquetas e regras de código são
+    // abas do Cadastro de Produtos; a tela antiga ficou apenas como cadastro fiscal.
     { label: 'Cadastro de Produtos', route: '/pageprincipal/cadastros/produtos', icon: Boxes },
-    { label: 'Ficha Técnica e Etiquetas', route: '/pageprincipal/cadastros/produtos/ficha-tecnica', icon: FileText },
-    { label: 'Parâmetros de Código', route: '/pageprincipal/cadastros/produtos/parametros-codigo', icon: Barcode },
+    { label: 'Cadastro Fiscal do Produto', route: '/pageprincipal/cadastros/produtos/fiscal', icon: Percent },
   ] },  { label: 'RH / Departamento Pessoal', route: '/pageprincipal/rh', icon: Users, children: [
     { label: 'Gestão de pessoas', route: '/pageprincipal/rh', icon: Users },
     { label: 'Funcionários', route: '/pageprincipal/rh/funcionarios', icon: UserRound },

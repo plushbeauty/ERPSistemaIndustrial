@@ -497,10 +497,10 @@ const introCatalog: Record<string, PageIntro> = {
   },
   'cadastros/produtos': {
     module: 'Cadastros Mestres', title: 'Cadastro de Produtos',
-    description: 'Identificação, fiscal, estoque, dimensional e produção do item, gravados em erp_produtos pela empresa autenticada.',
+    description: 'Tela mestre de produto em quatro abas: Listagem Geral, Ficha Técnica, Código de Barras e Regras do Código, gravadas em erp_produtos e erp_codigos pela empresa autenticada.',
     help: {
-      fill: ['Comece pela identificação: código/SKU, descrição e unidade — o SKU segue a regra de formação de código.', 'Preencha a aba fiscal (NCM, CFOP, tributação) antes de usar o produto em nota.', 'Informe estoque: ponto de reposição, endereço padrão e controle por lote ou validade quando aplicável.', 'Complete peso, dimensões e dados de produção; são usados em custo, cubagem e capacidade.'],
-      use: ['Produto cadastrado aparece em todas as telas: compra, estoque, BOM, OP, pedido e certificado.', 'Item com foto e descrição corretos alimenta automaticamente a Ficha de Processo.', 'Alterar unidade ou NCM de produto já movimentado afeta cálculos antigos: avalie antes.'],
+      fill: ['Procure o item na Listagem Geral e abra a Ficha Técnica para cadastrar ou alterar — nada é digitado de memória.', 'Na aba Regras do Código defina prefixo, separador e sequência antes de criar o primeiro item novo.', 'A aba Código de Barras monta a etiqueta ZPL do produto já salvo.'],
+      use: ['Produto cadastrado aparece em todas as telas: compra, estoque, BOM, OP, pedido e certificado.', 'Item com foto e descrição corretos alimenta automaticamente a Ficha de Processo.', 'O cadastro fiscal (NCM, CFOP, tributação) tem tela própria no mesmo menu.'],
       watch: 'Cadastro incompleto é a causa mais comum de erro em nota, saldo e custo.',
     },
   },
@@ -512,20 +512,13 @@ const introCatalog: Record<string, PageIntro> = {
       use: ['Use para enviar especificação a cliente ou fornecedor.', 'Campo em branco no A4 significa cadastro incompleto: complete na tela de Cadastro de Produtos.'],
     },
   },
-  'cadastros/produtos/ficha-tecnica': {
-    module: 'Cadastros Mestres', title: 'Ficha Técnica e Etiquetas',
-    description: 'Listagem geral, ficha técnica, código de barras em ZPL e regras de formação do código do produto.',
+  'cadastros/produtos/fiscal': {
+    module: 'Cadastros Mestres', title: 'Cadastro Fiscal do Produto',
+    description: 'Ficha técnica mestre e inteligência fiscal do item: NCM, CFOP, tributação, grupo, unidade, endereço de estoque e dados de produção.',
     help: {
-      fill: ['Escolha o produto para ver a ficha técnica completa e gerar a etiqueta.'],
-      use: ['O código de barras em ZPL vai direto para a impressora térmica industrial.', 'Consulte aqui a regra usada para formar o SKU antes de criar produto novo.'],
-    },
-  },
-  'cadastros/produtos/parametros-codigo': {
-    module: 'Cadastros Mestres', title: 'Parâmetros de Código',
-    description: 'Prefixo, separador, modo e dígitos da numeração de SKUs gravada em erp_codigos.',
-    help: {
-      fill: ['Defina prefixo, separador, sequência e quantidade de dígitos por tipo de item.', 'Grave com a regra validada: a numeração é controlada no banco.'],
-      use: ['Todo produto novo segue esta regra automaticamente.', 'Mudar a regra com itens já cadastrados não renomeia o que existe; gera apenas uma nova família de código.'],
+      fill: ['Preencha a aba fiscal (NCM, CFOP e tributação) antes de usar o produto em nota fiscal.', 'Vincule grupo, unidade de medida e endereço de estoque; sem eles o saldo e a cubagem ficam errados.', 'Complete peso, dimensões e dados de produção — são usados em custo, capacidade e OP.'],
+      use: ['Alterar unidade ou NCM de produto já movimentado afeta cálculos antigos: avalie antes.', 'O emitente de nota lê exatamente estes parâmetros no momento da emissão.'],
+      watch: 'Item sem NCM definido bloqueia ou erra a emissão da nota fiscal.',
     },
   },
   'cadastros/ajuda/ficha-tecnica': {

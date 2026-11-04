@@ -117,7 +117,6 @@ const PCPCapacidade = lazy(() => import('./pages/PCPCapacidade'))
 // Cadastro de Produtos — migrado em 2026-10-30 da branch legada para a origem única de código
 const ProdutosVendasIndustrial = lazy(() => import('./pages/ProdutosVendasIndustrial'))
 const ModuloCadastroProdutos = lazy(() => import('./pages/cadastro-produtos/ModuloCadastroProdutos'))
-const ParametrosCodigo = lazy(() => import('./pages/cadastro-produtos/ParametrosCodigo'))
 const HelpFichaTecnica = lazy(() => import('./pages/cadastro-produtos/HelpFichaTecnica'))
 const HelpListagemProdutos = lazy(() => import('./pages/cadastro-produtos/HelpListagemProdutos'))
 const HelpParametrosCodigo = lazy(() => import('./pages/cadastro-produtos/HelpParametrosCodigo'))
@@ -362,10 +361,14 @@ export default function AppEntryV2() {
               <Route path="fiscal/estorno" element={<QualityPlanGate><EstornoLancamentos /></QualityPlanGate>} />
               <Route path="fiscal/razao" element={<QualityPlanGate><PainelRazaoGeral /></QualityPlanGate>} />
               <Route path="master" element={<Master />} />
-              <Route path="cadastros/produtos" element={<ProdutosVendasIndustrial />} />
+              {/* Ordem do proprietario em 2026-11-04: "MANDEI TELA NOVA E NAO FOI APLICADO" e "NAO DEIXAR
+                  VARIAS TELAS COM MESMA FUNCÇAO". A tela nova (modulo em abas) passa a ser o cadastro
+                  principal; a tela antiga fica so como cadastro fiscal; ficha e parametros viram abas. */}
+              <Route path="cadastros/produtos" element={<ModuloCadastroProdutos />} />
               <Route path="cadastros/produtos/imprimir" element={<ProdutosVendasIndustrial />} />
-              <Route path="cadastros/produtos/ficha-tecnica" element={<ModuloCadastroProdutos />} />
-              <Route path="cadastros/produtos/parametros-codigo" element={<ParametrosCodigo />} />
+              <Route path="cadastros/produtos/fiscal" element={<ProdutosVendasIndustrial />} />
+              <Route path="cadastros/produtos/ficha-tecnica" element={<Navigate to="/pageprincipal/cadastros/produtos?aba=ficha" replace />} />
+              <Route path="cadastros/produtos/parametros-codigo" element={<Navigate to="/pageprincipal/cadastros/produtos?aba=regras" replace />} />
               <Route path="cadastros/ajuda/ficha-tecnica" element={<HelpFichaTecnica />} />
               <Route path="cadastros/ajuda/listagem-produtos" element={<HelpListagemProdutos />} />
               <Route path="cadastros/ajuda/parametros-codigo" element={<HelpParametrosCodigo />} />

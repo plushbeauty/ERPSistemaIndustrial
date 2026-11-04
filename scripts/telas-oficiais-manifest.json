@@ -1501,11 +1501,11 @@
     },
     {
       "path": "src/pages/cadastro-produtos/ModuloCadastroProdutos.tsx",
-      "sha": "d752d57f68ce654f1005b92759dad0f522e90a66",
+      "sha": "7910c1e4bbf184322b03b8bf7aaebd8966ad1b31",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PRODUTOS-MIGRACAO-20261030-01 — migracao para a origem unica de codigo; abas proprias e saida da moldura fixa",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "MIGRACAO AUTORIZADA PELO PROPRIETARIO EM 2026-10-30 (opcao \"migrar para a origem unica\")"
+      "revisao": "REV-PRODUTOS-TELA-UNICA-20261104-01 — vira a tela principal de /cadastros/produtos; abre a aba pela URL (?aba=) para absorver as rotas antigas de ficha técnica e de parâmetros",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-04: \"MANDEI TELA NOVA E NAO FOI APLICADO\" e \"NAO DEIXAR VARIAS TELAS COM MESMA FUNCÇAO OU PARECIDADAS\""
     },
     {
       "path": "src/pages/cadastro-produtos/ParametrosCodigo.tsx",
