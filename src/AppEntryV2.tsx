@@ -61,6 +61,7 @@ const CustomerDnPod = lazy(() => import('./pages/CustomerDnPod'))
 const Master = lazy(() => import('./pages/Master'))
 const PCPAreaFuncionario = lazy(() => import('./pages/PCPAreaFuncionario'))
 const PCPTabletOperador = lazy(() => import('./pages/PCPTabletOperador'))
+const CertificadoQualidade = lazy(() => import('./pages/CertificadoQualidade'))
 const PCPCapacidade = lazy(() => import('./pages/PCPCapacidade'))
 // Cadastro de Produtos — migrado em 2026-10-30 da branch legada para a origem única de código
 const ProdutosVendasIndustrial = lazy(() => import('./pages/ProdutosVendasIndustrial'))
@@ -96,6 +97,7 @@ export default function AppEntryV2() {
               <Route path="qualidade/rpnc" element={<QualityPlanGate><QualidadeRPNC /></QualityPlanGate>} />
               <Route path="qualidade/rpnc-formulario" element={<QualityPlanGate><QualityRpncForm /></QualityPlanGate>} />
               <Route path="qualidade/auditorias" element={<QualityPlanGate><QualityAuditsList /></QualityPlanGate>} />
+              <Route path="qualidade/certificado" element={<QualityPlanGate><CertificadoQualidade /></QualityPlanGate>} />
               <Route path="comissoes" element={<Navigate to="/pageprincipal/comissoes/regras" replace />} />
               <Route path="comissoes/regras" element={<CadastroRegras />} />
               <Route path="comissoes/calculo" element={<CalculoComissao />} />
