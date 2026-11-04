@@ -510,7 +510,7 @@ export default function AccessControlSettings() {
                       {assignableRoles.map(item => <option key={item.roleId} value={item.roleId}>{item.nome} · nível {item.nivel}</option>)}
                     </select>
                   </div>
-                  <div className="md:col-span-2"><span className={label}>Senha (mín. 12 com A-Z, a-z, 0-9 e símbolo)</span><input type="password" className={input} value={formSenha} onChange={event => setFormSenha(event.target.value)} placeholder="em branco = senha temporária gerada pelo servidor" /></div>
+                  <div className="md:col-span-2"><span className={label}>Senha (mín. 12 com A-Z, a-z, 0-9 e símbolo)</span><input type="password" autoComplete="new-password" className={input} value={formSenha} onChange={event => setFormSenha(event.target.value)} placeholder="em branco = senha temporária gerada pelo servidor" /></div>
                 </div>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <button type="submit" className={primaryButton} disabled={saving || !setorId}><UserPlus size={12}/>{saving ? 'Enviando…' : 'Criar acesso do setor'}</button>
