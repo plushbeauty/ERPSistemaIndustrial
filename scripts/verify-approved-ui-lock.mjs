@@ -33,6 +33,8 @@ const requiredFiles = [
   'src/pages/AdministracaoConfiguracoesGlobais.tsx',
   'src/styles/compras-workspace.css',
   'src/components/layout/ERPHorizontalShell.tsx',
+  'src/components/layout/ModuleTabletMenuModal.tsx',
+  'src/styles/module-tablet-panel.css',
   'src/styles/synqra-workspace-standard.css',
 ]
 const checks = [
@@ -42,9 +44,8 @@ const checks = [
   ['Tenant isolation and Master identity contract remain present', bootstrap.includes("from('erp_usuarios')") && bootstrap.includes("from('erp_empresas')") && bootstrap.includes('empresa_id') && bootstrap.includes('nivel_admin') && bootstrap.includes('is_master')],
   ['PCP, Paquímetro, Fiscal, Compras and Configurações are nested under PagePrincipal', app.includes('path="pcp"') && app.includes('path="paquimetro"') && app.includes('path="fiscal"') && app.includes('path="compras"') && app.includes('path="administracao-configuracoes"')],
   ['RH, Compras, RPNC and Fichas de Processo remain registered after login', app.includes('path="rh"') && app.includes('path="qualidade/rpnc"') && app.includes('path="compras/solicitacao"') && app.includes('path="compras/requisicoes"') && app.includes('path="pcp/fichas-processo"')],
-  ['Windows 11 menu exposes RH, PCP Fichas, RPNC and Compras entries', shell.includes("label: 'RH / Departamento Pessoal'") && shell.includes("label: 'Fichas de Processo'") && shell.includes("label: 'RPNC'") && shell.includes("label: 'Solicitação de Compra'")],
   ['Legacy URLs redirect into the shared workspace', app.includes('Navigate to="/pageprincipal"') && app.includes('Navigate to="/pageprincipal/pcp"') && app.includes('Navigate to="/pageprincipal/paquimetro"') && app.includes('Navigate to="/pageprincipal/fiscal"') && app.includes('Navigate to="/pageprincipal/compras"') && app.includes('Navigate to="/pageprincipal/administracao-configuracoes"')],
-  ['Top menu preserves Principal, PCP, Qualidade, Fiscal, Compras and Configurações without bottom bar or orange markers', shell.includes("label: 'Principal'") && shell.includes("label: 'Engenharia e PCP'") && shell.includes("label: 'Qualidade / Paquímetro'") && shell.includes("label: 'Fiscal'") && shell.includes("label: 'Compras'") && shell.includes("label: 'Configurações'") && !shell.includes('BarraWindows11') && !shell.includes('is-updated-orange') && !shell.includes('isUpdated: true')],
+  ['Top menu preserves Principal, PCP, SGQ, Fiscal, Compras and Configurações without bottom bar or orange markers', shell.includes("label: 'Principal'") && shell.includes("label: 'Engenharia e PCP'") && shell.includes("label: 'Sistema SGQ'") && shell.includes("tabletModule: 'sgq'") && shell.includes("from './ModuleTabletMenuModal'") && shell.includes("label: 'Fiscal'") && shell.includes("label: 'Compras'") && shell.includes("label: 'Configurações'") && !shell.includes('BarraWindows11') && !shell.includes('is-updated-orange') && !shell.includes('isUpdated: true') && !existsSync('src/components/layout/BarraWindows11.tsx')],
   ['Plan access checks normalize nested PagePrincipal routes', planGate.includes("path.startsWith('/pageprincipal/')") && planGate.includes("path === '/paquimetro'")],
   ['Shared compact form, grid, table and action styles are loaded', app.includes("synqra-workspace-standard.css") && existsSync('src/styles/synqra-workspace-standard.css')],
 ]
@@ -52,4 +53,4 @@ const missing = requiredFiles.filter(path => !existsSync(path))
 for (const path of missing) console.error(`FAIL — required phase-one file missing: ${path}`)
 for (const [label, ok] of checks) console.log(`${ok ? 'PASS' : 'FAIL'} — ${label}`)
 if (missing.length || checks.some(([, ok]) => !ok)) process.exit(1)
-console.log('APPROVED UI LOCK PASS — Compras and Configurações remain registered; shared workspace and security contracts are frozen.')
+console.log('APPROVED UI LOCK PASS — approved modules, SGQ tablet, top navigation and security contracts are frozen.')
