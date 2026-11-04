@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Bot, CircleHelp, ChevronDown, UserRound, UserCog, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, FolderOpen, Warehouse, Percent, Scale, ShieldCheck, BookOpen, Landmark, Calculator, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode, Truck, Gauge } from 'lucide-react'
+import { Bot, CircleHelp, ChevronDown, UserRound, UserCog, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, FolderOpen, Warehouse, Percent, Scale, ShieldCheck, BookOpen, Landmark, Calculator, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode, Truck, Gauge, Wrench } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
-import PCPTabletMenuModal from '../PCPTabletMenuModal'
+import ModuleTabletMenuModal, { MODULE_TABLET_PANELS, type ModuleTabletKey } from './ModuleTabletMenuModal'
 import PageIntroCard from './PageIntroCard'
 import { fallbackPageIntro, hasNativeIntroCard, resolvePageIntro } from './pageIntroCatalog'
 import { resolveContextualHelp } from '../../help/contextualHelpCatalog'
@@ -12,7 +12,8 @@ type MenuItem = {
   label: string
   route: string
   icon?: LucideIcon
-  action?: 'pcpTablet'
+  action?: 'moduleTablet'
+  tabletModule?: ModuleTabletKey
   minNivel?: number
   children?: MenuItem[]
 }
@@ -56,45 +57,23 @@ const menus: MenuItem[] = [
     { label: 'Parâmetros de Código', route: '/pageprincipal/cadastros/produtos/parametros-codigo', icon: Barcode },
   ] },
   { label: 'RH / Departamento Pessoal', route: '/pageprincipal/rh', icon: Users },
-  { label: 'Engenharia e PCP', route: '/pageprincipal/pcp', icon: Factory, children: [
-    { label: 'Central PCP', route: '/pageprincipal/pcp', icon: ClipboardList },
-    { label: 'Fichas de Processo', route: '/pageprincipal/pcp/fichas-processo', icon: ClipboardList },
-    { label: 'Roteiro de Operações', route: '/pageprincipal/pcp/roteiros', icon: Route },
-    { label: 'Carga e Capacidade', route: '/pageprincipal/pcp/capacidade', icon: BarChart3 },
-  ] },
+  { label: 'Engenharia e PCP', route: '/pageprincipal/pcp', icon: Factory, action: 'moduleTablet', tabletModule: 'pcp' },
   { label: 'Chão de Fábrica', route: '/pageprincipal/chao-de-fabrica/portal-operador', icon: Monitor, children: [
     { label: 'Portal do Operador', route: '/pageprincipal/chao-de-fabrica/portal-operador', icon: Monitor },
     { label: 'Terminal Touch do Operador', route: '/pageprincipal/chao-de-fabrica/apontamento-operador', icon: Monitor },
     { label: 'Postos de Trabalho', route: '/pageprincipal/chao-de-fabrica/postos', icon: ClipboardList },
   ] },
-  { label: 'Estoque e Almoxarifado', route: '/pageprincipal/estoque/auditoria-saldos', icon: Warehouse, children: [
-    { label: 'Auditoria de Saldos', route: '/pageprincipal/estoque/auditoria-saldos', icon: Scale },
-    { label: 'Balanço de Estoque', route: '/pageprincipal/estoque/balanco', icon: Archive },
-    { label: 'Regras de Depreciação', route: '/pageprincipal/estoque/depreciacao', icon: Percent },
-  ] },
-  { label: 'Qualidade / Paquímetro', route: '/pageprincipal/paquimetro', icon: Ruler, children: [
-    { label: 'Paquímetro Digital', route: '/pageprincipal/paquimetro', icon: Ruler },
-    { label: 'RPNC', route: '/pageprincipal/qualidade/rpnc', icon: ClipboardList },
-    { label: 'Formulário RPNC (Ishikawa / 5 Porquês / CAPA)', route: '/pageprincipal/qualidade/rpnc-formulario', icon: FileText },
-    { label: 'Auditorias da Qualidade', route: '/pageprincipal/qualidade/auditorias', icon: ShieldCheck },
-    { label: 'Certificado de Qualidade', route: '/pageprincipal/qualidade/certificado', icon: ShieldCheck },
-    { label: 'GED / Documentos da Qualidade', route: '/pageprincipal/qualidade/ged', icon: FolderOpen },
-  ] },
+  { label: 'Estoque e Almoxarifado', route: '/pageprincipal/estoque/auditoria-saldos', icon: Warehouse, action: 'moduleTablet', tabletModule: 'estoque' },
+  { label: 'Sistema SGQ', route: '/pageprincipal/qualidade/rpnc', icon: ShieldCheck, action: 'moduleTablet', tabletModule: 'sgq' },
+  { label: 'Manutenção', route: '/pageprincipal/manutencao', icon: Wrench, action: 'moduleTablet', tabletModule: 'manutencao' },
   { label: 'Compras', route: '/pageprincipal/compras', icon: ShoppingCart, children: [
     { label: 'Central de Compras', route: '/pageprincipal/compras', icon: ShoppingCart },
     { label: 'Solicitação de Compra', route: '/pageprincipal/compras/solicitacao', icon: FilePlus2 },
     { label: 'Requisições de Compra', route: '/pageprincipal/compras/requisicoes', icon: ClipboardList },
   ] },
-  { label: 'Configurações', route: '/pageprincipal/administracao-configuracoes', icon: Settings },
+  { label: 'Configurações', route: '/pageprincipal/administracao-configuracoes', icon: Settings, action: 'moduleTablet', tabletModule: 'configuracoes' },
   { label: 'Configurações de Usuário', route: '/pageprincipal/configuracoes-usuario', icon: UserCog, minNivel: 8 },
-  { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText, children: [
-    { label: 'Central Fiscal', route: '/pageprincipal/fiscal', icon: FileText },
-    { label: 'Ano Fiscal', route: '/pageprincipal/fiscal/ano', icon: BookOpen },
-    { label: 'Classificação Fiscal', route: '/pageprincipal/fiscal/classificacao', icon: Landmark },
-    { label: 'Auditoria Documental', route: '/pageprincipal/fiscal/auditoria-documental', icon: ShieldCheck },
-    { label: 'Estorno de Lançamentos', route: '/pageprincipal/fiscal/estorno', icon: RotateCcw },
-    { label: 'Painel Razão Geral', route: '/pageprincipal/fiscal/razao', icon: Scale },
-  ] },
+  { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText, action: 'moduleTablet', tabletModule: 'fiscal' },
   { label: 'Central de Ajuda', route: '/pageprincipal/ajuda', icon: CircleHelp },
 ]
 
@@ -105,7 +84,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [startMenuOpen, setStartMenuOpen] = useState(false)
   const [moduleSearch, setModuleSearch] = useState('')
   const [helpOpen, setHelpOpen] = useState(false)
-  const [pcpTabletOpen, setPcpTabletOpen] = useState(false)
+  const [activeTablet, setActiveTablet] = useState<ModuleTabletKey | null>(null)
   const [now, setNow] = useState(() => new Date())
   const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
   const [dataEpoch, setDataEpoch] = useState(0)
@@ -184,9 +163,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
     : pathname.startsWith('/pageprincipal/chao-de-fabrica') ? 'Chão de Fábrica'
     : pathname.startsWith('/pageprincipal/estoque') ? 'Estoque e Almoxarifado'
-    : pathname.startsWith('/pageprincipal/qualidade') ? 'Qualidade / Paquímetro'
+    : pathname.startsWith('/pageprincipal/qualidade') ? 'Sistema SGQ'
     : pathname.startsWith('/pageprincipal/rh') || pathname.startsWith('/rh') ? 'RH / Departamento Pessoal'
-    : pathname.startsWith('/pageprincipal/paquimetro') ? 'Qualidade / Paquímetro'
+    : pathname.startsWith('/pageprincipal/paquimetro') ? 'Sistema SGQ'
     : pathname.startsWith('/pageprincipal/compras') || pathname.startsWith('/compras') ? 'Compras'
     : pathname.startsWith('/pageprincipal/administracao-configuracoes') || pathname.startsWith('/configuracoes-adm') || pathname.startsWith('/administracao-configuracoes') ? 'Configurações'
     : pathname.startsWith('/pageprincipal/financeiro') || pathname.startsWith('/financeiro') ? 'Financeiro'
@@ -199,14 +178,14 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     : undefined
   const current = currentModuleMenu ?? visibleMenus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
   const normalizedSearch = moduleSearch.trim().toLocaleLowerCase('pt-BR')
-  const searchedMenus = normalizedSearch ? visibleMenus.map(menu => ({ ...menu, children: menu.children?.filter(child => child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)) })).filter(menu => menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.route.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || Boolean(menu.children?.length)) : visibleMenus
+  const searchedMenus = normalizedSearch ? visibleMenus.map(menu => ({ ...menu, children: menu.children?.filter(child => child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)), tabletMatches: menu.tabletModule ? MODULE_TABLET_PANELS[menu.tabletModule].items.some(item => (item.label + ' ' + item.description + ' ' + item.route).toLocaleLowerCase('pt-BR').includes(normalizedSearch)) : false })).filter(menu => menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.route.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || Boolean(menu.children?.length) || menu.tabletMatches) : visibleMenus
   useEffect(() => {
     setOpenMenu(null)
     setStartMenuOpen(false)
   }, [pathname])
-  const openMenuItem = (item: Pick<MenuItem, 'route' | 'action'>) => {
-    if (item.action === 'pcpTablet') {
-      setPcpTabletOpen(true)
+  const openMenuItem = (item: Pick<MenuItem, 'route' | 'action' | 'tabletModule'>) => {
+    if (item.action === 'moduleTablet' && item.tabletModule) {
+      setActiveTablet(item.tabletModule)
       setOpenMenu(null)
       return
     }
@@ -257,7 +236,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
                 return <div className="erp-windows-menu-group" key={menu.label}>
                   <div className={`erp-windows-menu-row ${current?.label === menu.label ? 'is-active' : ''}`}>
                     <button type="button" className="erp-windows-menu-main" onClick={() => {
-                      if (menu.action === 'pcpTablet') { setStartMenuOpen(false); openMenuItem(menu) }
+                      if (menu.action === 'moduleTablet') { setStartMenuOpen(false); openMenuItem(menu) }
                       else if (hasChildren) { setOpenMenu(value => value === menu.label ? null : menu.label);  }
                       else { setStartMenuOpen(false); openMenuItem(menu) }
                     }}>
@@ -312,7 +291,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           <span className="erp-help-floating-avatar"><Bot size={20}/></span><span className="erp-help-floating-label">Ajuda</span>
         </button>
       </div>
-      <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
+      <ModuleTabletMenuModal moduleKey={activeTablet} sessionNivel={sessionNivel} onClose={() => setActiveTablet(null)} onNavigate={route => { setActiveTablet(null); go(route) }} />
 
 
       <style>{`
