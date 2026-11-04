@@ -17,6 +17,7 @@ const Fiscal = lazy(() => import('./pages/Fiscal'))
 const NFeEmissao = lazy(() => import('./pages/NFeEmissao'))
 const SetupADMInicial = lazy(() => import('./pages/SetupADMInicial'))
 const PCPWorkspace = lazy(() => import('./pages/PCPWorkspace'))
+const CentraisIndustriais = lazy(() => import('./pages/CentraisIndustriais'))
 const Paquimetro = lazy(() => import('./pages/QualidadePaquimetroDigital'))
 const ComprasWorkspace = lazy(() => import('./pages/ComprasWorkspace'))
 const SolicitacaoCompra = lazy(() => import('./pages/SolicitacaoCompra'))
@@ -88,6 +89,14 @@ export default function AppEntryV2() {
             <Route path="/pageprincipal" element={<PagePrincipal />}>
               <Route path="ajuda" element={<CentralAjuda />} />
               <Route path="financeiro" element={<FinanceiroWorkspace />} />
+              <Route path="centrais-industriais/financeiro" element={<CentraisIndustriais module="financeiro" />} />
+              <Route path="centrais-industriais/expedicao" element={<CentraisIndustriais module="expedicao" />} />
+              <Route path="centrais-industriais/metrologia" element={<CentraisIndustriais module="metrologia" />} />
+              <Route path="centrais-industriais/treinamentos" element={<CentraisIndustriais module="treinamentos" />} />
+              <Route path="centrais-industriais/auditoria" element={<CentraisIndustriais module="auditoria" />} />
+              <Route path="centrais-industriais/paradas" element={<CentraisIndustriais module="paradas" />} />
+              <Route path="centrais-industriais/refugos" element={<CentraisIndustriais module="refugos" />} />
+              <Route path="centrais-industriais/materiais" element={<CentraisIndustriais module="materiais" />} />
               <Route index element={<AppIndustrial />} />
               <Route path="compras" element={<ComprasWorkspace />} />
               <Route path="compras/solicitacao" element={<SolicitacaoCompra />} />
