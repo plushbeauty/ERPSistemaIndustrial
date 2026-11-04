@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Bot, CircleHelp, ChevronDown, UserRound, UserCog, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, FolderOpen, Warehouse, Percent, Scale, ShieldCheck, BookOpen, Landmark, Calculator, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode } from 'lucide-react'
+import { Bot, CircleHelp, ChevronDown, UserRound, UserCog, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, FolderOpen, Warehouse, Percent, Scale, ShieldCheck, BookOpen, Landmark, Calculator, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode, Truck, Gauge } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -41,6 +41,16 @@ const menus: MenuItem[] = [
     { label: 'Cadastro de Decimais', route: '/pageprincipal/controladoria/cadastro-decimais', icon: Settings, isUpdated: true },
     { label: 'Estorno Documental', route: '/pageprincipal/controladoria/retificacao-assistente', icon: FileText, isUpdated: true },
     { label: 'Auditoria de Comissões', route: '/pageprincipal/controladoria/auditoria-comissoes', icon: Calculator, isUpdated: true },
+  ] },
+  { label: 'Centrais Operacionais', route: '/pageprincipal/centrais-industriais/expedicao', icon: Factory, isUpdated: true, children: [
+    { label: 'Central Financeira Operacional', route: '/pageprincipal/centrais-industriais/financeiro', icon: Wallet, isUpdated: true },
+    { label: 'Expedição e Logística', route: '/pageprincipal/centrais-industriais/expedicao', icon: Truck, isUpdated: true },
+    { label: 'Metrologia e Calibração', route: '/pageprincipal/centrais-industriais/metrologia', icon: Gauge, isUpdated: true },
+    { label: 'Treinamentos e Competências', route: '/pageprincipal/centrais-industriais/treinamentos', icon: Users, isUpdated: true },
+    { label: 'Auditorias e Conformidade', route: '/pageprincipal/centrais-industriais/auditoria', icon: ShieldCheck, isUpdated: true },
+    { label: 'Paradas e Setup', route: '/pageprincipal/centrais-industriais/paradas', icon: Factory, isUpdated: true },
+    { label: 'Refugo e Retrabalho', route: '/pageprincipal/centrais-industriais/refugos', icon: BarChart3, isUpdated: true },
+    { label: 'Materiais e Estoque', route: '/pageprincipal/centrais-industriais/materiais', icon: Warehouse, isUpdated: true },
   ] },
   { label: 'Principal', route: '/pageprincipal', icon: Home },
   { label: 'Cadastros Mestres', route: '/pageprincipal/cadastros/produtos', icon: Boxes, children: [
