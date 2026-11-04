@@ -77,7 +77,7 @@ type RegistroRPNC = {
 type AberturaRPNC = { id: string; numero_rpnc: string; status: string; pasta_evidencias: string; bucket: string }
 type Evidencia = { id: string; nome_arquivo: string; storage_path: string; mime_type: string | null; tamanho_bytes: number; finalidade: string | null; acao_id: string | null }
 type AcaoForm = { id?: string; tipo: 'Contencao' | 'Corretiva' | 'Preventiva'; descricao: string; causa_raiz: string; responsavel_id: string; prazo: string; status?: string }
-type AcaoSalva = AcaoForm & { id: string; responsavel: string | null }
+type AcaoSalva = AcaoForm & { id: string; responsavel: string | null; resultado_eficacia: string | null }
 type Recorrencia = {
   id: string
   numero_rpnc: string
@@ -328,7 +328,7 @@ export default function QualityRpncForm() {
       ])
       const falha = evidenciaRes.error ?? acaoRes.error
       if (falha) throw falha
-      type AcaoRow = { id: string; tipo: string; descricao: string; causa_raiz: string | null; responsavel_id: string; prazo: string; status: string; responsavel: { nome: string } | null }
+      type AcaoRow = { id: string; tipo: string; descricao: string; causa_raiz: string | null; responsavel_id: string; prazo: string; status: string; resultado_eficacia: string | null; responsavel: { nome: string } | null }
       setRpnc(registro)
       setPasta(registro.sgq_pasta_evidencias ?? `${tenantId}/rpnc_${registro.numero_rpnc}`)
       setTratamento(normalizarTratamento(registro.sgq_tratamento_anomalia))
@@ -350,7 +350,7 @@ export default function QualityRpncForm() {
       setEficaciaAprovada(registro.eficacia_aprovada ?? true)
       setAcoes(((acaoRes.data ?? []) as unknown as AcaoRow[]).map((a) => ({
         id: a.id, tipo: a.tipo as AcaoForm['tipo'], descricao: a.descricao ?? '', causa_raiz: a.causa_raiz ?? '',
-        responsavel_id: a.responsavel_id, prazo: a.prazo ?? '', status: a.status, responsavel: a.responsavel?.nome ?? null,
+        responsavel_id: a.responsavel_id, prazo: a.prazo ?? '', status: a.status, responsavel: a.responsavel?.nome ?? null, resultado_eficacia: a.resultado_eficacia ?? null,
       })))
       setFiles([])
       setNotice(`Formulário de ${registro.numero_rpnc} carregado do banco.`)
@@ -661,7 +661,7 @@ export default function QualityRpncForm() {
       id: String(a.id), tipo: String(a.tipo) as AcaoForm['tipo'], descricao: String(a.descricao ?? ''),
       causa_raiz: String(a.causa_raiz ?? ''), responsavel_id: String(a.responsavel_id ?? ''),
       prazo: String(a.prazo ?? ''), status: String(a.status ?? 'Planejada'),
-      responsavel: a.responsavel ? String(a.responsavel) : null,
+      responsavel: a.responsavel ? String(a.responsavel) : null, resultado_eficacia: a.resultado_eficacia ? String(a.resultado_eficacia) : null,
     })))
   }
 
