@@ -27,7 +27,7 @@
 .erp-dense table{font-size:var(--erp-font-table)}
 .erp-dense thead tr{height:var(--erp-grid-head)}
 .erp-dense tbody tr{height:var(--erp-grid-row)}
-.erp-dense button{height:var(--erp-control);min-height:var(--erp-control);font-size:var(--erp-font-field)}
+.erp-dense button:not(.module-tablet-panel *){height:var(--erp-control);min-height:var(--erp-control);font-size:var(--erp-font-field)}
 .erp-dense h1{font-size:var(--erp-title)}
 .erp-dense .erp-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
 .erp-dense .erp-toolbar button{min-height:30px}
@@ -45,7 +45,7 @@
 @media (max-width:1023px){
   .erp-dense .erp-sidebar-label{font-size:11px}
   .erp-dense input:not([type=checkbox]):not([type=radio]):not([type=range]),.erp-dense select{height:30px;min-height:30px;font-size:11px}
-  .erp-dense button{height:30px;min-height:30px;font-size:11px}
+  .erp-dense button:not(.module-tablet-panel *){height:30px;min-height:30px;font-size:11px}
   .erp-dense tbody tr{height:30px}
   .erp-dense .erp-grid th,.erp-dense .erp-grid td{padding:4px 6px}
 }
@@ -56,12 +56,12 @@
   height:30px!important;min-height:30px!important;font-size:11px!important;line-height:14px!important;border-radius:2px!important
 }
 .erp-dense label{font-size:9px!important;line-height:12px!important;margin-bottom:2px}
-.erp-dense button{height:30px!important;min-height:30px!important;font-size:11px!important;line-height:14px!important;border-radius:2px!important}
+.erp-dense button:not(.module-tablet-panel *){height:30px!important;min-height:30px!important;font-size:11px!important;line-height:14px!important;border-radius:2px!important}
 .erp-dense table{font-size:11px}
 .erp-dense thead tr,.erp-dense tbody tr{height:30px}
 .erp-compact input:not([type=checkbox]):not([type=radio]):not([type=range]),.erp-compact select{height:30px!important;min-height:30px!important;font-size:11px!important;line-height:14px!important;border-radius:2px!important}
 .erp-compact label{font-size:9px!important;line-height:12px!important;margin-bottom:2px}
-.erp-compact button{height:30px!important;min-height:30px!important;font-size:11px!important;line-height:14px!important;border-radius:2px!important}
+.erp-compact button:not(.module-tablet-panel *){height:30px!important;min-height:30px!important;font-size:11px!important;line-height:14px!important;border-radius:2px!important}
 
 .erp-vendas aside button{min-height:30px;font-size:11px}
 .erp-vendas table{font-size:11px}
@@ -78,7 +78,7 @@
 .fiscal-workspace .text-3xl{font-size:22px!important;line-height:1.25}.fiscal-workspace .text-2xl{font-size:19px!important;line-height:1.3}.fiscal-workspace .text-xl{font-size:16px!important;line-height:1.3}.fiscal-workspace .text-base{font-size:13px!important;line-height:1.4}.fiscal-workspace .text-sm{font-size:12px!important;line-height:1.4}.fiscal-workspace .text-xs{font-size:11px!important;line-height:1.4}
 .fiscal-workspace label{font-size:9px!important;line-height:12px;font-weight:500!important;color:#334155;margin-bottom:2px}.fiscal-workspace label.text-xs{font-size:9px!important}
 .fiscal-workspace .font-black,.fiscal-workspace .font-extrabold,.fiscal-workspace .font-bold,.fiscal-workspace .font-semibold{font-weight:600!important}
-.fiscal-workspace input:not([type=checkbox]):not([type=radio]):not([type=range]),.fiscal-workspace select,.fiscal-workspace button,.fiscal-workspace a[role=button]{box-sizing:border-box;height:30px!important;min-height:30px!important;border-radius:2px!important;font-family:inherit;font-size:11px!important;line-height:14px}
+.fiscal-workspace input:not([type=checkbox]):not([type=radio]):not([type=range]),.fiscal-workspace select,.fiscal-workspace button:not(.module-tablet-panel *),.fiscal-workspace a[role=button]{box-sizing:border-box;height:30px!important;min-height:30px!important;border-radius:2px!important;font-family:inherit;font-size:11px!important;line-height:14px}
 .fiscal-workspace input:not([type=checkbox]):not([type=radio]):not([type=range]),.fiscal-workspace select{padding:0 9px;color:#17333F}
 .fiscal-workspace textarea{box-sizing:border-box;min-height:80px;border-radius:2px!important;font:inherit}
 .fiscal-workspace table{font-size:11px}.fiscal-workspace thead tr{height:30px}.fiscal-workspace tbody tr{height:30px}.fiscal-workspace th{font-size:10px;font-weight:600}
@@ -101,11 +101,11 @@ body{background:#f4f8fa}.erp-dense{background:linear-gradient(180deg,#f7fbfc 0%,
 .erp-dense .text-emerald-600{color:#2d8b6c!important}.erp-dense .text-rose-600,.erp-dense .text-red-600{color:#c94f57!important}.erp-dense .bg-emerald-50{background:#eef9f4!important}.erp-dense .bg-amber-50,.erp-dense .bg-yellow-50{background:#fff8e8!important}.erp-dense .bg-rose-50,.erp-dense .bg-red-50{background:#fff0ef!important}.erp-dense .bg-sky-50,.erp-dense .bg-blue-50{background:#edf7fb!important}
 
 .erp-global-surface{min-height:100vh;background:linear-gradient(180deg,#f7fbfc 0%,#eef5f7 100%);color:#173b4a}.erp-global-surface input:not([type=checkbox]):not([type=radio]),.erp-global-surface select,.erp-global-surface textarea{accent-color:#2D8DB8}.erp-global-surface .bg-white{background-color:#fff!important}.erp-global-surface .border-slate-200{border-color:#d8e6ea!important}.erp-global-surface .text-slate-900{color:#173b4a!important}
-.erp-global-surface input:not([type=checkbox]):not([type=radio]):not([type=range]),.erp-global-surface select{height:30px!important;min-height:30px!important;font-size:11px!important;line-height:14px!important;border-radius:2px!important}.erp-global-surface label{font-size:9px!important;line-height:12px!important;margin-bottom:2px}.erp-global-surface button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button){height:30px!important;min-height:30px!important;font-size:11px!important;line-height:14px!important;border-radius:2px!important}.erp-global-surface table{font-size:11px}.erp-global-surface th{font-size:10px}
+.erp-global-surface input:not([type=checkbox]):not([type=radio]):not([type=range]),.erp-global-surface select{height:30px!important;min-height:30px!important;font-size:11px!important;line-height:14px!important;border-radius:2px!important}.erp-global-surface label{font-size:9px!important;line-height:12px!important;margin-bottom:2px}.erp-global-surface button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button):not(.module-tablet-panel *){height:30px!important;min-height:30px!important;font-size:11px!important;line-height:14px!important;border-radius:2px!important}.erp-global-surface table{font-size:11px}.erp-global-surface th{font-size:10px}
 
 .erp-dense input:not([type=checkbox]):not([type=radio]):not([type=range]),.erp-dense select,.erp-compact input:not([type=checkbox]):not([type=radio]):not([type=range]),.erp-compact select,.erp-global-surface input:not([type=checkbox]):not([type=radio]):not([type=range]),.erp-global-surface select,.fiscal-workspace input:not([type=checkbox]):not([type=radio]):not([type=range]),.fiscal-workspace select,.nfe-page input:not([type=checkbox]):not([type=radio]):not([type=range]),.nfe-page select{height:30px!important;min-height:30px!important;border-radius:2px!important;font-size:11px!important;line-height:14px!important;box-sizing:border-box}
 .erp-dense label,.erp-compact label,.erp-global-surface label,.fiscal-workspace label,.nfe-page label{font-size:9px!important;line-height:12px!important;margin-bottom:2px!important;letter-spacing:.04em;text-transform:uppercase}
-.erp-dense button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button),.erp-compact button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button),.erp-global-surface button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button),.fiscal-workspace button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button),.nfe-page button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button){height:30px!important;min-height:30px!important;border-radius:2px!important;font-size:11px!important;line-height:14px!important}
+.erp-dense button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button),.erp-compact button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button),.erp-global-surface button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button):not(.module-tablet-panel *),.fiscal-workspace button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button),.nfe-page button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button):not(.module-tablet-panel *){height:30px!important;min-height:30px!important;border-radius:2px!important;font-size:11px!important;line-height:14px!important}
 .erp-dense table,.erp-compact table,.erp-global-surface table,.fiscal-workspace table,.nfe-page table{font-size:11px!important}
 .erp-dense thead tr,.erp-dense tbody tr,.erp-compact thead tr,.erp-compact tbody tr,.erp-global-surface thead tr,.erp-global-surface tbody tr{height:30px!important}
 
@@ -146,3 +146,54 @@ body{background:#EDF5F8;color:#123B50}
 .erp-dense tbody tr:nth-child(even),.erp-compact tbody tr:nth-child(even){background:#F3F9FB}
 .erp-dense tbody tr:hover,.erp-compact tbody tr:hover{background:#E2F2F8}
 .erp-dense input:focus,.erp-dense select:focus,.erp-dense textarea:focus,.erp-compact input:focus,.erp-compact select:focus,.erp-compact textarea:focus{border-color:#2D8DB8!important;box-shadow:0 0 0 2px rgba(45,141,184,.14)!important}
+
+
+/* ERP STANDARD PASS — densidade operacional; botões-cartão do painel tablet preservados. */
+.erp-global-surface {
+  color: #123B50;
+  font-family: Inter, Roboto, Arial, sans-serif;
+  font-size: 11px;
+}
+.erp-global-surface h1 { color:#123B50; font-size:18px!important; line-height:1.2!important; font-weight:500!important; }
+.erp-global-surface h2 { color:#123B50; font-size:15px!important; line-height:1.25!important; font-weight:500!important; }
+.erp-global-surface h3 { color:#123B50; font-size:13px!important; line-height:1.3!important; font-weight:500!important; }
+.erp-global-surface p { font-size:10px; line-height:1.4; }
+.erp-global-surface label { color:#536B76; font-size:9px!important; line-height:12px!important; font-weight:500!important; margin-bottom:2px; }
+.erp-global-surface input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+.erp-global-surface select,
+.erp-global-surface button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button):not(.module-tablet-panel *),
+.erp-global-surface a[role="button"] {
+  box-sizing:border-box; min-height:30px; border-radius:2px!important; font-family:inherit; font-size:11px;
+}
+.erp-global-surface input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+.erp-global-surface select { height:30px; padding:0 8px; color:#17333F; }
+.erp-global-surface textarea { min-height:72px; border-radius:2px!important; padding:6px 8px; font:inherit; font-size:11px; }
+.erp-global-surface table { border-collapse:collapse; font-size:10px!important; }
+.erp-global-surface thead tr,.erp-global-surface tbody tr { min-height:30px; }
+.erp-global-surface thead th { min-height:30px; background:#DCECF2; color:#17445A; font-size:9px!important; font-weight:600; text-transform:uppercase; }
+.erp-global-surface tbody td { font-size:10px; line-height:1.25; }
+.erp-global-surface button:focus-visible,.erp-global-surface a:focus-visible,
+.erp-global-surface input:focus-visible,.erp-global-surface select:focus-visible,
+.erp-global-surface textarea:focus-visible { outline:2px solid #2D8DB8; outline-offset:1px; }
+@media (max-width:700px) {
+  .erp-global-surface h1 { font-size:16px!important; }
+  .erp-global-surface h2 { font-size:14px!important; }
+}
+
+/* PCP dashboard: preserve approved card geometry and prevent compressed labels. */
+.pcp-modern-page .quality-kpis article { min-height:88px!important; padding:14px 16px!important; box-sizing:border-box!important; }
+.pcp-modern-page .quality-kpis span { line-height:1.4!important; white-space:normal!important; overflow-wrap:anywhere!important; }
+.pcp-modern-page .quality-kpis strong { line-height:1.2!important; margin-top:6px!important; }
+.pcp-modern-page .pcp-dash-card { min-height:230px!important; padding:16px!important; box-sizing:border-box!important; }
+.pcp-modern-page .pcp-dash-card h2 { line-height:1.4!important; margin-bottom:12px!important; overflow-wrap:anywhere!important; }
+.pcp-modern-page .pcp-flow button { min-height:116px!important; padding:16px!important; box-sizing:border-box!important; }
+.pcp-modern-page .pcp-flow strong { line-height:1.4!important; overflow-wrap:anywhere!important; }
+.pcp-modern-page .pcp-flow small { line-height:1.55!important; overflow-wrap:anywhere!important; }
+.pcp-modern-page .pcp-alert { min-height:52px!important; box-sizing:border-box!important; line-height:1.4!important; }
+.pcp-modern-page .pcp-alert strong,.pcp-modern-page .pcp-alert small { line-height:1.45!important; white-space:normal!important; overflow-wrap:anywhere!important; }
+.pcp-modern-page .pcp-page-head h1 { line-height:1.25!important; overflow-wrap:anywhere!important; }
+.pcp-modern-page .pcp-page-head p { line-height:1.5!important; }
+@media(max-width:800px) {
+  .pcp-modern-page .pcp-dash-card { min-height:0!important; }
+  .pcp-modern-page .pcp-flow button { min-height:100px!important; }
+}
