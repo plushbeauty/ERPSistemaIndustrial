@@ -1,3 +1,9 @@
+/**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-11-03
+ * @REVISAO: REV-TABLET-CARIMBO-20261103-01 — cabecalho de autoria/aprovacao adicionado; nenhuma linha de logica ou visual foi tocada
+ * @STATUS_APROVACAO: APROVADO PELO PROPRIETARIO (ordem de 2026-11-03: "todas as telas novas vao ter revisao, aprovacao e travamento para o vercel nao pegar mais telas antigas")
+ */
 import { useEffect } from 'react'
 import {
   Archive,

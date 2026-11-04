@@ -18,6 +18,15 @@ type MenuItem = {
   children?: MenuItem[]
 }
 
+/**
+ * Carimbo embutido no bundle pelo vite.config.ts no instante do build. Ordem do proprietario em
+ * 2026-11-03: "o vercel voltou com versao antiga do sistema" — sem este selo, um deploy velho e um
+ * deploy novo sao visualmente identicos e ninguem percebe a troca.
+ */
+const carimboBuild = `${__SYNQRA_CARIMBO__.branch}/${__SYNQRA_CARIMBO__.commit.slice(0, 7)}`
+const dataDoCommit = __SYNQRA_CARIMBO__.quando.slice(0, 10)
+const buildForaDaLinhagem = __SYNQRA_CARIMBO__.ambiente === 'production' && __SYNQRA_CARIMBO__.branch !== __SYNQRA_CARIMBO__.branchOficial
+
 const menus: MenuItem[] = [
   { label: 'Financeiro', route: '/pageprincipal/financeiro', icon: Landmark, children: [
     { label: 'Central Financeira', route: '/pageprincipal/financeiro', icon: Wallet },
@@ -368,7 +377,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           {moduleSearch && <button type="button" aria-label="Limpar pesquisa" onClick={() => setModuleSearch('')}><X size={12} /></button>}
         </label>
         <div className="erp-windows-system-title" aria-live="polite">
-          <strong>SYSNQRA ERP & SGQ INDUSTRIAL</strong><span>GESTÃO INTEGRADA · v0.1.7</span>
+          <strong>SYSNQRA ERP & SGQ INDUSTRIAL</strong><span title={`Contrato ${__SYNQRA_CARIMBO__.contrato} · commit de ${dataDoCommit}`}>GESTÃO INTEGRADA · v{__APP_VERSION__} · {carimboBuild}</span>
         </div>
         <div className="erp-windows-session">
           <time dateTime={now.toISOString()}>{new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(now)} <span>·</span> {new Intl.DateTimeFormat('pt-BR', { timeStyle: 'medium' }).format(now)}</time>
@@ -383,6 +392,11 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           <small>Tela atual: {pathname}</small><button type="button" onClick={() => { setHelpOpen(false); navigate('/ajuda') }}>Abrir Central de Ajuda</button>
         </div>}
       </header>
+      {(buildForaDaLinhagem || __SYNQRA_CARIMBO__.commit === 'desconhecido') && <p className="erp-windows-release-alert" role="alert">
+        {buildForaDaLinhagem
+          ? `PRODUÇÃO SERVINDO BUILD FORA DA LINHAGEM OFICIAL: este bundle veio da branch "${__SYNQRA_CARIMBO__.branch}" (${carimboBuild}), e a produção oficial é ${__SYNQRA_CARIMBO__.branchOficial}. As telas abaixo são ANTIGAS — não lance pedido, nota ou apontamento aqui.`
+          : 'BUILD SEM CARIMBO DE GIT: não é possível provar de qual commit este deploy saiu. Trate esta tela como não oficialmente publicada.'}
+      </p>}
       <main key={`erp-workspace-${dataEpoch}`} className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {pageIntro && <PageIntroCard {...pageIntro} />}
         {children}
@@ -435,6 +449,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-windows-help-panel{position:absolute;right:40px;top:46px;z-index:1800;width:min(370px,90vw);max-height:75vh;overflow:auto;padding:10px 12px;border:1px solid #b9cbd3;background:#fff;box-shadow:0 6px 16px rgba(18,59,80,.16);font-size:10px;line-height:1.45;color:#173b4a}
         .erp-windows-help-panel p{margin:5px 0}.erp-windows-help-panel ol,.erp-windows-help-panel ul{margin:4px 0 8px;padding-left:17px}.erp-windows-help-panel li{margin-bottom:3px}.erp-windows-help-panel small{display:block;border-top:1px solid #e2e8f0;padding-top:7px;color:#647b85}
         .erp-windows-help-panel>button{margin-top:7px;height:28px;padding:0 9px;border:1px solid #2d8db8;background:#2d8db8;color:#fff;border-radius:2px;cursor:pointer}
+        .erp-windows-release-alert{margin:0;padding:7px 12px;background:#7f1d1d;color:#fff;font-size:11px;font-weight:700;line-height:1.35}
         .erp-horizontal-workspace{width:100%;max-width:100%;min-width:0;min-height:calc(100vh - 48px);padding:8px;box-sizing:border-box;background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%)}
         .erp-horizontal-workspace .bg-white{background-color:#f8fcfe!important}.erp-horizontal-workspace .bg-slate-50{background-color:#edf6fa!important}.erp-horizontal-workspace .bg-slate-100{background-color:#e7f1f6!important}
         .erp-horizontal-workspace .border-slate-200{border-color:#c9dde5!important}.erp-horizontal-workspace .border-slate-300{border-color:#b9d0dc!important}.erp-horizontal-workspace .text-slate-900{color:#123b50!important}.erp-horizontal-workspace .text-slate-700{color:#315466!important}

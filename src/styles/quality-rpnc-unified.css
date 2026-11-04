@@ -1,3 +1,9 @@
+/*
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-11-03
+ * @REVISAO: REV-RPNC-CSS-CARIMBO-20261103-01 — carimbo de autoria/aprovacao exigido pelo manifesto de telas; nenhuma regra visual foi tocada
+ * @STATUS_APROVACAO: APROVADO PELO PROPRIETARIO (ordem de 2026-11-03: "todas as telas novas vao ter revisao, aprovacao e travamento para o vercel nao pegar mais telas antigas")
+ */
 /* Cards de aba da página unificada de RPNC.
    O contrato global (.erp-design-system-2026) congela todo button em 30px de altura, o que cortava a
    descrição de cada aba. Ordem do proprietário em 2026-11-02: "os cards estão pequenos, as descrições

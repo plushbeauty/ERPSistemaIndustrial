@@ -65,13 +65,13 @@ const oficiais = [
   { path: 'src/pages/Contato.tsx', sha: '770de58912bee0ed0e3e0bc4cddd7262c729ec80', label: 'Publica / Contato' },
   { path: 'src/IndustrialLoginDirect.tsx', sha: '8e42f60fe545793e4382f049c490bb3289ea88d6', label: 'Login / tela sobre a foto da planta com cartao flutuante' },
   { path: 'src/styles/industrial-login.css', sha: 'b8924498059b298c44ccd58899c3358fe67735de', label: 'Login / estilos da tela sobre a foto da planta (REV-LOGIN-ZOOM-MENOR-20261103-01)' },
-  { path: 'src/pages/CertificadoQualidade.tsx', sha: '163a7d532d1999603d278b6e99862db6b5a0a336', label: 'Qualidade / Certificado de Qualidade com cotas dimensionais e desenho anexado (recebido em 2026-11-01)' },
-  { path: 'src/components/layout/ModuleTabletMenuModal.tsx', sha: '2cba6daaf4816b8cc7ad38df42988bd56dd1af1f', label: 'Tablet / painel flutuante de módulos (entrada única do Sistema SGQ)' },
-  { path: 'src/components/quality/qualityTabletModules.ts', sha: 'dfc1260fd8a81ad7c9bbea20ea6071d8bcbb7d48', label: 'Tablet / catálogo das rotinas do SGQ com cada rota conferida no roteador' },
-  { path: 'src/styles/module-tablet-panel.css', sha: 'daea57df6920668b31c8261836bde5aad9b1dc31', label: 'Tablet / estilos do painel flutuante' },
+  { path: 'src/pages/CertificadoQualidade.tsx', sha: 'f83e55451a90c5867297cff6f4f532bcfb45cd91', label: 'Qualidade / Certificado de Qualidade com cotas dimensionais e desenho anexado (recebido em 2026-11-01; REV-CERTIFICADO-CARIMBO-20261103-01 so adicionou o cabecalho de autoria/aprovacao)' },
+  { path: 'src/components/layout/ModuleTabletMenuModal.tsx', sha: '0e7259b7f3fb74769f32d0dc2b97125c09ee2554', label: 'Tablet / painel flutuante de módulos (entrada única do Sistema SGQ)' },
+  { path: 'src/components/quality/qualityTabletModules.ts', sha: 'a1fc2eb3713c465e1a851204d5300490c1a257cd', label: 'Tablet / catálogo das rotinas do SGQ com cada rota conferida no roteador' },
+  { path: 'src/styles/module-tablet-panel.css', sha: '97915a5da6c898af79c43b4a44f10ca45e8c51a3', label: 'Tablet / estilos do painel flutuante' },
   { path: 'src/pages/QualityRpncForm.tsx', sha: '50452b68f2663eb27ec2cfae7120d4c58d4b3478', label: 'Qualidade / RPNC com Ishikawa, 5 Porques e CAPA' },
   { path: 'src/pages/QualityRpncUnified.tsx', sha: '95335212fcf40881e37a37cc063f326d58335235', label: 'Qualidade / RPNC unificada em abas (REV-RPNC-ABAS-CARD-20261102-01: card das abas maior, descricao visivel)' },
-  { path: 'src/styles/quality-rpnc-unified.css', sha: '6462e55f4804cb76ba9ecc277439c045c5634d05', label: 'Qualidade / estilos das abas do RPNC unificado (isengao da regula de 30px)' },
+  { path: 'src/styles/quality-rpnc-unified.css', sha: '38e62419f0b2e3798847abd7f2bbd6622a9acaa3', label: 'Qualidade / estilos das abas do RPNC unificado (isengao da regula de 30px)' },
   { path: 'src/pages/QualityAuditsList.tsx', sha: '34d4247238acaa0cab346056b56953a049c4ec2d', label: 'Qualidade / Painel de auditorias' },
   { path: 'src/pages/DocumentosQualidadeControle.tsx', sha: 'e4fbb85f9dad9fc2ad457567cba27185f0695e9b', label: 'Qualidade / Controle de Alteracao de Documentos em 7 abas (anexo pela URL assinada, nenhum status inventado)' },
   { path: 'src/pages/AccessControlSettings.tsx', sha: '64fbe7d0a0cb14e2aff8565f14fd713de2b13a00', label: 'Configuracoes / Controle de acesso por setor (CRUD de usuarios preservado; sem redesign)' },
@@ -226,6 +226,38 @@ for (const item of oficiais) {
   const content = Buffer.from(read(item.path).replace(/\r\n/g, '\n'), 'utf8')
   const sha = createHash('sha1').update(Buffer.from(`blob ${content.byteLength}\0`, 'utf8')).update(content).digest('hex')
   if (sha !== item.sha) falhas.push(`tela oficial modificada sem ordem: ${item.label} [${item.path}] esperado=${item.sha} encontrado=${sha}`)
+}
+
+/**
+ * MANIFESTO DE APROVACAO — ordem do proprietario em 2026-11-03: "todas as telas novas vao ter
+ * revisao, aprovacao e travamento para o vercel nao pegar mais telas antigas". As 25 telas acima
+ * eram o contrato escrito a mao; abaixo o contrato passa a cobrir TODAS as telas alcancaveis do
+ * sistema, cada uma com @AUTOR, @REVISAO, @DATA_REVISAO_APROVACAO e @STATUS_APROVACAO registrados.
+ * Re-aprovacao exige ordem do proprietario e `npm run telas:manifest` commite junto.
+ */
+const MANIFESTO = 'scripts/telas-oficiais-manifest.json'
+if (!existsSync(path.join(ROOT, MANIFESTO))) {
+  falhas.push(`manifesto de aprovacao ausente: ${MANIFESTO} — gere com npm run telas:manifest depois da ordem do proprietario`)
+} else {
+  const manifesto = JSON.parse(readFileSync(path.join(ROOT, MANIFESTO), 'utf8'))
+  const entradas = new Map((manifesto.telas ?? []).map(item => [item.path, item]))
+  const shaDaTela = rel => {
+    const content = Buffer.from(readFileSync(path.join(ROOT, rel), 'utf8').replace(/\r\n/g, '\n'), 'utf8')
+    return createHash('sha1').update(Buffer.from(`blob ${content.byteLength}\0`, 'utf8')).update(content).digest('hex')
+  }
+  for (const f of arquivosSrc) {
+    const rel = relOf(f)
+    if (!TELAS.some(prefix => rel.startsWith(prefix))) continue
+    if (!alcancaveis.has(f)) continue
+    const entrada = entradas.get(rel)
+    if (!entrada) { falhas.push(`tela alcancavel sem aprovacao no manifesto: ${rel}`); continue }
+    if (!entrada.autor || !entrada.revisao || !entrada.statusAprovacao) falhas.push(`tela sem carimbo de revisao/aprovacao: ${rel}`)
+    const sha = shaDaTela(rel)
+    if (sha !== entrada.sha) falhas.push(`tela travada modificada sem ordem: ${rel} esperado=${entrada.sha} encontrado=${sha}`)
+  }
+  for (const [rel, entrada] of entradas) {
+    if (!existsSync(path.join(ROOT, rel))) falhas.push(`tela aprovada sumiu do sistema: ${rel} (${entrada.revisao})`)
+  }
 }
 
 for (const rel of banidos) {

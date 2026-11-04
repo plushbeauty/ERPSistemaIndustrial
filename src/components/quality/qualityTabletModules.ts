@@ -1,3 +1,9 @@
+/**
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-11-03
+ * @REVISAO: REV-TABLET-CATALOGO-CARIMBO-20261103-01 — cabecalho de autoria/aprovacao adicionado; o catalogo de rotinas do SGQ segue identico
+ * @STATUS_APROVACAO: APROVADO PELO PROPRIETARIO (ordem de 2026-11-03: "todas as telas novas vao ter revisao, aprovacao e travamento para o vercel nao pegar mais telas antigas")
+ */
 import {
   Activity, Archive, Award, BarChart3, BookOpenCheck, Building2, ClipboardCheck, ClipboardList, FileCheck2,
   FileText, FolderOpen, Gauge, GitBranch, ListChecks, Microscope, PenTool, Ruler, ScrollText, SearchCheck,

@@ -1,0 +1,25 @@
+{
+  "contrato": "SYNQRA-R-20261103-01",
+  "branchOficial": "prod-telas-novas",
+  "branchesDeProducaoPermitidas": ["prod-telas-novas", "main"],
+  "aprovadoEm": "2026-11-03",
+  "aprovadoPor": "Proprietario (ordem: 'todas as telas tem que ter trava para o vercel nao pegar telas antigas')",
+  "minimoTelasEmPages": 180,
+  "obrigatorios": [
+    "scripts/verify-official-screens-lock.mjs",
+    "scripts/verify-quality-tablet-contract.mjs",
+    "scripts/verify-release-lineage.mjs",
+    "src/lib/serverClock.ts",
+    "src/components/layout/ModuleTabletMenuModal.tsx",
+    "src/components/quality/qualityTabletModules.ts",
+    "src/styles/module-tablet-panel.css",
+    "src/pages/CertificadoQualidade.tsx",
+    "src/pages/QualityRpncUnified.tsx",
+    "src/pages/DocumentosQualidadeControle.tsx",
+    "src/pages/EstoqueRastreabilidadeLotes.tsx",
+    "src/pages/AlmoxarifadoSaidaMaterial.tsx",
+    "src/pages/NFeEmissao.tsx",
+    "src/pages/AccessControlSettings.tsx",
+    "src/pages/AtivarAcesso.tsx"
+  ]
+}

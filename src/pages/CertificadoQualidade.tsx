@@ -1,3 +1,9 @@
+/**
+ * @AUTOR: Fernando Schuinsekel (tela recebida do proprietario em 2026-11-01 em C:\\Users\\Dri\\Documents\\Qoder\\integracao-sgq-certificado-6006a807)
+ * @DATA_REVISAO_APROVACAO: 2026-11-03
+ * @REVISAO: REV-CERTIFICADO-CARIMBO-20261103-01 — somente o cabecalho de autoria/aprovacao foi adicionado; nenhuma linha de logica ou visual foi tocada
+ * @STATUS_APROVACAO: APROVADO PELO PROPRIETARIO (ordem de 2026-11-03: "todas as telas novas vao ter revisao, aprovacao e travamento para o vercel nao pegar mais telas antigas")
+ */
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import {
   AlertTriangle, Check, CheckCircle2, FileCheck2, FilePlus2, FileText, Image,
