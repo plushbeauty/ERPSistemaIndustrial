@@ -1,8 +1,15 @@
 /**
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-04
- * @REVISAO: REV-VITRINE-PUBLICA-20261104-02 — botão de teste grátis no azul do login e barra de indicadores do carrossel removida
+ * @REVISAO: REV-VITRINE-PUBLICA-20261104-03 — botao de teste de 15 dias so no topo e rotacao do carrossel livre do mouse
  * @STATUS_APROVACAO: REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01; ajustes de 2026-11-04 ordenados pelo proprietário
+ *
+ * Ordem do proprietario em 2026-11-04: "mandei vc tirar botoes da tela principal de 15 dias gratis que
+ * se repete e as imagens nao fica neles para vem passando como um carrossel". O botao de teste de 15 dias
+ * fica somente no topo da pagina: saiu do slide do carrossel (que repetia o mesmo botao a cada volta) e
+ * saiu da central de ajuda. A pausa por mouse, que antes era ligada no hero inteiro — uma area que cobre
+ * a tela toda e congelava a rotacao com o ponteiro em cima — passou a valer so sobre o bloco de texto,
+ * entao as fotos continuam passando enquanto o mouse esta sobre a imagem.
  *
  * Ordem do proprietario em 2026-11-04, print com seta no botão do topo ("MUDAR A COR DEIXAR AZUL QUE
  * NEM DO BOTÃO DO LOGIN AZUL") e caixa sobre os quadradinhos do carrossel ("TIRAR"): o .ph-solid passou
@@ -76,7 +83,6 @@ type HeroSlide = {
   description: string
   background: string
   shot: Screen
-  primary: { label: string; href: string }
   secondary: { label: string; href: string }
   assurances?: string[]
 }
@@ -89,7 +95,6 @@ const heroSlides: HeroSlide[] = [
     description: 'PCP, chão de fábrica, qualidade com SGQ, estoque, compras, fiscal e controladoria gravando na mesma base, separada por empresa. Sem planilha paralela, sem retrabalho de digitação e sem número inventado em relatório.',
     background: '/images/cena-celula-injecao.webp',
     shot: screens[0],
-    primary: { label: 'Ativar teste grátis de 15 dias', href: '/cadastro-empresa' },
     secondary: { label: 'Ver as telas do sistema', href: '#telas' },
     assurances: ['Dados isolados por empresa', 'Telas feitas para uso no chão de fábrica', 'Trilha de auditoria nos registros'],
   },
@@ -100,7 +105,6 @@ const heroSlides: HeroSlide[] = [
     description: 'Gantt por máquina, ordens abertas com avanço real e carga de capacidade juntos. O planejador vê o dia, a semana e o mês sem abrir cinco relatórios.',
     background: '/images/cena-pcp.webp',
     shot: screens[0],
-    primary: { label: 'Testar o PCP no meu ambiente', href: '/cadastro-empresa' },
     secondary: { label: 'Ver o PCP nos planos', href: '/planos?modulo=pcp' },
   },
   {
@@ -110,7 +114,6 @@ const heroSlides: HeroSlide[] = [
     description: 'RPNC, causa raiz com Ishikawa e 5 Porquês, CAPA com responsável e prazo, auditorias e documentos controlados no mesmo fluxo — prontos para a auditoria certificadora.',
     background: '/images/cena-qualidade.webp',
     shot: screens[1],
-    primary: { label: 'Testar o SGQ no meu ambiente', href: '/cadastro-empresa' },
     secondary: { label: 'Ver a Qualidade nos planos', href: '/planos?modulo=qualidade' },
   },
   {
@@ -120,7 +123,6 @@ const heroSlides: HeroSlide[] = [
     description: 'O que está reservado e o que está realmente disponível, o mapa de endereços e a movimentação registrada por código de barras — sem digitação no portão.',
     background: '/images/cena-almoxarifado.webp',
     shot: screens[2],
-    primary: { label: 'Testar o Estoque no meu ambiente', href: '/cadastro-empresa' },
     secondary: { label: 'Ver o Estoque nos planos', href: '/planos?modulo=estoque' },
   },
   {
@@ -130,7 +132,6 @@ const heroSlides: HeroSlide[] = [
     description: 'Botão grande, contador de peças e status da máquina no tablet ao lado do equipamento. Produção, parada, refugo e setup entram na ordem na hora, com usuário e turno.',
     background: '/images/cena-chao-de-fabrica.webp',
     shot: screens[3],
-    primary: { label: 'Testar o Chão de Fábrica', href: '/cadastro-empresa' },
     secondary: { label: 'Ver o Chão de Fábrica nos planos', href: '/planos?modulo=chao-de-fabrica' },
   },
 ]
@@ -230,7 +231,6 @@ function HeroCarousel() {
 
   useEffect(() => {
     if (pausado) return undefined
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
     const timer = window.setInterval(() => setIndice(atual => (atual + 1) % total), INTERVALO_SLIDE_MS)
     return () => window.clearInterval(timer)
   }, [pausado, total])
@@ -243,10 +243,6 @@ function HeroCarousel() {
       className="ph-hero ph-hero--carousel"
       aria-roledescription="carrossel"
       aria-label="Telas e módulos do SYSNQRA ERP & SGQ Industrial"
-      onMouseEnter={() => setPausado(true)}
-      onMouseLeave={() => setPausado(false)}
-      onFocusCapture={() => setPausado(true)}
-      onBlurCapture={() => setPausado(false)}
     >
       <div className="ph-carousel-bg" aria-hidden="true">
         {heroSlides.map((item, i) => (
@@ -256,25 +252,33 @@ function HeroCarousel() {
       <div className="ph-carousel-scrim" aria-hidden="true" />
 
       <div className="ph-wrap ph-carousel-grid" key={slide.key}>
-        <div className="ph-slide-copy">
+        <div
+          className="ph-slide-copy"
+          onMouseEnter={() => setPausado(true)}
+          onMouseLeave={() => setPausado(false)}
+          onFocusCapture={() => setPausado(true)}
+          onBlurCapture={() => setPausado(false)}
+        >
           <span className="ph-kicker">{slide.eyebrow}</span>
           <h1>{slide.titleLead} <em>{slide.titleAccent}</em>{slide.titleTail}</h1>
           <p className="ph-lead">{slide.description}</p>
           <div className="ph-cta-row">
-            <a className="ph-solid" href={slide.primary.href}>{slide.primary.label} <ArrowRight size={16} /></a>
-            <a className="ph-ghost" href={slide.secondary.href}>{slide.secondary.label}</a>
+            <a className="ph-ghost" href={slide.secondary.href}>{slide.secondary.label} <ArrowRight size={16} /></a>
           </div>
           {slide.assurances && (
             <div className="ph-assurances">
               {slide.assurances.map(item => <span key={item} className="ph-assurance"><Check size={15} /> {item}</span>)}
             </div>
           )}
-          <p className="ph-cta-note">O teste inclui todos os módulos do plano Industrial. Nenhum cartão é solicitado para começar.</p>
+          <p className="ph-cta-note">As imagens passam sozinhas, uma por módulo. Passe o mouse sobre o texto para ler com calma.</p>
         </div>
       </div>
 
-      {/* Ordem do proprietario em 2026-11-04, sobre print com "TIRAR" nos quadradinhos: a barra de
-          indicadores do carrossel sai da tela. O slide continua trocando sozinho a cada 7s. */}
+      {/* Ordem do proprietario em 2026-11-04: "tirar botoes da tela principal de 15 dias gratis que se
+          repete" e "as imagens nao ficam passando como um carrossel". O botao de teste fica so no topo
+          (ph-nav-actions); o slide nao repete mais o mesmo botao a cada volta, e mostra o link do modulo
+          que esta na foto. A pausa por mouse sai do hero inteiro — que cobre a tela e congelava a
+          rotacao — e passa a valer so sobre o bloco de texto. */}
     </section>
   )
 }
@@ -430,11 +434,10 @@ export default function PublicIndustrialHome() {
     {helpOpen && <div className="ph-help-panel">
       <button type="button" aria-label="Fechar ajuda" onClick={() => setHelpOpen(false)} style={{ float: 'right', border: 0, background: 'transparent', cursor: 'pointer' }}><X size={16} /></button>
       <h3>Como posso ajudar?</h3>
-      <p>Veja as telas do sistema, entenda cada módulo ou comece o teste grátis de 15 dias.</p>
+      <p>Veja as telas do sistema e entenda cada módulo, ou fale com o atendimento.</p>
       <a href="#telas">Ver as telas</a>
       <a href="#modulos">Ver módulos</a>
       <a href="#planos">Ver planos</a>
-      <a href="/cadastro-empresa">Ativar teste grátis</a>
       <a href="/contato">Falar com atendimento</a>
     </div>}
   </main>

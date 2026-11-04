@@ -60,6 +60,13 @@ import path from 'node:path'
  * "como preencher / como usar" com o catalogo curado por rota; CentralAjuda passou a indexar esse
  * catalogo. Escopo: exclusivamente classNames, CSS e texto de ajuda — nenhuma consulta, RPC ou regra
  * de negocio foi tocada. Manifesto re-gerado com npm run telas:manifest.
+ * Revisao 2026-11-04 (rotacao do carrossel + botao unico de teste): ordem explicita do proprietario
+ * — "manei vc tirar botoes da tela principal de 15 dias gratis que se repete" e "as imagens nao fica
+ * neles para vem passando como um carrossel". O botao de teste grátis de 15 dias fica somente no topo
+ * (ph-nav-actions): saiu do slide do carrossel (que repetia o mesmo botao a cada volta) e saiu da
+ * central de ajuda. A pausa por mouse, que antes valia pelo hero inteiro e congelava a rotacao com o
+ * ponteiro em cima da tela, passou a valer so sobre o bloco de texto. Manifesto re-gerado com
+ * npm run telas:manifest.
  * Mudanca neste contrato exige ordem explicita do proprietario.
  */
 
@@ -67,7 +74,7 @@ const ROOT = path.resolve(import.meta.dirname, '..')
 const read = rel => readFileSync(path.join(ROOT, rel), 'utf8')
 
 const oficiais = [
-  { path: 'src/PublicIndustrialHome.tsx', sha: 'efc9e69d4cae1584cf63abf3f03f362ce624b4a4', label: 'Publica / Home com carrossel da vitrine (REV-VITRINE-PUBLICA-20261104-02: ordem do proprietario sobre print — "TIRAR" da barra de indicadores do carrossel)' },
+  { path: 'src/PublicIndustrialHome.tsx', sha: 'a90346e68cf2ffc3379863fdb56d2db732a2b474', label: 'Publica / Home com carrossel da vitrine (REV-VITRINE-PUBLICA-20261104-03: ordem do proprietario — "TIRAR BOTOES ... DE 15 DIAS GRATIS QUE SE REPETE" e "AS IMAGENS NAO FICA NELES PARA VEM PASSANDO COMO UM CARROSSEL")' },
   { path: 'src/components/marketing/TelaVitrine.tsx', sha: 'befc9424504e57fcfb85ff3d593fa4172aedfe10', label: 'Publica / Replica de tela do sistema na vitrine' },
   { path: 'src/styles/public-home-premium-20261101.css', sha: 'b44ab4a728b593b6bbcd64ac00728d7ed01b41a8', label: 'Publica / estilos do carrossel e vitrine (REV-VITRINE-PUBLICA-20261104-02: ordem do proprietario sobre print — "MUDAR A COR DEIXAR AZUL QUE NEM DO BOTAO DO LOGIN" no .ph-solid e as regras dos indicadores deletas junto da barra)' },
   { path: 'src/pages/PlanosIndustrial.tsx', sha: '1070b2cc87cacb249390e69d99c5c11dcfd411a6', label: 'Publica / Planos' },
