@@ -4,6 +4,8 @@ import { existsSync, readFileSync } from 'node:fs'
 // Hashes are Git blob SHA-1 values from the approved release baseline.
 // A legitimate redesign requires explicit approval and a deliberate revision here.
 const approved = [
+  ['src/components/layout/PageIntroCard.tsx', '7b8f056e5b1655be07a2b6203a6d221df837aec4'],
+  ['src/components/layout/pageIntroCatalog.ts', '389b2ddbc909cb688f0ac902c5c4be0c16811da3'],
   ['src/pages/ProdutosVendasIndustrial.tsx', '4fb1a6a0603e7814098e583437a187cdb865a130'],
   ['src/components/DigitalCaliper.tsx', '2de2550896b0ccb33730432bc0457085f693b488'],
   ['src/components/IndustrialCommandDashboard.tsx', 'fa49460b6fb18a7686a3e6ac20b6e516eb2e0275'],
@@ -53,4 +55,4 @@ if (!readFileSync('src/main.tsx', 'utf8').includes('erp-industrial-legacy-pwa-cl
 
 for (const failure of failures) console.error('FAIL — ' + failure)
 if (failures.length) process.exit(1)
-console.log('APPROVED REGRESSION LOCK PASS — 25 arquivos congelados; barra inferior, modal legado e marcadores laranja bloqueados.')
+console.log('APPROVED REGRESSION LOCK PASS — 27 arquivos congelados; barra inferior, modal legado e marcadores laranja bloqueados.')
