@@ -77,7 +77,7 @@ const menus: MenuItem[] = [
     { label: 'Roteiro de Produção (tela anterior)', route: '/pageprincipal/pcp/roteiro-producao', icon: Route },
   ] },  { label: 'Chão de Fábrica', route: '/pageprincipal/chao-de-fabrica/portal-operador', icon: Monitor, children: [
     { label: 'Portal do Operador', route: '/pageprincipal/chao-de-fabrica/portal-operador', icon: Monitor },
-    { label: 'Apontamento · protótipo visual', route: '/pageprincipal/chao-de-fabrica/apontamento-operador', icon: Clock },
+    { label: 'Apontamento · cartão de ponto', route: '/pageprincipal/chao-de-fabrica/apontamento-operador', icon: Clock },
     { label: 'Postos de Trabalho', route: '/pageprincipal/chao-de-fabrica/postos', icon: ClipboardList },
   ] },  /* Ordem do proprietario em 2026-11-03 (#108): "todos os modulos qualidade do menu vc vai alterar
      para Sistema SGQ; quando clicar vai abrir o tablet com todos os icones referentes a qualidade".
@@ -166,6 +166,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
   const [dataEpoch, setDataEpoch] = useState(0)
   const [sessionNivel, setSessionNivel] = useState(0)
+  const [sessionEmpresa, setSessionEmpresa] = useState('')
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -199,6 +200,24 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000)
     return () => window.clearInterval(timer)
+  }, [])
+
+  // Identidade da empresa autenticada (nome padrão do link/aba): vem do cadastro, nunca de texto fixo.
+  useEffect(() => {
+    let ativo = true
+    void (async () => {
+      const tenant = await supabase.rpc('erp_current_empresa_id')
+      if (typeof tenant.data !== 'string' || !tenant.data) return
+      const empresa = await supabase
+        .from('erp_empresas')
+        .select('nome_fantasia,razao_social')
+        .eq('id', tenant.data)
+        .maybeSingle<{ nome_fantasia: string | null; razao_social: string | null }>()
+      if (!ativo) return
+      const nome = empresa.data?.nome_fantasia?.trim() || empresa.data?.razao_social?.trim() || ''
+      if (nome) setSessionEmpresa(nome)
+    })()
+    return () => { ativo = false }
   }, [])
 
   useEffect(() => {
@@ -315,6 +334,13 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const pageIntro = hasNativeIntroCard(pathname)
     ? null
     : resolvePageIntro(pathname) ?? fallbackPageIntro({ module: introModule, label: menuLeafLabel, purpose: contextualPurpose })
+
+  // Padrão de nome do link/aba, ordem do proprietário em 2026-11-04: sistema · empresa · módulo · tela.
+  // O hostname da Vercel não muda pelo código — renaming do projeto é decisão do painel dele.
+  const tituloDaTela = pageIntro?.title ?? menuLeafLabel ?? (contextualHelp.title === 'Ajuda da tela atual' ? '' : contextualHelp.title)
+  useEffect(() => {
+    document.title = ['SYSNQRA ERP', sessionEmpresa, introModule, tituloDaTela].filter(Boolean).join(' · ')
+  }, [sessionEmpresa, introModule, tituloDaTela])
 
   const logout = async () => {
     await supabase.auth.signOut()

@@ -396,12 +396,12 @@
       "statusAprovacao": "APROVADO PELO PROPRIETARIO (ordem de 2026-11-03: \"todas as telas novas vao ter revisao, aprovacao e travamento para o vercel nao pegar mais telas antigas\")"
     },
     {
-      "path": "src/pages/ChaoDeFabricaOperadorDemo.tsx",
-      "sha": "4bc0b153fc50b186aba343578e14bc7a925b6259",
+      "path": "src/pages/ChaoDeFabricaApontamento.tsx",
+      "sha": "ff405a3349544a54053ac3f77ca0ac43e81f0216",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-CHAO-FABRICA-APONTAMENTO-PROTOTIPO-20261103-01 — integrado por ordem do proprietario",
-      "aprovadaEm": "2026-11-03",
-      "statusAprovacao": "PROTOTIPO VISUAL — sem integracao com o Supabase. A tela de apontamento que grava no"
+      "revisao": "REV-CHAO-FABRICA-CARTAO-PONTO-20261104-01 — tela real por cartão de ponto (ordem do proprietário)",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "DETERMINADO PELO PROPRIETARIO (\"NAO QUERO ESSA TELA SÓ DE DEMOSTRAÇÃO DEVE VIR UM CAMPO PARA"
     },
     {
       "path": "src/pages/ClientesIndustrial.tsx",

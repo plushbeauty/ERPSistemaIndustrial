@@ -89,6 +89,15 @@ const introCatalog: Record<string, PageIntro> = {
       watch: 'Funciona apenas com a conta individual do funcionário cadastrado no RH com o mesmo e-mail do login.',
     },
   },
+  'chao-de-fabrica/apontamento-operador': {
+    module: 'Chão de Fábrica', title: 'Apontamento por cartão de ponto',
+    description: 'Terminal do posto: o número do cartão identifica o operador no RH e abre a programação do PCP do dia e da semana, as máquinas atribuídas e a ficha de processo da peça direto do banco.',
+    help: {
+      fill: ['Digite o número do cartão (RFID) ou a matrícula cadastrada no RH da empresa e toque em Abrir minha programação.', 'Selecione a tarefa do dia antes de iniciar: o apontamento precisa de OP, máquina e ficha aprovada.', 'Ao finalizar, informe peças boas e refugadas; com refugo, a descrição do defeito é obrigatória.'],
+      use: ['Início, fim, duração e a baixa na programação são carimbados pelo relógio do banco.', 'A aba Ficha de processo lê erp_fichas_processo, a sequência de operações e a receita aprovada do produto.', 'Parada registrada aqui entra em erp_producao_paradas e aparece no OEE; encerre a parada antes de trocar de motivo.'],
+      watch: 'Sem cartão cadastrado no RH (numero_cracha_rfid ou matrícula) a tela não abre a agenda — não existe operador de demonstração.',
+    },
+  },
   'chao-de-fabrica/postos': {
     module: 'Chão de Fábrica', title: 'Postos de Trabalho',
     description: 'Cadastro de postos e setores com responsável, turno e recursos vinculados à produção.',
@@ -565,7 +574,7 @@ const introCatalog: Record<string, PageIntro> = {
 const pagePrincipalPrefix = '/pageprincipal'
 
 /** Telas que já desenham o próprio cabeçalho de abertura; o shell não adiciona card acima (evita título duplicado). */
-const nativeIntroCardPaths = ['/compras', '/financeiro', '/administracao-configuracoes', '/chao-de-fabrica/apontamento-operador', '/ajuda']
+const nativeIntroCardPaths = ['/compras', '/financeiro', '/administracao-configuracoes', '/ajuda']
 
 export function hasNativeIntroCard(pathname: string): boolean {
   return nativeIntroCardPaths.includes(normalizeWorkspacePath(pathname))
