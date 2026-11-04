@@ -245,11 +245,11 @@
     },
     {
       "path": "src/features/pcp/RoteiroOperacoes.tsx",
-      "sha": "cf41ef138baad2387c55a0e2c471765c42783fa3",
+      "sha": "b0734cb02251a36e6bf6c0d65c67c3d95145242c",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-ROTEIRO-ACESSIBILIDADE-20261104-01 — campos de cadastro recebem nomes acessiveis (aria-label), tempo passa a ser numérico com minimo zero, cabecalhos ganham scope=col, botoes ganham type=button e removido o estilo morto",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "AJUSTE DE USABILIDADE E ACESSIBILIDADE POR ORDEM DO PROPRIETARIO EM 2026-11-04"
     },
     {
       "path": "src/modules/financeiro/pages/FinanceiroWorkspace.tsx",
