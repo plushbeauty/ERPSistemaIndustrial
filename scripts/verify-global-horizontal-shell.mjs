@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 
 const app = readFileSync('src/AppEntryV2.tsx', 'utf8').replace(/\r\n/g, '\n')
 const shell = readFileSync('src/components/layout/ERPHorizontalShell.tsx', 'utf8')
@@ -8,7 +8,7 @@ const checks = [
   [/<ERPHorizontalShell>[\s\S]*?<Routes>[\s\S]*?<\/Routes>[\s\S]*?<\/ERPHorizontalShell>/.test(app), 'As rotas operacionais mantidas devem estar dentro da shell compartilhada.'],
   [(app.match(/<ERPHorizontalShell>/g) ?? []).length === 1, 'Deve existir exatamente uma shell global.'],
   [app.includes('path="/erp-industrial"') && app.includes('path="/fiscal"') && app.includes('path="pcp"') && app.includes('path="paquimetro"') && app.includes('path="compras"') && app.includes('path="administracao-configuracoes"'), 'Dashboard, Fiscal, PCP, Paquímetro, Compras e Configurações devem permanecer acessíveis na área de trabalho.'],
-  [shell.includes("label: 'Principal'") && shell.includes("label: 'Engenharia e PCP'") && shell.includes("label: 'Qualidade / Paquímetro'") && shell.includes("label: 'Fiscal'") && shell.includes("label: 'Compras'") && shell.includes("label: 'Configurações'") && !shell.includes("label: 'Vendas'") && !shell.includes('BarraWindows11') && !shell.includes('is-updated-orange') && !shell.includes('isUpdated: true'), 'A navegação superior preserva os módulos existentes, sem barra inferior nem realces laranja.'],
+  [shell.includes("label: 'Principal'") && shell.includes("label: 'Engenharia e PCP'") && shell.includes("label: 'Sistema SGQ'") && shell.includes("tabletModule: 'sgq'") && shell.includes("from './ModuleTabletMenuModal'") && shell.includes("label: 'Fiscal'") && shell.includes("label: 'Compras'") && shell.includes("label: 'Configurações'") && !shell.includes("label: 'Vendas'") && !shell.includes('BarraWindows11') && !shell.includes('is-updated-orange') && !shell.includes('isUpdated: true') && !existsSync('src/components/layout/BarraWindows11.tsx'), 'A navegação superior preserva os módulos existentes, sem barra inferior nem realces laranja.'],
   [bootstrap.includes('function AccessGate') && bootstrap.includes('supabase.auth.getSession()'), 'O gate de autenticação real deve permanecer no bootstrap.'],
 ]
 const failures = checks.filter(([ok]) => !ok)
