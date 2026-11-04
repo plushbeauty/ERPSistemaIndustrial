@@ -14,6 +14,7 @@ const errText=(e:unknown)=>e instanceof Error?e.message:'Falha ao carregar os da
 
 export default function CentraisIndustriais({module}:{module:Module}){
  const [profile,setProfile]=useState<Profile|null>(null),[rows,setRows]=useState<Row[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[refresh,setRefresh]=useState(0),[query,setQuery]=useState(''),[form,setForm]=useState(false),[hoje,setHoje]=useState<Date|null>(null),[avisoRelogio,setAvisoRelogio]=useState('')
+ const alertas = useRealtimeAlerts(profile?.empresa_id ?? null)
  useEffect(()=>{let alive=true;void(async()=>{try{
   const {data:u}=await supabase.auth.getUser();if(!u.user)throw new Error('Sessão não encontrada.')
   const {data:p,error:pe}=await supabase.from('erp_usuarios').select('empresa_id,is_master').eq('auth_user_id',u.user.id).eq('ativo',true).is('deleted_at',null).maybeSingle();if(pe)throw pe
@@ -35,7 +36,7 @@ export default function CentraisIndustriais({module}:{module:Module}){
    if(!profile.is_master)q=q.eq('empresa_id',profile.empresa_id as string)
    const {data,error:e}=await q;if(e)throw e
    const relogio=await relogioDoServidor()
-   if(alive){setRows((data??[]) as unknown as Row[]);setHoje(relogio.agora);setAvisoRelogio(relogio.aviso)}
+   if(alive){setRows((data??[]) as unknown as Row[]);setHoje(relogio.agora);setAvisoRelogio(relogio.aviso ?? '')}
   }catch(e){if(alive)setError(errText(e))}finally{if(alive)setLoading(false)}
  })();return()=>{alive=false}},[profile,module,refresh])
  const filtered=useMemo(()=>rows.filter(r=>JSON.stringify(r).toLowerCase().includes(query.toLowerCase())),[rows,query])
