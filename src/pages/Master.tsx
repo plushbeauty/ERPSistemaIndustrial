@@ -1,4 +1,5 @@
 /**
+ * @REVISAO: REV-COLUNAS-BANCO-20261104-02 — a trilha de auditoria leu company_id/user_id/entity, colunas que não existem em erp_audit_logs (contrato oficial: empresa_id/actor_user_id/entity_type); o throw derrubava a tela MASTER inteira. Seleção corrigida com alias PostgREST, sem alterar a interface da tela.
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
@@ -55,7 +56,7 @@ export default function Master() {
         fetchAllPages<UserSummary>((from, to) => supabase.from('erp_usuarios').select('id,empresa_id,ativo', { count: 'exact' }).not('empresa_id', 'is', null).is('deleted_at', null).range(from, to)),
         fetchAllPages<Plan>((from, to) => supabase.from('erp_planos_catalogo').select('id,codigo,nome,preco_mensal,descricao,ativo,ordem', { count: 'exact' }).order('ordem').range(from, to)),
         fetchAllPages<PlanModule>((from, to) => supabase.from('erp_plano_modulos').select('id,plano_codigo,modulo_codigo,modulo_nome,acesso,limite_usuarios,limite_empresas,recursos', { count: 'exact' }).order('modulo_nome').range(from, to)),
-        supabase.from('erp_audit_logs').select('id,company_id,user_id,action,module,entity,entity_id,created_at,old_data,new_data').order('created_at', { ascending: false }).limit(50).then(result => {
+        supabase.from('erp_audit_logs').select('id,company_id:empresa_id,user_id:actor_user_id,action,module,entity:entity_type,entity_id,created_at,old_data,new_data').order('created_at', { ascending: false }).limit(50).then(result => {
           if (result.error) throw result.error
           return (result.data ?? []) as Audit[]
         }),

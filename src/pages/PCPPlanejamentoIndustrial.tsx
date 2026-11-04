@@ -1,4 +1,5 @@
 /**
+ * @REVISAO: REV-COLUNAS-BANCO-20261104-02 — a aba de alertas leu 'created_at', coluna inexistente em erp_pcp_alertas (a tabela só tem 'criado_em'); a query falhava e derrubava toda a carga da tela. Leitura e tipos alinhados ao banco.
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
@@ -16,7 +17,7 @@ type Planned={id:string;produto_id:string;quantidade:number;data_necessaria:stri
 type Center={id:string;codigo_posto:string;nome_posto:string;taxa_hora:number;ativo:boolean}
 type Program={id:string;maquina_id:string|null;inicio_planejado:string;fim_planejado:string;quantidade_planejada:number;status:string}
 type Machine={id:string;codigo:string;nome:string;status:string}
-type AlertRow={id:string;tipo:string;severidade:string;mensagem:string;status:string;created_at:string}
+type AlertRow={id:string;tipo:string;severidade:string;mensagem:string;status:string;criado_em:string}
 
 const today=()=>new Date().toISOString().slice(0,10)
 const productLabel=(p:Product)=>p.codigo+' • '+p.nome
@@ -47,7 +48,7 @@ export default function PCPPlanejamentoIndustrial(){
     fetchAllPages<Center>((from,to)=>supabase.from('erp_postos_trabalho').select('id,codigo_posto,nome_posto,taxa_hora,ativo',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo_posto').range(from,to)),
     fetchAllPages<Program>((from,to)=>supabase.from('erp_pcp_programacoes').select('id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,status',{count:'exact'}).eq('empresa_id',empresaId).neq('status','cancelada').order('inicio_planejado').range(from,to)),
     fetchAllPages<Machine>((from,to)=>supabase.from('erp_maquinas').select('id,codigo,nome,status',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').range(from,to)),
-    fetchAllPages<AlertRow>((from,to)=>supabase.from('erp_pcp_alertas').select('id,tipo,severidade,mensagem,status,created_at',{count:'exact'}).eq('empresa_id',empresaId).neq('status','RESOLVIDO').order('created_at',{ascending:false}).range(from,to))
+    fetchAllPages<AlertRow>((from,to)=>supabase.from('erp_pcp_alertas').select('id,tipo,severidade,mensagem,status,criado_em',{count:'exact'}).eq('empresa_id',empresaId).neq('status','RESOLVIDO').order('criado_em',{ascending:false}).range(from,to))
    ])
    setProducts(p);setMps(m);setPlanned(o);setCenters(c);setPrograms(pr);setMachines(ma);setAlerts(a)
   }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar planejamento PCP.')}
@@ -155,7 +156,7 @@ export default function PCPPlanejamentoIndustrial(){
 
   {tab==='alertas'&&<section className="industrial-panel">
    <div className="process-section-heading"><span>EXCEÇÕES</span><h2>Alertas do PCP</h2><p>Fila de exceções que exige ação do planejador: atraso, falta, capacidade, conflito e máquina indisponível.</p></div>
-   <div className="industrial-table-scroll"><table className="industrial-table"><thead><tr><th>Data</th><th>Tipo</th><th>Severidade</th><th>Mensagem</th><th>Ação</th></tr></thead><tbody>{alerts.map(a=><tr key={a.id}><td>{new Date(a.created_at).toLocaleString('pt-BR')}</td><td>{a.tipo}</td><td>{a.severidade}</td><td>{a.mensagem}</td><td><button className="industrial-secondary" onClick={()=>void resolveAlert(a.id)} disabled={busy}><CheckCircle2 size={15}/> Resolver</button></td></tr>)}{!alerts.length&&<tr><td colSpan={5}>Nenhum alerta aberto.</td></tr>}</tbody></table></div>
+   <div className="industrial-table-scroll"><table className="industrial-table"><thead><tr><th>Data</th><th>Tipo</th><th>Severidade</th><th>Mensagem</th><th>Ação</th></tr></thead><tbody>{alerts.map(a=><tr key={a.id}><td>{new Date(a.criado_em).toLocaleString('pt-BR')}</td><td>{a.tipo}</td><td>{a.severidade}</td><td>{a.mensagem}</td><td><button className="industrial-secondary" onClick={()=>void resolveAlert(a.id)} disabled={busy}><CheckCircle2 size={15}/> Resolver</button></td></tr>)}{!alerts.length&&<tr><td colSpan={5}>Nenhum alerta aberto.</td></tr>}</tbody></table></div>
   </section>}
  </main>
 }

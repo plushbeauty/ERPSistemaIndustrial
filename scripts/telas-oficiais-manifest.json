@@ -285,9 +285,9 @@
     },
     {
       "path": "src/pages/AdministracaoConfiguracoesGlobais.tsx",
-      "sha": "11f74852d7d07bda53e363dd7a33f1dc41c58a2a",
+      "sha": "4561e752e3726fcb11ced340b879dc14b48c89c6",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-COLUNAS-BANCO-20261104-02 — a trilha de auditoria filtrava por 'company_id' e selecionava 'entity'/'user_id', colunas que não existem em erp_audit_logs (contrato oficial: empresa_id/entity_type/actor_user_id). A consulta falhava e a tela inteira mostrava erro. Alias PostgREST preserva os nomes usados pela interface.",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
@@ -853,9 +853,9 @@
     },
     {
       "path": "src/pages/Master.tsx",
-      "sha": "5d95106c57ee38a7a5166c2087203cf4ed571414",
+      "sha": "5bbb5f4835f344455ad191f212fab5f91770c87b",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-COLUNAS-BANCO-20261104-02 — a trilha de auditoria leu company_id/user_id/entity, colunas que não existem em erp_audit_logs (contrato oficial: empresa_id/actor_user_id/entity_type); o throw derrubava a tela MASTER inteira. Seleção corrigida com alias PostgREST, sem alterar a interface da tela.",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
@@ -997,9 +997,9 @@
     },
     {
       "path": "src/pages/PCPPlanejamentoIndustrial.tsx",
-      "sha": "ce6190f5a7a6cbd6a743a4e8ccf6adead6401287",
+      "sha": "cfb1320a26ae443a988c70ee7e72c479d90761f5",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-COLUNAS-BANCO-20261104-02 — a aba de alertas leu 'created_at', coluna inexistente em erp_pcp_alertas (a tabela só tem 'criado_em'); a query falhava e derrubava toda a carga da tela. Leitura e tipos alinhados ao banco.",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
@@ -1077,9 +1077,9 @@
     },
     {
       "path": "src/pages/ProdutosVendasIndustrial.tsx",
-      "sha": "b5da30b459ba2325d49c5740d252580ea3a60331",
+      "sha": "b1b9dc16bf8d4fbdec94ff5042ca30cd1c51ed3c",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PRODUTOS-PAGINACAO-REAL-20261104-01 — o cadastro sai do teto silencioso de 2000 linhas e le todas as paginas com fetchAllPages (produtos, fornecedores, grupos e localizacoes); lista paginada de 25 em 25 com Anterior/Próxima, contador e selecao de linha por Enter/Espaco; removido o estado de operador que era gravado e nunca lido",
+      "revisao": "REV-COLUNAS-BANCO-20261104-02 — a trilha de auditoria do produto consultava company_id/entity e uma coluna 'module' inexistente em erp_audit_logs; contrato oficial é empresa_id/entity_type. Leitura corrigida e campo não usado removido da seleção.",
       "aprovadaEm": "2026-11-04",
       "statusAprovacao": "CORRECAO DE DEFEITO DE LEITURA PARCIAL APLICADA POR ORDEM DO PROPRIETARIO EM 2026-11-04 (\"verificar todas as pendencias e arrumar\")"
     },

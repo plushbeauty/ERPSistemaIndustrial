@@ -1,4 +1,5 @@
 /**
+ * @REVISAO: REV-COLUNAS-BANCO-20261104-02 — a trilha de auditoria do produto consultava company_id/entity e uma coluna 'module' inexistente em erp_audit_logs; contrato oficial é empresa_id/entity_type. Leitura corrigida e campo não usado removido da seleção.
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-04
  * @REVISAO: REV-PRODUTOS-PAGINACAO-REAL-20261104-01 — o cadastro sai do teto silencioso de 2000 linhas e le todas as paginas com fetchAllPages (produtos, fornecedores, grupos e localizacoes); lista paginada de 25 em 25 com Anterior/Próxima, contador e selecao de linha por Enter/Espaco; removido o estado de operador que era gravado e nunca lido
@@ -54,7 +55,7 @@ type Group={id:string;codigo:string;nome:string}
 type Location={id:string;codigo:string;nome:string;tipo:string}
 type Movement={id:string;tipo:string;quantidade:number;origem:string|null;documento:string|null;observacao:string|null;created_at:string}
 type Defect={id:string;ordem_producao_id:string;defeito:string;quantidade:number;observacao:string|null;created_at:string}
-type Audit={id:string;action:string;module:string;old_data:Record<string,unknown>|null;new_data:Record<string,unknown>|null;created_at:string}
+type Audit={id:string;action:string;old_data:Record<string,unknown>|null;new_data:Record<string,unknown>|null;created_at:string}
 type Attachment={id:string;nome_arquivo:string;storage_path:string;mime_type:string|null;tamanho_bytes:number|null;created_at:string}
 type Tab='tecnica'|'fiscal'
 type FormData=Omit<Product,'id'|'empresa_id'>
@@ -224,7 +225,7 @@ export default function ProdutosVendasIndustrial(){
       const [m,d,a,an,ft]=await Promise.all([
         supabase.from('erp_estoque_movimentos').select('id,tipo,quantidade,origem,documento,observacao,created_at').eq('empresa_id',companyId).eq('produto_id',selectedId).order('created_at',{ascending:false}).limit(200),
         supabase.from('erp_producao_defeitos').select('id,ordem_producao_id,defeito,quantidade,observacao,created_at').eq('empresa_id',companyId).eq('produto_id',selectedId).order('created_at',{ascending:false}).limit(200),
-        supabase.from('erp_audit_logs').select('id,action,module,old_data,new_data,created_at').eq('company_id',companyId).eq('entity','erp_produtos').eq('entity_id',selectedId).order('created_at',{ascending:false}).limit(200),
+        supabase.from('erp_audit_logs').select('id,action,old_data,new_data,created_at').eq('empresa_id',companyId).eq('entity_type','erp_produtos').eq('entity_id',selectedId).order('created_at',{ascending:false}).limit(200),
         supabase.from('erp_documentos_anexos').select('id,nome_arquivo,storage_path,mime_type,tamanho_bytes,created_at').eq('empresa_id',companyId).eq('entidade_tipo','produto').eq('entidade_id',selectedId).order('created_at',{ascending:false}).limit(200),        supabase.from('erp_fichas_tecnicas').select('id,versao,rendimento,unidade_rendimento,status,revisao').eq('empresa_id',companyId).eq('produto_id',selectedId).eq('ativa',true).order('versao',{ascending:false}).limit(1).maybeSingle()
       ])
       setMovements((m.data??[]) as Movement[]);setDefects((d.data??[]) as Defect[]);setAudits((a.data??[]) as Audit[]);setAttachments((an.data??[]) as Attachment[])

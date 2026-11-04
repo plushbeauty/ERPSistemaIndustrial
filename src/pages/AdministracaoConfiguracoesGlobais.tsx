@@ -1,4 +1,5 @@
 /**
+ * @REVISAO: REV-COLUNAS-BANCO-20261104-02 — a trilha de auditoria filtrava por 'company_id' e selecionava 'entity'/'user_id', colunas que não existem em erp_audit_logs (contrato oficial: empresa_id/entity_type/actor_user_id). A consulta falhava e a tela inteira mostrava erro. Alias PostgREST preserva os nomes usados pela interface.
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
@@ -71,7 +72,7 @@ export default function AdministracaoConfiguracoesGlobais() {
         supabase.from('erp_usuarios').select('id,nome,email,login_nome,perfil,nivel_admin,ativo,role_id,is_master,deleted_at,empresa_id,auth_user_id').eq('empresa_id', tenant).is('deleted_at', null).order('nome').limit(500),
         supabase.from('erp_roles').select('id,codigo,nome,nivel,ativo').eq('ativo', true).order('nivel', { ascending: false }),
         supabase.from('erp_permissions').select('id,codigo,nome,modulo,ativo').eq('ativo', true).order('modulo').order('codigo').limit(1000),
-        supabase.from('erp_audit_logs').select('id,action,module,entity,entity_id,created_at,user_id').eq('company_id', tenant).order('created_at', { ascending: false }).limit(200),
+        supabase.from('erp_audit_logs').select('id,action,module,entity:entity_type,entity_id,created_at,user_id:actor_user_id').eq('empresa_id', tenant).order('created_at', { ascending: false }).limit(200),
       ])
       const firstError = companyResult.error || usersResult.error || rolesResult.error || permissionsResult.error || logsResult.error
       if (firstError) throw firstError
