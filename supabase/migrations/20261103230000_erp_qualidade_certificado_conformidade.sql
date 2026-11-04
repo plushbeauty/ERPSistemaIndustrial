@@ -65,7 +65,7 @@ drop policy if exists erp_qualidade_certificados_select on public.erp_qualidade_
 create policy erp_qualidade_certificados_select on public.erp_qualidade_certificados
   for select to authenticated
   using (empresa_id = public.erp_current_empresa_id()
-    and public.erp_has_permission('qualidade','ver'));
+    and (public.erp_has_permission('qualidade','ver') or public.erp_has_permission('qualidade','criar') or public.erp_has_permission('qualidade','editar')));
 
 drop policy if exists erp_qualidade_certificado_cotas_select on public.erp_qualidade_certificado_cotas;
 create policy erp_qualidade_certificado_cotas_select on public.erp_qualidade_certificado_cotas
@@ -131,7 +131,7 @@ begin
      or p_data_inspecao is null then
     raise exception 'Código, descrição, OP/lote e data da inspeção são obrigatórios.';
   end if;
-  if p_desenho_mime not in ('image/jpeg','image/png','image/webp','application/pdf')
+  if coalesce(p_desenho_mime,'') not in ('image/jpeg','image/png','image/webp','application/pdf')
      or nullif(trim(coalesce(p_desenho_nome,'')),'') is null then
     raise exception 'Desenho técnico ou formato inválido.';
   end if;
