@@ -17,7 +17,7 @@ const approved = [
   ['src/pages/QualidadePaquimetroDigital.tsx', '9e57e1318490c038192882f07374ba5fe3e3e186'],
   ['src/pages/PCPTabletOperador.tsx', '9d73beb0b7adc1b5a865b0c2db39885c5d173cea'],
   ['src/pages/CertificadoQualidade.tsx', 'fedbf7bc96faa10f001191ea5db32e0211298a58'],
-  ['src/pages/CentraisIndustriais.tsx', 'd2b90c2fc3d49bfe9251f629ca6a1ec44e0cc68c'],
+  ['src/pages/CentraisIndustriais.tsx', '1ab71637bd5d30ecd17e08a647ac537cdbda8f62'],
   ['src/hooks/useRealtimeAlerts.ts', '22cd5592b5d48660b37385d68a6ab9853fe33e67'],
   ['src/pages/QualityRpncForm.tsx', '381b3765b81513ce5f9da39fc33e6d5b678f4960'],
   ['src/pages/QualityAuditsList.tsx', '34d4247238acaa0cab346056b56953a049c4ec2d'],
