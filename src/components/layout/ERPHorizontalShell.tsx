@@ -42,6 +42,15 @@ const menus: MenuItem[] = [
     { label: 'Estorno Documental', route: '/pageprincipal/controladoria/retificacao-assistente', icon: FileText, isUpdated: true },
     { label: 'Auditoria de Comissões', route: '/pageprincipal/controladoria/auditoria-comissoes', icon: Calculator, isUpdated: true },
   ] },
+  { label: 'Centrais Operacionais', route: '/pageprincipal/centrais-industriais/expedicao', icon: Factory, isUpdated: true, children: [
+    { label: 'Expedição e Logística', route: '/pageprincipal/centrais-industriais/expedicao', icon: Truck, isUpdated: true },
+    { label: 'Metrologia e Calibração', route: '/pageprincipal/centrais-industriais/metrologia', icon: Gauge, isUpdated: true },
+    { label: 'Treinamentos e Competências', route: '/pageprincipal/centrais-industriais/treinamentos', icon: Users, isUpdated: true },
+    { label: 'Auditorias e Conformidade', route: '/pageprincipal/centrais-industriais/auditoria', icon: ShieldCheck, isUpdated: true },
+    { label: 'Paradas e Setup', route: '/pageprincipal/centrais-industriais/paradas', icon: Factory, isUpdated: true },
+    { label: 'Refugo e Retrabalho', route: '/pageprincipal/centrais-industriais/refugos', icon: BarChart3, isUpdated: true },
+    { label: 'Materiais e Estoque', route: '/pageprincipal/centrais-industriais/materiais', icon: Warehouse, isUpdated: true },
+  ] },
   { label: 'Principal', route: '/pageprincipal', icon: Home },
   { label: 'Cadastros Mestres', route: '/pageprincipal/cadastros/produtos', icon: Boxes, children: [
     { label: 'Cadastro de Produtos', route: '/pageprincipal/cadastros/produtos', icon: Boxes, isUpdated: true },
