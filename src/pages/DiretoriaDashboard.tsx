@@ -1,13 +1,14 @@
 /**
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-04
- * @REVISAO: REV-DIRETORIA-TABELAS-REAIS-20261104-02 — OEE da diretoria lê erp_apontamentos_processo e erp_producao_paradas; RNC em aberto lê erp_rpnc (status em minúsculo); janela de calibração medida pelo relógio do servidor
+ * @REVISAO: REV-DIRETORIA-TABELAS-REAIS-20261104-03 — OEE lê erp_apontamentos_processo e erp_producao_paradas; RNC lê erp_rpnc; OPs abertas contadas por "não finalizada" em qualquer grafia; calibração de 30 dias pelo relógio do servidor
  * @STATUS_APROVACAO: AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO (correção do cronograma de 2026-11-03; sem chave real no PC, a conferência visual autenticada não foi feita)
  */
 import { useEffect, useState } from "react";
 import { AlertTriangle, ClipboardList, PackageX, RefreshCw, ShieldAlert } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import { relogioDoServidor } from "../lib/serverClock";
+import { LISTA_STATUS_OP_FECHADAS } from "../lib/statusOrdemProducao";
 import { useRealtimeAlerts } from "../hooks/useRealtimeAlerts";
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 
@@ -66,7 +67,7 @@ export default function DiretoriaDashboard() {
     const relogio = await relogioDoServidor();
     const limiteCalibracao = relogio.agora ? new Date(relogio.agora.getTime() + 30 * 86400000).toISOString().slice(0, 10) : null;
     const [opsResult, rncResult, calibrationResult, nfeResult, apontamentosResult, reservationsResult, paradasResult] = await Promise.all([
-      supabase.from("erp_ordens_producao").select("id,status").in("status", ["ABERTA", "PLANEJADA", "EM_PRODUCAO", "EM_ANDAMENTO"]),
+      supabase.from("erp_ordens_producao").select("id,status").not("status", "in", LISTA_STATUS_OP_FECHADAS).limit(5000),
       supabase.from("erp_rpnc").select("id,status").not("status", "in", "(encerrada,Encerrada,Cancelada,cancelada)"),
       limiteCalibracao
         ? supabase.from("erp_equipamentos_medicao").select("id").lte("proxima_calibracao", limiteCalibracao)

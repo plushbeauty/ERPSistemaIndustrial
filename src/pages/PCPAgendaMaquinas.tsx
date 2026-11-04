@@ -1,8 +1,8 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-04
+ * @REVISAO: REV-PCP-AGENDA-STATUS-OP-20261104-01 — agenda exclui OP finalizadas em qualquer grafia (o filtro minúsculo deixava concluídas maiúsculas na tela)
+ * @STATUS_APROVACAO: AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO (sem chave real no PC, a conferência visual autenticada não foi feita)
  */
 /**
  * REVISÃO: 2026-10-23 · REV-PCP-AGENDA-007
@@ -12,6 +12,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CalendarRange, Factory, RefreshCw, Plus, Play, ArrowUpDown, X, Printer, CircleAlert } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { LISTA_STATUS_OP_FECHADAS } from '../lib/statusOrdemProducao'
 import { fetchAllPages } from '../lib/supabasePagination'
 
 type Machine = { id:string; codigo:string; nome:string; status:string|null; ativo:boolean }
@@ -62,7 +63,7 @@ export default function PCPAgendaMaquinas(){
    const start=new Date(weekStart);const end=new Date(start);end.setDate(end.getDate()+7)
    const [m,o,mo,a,c,fc]=await Promise.all([
     supabase.from('erp_maquinas').select('id,codigo,nome,status,ativo').eq('empresa_id',id).eq('ativo',true).order('codigo'),
-    fetchAllPages<Order>((from,to)=>supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status',{count:'exact'}).eq('empresa_id',id).not('status','in','(concluida,cancelada,cancelado)').order('numero_op',{ascending:false}).range(from,to)),
+    fetchAllPages<Order>((from,to)=>supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status',{count:'exact'}).eq('empresa_id',id).not('status','in',LISTA_STATUS_OP_FECHADAS).order('numero_op',{ascending:false}).range(from,to)),
     supabase.from('erp_moldes').select('id,codigo,nome,status,ativo').eq('empresa_id',id).eq('ativo',true).order('codigo'),
     fetchAllPages<Slot>((from,to)=>supabase.from('pcp_agenda_maquinas').select('id,maquina_id,ordem_producao_id,molde_id,quantidade_programada,lote_producao,data_hora_inicio,data_hora_fim,status',{count:'exact'}).eq('empresa_id',id).neq('status','cancelada').gte('data_hora_inicio',start.toISOString()).lt('data_hora_inicio',end.toISOString()).order('data_hora_inicio').range(from,to)),
     supabase.from('erp_pcp_calendario_trabalho').select('dias_trabalho,horario_inicio_jornada,horario_fim_jornada').eq('empresa_id',id).maybeSingle(),

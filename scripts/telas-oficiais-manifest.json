@@ -549,9 +549,9 @@
     },
     {
       "path": "src/pages/DiretoriaDashboard.tsx",
-      "sha": "73d1515619ea651521524d92d44ce0a4296ca0cc",
+      "sha": "953b35fff3ab14d4d405838d9f1dd4443d140227",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-DIRETORIA-TABELAS-REAIS-20261104-02 — OEE da diretoria lê erp_apontamentos_processo e erp_producao_paradas; RNC em aberto lê erp_rpnc (status em minúsculo); janela de calibração medida pelo relógio do servidor",
+      "revisao": "REV-DIRETORIA-TABELAS-REAIS-20261104-03 — OEE lê erp_apontamentos_processo e erp_producao_paradas; RNC lê erp_rpnc; OPs abertas contadas por \"não finalizada\" em qualquer grafia; calibração de 30 dias pelo relógio do servidor",
       "aprovadaEm": "2026-11-04",
       "statusAprovacao": "AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO (correção do cronograma de 2026-11-03; sem chave real no PC, a conferência visual autenticada não foi feita)"
     },
@@ -917,11 +917,11 @@
     },
     {
       "path": "src/pages/PCPAgendaMaquinas.tsx",
-      "sha": "19d0142630b66a1497f6e6504bdf0ed9f626e17c",
+      "sha": "1e32e1e57b93f412bc77b2ceca3d7989743074de",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-PCP-AGENDA-STATUS-OP-20261104-01 — agenda exclui OP finalizadas em qualquer grafia (o filtro minúsculo deixava concluídas maiúsculas na tela)",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO (sem chave real no PC, a conferência visual autenticada não foi feita)"
     },
     {
       "path": "src/pages/PCPAreaFuncionario.tsx",
