@@ -2,7 +2,8 @@
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @REVISAO: REV-TABELAS-REAIS-SGQ-20261104-01 — Central tablet: RNC em aberto consulta erp_rpnc e os 30 dias de calibração usam o relógio do Postgres
+ * @STATUS_APROVACAO: AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO (correção do cronograma de 2026-11-04; sem chave real no PC, a conferência visual autenticada não foi feita)
  */
 /**
  * @DATA_REVISAO_ANTERIOR: 2026-10-19
@@ -21,6 +22,7 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { relogioDoServidor } from '../lib/serverClock'
 
 type QualityModule = {
   label: string
@@ -88,17 +90,18 @@ export default function QualidadeCentralTablet() {
       const tenant = await supabase.rpc('erp_current_empresa_id')
       if (tenant.error || !tenant.data) throw new Error('Empresa da sessão autenticada não identificada.')
       const empresaId = String(tenant.data)
-      const today = new Date()
-      const horizon = new Date(today)
-      horizon.setDate(horizon.getDate() + 30)
-      const todayISO = today.toISOString().slice(0, 10)
-      const horizonISO = horizon.toISOString().slice(0, 10)
+      // Os 30 dias de calibração são medidos pelo relógio do Postgres, não pelo relógio do tablet.
+      const relogio = await relogioDoServidor()
+      const todayISO = relogio.agora ? relogio.agora.toISOString().slice(0, 10) : null
+      const horizonISO = relogio.agora ? new Date(relogio.agora.getTime() + 30 * 86400000).toISOString().slice(0, 10) : null
 
       const [inspections, rncs, fmeas, calibrations] = await Promise.all([
         supabase.from('qualidade_inspecoes').select('id', { count: 'exact', head: true }).eq('empresa_id', empresaId),
-        supabase.from('erp_rncs').select('id', { count: 'exact', head: true }).eq('empresa_id', empresaId).not('status', 'in', '(ENCERRADA,CANCELADA,FECHADA)'),
+        supabase.from('erp_rpnc').select('id', { count: 'exact', head: true }).eq('empresa_id', empresaId).not('status', 'in', '(encerrada,Encerrada,Cancelada,cancelada)'),
         supabase.from('qualidade_fmea').select('id', { count: 'exact', head: true }).eq('empresa_id', empresaId),
-        supabase.from('erp_equipamentos_medicao').select('id', { count: 'exact', head: true }).eq('empresa_id', empresaId).gte('proxima_calibracao', todayISO).lte('proxima_calibracao', horizonISO),
+        todayISO && horizonISO
+          ? supabase.from('erp_equipamentos_medicao').select('id', { count: 'exact', head: true }).eq('empresa_id', empresaId).gte('proxima_calibracao', todayISO).lte('proxima_calibracao', horizonISO)
+          : Promise.resolve({ data: null, count: null, error: { message: relogio.aviso || 'Relógio do servidor indisponível.' } as unknown as Error }),
       ])
       const failed = [inspections, rncs, fmeas, calibrations].filter(result => result.error)
       if (failed.length === 4) throw new Error('Não foi possível consultar os indicadores do SGQ no banco de dados.')

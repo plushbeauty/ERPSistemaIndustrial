@@ -1,13 +1,13 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-11-03
- * @REVISAO: REV-CONTRATO-BANCO-20261103-01 — as janelas de vencimento saíram do relógio do navegador e passaram a usar o relógio do servidor
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-04
+ * @REVISAO: REV-CENTRAIS-TABELASREAIS-20261104-01 — treinamentos, paradas, refugos, auditoria e materiais passaram a consultar as tabelas que existem no banco (erp_rh_treinamentos_registros, erp_producao_paradas, erp_qualidade_refugos, erp_sgq_auditorias, erp_produtos); janelas de vencimento usam o relógio do servidor
+ * @STATUS_APROVACAO: AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO (corrigida na ordem de 2026-11-03 "seguir com o cronograma"; sem chave real no PC, a conferência visual autenticada não foi feita)
  */
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { relogioDoServidor } from '../lib/serverClock'
-import { ArrowDownCircle, ArrowUpCircle, ClipboardCheck, Factory, FileText, Gauge, Plus, RefreshCw, Truck, Users, X } from 'lucide-react'
+import { ArrowDownCircle, ArrowUpCircle, Boxes, ClipboardCheck, Factory, FileText, Gauge, Plus, RefreshCw, Truck, Users, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 type Module = 'financeiro'|'expedicao'|'metrologia'|'treinamentos'|'auditoria'|'paradas'|'refugos'|'materiais'
@@ -15,7 +15,10 @@ type Profile = { empresa_id:string|null; is_master:boolean }
 type Row = Record<string, unknown> & { id: string }
 
 const money=(v:unknown)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0)
+const num=(v:unknown)=>new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(Number(v)||0)
 const date=(v:unknown)=>v?new Date(String(v)).toLocaleDateString('pt-BR'):'—'
+// Colunas de data/hora efetivamente selecionadas pelas consultas abaixo.
+const CAMPOS_DATA=new Set(['vencimento','pagamento','proxima_calibracao','data_expedicao','data_treinamento','validade_ate','data_inicio','data_fim','inicio','fim','created_at','criado_em'])
 
 export default function CentraisIndustriais({module}:{module:Module}){
  const [profile,setProfile]=useState<Profile|null>(null),[rows,setRows]=useState<Row[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[refresh,setRefresh]=useState(0),[query,setQuery]=useState(''),[form,setForm]=useState(false),[hoje,setHoje]=useState<Date|null>(null),[avisoRelogio,setAvisoRelogio]=useState('')
@@ -31,20 +34,23 @@ export default function CentraisIndustriais({module}:{module:Module}){
     module==='financeiro'?{table:'erp_contas_pagar',select:'id,descricao,documento,valor,vencimento,pagamento,status,created_at',order:'vencimento'}:
     module==='expedicao'?{table:'erp_expedicoes',select:'id,numero,status,transportadora,rastreio,data_expedicao,observacoes,created_at',order:'numero',ascending:false}:
     module==='metrologia'?{table:'erp_equipamentos_medicao',select:'id,codigo,descricao,fabricante,modelo,status,proxima_calibracao,setor_localizacao,ultima_calibracao',order:'codigo'}:
-    module==='treinamentos'?{table:'erp_treinamentos',select:'id,titulo,instrutor,data,carga_horas,status,evidencia_storage_path',order:'data',ascending:false}:
-    module==='paradas'?{table:'erp_pcp_paradas',select:'id,programacao_id,maquina_id,molde_id,lado_prensagem,inicio,fim,categoria,motivo,setup_changeover,observacoes',order:'inicio',ascending:false}:
-    module==='refugos'?{table:'erp_refugos_retrabalhos',select:'id,ordem_producao_id,produto_id,tipo,quantidade,motivo,custo,created_at',order:'created_at',ascending:false}:
-    {table:'erp_auditorias',select:'id,auditor,criterio,data_auditoria,resultado,evidencia,created_at',order:'data_auditoria',ascending:false}
+    module==='treinamentos'?{table:'erp_rh_treinamentos_registros',select:'id,titulo,instrutor,data_treinamento,carga_horas,resultado,status,validade_ate,certificado_path',order:'data_treinamento',ascending:false}:
+    module==='paradas'?{table:'erp_producao_paradas',select:'id,motivo,inicio,fim,status,observacao,created_at',order:'inicio',ascending:false}:
+    module==='refugos'?{table:'erp_qualidade_refugos',select:'id,quantidade_refugada,peso_refugo_kg,turno,operador,disposicao_material,observacoes,created_at,defeito:erp_qualidade_defeitos_motivos(codigo_defeito,descricao,classificacao)',order:'created_at',ascending:false}:
+    module==='materiais'?{table:'erp_produtos',select:'id,codigo,nome,unidade_medida,estoque_atual,ponto_reposicao',order:'codigo'}:
+    {table:'erp_sgq_auditorias',select:'id,codigo_auditoria,escopo,tipo,auditor_lider_nome,data_inicio,data_fim,status',order:'data_inicio',ascending:false}
    let q=supabase.from(config.table).select(config.select).order(config.order,{ascending:config.ascending??true}).limit(500)
    if(!profile.is_master)q=q.eq('empresa_id',profile.empresa_id as string)
    const {data,error:e}=await q;if(e)throw e
    const relogio=await relogioDoServidor()
-   if(alive){setRows((data??[]) as unknown as Row[]);setHoje(relogio.agora);setAvisoRelogio(relogio.aviso)}
+   // O defeito chega embutido pela FK; é achatado para que a tabela e a pesquisa funcionem como as demais colunas.
+   const linhas=((data??[]) as unknown as Row[]).map(r=>{if(module!=='refugos')return r;const d=(r.defeito??null) as Record<string,unknown>|null;const{defeito:_d,...resto}=r;return {...resto,codigo_defeito:d?.codigo_defeito??'—',defeito_descricao:d?.descricao??'—',classificacao:d?.classificacao??'—'}})
+   if(alive){setRows(linhas);setHoje(relogio.agora);setAvisoRelogio(relogio.aviso)}
   }catch(e){if(alive)setError(e instanceof Error?e.message:'Falha ao carregar os dados.')}finally{if(alive)setLoading(false)}
  })();return()=>{alive=false}},[profile,module,refresh])
  const filtered=useMemo(()=>rows.filter(r=>JSON.stringify(r).toLowerCase().includes(query.toLowerCase())),[rows,query])
  const title={financeiro:'Central Financeira',expedicao:'Expedição e Logística',metrologia:'Metrologia e Calibração',treinamentos:'Treinamentos e Competências',auditoria:'Auditorias e Conformidade',paradas:'Paradas, Setup e Downtime',refugos:'Refugo e Retrabalho',materiais:'Materiais e Estoque'}[module]
- const desc={financeiro:'Contas a pagar, fluxo financeiro e compromissos reais da empresa.',expedicao:'Separação, transporte, rastreio e expedição vinculados aos pedidos.',metrologia:'Equipamentos de medição, validade de calibração e certificados.',treinamentos:'Capacitação, presença, conclusão e evidências dos treinamentos.',auditoria:'Programação, execução, evidências e resultados das auditorias.',paradas:'Acompanhamento de paradas, setup/changeover e motivos no PCP.',refugos:'Apontamento de refugo, retrabalho, motivo e custo de qualidade.',materiais:'Materiais e saldos de estoque vinculados à operação industrial.'}[module]
+ const desc={financeiro:'Contas a pagar, fluxo financeiro e compromissos reais da empresa.',expedicao:'Separação, transporte, rastreio e expedição vinculados aos pedidos.',metrologia:'Equipamentos de medição, validade de calibração e certificados.',treinamentos:'Capacitação, instrutor, conclusão, validade da competência e evidências.',auditoria:'Programação, escopo, período e status das auditorias do SGQ.',paradas:'Paradas de máquina com início, fim, motivo e observação apontados na produção.',refugos:'Refugo apontado por defeito, classificação, quantidade, peso e destinação.',materiais:'Materiais cadastrados com unidade, saldo atual e ponto de reposição.'}[module]
  async function addFinance(e:React.FormEvent<HTMLFormElement>){e.preventDefault();if(!profile?.empresa_id)return;const f=new FormData(e.currentTarget);const {error}=await supabase.from('erp_contas_pagar').insert({empresa_id:profile.empresa_id,descricao:String(f.get('descricao')),documento:String(f.get('documento')||''),valor:Number(f.get('valor')),vencimento:String(f.get('vencimento')),status:'aberta'});if(error){setError(error.message);return}setForm(false);setRefresh(x=>x+1)}
  async function addExpedicao(e:React.FormEvent<HTMLFormElement>){e.preventDefault();if(!profile?.empresa_id)return;const f=new FormData(e.currentTarget);const {error}=await supabase.from('erp_expedicoes').insert({empresa_id:profile.empresa_id,numero:Number(f.get('numero')),status:'preparacao',transportadora:String(f.get('transportadora')||''),rastreio:String(f.get('rastreio')||''),observacoes:String(f.get('observacoes')||'')});if(error){setError(error.message);return}setForm(false);setRefresh(x=>x+1)}
  return <main style={{minHeight:'100vh',background:'#F4FBFD',padding:'12px',fontFamily:'Inter,system-ui,sans-serif',color:'#123B50'}}>
@@ -53,13 +59,14 @@ export default function CentraisIndustriais({module}:{module:Module}){
    <div style={{display:'flex',gap:8}}><button onClick={()=>setRefresh(x=>x+1)} aria-label="Atualizar" style={btn(false)}><RefreshCw size={17}/></button>{(module==='financeiro'||module==='expedicao')&&!profile?.is_master&&<button onClick={()=>setForm(true)} style={btn(true)}><Plus size={17}/> Novo registro</button>}</div>
   </header>
   <section style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:12,marginBottom:18}}>
-   <Kpi icon={module==='financeiro'?ArrowDownCircle:module==='expedicao'?Truck:module==='metrologia'?Gauge:module==='treinamentos'?Users:ClipboardCheck} label="Registros" value={loading?'…':filtered.length.toString()}/>
+   <Kpi icon={module==='financeiro'?ArrowDownCircle:module==='expedicao'?Truck:module==='metrologia'?Gauge:module==='treinamentos'?Users:module==='materiais'?Boxes:ClipboardCheck} label="Registros" value={loading?'…':filtered.length.toString()}/>
    {module==='financeiro'&&<Kpi icon={ArrowUpCircle} label="Total a pagar" value={money(rows.reduce((s,r)=>s+Number(r.valor||0),0))}/>}
    {module==='expedicao'&&<Kpi icon={Truck} label="Em trânsito" value={rows.filter(r=>/transito|transporte/i.test(String(r.status))).length.toString()}/>}
    {module==='metrologia'&&<Kpi icon={Gauge} label="Próximas calibrações (30 dias pelo servidor)" value={hoje?rows.filter(r=>r.proxima_calibracao&&new Date(String(r.proxima_calibracao))<=new Date(hoje.getTime()+30*86400000)).length.toString():'—'}/>}
-   {module==='metrologia'&&avisoRelogio&&<p style={{gridColumn:'span 3',margin:0,fontSize:10,fontWeight:700,color:'#B45309'}}>{avisoRelogio}</p>}
    {module==='treinamentos'&&<Kpi icon={Users} label="Concluídos" value={rows.filter(r=>/conclu/i.test(String(r.status))).length.toString()}/>}
-   {module==='paradas'&&<Kpi icon={Factory} label="Paradas abertas" value={rows.filter(r=>!r.fim).length.toString()}/>} {module==='refugos'&&<Kpi icon={ClipboardCheck} label="Quantidade" value={rows.reduce((s,r)=>s+Number(r.quantidade||0),0).toString()}/>} {module==='auditoria'&&<Kpi icon={ClipboardCheck} label="Conformes" value={rows.filter(r=>/conforme/i.test(String(r.resultado))).length.toString()}/>}
+   {module==='treinamentos'&&<Kpi icon={Gauge} label="Validade até 30 dias (pelo servidor)" value={hoje?rows.filter(r=>r.validade_ate&&new Date(String(r.validade_ate))<=new Date(hoje.getTime()+30*86400000)).length.toString():'—'}/>}
+   {(module==='metrologia'||module==='treinamentos')&&avisoRelogio&&<p style={{gridColumn:'span 3',margin:0,fontSize:10,fontWeight:700,color:'#B45309'}}>{avisoRelogio}</p>}
+   {module==='paradas'&&<Kpi icon={Factory} label="Paradas em aberto (sem retorno)" value={rows.filter(r=>!r.fim).length.toString()}/>} {module==='refugos'&&<Kpi icon={ClipboardCheck} label="Quantidade refugada" value={rows.reduce((s,r)=>s+Number(r.quantidade_refugada||0),0).toString()}/>} {module==='refugos'&&<Kpi icon={ClipboardCheck} label="Peso (kg)" value={num(rows.reduce((s,r)=>s+Number(r.peso_refugo_kg||0),0))}/>} {module==='materiais'&&<Kpi icon={ArrowDownCircle} label="Abaixo do ponto de reposição" value={rows.filter(r=>Number(r.estoque_atual||0)<=Number(r.ponto_reposicao||0)).length.toString()}/>} {module==='auditoria'&&<Kpi icon={ClipboardCheck} label="Concluídas" value={rows.filter(r=>/conclu/i.test(String(r.status))).length.toString()}/>}
   </section>
   <div style={{display:'flex',gap:8,marginBottom:10}}><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Pesquisar por descrição, código, status ou documento…" style={input}/></div>
   {error&&<div role="alert" style={{padding:10,background:'#fff1f1',border:'1px solid #e1b7b7',borderRadius:2,marginBottom:10}}>{error}</div>}
@@ -72,8 +79,8 @@ export default function CentraisIndustriais({module}:{module:Module}){
 }
 function Kpi({icon:Icon,label,value}:{icon:LucideIcon;label:string;value:string}){return <article style={{background:'#fff',border:'1px solid #cfe1e7',borderRadius:2,padding:12,display:'flex',gap:10,alignItems:'center'}}><span style={{width:32,height:32,borderRadius:2,display:'grid',placeItems:'center',background:'#e9f6fa',color:'#2D8DB8'}}><Icon size={20}/></span><div><small style={{display:'block',color:'#536B76',fontSize:11}}>{label}</small><strong style={{fontSize:18}}>{value}</strong></div></article>}
 function Field({name,label,type='text',required=false,step}:{name:string;label:string;type?:string;required?:boolean;step?:string}){return <label style={{display:'grid',gap:6}}>{label}<input name={name} type={type} required={required} step={step} style={input}/></label>}
-function headers(m:Module){return m==='financeiro'?[['descricao','Descrição'],['documento','Documento'],['valor','Valor'],['vencimento','Vencimento'],['pagamento','Pagamento'],['status','Status']] :m==='expedicao'?[['numero','Número'],['status','Status'],['transportadora','Transportadora'],['rastreio','Rastreio'],['data_expedicao','Data'],['observacoes','Observações']]:m==='metrologia'?[['codigo','Código'],['descricao','Descrição'],['status','Status'],['proxima_calibracao','Próxima calibração'],['setor_localizacao','Localização']]:m==='treinamentos'?[['titulo','Treinamento'],['instrutor','Instrutor'],['data','Data'],['carga_horas','Horas'],['status','Status']]:m==='paradas'?[['lado_prensagem','Lado'],['inicio','Início'],['fim','Fim'],['categoria','Categoria'],['motivo','Motivo'],['setup_changeover','Setup']]:m==='refugos'?[['tipo','Tipo'],['quantidade','Quantidade'],['motivo','Motivo'],['custo','Custo'],['created_at','Registro']]:[['auditor','Auditor'],['criterio','Critério'],['data_auditoria','Data'],['resultado','Resultado'],['evidencia','Evidência']]}
-function formatCell(m:Module,r:Row,k:string){if(k==='valor')return money(r[k]);if(k.includes('data')||k==='vencimento'||k==='pagamento'||k==='proxima_calibracao')return date(r[k]);const value=r[k];return value==null||value===''?'—':String(value)}
+function headers(m:Module){return m==='financeiro'?[['descricao','Descrição'],['documento','Documento'],['valor','Valor'],['vencimento','Vencimento'],['pagamento','Pagamento'],['status','Status']] :m==='expedicao'?[['numero','Número'],['status','Status'],['transportadora','Transportadora'],['rastreio','Rastreio'],['data_expedicao','Data'],['observacoes','Observações']]:m==='metrologia'?[['codigo','Código'],['descricao','Descrição'],['status','Status'],['proxima_calibracao','Próxima calibração'],['setor_localizacao','Localização']]:m==='treinamentos'?[['titulo','Treinamento'],['instrutor','Instrutor'],['data_treinamento','Data'],['carga_horas','Horas'],['resultado','Resultado'],['validade_ate','Validade'],['status','Status']]:m==='paradas'?[['motivo','Motivo'],['inicio','Início'],['fim','Fim'],['status','Status'],['observacao','Observações']]:m==='refugos'?[['codigo_defeito','Código'],['defeito_descricao','Defeito'],['classificacao','Classificação'],['quantidade_refugada','Quantidade'],['peso_refugo_kg','Peso (kg)'],['turno','Turno'],['disposicao_material','Destinação']]:m==='materiais'?[['codigo','Código'],['nome','Material'],['unidade_medida','Unidade'],['estoque_atual','Saldo'],['ponto_reposicao','Ponto de reposição']]:[['codigo_auditoria','Código'],['escopo','Escopo'],['tipo','Tipo'],['auditor_lider_nome','Auditor líder'],['data_inicio','Início'],['data_fim','Fim'],['status','Status']]}
+function formatCell(m:Module,r:Row,k:string){if(k==='valor')return money(r[k]);if(k==='peso_refugo_kg'||k==='quantidade_refugada'||k==='estoque_atual'||k==='ponto_reposicao'||k==='carga_horas')return num(r[k]);if(CAMPOS_DATA.has(k))return date(r[k]);const value=r[k];return value==null||value===''?'—':String(value)}
 const btn=(primary:boolean):React.CSSProperties=>({border:primary?'0':'1px solid #b9d2da',background:primary?'#2D8DB8':'#fff',color:primary?'#fff':'#123B50',borderRadius:2,minHeight:30,height:30,padding:'0 9px',fontSize:11,fontWeight:700,display:'inline-flex',gap:7,alignItems:'center',cursor:'pointer'})
 const input:React.CSSProperties={width:'100%',minHeight:30,height:30,boxSizing:'border-box',border:'1px solid #b9d2da',borderRadius:2,padding:'0 8px',fontSize:11,background:'#fff',color:'#123B50'}
 const th:React.CSSProperties={padding:8,textAlign:'left',fontSize:10,letterSpacing:'.04em',borderBottom:'1px solid #dbe8ed',background:'#f4fbfd'}

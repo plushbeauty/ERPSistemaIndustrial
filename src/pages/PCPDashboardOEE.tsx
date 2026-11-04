@@ -1,21 +1,31 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-04
+ * @REVISAO: REV-OEE-TABELA-REAL-20261104-01 — o OEE passou a ler erp_apontamentos_processo e erp_producao_paradas (tabelas reais); a janela do período é medida pelo relógio do servidor
+ * @STATUS_APROVACAO: AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO (correção do cronograma de 2026-11-03; sem chave real no PC, a conferência visual autenticada não foi feita)
  */
 import { useEffect, useMemo, useState } from 'react'
 import { Activity, BarChart3, Clock3, Factory, Gauge, RefreshCw, ShieldCheck, TrendingUp } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { supabase } from '../lib/supabaseClient'
+import { relogioDoServidor } from '../lib/serverClock'
 
 type Apontamento = {
-  ordem_producao_id: string
+  id: string
+  ordem_producao_id: string | null
+  maquina_id: string | null
+  inicio_em: string
+  fim_em: string | null
+  quantidade_planejada: number
   quantidade_boa: number
-  quantidade_refugo: number
-  setup_min: number
-  paradas_min: number
-  inicio: string | null
+  quantidade_refugada: number
+  quantidade_reprocessada: number
+}
+type Parada = {
+  id: string
+  ordem_producao_id: string | null
+  maquina_id: string | null
+  inicio: string
   fim: string | null
 }
 type Ordem = {
@@ -24,92 +34,145 @@ type Ordem = {
   velocidade_nominal_hora: number
   tempo_estimado_horas: number
 }
-type Dia = { dia: string; disponibilidade: number; performance: number; qualidade: number; oee: number }
 
 const pct = (value: number) => `${value.toFixed(1)}%`
 const clamp = (value: number) => Math.max(0, Math.min(100, value))
+const num = (value: unknown) => Math.max(0, Number(value) || 0)
+
+// Sobreposição em minutos entre dois intervalos: a parada só desconta o tempo que cai dentro do apontamento.
+const sobreposicaoMin = (aInicio: number, aFim: number, bInicio: number, bFim: number) =>
+  Math.max(0, (Math.min(aFim, bFim) - Math.max(aInicio, bInicio)) / 60000)
 
 export default function PCPDashboardOEE() {
   const [period, setPeriod] = useState('30')
   const [rows, setRows] = useState<Apontamento[]>([])
+  const [paradas, setParadas] = useState<Parada[]>([])
   const [ordens, setOrdens] = useState<Ordem[]>([])
+  const [agoraServidor, setAgoraServidor] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   const load = async () => {
     setLoading(true)
     setError('')
-    const since = new Date(Date.now() - Number(period) * 86400000).toISOString()
-    const [a, o] = await Promise.all([
-      supabase.from('erp_producao_apontamentos').select('ordem_producao_id,quantidade_boa,quantidade_refugo,setup_min,paradas_min,inicio,fim').gte('inicio', since).limit(10000),
+    // A janela do período é medida pelo relógio do Postgres, não pelo do tablet/navegador.
+    const relogio = await relogioDoServidor()
+    if (!relogio.agora) {
+      setRows([]); setParadas([]); setOrdens([]); setAgoraServidor('')
+      setError(relogio.aviso || 'O relógio do servidor está indisponível; o período do OEE não pôde ser determinado.')
+      setLoading(false)
+      return
+    }
+    const agora = relogio.agora
+    const since = new Date(agora.getTime() - Number(period) * 86400000).toISOString()
+    const [a, p, o] = await Promise.all([
+      supabase
+        .from('erp_apontamentos_processo')
+        .select('id,ordem_producao_id,maquina_id,inicio_em,fim_em,quantidade_planejada,quantidade_boa,quantidade_refugada,quantidade_reprocessada')
+        .gte('inicio_em', since)
+        .limit(10000),
+      supabase
+        .from('erp_producao_paradas')
+        .select('id,ordem_producao_id,maquina_id,inicio,fim')
+        .gte('inicio', since)
+        .limit(10000),
       supabase.from('erp_ordens_producao').select('id,quantidade_planejada,velocidade_nominal_hora,tempo_estimado_horas').limit(10000),
     ])
-    if (a.error || o.error) {
-      setError(a.error?.message ?? o.error?.message ?? 'Falha ao carregar o OEE.')
+    if (a.error || p.error || o.error) {
+      setError(a.error?.message ?? p.error?.message ?? o.error?.message ?? 'Falha ao carregar o OEE.')
       setRows([])
+      setParadas([])
       setOrdens([])
+      setAgoraServidor('')
     } else {
       setRows((a.data ?? []) as Apontamento[])
+      setParadas((p.data ?? []) as Parada[])
       setOrdens((o.data ?? []) as Ordem[])
+      setAgoraServidor(agora.toISOString())
     }
     setLoading(false)
   }
 
   useEffect(() => { void load() }, [period])
 
-  const metrics = useMemo(() => {
+  const calc = useMemo(() => {
     const byOrder = new Map(ordens.map((x) => [x.id, x]))
-    let planned = 0
-    let downtime = 0
-    let runtime = 0
-    let good = 0
-    let scrap = 0
-    let idealPieces = 0
-
-    for (const row of rows) {
-      const op = byOrder.get(row.ordem_producao_id)
-      const duration = row.inicio && row.fim ? Math.max(0, (new Date(row.fim).getTime() - new Date(row.inicio).getTime()) / 60000) : 0
-      const stop = Math.max(0, Number(row.paradas_min) || 0) + Math.max(0, Number(row.setup_min) || 0)
-      planned += op ? Math.max(0, Number(op.tempo_estimado_horas) || 0) * 60 : duration
-      downtime += Math.min(duration, stop)
-      runtime += Math.max(0, duration - stop)
-      good += Math.max(0, Number(row.quantidade_boa) || 0)
-      scrap += Math.max(0, Number(row.quantidade_refugo) || 0)
-      const rate = op ? Math.max(0, Number(op.velocidade_nominal_hora) || 0) : 0
-      idealPieces += (Math.max(0, duration - stop) / 60) * rate
+    const porOrdem = new Map<string, Parada[]>()
+    const porMaquina = new Map<string, Parada[]>()
+    for (const parada of paradas) {
+      if (parada.ordem_producao_id) porOrdem.set(parada.ordem_producao_id, [...(porOrdem.get(parada.ordem_producao_id) ?? []), parada])
+      if (parada.maquina_id) porMaquina.set(parada.maquina_id, [...(porMaquina.get(parada.maquina_id) ?? []), parada])
     }
+    const limiteFim = agoraServidor ? new Date(agoraServidor).getTime() : Date.now()
 
-    const availability = planned > 0 ? clamp(((planned - downtime) / planned) * 100) : 0
-    const performance = idealPieces > 0 ? clamp((good / idealPieces) * 100) : 0
-    const quality = good + scrap > 0 ? clamp((good / (good + scrap)) * 100) : 0
-    const oee = (availability * performance * quality) / 10000
-    return { availability, performance, quality, oee, planned, downtime, runtime, good, scrap }
-  }, [rows, ordens])
-
-  const trend = useMemo<Dia[]>(() => {
-    const byOrder = new Map(ordens.map((x) => [x.id, x]))
-    const map = new Map<string, { planned: number; stop: number; good: number; scrap: number; ideal: number }>()
-    for (const row of rows) {
-      const key = row.inicio?.slice(0, 10)
-      if (!key) continue
-      const op = byOrder.get(row.ordem_producao_id)
-      const duration = row.inicio && row.fim ? Math.max(0, (new Date(row.fim).getTime() - new Date(row.inicio).getTime()) / 60000) : 0
-      const stop = Math.min(duration, Math.max(0, Number(row.paradas_min) || 0) + Math.max(0, Number(row.setup_min) || 0))
-      const item = map.get(key) ?? { planned: 0, stop: 0, good: 0, scrap: 0, ideal: 0 }
-      item.planned += op ? Math.max(0, Number(op.tempo_estimado_horas) || 0) * 60 : duration
-      item.stop += stop
-      item.good += Math.max(0, Number(row.quantidade_boa) || 0)
-      item.scrap += Math.max(0, Number(row.quantidade_refugo) || 0)
-      item.ideal += ((duration - stop) / 60) * Math.max(0, Number(op?.velocidade_nominal_hora) || 0)
-      map.set(key, item)
-    }
-    return [...map.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([dia, x]) => {
-      const availability = x.planned ? clamp(((x.planned - x.stop) / x.planned) * 100) : 0
-      const performance = x.ideal ? clamp((x.good / x.ideal) * 100) : 0
-      const quality = x.good + x.scrap ? clamp((x.good / (x.good + x.scrap)) * 100) : 0
-      return { dia: dia.slice(5).replace('-', '/'), disponibilidade: availability, performance, qualidade: quality, oee: availability * performance * quality / 10000 }
+    const itens = rows.map((row) => {
+      const op = row.ordem_producao_id ? byOrder.get(row.ordem_producao_id) : undefined
+      const inicio = new Date(row.inicio_em).getTime()
+      const fim = row.fim_em ? Math.min(new Date(row.fim_em).getTime(), limiteFim) : limiteFim
+      const duracao = Math.max(0, (fim - inicio) / 60000)
+      const planejado = op && num(op.tempo_estimado_horas) > 0 ? num(op.tempo_estimado_horas) * 60 : duracao
+      const lista = (row.ordem_producao_id && porOrdem.get(row.ordem_producao_id)) || (row.maquina_id && porMaquina.get(row.maquina_id)) || []
+      const parada = Math.min(planejado, lista.reduce((s, x) => s + sobreposicaoMin(inicio, fim, new Date(x.inicio).getTime(), x.fim ? new Date(x.fim).getTime() : limiteFim), 0))
+      const efetivo = Math.max(0, planejado - parada)
+      const good = num(row.quantidade_boa)
+      const scrap = num(row.quantidade_refugada)
+      return {
+        dia: row.inicio_em.slice(0, 10),
+        planejado,
+        parada,
+        efetivo,
+        good,
+        scrap,
+        rework: num(row.quantidade_reprocessada),
+        ideal: (efetivo / 60) * (op ? num(op.velocidade_nominal_hora) : 0),
+      }
     })
-  }, [rows, ordens])
+
+    const soma = itens.reduce((acc, x) => ({
+      planejado: acc.planejado + x.planejado,
+      parada: acc.parada + x.parada,
+      efetivo: acc.efetivo + x.efetivo,
+      good: acc.good + x.good,
+      scrap: acc.scrap + x.scrap,
+      rework: acc.rework + x.rework,
+      ideal: acc.ideal + x.ideal,
+    }), { planejado: 0, parada: 0, efetivo: 0, good: 0, scrap: 0, rework: 0, ideal: 0 })
+
+    const indices = (x: { planejado: number; parada: number; efetivo: number; good: number; scrap: number; ideal: number }) => {
+      const availability = x.planejado > 0 ? clamp(((x.planejado - x.parada) / x.planejado) * 100) : 0
+      const performance = x.ideal > 0 ? clamp((x.good / x.ideal) * 100) : 0
+      const quality = x.good + x.scrap > 0 ? clamp((x.good / (x.good + x.scrap)) * 100) : 0
+      return { availability, performance, quality, oee: (availability * performance * quality) / 10000 }
+    }
+
+    const porDia = new Map<string, typeof soma>()
+    for (const item of itens) {
+      const atual = porDia.get(item.dia) ?? { planejado: 0, parada: 0, efetivo: 0, good: 0, scrap: 0, rework: 0, ideal: 0 }
+      atual.planejado += item.planejado
+      atual.parada += item.parada
+      atual.efetivo += item.efetivo
+      atual.good += item.good
+      atual.scrap += item.scrap
+      atual.rework += item.rework
+      atual.ideal += item.ideal
+      porDia.set(item.dia, atual)
+    }
+
+    const dias = [...porDia.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([dia, x]) => ({
+        dia: dia.slice(5).replace('-', '/'),
+        disponibilidade: indices(x).availability,
+        performance: indices(x).performance,
+        qualidade: indices(x).quality,
+        oee: indices(x).oee,
+      }))
+
+    return { ...indices(soma), planned: soma.planejado, downtime: soma.parada, runtime: soma.efetivo, good: soma.good, scrap: soma.scrap, rework: soma.rework, apontamentos: itens.length, dias }
+  }, [rows, paradas, ordens, agoraServidor])
+
+  const metrics = calc
+  const trend = calc.dias
 
   const donut = [
     { name: 'Boa', value: metrics.good },
@@ -123,7 +186,7 @@ export default function PCPDashboardOEE() {
           <div>
             <p className="text-xs font-black uppercase tracking-[0.16em] text-sky-700">PCP › CHÃO DE FÁBRICA › PERFORMANCE</p>
             <h1 className="mt-1 text-[15px] font-black tracking-tight">OEE Industrial</h1>
-            <p className="text-sm font-medium text-slate-600">Disponibilidade × Performance × Qualidade, calculado somente sobre apontamentos reais.</p>
+            <p className="text-sm font-medium text-slate-600">Disponibilidade × Performance × Qualidade sobre os apontamentos de processo e as paradas de máquina do período, medidos pelo relógio do servidor.</p>
           </div>
           <div className="ml-auto flex items-center gap-2 print:hidden">
             <select value={period} onChange={(e) => setPeriod(e.target.value)} className="h-[30px] rounded-[2px] border border-slate-300 bg-white px-4 font-bold">

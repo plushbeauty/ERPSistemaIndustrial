@@ -1,12 +1,13 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-04
+ * @REVISAO: REV-DIRETORIA-TABELAS-REAIS-20261104-02 — OEE da diretoria lê erp_apontamentos_processo e erp_producao_paradas; RNC em aberto lê erp_rpnc (status em minúsculo); janela de calibração medida pelo relógio do servidor
+ * @STATUS_APROVACAO: AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO (correção do cronograma de 2026-11-03; sem chave real no PC, a conferência visual autenticada não foi feita)
  */
 import { useEffect, useState } from "react";
 import { AlertTriangle, ClipboardList, PackageX, RefreshCw, ShieldAlert } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
+import { relogioDoServidor } from "../lib/serverClock";
 import { useRealtimeAlerts } from "../hooks/useRealtimeAlerts";
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 
@@ -21,18 +22,23 @@ type PendingRow = {
 
 type ApontamentoRow = {
   ordem_producao_id: string | null;
+  maquina_id: string | null;
   quantidade_boa: number | null;
-  quantidade_refugo: number | null;
-  setup_min: number | null;
-  paradas_min: number | null;
-  inicio: string | null;
-  fim: string | null;
+  quantidade_refugada: number | null;
+  inicio_em: string | null;
+  fim_em: string | null;
 };
+type ParadaRow = { ordem_producao_id: string | null; maquina_id: string | null; inicio: string; fim: string | null };
 type OrderRow = { id: string; velocidade_nominal_hora: number | null };
 
 function numberValue(value: unknown): number {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+// Sobreposição em minutos entre o apontamento e a janela da parada de máquina.
+function sobreposicaoMin(aInicio: number, aFim: number, bInicio: number, bFim: number): number {
+  return Math.max(0, (Math.min(aFim, bFim) - Math.max(aInicio, bInicio)) / 60000);
 }
 
 function monthLabel(value: string): string {
@@ -56,16 +62,22 @@ export default function DiretoriaDashboard() {
     const current = await supabase.rpc("erp_current_empresa_id");
     const empresaAtual = current.error || !current.data ? null : String(current.data);
     if (empresaAtual) setEmpresaId(empresaAtual);
-    const [opsResult, rncResult, calibrationResult, nfeResult, apontamentosResult, reservationsResult] = await Promise.all([
+    // Os 30 dias da metrologia e o fechamento de apontamentos abertos são medidos pelo relógio do Postgres.
+    const relogio = await relogioDoServidor();
+    const limiteCalibracao = relogio.agora ? new Date(relogio.agora.getTime() + 30 * 86400000).toISOString().slice(0, 10) : null;
+    const [opsResult, rncResult, calibrationResult, nfeResult, apontamentosResult, reservationsResult, paradasResult] = await Promise.all([
       supabase.from("erp_ordens_producao").select("id,status").in("status", ["ABERTA", "PLANEJADA", "EM_PRODUCAO", "EM_ANDAMENTO"]),
-      supabase.from("erp_rncs").select("id,status").not("status", "in", "(ENCERRADA,CANCELADA,FECHADA)"),
-      supabase.from("erp_equipamentos_medicao").select("id").lte("proxima_calibracao", new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10)),
+      supabase.from("erp_rpnc").select("id,status").not("status", "in", "(encerrada,Encerrada,Cancelada,cancelada)"),
+      limiteCalibracao
+        ? supabase.from("erp_equipamentos_medicao").select("id").lte("proxima_calibracao", limiteCalibracao)
+        : Promise.resolve({ data: null, error: { message: relogio.aviso || "Relógio do servidor indisponível." } as unknown as Error }),
       supabase.from("erp_documentos_fiscais").select("id,valor_total,status,data_emissao").eq("empresa_id", empresaAtual ?? "").eq("status", "Autorizada").order("data_emissao", { ascending: true }).limit(500),
-      supabase.from("erp_producao_apontamentos").select("ordem_producao_id,quantidade_boa,quantidade_refugo,setup_min,paradas_min,inicio,fim").order("created_at", { ascending: false }).limit(500),
+      supabase.from("erp_apontamentos_processo").select("ordem_producao_id,maquina_id,quantidade_boa,quantidade_refugada,inicio_em,fim_em").order("inicio_em", { ascending: false }).limit(500),
       supabase.from("erp_estoque_reservas").select("id,quantidade, status, pedido_item_id").eq("status", "ATIVA").order("created_at", { ascending: false }).limit(20),
+      supabase.from("erp_producao_paradas").select("id,ordem_producao_id,maquina_id,inicio,fim").order("inicio", { ascending: false }).limit(1000),
     ]);
 
-    const queryErrors = [opsResult.error, rncResult.error, calibrationResult.error, nfeResult.error, apontamentosResult.error, reservationsResult.error].filter(Boolean);
+    const queryErrors = [opsResult.error, rncResult.error, calibrationResult.error, nfeResult.error, apontamentosResult.error, reservationsResult.error, paradasResult.error].filter(Boolean);
     setNotice(queryErrors.length > 0 ? "Alguns indicadores não estão disponíveis para o perfil atual; nenhum valor fictício foi criado." : "");
 
     setOpsAbertas((opsResult.data ?? []).length);
@@ -80,6 +92,13 @@ export default function DiretoriaDashboard() {
     setRevenue([...monthly.entries()].slice(-6).map(([name, value]) => ({ name, value })));
 
     const apontamentos = (apontamentosResult.data ?? []) as ApontamentoRow[];
+    const paradas = (paradasResult.data ?? []) as ParadaRow[];
+    const paradasPorOrdem = new Map<string, ParadaRow[]>();
+    const paradasPorMaquina = new Map<string, ParadaRow[]>();
+    for (const parada of paradas) {
+      if (parada.ordem_producao_id) paradasPorOrdem.set(parada.ordem_producao_id, [...(paradasPorOrdem.get(parada.ordem_producao_id) ?? []), parada]);
+      if (parada.maquina_id) paradasPorMaquina.set(parada.maquina_id, [...(paradasPorMaquina.get(parada.maquina_id) ?? []), parada]);
+    }
     const orderIds = [...new Set(apontamentos.map(row => row.ordem_producao_id).filter((id): id is string => Boolean(id)))];
     let orders: OrderRow[] = [];
     if (orderIds.length > 0) {
@@ -92,21 +111,20 @@ export default function DiretoriaDashboard() {
     let runMinutes = 0;
     let elapsedMinutes = 0;
     let idealMinutes = 0;
-    let downtimeMinutes = 0;
     for (const row of apontamentos) {
       const boa = numberValue(row.quantidade_boa);
-      const refugo = numberValue(row.quantidade_refugo);
-      const setup = Math.max(0, numberValue(row.setup_min));
-      const parada = Math.max(0, numberValue(row.paradas_min));
+      const refugo = numberValue(row.quantidade_refugada);
       totalBoa += boa;
       totalRefugo += refugo;
-      downtimeMinutes += parada;
-      if (row.inicio && row.fim) {
-        const elapsed = (new Date(row.fim).getTime() - new Date(row.inicio).getTime()) / 60000;
-        if (Number.isFinite(elapsed) && elapsed > 0) {
-          elapsedMinutes += elapsed;
-          runMinutes += Math.max(0, elapsed - setup - parada);
-        }
+      const inicio = row.inicio_em ? new Date(row.inicio_em).getTime() : Number.NaN;
+      // Apontamento ainda aberto sem relógio do servidor não tem duração deduzida: é ignorado, não inventado.
+      const fim = row.fim_em ? new Date(row.fim_em).getTime() : relogio.agora ? relogio.agora.getTime() : Number.NaN;
+      const elapsed = (fim - inicio) / 60000;
+      if (Number.isFinite(inicio) && Number.isFinite(fim) && elapsed > 0) {
+        const lista = (row.ordem_producao_id && paradasPorOrdem.get(row.ordem_producao_id)) || (row.maquina_id && paradasPorMaquina.get(row.maquina_id)) || [];
+        const parada = lista.reduce((s, x) => s + sobreposicaoMin(inicio, fim, new Date(x.inicio).getTime(), x.fim ? new Date(x.fim).getTime() : fim), 0);
+        elapsedMinutes += elapsed;
+        runMinutes += Math.max(0, elapsed - parada);
       }
       const speed = speedByOrder.get(row.ordem_producao_id ?? "") ?? 0;
       if (speed > 0) idealMinutes += ((boa + refugo) / speed) * 60;
@@ -146,8 +164,8 @@ export default function DiretoriaDashboard() {
       .channel("diretoria-dashboard-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "erp_alertas_sistema" }, () => void load())
       .on("postgres_changes", { event: "*", schema: "public", table: "erp_ordens_producao" }, () => void load())
-      .on("postgres_changes", { event: "*", schema: "public", table: "erp_rncs" }, () => void load())
-      .on("postgres_changes", { event: "*", schema: "public", table: "erp_producao_apontamentos" }, () => void load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "erp_rpnc" }, () => void load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "erp_apontamentos_processo" }, () => void load())
       .on("postgres_changes", { event: "*", schema: "public", table: "fiscal_nfes" }, () => void load())
       .on("postgres_changes", { event: "*", schema: "public", table: "erp_equipamentos_medicao" }, () => void load())
       .subscribe();

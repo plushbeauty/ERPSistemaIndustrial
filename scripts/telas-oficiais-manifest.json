@@ -365,11 +365,11 @@
     },
     {
       "path": "src/pages/CentraisIndustriais.tsx",
-      "sha": "f2f36f98623b9bec8cd2a6a47ecf3f4c0275ce47",
+      "sha": "8e77faa588af13450155cd7f474748c756011565",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-CONTRATO-BANCO-20261103-01 — as janelas de vencimento saíram do relógio do navegador e passaram a usar o relógio do servidor",
-      "aprovadaEm": "2026-11-03",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-CENTRAIS-TABELASREAIS-20261104-01 — treinamentos, paradas, refugos, auditoria e materiais passaram a consultar as tabelas que existem no banco (erp_rh_treinamentos_registros, erp_producao_paradas, erp_qualidade_refugos, erp_sgq_auditorias, erp_produtos); janelas de vencimento usam o relógio do servidor",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO (corrigida na ordem de 2026-11-03 \"seguir com o cronograma\"; sem chave real no PC, a conferência visual autenticada não foi feita)"
     },
     {
       "path": "src/pages/CentralAjuda.tsx",
@@ -549,11 +549,11 @@
     },
     {
       "path": "src/pages/DiretoriaDashboard.tsx",
-      "sha": "3333dafa82c52700ca55bd3d3565a2845ffef149",
+      "sha": "73d1515619ea651521524d92d44ce0a4296ca0cc",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-DIRETORIA-TABELAS-REAIS-20261104-02 — OEE da diretoria lê erp_apontamentos_processo e erp_producao_paradas; RNC em aberto lê erp_rpnc (status em minúsculo); janela de calibração medida pelo relógio do servidor",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO (correção do cronograma de 2026-11-03; sem chave real no PC, a conferência visual autenticada não foi feita)"
     },
     {
       "path": "src/pages/DocumentosQualidadeControle.tsx",
@@ -941,11 +941,11 @@
     },
     {
       "path": "src/pages/PCPDashboardOEE.tsx",
-      "sha": "7584fd4c75693f0677e33bb74e90a70bb0706bd9",
+      "sha": "aafc39e00401154401682b42c93c1437205cb890",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-OEE-TABELA-REAL-20261104-01 — o OEE passou a ler erp_apontamentos_processo e erp_producao_paradas (tabelas reais); a janela do período é medida pelo relógio do servidor",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO (correção do cronograma de 2026-11-03; sem chave real no PC, a conferência visual autenticada não foi feita)"
     },
     {
       "path": "src/pages/PCPExecucaoIndustrial.tsx",
@@ -1101,11 +1101,11 @@
     },
     {
       "path": "src/pages/QualidadeCentralTablet.tsx",
-      "sha": "eb0db7953ec113fdd19dddac9dcd57d8dc72b328",
+      "sha": "08a700d770d01dff37a58478afb17fbc290512e2",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
       "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "statusAprovacao": "AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO (correção do cronograma de 2026-11-04; sem chave real no PC, a conferência visual autenticada não foi feita)"
     },
     {
       "path": "src/pages/QualidadeDashboardRNC.tsx",
