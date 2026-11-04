@@ -1,7 +1,8 @@
 /**
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-04
- * @REVISAO: REV-CHAO-FABRICA-CARTAO-PONTO-20261104-01 — tela real por cartão de ponto (ordem do proprietário)
+ * @REVISAO: REV-CHAO-FABRICA-CARTAO-PONTO-20261104-02 — tela real por cartão de ponto + fileira da semana em trilho
+ *   de rolagem no celular e nome do operador lido de nome_completo quando o cadastro tiver os dois campos
  * @STATUS_APROVACAO: DETERMINADO PELO PROPRIETARIO ("NAO QUERO ESSA TELA SÓ DE DEMOSTRAÇÃO DEVE VIR UM CAMPO PARA
  *   COLOCAR NUMERO DO CARTÁO DE PONTO PARA PUXAR O NOME DO OPERADOR E SUA PROGRAMAÇAO DO PC PARA ELE O QUE VAI TER
  *   PARA FAZER NO DIA E NA SEMANA E AS MAQUINAS TER UM ABA PARA ELE PUXAR A FICHA DE PROCESSO DA PEÇA ONLINE", 2026-11-04)
@@ -459,7 +460,7 @@ export default function ChaoDeFabricaApontamento() {
     }
   }
 
-  const operatorName = worker?.nome ?? worker?.nome_completo ?? ''
+  const operatorName = (worker?.nome_completo || worker?.nome || '').trim()
 
   if (!worker) {
     return <main className="min-h-screen bg-[#F4FBFD] p-4 text-slate-900 md:p-8">
@@ -528,7 +529,7 @@ export default function ChaoDeFabricaApontamento() {
                 <button type="button" aria-label="Próxima semana" onClick={() => setWeekOffset(value => value + 1)} className="grid h-9 w-9 place-items-center border border-slate-300 bg-white hover:bg-[#F4FBFD]"><ChevronRight size={16} /></button>
               </div>
             </div>
-            <div className="mt-3 grid grid-cols-4 gap-2 lg:grid-cols-7">
+            <div data-synqra-weekrail="1" className="mt-3 grid grid-cols-4 gap-2 lg:grid-cols-7">
               {weekDays.map(day => {
                 const count = programs.filter(item => dayKey(new Date(item.inicio_planejado)) === day).length
                 const isSelected = selectedDay === day

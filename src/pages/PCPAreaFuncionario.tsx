@@ -1,8 +1,10 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-11-03
- * @REVISAO: REV-MES-APONTAMENTO-SERVIDOR-20261103-01 — apontamento gravado pelo servidor
- * @STATUS_APROVACAO: DETERMINADO PELO PROPRIETARIO ("O prazo deve ser calculado pelo servidor, e não pelo
+ * @DATA_REVISAO_APROVACAO: 2026-11-04
+ * @REVISAO: REV-PORTAL-OPERADOR-NOME-REAL-20261104-01 — cabecalo passou a ler nome_completo do RH (antes mostrava "Identificando conta…" para sempre quando o cadastro só tinha nome completo) e a fileira de dias virou trilho de rolagem no celular
+ * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-04: "se a conta ja foi identificada, substitua o texto pelo nome real do operador em destaque" + pente fino responsivo
+ * @REVISAO_ANTERIOR: REV-MES-APONTAMENTO-SERVIDOR-20261103-01 — apontamento gravado pelo servidor
+ * @STATUS_ANTERIOR: DETERMINADO PELO PROPRIETARIO ("O prazo deve ser calculado pelo servidor, e não pelo
  *   relógio do navegador" + "Tela Chão de Fábrica · Apontamento gravando de verdade", 2026-11-03)
  * Início e fim saem do relógio do banco (erp_apontamento_iniciar / erp_apontamento_finalizar), a ficha aprovada é
  * conferida no banco e a finalização dá baixa em erp_pcp_programacoes na mesma transação. Sem migration aplicada o
@@ -22,7 +24,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Clock3, Factory, FileText, Package, Play, RefreshCw, ShieldCheck, Square, UserRound } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
-type Employee = { id: string; matricula: string; nome: string; email: string | null; status: string }
+type Employee = { id: string; matricula: string | null; nome: string | null; nome_completo: string | null; email: string | null; status: string }
 type Program = { id: string; ordem_producao_id: string | null; maquina_id: string | null; produto_id: string | null; inicio_planejado: string; fim_planejado: string; quantidade_planejada: number; quantidade_produzida: number; quantidade_refugada: number; status: string; operador_frente_id: string | null; operador_atras_id: string | null }
 type Order = { id: string; numero_op: string | number; produto_id: string | null; quantidade_planejada: number | null; quantidade: number | null; status: string; data_prevista: string | null }
 type Product = { id: string; codigo: string; nome: string; unidade: string | null; descricao?: string | null }
@@ -105,7 +107,7 @@ export default function PCPAreaFuncionario() {
       setCompanyId(tenant.data)
       setUserId(authData.user.id)
       const employeeResult = await supabase.from('erp_funcionarios')
-        .select('id,matricula,nome,email,status')
+        .select('id,matricula,nome,nome_completo,email,status')
         .eq('empresa_id', tenant.data)
         .ilike('email', email)
         .maybeSingle()
@@ -275,7 +277,7 @@ export default function PCPAreaFuncionario() {
       {(error || message) && <p role={error?'alert':'status'} className={'border p-4 text-sm font-bold '+(error?'border-rose-200 bg-rose-50 text-rose-800':'border-emerald-200 bg-emerald-50 text-emerald-800')}>{error||message}</p>}
       {!loading && !employee && !error && <p className="border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">Conta ainda não vinculada a um funcionário no RH.</p>}
       <section className="flex flex-wrap items-center justify-between gap-4 border border-slate-200 bg-white p-4">
-        <div className="flex items-center gap-3"><span className="grid h-12 w-12 place-items-center border border-[#C8E3EE] bg-[#EAF6FA] text-[#2D8DB8]"><UserRound size={22}/></span><div><p className="text-[10px] font-black uppercase text-slate-500">Funcionário autenticado</p><p className="text-lg font-black text-[#123B50]">{employee?.nome ?? 'Identificando conta…'}</p></div></div>
+        <div className="flex min-w-0 items-center gap-3"><span className="grid h-12 w-12 shrink-0 place-items-center border border-[#C8E3EE] bg-[#EAF6FA] text-[#2D8DB8]"><UserRound size={22}/></span><div className="min-w-0"><p className="text-[10px] font-black uppercase text-slate-500">Funcionário autenticado</p><p className="truncate text-lg font-black text-[#123B50] sm:text-xl">{(employee?.nome_completo || employee?.nome || '').trim() || (loading ? 'Identificando conta…' : 'Nome não informado no cadastro do RH')}</p></div></div>
         <div className="flex flex-wrap gap-2 text-xs font-bold"><span className="border border-slate-200 bg-slate-50 px-3 py-2">Matrícula: {employee?.matricula ?? '—'}</span><span className="border border-emerald-200 bg-emerald-50 px-3 py-2 text-emerald-800"><ShieldCheck size={14} className="mr-1 inline"/>Acesso autenticado</span></div>
       </section>
       <section className="border border-slate-200 bg-white p-4 shadow-[0_2px_8px_rgba(18,59,80,.04)]">
@@ -288,7 +290,7 @@ export default function PCPAreaFuncionario() {
           <p className="min-w-[232px] text-center text-sm font-black text-[#123B50]">{new Date(days[0]+'T12:00:00').toLocaleDateString('pt-BR')} — {new Date(days[6]+'T12:00:00').toLocaleDateString('pt-BR')}</p>
           <button type="button" onClick={()=>changeWeek(1)} aria-label="Próxima semana" className="grid h-10 w-10 shrink-0 place-items-center border border-slate-300 bg-white text-[#123B50] hover:bg-[#F4FBFD]"><ChevronRight size={18}/></button>
         </div>
-        <div className="grid grid-cols-2 gap-2 pb-1 sm:grid-cols-4 lg:grid-cols-7">
+        <div data-synqra-weekrail="1" className="grid grid-cols-2 gap-2 pb-1 sm:grid-cols-4 lg:grid-cols-7">
           {days.map(day=>{const count=programs.filter(item=>localDate(new Date(item.inicio_planejado))===day).length;const isSelected=selectedDay===day;return <button type="button" key={day} onClick={()=>setSelectedDay(day)} aria-pressed={isSelected} aria-label={new Date(day+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})+(count?', '+count+' tarefa(s) programada(s)':' sem tarefas programadas')} className={'flex min-h-[92px] min-w-0 flex-col items-center justify-center rounded-[3px] border px-3 py-3 text-center transition-colors lg:min-h-[104px] '+(isSelected?'border-[#123B50] bg-[#123B50] text-white shadow-[0_3px_8px_rgba(18,59,80,.2)]':'border-slate-200 bg-white text-slate-700 hover:border-[#2D8DB8] hover:bg-[#F4FBFD]')}><span className="block text-[11px] font-black uppercase leading-tight tracking-wide sm:text-xs">{new Date(day+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</span><span className="mt-1.5 block text-2xl font-black leading-none sm:text-[26px]">{day.slice(8,10)}</span><span className="mt-2 flex items-center gap-1.5"><span className={'block h-2.5 w-2.5 shrink-0 rounded-full '+(count?'bg-emerald-500':'bg-slate-200')}/><span className="block text-[11px] font-bold leading-tight sm:text-xs">{count?count+' tarefa(s)':'Livre'}</span></span></button>})}
         </div>
       </section>

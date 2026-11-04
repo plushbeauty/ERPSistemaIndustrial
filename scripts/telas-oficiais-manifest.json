@@ -397,9 +397,9 @@
     },
     {
       "path": "src/pages/ChaoDeFabricaApontamento.tsx",
-      "sha": "ff405a3349544a54053ac3f77ca0ac43e81f0216",
+      "sha": "98e4c20ea78fa67f1ac830fcb4bf528ca5179a3f",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-CHAO-FABRICA-CARTAO-PONTO-20261104-01 — tela real por cartão de ponto (ordem do proprietário)",
+      "revisao": "REV-CHAO-FABRICA-CARTAO-PONTO-20261104-02 — tela real por cartão de ponto + fileira da semana em trilho",
       "aprovadaEm": "2026-11-04",
       "statusAprovacao": "DETERMINADO PELO PROPRIETARIO (\"NAO QUERO ESSA TELA SÓ DE DEMOSTRAÇÃO DEVE VIR UM CAMPO PARA"
     },
@@ -925,11 +925,11 @@
     },
     {
       "path": "src/pages/PCPAreaFuncionario.tsx",
-      "sha": "4cbc24735fd8ffb398c04fd234069f3988d52db9",
+      "sha": "03f4ba17b15e9628379332e86599c93480d7312e",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-MES-APONTAMENTO-SERVIDOR-20261103-01 — apontamento gravado pelo servidor",
-      "aprovadaEm": "2026-11-03",
-      "statusAprovacao": "DETERMINADO PELO PROPRIETARIO (\"O prazo deve ser calculado pelo servidor, e não pelo"
+      "revisao": "REV-PORTAL-OPERADOR-NOME-REAL-20261104-01 — cabecalo passou a ler nome_completo do RH (antes mostrava \"Identificando conta…\" para sempre quando o cadastro só tinha nome completo) e a fileira de dias virou trilho de rolagem no celular",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-04: \"se a conta ja foi identificada, substitua o texto pelo nome real do operador em destaque\" + pente fino responsivo"
     },
     {
       "path": "src/pages/PCPCapacidade.tsx",
@@ -1277,11 +1277,11 @@
     },
     {
       "path": "src/pages/RHIndustrial.tsx",
-      "sha": "242c9e8f71cb3ddd08c9f7bb880cac7ef128dedc",
+      "sha": "fef9c1e23621d6f243e05a40c9573d7bb40a2cab",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-RH-SEM-CARD-REPETIDO-20261104-01 — a fileira superior de indicadores saiu da tela (repetia a Visão geral e mostrava traço no que não era da aba aberta); as abas passaram ao topo e viram trilho de rolagem no celular",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-04 (\"a primeira fileira de cards superiores exibe exatamente as mesmas métricas da fileira que está abaixo do menu de abas. O ideal é remover a primeira fileira de cima\" + \"exibir o número 0, exatamente como foi feito nos cards da fileira de baixo\")"
     },
     {
       "path": "src/pages/RecebimentoMateriais.tsx",

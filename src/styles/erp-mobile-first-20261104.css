@@ -1,0 +1,66 @@
+/**
+ * Pente fino responsivo (ordem do proprietario em 2026-11-04): celular e tablet do chao de fabrica.
+ * "Quero fazer um pente fino em todas as telas para garantir que NENHUM componente quebre em telas de
+ *  celular ou tablets" — cards de metrica em 1 coluna no celular, abas em trilho de rolagem horizontal,
+ *  calendario semanal sem espremer, tabelas com rolamento lateral e banner de abertura compacto.
+ * Escopo: exclusivamente layout. Nenhuma consulta, RPC, RLS ou regra de negocio foi tocada.
+ */
+
+/* Abas de qualquer tela: no celular viram trilho horizontal de rolagem suave em vez de quebrar
+   em tres linhas e empurrar o conteudo para baixo da dobra. */
+@media (max-width: 767px) {
+  .erp-horizontal-workspace [role="tablist"] {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .erp-horizontal-workspace [role="tablist"] > * { flex: 0 0 auto; }
+  .erp-horizontal-workspace [role="tablist"]::-webkit-scrollbar { height: 4px; }
+  .erp-horizontal-workspace [role="tablist"]::-webkit-scrollbar-thumb { background: #b9d0dc; border-radius: 2px; }
+
+  /* Cartao de abertura: banner e titulo menores para liberar espaco vertical util no celular. */
+  .erp-page-intro { padding: 10px 12px; }
+  .erp-page-intro h1 { font-size: 1rem; line-height: 1.15; }
+  .erp-page-intro-module { font-size: .625rem; }
+
+  /* Tabelas: nunca estouram a pagina; o rolamento lateral e do container, nao do documento. */
+  .erp-horizontal-workspace table { max-width: 100%; }
+  .erp-horizontal-workspace .overflow-x-auto { -webkit-overflow-scrolling: touch; }
+}
+
+/* Tabelas sem container de rolamento proprio (auditoria: 50 telas). Em vez de reescrever o JSX de
+   cada uma, qualquer bloco cujo filho direto seja uma tabela passa a rolar lateralmente no celular
+   e no tablet. :has() e ignorado por navegadores antigos: o comportamento continua o de hoje. */
+@media (max-width: 1023px) {
+  .erp-horizontal-workspace :is(section, article, div, form):has(> table) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .erp-horizontal-workspace :is(section, article, div, form):has(> table)::-webkit-scrollbar { height: 5px; }
+  .erp-horizontal-workspace :is(section, article, div, form):has(> table)::-webkit-scrollbar-thumb { background: #b9d0dc; border-radius: 3px; }
+}
+
+/* Cards de indicador: 1 coluna no celular, 2 no tablet e 4 no desktop (padrao pedido).
+   Vale para as grades que hoje nascem com grid-cols-2/3/4 fixos; as variants md:/xl: continuam vencendo. */
+@media (max-width: 479px) {
+  .erp-horizontal-workspace [class~="grid-cols-2"],
+  .erp-horizontal-workspace [class~="grid-cols-3"],
+  .erp-horizontal-workspace [class~="grid-cols-4"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Tablet do SGQ e Portal do Operador: a fileira de dias nao espreme nem vira lista;
+   vira trilho horizontal de rolagem (o proprio dono elogiou os blocos horizontais). */
+@media (max-width: 900px) {
+  .erp-horizontal-workspace [data-synqra-weekrail="1"] {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .erp-horizontal-workspace [data-synqra-weekrail="1"] > * { flex: 0 0 auto; min-width: 96px; }
+}

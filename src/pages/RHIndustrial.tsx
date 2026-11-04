@@ -1,5 +1,11 @@
 /**
  * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-11-04
+ * @REVISAO: REV-RH-SEM-CARD-REPETIDO-20261104-01 — a fileira superior de indicadores saiu da tela (repetia a Visão geral e mostrava traço no que não era da aba aberta); as abas passaram ao topo e viram trilho de rolagem no celular
+ * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-04 ("a primeira fileira de cards superiores exibe exatamente as mesmas métricas da fileira que está abaixo do menu de abas. O ideal é remover a primeira fileira de cima" + "exibir o número 0, exatamente como foi feito nos cards da fileira de baixo")
+ */
+/**
+ * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
@@ -366,7 +372,6 @@ export default function RHIndustrial() {
 
   const filteredStaff = staff.filter(person => [person.nome_completo, person.nome, person.cpf, person.matricula, person.cargo].some(value => String(value ?? '').toLowerCase().includes(query.toLowerCase())))
   const activeCount = staff.filter(person => !['desligado', 'inativo'].includes(String(person.status ?? '').toLowerCase())).length
-  const pendingTrainings = tab === 'Treinamentos' ? rows.filter(row => ['PENDENTE', 'VENCIDO', 'REPROVADO'].includes(String(row.status))) : []
   const staffName = (id: unknown) => staff.find(person => person.id === id)?.nome_completo ?? staff.find(person => person.id === id)?.nome ?? 'Funcionário não localizado'
 
   const fieldControl = (field: Field) => {
@@ -378,15 +383,11 @@ export default function RHIndustrial() {
   }
 
   return <main className="rh-page min-h-[70vh] bg-slate-50 p-3 text-slate-800 md:p-5">
-    <section className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><Users className="mb-2 text-sky-700" size={19}/><p className="text-xs text-slate-500">Funcionários cadastrados</p><strong className="text-2xl">{staff.length}</strong></div>
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CheckCircle2 className="mb-2 text-emerald-700" size={19}/><p className="text-xs text-slate-500">Ativos</p><strong className="text-2xl">{activeCount}</strong></div>
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><Clock3 className="mb-2 text-amber-700" size={19}/><p className="text-xs text-slate-500">Eventos de ponto no período</p><strong className="text-2xl">{tab === 'Ponto / Presença' ? rows.length : '—'}</strong></div>
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><GraduationCap className="mb-2 text-violet-700" size={19}/><p className="text-xs text-slate-500">Treinamentos pendentes</p><strong className="text-2xl">{tab === 'Treinamentos' ? pendingTrainings.length : '—'}</strong></div>
-    </section>
-
+    {/* Ordem do proprietario em 2026-11-04: a fileira superior de cards repetia exatamente os indicadores da
+        Visão geral e ainda mostrava traço (—) no que não era da aba aberta. Saiu; as abas assumem o topo e os
+        numeros passam a ser lidos na Visão geral, onde todo valor ausente chega como 0 do banco. */}
     <div className="mb-4 flex flex-wrap items-start gap-2">
-      <nav role="tablist" aria-label="Abas do módulo RH" className="flex min-w-0 flex-1 flex-wrap gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm">
+      <nav role="tablist" aria-label="Abas do módulo RH" className="flex min-w-0 flex-1 flex-nowrap gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm md:flex-wrap">
         {tabs.map(item => { const Icon = item.icon; return <button key={item.label} type="button" role="tab" aria-selected={tab === item.label} onClick={() => { setTab(item.label); setForm(item.label === 'Funcionários' ? blank(employeeFields) : item.label === 'Visão geral' ? {} : blank(schemas[item.label as Exclude<Tab, 'Funcionários' | 'Visão geral'>].fields)); setEditingId(null); setMessage('') }} className={`flex min-h-[30px] shrink-0 items-center gap-2 rounded-[2px] px-3 text-xs font-bold transition ${tab === item.label ? 'bg-sky-700 text-white' : 'text-slate-600 hover:bg-slate-100'}`}><Icon size={15}/>{item.label}</button> })}
       </nav>
       <button type="button" onClick={() => empresaId && void reload(empresaId, tab)} className="inline-flex h-[30px] shrink-0 items-center gap-2 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"><RefreshCw size={14}/> Atualizar</button>
