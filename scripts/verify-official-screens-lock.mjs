@@ -46,6 +46,9 @@ import path from 'node:path'
  * Certificado de Qualidade; o painel flutuante do SGQ (ModuleTabletMenuModal + qualityTabletModules) vira a
  * entrada unica da Qualidade no lugar do dropdown; ControleDesenhos e a grade QualitySidebar (que se repetia
  * no topo de 19 telas) sao deletados e banidos.
+ * Revisao 2026-11-03 (carrossel): ordem "tirar do carrossel da tela principal aquelas das imagens
+ * pequenas, so deixar as imagens grandes de traz" — PublicIndustrialHome e a folha de estilo do
+ * carrossel sao re-travados sem a moldura de navegador dentro do slide; a secao "Telas" segue igual.
  * Mudanca neste contrato exige ordem explicita do proprietario.
  */
 
@@ -53,9 +56,9 @@ const ROOT = path.resolve(import.meta.dirname, '..')
 const read = rel => readFileSync(path.join(ROOT, rel), 'utf8')
 
 const oficiais = [
-  { path: 'src/PublicIndustrialHome.tsx', sha: 'e8558c8befcc09d8b175d079f231372e3dbbe7e0', label: 'Publica / Home com carrossel da vitrine' },
+  { path: 'src/PublicIndustrialHome.tsx', sha: 'da0347d9ce223b0d268d05ba0e19b97ceee3479d', label: 'Publica / Home com carrossel da vitrine (REV-20261103-01: sem a moldura pequena no slide)' },
   { path: 'src/components/marketing/TelaVitrine.tsx', sha: 'befc9424504e57fcfb85ff3d593fa4172aedfe10', label: 'Publica / Replica de tela do sistema na vitrine' },
-  { path: 'src/styles/public-home-premium-20261101.css', sha: '775ed1d1dd8df5a2d347b1c3dc1885f99d74333d', label: 'Publica / estilos do carrossel e vitrine' },
+  { path: 'src/styles/public-home-premium-20261101.css', sha: '05a8d17def7c36b37c03781314cffec0eed1aa3b', label: 'Publica / estilos do carrossel e vitrine (texto do slide em coluna unica)' },
   { path: 'src/pages/PlanosIndustrial.tsx', sha: '1070b2cc87cacb249390e69d99c5c11dcfd411a6', label: 'Publica / Planos' },
   { path: 'src/pages/CadastroEmpresa.tsx', sha: 'a860dc1434ece03bf9e60803d929d16bddd7f90b', label: 'Publica / Cadastro da empresa' },
   { path: 'src/pages/Blog.tsx', sha: 'aebf301d6e049f459f5c403527c7010e0b7eabf7', label: 'Publica / Blog' },

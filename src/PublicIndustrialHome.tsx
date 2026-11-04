@@ -1,8 +1,13 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-11-01
- * @REVISAO: REV-VITRINE-PUBLICA-20261101-05 — carrossel com encaixe para captura real do sistema
+ * @DATA_REVISAO_APROVACAO: 2026-11-03
+ * @REVISAO: REV-VITRINE-PUBLICA-20261103-01 — carrossel da tela principal sem as imagens pequenas
  * @STATUS_APROVACAO: REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01
+ *
+ * Ordem do proprietario em 2026-11-03: "tirar do carrossel da tela principal aquelas das imagens
+ * pequenas, so deixar as imagens grandes de traz". A moldura de navegador com a replica DOM sai do
+ * slide e o texto passa a ocupar a largura inteira sobre a foto grande. A secao "Telas" do meio da
+ * pagina permanece como estava.
  *
  * Ordem do proprietario em 2026-11-01: as fotos que vao entrar no carrossel sao capturas do proprio
  * sistema, tiradas por ele. O encaixe esta pronto em capturasReais — basta soltar o arquivo em
@@ -259,7 +264,6 @@ function HeroCarousel() {
           )}
           <p className="ph-cta-note">O teste inclui todos os módulos do plano Industrial. Nenhum cartão é solicitado para começar.</p>
         </div>
-        <ScreenShot screen={slide.shot} />
       </div>
 
       <div className="ph-carousel-bar">

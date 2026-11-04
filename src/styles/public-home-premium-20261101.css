@@ -319,13 +319,16 @@
     rgba(0, 0, 0, .5);
 }
 
+/* Ordem do proprietario em 2026-11-03: saem as imagens pequenas (moldura de navegador) do
+   carrossel da tela principal; fica somente a imagem grande de fundo com o texto por cima. */
 .ph-carousel-grid {
   display: grid;
-  grid-template-columns: minmax(0, .98fr) minmax(0, 1.02fr);
-  gap: clamp(24px, 4vw, 56px);
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
   align-items: center;
   animation: phSlideIn .55s ease both;
 }
+.ph-carousel-grid .ph-slide-copy { max-width: 940px; }
 @keyframes phSlideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
 .ph-slide-copy .ph-kicker { border-color: rgba(255, 255, 255, .24); background: rgba(255, 255, 255, .1); color: #9FE0F1; }
