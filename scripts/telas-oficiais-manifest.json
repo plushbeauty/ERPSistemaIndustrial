@@ -597,9 +597,9 @@
     },
     {
       "path": "src/pages/EstoqueAlmoxarifadoCompact.tsx",
-      "sha": "f4e4070be7bafa9a43febf492a0b4f7187083c26",
+      "sha": "a108edef33262d92a30c5a36c115381bb8b58516",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: \"todos os edits do módulo estoque estão desalinhados e fora de tamanho\". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).",
+      "revisao": "REV-COLUNAS-BANCO-20261104-01 — ordem do proprietário \"telas travadas vc destrava\": a listagem de OPs ordenava por 'criado_em', coluna que não existe em erp_ordens_producao; a query falhava e derrubava o carregamento da tela. Leitura corrigida para 'created_at'.",
       "aprovadaEm": "2026-11-02",
       "statusAprovacao": "CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela"
     },
@@ -893,9 +893,9 @@
     },
     {
       "path": "src/pages/OperacaoIndustrial.tsx",
-      "sha": "7e6eed45f6c0aece6f44339aec42e005e60122c3",
+      "sha": "47499e537eb76088c071989b4b6bfb0feed2fbd1",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-COLUNAS-BANCO-20261104-01 — ordem do proprietário \"telas travadas vc destrava\": a lista de OPs do apontamento ordenava por 'criado_em', coluna que não existe em erp_ordens_producao; a query falhava e travava a tela. Leitura corrigida para 'created_at'.",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
@@ -949,9 +949,9 @@
     },
     {
       "path": "src/pages/PCPExecucaoIndustrial.tsx",
-      "sha": "6d9ca9c7b7d1c568ae7c5310b68fb8cb9b8b6534",
+      "sha": "50a8df516b53855496acbad1efd84bca27149f05",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-COLUNAS-BANCO-20261104-01 — ordem do proprietário \"telas travadas vc destrava\": os apontamentos liam e ordenavam por 'created_at', coluna que não existe em erp_apontamentos_processo (o nome real é 'criado_em'); a query do Promise.all falhava e a aba de apontamentos não carregava.",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
@@ -1661,9 +1661,9 @@
     },
     {
       "path": "src/pages/pcp/ControleProcessoInjetora.tsx",
-      "sha": "ec509a78a9afa2caf5c95fcac0ef8c9437d25391",
+      "sha": "ebfe3ac6fb0fe32cb5dd91b3a1543cae1901347f",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
+      "revisao": "REV-COLUNAS-BANCO-20261104-01 — ordem do proprietário \"telas travadas vc destrava\": o seletor de OPs ordenava por 'criado_em', coluna que não existe em erp_ordens_producao; o Promise.all lançava e a tela não carregava. Leitura corrigida para 'created_at'.",
       "aprovadaEm": "2026-11-04",
       "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
     },

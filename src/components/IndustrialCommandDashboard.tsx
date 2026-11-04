@@ -3,6 +3,7 @@
  * @REVISAO: REV-HOME-PREMIUM-20261102-01 — tela principal reconstruida sobre a fundacao premium (#63)
  * @STATUS_APROVACAO: ORDEM EXPRESSA DO PROPRIETARIO (#63) — mesma regua dos tokens, sem <style> inline
  * @REVISAO: REV-CONTRATO-BANCO-20261103-01 — "hoje", atraso e vencimentos passam a usar o relógio do Postgres (regra do proprietário)
+ * @REVISAO: REV-HOME-COLUNAS-BANCO-20261104-01 — leitura corrigida para as colunas que existem: apontamentos tem criado_em (nao created_at) e ordens tem created_at (nao criado_em)
  * APROVADO — indicadores conectados ao Supabase com isolamento por empresa/RLS.
  * Autorização expressa do usuário em 2026-10-26: incluir atalho ao Portal do Operador.
  */
@@ -20,9 +21,9 @@ import '../styles/home-premium-20261102.css'
 
 type Props = { onNavigate: (route: string) => void }
 type Machine = { id: string; codigo: string; nome: string; status: string }
-type OP = { id: string; numero_op: string | number; produto_id: string | null; maquina_id: string | null; status: string; quantidade_planejada: number | null; quantidade: number | null; created_at: string | null; criado_em?: string | null }
+type OP = { id: string; numero_op: string | number; produto_id: string | null; maquina_id: string | null; status: string; quantidade_planejada: number | null; quantidade: number | null; created_at: string | null }
 type Product = { id: string; codigo: string | null; nome: string | null }
-type Pointing = { id: string; ordem_producao_id: string | null; maquina_id: string | null; quantidade_planejada: number | null; quantidade_boa: number | null; quantidade_refugada: number | null; created_at: string | null; criado_em?: string | null }
+type Pointing = { id: string; ordem_producao_id: string | null; maquina_id: string | null; quantidade_planejada: number | null; quantidade_boa: number | null; quantidade_refugada: number | null; criado_em: string | null }
 type Program = { id: string; ordem_producao_id: string | null; maquina_id: string | null; inicio_planejado: string; fim_planejado: string; quantidade_planejada: number | null; quantidade_produzida: number | null; quantidade_refugada: number | null; status: string }
 type Stop = { maquina_id: string | null; inicio: string | null; fim: string | null; status: string | null }
 type QueueRow = { op: string; workstation: string; product: string; lastPointing: string; status: string; planned: number; produced: number }
@@ -109,9 +110,9 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
 
     const empresaId = p.empresa_id as string | null
     const machineQ = supabase.from('erp_maquinas').select('id,codigo,nome,status').eq('ativo', true).order('codigo')
-    const opQ = supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status,quantidade_planejada,quantidade,created_at,criado_em').order('created_at', { ascending: false }).limit(500)
+    const opQ = supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status,quantidade_planejada,quantidade,created_at').order('created_at', { ascending: false }).limit(500)
     const prodQ = supabase.from('erp_produtos').select('id,codigo,nome').limit(3000)
-    const pointingQ = supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,quantidade_planejada,quantidade_boa,quantidade_refugada,created_at').order('created_at', { ascending: false }).limit(5000)
+    const pointingQ = supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,quantidade_planejada,quantidade_boa,quantidade_refugada,criado_em').order('criado_em', { ascending: false }).limit(5000)
     const programQ = supabase.from('erp_pcp_programacoes').select('id,ordem_producao_id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,quantidade_produzida,quantidade_refugada,status').neq('status', 'cancelada').limit(3000)
     const stopQ = supabase.from('erp_producao_paradas').select('maquina_id,inicio,fim,status').limit(5000)
     const rpncQ = supabase.from('erp_rpnc').select('id,status').limit(5000)
@@ -163,7 +164,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
 
   const today = dateKey(tick)
   const activeOps = ops.filter(o => !['concluida', 'concluído', 'cancelada', 'cancelado'].includes(String(o.status).toLowerCase()))
-  const todayPointings = pointings.filter(p => String(p.criado_em ?? p.created_at ?? '').slice(0, 10) === today)
+  const todayPointings = pointings.filter(p => String(p.criado_em ?? '').slice(0, 10) === today)
   const producedToday = todayPointings.reduce((s, p) => s + n(p.quantidade_boa) + n(p.quantidade_refugada), 0)
   const totalPlanned = pointings.reduce((s, p) => s + n(p.quantidade_planejada), 0)
   const totalGood = pointings.reduce((s, p) => s + n(p.quantidade_boa), 0)
@@ -196,7 +197,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
       d.setDate(d.getDate() - i)
       const key = dateKey(d)
       const previsto = programs.filter(p => String(p.inicio_planejado).slice(0, 10) === key).reduce((s, p) => s + n(p.quantidade_planejada), 0)
-      const realizado = pointings.filter(p => String(p.criado_em ?? p.created_at ?? '').slice(0, 10) === key).reduce((s, p) => s + n(p.quantidade_boa) + n(p.quantidade_refugada), 0)
+      const realizado = pointings.filter(p => String(p.criado_em ?? '').slice(0, 10) === key).reduce((s, p) => s + n(p.quantidade_boa) + n(p.quantidade_refugada), 0)
       days.push({ day: d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''), previsto, realizado })
     }
     return days
@@ -254,7 +255,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
     const productMap = new Map(products.map(p => [p.id, p]))
     const machineMap = new Map(machines.map(m => [m.id, m]))
     return activeOps.slice(0, 12).map(op => {
-      const rows = pointings.filter(p => p.ordem_producao_id === op.id).sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')))
+      const rows = pointings.filter(p => p.ordem_producao_id === op.id).sort((a, b) => String(b.criado_em ?? '').localeCompare(String(a.criado_em ?? '')))
       const last = rows[0]
       const machine = machineMap.get(op.maquina_id ?? '')
       const product = productMap.get(op.produto_id ?? '')
@@ -262,7 +263,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         op: `OP-${op.numero_op}`,
         workstation: machine ? `${machine.codigo} · ${machine.nome}` : 'Posto não definido',
         product: product ? `${product.codigo ?? ''} · ${product.nome ?? ''}`.replace(/^ · | · $/g, '') : 'Produto não informado',
-        lastPointing: last?.created_at ? new Date(last.created_at).toLocaleString('pt-BR') : 'Sem apontamento',
+        lastPointing: last?.criado_em ? new Date(last.criado_em).toLocaleString('pt-BR') : 'Sem apontamento',
         status: statusText(op.status),
         planned: n(op.quantidade_planejada),
         produced: n(op.quantidade)

@@ -1,4 +1,5 @@
 /**
+ * @REVISAO: REV-COLUNAS-BANCO-20261104-01 — ordem do proprietário "telas travadas vc destrava": os apontamentos liam e ordenavam por 'created_at', coluna que não existe em erp_apontamentos_processo (o nome real é 'criado_em'); a query do Promise.all falhava e a aba de apontamentos não carregava.
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
@@ -20,7 +21,7 @@ type Product = { id:string; codigo:string; nome:string; unidade:string|null }
 type Order = { id:string; numero_op:number|string; produto_id:string|null; quantidade:number|null; quantidade_planejada:number|null; quantidade_produzida:number|null; status:string; data_prevista:string|null; maquina_id:string|null }
 type Machine = { id:string; codigo:string; nome:string }
 type Process = { id:string; codigo:string; nome:string }
-type Entry = { id:string; ordem_producao_id:string; maquina_id:string|null; processo_id:string|null; inicio_em:string|null; fim_em:string|null; quantidade_planejada:number|null; quantidade_boa:number|null; quantidade_refugada:number|null; motivo_parada:string|null; observacoes:string|null; created_at:string }
+type Entry = { id:string; ordem_producao_id:string; maquina_id:string|null; processo_id:string|null; inicio_em:string|null; fim_em:string|null; quantidade_planejada:number|null; quantidade_boa:number|null; quantidade_refugada:number|null; motivo_parada:string|null; observacoes:string|null; criado_em:string }
 type Material = { produto_id:string; codigo:string; descricao:string; nivel:number; necessidade_bruta:number; saldo_disponivel:number; necessidade_liquida:number; perda_estimada:number }
 
 const field='h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 outline-none transition-all focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-100'
@@ -59,7 +60,7 @@ export default function PCPExecucaoIndustrial(){
     supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,quantidade_planejada,quantidade_produzida,status,data_prevista,maquina_id').eq('empresa_id',company).order('created_at',{ascending:false}).limit(2000),
     supabase.from('erp_maquinas').select('id,codigo,nome').eq('empresa_id',company).eq('ativo',true).order('codigo').limit(1000),
     supabase.from('erp_processos_industriais').select('id,codigo,nome').eq('empresa_id',company).eq('ativo',true).order('codigo').limit(1000),
-    supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,processo_id,inicio_em,fim_em,quantidade_planejada,quantidade_boa,quantidade_refugada,motivo_parada,observacoes,created_at').eq('empresa_id',company).order('created_at',{ascending:false}).limit(1000)
+    supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,processo_id,inicio_em,fim_em,quantidade_planejada,quantidade_boa,quantidade_refugada,motivo_parada,observacoes,criado_em').eq('empresa_id',company).order('criado_em',{ascending:false}).limit(1000)
    ])
    for(const r of [p,o,m,pr,a])if(r.error)throw r.error
    setProducts((p.data??[]) as Product[]);setOrders((o.data??[]) as Order[]);setMachines((m.data??[]) as Machine[]);setProcesses((pr.data??[]) as Process[]);setEntries((a.data??[]) as Entry[])
