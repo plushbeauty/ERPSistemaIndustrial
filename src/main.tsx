@@ -82,16 +82,43 @@ createRoot(rootElement).render(
 const LEGACY_PWA_CLEANUP_KEY = 'erp-industrial-legacy-pwa-cleanup-v3'
 
 async function limparAplicacaoPwaLegadaUmaVez() {
-  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return
-  if (window.localStorage.getItem(LEGACY_PWA_CLEANUP_KEY) === '1') return
+  if (typeof window === 'undefined') return
+
+  let jaLimpo = false
   try {
-    const registrations = await navigator.serviceWorker.getRegistrations()
-    await Promise.allSettled(registrations.map(registration => registration.unregister()))
-    if ('caches' in window) {
-      const keys = await caches.keys()
-      await Promise.allSettled(keys.map(key => caches.delete(key)))
+    jaLimpo = window.localStorage.getItem(LEGACY_PWA_CLEANUP_KEY) === '1'
+  } catch {
+    try {
+      jaLimpo = window.sessionStorage.getItem(LEGACY_PWA_CLEANUP_KEY) === '1'
+    } catch {
+      // Se o navegador bloquear os dois storages, não forçar reload repetido.
     }
-    window.localStorage.setItem(LEGACY_PWA_CLEANUP_KEY, '1')
+  }
+  if (jaLimpo) return
+
+  try {
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations()
+      await Promise.allSettled(registrations.map(registration => registration.unregister()))
+    }
+    if ('caches' in window) {
+      const keys = await window.caches.keys()
+      await Promise.allSettled(keys.map(key => window.caches.delete(key)))
+    }
+
+    let marcadorGravado = false
+    try {
+      window.localStorage.setItem(LEGACY_PWA_CLEANUP_KEY, '1')
+      marcadorGravado = true
+    } catch {
+      try {
+        window.sessionStorage.setItem(LEGACY_PWA_CLEANUP_KEY, '1')
+        marcadorGravado = true
+      } catch {
+        // Sem storage persistente, evita reload para não criar ciclo infinito.
+      }
+    }
+    if (marcadorGravado) window.location.reload()
   } catch (error) {
     console.warn('[ERP] limpeza única de cache legado ignorada:', error)
   }
