@@ -44,7 +44,7 @@ Para cada módulo encontrado:
 - Preserve integralmente o visual e o comportamento das páginas aprovadas/congeladas. Não redesenhe, simplifique, substitua ou restaure versões antigas dessas telas. Corrija nelas somente defeitos funcionais/técnicos estritamente necessários.
 - Não remova páginas, funcionalidades, componentes, rotas ou dados para fazer o build passar. Não substitua telas novas por código legado.
 - Preserve o shell horizontal aprovado e a navegação atual. Não reintroduza sidebar antiga, cabeçalho antigo ou navegação legada.
-- Ao criar/atualizar entradas de menu, respeite o padrão visual e marque como atualizada (isUpdated: true) quando essa convenção existir.
+- Não adicione `isUpdated`, `is-updated-orange`, badges laranja ou realces laranja nos menus. O menu global aprovado usa estilo neutro e não marca telas novas por cor.
 - Mantenha UI industrial premium, acessibilidade, responsividade, textos em português e consistência com componentes compartilhados.
 - Não crie mocks, fixtures, arrays estáticos ou LocalStorage para representar operações empresariais reais. Dados estáticos só podem existir em testes isolados e identificados como fixtures.
 - Não altere o modelo de identidade Master: somente pelo fluxo oficial /configuracao-adm-master, plush-master-bootstrap, SUPER_ADMIN, nivel_admin=100, empresa_id=NULL e isMaster===true. Não use nivel_admin===9 como substituto de Master.
