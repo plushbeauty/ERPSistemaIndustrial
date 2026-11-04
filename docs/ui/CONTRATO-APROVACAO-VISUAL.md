@@ -20,33 +20,35 @@ Antes de alterar CSS global, shell, navegação, tokens ou componentes compartil
 
 ## Referências congeladas no verificador de regressão
 
-O script `scripts/verify-approved-regression-lock.mjs` valida os hashes Git blob SHA-1 dos 25 arquivos abaixo e falha se qualquer conteúdo mudar sem revisão explícita:
+O script `scripts/verify-approved-regression-lock.mjs` valida os hashes Git blob SHA-1 dos 27 arquivos abaixo e falha se qualquer conteúdo mudar sem revisão explícita:
 
-1. `src/pages/ProdutosVendasIndustrial.tsx`
-2. `src/components/DigitalCaliper.tsx`
-3. `src/components/IndustrialCommandDashboard.tsx`
-4. `src/PublicIndustrialHome.tsx`
-5. `src/IndustrialLoginDirect.tsx`
-6. `src/styles/industrial-login.css`
-7. `src/pages/ComprasWorkspace.tsx`
-8. `src/pages/PCPWorkspace.tsx`
-9. `src/components/PCPMoldPhotoPanel.tsx`
-10. `src/features/pcp/FichaProcesso.tsx`
-11. `src/pages/QualidadePaquimetroDigital.tsx`
-12. `src/pages/PCPTabletOperador.tsx`
-13. `src/pages/CertificadoQualidade.tsx`
-14. `src/pages/CentraisIndustriais.tsx`
-15. `src/hooks/useRealtimeAlerts.ts`
-16. `src/pages/QualityRpncForm.tsx`
-17. `src/pages/QualityAuditsList.tsx`
-18. `src/styles/quality-rpnc-form.css`
-19. `src/pages/AccessControlSettings.tsx`
-20. `supabase/migrations/20261031100000_sgq_rpnc_formulario_auditorias_recorrencia_v1.sql`
-21. `src/components/layout/ModuleTabletMenuModal.tsx`
-22. `src/styles/module-tablet-panel.css`
-23. `src/AppEntryV2.tsx`
-24. `src/AppBootstrap.tsx`
-25. `src/main.tsx`
+1. `src/components/layout/PageIntroCard.tsx`
+2. `src/components/layout/pageIntroCatalog.ts`
+3. `src/pages/ProdutosVendasIndustrial.tsx`
+4. `src/components/DigitalCaliper.tsx`
+5. `src/components/IndustrialCommandDashboard.tsx`
+6. `src/PublicIndustrialHome.tsx`
+7. `src/IndustrialLoginDirect.tsx`
+8. `src/styles/industrial-login.css`
+9. `src/pages/ComprasWorkspace.tsx`
+10. `src/pages/PCPWorkspace.tsx`
+11. `src/components/PCPMoldPhotoPanel.tsx`
+12. `src/features/pcp/FichaProcesso.tsx`
+13. `src/pages/QualidadePaquimetroDigital.tsx`
+14. `src/pages/PCPTabletOperador.tsx`
+15. `src/pages/CertificadoQualidade.tsx`
+16. `src/pages/CentraisIndustriais.tsx`
+17. `src/hooks/useRealtimeAlerts.ts`
+18. `src/pages/QualityRpncForm.tsx`
+19. `src/pages/QualityAuditsList.tsx`
+20. `src/styles/quality-rpnc-form.css`
+21. `src/pages/AccessControlSettings.tsx`
+22. `supabase/migrations/20261031100000_sgq_rpnc_formulario_auditorias_recorrencia_v1.sql`
+23. `src/components/layout/ModuleTabletMenuModal.tsx`
+24. `src/styles/module-tablet-panel.css`
+25. `src/AppEntryV2.tsx`
+26. `src/AppBootstrap.tsx`
+27. `src/main.tsx`
 
 Referências históricas como `VendasCentral.tsx`, `NovoPedido.tsx`, `PCPFichasProcesso.tsx` e `QualidadeInspecoesIndustrial.tsx` não existem nos caminhos documentados no branch avaliado e não aparecem como rotas ativas em `AppEntryV2.tsx`. Os equivalentes atuais são as páginas listadas acima; não recriar os caminhos antigos sem autorização.
 
