@@ -17,6 +17,7 @@ const Fiscal = lazy(() => import('./pages/Fiscal'))
 const NFeEmissao = lazy(() => import('./pages/NFeEmissao'))
 const SetupADMInicial = lazy(() => import('./pages/SetupADMInicial'))
 const PCPWorkspace = lazy(() => import('./pages/PCPWorkspace'))
+const PCPFluxoIndustrial = lazy(() => import('./pages/PCPFluxoIndustrial'))
 const Paquimetro = lazy(() => import('./pages/QualidadePaquimetroDigital'))
 const ComprasWorkspace = lazy(() => import('./pages/ComprasWorkspace'))
 const SolicitacaoCompra = lazy(() => import('./pages/SolicitacaoCompra'))
@@ -115,6 +116,7 @@ export default function AppEntryV2() {
               <Route path="fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />
               <Route path="fiscal/emissao" element={<QualityPlanGate><NFeEmissao /></QualityPlanGate>} />
               <Route path="pcp" element={<PCPWorkspace />} />
+              <Route path="pcp/fluxo-industrial" element={<PCPFluxoIndustrial />} />
               <Route path="pcp/roteiros" element={<QualityPlanGate><RoteiroOperacoes /></QualityPlanGate>} />
               <Route path="pcp/capacidade" element={<QualityPlanGate><PCPCapacidade /></QualityPlanGate>} />
               <Route path="chao-de-fabrica/postos" element={<QualityPlanGate><PostosTrabalho /></QualityPlanGate>} />
@@ -192,6 +194,7 @@ export default function AppEntryV2() {
             <Route path="/fiscal" element={<Navigate to="/pageprincipal/fiscal" replace />} />
             <Route path="/fiscal/emissao" element={<Navigate to="/pageprincipal/fiscal/emissao" replace />} />
             <Route path="/pcp" element={<Navigate to="/pageprincipal/pcp" replace />} />
+            <Route path="/pcp/fluxo-industrial" element={<Navigate to="/pageprincipal/pcp/fluxo-industrial" replace />} />
             <Route path="/paquimetro" element={<Navigate to="/pageprincipal/paquimetro" replace />} />
             <Route path="/qualidade/paquimetro" element={<Navigate to="/pageprincipal/paquimetro" replace />} />
             <Route path="/qualidade/ged-documentos" element={<Navigate to="/pageprincipal/qualidade/ged" replace />} />
