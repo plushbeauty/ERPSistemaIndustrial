@@ -37,7 +37,7 @@
     },
     {
       "path": "src/components/quality/qualityTabletModules.ts",
-      "sha": "a1fc2eb3713c465e1a851204d5300490c1a257cd",
+      "sha": "3d022298c7c578e1d0b4866dea139c121e479da4",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-TABLET-CATALOGO-CARIMBO-20261103-01 — cabecalho de autoria/aprovacao adicionado; o catalogo de rotinas do SGQ segue identico",
       "aprovadaEm": "2026-11-03",
@@ -1773,11 +1773,11 @@
     },
     {
       "path": "src/styles/module-tablet-panel.css",
-      "sha": "97915a5da6c898af79c43b4a44f10ca45e8c51a3",
+      "sha": "d18763d1a95bb3564e421bd43b79664c665b80aa",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-TABLET-CSS-CARIMBO-20261103-01 — cabecalho de autoria/aprovacao adicionado; nenhuma regra visual foi tocada",
-      "aprovadaEm": "2026-11-03",
-      "statusAprovacao": "APROVADO PELO PROPRIETARIO (ordem de 2026-11-03: \"todas as telas novas vao ter revisao, aprovacao e travamento para o vercel nao pegar mais telas antigas\")"
+      "revisao": "REV-TABLET-COMPACTO-20261104-01 — ordem do proprietário: \"o tablet qualidade muito grande, diminuir ... arrumar os cards\".",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO no preview do Vercel"
     },
     {
       "path": "src/styles/public-home-premium-20261101.css",

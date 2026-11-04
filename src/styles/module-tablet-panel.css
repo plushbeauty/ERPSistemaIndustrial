@@ -1,8 +1,11 @@
 /*
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-11-03
- * @REVISAO: REV-TABLET-CSS-CARIMBO-20261103-01 — cabecalho de autoria/aprovacao adicionado; nenhuma regra visual foi tocada
- * @STATUS_APROVACAO: APROVADO PELO PROPRIETARIO (ordem de 2026-11-03: "todas as telas novas vao ter revisao, aprovacao e travamento para o vercel nao pegar mais telas antigas")
+ * @DATA_REVISAO_APROVACAO: 2026-11-04
+ * @REVISAO: REV-TABLET-COMPACTO-20261104-01 — ordem do proprietário: "o tablet qualidade muito grande, diminuir ... arrumar os cards".
+ *           O botão-cartão deixou de ser esmagado pela régua de 30px (exclusão :not(.module-tablet-panel *) em
+ *           erp-design-system-2026.css e erp-compact-global.css) e o desenho encolheu: painel 1120px, coluna 142px,
+ *           ícone 34px, card ~124px de altura e a descrição cabe na coluna (antes max-width 190px > 170px estourava a linha).
+ * @STATUS_APROVACAO: AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO no preview do Vercel
  */
 .module-tablet-backdrop {
   position: fixed;
@@ -10,21 +13,21 @@
   z-index: 10001;
   display: grid;
   place-items: center;
-  padding: 18px;
+  padding: 12px;
   background: rgb(15 35 55 / 64%);
   backdrop-filter: blur(5px);
 }
 
 .module-tablet-panel {
-  width: min(1280px, 100%);
-  max-height: calc(100vh - 36px);
+  width: min(1120px, 100%);
+  max-height: calc(100vh - 24px);
   overflow: auto;
-  padding: 24px;
+  padding: 14px 16px;
   border: 1px solid #a9d8e9;
-  border-radius: 14px;
+  border-radius: 12px;
   background: linear-gradient(180deg, #fff 0%, #f5fbfe 100%);
   color: #123b50;
-  box-shadow: 0 28px 90px rgb(2 28 48 / 38%);
+  box-shadow: 0 22px 68px rgb(2 28 48 / 34%);
 }
 
 .module-tablet-header {
@@ -32,14 +35,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 4px 44px 20px 4px;
+  gap: 8px;
+  padding: 0 38px 12px 0;
   border-bottom: 1px solid #cfe7f1;
 }
 
 .module-tablet-logo {
-  width: 250px;
-  height: 82px;
+  width: 168px;
+  height: 54px;
   flex: 0 0 auto;
   object-fit: contain;
 }
@@ -48,7 +51,7 @@
   display: flex;
   min-width: 0;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   justify-content: center;
   text-align: left;
 }
@@ -60,19 +63,24 @@
   place-items: center;
   color: #fff;
   background: linear-gradient(145deg, #23b6e8, #0755b5 76%);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 55%), 0 5px 12px rgb(18 92 155 / 22%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 55%), 0 4px 9px rgb(18 92 155 / 20%);
 }
 
 .module-tablet-section-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+}
+
+.module-tablet-section-icon svg {
+  width: 20px;
+  height: 20px;
 }
 
 .module-tablet-heading p {
-  margin: 0 0 3px;
+  margin: 0 0 2px;
   color: #1687bb;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 850;
   letter-spacing: .16em;
 }
@@ -80,17 +88,17 @@
 .module-tablet-heading h1 {
   margin: 0;
   color: #123b50;
-  font-size: clamp(17px, 2vw, 23px);
+  font-size: clamp(15px, 1.6vw, 18px);
   font-weight: 850;
   line-height: 1.2;
 }
 
 .module-tablet-heading div > span {
   display: block;
-  margin-top: 5px;
+  margin-top: 3px;
   color: #5c7483;
-  font-size: 12px;
-  line-height: 1.45;
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .module-tablet-close {
@@ -98,14 +106,16 @@
   top: 0;
   right: 0;
   display: grid;
-  width: 38px;
-  height: 38px;
+  width: 30px;
+  height: 30px;
+  min-height: 0;
   place-items: center;
+  padding: 0;
   border: 1px solid #b9dbe9;
-  border-radius: 9px;
+  border-radius: 8px;
   background: #f0f9fd;
   color: #155578;
-  font-size: 26px;
+  font-size: 20px !important;
   line-height: 1;
   cursor: pointer;
 }
@@ -117,23 +127,25 @@
 
 .module-tablet-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 14px;
-  padding: 22px 2px 6px;
+  grid-template-columns: repeat(auto-fill, minmax(142px, 1fr));
+  gap: 8px;
+  padding: 12px 0 0;
 }
 
 .module-tablet-card {
   display: flex;
   flex-direction: column;
-  min-height: 176px;
+  min-height: 0;
   align-items: center;
   justify-content: flex-start;
-  gap: 10px;
-  padding: 18px 14px;
+  gap: 5px;
+  padding: 10px 8px;
   border: 1px solid #9ed5ea;
-  border-radius: 12px;
+  border-radius: 10px;
   background: linear-gradient(180deg, #fff 0%, #eff9fe 100%);
   color: #123b50;
+  font-size: 10px !important;
+  line-height: 1.3;
   text-align: center;
   cursor: pointer;
   transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease;
@@ -143,7 +155,7 @@
   transform: translateY(-2px);
   border-color: #28a8d7;
   background: #fff;
-  box-shadow: 0 10px 24px rgb(26 112 158 / 14%);
+  box-shadow: 0 8px 18px rgb(26 112 158 / 14%);
 }
 
 .module-tablet-card:disabled,
@@ -163,49 +175,57 @@
 .module-tablet-card:focus-visible,
 .module-tablet-close:focus-visible {
   outline: 3px solid #1687bb;
-  outline-offset: 3px;
+  outline-offset: 2px;
 }
 
 .module-tablet-card-icon {
-  width: 58px;
-  height: 58px;
-  border-radius: 14px;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+}
+
+.module-tablet-card-icon svg {
+  width: 18px;
+  height: 18px;
 }
 
 .module-tablet-card strong {
+  width: 100%;
   color: #123b50;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 850;
-  line-height: 1.3;
+  line-height: 1.25;
   text-transform: uppercase;
+  overflow-wrap: anywhere;
 }
 
 .module-tablet-card > span:last-child {
-  max-width: 190px;
+  width: 100%;
   color: #617a88;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 550;
-  line-height: 1.45;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .module-tablet-empty {
-  margin: 22px 0 6px;
-  padding: 24px;
+  margin: 16px 0 4px;
+  padding: 18px;
   border: 1px dashed #9ed5ea;
-  border-radius: 12px;
+  border-radius: 10px;
   background: #f3fbfe;
   color: #526d7c;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.6;
   text-align: center;
 }
 
 .module-tablet-footer {
-  margin-top: 18px;
-  padding-top: 12px;
+  margin-top: 12px;
+  padding-top: 8px;
   border-top: 1px solid #cfe7f1;
   color: #66808e;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
   letter-spacing: .06em;
   text-align: center;
@@ -213,40 +233,44 @@
 
 @media (max-width: 720px) {
   .module-tablet-backdrop {
-    padding: 10px;
+    padding: 8px;
   }
 
   .module-tablet-panel {
-    max-height: calc(100vh - 20px);
-    padding: 14px;
-    border-radius: 10px;
+    max-height: calc(100vh - 16px);
+    padding: 10px;
+    border-radius: 9px;
   }
 
   .module-tablet-header {
-    align-items: center;
-    gap: 8px;
-    padding: 4px 38px 14px 0;
+    gap: 6px;
+    padding: 0 32px 8px 0;
   }
 
   .module-tablet-logo {
-    width: 150px;
-    height: 54px;
+    width: 124px;
+    height: 40px;
   }
 
   .module-tablet-heading {
     align-items: flex-start;
-    gap: 8px;
+    gap: 7px;
   }
 
   .module-tablet-section-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 9px;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
   }
 
   .module-tablet-section-icon svg {
-    width: 19px;
-    height: 19px;
+    width: 16px;
+    height: 16px;
+  }
+
+  .module-tablet-close {
+    width: 26px;
+    height: 26px;
   }
 
   .module-tablet-heading div > span {
@@ -254,34 +278,25 @@
   }
 
   .module-tablet-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-    padding-top: 14px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    padding-top: 10px;
   }
 
   .module-tablet-card {
-    min-height: 145px;
-    gap: 8px;
-    padding: 12px 8px;
+    gap: 4px;
+    padding: 8px 6px;
   }
 
   .module-tablet-card-icon {
-    width: 46px;
-    height: 46px;
-    border-radius: 11px;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
   }
 
   .module-tablet-card-icon svg {
-    width: 27px;
-    height: 27px;
-  }
-
-  .module-tablet-card strong {
-    font-size: 10px;
-  }
-
-  .module-tablet-card > span:last-child {
-    font-size: 9px;
+    width: 16px;
+    height: 16px;
   }
 }
 
