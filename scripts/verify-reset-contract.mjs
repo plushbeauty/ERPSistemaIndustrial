@@ -9,14 +9,14 @@ const shell = read('src/components/layout/ERPHorizontalShell.tsx')
 const checks = [
   ['Home/logo pública preservada', fs.existsSync('src/PublicIndustrialHome.tsx') && bootstrap.includes("import('./PublicIndustrialHome')")],
   ['Dashboard aprovado preservado', dashboard.includes("IndustrialCommandDashboard")],
-  ['Shell Windows 11 preservado', shell.includes('BarraWindows11') && shell.includes('erp-windows-topbar')],
+  ['Shell superior aprovado sem barra inferior nem realces laranja', shell.includes('erp-windows-topbar') && !shell.includes('BarraWindows11') && !shell.includes('is-updated-orange') && !shell.includes('isUpdated: true') && !fs.existsSync('src/components/layout/BarraWindows11.tsx')],
   ['Fiscal aprovada preservada como referência', fs.existsSync('src/pages/Fiscal.tsx') && app.includes('path="fiscal"') && app.includes('path="/fiscal"')],
   ['Page Principal é a área central única', fs.existsSync('src/pages/PagePrincipal.tsx') && app.includes('path="/pageprincipal"') && app.includes('path="pcp"') && app.includes('path="paquimetro"') && app.includes('path="fiscal"') && app.includes('path="*"')],
   ['Página administrativa Master preservada', fs.existsSync('src/pages/Master.tsx')],
   ['Gate de sessão Supabase preservado', bootstrap.includes('function AccessGate') && bootstrap.includes('supabase.auth.getSession()')],
   ['Perfil ERP ativo e soft-delete verificados', bootstrap.includes(".from('erp_usuarios')") && bootstrap.includes(".eq('ativo', true)") && bootstrap.includes(".is('deleted_at', null)")],
   ['Isolamento por empresa e validação Master preservados', bootstrap.includes("empresa_id") && bootstrap.includes("nivel_admin") && bootstrap.includes("is_master") && bootstrap.includes("MASTER")],
-  ['Menu ativo contém os módulos preservados', shell.includes("label: 'Principal'") && shell.includes("label: 'Engenharia e PCP'") && shell.includes("label: 'Fiscal'") && shell.includes("label: 'Qualidade / Paquímetro'")],
+  ['Menu ativo contém os módulos preservados e abre o tablet SGQ', shell.includes("label: 'Principal'") && shell.includes("label: 'Engenharia e PCP'") && shell.includes("label: 'Fiscal'") && shell.includes("label: 'Sistema SGQ'") && shell.includes("tabletModule: 'sgq'") && shell.includes("from './ModuleTabletMenuModal'")],
 ]
 
 const failures = checks.filter(([, ok]) => !ok)

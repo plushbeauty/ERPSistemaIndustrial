@@ -5,6 +5,7 @@ export interface IContadoresAlertas {
   opsAbertas: number;
   rncsAtivas: number;
   materiaisVencendo: number;
+  erro: string | null;
 }
 
 interface AlertaRow {
@@ -12,7 +13,7 @@ interface AlertaRow {
   status: "ATIVO" | "RESOLVIDO";
 }
 
-const ZERO: IContadoresAlertas = { opsAbertas: 0, rncsAtivas: 0, materiaisVencendo: 0 };
+const ZERO: IContadoresAlertas = { opsAbertas: 0, rncsAtivas: 0, materiaisVencendo: 0, erro: null };
 
 export function useRealtimeAlerts(empresaId: string | null) {
   const [contadores, setContadores] = useState<IContadoresAlertas>(ZERO);
@@ -29,12 +30,13 @@ export function useRealtimeAlerts(empresaId: string | null) {
       .eq("status", "ATIVO");
 
     if (error) {
-      setContadores(ZERO);
+      setContadores({ ...ZERO, erro: error.message });
       return;
     }
 
     const rows = (data ?? []) as AlertaRow[];
     setContadores({
+      erro: null,
       opsAbertas: rows.filter((row) => row.tipo_alerta === "OP_ABERTA").length,
       rncsAtivas: rows.filter((row) => row.tipo_alerta === "RNC_ATIVA").length,
       materiaisVencendo: rows.filter((row) => row.tipo_alerta === "MATERIAL_VENCIDO").length,

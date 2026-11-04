@@ -1,9 +1,9 @@
 # Contrato de aprovação visual do SYSNQRA ERP & SGQ INDUSTRIAL
 
-- Revisão: UI-CONTRACT-002
-- Data: 2026-10-27
+- Revisão: UI-CONTRACT-003
+- Data: 2026-11-04
 - Branch de referência: main
-- Verificador obrigatório existente: `npm run verify:approved-ui-lock`
+- Verificadores obrigatórios: `npm run verify:approved-ui-lock` e `npm run verify:approved-regression-lock`
 - Fonte executável: `scripts/verify-approved-ui-lock.mjs`
 
 ## Revisão autorizada — Cadastro Mestre de Produtos (2026-10-27)
@@ -12,28 +12,45 @@ O usuário autorizou explicitamente substituir a revisão visual anterior de `sr
 
 ## Regra de proteção
 
+A barra inferior Windows 11 está removida e não pode ser reintroduzida. O menu superior horizontal permanece. Marcadores `isUpdated`, `is-updated-orange` e destaques laranja nos menus são proibidos. O ponto de entrada de Qualidade é **Sistema SGQ**, que abre `ModuleTabletMenuModal`; o modal antigo `PCPTabletMenuModal` não deve voltar.
+
 Uma tela só é considerada congelada quando existe uma referência explícita no verificador e o comando `verify:approved-ui-lock` passa no commit avaliado. Não atualize hashes para fazer uma alteração não aprovada passar. Uma aprovação é específica aos arquivos e ao escopo registrados; não autoriza mudanças em outros módulos.
 
 Antes de alterar CSS global, shell, navegação, tokens ou componentes compartilhados, identifique as telas dependentes e execute as verificações pertinentes. Se o bloqueio falhar, interrompa a publicação até restaurar a referência ou registrar uma revisão autorizada.
 
-## Referências já cadastradas no verificador
+## Referências congeladas no verificador de regressão
 
-A lista executável de arquivos e hashes fica em `scripts/verify-approved-ui-lock.mjs` e, nesta revisão, abrange 14 arquivos:
+O script `scripts/verify-approved-regression-lock.mjs` valida os hashes Git blob SHA-1 dos 27 arquivos abaixo e falha se qualquer conteúdo mudar sem revisão explícita:
 
-1. `src/pages/VendasCentral.tsx` — Vendas / Status do pedido
-2. `src/pages/NovoPedido.tsx` — Vendas / Novo Pedido
-3. `src/pages/ProdutosVendasIndustrial.tsx` — Cadastros / Produtos
-4. `src/styles/industrial-login.css` — Login institucional
-5. `src/pages/QualidadePaquimetroDigital.tsx` — Qualidade / Paquímetro Digital
-6. `src/components/DigitalCaliper.tsx` — Qualidade / componente de medição digital
-7. `src/pages/PCPTabletOperador.tsx` — PCP / Tablet do operador
-8. `src/components/PCPTabletMenuModal.tsx` — PCP / Menu Tablet
-9. `src/components/layout/ERPHorizontalShell.tsx` — Shell horizontal
-10. `src/components/IndustrialCommandDashboard.tsx` — Dashboard industrial
-11. `src/pages/PCPFichasProcesso.tsx` — PCP / Fichas de Processo
-12. `src/pages/QualidadeInspecoesIndustrial.tsx` — Qualidade / Inspeções
-13. `src/PublicIndustrialHome.tsx` — Página inicial pública
-14. `src/components/PCPMoldPhotoPanel.tsx` — PCP / Fotos da ficha
+1. `src/components/layout/PageIntroCard.tsx`
+2. `src/components/layout/pageIntroCatalog.ts`
+3. `src/pages/ProdutosVendasIndustrial.tsx`
+4. `src/components/DigitalCaliper.tsx`
+5. `src/components/IndustrialCommandDashboard.tsx`
+6. `src/PublicIndustrialHome.tsx`
+7. `src/IndustrialLoginDirect.tsx`
+8. `src/styles/industrial-login.css`
+9. `src/pages/ComprasWorkspace.tsx`
+10. `src/pages/PCPWorkspace.tsx`
+11. `src/components/PCPMoldPhotoPanel.tsx`
+12. `src/features/pcp/FichaProcesso.tsx`
+13. `src/pages/QualidadePaquimetroDigital.tsx`
+14. `src/pages/PCPTabletOperador.tsx`
+15. `src/pages/CertificadoQualidade.tsx`
+16. `src/pages/CentraisIndustriais.tsx`
+17. `src/hooks/useRealtimeAlerts.ts`
+18. `src/pages/QualityRpncForm.tsx`
+19. `src/pages/QualityAuditsList.tsx`
+20. `src/styles/quality-rpnc-form.css`
+21. `src/pages/AccessControlSettings.tsx`
+22. `supabase/migrations/20261031100000_sgq_rpnc_formulario_auditorias_recorrencia_v1.sql`
+23. `src/components/layout/ModuleTabletMenuModal.tsx`
+24. `src/styles/module-tablet-panel.css`
+25. `src/AppEntryV2.tsx`
+26. `src/AppBootstrap.tsx`
+27. `src/main.tsx`
+
+Referências históricas como `VendasCentral.tsx`, `NovoPedido.tsx`, `PCPFichasProcesso.tsx` e `QualidadeInspecoesIndustrial.tsx` não existem nos caminhos documentados no branch avaliado e não aparecem como rotas ativas em `AppEntryV2.tsx`. Os equivalentes atuais são as páginas listadas acima; não recriar os caminhos antigos sem autorização.
 
 ## Estado honesto da cobertura
 

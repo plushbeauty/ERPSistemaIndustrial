@@ -17,6 +17,7 @@ const Fiscal = lazy(() => import('./pages/Fiscal'))
 const NFeEmissao = lazy(() => import('./pages/NFeEmissao'))
 const SetupADMInicial = lazy(() => import('./pages/SetupADMInicial'))
 const PCPWorkspace = lazy(() => import('./pages/PCPWorkspace'))
+const CentraisIndustriais = lazy(() => import('./pages/CentraisIndustriais'))
 const Paquimetro = lazy(() => import('./pages/QualidadePaquimetroDigital'))
 const ComprasWorkspace = lazy(() => import('./pages/ComprasWorkspace'))
 const SolicitacaoCompra = lazy(() => import('./pages/SolicitacaoCompra'))
@@ -60,6 +61,8 @@ const CustomerDnSettings = lazy(() => import('./pages/CustomerDnSettings'))
 const CustomerDnPod = lazy(() => import('./pages/CustomerDnPod'))
 const Master = lazy(() => import('./pages/Master'))
 const PCPAreaFuncionario = lazy(() => import('./pages/PCPAreaFuncionario'))
+const PCPTabletOperador = lazy(() => import('./pages/PCPTabletOperador'))
+const CertificadoQualidade = lazy(() => import('./pages/CertificadoQualidade'))
 const PCPCapacidade = lazy(() => import('./pages/PCPCapacidade'))
 // Cadastro de Produtos — migrado em 2026-10-30 da branch legada para a origem única de código
 const ProdutosVendasIndustrial = lazy(() => import('./pages/ProdutosVendasIndustrial'))
@@ -86,6 +89,14 @@ export default function AppEntryV2() {
             <Route path="/pageprincipal" element={<PagePrincipal />}>
               <Route path="ajuda" element={<CentralAjuda />} />
               <Route path="financeiro" element={<FinanceiroWorkspace />} />
+              <Route path="centrais-industriais/financeiro" element={<CentraisIndustriais module="financeiro" />} />
+              <Route path="centrais-industriais/expedicao" element={<CentraisIndustriais module="expedicao" />} />
+              <Route path="centrais-industriais/metrologia" element={<CentraisIndustriais module="metrologia" />} />
+              <Route path="centrais-industriais/treinamentos" element={<CentraisIndustriais module="treinamentos" />} />
+              <Route path="centrais-industriais/auditoria" element={<CentraisIndustriais module="auditoria" />} />
+              <Route path="centrais-industriais/paradas" element={<CentraisIndustriais module="paradas" />} />
+              <Route path="centrais-industriais/refugos" element={<CentraisIndustriais module="refugos" />} />
+              <Route path="centrais-industriais/materiais" element={<CentraisIndustriais module="materiais" />} />
               <Route index element={<AppIndustrial />} />
               <Route path="compras" element={<ComprasWorkspace />} />
               <Route path="compras/solicitacao" element={<SolicitacaoCompra />} />
@@ -95,6 +106,7 @@ export default function AppEntryV2() {
               <Route path="qualidade/rpnc" element={<QualityPlanGate><QualidadeRPNC /></QualityPlanGate>} />
               <Route path="qualidade/rpnc-formulario" element={<QualityPlanGate><QualityRpncForm /></QualityPlanGate>} />
               <Route path="qualidade/auditorias" element={<QualityPlanGate><QualityAuditsList /></QualityPlanGate>} />
+              <Route path="qualidade/certificado" element={<QualityPlanGate><CertificadoQualidade /></QualityPlanGate>} />
               <Route path="comissoes" element={<Navigate to="/pageprincipal/comissoes/regras" replace />} />
               <Route path="comissoes/regras" element={<CadastroRegras />} />
               <Route path="comissoes/calculo" element={<CalculoComissao />} />
@@ -119,6 +131,7 @@ export default function AppEntryV2() {
               <Route path="pcp/capacidade" element={<QualityPlanGate><PCPCapacidade /></QualityPlanGate>} />
               <Route path="chao-de-fabrica/postos" element={<QualityPlanGate><PostosTrabalho /></QualityPlanGate>} />
               <Route path="chao-de-fabrica/portal-operador" element={<PCPAreaFuncionario />} />
+              <Route path="chao-de-fabrica/apontamento-operador" element={<PCPTabletOperador />} />
               <Route path="paquimetro" element={<QualityPlanGate><Paquimetro /></QualityPlanGate>} />
               <Route path="qualidade/ged" element={<QualityPlanGate><FileTreeGED /></QualityPlanGate>} />
               <Route path="estoque/auditoria-saldos" element={<QualityPlanGate><AuditoriaSaldos /></QualityPlanGate>} />
@@ -200,6 +213,7 @@ export default function AppEntryV2() {
             <Route path="/pcp/roteiros" element={<Navigate to="/pageprincipal/pcp/roteiros" replace />} />
             <Route path="/pcp/capacidade" element={<Navigate to="/pageprincipal/pcp/capacidade" replace />} />
             <Route path="/pcp/portal-operador" element={<Navigate to="/pageprincipal/chao-de-fabrica/portal-operador" replace />} />
+            <Route path="/pcp/apontamento-operador" element={<Navigate to="/pageprincipal/chao-de-fabrica/apontamento-operador" replace />} />
             <Route path="/tablet/dashboard" element={<Navigate to="/pageprincipal/chao-de-fabrica/portal-operador" replace />} />
             <Route path="/diretoria/dashboard" element={<Navigate to="/pageprincipal" replace />} />
             <Route path="/area-funcionario" element={<Navigate to="/pageprincipal/chao-de-fabrica/portal-operador" replace />} />

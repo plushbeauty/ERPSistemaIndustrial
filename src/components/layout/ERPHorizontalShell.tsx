@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Bot, CircleHelp, ChevronDown, UserRound, UserCog, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, FolderOpen, Warehouse, Percent, Scale, ShieldCheck, BookOpen, Landmark, Calculator, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode } from 'lucide-react'
+import { Bot, CircleHelp, ChevronDown, UserRound, UserCog, ChevronRight, Home, FileText, Factory, LogOut, Search, X, Ruler, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, FolderOpen, Warehouse, Percent, Scale, ShieldCheck, BookOpen, Landmark, Calculator, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode, Truck, Gauge, Wrench } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
-import { BarraWindows11 } from './BarraWindows11'
-import PCPTabletMenuModal from '../PCPTabletMenuModal'
+import ModuleTabletMenuModal, { MODULE_TABLET_PANELS, type ModuleTabletKey } from './ModuleTabletMenuModal'
 import PageIntroCard from './PageIntroCard'
 import { fallbackPageIntro, hasNativeIntroCard, resolvePageIntro } from './pageIntroCatalog'
 import { resolveContextualHelp } from '../../help/contextualHelpCatalog'
@@ -13,79 +12,68 @@ type MenuItem = {
   label: string
   route: string
   icon?: LucideIcon
-  isNew?: boolean
-  isUpdated?: boolean
-  action?: 'pcpTablet'
+  action?: 'moduleTablet'
+  tabletModule?: ModuleTabletKey
   minNivel?: number
   children?: MenuItem[]
 }
 
 const menus: MenuItem[] = [
   { label: 'Financeiro', route: '/pageprincipal/financeiro', icon: Landmark, children: [
-    { label: 'Central Financeira', route: '/pageprincipal/financeiro', icon: Wallet, isUpdated: true },
+    { label: 'Central Financeira', route: '/pageprincipal/financeiro', icon: Wallet },
     { label: 'Conciliação Bancária', route: '/pageprincipal/financeiro/conciliacao-bancaria', icon: ClipboardList },
-    { label: 'Importar Extratos', route: '/pageprincipal/financeiro/importar-extratos', icon: FileText, isUpdated: true },
-    { label: 'Lista de Preços por Cliente', route: '/pageprincipal/financeiro/lista-precos-cliente', icon: ShoppingCart, isUpdated: true },
-    { label: 'Retificação de Pedido', route: '/pageprincipal/financeiro/retificacao', icon: RotateCcw, isUpdated: true },
-    { label: 'Notas de Débito', route: '/pageprincipal/financeiro/notas-debito', icon: FileWarning, isUpdated: true },
-    { label: 'Configurações de Notas de Débito', route: '/pageprincipal/financeiro/notas-debito/configuracoes', icon: Settings, isUpdated: true },
+    { label: 'Importar Extratos', route: '/pageprincipal/financeiro/importar-extratos', icon: FileText },
+    { label: 'Lista de Preços por Cliente', route: '/pageprincipal/financeiro/lista-precos-cliente', icon: ShoppingCart },
+    { label: 'Retificação de Pedido', route: '/pageprincipal/financeiro/retificacao', icon: RotateCcw },
+    { label: 'Notas de Débito', route: '/pageprincipal/financeiro/notas-debito', icon: FileWarning },
+    { label: 'Configurações de Notas de Débito', route: '/pageprincipal/financeiro/notas-debito/configuracoes', icon: Settings },
   ] },
-  { label: 'Comissões', route: '/pageprincipal/comissoes', icon: Calculator, isUpdated: true, children: [
-    { label: 'Regras de Comissão', route: '/pageprincipal/comissoes/regras', icon: ClipboardList, isUpdated: true },
-    { label: 'Cálculo de Comissão', route: '/pageprincipal/comissoes/calculo', icon: Calculator, isUpdated: true },
-    { label: 'Perfil do Vendedor', route: '/pageprincipal/comissoes/perfil', icon: UserRound, isUpdated: true },
+  { label: 'Comissões', route: '/pageprincipal/comissoes', icon: Calculator, children: [
+    { label: 'Regras de Comissão', route: '/pageprincipal/comissoes/regras', icon: ClipboardList },
+    { label: 'Cálculo de Comissão', route: '/pageprincipal/comissoes/calculo', icon: Calculator },
+    { label: 'Perfil do Vendedor', route: '/pageprincipal/comissoes/perfil', icon: UserRound },
   ] },
-  { label: 'Controladoria', route: '/pageprincipal/controladoria', icon: BookOpen, isUpdated: true, children: [
-    { label: 'Lucratividade e Margens', route: '/pageprincipal/controladoria/lucratividade', icon: ClipboardList, isUpdated: true },
-    { label: 'Razão Geral', route: '/pageprincipal/controladoria/razao-geral', icon: Landmark, isUpdated: true },
-    { label: 'Cadastro de Decimais', route: '/pageprincipal/controladoria/cadastro-decimais', icon: Settings, isUpdated: true },
-    { label: 'Estorno Documental', route: '/pageprincipal/controladoria/retificacao-assistente', icon: FileText, isUpdated: true },
-    { label: 'Auditoria de Comissões', route: '/pageprincipal/controladoria/auditoria-comissoes', icon: Calculator, isUpdated: true },
+  { label: 'Controladoria', route: '/pageprincipal/controladoria', icon: BookOpen, children: [
+    { label: 'Lucratividade e Margens', route: '/pageprincipal/controladoria/lucratividade', icon: ClipboardList },
+    { label: 'Razão Geral', route: '/pageprincipal/controladoria/razao-geral', icon: Landmark },
+    { label: 'Cadastro de Decimais', route: '/pageprincipal/controladoria/cadastro-decimais', icon: Settings },
+    { label: 'Estorno Documental', route: '/pageprincipal/controladoria/retificacao-assistente', icon: FileText },
+    { label: 'Auditoria de Comissões', route: '/pageprincipal/controladoria/auditoria-comissoes', icon: Calculator },
+  ] },
+  { label: 'Centrais Operacionais', route: '/pageprincipal/centrais-industriais/expedicao', icon: Factory, children: [
+    { label: 'Central Financeira Operacional', route: '/pageprincipal/centrais-industriais/financeiro', icon: Wallet },
+    { label: 'Expedição e Logística', route: '/pageprincipal/centrais-industriais/expedicao', icon: Truck },
+    { label: 'Metrologia e Calibração', route: '/pageprincipal/centrais-industriais/metrologia', icon: Gauge },
+    { label: 'Treinamentos e Competências', route: '/pageprincipal/centrais-industriais/treinamentos', icon: Users },
+    { label: 'Auditorias e Conformidade', route: '/pageprincipal/centrais-industriais/auditoria', icon: ShieldCheck },
+    { label: 'Paradas e Setup', route: '/pageprincipal/centrais-industriais/paradas', icon: Factory },
+    { label: 'Refugo e Retrabalho', route: '/pageprincipal/centrais-industriais/refugos', icon: BarChart3 },
+    { label: 'Materiais e Estoque', route: '/pageprincipal/centrais-industriais/materiais', icon: Warehouse },
   ] },
   { label: 'Principal', route: '/pageprincipal', icon: Home },
   { label: 'Cadastros Mestres', route: '/pageprincipal/cadastros/produtos', icon: Boxes, children: [
-    { label: 'Cadastro de Produtos', route: '/pageprincipal/cadastros/produtos', icon: Boxes, isUpdated: true },
-    { label: 'Ficha Técnica e Etiquetas', route: '/pageprincipal/cadastros/produtos/ficha-tecnica', icon: FileText, isUpdated: true },
-    { label: 'Parâmetros de Código', route: '/pageprincipal/cadastros/produtos/parametros-codigo', icon: Barcode, isUpdated: true },
+    { label: 'Cadastro de Produtos', route: '/pageprincipal/cadastros/produtos', icon: Boxes },
+    { label: 'Ficha Técnica e Etiquetas', route: '/pageprincipal/cadastros/produtos/ficha-tecnica', icon: FileText },
+    { label: 'Parâmetros de Código', route: '/pageprincipal/cadastros/produtos/parametros-codigo', icon: Barcode },
   ] },
-  { label: 'RH / Departamento Pessoal', route: '/pageprincipal/rh', icon: Users, isUpdated: true },
-  { label: 'Engenharia e PCP', route: '/pageprincipal/pcp', icon: Factory, children: [
-    { label: 'Central PCP', route: '/pageprincipal/pcp', icon: ClipboardList },
-    { label: 'Fichas de Processo', route: '/pageprincipal/pcp/fichas-processo', icon: ClipboardList, isUpdated: true },
-    { label: 'Roteiro de Operações', route: '/pageprincipal/pcp/roteiros', icon: Route, isUpdated: true },
-    { label: 'Carga e Capacidade', route: '/pageprincipal/pcp/capacidade', icon: BarChart3, isUpdated: true },
+  { label: 'RH / Departamento Pessoal', route: '/pageprincipal/rh', icon: Users },
+  { label: 'Engenharia e PCP', route: '/pageprincipal/pcp', icon: Factory, action: 'moduleTablet', tabletModule: 'pcp' },
+  { label: 'Chão de Fábrica', route: '/pageprincipal/chao-de-fabrica/portal-operador', icon: Monitor, children: [
+    { label: 'Portal do Operador', route: '/pageprincipal/chao-de-fabrica/portal-operador', icon: Monitor },
+    { label: 'Terminal Touch do Operador', route: '/pageprincipal/chao-de-fabrica/apontamento-operador', icon: Monitor },
+    { label: 'Postos de Trabalho', route: '/pageprincipal/chao-de-fabrica/postos', icon: ClipboardList },
   ] },
-  { label: 'Chão de Fábrica', route: '/pageprincipal/chao-de-fabrica/portal-operador', icon: Monitor, isUpdated: true, children: [
-    { label: 'Portal do Operador', route: '/pageprincipal/chao-de-fabrica/portal-operador', icon: Monitor, isUpdated: true },
-    { label: 'Postos de Trabalho', route: '/pageprincipal/chao-de-fabrica/postos', icon: ClipboardList, isUpdated: true },
+  { label: 'Estoque e Almoxarifado', route: '/pageprincipal/estoque/auditoria-saldos', icon: Warehouse, action: 'moduleTablet', tabletModule: 'estoque' },
+  { label: 'Sistema SGQ', route: '/pageprincipal/qualidade/rpnc', icon: ShieldCheck, action: 'moduleTablet', tabletModule: 'sgq' },
+  { label: 'Manutenção', route: '/pageprincipal/manutencao', icon: Wrench, action: 'moduleTablet', tabletModule: 'manutencao' },
+  { label: 'Compras', route: '/pageprincipal/compras', icon: ShoppingCart, children: [
+    { label: 'Central de Compras', route: '/pageprincipal/compras', icon: ShoppingCart },
+    { label: 'Solicitação de Compra', route: '/pageprincipal/compras/solicitacao', icon: FilePlus2 },
+    { label: 'Requisições de Compra', route: '/pageprincipal/compras/requisicoes', icon: ClipboardList },
   ] },
-  { label: 'Estoque e Almoxarifado', route: '/pageprincipal/estoque/auditoria-saldos', icon: Warehouse, isUpdated: true, children: [
-    { label: 'Auditoria de Saldos', route: '/pageprincipal/estoque/auditoria-saldos', icon: Scale, isUpdated: true },
-    { label: 'Balanço de Estoque', route: '/pageprincipal/estoque/balanco', icon: Archive, isUpdated: true },
-    { label: 'Regras de Depreciação', route: '/pageprincipal/estoque/depreciacao', icon: Percent, isUpdated: true },
-  ] },
-  { label: 'Qualidade / Paquímetro', route: '/pageprincipal/paquimetro', icon: Ruler, children: [
-    { label: 'Paquímetro Digital', route: '/pageprincipal/paquimetro', icon: Ruler },
-    { label: 'RPNC', route: '/pageprincipal/qualidade/rpnc', icon: ClipboardList, isUpdated: true },
-    { label: 'Formulário RPNC (Ishikawa / 5 Porquês / CAPA)', route: '/pageprincipal/qualidade/rpnc-formulario', icon: FileText, isUpdated: true },
-    { label: 'Auditorias da Qualidade', route: '/pageprincipal/qualidade/auditorias', icon: ShieldCheck, isUpdated: true },
-    { label: 'GED / Documentos da Qualidade', route: '/pageprincipal/qualidade/ged', icon: FolderOpen, isUpdated: true },
-  ] },
-  { label: 'Compras', route: '/pageprincipal/compras', icon: ShoppingCart, isUpdated: true, children: [
-    { label: 'Central de Compras', route: '/pageprincipal/compras', icon: ShoppingCart, isUpdated: true },
-    { label: 'Solicitação de Compra', route: '/pageprincipal/compras/solicitacao', icon: FilePlus2, isUpdated: true },
-    { label: 'Requisições de Compra', route: '/pageprincipal/compras/requisicoes', icon: ClipboardList, isUpdated: true },
-  ] },
-  { label: 'Configurações', route: '/pageprincipal/administracao-configuracoes', icon: Settings },
-  { label: 'Configurações de Usuário', route: '/pageprincipal/configuracoes-usuario', icon: UserCog, isUpdated: true, minNivel: 8 },
-  { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText, isUpdated: true, children: [
-    { label: 'Central Fiscal', route: '/pageprincipal/fiscal', icon: FileText },
-    { label: 'Ano Fiscal', route: '/pageprincipal/fiscal/ano', icon: BookOpen, isUpdated: true },
-    { label: 'Classificação Fiscal', route: '/pageprincipal/fiscal/classificacao', icon: Landmark, isUpdated: true },
-    { label: 'Auditoria Documental', route: '/pageprincipal/fiscal/auditoria-documental', icon: ShieldCheck, isUpdated: true },
-    { label: 'Estorno de Lançamentos', route: '/pageprincipal/fiscal/estorno', icon: RotateCcw, isUpdated: true },
-    { label: 'Painel Razão Geral', route: '/pageprincipal/fiscal/razao', icon: Scale, isUpdated: true },
-  ] },
+  { label: 'Configurações', route: '/pageprincipal/administracao-configuracoes', icon: Settings, action: 'moduleTablet', tabletModule: 'configuracoes' },
+  { label: 'Configurações de Usuário', route: '/pageprincipal/configuracoes-usuario', icon: UserCog, minNivel: 8 },
+  { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText, action: 'moduleTablet', tabletModule: 'fiscal' },
   { label: 'Central de Ajuda', route: '/pageprincipal/ajuda', icon: CircleHelp },
 ]
 
@@ -96,7 +84,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [startMenuOpen, setStartMenuOpen] = useState(false)
   const [moduleSearch, setModuleSearch] = useState('')
   const [helpOpen, setHelpOpen] = useState(false)
-  const [pcpTabletOpen, setPcpTabletOpen] = useState(false)
+  const [activeTablet, setActiveTablet] = useState<ModuleTabletKey | null>(null)
   const [now, setNow] = useState(() => new Date())
   const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
   const [dataEpoch, setDataEpoch] = useState(0)
@@ -175,9 +163,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'Engenharia e PCP'
     : pathname.startsWith('/pageprincipal/chao-de-fabrica') ? 'Chão de Fábrica'
     : pathname.startsWith('/pageprincipal/estoque') ? 'Estoque e Almoxarifado'
-    : pathname.startsWith('/pageprincipal/qualidade') ? 'Qualidade / Paquímetro'
+    : pathname.startsWith('/pageprincipal/qualidade') ? 'Sistema SGQ'
     : pathname.startsWith('/pageprincipal/rh') || pathname.startsWith('/rh') ? 'RH / Departamento Pessoal'
-    : pathname.startsWith('/pageprincipal/paquimetro') ? 'Qualidade / Paquímetro'
+    : pathname.startsWith('/pageprincipal/paquimetro') ? 'Sistema SGQ'
     : pathname.startsWith('/pageprincipal/compras') || pathname.startsWith('/compras') ? 'Compras'
     : pathname.startsWith('/pageprincipal/administracao-configuracoes') || pathname.startsWith('/configuracoes-adm') || pathname.startsWith('/administracao-configuracoes') ? 'Configurações'
     : pathname.startsWith('/pageprincipal/financeiro') || pathname.startsWith('/financeiro') ? 'Financeiro'
@@ -190,14 +178,14 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     : undefined
   const current = currentModuleMenu ?? visibleMenus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
   const normalizedSearch = moduleSearch.trim().toLocaleLowerCase('pt-BR')
-  const searchedMenus = normalizedSearch ? visibleMenus.map(menu => ({ ...menu, children: menu.children?.filter(child => child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)) })).filter(menu => menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.route.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || Boolean(menu.children?.length)) : visibleMenus
+  const searchedMenus = normalizedSearch ? visibleMenus.map(menu => ({ ...menu, children: menu.children?.filter(child => child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)), tabletMatches: menu.tabletModule ? MODULE_TABLET_PANELS[menu.tabletModule].items.some(item => (item.label + ' ' + item.description + ' ' + item.route).toLocaleLowerCase('pt-BR').includes(normalizedSearch)) : false })).filter(menu => menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.route.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || Boolean(menu.children?.length) || menu.tabletMatches) : visibleMenus
   useEffect(() => {
     setOpenMenu(null)
     setStartMenuOpen(false)
   }, [pathname])
-  const openMenuItem = (item: Pick<MenuItem, 'route' | 'action'>) => {
-    if (item.action === 'pcpTablet') {
-      setPcpTabletOpen(true)
+  const openMenuItem = (item: Pick<MenuItem, 'route' | 'action' | 'tabletModule'>) => {
+    if (item.action === 'moduleTablet' && item.tabletModule) {
+      setActiveTablet(item.tabletModule)
       setOpenMenu(null)
       return
     }
@@ -244,21 +232,20 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
               {searchedMenus.map(menu => {
                 const Icon = menu.icon ?? Home
                 const hasChildren = Boolean(menu.children?.length)
-                const hasNewItems = Boolean(menu.isNew || menu.children?.some(child => child.isNew))
                 const expanded = openMenu === menu.label || Boolean(normalizedSearch && menu.children?.length)
                 return <div className="erp-windows-menu-group" key={menu.label}>
-                  <div className={`erp-windows-menu-row ${current?.label === menu.label ? 'is-active' : ''} ${hasNewItems ? 'has-new' : ''} ${menu.isUpdated ? 'is-updated-orange' : ''}`}>
-                    <button type="button" className="erp-windows-menu-main" title={hasNewItems ? 'Este módulo contém telas novas' : undefined} onClick={() => {
-                      if (menu.action === 'pcpTablet') { setStartMenuOpen(false); openMenuItem(menu) }
+                  <div className={`erp-windows-menu-row ${current?.label === menu.label ? 'is-active' : ''}`}>
+                    <button type="button" className="erp-windows-menu-main" onClick={() => {
+                      if (menu.action === 'moduleTablet') { setStartMenuOpen(false); openMenuItem(menu) }
                       else if (hasChildren) { setOpenMenu(value => value === menu.label ? null : menu.label);  }
                       else { setStartMenuOpen(false); openMenuItem(menu) }
                     }}>
-                      <Icon size={16} className={menu.isUpdated ? 'is-updated-orange-icon' : hasNewItems ? 'is-new-icon' : undefined} /><span>{menu.label}</span>
+                      <Icon size={16} /><span>{menu.label}</span>
                     </button>
                     {hasChildren && <button type="button" className="erp-windows-menu-expand" aria-label={`Expandir ${menu.label}`} aria-expanded={expanded} onClick={() => { setOpenMenu(value => value === menu.label ? null : menu.label);  }}>{expanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}</button>}
                   </div>
                   {hasChildren && expanded && <div className="erp-windows-menu-children">
-                    {menu.children?.filter(child => !normalizedSearch || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(child => { const ChildIcon = child.icon; const active = pathname === child.route; return <button type="button" key={child.label + child.route} className={`${active ? (child.route === '/compras/rfq' ? 'is-active is-rfq-active' : 'is-active') : ''}${child.isNew ? ' is-new' : ''}${child.isUpdated ? ' is-updated-orange' : ''}`} onClick={() => { setStartMenuOpen(false); if (child.action) openMenuItem(child); else go(child.route) }} title={child.isNew ? 'Tela nova' : undefined}>{ChildIcon && <ChildIcon size={14} className={child.isNew ? 'is-new-icon' : undefined} />}<span>{child.label}</span></button> })}
+                    {menu.children?.filter(child => !normalizedSearch || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(child => { const ChildIcon = child.icon; const active = pathname === child.route; return <button type="button" key={child.label + child.route} className={`${active ? (child.route === '/compras/rfq' ? 'is-active is-rfq-active' : 'is-active') : ''}`} onClick={() => { setStartMenuOpen(false); if (child.action) openMenuItem(child); else go(child.route) }}>{ChildIcon && <ChildIcon size={14} />}<span>{child.label}</span></button> })}
                   </div>}
                 </div>
               })}
@@ -304,30 +291,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           <span className="erp-help-floating-avatar"><Bot size={20}/></span><span className="erp-help-floating-label">Ajuda</span>
         </button>
       </div>
-      <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
-      <BarraWindows11
-        ativo={pathname.startsWith('/pageprincipal/comissoes') || pathname.startsWith('/comissoes') ? 'comissoes' : pathname.startsWith('/pageprincipal/controladoria') || pathname.startsWith('/controladoria') ? 'controladoria' : pathname.startsWith('/pageprincipal/financeiro') || pathname.startsWith('/financeiro') ? 'financeiro' : pathname.startsWith('/pageprincipal/rh') ? 'rh' : pathname.startsWith('/pageprincipal/pcp/fichas-processo') ? 'fichas' : pathname.startsWith('/pageprincipal/compras/solicitacao') ? 'solicitacao' : pathname.startsWith('/pageprincipal/compras/requisicoes') ? 'requisicoes' : pathname.startsWith('/pageprincipal/compras') ? 'compras' : pathname.startsWith('/pageprincipal/qualidade/rpnc') ? 'rpnc' : pathname.startsWith('/pageprincipal/pcp') || pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/pageprincipal/paquimetro') ? 'paq' : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'fiscal' : pathname.startsWith('/pageprincipal') ? 'home' : ''}
-        onAbrir={(id) => {
-          const destinations: Record<string, string> = {
-            home: '/pageprincipal',
-            rh: '/pageprincipal/rh',
-            fichas: '/pageprincipal/pcp/fichas-processo',
-            pcp: '/pageprincipal/pcp',
-            maq: '/pageprincipal/pcp',
-            op: '/pageprincipal/pcp',
-            paq: '/pageprincipal/paquimetro',
-            fiscal: '/pageprincipal/fiscal',
-            compras: '/pageprincipal/compras',
-            solicitacao: '/pageprincipal/compras/solicitacao',
-            requisicoes: '/pageprincipal/compras/requisicoes',
-            rpnc: '/pageprincipal/qualidade/rpnc',
-            financeiro: '/pageprincipal/financeiro',
-            comissoes: '/pageprincipal/comissoes',
-            controladoria: '/pageprincipal/controladoria',
-          }
-          go(destinations[id] ?? '/pageprincipal')
-        }}
-      />
+      <ModuleTabletMenuModal moduleKey={activeTablet} sessionNivel={sessionNivel} onClose={() => setActiveTablet(null)} onNavigate={route => { setActiveTablet(null); go(route) }} />
+
 
       <style>{`
         .erp-horizontal-shell{min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%);color:#123b50}
@@ -358,10 +323,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-windows-menu-list{padding:0 6px 8px;overflow:auto;min-height:0}
         .erp-windows-menu-row{min-height:34px;display:flex;align-items:center;border:1px solid transparent}
         .erp-windows-menu-row.is-active{background:#edf6fa;border-color:#d5e8ef}
-        .erp-windows-menu-main>svg.is-new-icon,.erp-windows-menu-children button.is-new>svg.is-new-icon{color:#C65D00!important}
-        .erp-windows-menu-row.is-updated-orange{border-left:3px solid #f97316;background:#fff7ed!important}
-        .erp-windows-menu-row.is-updated-orange .erp-windows-menu-main{color:#c2410c!important;font-weight:800}
-        .erp-windows-menu-row.is-updated-orange .is-updated-orange-icon{color:#f97316!important}
         .erp-windows-menu-main{flex:1;min-width:0;min-height:32px;display:flex;align-items:center;gap:9px;padding:0 8px;border:0;background:transparent;text-align:left;color:#1e293b;font-size:11px;cursor:pointer}
         .erp-windows-menu-main span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .erp-windows-menu-main:hover,.erp-windows-menu-expand:hover{background:#f1f5f9}
@@ -370,7 +331,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-windows-menu-children button{display:flex;align-items:center;gap:8px;width:100%;min-height:29px;padding:5px 8px;border:0;background:#fff;text-align:left;color:#334155;font-size:10px;cursor:pointer}
         .erp-windows-menu-children button>svg{flex:0 0 auto}.erp-windows-menu-children button>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .erp-windows-menu-children button:hover,.erp-windows-menu-children button.is-active{background:#eaf5f8;color:#123b50}
-        .erp-windows-menu-children button.is-rfq-active{background:#1d5fd1!important;border-color:#1d5fd1!important;color:#fff!important;font-weight:800;box-shadow:inset 3px 0 #0b2545}\n        .erp-windows-menu-children button.is-updated-orange{background:#f97316!important;border:1px solid #ea580c!important;color:#fff!important;font-weight:900;box-shadow:inset 4px 0 #9a3412}\n        .erp-windows-menu-children button.is-updated-orange:hover,.erp-windows-menu-children button.is-updated-orange.is-active{background:#ea580c!important;border-color:#c2410c!important;color:#fff!important}
         .erp-windows-no-results{margin:12px 8px;font-size:10px;color:#64748b}
         .erp-windows-start-footer{min-height:38px;display:flex;align-items:center;gap:6px;padding:0 10px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:10px;color:#334155}
         .erp-windows-start-footer span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
