@@ -30,7 +30,7 @@ const approved = [
   ['src/styles/module-tablet-panel.css', '9c354f194067f42e9786b1340f509e2dfeda9c14'],
   ['src/AppEntryV2.tsx', '842bfb7b925d03c8eba5ce7486f37f5e5938ebcf'],
   ['src/AppBootstrap.tsx', '3cc6b3f6530db4785f32f1d0bc9ba5feeba5aeae'],
-  ['src/main.tsx', 'c7c448d0ee4677e1578836488fbdd3cb12448560'],
+  ['src/main.tsx', '201089c95125d3baa0ed1461f0836f087ea438fa'],
 ]
 
 const failures = []
