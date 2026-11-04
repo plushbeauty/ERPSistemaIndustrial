@@ -16,6 +16,12 @@ const approved = [
   ['src/pages/PCPTabletOperador.tsx', '9d73beb0b7adc1b5a865b0c2db39885c5d173cea'],
   ['src/pages/CertificadoQualidade.tsx', 'fedbf7bc96faa10f001191ea5db32e0211298a58'],
   ['src/pages/CentraisIndustriais.tsx', 'b3f48bdf11fde6a61345430ba30f5cb0f98db103'],
+  ['src/hooks/useRealtimeAlerts.ts', 'c2fdff9187849ce74296b68ad688b03422c6ff45'],
+  ['src/pages/QualityRpncForm.tsx', '381b3765b81513ce5f9da39fc33e6d5b678f4960'],
+  ['src/pages/QualityAuditsList.tsx', '34d4247238acaa0cab346056b56953a049c4ec2d'],
+  ['src/styles/quality-rpnc-form.css', '123b6df03ca1bfe0bc204a3e76982a31a9586a5d'],
+  ['src/pages/AccessControlSettings.tsx', 'dbd538d0934318ec88675e894208e3ce65df8e5a'],
+  ['supabase/migrations/20261031100000_sgq_rpnc_formulario_auditorias_recorrencia_v1.sql', 'ad3faec742aa01d74b42edc1e0816c34397987e3'],
   ['src/components/layout/ModuleTabletMenuModal.tsx', '072412bf24cdf90509cb8ed114731adb999b85cd'],
   ['src/styles/module-tablet-panel.css', '9c354f194067f42e9786b1340f509e2dfeda9c14'],
   ['src/AppEntryV2.tsx', '842bfb7b925d03c8eba5ce7486f37f5e5938ebcf'],
@@ -45,4 +51,4 @@ if (!readFileSync('src/main.tsx', 'utf8').includes('erp-industrial-legacy-pwa-cl
 
 for (const failure of failures) console.error('FAIL — ' + failure)
 if (failures.length) process.exit(1)
-console.log('APPROVED REGRESSION LOCK PASS — 17 arquivos congelados; barra inferior, modal legado e marcadores laranja bloqueados.')
+console.log('APPROVED REGRESSION LOCK PASS — 23 arquivos congelados; barra inferior, modal legado e marcadores laranja bloqueados.')
