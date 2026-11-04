@@ -1057,7 +1057,14 @@ export default function QualityRpncForm() {
           <div className="min-w-64 flex-1">
             <p className="erp-label">Evidências da ocorrência</p>
             <input type="file" multiple accept=".pdf,.docx,.xlsx,.png,.jpg,.jpeg,.webp,.txt" disabled={saving || Boolean(rpnc)}
-              onChange={(e) => setFiles(Array.from(e.target.files ?? []).filter((f) => f.size <= MAX_ANEXO))}
+              onChange={(e) => {
+                const selecionados = Array.from(e.target.files ?? [])
+                const validos = selecionados.filter((file) => file.size <= MAX_ANEXO)
+                const rejeitados = selecionados.filter((file) => file.size > MAX_ANEXO)
+                setFiles(validos)
+                setError(rejeitados.length ? `Arquivo(s) acima do limite de ${tamanho(MAX_ANEXO)}: ${rejeitados.map((file) => file.name).join(', ')}` : '')
+                e.target.value = ''
+              }}
               className="text-xs" />
             <p className="mt-1 text-[10px] text-slate-500">{files.length ? `${files.length} arquivo(s) na fila · serão gravados em ${pasta || 'pasta criada na abertura'}` : 'PDF, DOCX, XLSX, PNG, JPEG, WEBP e TXT · 15 MB por arquivo.'}</p>
           </div>
