@@ -1,7 +1,7 @@
 # Contrato de telas aprovadas — ERP Industrial
 
-**Data da revisão:** 2026-10-19  
-**Revisão:** APROV-007  
+**Data da revisão:** 2026-11-04  
+**Revisão:** APROV-008  
 **Regra:** telas aprovadas são imutáveis por padrão. Não alterar layout, conteúdo, geometria, comportamento ou estrutura sem autorização explícita do usuário para uma nova revisão.
 
 | Tela/arquivo | Referência aprovada | Proteção |
@@ -10,8 +10,8 @@
 | Vendas → Status do pedido — `src/pages/VendasCentral.tsx` | APROV-006, alinhamento dos cards e legenda visível; revisão autorizada em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | Cadastro de Produtos — `src/pages/ProdutosVendasIndustrial.tsx` | Referência aprovada anterior | Hash Git do arquivo verificado no CI |
 | Login institucional — `src/styles/industrial-login.css` | APROV-005, texto institucional branco com contorno escuro | Hash Git do arquivo verificado no CI |
-| PCP → Submenu de fichas — `src/components/PCPTabletMenuModal.tsx` | Submenu de fichas aprovado em 2026-10-18 | Hash Git do arquivo verificado no CI |
-| Shell horizontal — `src/components/layout/ERPHorizontalShell.tsx` | APROV-014: menu SGQ direto e Paquímetro Digital visível; Central de Compras abre em `/compras` | Hash Git do arquivo verificado no CI |
+| Sistema SGQ / tablet compartilhado — `src/components/layout/ModuleTabletMenuModal.tsx` | Painel SGQ com Metrologia, RPNC, formulário, auditorias e GED; seis painéis de módulos | Hash Git do arquivo verificado no CI |
+| Shell horizontal — `src/components/layout/ERPHorizontalShell.tsx` | Menu superior sem barra inferior Windows 11 e sem marcadores laranja; Sistema SGQ abre o tablet compartilhado | Contrato estrutural no CI |
 | Dashboard industrial — `src/components/IndustrialCommandDashboard.tsx` | Restaurado da referência aprovada em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | PCP → Fichas de Processo — `src/pages/PCPFichasProcesso.tsx` | Restaurada da referência aprovada em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | Página pública — `src/PublicIndustrialHome.tsx` | Carrossel acessível e planos da referência aprovada | Hash Git do arquivo verificado no CI |
@@ -43,6 +43,16 @@ O workflow executa `npm run verify:approved-ui-lock`. Se qualquer byte de um arq
 
 Este contrato protege os arquivos listados; ele não substitui a configuração de proteção da branch `main` no GitHub. Para impedir bypass também nas regras do repositório, o status de CI deve ser obrigatório nas regras de proteção da branch.
 
+
+## Registro da revisão APROV-008 — 2026-11-04
+
+- Removida a barra inferior Windows 11; o menu superior horizontal permanece como navegação global.
+- Removidos `isUpdated`, `is-updated-orange` e os realces laranja dos menus.
+- Excluídos `src/components/layout/BarraWindows11.tsx` e `src/components/PCPTabletMenuModal.tsx`; o tablet modular substitui o modal legado.
+- A entrada **Sistema SGQ** abre o painel com Metrologia/Paquímetro, RPNC, formulário, auditorias e GED. O mesmo padrão de tablet é usado em PCP, Fiscal, Estoque, Manutenção e Configurações.
+- A tela pública recebeu o layout premium aprovado; o login mantém a revisão APROV-005 e o bootstrap continua usando Supabase Auth real.
+- O PWA incrementa a chave de limpeza para `erp-industrial-legacy-pwa-cleanup-v3`, removendo registros de service worker e caches legados uma vez por navegador.
+- `scripts/verify-approved-regression-lock.mjs` congela 17 arquivos aprovados por Git blob SHA-1 e falha se houver alteração sem revisão explícita. O gate é executado em `verify:production` e `verify:release`.
 
 ## Registro da revisão APROV-004 — 2026-10-16
 
