@@ -52,7 +52,8 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - A entrada **Sistema SGQ** abre o painel com Metrologia/Paquímetro, RPNC, formulário, auditorias e GED. O mesmo padrão de tablet é usado em PCP, Fiscal, Estoque, Manutenção e Configurações.
 - A tela pública recebeu o layout premium aprovado; o login mantém a revisão APROV-005 e o bootstrap continua usando Supabase Auth real.
 - O PWA incrementa a chave de limpeza para `erp-industrial-legacy-pwa-cleanup-v3`, removendo registros de service worker e caches legados uma vez por navegador.
-- `scripts/verify-approved-regression-lock.mjs` congela 17 arquivos aprovados por Git blob SHA-1 e falha se houver alteração sem revisão explícita. O gate é executado em `verify:production` e `verify:release`.
+- `useRealtimeAlerts`, Centrais Operacionais, formulário RPNC, auditorias e migration do SGQ também entram no inventário congelado. A migration existe no repositório, mas sua aplicação no Supabase remoto ainda precisa ser confirmada.
+- `scripts/verify-approved-regression-lock.mjs` congela 23 arquivos aprovados por Git blob SHA-1 e falha se houver alteração sem revisão explícita. O gate é executado em `verify:production` e `verify:release`.
 
 ## Registro da revisão APROV-004 — 2026-10-16
 
