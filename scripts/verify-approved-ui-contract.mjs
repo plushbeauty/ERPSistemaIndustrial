@@ -4,10 +4,13 @@ import { existsSync } from 'node:fs'
 const app = readFileSync('src/AppEntryV2.tsx', 'utf8')
 const bootstrap = readFileSync('src/AppBootstrap.tsx', 'utf8')
 const shell = readFileSync('src/components/layout/ERPHorizontalShell.tsx', 'utf8')
+const tablet = 'src/components/layout/ModuleTabletMenuModal.tsx'
+const tabletCss = 'src/styles/module-tablet-panel.css'
 const checks = [
   ['Tela pública do logo preservada', existsSync('src/PublicIndustrialHome.tsx') && bootstrap.includes("import('./PublicIndustrialHome')")],
   ['Dashboard industrial aprovado preservado', readFileSync('src/AppIndustrialV7.tsx', 'utf8').includes('IndustrialCommandDashboard')],
   ['Fiscal aprovada preservada', existsSync('src/pages/Fiscal.tsx') && app.includes('path="/fiscal"')],
+  ['Tablet SGQ compartilhado preservado', existsSync(tablet) && existsSync(tabletCss) && shell.includes("label: 'Sistema SGQ'") && shell.includes("tabletModule: 'sgq'")],
   ['Navegação superior aprovada sem barra inferior nem marcadores laranja', shell.includes('erp-windows-topbar') && !shell.includes('BarraWindows11') && !shell.includes('is-updated-orange') && !shell.includes('isUpdated: true')],
   ['Rotas antigas abrem a Page Principal padrão', app.includes('path="*"') && app.includes('Navigate to="/pageprincipal"') && app.includes('path="/fiscal"') && app.includes('path="/pcp"') && app.includes('path="/paquimetro"')],
   ['Login nativo Supabase preservado', existsSync('src/IndustrialLoginDirect.tsx') && bootstrap.includes('IndustrialLoginDirect')],
