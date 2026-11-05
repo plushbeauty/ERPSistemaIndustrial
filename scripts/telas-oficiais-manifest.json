@@ -973,11 +973,11 @@
     },
     {
       "path": "src/pages/PCPOrdens.tsx",
-      "sha": "308df5e32b894230af4b4b7c31d05b09ccd2737c",
+      "sha": "15fc36bc50a2526d28a08d7322644873fbf09711",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir a ficha operacional A4 montada do documento com dados do banco",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
     },
     {
       "path": "src/pages/PCPParadasMaquina.tsx",

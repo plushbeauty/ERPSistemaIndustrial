@@ -1,8 +1,8 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir a ficha operacional A4 montada do documento com dados do banco
+ * @STATUS_APROVACAO: ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — "Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório."
  */
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import {
@@ -26,6 +26,8 @@ import {
 import { supabase } from '../lib/supabaseClient'
 import EntityCodeLookup from '../components/industrial/EntityCodeLookup'
 import { fetchAllPages } from '../lib/supabasePagination'
+import { abrirRelatorio } from '../lib/report/abrirRelatorio'
+import type { Bloco } from '../lib/report/documento'
 import '../styles/synqra-premium.css'
 
 type Product = {
@@ -92,6 +94,41 @@ type Material = {
 
 type StatusTab = 'TODAS' | 'PENDENTE' | 'EM_PROCESSO' | 'CONCLUIDO' | 'PAUSADA'
 
+type ApontamentoOP = {
+  id: string
+  operador_id: string | null
+  maquina_id: string | null
+  inicio_em: string | null
+  fim_em: string | null
+  quantidade_planejada: number | null
+  quantidade_boa: number | null
+  quantidade_refugada: number | null
+  motivo_parada: string | null
+  observacoes: string | null
+  criado_em: string | null
+}
+
+const RotuloStatusOP: Record<string, string> = {
+  PENDENTE: 'Em fila',
+  EM_PROCESSO: 'Em produção',
+  CONCLUIDO: 'Concluída',
+  PAUSADA: 'Pausada',
+  CANCELADA: 'Cancelada'
+}
+
+function dataHoraRelatorio(valor: string | null | undefined): string {
+  if (!valor) return '—'
+  const data = new Date(valor)
+  if (!Number.isFinite(data.getTime())) return valor
+  return data.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
+
+function quantidadeRelatorio(valor: number | string | null | undefined): string {
+  const n = Number(valor ?? 0)
+  if (!Number.isFinite(n)) return '—'
+  return n.toLocaleString('pt-BR', { maximumFractionDigits: 2 })
+}
+
 const inputStyle = 'h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2.5 text-[11px] font-semibold text-slate-800 outline-none transition-all focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-100 disabled:text-slate-500'
 const labelStyle = 'flex flex-col gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-500'
 const btnBase = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] px-3 text-[10px] font-bold tracking-wide uppercase transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer'
@@ -153,6 +190,8 @@ export default function PCPOrdens() {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [materials, setMaterials] = useState<Material[]>([])
+  // Guardado para o relatório da OP consultar os apontamentos no mesmo tenant, sem nova RPC.
+  const [empresaSessaoId, setEmpresaSessaoId] = useState('')
 
   // Carregamento multi-tenant real
   async function loadData() {
@@ -164,6 +203,7 @@ export default function PCPOrdens() {
         throw companyRes.error ?? new Error('Empresa da sessão não identificada.')
       }
       const companyId = String(companyRes.data)
+      setEmpresaSessaoId(companyId)
 
       const [ps, ms, os, salesOrders, salesItems, cls] = await Promise.all([
         fetchAllPages<Product>((from, to) =>
@@ -273,6 +313,146 @@ export default function PCPOrdens() {
   const selectedProducedQty = selectedOp?.quantidade_produzida || 0
   const selectedProductId = selectedOp?.produto_id || ''
   const selectedDemandRef = selectedOp?.pedido_venda_id ? 'PCP_OP_PEDIDO' : 'PCP_OP'
+
+  /**
+   * Ficha operacional A4. Os dados vêm da OP da linha + apontamentos lidos do banco no
+   * tenant da sessão; nada é inventado quando a consulta retorna vazio ou falha.
+   */
+  async function emitirFichaOP(op: OP) {
+    setError('')
+    try {
+      if (!empresaSessaoId) throw new Error('Empresa da sessão não identificada. Use Atualizar antes de imprimir.')
+
+      const apontamentosResult = await supabase
+        .from('erp_apontamentos_processo')
+        .select(
+          'id,operador_id,maquina_id,inicio_em,fim_em,quantidade_planejada,quantidade_boa,quantidade_refugada,motivo_parada,observacoes,criado_em',
+          { count: 'exact' }
+        )
+        .eq('empresa_id', empresaSessaoId)
+        .eq('ordem_producao_id', op.id)
+        .order('criado_em', { ascending: false })
+        .limit(500)
+      if (apontamentosResult.error) throw apontamentosResult.error
+
+      const apontamentos = (apontamentosResult.data ?? []) as ApontamentoOP[]
+
+      const operadorIds = Array.from(
+        new Set(apontamentos.map(a => a.operador_id).filter((id): id is string => Boolean(id)))
+      )
+      const nomesOperador = new Map<string, string>()
+      if (operadorIds.length > 0) {
+        const operadoresResult = await supabase
+          .from('erp_usuarios')
+          .select('id,nome')
+          .in('id', operadorIds)
+        if (operadoresResult.error) throw operadoresResult.error
+        for (const registro of (operadoresResult.data ?? []) as { id: string; nome: string }[]) {
+          nomesOperador.set(registro.id, registro.nome)
+        }
+      }
+
+      const produto = op.produto_id ? productMap.get(op.produto_id) : null
+      const maquina = op.maquina_id ? machineMap.get(op.maquina_id) : null
+      const pedido = op.pedido_venda_id ? pedidoMap.get(op.pedido_venda_id) : null
+      const status = normalizeStatus(op.status)
+      const planejada = Number(op.quantidade_planejada || op.quantidade || 0)
+      const produzida = Number(op.quantidade_produzida || 0)
+      const boaTotal = apontamentos.reduce((total, a) => total + Number(a.quantidade_boa ?? 0), 0)
+      const refugoTotal = apontamentos.reduce((total, a) => total + Number(a.quantidade_refugada ?? 0), 0)
+      const rendimento = planejada > 0 ? `${((produzida / planejada) * 100).toFixed(1)}%` : '—'
+      const observacoes = (op.observacoes ?? '').trim()
+
+      const blocos: Bloco[] = [
+        {
+          tipo: 'campos',
+          titulo: 'Identificação da ordem de produção',
+          colunas: 2,
+          itens: [
+            { rotulo: 'Nº da OP', valor: `OP-${op.numero_op}` },
+            { rotulo: 'Status', valor: RotuloStatusOP[status] ?? status },
+            { rotulo: 'Produto', valor: produto?.nome ?? 'Produto não cadastrado' },
+            { rotulo: 'Código do produto', valor: produto?.codigo ?? '—' },
+            { rotulo: 'Unidade', valor: produto?.unidade ?? '—' },
+            { rotulo: 'Prioridade', valor: op.prioridade || 'Regular' },
+            { rotulo: 'Pedido de venda', valor: pedido ? `PV ${pedido.codigo} — ${pedido.nome}` : 'Ordem de estoque' },
+            { rotulo: 'Máquina / centro', valor: maquina ? `${maquina.codigo} — ${maquina.nome}` : 'Não atribuída' },
+            { rotulo: 'Data prevista', valor: op.data_prevista ? String(op.data_prevista).slice(0, 10) : '—' },
+            { rotulo: 'Aberta em', valor: dataHoraRelatorio(op.created_at) }
+          ]
+        },
+        {
+          tipo: 'campos',
+          titulo: 'Quantidades e capacidade',
+          colunas: 3,
+          itens: [
+            { rotulo: 'Quantidade planejada', valor: quantidadeRelatorio(planejada) },
+            { rotulo: 'Produzido registrado', valor: quantidadeRelatorio(produzida) },
+            { rotulo: 'Rendimento', valor: rendimento },
+            { rotulo: 'Boa apontada', valor: quantidadeRelatorio(boaTotal) },
+            { rotulo: 'Refugo apontado', valor: quantidadeRelatorio(refugoTotal) },
+            { rotulo: 'Apontamentos', valor: apontamentos.length },
+            { rotulo: 'Velocidade nominal (pç/h)', valor: quantidadeRelatorio(op.velocidade_nominal_hora) },
+            { rotulo: 'Operação dupla', valor: op.operacao_dupla ? 'Sim' : 'Não' },
+            { rotulo: 'Tempo estimado (h)', valor: quantidadeRelatorio(op.tempo_estimado_horas) }
+          ]
+        },
+        {
+          tipo: 'tabela',
+          titulo: 'Apontamentos de produção',
+          colunas: [
+            { titulo: 'Início', larguraMm: 28 },
+            { titulo: 'Fim', larguraMm: 28 },
+            { titulo: 'Operador', larguraMm: 38 },
+            { titulo: 'Máquina', larguraMm: 26 },
+            { titulo: 'Boa', larguraMm: 16, alinhar: 'direita' },
+            { titulo: 'Refugo', larguraMm: 16, alinhar: 'direita' },
+            { titulo: 'Motivo / observação' }
+          ],
+          linhas: apontamentos.map(a => [
+            dataHoraRelatorio(a.inicio_em),
+            dataHoraRelatorio(a.fim_em),
+            (a.operador_id && nomesOperador.get(a.operador_id)) || 'Não identificado',
+            (a.maquina_id && machineMap.get(a.maquina_id)?.codigo) || '—',
+            quantidadeRelatorio(a.quantidade_boa),
+            quantidadeRelatorio(a.quantidade_refugada),
+            [a.motivo_parada, a.observacoes].filter(Boolean).join(' · ') || '—'
+          ]),
+          nota:
+            apontamentosResult.count === null || apontamentosResult.count === undefined
+              ? undefined
+              : apontamentos.length < Number(apontamentosResult.count)
+                ? `Exibindo ${apontamentos.length} de ${apontamentosResult.count} apontamentos registrados no banco.`
+                : undefined
+        }
+      ]
+
+      if (observacoes) {
+        blocos.push({ tipo: 'texto', titulo: 'Observações da ordem', texto: observacoes })
+      }
+
+      blocos.push({
+        tipo: 'assinaturas',
+        titulo: 'Aprovações',
+        assinantes: [
+          { papel: 'Planejamento e controle da produção' },
+          { papel: 'Liderança de produção' },
+          { papel: 'Controle da qualidade' }
+        ]
+      })
+
+      await abrirRelatorio({
+        modulo: 'PCP',
+        tipo: 'Ordem de Produção',
+        titulo: `Ficha operacional da OP-${op.numero_op}`,
+        codigo: `OP-${op.numero_op}`,
+        subtitulo: produto ? `${produto.codigo} — ${produto.nome}` : 'Produto sem cadastro no banco',
+        blocos
+      })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Falha ao emitir a ficha operacional da OP.')
+    }
+  }
 
   // Sincroniza apenas quando a OP selecionada ou seus valores mudam.
   useEffect(() => {
@@ -676,11 +856,11 @@ export default function PCPOrdens() {
                     setError('Selecione uma OP na tabela para imprimir a ficha operacional.')
                     return
                   }
-                  window.print()
+                  void emitirFichaOP(selectedOp)
                 }}
                 disabled={!selectedOp}
                 className={`${btnBase} border border-slate-300 bg-white text-slate-700 hover:bg-slate-50`}
-                title="Imprimir Ficha Operacional A4"
+                title="Emitir ficha operacional em A4"
               >
                 <Printer size={13} />
                 <span>Imprimir OP (A4)</span>
@@ -980,10 +1160,10 @@ export default function PCPOrdens() {
                                     type="button"
                                     onClick={() => {
                                       setSelectedOpId(op.id)
-                                      setTimeout(() => window.print(), 50)
+                                      void emitirFichaOP(op)
                                     }}
                                     className="h-6 w-6 rounded border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 flex items-center justify-center"
-                                    title="Imprimir Ficha"
+                                    title="Emitir ficha operacional A4 desta OP"
                                   >
                                     <Printer size={10} />
                                   </button>

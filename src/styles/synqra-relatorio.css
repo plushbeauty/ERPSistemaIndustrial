@@ -1,0 +1,456 @@
+/*
+ * SYSNQRA ERP INDUSTRIAL — folha A4 dos relatórios profissionais
+ * Ordem geral do proprietário (2026-11-05, item 5): "Quero relatórios completos, com layout
+ * próprio, e não uma captura da tela do sistema" e "Não basta adicionar CSS @media print para
+ * imprimir a tela atual. Quero uma estrutura própria de relatório."
+ *
+ * Modelo: a folha existe no DOM como .sr-page (186 × 273 mm = área útil do A4 com as margens de
+ * 12 mm que src/styles/index.css:94 já declara). A paginação é calculada em JS pelo motor, então
+ * "Página X de Y" é exato e nenhuma tabela corta no meio de uma linha.
+ * Em tela é pré-visualização; na impressão só sai a folha.
+ */
+
+.sr-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  background: #1a2430;
+  overflow: auto;
+  padding: 88px 24px 40px;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+
+.sr-toolbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 24px;
+  background: #123b50;
+  color: #fff;
+  border-bottom: 2px solid #0b2436;
+}
+
+.sr-toolbar-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sr-toolbar-title strong {
+  font-size: 14px;
+  letter-spacing: 0.02em;
+}
+
+.sr-toolbar-title span {
+  font-size: 12px;
+  color: #b9d4e6;
+}
+
+.sr-toolbar-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.sr-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #4e7f9c;
+  background: #176487;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 9px 14px;
+  cursor: pointer;
+}
+
+.sr-btn:hover {
+  background: #1a7199;
+}
+
+.sr-btn-ghost {
+  background: transparent;
+  border-color: #7fa9c2;
+}
+
+.sr-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.sr-hint {
+  font-size: 11px;
+  color: #9fc0d6;
+}
+
+.sr-sheet {
+  display: flex;
+  justify-content: center;
+}
+
+.sr-page {
+  width: 186mm;
+  min-height: 273mm;
+  box-sizing: border-box;
+  background: #fff;
+  color: #101820;
+  padding: 0 0 6mm;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10mm;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.45);
+  font-size: 9.5pt;
+}
+
+/* ── Cabeçalho do documento ─────────────────────────────────────────────── */
+.sr-head {
+  border-bottom: 1.4pt solid #123b50;
+  padding-bottom: 3mm;
+}
+
+.sr-head-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6mm;
+}
+
+.sr-brand {
+  display: flex;
+  align-items: center;
+  gap: 4mm;
+  min-width: 0;
+}
+
+.sr-brand img {
+  height: 12mm;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.sr-company {
+  min-width: 0;
+}
+
+.sr-company-name {
+  font-size: 11.5pt;
+  font-weight: 700;
+  color: #123b50;
+  line-height: 1.15;
+}
+
+.sr-company-line {
+  font-size: 7.5pt;
+  color: #33475b;
+  line-height: 1.35;
+}
+
+.sr-doc-id {
+  text-align: right;
+  flex: none;
+}
+
+.sr-doc-kind {
+  font-size: 7pt;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #176487;
+  font-weight: 700;
+}
+
+.sr-doc-code {
+  font-size: 12pt;
+  font-weight: 800;
+  color: #123b50;
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-doc-module {
+  font-size: 7.5pt;
+  color: #47607a;
+}
+
+.sr-title {
+  margin: 2.5mm 0 0;
+  font-size: 13pt;
+  font-weight: 800;
+  color: #123b50;
+  letter-spacing: 0.01em;
+}
+
+.sr-subtitle {
+  margin: 1mm 0 0;
+  font-size: 8.5pt;
+  color: #33475b;
+}
+
+.sr-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 8mm;
+  margin-top: 2.5mm;
+  padding-top: 2mm;
+  border-top: 0.5pt dashed #a9c2d3;
+  font-size: 7.5pt;
+  color: #33475b;
+}
+
+.sr-meta b {
+  color: #123b50;
+  font-weight: 700;
+}
+
+.sr-continua {
+  font-size: 7pt;
+  font-style: italic;
+  color: #7a8b99;
+  text-align: right;
+}
+
+/* ── Corpo ──────────────────────────────────────────────────────────────── */
+.sr-body {
+  flex: 1 1 auto;
+  padding-top: 3mm;
+}
+
+.sr-block {
+  margin-bottom: 3.5mm;
+  break-inside: avoid;
+}
+
+.sr-block-title {
+  font-size: 8pt;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #123b50;
+  background: #eef4fa;
+  border-left: 2.5pt solid #176487;
+  padding: 1.4mm 2mm;
+  margin-bottom: 1.6mm;
+}
+
+.sr-fields {
+  display: grid;
+  gap: 1.2mm 4mm;
+}
+
+.sr-field {
+  border-bottom: 0.4pt solid #dde5ec;
+  padding-bottom: 0.8mm;
+  min-width: 0;
+}
+
+.sr-field-label {
+  display: block;
+  font-size: 6.5pt;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.sr-field-value {
+  display: block;
+  font-size: 9pt;
+  color: #101820;
+  word-break: break-word;
+}
+
+.sr-text {
+  font-size: 8.5pt;
+  line-height: 1.45;
+  color: #101820;
+  white-space: pre-wrap;
+}
+
+.sr-list {
+  margin: 0;
+  padding-left: 5mm;
+  font-size: 8.5pt;
+  line-height: 1.5;
+}
+
+/* Tabelas de documento: nunca cortadas no meio da linha. */
+.sr-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 8pt;
+}
+
+.sr-table th {
+  background: #123b50;
+  color: #fff;
+  font-size: 7pt;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 1.5mm 1.8mm;
+  border: 0.4pt solid #123b50;
+}
+
+.sr-table td {
+  padding: 1.4mm 1.8mm;
+  border: 0.4pt solid #c8d5e0;
+  vertical-align: top;
+  word-break: break-word;
+}
+
+.sr-table tbody tr:nth-child(even) td {
+  background: #f6f9fc;
+}
+
+.sr-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-center {
+  text-align: center;
+}
+
+.sr-empty {
+  font-size: 8pt;
+  color: #64748b;
+  font-style: italic;
+}
+
+/* Desenhos técnicos do documento (ex.: cotas do certificado de qualidade). */
+.sr-figure {
+  text-align: center;
+}
+
+.sr-figure img {
+  max-width: 100%;
+  max-height: 80mm;
+  object-fit: contain;
+}
+
+.sr-figure figcaption {
+  font-size: 7pt;
+  color: #47566a;
+  margin-top: 1.5mm;
+}
+
+/* ── Aprovação e assinaturas ────────────────────────────────────────────── */
+.sr-signs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(48mm, 1fr));
+  gap: 6mm 4mm;
+  margin-top: 8mm;
+  padding-top: 2mm;
+}
+
+.sr-sign {
+  text-align: center;
+}
+
+.sr-sign-line {
+  border-top: 0.8pt solid #101820;
+  padding-top: 1.5mm;
+  font-size: 7.5pt;
+  color: #101820;
+  min-height: 8mm;
+}
+
+.sr-sign-role {
+  font-size: 6.5pt;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 700;
+}
+
+/* ── Rodapé ─────────────────────────────────────────────────────────────── */
+.sr-foot {
+  margin-top: auto;
+  border-top: 0.8pt solid #123b50;
+  padding-top: 2mm;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 6mm;
+  font-size: 6.8pt;
+  color: #47566a;
+}
+
+.sr-foot-page {
+  font-weight: 800;
+  color: #123b50;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-block-break {
+  break-before: page;
+}
+
+@media print {
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  body.sr-printing > *:not(#synqra-report-root) {
+    display: none !important;
+  }
+
+  #synqra-report-root {
+    display: block !important;
+  }
+
+  .sr-overlay {
+    position: static !important;
+    inset: auto !important;
+    background: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    z-index: auto !important;
+  }
+
+  .sr-toolbar,
+  .sr-hint {
+    display: none !important;
+  }
+
+  .sr-sheet {
+    display: block !important;
+  }
+
+  .sr-page {
+    width: 186mm !important;
+    min-height: 273mm !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 0 4mm !important;
+    break-after: page;
+    page-break-after: always;
+  }
+
+  .sr-page:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  .sr-table th {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .sr-block-title,
+  .sr-table tbody tr:nth-child(even) td {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
