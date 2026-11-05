@@ -20,7 +20,7 @@ import type { LucideIcon } from 'lucide-react'
  * @STATUS: TODAS as rotas abaixo foram conferidas uma a uma contra o roteador autenticado desta branch
  *          (src/AppEntryV2.tsx). Rota que não existe no roteador fica com route: null e o card aparece
  *          desabilitado; nada aqui aponta para tela antiga ou para rota inventada.
- * @REVISAO_2: REV-TABLET-CATALOGO-20261104-01 — pente fino do pedido "verificar se todos os módulos qualidade
+ * @REVISAO_2: REV-TABLET-CATALOGO-20261104-01 — conferência tela a tela do pedido "verificar se todos os módulos qualidade
  *          estão dentro dele": FMEA de projeto (/pageprincipal/qualidade/fmea) era a única tela real da
  *          Qualidade sem card. As rotas /qualidade/ishikawa, /qualidade/capa, /qualidade/rnc,
  *          /qualidade/sala-rnc e /qualidade/tablet ficaram fora por decisão registrada no relatório: as duas

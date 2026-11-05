@@ -1,13 +1,15 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o laudo A4 de CEP com as medições reais gravadas no banco
+ * @STATUS_APROVACAO: ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — "Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório."
  */
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Activity, Gauge, RefreshCw, Save, Sigma } from 'lucide-react'
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { supabase } from '../../lib/supabaseClient'
+import { abrirRelatorio } from '../../lib/report/abrirRelatorio'
+import type { Bloco } from '../../lib/report/documento'
 
 type Product = { id: string; codigo: string; descricao_tecnica: string }
 type Measurement = {
@@ -29,6 +31,13 @@ const button = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded
 
 function fixed(value: number, digits = 4) {
   return Number.isFinite(value) ? value.toFixed(digits) : '—'
+}
+
+function dataHoraRelatorio(valor: string | null | undefined): string {
+  if (!valor) return '—'
+  const data = new Date(valor)
+  if (!Number.isFinite(data.getTime())) return valor
+  return data.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
 function CustomTooltip({ active, payload, label, stats }: {
@@ -112,6 +121,95 @@ export default function QualidadeCEP() {
     lower: Number(row.limite_inferior),
   })), [filtered])
 
+  /**
+   * Laudo A4 de CEP. Só usa as medições, produtos e estatísticas já carregados na tela para
+   * o recorte selecionado; nada é inventado quando o recorte está vazio.
+   */
+  async function emitirLaudoCEP() {
+    setError('')
+    try {
+      if (!filtered.length) throw new Error('Nenhuma medição carregada para os filtros selecionados.')
+      const produto = products.find(item => item.id === productId) ?? null
+      const recorte = rows.filter(row => (!productId || row.produto_id === productId) && (!parameter || row.parametro === parameter))
+      const primeira = filtered[0]
+      const ultima = filtered[filtered.length - 1]
+
+      const blocos: Bloco[] = [
+        {
+          tipo: 'campos',
+          titulo: 'Identificação da análise',
+          colunas: 2,
+          itens: [
+            { rotulo: 'Produto', valor: produto ? `${produto.codigo} — ${produto.descricao_tecnica}` : 'Recorte de todos os produtos' },
+            { rotulo: 'Característica monitorada', valor: parameter || 'Todos os parâmetros' },
+            { rotulo: 'Medições no laudo', valor: filtered.length },
+            { rotulo: 'Faixa de amostras', valor: `${primeira.amostra_numero} a ${ultima.amostra_numero}` },
+            { rotulo: 'Primeira medição', valor: dataHoraRelatorio(primeira.medido_em) },
+            { rotulo: 'Última medição', valor: dataHoraRelatorio(ultima.medido_em) }
+          ]
+        },
+        {
+          tipo: 'campos',
+          titulo: 'Figuras de qualidade do recorte',
+          colunas: 3,
+          itens: [
+            { rotulo: 'Média amostral (mm)', valor: stats ? fixed(stats.mean) : '—' },
+            { rotulo: 'Desvio padrão s (mm)', valor: stats ? fixed(stats.sigma) : '—' },
+            { rotulo: 'Índice de capacidade Cpk', valor: stats?.cpk == null ? 'Não calculável' : fixed(stats.cpk, 3) },
+            { rotulo: 'Cota nominal (mm)', valor: stats ? fixed(stats.nominal) : '—' },
+            { rotulo: 'Limite superior LST (mm)', valor: stats ? fixed(stats.upper) : '—' },
+            { rotulo: 'Limite inferior LIT (mm)', valor: stats ? fixed(stats.lower) : '—' }
+          ]
+        },
+        {
+          tipo: 'tabela',
+          titulo: 'Medições registradas no banco',
+          colunas: [
+            { titulo: 'Amostra', larguraMm: 14, alinhar: 'direita' },
+            { titulo: 'Característica', larguraMm: 34 },
+            { titulo: 'Medido (mm)', larguraMm: 18, alinhar: 'direita' },
+            { titulo: 'Nominal (mm)', larguraMm: 18, alinhar: 'direita' },
+            { titulo: 'LST (mm)', larguraMm: 16, alinhar: 'direita' },
+            { titulo: 'LIT (mm)', larguraMm: 16, alinhar: 'direita' },
+            { titulo: 'Data/hora', larguraMm: 42 }
+          ],
+          linhas: filtered.slice().reverse().map(row => [
+            row.amostra_numero,
+            row.parametro,
+            fixed(Number(row.valor_medido)),
+            fixed(Number(row.nominal)),
+            fixed(Number(row.limite_superior)),
+            fixed(Number(row.limite_inferior)),
+            dataHoraRelatorio(row.medido_em)
+          ]),
+          nota: recorte.length > filtered.length
+            ? `O laudo usa as ${filtered.length} medições mais recentes do recorte, que tem ${recorte.length} no banco.`
+            : undefined
+        },
+        {
+          tipo: 'assinaturas',
+          titulo: 'Aprovações',
+          assinantes: [
+            { papel: 'Inspetor responsável' },
+            { papel: 'Garantia da Qualidade / SGQ' }
+          ]
+        }
+      ]
+
+      await abrirRelatorio({
+        modulo: 'Qualidade',
+        tipo: 'Carta de Controle Estatístico',
+        titulo: `Laudo de CEP — ${parameter || 'Todos os parâmetros'}`,
+        codigo: produto?.codigo || parameter || companyId,
+        subtitulo: produto ? `${produto.codigo} — ${produto.descricao_tecnica}` : 'Recorte sem produto específico',
+        blocos,
+        observacoes: 'Este laudo reproduz as medições persistidas no sistema para o filtro selecionado. A liberação formal do lote deve respeitar o plano de controle e as regras de qualidade aplicáveis.'
+      })
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao emitir o laudo A4 de CEP.')
+    }
+  }
+
   async function saveMeasurement(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setBusy(true)
@@ -156,7 +254,7 @@ export default function QualidadeCEP() {
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[2px] border border-[#2D8DB8]/30 bg-[#123B50] text-[#48B7C7]"><Activity size={18}/></span>
         <div className="min-w-0 flex-1"><p className="text-[9px] font-black uppercase tracking-[0.16em] text-[#2D8DB8]">SYSNQRA · SGQ / IT-QAL-CEP-004</p><h1 className="text-sm font-black text-[#123B50]">Controle Dimensional de Peças & CEP</h1><p className="text-[10px] text-slate-500">Medições reais, limites de especificação e capacidade do processo.</p></div>
         <button type="button" onClick={() => void load()} disabled={loading} className={button}><RefreshCw size={13} className={loading ? 'animate-spin' : ''}/> Sincronizar</button>
-        <button type="button" onClick={() => window.print()} disabled={!filtered.length} className={button}><Activity size={13}/> Imprimir laudo A4</button>
+        <button type="button" onClick={() => void emitirLaudoCEP()} disabled={!filtered.length} className={button}><Activity size={13}/> Imprimir laudo A4</button>
       </header>
       <section className="border border-slate-200 bg-white">
         <header className="flex h-9 items-center gap-2 border-b border-slate-200 px-3"><Activity size={14} className="text-[#2D8DB8]"/><h2 className="text-[10px] font-bold uppercase tracking-wider text-[#123B50]">Característica monitorada</h2></header>

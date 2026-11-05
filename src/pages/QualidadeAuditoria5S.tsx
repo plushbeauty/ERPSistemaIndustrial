@@ -1,12 +1,15 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o relatório A4 das auditorias 5S com notas, médias e observações gravadas no banco
+ * @STATUS_APROVACAO: ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — "Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório."
+ * Revisão anterior (2026-10-30): card de abertura padrão (PageIntroCard) e identificação de autoria.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ClipboardCheck, Plus, Printer, RefreshCw, Save } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { abrirRelatorio } from '../lib/report/abrirRelatorio'
+import type { Bloco } from '../lib/report/documento'
 
 type Score = number | ''
 type AuditRow = {
@@ -131,6 +134,112 @@ export default function QualidadeAuditoria5S() {
     return senses.map(sense => String(value[sense.key] ?? '')).filter(Boolean).join(' · ')
   }
 
+  function dataHoraRelatorio(valor: string | null | undefined): string {
+    if (!valor) return '—'
+    const data = new Date(valor)
+    if (!Number.isFinite(data.getTime())) return valor
+    return data.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  }
+
+  /**
+   * Relatório A4 das auditorias 5S. Usa somente os registros carregados da tabela
+   * erp_qualidade_5s_auditorias; se a auditoria em lançamento estiver completa na tela,
+   * ela também é descrita — nada é inventado.
+   */
+  async function emitirRelatorio5S() {
+    setError('')
+    try {
+      if (!rows.length) throw new Error('Nenhuma auditoria 5S registrada no banco para emitir o relatório.')
+      const maisRecente = rows[0]?.created_at ?? ''
+      const maisAntiga = rows[rows.length - 1]?.created_at ?? ''
+      const mediaRegistrada = (row: AuditRow) => (row.seiri + row.seiton + row.seiso + row.seiketsu + row.shitsuke) / 5
+      const setores = [...new Set(rows.map(row => row.setor))]
+
+      const blocos: Bloco[] = [
+        {
+          tipo: 'campos',
+          titulo: 'Identificação do relatório',
+          colunas: 2,
+          itens: [
+            { rotulo: 'Auditorias registradas', valor: rows.length },
+            { rotulo: 'Setores auditados', valor: setores.length ? setores.join(', ') : '—' },
+            { rotulo: 'Período coberto', valor: `${dataHoraRelatorio(maisAntiga)} — ${dataHoraRelatorio(maisRecente)}` },
+            { rotulo: 'Média geral das auditorias', valor: (rows.reduce((total, row) => total + mediaRegistrada(row), 0) / rows.length).toFixed(1) + ' / 5,0' }
+          ]
+        },
+        {
+          tipo: 'tabela',
+          titulo: 'Auditorias 5S gravadas no banco',
+          colunas: [
+            { titulo: 'Data', larguraMm: 24 },
+            { titulo: 'Setor', larguraMm: 20 },
+            { titulo: 'Auditor', larguraMm: 18 },
+            { titulo: 'Seiri', larguraMm: 8, alinhar: 'centro' },
+            { titulo: 'Seiton', larguraMm: 8, alinhar: 'centro' },
+            { titulo: 'Seiso', larguraMm: 8, alinhar: 'centro' },
+            { titulo: 'Seiketsu', larguraMm: 10, alinhar: 'centro' },
+            { titulo: 'Shitsuke', larguraMm: 10, alinhar: 'centro' },
+            { titulo: 'Média', larguraMm: 12, alinhar: 'direita' },
+            { titulo: 'Observações / evidências' },
+            { titulo: 'Status', larguraMm: 14 }
+          ],
+          linhas: rows.map(row => [
+            dataHoraRelatorio(row.created_at),
+            row.setor,
+            row.auditor,
+            row.seiri,
+            row.seiton,
+            row.seiso,
+            row.seiketsu,
+            row.shitsuke,
+            mediaRegistrada(row).toFixed(1),
+            notesOf(row) || '—',
+            row.status
+          ]),
+          nota: `Exibindo ${rows.length} auditoria(s) lidas do banco${rows.length === 100 ? ' (limite de 100 registros carregados pela tela)' : ''}.`
+        }
+      ]
+
+      const lancamentoCompleto = scores.every((score): score is number => typeof score === 'number')
+      if (lancamentoCompleto && sector.trim() && auditor.trim()) {
+        blocos.splice(1, 0, {
+          tipo: 'campos',
+          titulo: 'Auditoria em lançamento na tela (ainda não gravada)',
+          colunas: 2,
+          itens: [
+            { rotulo: 'Setor auditado', valor: sector.trim() },
+            { rotulo: 'Auditor responsável', valor: auditor.trim() },
+            { rotulo: 'Acompanhante', valor: companion.trim() || '—' },
+            { rotulo: 'Média dos cinco sensos', valor: average === null ? '—' : average.toFixed(1) + ' / 5,0' },
+            { rotulo: 'Resultado', valor: average === null ? '—' : average >= 4 ? 'Meta atingida (≥ 4,0)' : 'Necessário plano de ação (< 4,0)' }
+          ]
+        })
+      }
+
+      blocos.push({
+        tipo: 'assinaturas',
+        titulo: 'Aprovações',
+        assinantes: [
+          { papel: 'Auditor 5S responsável' },
+          { papel: 'Acompanhante da auditoria' },
+          { papel: 'Gestão da Qualidade / SGQ' }
+        ]
+      })
+
+      await abrirRelatorio({
+        modulo: 'Qualidade',
+        tipo: 'Auditoria 5S',
+        titulo: 'Relatório de auditorias 5S do período',
+        codigo: maisRecente && maisAntiga ? `5S-${maisAntiga.slice(0, 10)}A${maisRecente.slice(0, 10)}` : `5S-${companyId}`,
+        subtitulo: `${rows.length} auditoria(s) · ${setores.length || 0} setor(es) auditado(s)`,
+        blocos,
+        observacoes: 'Registros reais por empresa, sem notas pré-preenchidas; fonte: erp_qualidade_5s_auditorias.'
+      })
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao emitir o relatório A4 das auditorias 5S.')
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[#EAF3F7] p-3 text-[#123B50]">
       <div className="mx-auto max-w-[1500px] space-y-3">
@@ -147,7 +256,7 @@ export default function QualidadeAuditoria5S() {
             <button type="button" onClick={resetForm} className={secondaryButton}><Plus size={12} /> NOVA</button>
             <button type="button" onClick={() => void load()} disabled={loading || saving} className={secondaryButton}><RefreshCw size={12} /> ATUALIZAR</button>
             <button type="button" onClick={() => void save()} disabled={saving || loading} className={button}><Save size={12} /> SALVAR AUDITORIA</button>
-            <button type="button" onClick={() => window.print()} className={secondaryButton}><Printer size={12} /> IMPRIMIR</button>
+            <button type="button" onClick={() => void emitirRelatorio5S()} className={secondaryButton}><Printer size={12} /> IMPRIMIR</button>
           </div>
         </header>
         {(error || notice) && <div role={error ? 'alert' : 'status'} className={error ? 'border border-red-300 bg-red-50 p-2 text-[10px] text-red-800' : 'border border-emerald-300 bg-emerald-50 p-2 text-[10px] text-emerald-800'}>{error || notice}</div>}

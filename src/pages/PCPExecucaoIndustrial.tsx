@@ -1,9 +1,12 @@
 /**
- * @REVISAO: REV-COLUNAS-BANCO-20261104-01 — ordem do proprietário "telas travadas vc destrava": os apontamentos liam e ordenavam por 'created_at', coluna que não existe em erp_apontamentos_processo (o nome real é 'criado_em'); a query do Promise.all falhava e a aba de apontamentos não carregava.
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o relatório A4 de execução da produção (carteira de OPs e apontamentos) montado pelo motor de relatório com dados do banco
+ * @STATUS_APROVACAO: ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — "Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório."
+ */
+/**
+ * HISTÓRICO: REV-COLUNAS-BANCO-20261104-01 — ordem do proprietário "telas travadas vc destrava": os apontamentos liam e ordenavam por 'created_at', coluna que não existe em erp_apontamentos_processo (o nome real é 'criado_em'); a query do Promise.all falhava e a aba de apontamentos não carregava.
+ * HISTÓRICO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  */
 /**
  * ERPSis — CONTROLE DE REVISÃO VISUAL
@@ -16,6 +19,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Activity, AlertTriangle, Boxes, ClipboardList, Factory, Printer, RefreshCw, Save } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { abrirRelatorio } from '../lib/report/abrirRelatorio'
+import type { Bloco } from '../lib/report/documento'
 
 type Product = { id:string; codigo:string; nome:string; unidade:string|null }
 type Order = { id:string; numero_op:number|string; produto_id:string|null; quantidade:number|null; quantidade_planejada:number|null; quantidade_produzida:number|null; status:string; data_prevista:string|null; maquina_id:string|null }
@@ -32,9 +37,14 @@ const th='h-[30px] border-b border-slate-200 bg-slate-100 px-2 text-left align-m
 const td='h-[30px] border-b border-slate-100 px-2 align-middle text-[10px] font-semibold text-slate-700'
 const localDateTime=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}
 const messageOf=(e:unknown)=>e instanceof Error?e.message:'Falha na execução do PCP.'
+const dataHoraRelatorio=(value:string|null|undefined)=>{if(!value)return '—';const d=new Date(value);return Number.isFinite(d.getTime())?d.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):value}
+const dataRelatorio=(value:string|null|undefined)=>{if(!value)return '—';const d=new Date(value);return Number.isFinite(d.getTime())?d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}):value}
+const quantidadeRelatorio=(value:number|string|null|undefined)=>{const n=Number(value??0);return Number.isFinite(n)?n.toLocaleString('pt-BR',{maximumFractionDigits:2}):'—'}
+const numeroSeguro=(value:number|string|null|undefined)=>{const n=Number(value??0);return Number.isFinite(n)?n:0}
 
 export default function PCPExecucaoIndustrial(){
  const [tab,setTab]=useState<'ordens'|'apontamentos'|'mrp'>('ordens')
+ const [company,setCompany]=useState('')
  const [products,setProducts]=useState<Product[]>([])
  const [orders,setOrders]=useState<Order[]>([])
  const [machines,setMachines]=useState<Machine[]>([])
@@ -55,6 +65,7 @@ export default function PCPExecucaoIndustrial(){
    const tenant=await supabase.rpc('erp_current_empresa_id')
    if(tenant.error||typeof tenant.data!=='string'||!tenant.data)throw tenant.error??new Error('Empresa da sessão não identificada; PCP bloqueado.')
    const company=tenant.data
+   setCompany(company)
    const [p,o,m,pr,a]=await Promise.all([
     supabase.from('erp_produtos').select('id,codigo,nome,unidade').eq('empresa_id',company).eq('ativo',true).order('codigo').limit(3000),
     supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,quantidade_planejada,quantidade_produzida,status,data_prevista,maquina_id').eq('empresa_id',company).order('created_at',{ascending:false}).limit(2000),
@@ -106,8 +117,110 @@ export default function PCPExecucaoIndustrial(){
    setNotice('Necessidades calculadas pelo MRP no PostgreSQL para a empresa da sessão.')
   }catch(e){setError(messageOf(e))}finally{setBusy(false)}
  }
+
+ /**
+  * Relatório A4 da execução industrial. Usa somente a carteira de OPs, os apontamentos,
+  * o MRP calculado e os cadastros que a própria tela já carregou do banco.
+  */
+ async function emitirRelatorioExecucao(){
+  setError('')
+  try{
+   if(!company)throw new Error('Empresa da sessão não identificada. Use Atualizar antes de imprimir.')
+   const rotuloTab:Record<'ordens'|'apontamentos'|'mrp',string>={ordens:'Ordens de produção',apontamentos:'Apontamentos de produção',mrp:'MRP / materiais'}
+   const abertas=orders.filter(o=>!['concluida','encerrada','cancelada','cancelado'].includes(o.status.toLowerCase()))
+   const boaTotal=entries.reduce((n,r)=>n+numeroSeguro(r.quantidade_boa),0)
+   const refugoTotal=entries.reduce((n,r)=>n+numeroSeguro(r.quantidade_refugada),0)
+   const planejadoApontamentos=entries.reduce((n,r)=>n+numeroSeguro(r.quantidade_planejada),0)
+   const produzidoNasOPs=orders.reduce((n,o)=>n+numeroSeguro(o.quantidade_produzida),0)
+   const planejadoNasOPs=orders.reduce((n,o)=>n+numeroSeguro(o.quantidade_planejada??o.quantidade),0)
+   const totalApontado=boaTotal+refugoTotal
+   const refugoPct=totalApontado>0?`${(refugoTotal/totalApontado*100).toLocaleString('pt-BR',{maximumFractionDigits:1})}%`:'—'
+   const blocos:Bloco[]=[
+    {tipo:'campos',titulo:'Identificação do relatório',colunas:2,itens:[
+      {rotulo:'Escopo impresso',valor:`Carteira de execução · aba ativa: ${rotuloTab[tab]}`},
+      {rotulo:'Filtro aplicado na tela',valor:query.trim()?`Pesquisa: ${query.trim()}`:'Sem filtro — carteira completa'},
+      {rotulo:'Ordens de produção carregadas',valor:orders.length},
+      {rotulo:'OPs abertas',valor:abertas.length},
+      {rotulo:'Apontamentos carregados',valor:entries.length},
+      {rotulo:'OPs com apontamento',valor:progressByOrder.size},
+      {rotulo:'Máquinas ativas',valor:machines.length},
+      {rotulo:'Processos industriais',valor:processes.length},
+      {rotulo:'Produtos cadastrados',valor:products.length},
+      {rotulo:'MRP calculado na tela',valor:materials.length>0?`${materials.length} componente(s)`:'Nenhum cálculo executado'}
+    ]},
+    {tipo:'campos',titulo:'Quantidades e perdas da carteira',colunas:3,itens:[
+      {rotulo:'Planejado nas OPs',valor:quantidadeRelatorio(planejadoNasOPs)},
+      {rotulo:'Produzido informado nas OPs',valor:quantidadeRelatorio(produzidoNasOPs)},
+      {rotulo:'Planejado nos apontamentos',valor:quantidadeRelatorio(planejadoApontamentos)},
+      {rotulo:'Peças boas apontadas',valor:quantidadeRelatorio(boaTotal)},
+      {rotulo:'Peças refugadas apontadas',valor:quantidadeRelatorio(refugoTotal)},
+      {rotulo:'Total apontado',valor:quantidadeRelatorio(totalApontado)},
+      {rotulo:'Índice de refugo',valor:refugoPct},
+      {rotulo:'Pendência de produção',valor:quantidadeRelatorio(Math.max(0,planejadoNasOPs-produzidoNasOPs))},
+      {rotulo:'Apontamentos sem fim registrado',valor:entries.filter(r=>!r.fim_em).length}
+    ]},
+    {tipo:'tabela',titulo:'Ordens de produção da carteira',colunas:[
+      {titulo:'OP',larguraMm:16},
+      {titulo:'Produto',larguraMm:46},
+      {titulo:'Planejada',larguraMm:20,alinhar:'direita'},
+      {titulo:'Produzida',larguraMm:20,alinhar:'direita'},
+      {titulo:'Avanço',larguraMm:16,alinhar:'direita'},
+      {titulo:'Entrega',larguraMm:18},
+      {titulo:'Status'}
+    ],linhas:visibleOrders.map(o=>{
+      const planned=numeroSeguro(o.quantidade_planejada??o.quantidade)
+      const done=numeroSeguro(o.quantidade_produzida??progressByOrder.get(o.id)?.good)
+      const produto=productMap.get(o.produto_id??'')
+      return [`OP-${o.numero_op}`,produto?`${produto.codigo} — ${produto.nome}`:'Produto não localizado',quantidadeRelatorio(planned),quantidadeRelatorio(done),planned>0?`${Math.min(100,done/planned*100).toLocaleString('pt-BR',{maximumFractionDigits:1})}%`:'—',dataRelatorio(o.data_prevista),o.status]
+    }),nota:`Quantidades planejadas e produzidas lidas de erp_ordens_producao; "produzida" usa o apontamento acumulado quando o campo da OP está vazio.`},
+    {tipo:'tabela',titulo:'Apontamentos de produção registrados',colunas:[
+      {titulo:'OP',larguraMm:16},
+      {titulo:'Processo',larguraMm:18},
+      {titulo:'Máquina',larguraMm:16},
+      {titulo:'Início',larguraMm:24},
+      {titulo:'Fim',larguraMm:24},
+      {titulo:'Boa',larguraMm:16,alinhar:'direita'},
+      {titulo:'Refugo',larguraMm:16,alinhar:'direita'},
+      {titulo:'Motivo / observação'}
+    ],linhas:entries.map(r=>[
+      `OP-${orderMap.get(r.ordem_producao_id)?.numero_op??'—'}`,
+      processMap.get(r.processo_id??'')?.codigo??'—',
+      machineMap.get(r.maquina_id??'')?.codigo??'—',
+      dataHoraRelatorio(r.inicio_em),
+      dataHoraRelatorio(r.fim_em),
+      quantidadeRelatorio(r.quantidade_boa),
+      quantidadeRelatorio(r.quantidade_refugada),
+      [r.motivo_parada,r.observacoes].filter(Boolean).join(' · ')||'—'
+    ]),nota:entries.length>=1000?'A consulta da tela retorna os 1000 apontamentos mais recentes; o banco pode ter mais registros fora desta janela.':undefined}
+   ]
+   if(materials.length>0){
+    blocos.push({tipo:'tabela',titulo:'Necessidades de materiais calculadas pelo MRP',colunas:[
+      {titulo:'Nível',larguraMm:12,alinhar:'centro'},
+      {titulo:'Componente',larguraMm:42},
+      {titulo:'Necessidade bruta',larguraMm:20,alinhar:'direita'},
+      {titulo:'Saldo disponível',larguraMm:20,alinhar:'direita'},
+      {titulo:'Necessidade líquida',larguraMm:20,alinhar:'direita'},
+      {titulo:'Perda estimada',larguraMm:18,alinhar:'direita'},
+      {titulo:'Produto pai',larguraMm:18}
+    ],linhas:materials.map(m=>[m.nivel,`${m.codigo} — ${m.descricao}`,quantidadeRelatorio(m.necessidade_bruta),quantidadeRelatorio(m.saldo_disponivel),quantidadeRelatorio(m.necessidade_liquida),quantidadeRelatorio(m.perda_estimada),productMap.get(mrpProduct)?.codigo??null]),nota:'Explosão calculada pela RPC erp_pcp_mrp_explodir para o produto e quantidade informados na tela.'})
+   }
+   blocos.push({tipo:'assinaturas',titulo:'Aprovações',assinantes:[
+     {papel:'Planejamento e controle da produção'},
+     {papel:'Liderança de produção'},
+     {papel:'Controle da qualidade'}
+   ]})
+   await abrirRelatorio({
+    modulo:'PCP',
+    tipo:'Apontamento de Produção',
+    titulo:`Execução industrial da produção · ${new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'})}`,
+    codigo:`EXEC-${localDateTime().slice(0,10)}`,
+    subtitulo:`${orders.length} OP(s) · ${entries.length} apontamento(s) · ${abertas.length} em aberto`,
+    blocos
+   })
+  }catch(e){setError(e instanceof Error?e.message:'Falha ao emitir o relatório de execução da produção.')}
+ }
  return <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900 md:p-4 print:bg-white print:p-0"><div className="mx-auto max-w-[1600px]">
-  <header className="mb-3 flex flex-wrap items-center gap-3 border-b border-slate-200 pb-3 print:mb-2"><div className="flex h-9 w-9 items-center justify-center bg-[#123B50] text-white"><Factory size={18}/></div><div><p className="text-[9px] font-bold uppercase tracking-[.16em] text-sky-700">SGQ ERP INDUSTRIAL / PCP</p><h1 className="text-base font-semibold">Execução e controle da produção</h1><p className="text-[10px] text-slate-500">Carteira de OPs reais · apontamento por processo · MRP multinível</p></div><div className="ml-auto flex flex-wrap gap-1.5 print:hidden"><button className={primary} type="button" onClick={()=>{window.location.href='/pcp?tab=novaop'}}><Factory size={12}/> Nova OP</button><button className={btn} onClick={()=>void load()} disabled={busy}><RefreshCw size={12}/> Atualizar</button><button className={btn} onClick={()=>window.print()}><Printer size={12}/> Imprimir</button></div></header>
+  <header className="mb-3 flex flex-wrap items-center gap-3 border-b border-slate-200 pb-3 print:mb-2"><div className="flex h-9 w-9 items-center justify-center bg-[#123B50] text-white"><Factory size={18}/></div><div><p className="text-[9px] font-bold uppercase tracking-[.16em] text-sky-700">SGQ ERP INDUSTRIAL / PCP</p><h1 className="text-base font-semibold">Execução e controle da produção</h1><p className="text-[10px] text-slate-500">Carteira de OPs reais · apontamento por processo · MRP multinível</p></div><div className="ml-auto flex flex-wrap gap-1.5 print:hidden"><button className={primary} type="button" onClick={()=>{window.location.href='/pcp?tab=novaop'}}><Factory size={12}/> Nova OP</button><button className={btn} onClick={()=>void load()} disabled={busy}><RefreshCw size={12}/> Atualizar</button><button className={btn} onClick={()=>{void emitirRelatorioExecucao()}}><Printer size={12}/> Imprimir</button></div></header>
   <section className="mb-3 grid grid-cols-3 gap-2">{[['OPs abertas',totals.open],['Peças boas',totals.good],['Peças refugadas',totals.scrap]].map(([name,value])=><div key={String(name)} className="border border-slate-200 bg-white p-2"><p className={label}>{name}</p><strong className="text-base tabular-nums">{Number(value).toLocaleString('pt-BR')}</strong></div>)}</section>
   {error&&<div role="alert" className="mb-2 flex gap-2 border border-rose-300 bg-rose-50 p-2 text-[10px] text-rose-800"><AlertTriangle size={13}/>{error}</div>}{notice&&<div role="status" className="mb-2 border border-emerald-300 bg-emerald-50 p-2 text-[10px] text-emerald-800">{notice}</div>}
   <nav className="mb-3 flex gap-1 border-b border-slate-200 print:hidden">{([{id:'ordens',label:'Ordens de produção',icon:ClipboardList},{id:'apontamentos',label:'Apontamentos',icon:Activity},{id:'mrp',label:'MRP / materiais',icon:Boxes}] as const).map(t=><button key={t.id} className={tab===t.id?'h-8 border-b-2 border-sky-700 bg-white px-3 text-[10px] font-bold text-sky-800':'h-8 px-3 text-[10px] text-slate-600'} onClick={()=>setTab(t.id)}><t.icon className="mr-1 inline" size={12}/>{t.label}</button>)}</nav>

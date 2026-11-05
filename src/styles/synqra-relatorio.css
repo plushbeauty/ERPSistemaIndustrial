@@ -410,6 +410,13 @@
     display: block !important;
   }
 
+  /* src/styles/index.css:222 esconde todo o corpo na impressão (body * { visibility: hidden }).
+     O id abaixo tem precedência maior, senão a folha A4 sairia em branco. */
+  #synqra-report-root,
+  #synqra-report-root * {
+    visibility: visible !important;
+  }
+
   .sr-overlay {
     position: static !important;
     inset: auto !important;

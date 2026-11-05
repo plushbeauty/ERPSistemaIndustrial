@@ -2,7 +2,7 @@
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-04
  * @REVISAO: REV-PORTAL-OPERADOR-NOME-REAL-20261104-01 — cabecalo passou a ler nome_completo do RH (antes mostrava "Identificando conta…" para sempre quando o cadastro só tinha nome completo) e a fileira de dias virou trilho de rolagem no celular
- * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-04: "se a conta ja foi identificada, substitua o texto pelo nome real do operador em destaque" + pente fino responsivo
+ * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-04: "se a conta ja foi identificada, substitua o texto pelo nome real do operador em destaque" + conferência responsiva tela a tela
  * @REVISAO_ANTERIOR: REV-MES-APONTAMENTO-SERVIDOR-20261103-01 — apontamento gravado pelo servidor
  * @STATUS_ANTERIOR: DETERMINADO PELO PROPRIETARIO ("O prazo deve ser calculado pelo servidor, e não pelo
  *   relógio do navegador" + "Tela Chão de Fábrica · Apontamento gravando de verdade", 2026-11-03)

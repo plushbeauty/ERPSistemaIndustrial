@@ -1,8 +1,8 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-RELATORIO-A4-20261105-01 — o botão Imprimir A4 deixa de capturar a tela e passa a emitir o diário de paradas de máquina em A4 pelo motor de relatório, com as ocorrências lidas de erp_producao_paradas
+ * @STATUS_APROVACAO: ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — "Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório."
  */
 /**
  * SYSNQRA — PCP / APONTAMENTO DE PARADAS DE MÁQUINA
@@ -14,6 +14,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, Clock3, Factory, FileSpreadsheet, History, PauseCircle, PlayCircle, Printer, RefreshCw, Search, Square, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import { abrirRelatorio } from '../lib/report/abrirRelatorio'
+import type { Bloco } from '../lib/report/documento'
 
 type Machine = { id: string; codigo: string; nome: string; status?: string | null }
 type Order = { id: string; numero_op?: string | number | null; status?: string | null }
@@ -32,6 +34,8 @@ const buttonClass = 'inline-flex h-[30px] items-center justify-center gap-1.5 ro
 function formatMinutes(value: number) { const n = Math.max(0, value); const h = Math.floor(n / 60); const m = n % 60; return h ? `${h}h ${String(m).padStart(2, '0')}min` : `${m} min` }
 function minutesBetween(start: string, end?: string | null, now = Date.now()) { const a = new Date(start).getTime(); const b = end ? new Date(end).getTime() : now; return !Number.isFinite(a) || !Number.isFinite(b) || b < a ? 0 : Math.round((b - a) / 60000) }
 function formatDate(value?: string | null) { if (!value) return '—'; const d = new Date(value); return Number.isNaN(d.getTime()) ? '—' : d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) }
+function dataChaveRelatorio(value?: string | null) { const d = value ? new Date(value) : null; return d && Number.isFinite(d.getTime()) ? `${String(d.getFullYear())}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` : '' }
+function dataRelatorio(value?: string | null) { if (!value) return '—'; const d = new Date(value); return Number.isFinite(d.getTime()) ? d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : value }
 
 export default function PCPParadasMaquina() {
   const [companyId, setCompanyId] = useState('')
@@ -118,6 +122,124 @@ export default function PCPParadasMaquina() {
     setMachineId(''); setOrderId(''); setReason(''); setObservation(''); setError(''); setMessage('Formulário pronto para novo apontamento.')
   }
 
+  /**
+   * Diário de paradas em A4. Sai apenas do histórico que a tela já carregou de
+   * erp_producao_paradas, respeitando os filtros visíveis na grade.
+   */
+  async function emitirDiarioParadas() {
+    setError(''); setMessage('')
+    try {
+      if (!companyId) throw new Error('Empresa da sessão não identificada. Use Atualizar antes de imprimir.')
+      const maquinaFiltro = machineFilter ? machineMap.get(machineFilter) : null
+      const ordenadas = [...filteredStops]
+      const maisAntiga = ordenadas.length ? dataChaveRelatorio(ordenadas[ordenadas.length - 1].inicio) : ''
+      const maisRecente = ordenadas.length ? dataChaveRelatorio(ordenadas[0].inicio) : ''
+      const tempoFiltrado = filteredStops.reduce((sum, s) => sum + minutesBetween(s.inicio, s.fim, now), 0)
+      const porMaquina = new Map<string, { paradas: number; minutos: number; abertas: number; motivos: Map<string, number> }>()
+      for (const s of filteredStops) {
+        const atual = porMaquina.get(s.maquina_id) ?? { paradas: 0, minutos: 0, abertas: 0, motivos: new Map<string, number>() }
+        atual.paradas += 1
+        atual.minutos += minutesBetween(s.inicio, s.fim, now)
+        if (s.status === 'ABERTA' && !s.fim) atual.abertas += 1
+        atual.motivos.set(s.motivo, (atual.motivos.get(s.motivo) ?? 0) + 1)
+        porMaquina.set(s.maquina_id, atual)
+      }
+      const blocos: Bloco[] = [
+        {
+          tipo: 'campos',
+          titulo: 'Identificação do diário de paradas',
+          colunas: 2,
+          itens: [
+            { rotulo: 'Máquina em filtro', valor: maquinaFiltro ? `${maquinaFiltro.codigo} — ${maquinaFiltro.nome}` : 'Todas as máquinas ativas' },
+            { rotulo: 'Situação em filtro', valor: statusFilter === 'TODAS' ? 'Abertas e encerradas' : statusFilter === 'ABERTA' ? 'Somente abertas' : 'Somente encerradas' },
+            { rotulo: 'Pesquisa aplicada', valor: search.trim() || 'Sem texto de pesquisa' },
+            { rotulo: 'Período do histórico impresso', valor: maisAntiga && maisRecente ? (maisAntiga === maisRecente ? maisAntiga : `${dataRelatorio(ordenadas[ordenadas.length - 1].inicio)} a ${dataRelatorio(ordenadas[0].inicio)}`) : 'Sem registros nos filtros atuais' },
+            { rotulo: 'Registros no relatório', valor: filteredStops.length },
+            { rotulo: 'Registros carregados no histórico', valor: stops.length },
+            { rotulo: 'Paradas em aberto na empresa', valor: openStops.length },
+            { rotulo: 'Cronômetro ativo', valor: activeStop ? `${formatMinutes(activeMinutes)} — início ${formatDate(activeStop.inicio)}` : 'Nenhuma parada em andamento' },
+            { rotulo: 'Ocorrências não programadas', valor: exceptionCount }
+          ]
+        },
+        {
+          tipo: 'campos',
+          titulo: 'Tempo improdutivo consolidado',
+          colunas: 3,
+          itens: [
+            { rotulo: 'Tempo total nos filtros', valor: formatMinutes(tempoFiltrado) },
+            { rotulo: 'Tempo total do histórico', valor: formatMinutes(totalMinutes) },
+            { rotulo: 'Máquinas atingidas', valor: porMaquina.size },
+            { rotulo: 'Paradas abertas no relatório', valor: filteredStops.filter(s => s.status === 'ABERTA' && !s.fim).length },
+            { rotulo: 'Paradas encerradas no relatório', valor: filteredStops.filter(s => Boolean(s.fim)).length },
+            { rotulo: 'Duração média por parada', valor: filteredStops.length ? formatMinutes(Math.round(tempoFiltrado / filteredStops.length)) : '—' }
+          ]
+        },
+        {
+          tipo: 'tabela',
+          titulo: 'Ocorrências registradas na produção',
+          colunas: [
+            { titulo: 'Máquina', larguraMm: 20 },
+            { titulo: 'Motivo', larguraMm: 26 },
+            { titulo: 'OP', larguraMm: 14 },
+            { titulo: 'Início', larguraMm: 22 },
+            { titulo: 'Fim', larguraMm: 22 },
+            { titulo: 'Duração', larguraMm: 16, alinhar: 'direita' },
+            { titulo: 'Situação', larguraMm: 14 },
+            { titulo: 'Observação' }
+          ],
+          linhas: filteredStops.map(s => {
+            const m = machineMap.get(s.maquina_id)
+            const o = s.ordem_producao_id ? orderMap.get(s.ordem_producao_id) : null
+            return [
+              m?.codigo ?? '—',
+              s.motivo,
+              s.ordem_producao_id ? `OP ${o?.numero_op ?? 'vinculada'}` : 'Sem OP',
+              formatDate(s.inicio),
+              formatDate(s.fim),
+              formatMinutes(minutesBetween(s.inicio, s.fim, now)),
+              s.status === 'ABERTA' && !s.fim ? 'ABERTA' : s.status,
+              s.observacao
+            ]
+          }),
+          nota: 'Início e término são os horários persistidos no banco; paradas em aberto usam a hora atual do equipamento como referência de duração.'
+        },
+        {
+          tipo: 'tabela',
+          titulo: 'Resumo por máquina no período',
+          colunas: [
+            { titulo: 'Máquina', larguraMm: 44 },
+            { titulo: 'Paradas', larguraMm: 18, alinhar: 'direita' },
+            { titulo: 'Tempo improdutivo', larguraMm: 26, alinhar: 'direita' },
+            { titulo: 'Em aberto', larguraMm: 18, alinhar: 'direita' },
+            { titulo: 'Motivo mais registrado' }
+          ],
+          linhas: Array.from(porMaquina.entries()).map(([id, resumo]) => {
+            const m = machineMap.get(id)
+            const motivo = [...resumo.motivos.entries()].sort((a, b) => b[1] - a[1])[0]
+            return [m ? `${m.codigo} — ${m.nome}` : 'Máquina não localizada', resumo.paradas, formatMinutes(resumo.minutos), resumo.abertas, motivo ? `${motivo[0]} (${motivo[1]}x)` : '—']
+          })
+        }
+      ]
+      blocos.push({
+        tipo: 'assinaturas',
+        titulo: 'Aprovações',
+        assinantes: [
+          { papel: 'Planejamento e controle da produção' },
+          { papel: 'Supervisor / líder de produção' },
+          { papel: 'Inspetor de qualidade / SGQ' }
+        ]
+      })
+      await abrirRelatorio({
+        modulo: 'PCP',
+        tipo: 'Registro de Parada',
+        titulo: `Diário de paradas de máquina${maquinaFiltro ? ` — ${maquinaFiltro.codigo}` : ''}`,
+        codigo: maquinaFiltro ? `PARADAS-${maquinaFiltro.codigo}` : maisAntiga && maisRecente ? `PARADAS-${maisAntiga}A${maisRecente}` : `PARADAS-${companyId}`,
+        subtitulo: `${filteredStops.length} ocorrência(s) · ${formatMinutes(tempoFiltrado)} de tempo improdutivo`,
+        blocos
+      })
+    } catch (e) { setError(e instanceof Error ? e.message : 'Falha ao emitir o diário de paradas.') }
+  }
+
   return <main className="pcp-paradas-page min-h-full bg-[#F4FBFD] px-3 py-3 text-[#123B50] md:px-4">
     <style>{`
       .pcp-paradas-page .paradas-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px 12px;align-items:start}
@@ -137,7 +259,7 @@ export default function PCPParadasMaquina() {
     <div className="paradas-screen mx-auto max-w-[1500px]">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[#D5E1E8] pb-3">
         <div className="flex min-w-0 items-center gap-3"><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[2px] bg-[#123B50] text-white"><Factory size={18}/></div><div className="min-w-0"><p className="text-[9px] font-black uppercase tracking-[.12em] text-[#2D8DB8]">SYSNQRA • PCP / SGQ • IT-PCP-PARADAS-002</p><h1 className="text-[16px] font-extrabold leading-5">Apontamento de Paradas de Máquina</h1><p className="mt-1 text-[10px] text-[#5D7482]">Registro operacional de tempo improdutivo, setup e ocorrências críticas.</p></div></div>
-        <div className="flex flex-wrap gap-2"><button type="button" onClick={() => void loadData()} disabled={loading || saving} className={buttonClass+' border-[#C8D6E0] bg-white text-[#123B50] hover:bg-[#F0F8FB]'}><RefreshCw size={13} className={loading?'animate-spin':''}/>Atualizar</button><button type="button" onClick={() => window.print()} className={buttonClass+' border-[#C8D6E0] bg-white text-[#123B50] hover:bg-[#F0F8FB]'}><Printer size={13}/>Imprimir A4</button><button type="button" onClick={resetForm} disabled={saving || Boolean(activeStop)} className={buttonClass+' border-[#2D8DB8] bg-[#2D8DB8] text-white hover:bg-[#236F91]'}><PlayCircle size={13}/>Nova parada</button></div>
+        <div className="flex flex-wrap gap-2"><button type="button" onClick={() => void loadData()} disabled={loading || saving} className={buttonClass+' border-[#C8D6E0] bg-white text-[#123B50] hover:bg-[#F0F8FB]'}><RefreshCw size={13} className={loading?'animate-spin':''}/>Atualizar</button><button type="button" onClick={() => { void emitirDiarioParadas() }} className={buttonClass+' border-[#C8D6E0] bg-white text-[#123B50] hover:bg-[#F0F8FB]'}><Printer size={13}/>Imprimir A4</button><button type="button" onClick={resetForm} disabled={saving || Boolean(activeStop)} className={buttonClass+' border-[#2D8DB8] bg-[#2D8DB8] text-white hover:bg-[#236F91]'}><PlayCircle size={13}/>Nova parada</button></div>
       </header>
       {(error || message) && <div role={error?'alert':'status'} className={'mt-3 flex items-start justify-between gap-2 rounded-[2px] border px-3 py-2 text-[11px] font-semibold '+(error?'border-[#D65B61] bg-[#FFF1F1] text-[#9E3038]':'border-[#3A9D78] bg-[#F0FBF5] text-[#246B50]')}><span>{error||message}</span><button type="button" aria-label="Fechar mensagem" onClick={() => {setError('');setMessage('')}}><X size={14}/></button></div>}
       <section className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">

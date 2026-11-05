@@ -13,11 +13,11 @@
     },
     {
       "path": "src/PublicIndustrialHome.tsx",
-      "sha": "a90346e68cf2ffc3379863fdb56d2db732a2b474",
+      "sha": "a3391988874db8446c106d84ef271fb4e757e12c",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-VITRINE-PUBLICA-20261104-03 — botao de teste de 15 dias so no topo e rotacao do carrossel livre do mouse",
-      "aprovadaEm": "2026-11-04",
-      "statusAprovacao": "REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01; ajustes de 2026-11-04 ordenados pelo proprietário"
+      "revisao": "REV-CARROSSEL-ARTES-20261105-01 — o carrossel do topo passa a ser as 5 artes enviadas pelo proprietario",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-05 — \"mandei trocar as imagens do fundo com aquelas"
     },
     {
       "path": "src/components/layout/ModuleTabletMenuModal.tsx",
@@ -37,7 +37,7 @@
     },
     {
       "path": "src/components/quality/qualityTabletModules.ts",
-      "sha": "3d022298c7c578e1d0b4866dea139c121e479da4",
+      "sha": "359db7ec82fbaeec15960ae87a81e3e4f9691344",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-TABLET-CATALOGO-CARIMBO-20261103-01 — cabecalho de autoria/aprovacao adicionado; o catalogo de rotinas do SGQ segue identico",
       "aprovadaEm": "2026-11-03",
@@ -917,19 +917,19 @@
     },
     {
       "path": "src/pages/PCPAgendaMaquinas.tsx",
-      "sha": "1e32e1e57b93f412bc77b2ceca3d7989743074de",
+      "sha": "77ba800775650ca9ac583fa37d2696fb3f6b598c",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PCP-AGENDA-STATUS-OP-20261104-01 — agenda exclui OP finalizadas em qualquer grafia (o filtro minúsculo deixava concluídas maiúsculas na tela)",
-      "aprovadaEm": "2026-11-04",
-      "statusAprovacao": "AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO (sem chave real no PC, a conferência visual autenticada não foi feita)"
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o relatório A4 da agenda semanal de máquinas montado pelo motor de relatório com dados do banco",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
     },
     {
       "path": "src/pages/PCPAreaFuncionario.tsx",
-      "sha": "03f4ba17b15e9628379332e86599c93480d7312e",
+      "sha": "f40fb07ffe9f15e3a0e28403732cb0ffcc8243f5",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-PORTAL-OPERADOR-NOME-REAL-20261104-01 — cabecalo passou a ler nome_completo do RH (antes mostrava \"Identificando conta…\" para sempre quando o cadastro só tinha nome completo) e a fileira de dias virou trilho de rolagem no celular",
       "aprovadaEm": "2026-11-04",
-      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-04: \"se a conta ja foi identificada, substitua o texto pelo nome real do operador em destaque\" + pente fino responsivo"
+      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-04: \"se a conta ja foi identificada, substitua o texto pelo nome real do operador em destaque\" + conferência responsiva tela a tela"
     },
     {
       "path": "src/pages/PCPCapacidade.tsx",
@@ -949,19 +949,19 @@
     },
     {
       "path": "src/pages/PCPExecucaoIndustrial.tsx",
-      "sha": "50a8df516b53855496acbad1efd84bca27149f05",
+      "sha": "a43e85137949a7f84b99cac3bae200025df728c6",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-COLUNAS-BANCO-20261104-01 — ordem do proprietário \"telas travadas vc destrava\": os apontamentos liam e ordenavam por 'created_at', coluna que não existe em erp_apontamentos_processo (o nome real é 'criado_em'); a query do Promise.all falhava e a aba de apontamentos não carregava.",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o relatório A4 de execução da produção (carteira de OPs e apontamentos) montado pelo motor de relatório com dados do banco",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
     },
     {
       "path": "src/pages/PCPFichasProcesso.tsx",
-      "sha": "a2442c0157c17f4c3c1b011fbb08d304883154c9",
+      "sha": "93f7821fa20b22f105518c5612a6f5c1c54c4103",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir ficha deixa de capturar a tela e passa a emitir a ficha de processo em A4 pelo motor de relatório, com os parâmetros técnicos e o vínculo do registro lido do banco",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
     },
     {
       "path": "src/pages/PCPIndustrial.tsx",
@@ -981,19 +981,19 @@
     },
     {
       "path": "src/pages/PCPParadasMaquina.tsx",
-      "sha": "d99f01e420bc9bddbd7ad1f5a6835644d3a60d06",
+      "sha": "1273f0f5eb0942b1d63000c2913f0b7249bc92e2",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir A4 deixa de capturar a tela e passa a emitir o diário de paradas de máquina em A4 pelo motor de relatório, com as ocorrências lidas de erp_producao_paradas",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
     },
     {
       "path": "src/pages/PCPPedidosPendentes.tsx",
-      "sha": "3011ef7e3c5184d09cf309782c0d8c9fb116386c",
+      "sha": "d77611ed03045aee4c7474b2c9f222c04bab5195",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir Ficha (A4) deixa de capturar a tela e passa a emitir a carteira de pedidos pendentes em A4 pelo motor de relatório, com itens, OPs, saldo e NF-e lidos do banco",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
     },
     {
       "path": "src/pages/PCPPlanejamentoIndustrial.tsx",
@@ -1085,11 +1085,11 @@
     },
     {
       "path": "src/pages/QualidadeAuditoria5S.tsx",
-      "sha": "29ae7bbc22e9bfa4dba69a98360e181dafc1c1ae",
+      "sha": "cb12e7520f15f0a9604d6fcfc47644d79cdc9597",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o relatório A4 das auditorias 5S com notas, médias e observações gravadas no banco",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
     },
     {
       "path": "src/pages/QualidadeAuditoriasPlanta.tsx",
@@ -1181,11 +1181,11 @@
     },
     {
       "path": "src/pages/QualidadeMetodologia8D.tsx",
-      "sha": "9825cf8912f25562e7b5124516498033a3bf580b",
+      "sha": "bdcd837263e327268ad70dde555a5e6e6950410d",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o protocolo 8D em A4 com as etapas D1–D8, o status e a RNC de origem carregados do banco",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
     },
     {
       "path": "src/pages/QualidadePFMEA.tsx",
@@ -1661,11 +1661,11 @@
     },
     {
       "path": "src/pages/pcp/ControleProcessoInjetora.tsx",
-      "sha": "af5bdde6778def1abe1d560b6c82db205a1c3c6a",
+      "sha": "f54e7a8cda6ce5b2b505947c981baaca001aa48b",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-COLUNAS-BANCO-20261104-01 — ordem do proprietário \"telas travadas vc destrava\": o seletor de OPs ordenava por 'criado_em', coluna que não existe em erp_ordens_producao; o Promise.all lançava e a tela não carregava. Leitura corrigida para 'created_at'.",
-      "aprovadaEm": "2026-11-04",
-      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir A4 deixa de capturar a tela e passa a emitir o CCPP da injetora em A4 pelo motor de relatório, com perfil térmico, amostragem e diário de bordo lidos do banco",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
     },
     {
       "path": "src/pages/pcp/PCPAuditoria.tsx",
@@ -1677,11 +1677,11 @@
     },
     {
       "path": "src/pages/qualidade/CEP.tsx",
-      "sha": "2b66ac86be093b3b7c2666d3ba3a105513500f06",
+      "sha": "7a878e696f4bfefee8ba29f2cc377c5fd5663c1e",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o laudo A4 de CEP com as medições reais gravadas no banco",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
     },
     {
       "path": "src/pages/qualidade/FMEA.tsx",
@@ -1701,11 +1701,11 @@
     },
     {
       "path": "src/pages/qualidade/GEDDocumentos.tsx",
-      "sha": "3a99478d5b6747a39f85fb024f06a942703265ac",
+      "sha": "67134abc333c38ac17884273553014789598cd7b",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-GED-ARVORE-LARGA-20261104-01 — ordem do proprietário: \"a barra lateral dos documentos está uma bagunça, muito apertado para caber os nomes dos procedimentos\". Coluna da árvore ampliada (250-280px → 340-380px) e título do procedimento com três linhas legíveis em vez de duas linhas cortadas.",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o documento controlado A4 com a revisão, o conteúdo e a trilha de versões gravados no banco",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
     },
     {
       "path": "src/pages/qualidade/QualidadeAssinaturaIT.tsx",
@@ -1717,11 +1717,11 @@
     },
     {
       "path": "src/pages/qualidade/QualidadeEditorIT.tsx",
-      "sha": "c5c5bed0131c347f5a791cf421be839091a1d794",
+      "sha": "543aebb6e527eadbfbfcb5229eda7d63dc042173",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-EDITOR-IT-COPIA-LOCAL-20261103-01 — grava a revisão no banco e a cópia local na pasta do PC/rede",
-      "aprovadaEm": "2026-11-03",
-      "statusAprovacao": "ORDEM DO PROPRIETÁRIO EM 2026-11-03 (o setor precisa alterar o próprio procedimento e"
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir a instrução de trabalho em A4 com código, revisão, homologação e conteúdo carregados do banco",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
     },
     {
       "path": "src/pages/qualidade/QualidadeGenealogiaLote.tsx",
@@ -1733,11 +1733,11 @@
     },
     {
       "path": "src/pages/qualidade/QualidadeLiberacaoLotes.tsx",
-      "sha": "0d36e7558e08af7fad91582a08c8e241097e3675",
+      "sha": "cc904b7b17438cb6479313f9cf91ba1594be1c41",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
-      "aprovadaEm": "2026-11-04",
-      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o parecer SGQ do lote (ou o registro de pareceres) em A4 com dados reais do banco",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
     },
     {
       "path": "src/pages/qualidade/QualidadeProcedimentos.tsx",
@@ -1757,11 +1757,11 @@
     },
     {
       "path": "src/pages/qualidade/sala-rnc.tsx",
-      "sha": "e4fa1c751cb1d2d1145b3b4b6b6c764401b82b2a",
+      "sha": "011afe071db65c0d5182cf367d848e8ca090bcb1",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir A4 deixa de capturar a tela e passa a emitir o relatório da RPNC selecionada e do registro de não conformidades em A4 com dados do banco",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
     },
     {
       "path": "src/styles/industrial-login.css",
@@ -1781,7 +1781,7 @@
     },
     {
       "path": "src/styles/public-home-premium-20261101.css",
-      "sha": "b44ab4a728b593b6bbcd64ac00728d7ed01b41a8",
+      "sha": "7379e6d9ffab4afbb384eaebc3512224d524d2ba",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-VITRINE-PUBLICA-20261101-01 — home pública em fundo branco com vitrine de telas",
       "aprovadaEm": "2026-11-04",

@@ -1,14 +1,17 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-RELATORIO-A4-20261105-01 — o botão Imprimir A4 deixa de capturar a tela e passa a emitir o relatório da RPNC selecionada e do registro de não conformidades em A4 com dados do banco
+ * @STATUS_APROVACAO: ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — "Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório."
+ * Revisão anterior (2026-10-30): card de abertura padrão (PageIntroCard) e identificação de autoria.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, Check, CircleHelp, ClipboardList, Plus, Printer, RefreshCw, Save, ShieldCheck, Trash2 } from 'lucide-react'
 import ERPHorizontalShell from '../../components/layout/ERPHorizontalShell'
 import { supabase } from '../../lib/supabaseClient'
 import { fetchAllPages } from '../../lib/supabasePagination'
+import { abrirRelatorio } from '../../lib/report/abrirRelatorio'
+import type { Bloco } from '../../lib/report/documento'
 
 type Lot = { id: string; lote_interno: string; lote_fornecedor: string | null; produto_id: string; quantidade_disponivel: number; status_inspecao: string }
 type Rnc = { id: string; numero_rpnc: string; descricao_nao_conformidade: string; origem: string | null; status: string; lote_producao: string | null; criado_em: string }
@@ -40,6 +43,13 @@ const labelClass = 'mb-1 flex min-h-[12px] items-center gap-1 text-[9px] font-bo
 const buttonClass = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-bold text-white hover:bg-[#236f91] disabled:cursor-not-allowed disabled:opacity-50'
 const secondaryButton = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] border border-slate-300 bg-white px-3 text-[10px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50'
 const emptyAction = (): ActionRow => ({ id: crypto.randomUUID(), oQue: '', quem: '', quando: '', como: '', porQue: '', onde: '', quanto: '' })
+
+function dataHoraRelatorio(valor: string | null | undefined): string {
+  if (!valor) return '—'
+  const data = new Date(valor)
+  if (!Number.isFinite(data.getTime())) return valor
+  return data.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
 const Help = ({ text }: { text: string }) => <span className="group relative inline-flex shrink-0 items-center" title={text} aria-label={text}><CircleHelp size={10} className="cursor-help text-[#2D8DB8]" /><span role="tooltip" className="pointer-events-none absolute bottom-full left-0 z-50 mb-1 hidden w-64 rounded-[2px] border border-sky-200 bg-[#123B50] p-2 text-[10px] font-normal normal-case leading-4 text-white shadow-lg group-hover:block group-focus-within:block">{text}</span></span>
 function FieldLabel({ children, help }: { children: string; help: string }) { return <label className={labelClass}>{children}<Help text={help}/></label> }
 
@@ -199,6 +209,72 @@ export default function SalaRNC() {
     }
   }
 
+  /**
+   * Relatório A4 da RPNC selecionada na lista. Usa apenas o registro carregado do banco e o
+   * quadro de RPNCs visível na tela; sem registro selecionado nada é emitido.
+   */
+  const emitirRelatorioRNC = async () => {
+    setError('')
+    try {
+      if (!selectedRecord) throw new Error('Selecione uma RPNC registrada na lista da sala para emitir o relatório A4.')
+      const blocos: Bloco[] = [
+        {
+          tipo: 'campos',
+          titulo: 'Identificação da não conformidade',
+          colunas: 2,
+          itens: [
+            { rotulo: 'Nº da RPNC', valor: selectedRecord.numero_rpnc },
+            { rotulo: 'Status', valor: selectedRecord.status },
+            { rotulo: 'Origem do desvio', valor: selectedRecord.origem },
+            { rotulo: 'Lote de produção', valor: selectedRecord.lote_producao },
+            { rotulo: 'Registrada em', valor: dataHoraRelatorio(selectedRecord.criado_em) },
+            { rotulo: 'Registros na sala', valor: records.length }
+          ]
+        },
+        { tipo: 'texto', titulo: 'Descrição da não conformidade', texto: selectedRecord.descricao_nao_conformidade },
+        {
+          tipo: 'tabela',
+          titulo: 'Registro de RPNCs da empresa',
+          colunas: [
+            { titulo: 'Nº RPNC', larguraMm: 24 },
+            { titulo: 'Origem', larguraMm: 20 },
+            { titulo: 'Lote', larguraMm: 20 },
+            { titulo: 'Status', larguraMm: 18 },
+            { titulo: 'Criada em', larguraMm: 28 },
+            { titulo: 'Descrição' }
+          ],
+          linhas: records.map(record => [
+            record.numero_rpnc,
+            record.origem,
+            record.lote_producao,
+            record.status,
+            dataHoraRelatorio(record.criado_em),
+            record.descricao_nao_conformidade
+          ])
+        },
+        {
+          tipo: 'assinaturas',
+          titulo: 'Aprovações',
+          assinantes: [
+            { papel: 'Inspetor / emissor' },
+            { papel: 'Gestão da Qualidade (SGQ)' }
+          ]
+        }
+      ]
+      await abrirRelatorio({
+        modulo: 'Qualidade',
+        tipo: 'RNC — Não Conformidade',
+        titulo: `Registro de não conformidade ${selectedRecord.numero_rpnc}`,
+        codigo: selectedRecord.numero_rpnc,
+        subtitulo: selectedRecord.lote_producao ? `Lote ${selectedRecord.lote_producao}` : undefined,
+        blocos,
+        observacoes: 'Triagem, disposição física, análise dos 5 Porquês e plano 5W2H conduzidos na Sala de RNC. Dados por empresa com RLS ativo.'
+      })
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao emitir o relatório A4 da RPNC.')
+    }
+  }
+
   return (
     <ERPHorizontalShell>
       <main className="rnc-print-document min-h-[calc(100vh-48px)] bg-[#F4FBFD] pb-12 text-slate-800 print:min-h-0 print:bg-white print:p-0">
@@ -215,7 +291,7 @@ export default function SalaRNC() {
             <p className="text-[10px] text-slate-500">Triagem, disposição física, análise dos 5 Porquês e ações mitigatórias 5W2H.</p>
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <button type="button" className={secondaryButton} onClick={() => window.print()} disabled={loading} title="Imprimir formulário em A4"><Printer size={12}/> Imprimir A4</button><button type="button" className={secondaryButton} onClick={() => void load()} disabled={loading || busy}><RefreshCw size={12}/> Atualizar</button>
+            <button type="button" className={secondaryButton} onClick={() => void emitirRelatorioRNC()} disabled={loading} title="Imprimir formulário em A4"><Printer size={12}/> Imprimir A4</button><button type="button" className={secondaryButton} onClick={() => void load()} disabled={loading || busy}><RefreshCw size={12}/> Atualizar</button>
             <button type="button" className={buttonClass} onClick={() => void createRnc()} disabled={busy || loading}><Save size={12}/> {busy ? 'Salvando…' : 'Registrar RPNC'}</button>
           </div>
         </header>

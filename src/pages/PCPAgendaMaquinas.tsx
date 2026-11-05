@@ -1,8 +1,8 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-11-04
- * @REVISAO: REV-PCP-AGENDA-STATUS-OP-20261104-01 — agenda exclui OP finalizadas em qualquer grafia (o filtro minúsculo deixava concluídas maiúsculas na tela)
- * @STATUS_APROVACAO: AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO (sem chave real no PC, a conferência visual autenticada não foi feita)
+ * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o relatório A4 da agenda semanal de máquinas montado pelo motor de relatório com dados do banco
+ * @STATUS_APROVACAO: ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — "Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório."
  */
 /**
  * REVISÃO: 2026-10-23 · REV-PCP-AGENDA-007
@@ -14,6 +14,8 @@ import { CalendarRange, Factory, RefreshCw, Plus, Play, ArrowUpDown, X, Printer,
 import { supabase } from '../lib/supabaseClient'
 import { LISTA_STATUS_OP_FECHADAS } from '../lib/statusOrdemProducao'
 import { fetchAllPages } from '../lib/supabasePagination'
+import { abrirRelatorio } from '../lib/report/abrirRelatorio'
+import type { Bloco } from '../lib/report/documento'
 
 type Machine = { id:string; codigo:string; nome:string; status:string|null; ativo:boolean }
 type Mold = { id:string; codigo:string; nome:string; status:string; ativo:boolean }
@@ -32,6 +34,10 @@ const localValue=(d:Date)=>{const x=new Date(d.getTime()-d.getTimezoneOffset()*6
 const monday=(d:Date)=>{const x=new Date(d);x.setHours(0,0,0,0);x.setDate(x.getDate()-((x.getDay()+6)%7));return x}
 const dayKey=(d:Date)=>weekdays[(d.getDay()+6)%7].key
 const messageOf=(e:unknown)=>e instanceof Error?e.message:'Falha ao carregar a agenda de máquinas.'
+const dataHoraRelatorio=(value:string|null|undefined)=>{if(!value)return '—';const d=new Date(value);return Number.isFinite(d.getTime())?d.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):value}
+const dataRelatorio=(value:string|null|undefined)=>{if(!value)return '—';const d=new Date(value);return Number.isFinite(d.getTime())?d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}):value}
+const quantidadeRelatorio=(value:number|string|null|undefined)=>{const n=Number(value??0);return Number.isFinite(n)?n.toLocaleString('pt-BR',{maximumFractionDigits:2}):'—'}
+const horasEntre=(inicio:string|null|undefined,fim:string|null|undefined)=>{const a=new Date(String(inicio)).getTime(),b=new Date(String(fim)).getTime();if(!Number.isFinite(a)||!Number.isFinite(b)||b<=a)return 0;return(b-a)/3600000}
 
 export default function PCPAgendaMaquinas(){
  const [company,setCompany]=useState('')
@@ -136,12 +142,101 @@ export default function PCPAgendaMaquinas(){
    await load()
   }catch(e){setError(messageOf(e))}finally{setBusy(false)}
  }
+ /**
+  * Relatório A4 da agenda. Tudo vem do que a tela já carregou (máquinas, moldes, OPs,
+  * programações da semana e calendário de jornada); nada é inventado quando não há dado.
+  */
+ async function emitirAgenda(){
+  setError('')
+  try{
+   if(!company)throw new Error('Empresa da sessão não identificada. Use Atualizar antes de imprimir.')
+   const machineMap=new Map(machines.map(m=>[m.id,m]))
+   const toMinutes=(value:string)=>{const [hour='0',minute='0']=value.split(':');return Number(hour)*60+Number(minute)}
+   const horasJornada=Math.max(0,(toMinutes(calendar.horario_fim_jornada)-toMinutes(calendar.horario_inicio_jornada))/60)
+   const horasDisponiveis=machines.length*visibleDays.length*horasJornada
+   const horasAlocadas=slots.reduce((sum,s)=>sum+horasEntre(s.data_hora_inicio,s.data_hora_fim),0)
+   const pecasProgramadas=slots.reduce((sum,s)=>sum+(Number.isFinite(Number(s.quantidade_programada))?Number(s.quantidade_programada):0),0)
+   const opsProgramadas=new Set(slots.map(s=>s.ordem_producao_id)).size
+   const maquinasOcupadas=new Set(slots.map(s=>s.maquina_id)).size
+   const emExecucao=slots.filter(s=>s.status==='em_execucao').length
+   const diasTrabalho=weekdays.filter(d=>calendar.dias_trabalho.includes(d.key)).map(d=>d.label).join(', ')
+   const ocupacao=horasDisponiveis>0?`${(horasAlocadas/horasDisponiveis*100).toFixed(1)}%`:'—'
+   const blocos:Bloco[]=[
+    {tipo:'campos',titulo:'Identificação da agenda semanal',colunas:2,itens:[
+      {rotulo:'Semana',valor:weekLabel},
+      {rotulo:'Início da semana',valor:dataRelatorio(weekStart.toISOString())},
+      {rotulo:'Término da semana',valor:dataRelatorio(days[6].toISOString())},
+      {rotulo:'Dias de trabalho',valor:diasTrabalho||'Nenhum dia configurado'},
+      {rotulo:'Jornada da empresa',valor:`${calendar.horario_inicio_jornada.slice(0,5)}–${calendar.horario_fim_jornada.slice(0,5)}`},
+      {rotulo:'Máquinas na grade',valor:machines.length},
+      {rotulo:'Moldes cadastrados',valor:molds.length},
+      {rotulo:'OPs abertas no banco',valor:orders.length}
+    ]},
+    {tipo:'campos',titulo:'Capacidade finita da semana',colunas:3,itens:[
+      {rotulo:'Programações',valor:slots.length},
+      {rotulo:'OPs programadas',valor:opsProgramadas},
+      {rotulo:'Máquinas com programação',valor:maquinasOcupadas},
+      {rotulo:'Máquinas ociosas na semana',valor:Math.max(0,machines.length-maquinasOcupadas)},
+      {rotulo:'Programações em execução',valor:emExecucao},
+      {rotulo:'Horas alocadas',valor:quantidadeRelatorio(horasAlocadas)},
+      {rotulo:'Horas disponíveis',valor:quantidadeRelatorio(horasDisponiveis)},
+      {rotulo:'Ocupação da capacidade',valor:ocupacao},
+      {rotulo:'Peças programadas',valor:quantidadeRelatorio(pecasProgramadas)}
+    ]},
+    {tipo:'tabela',titulo:'Programações registradas na semana',colunas:[
+      {titulo:'Máquina',larguraMm:20},
+      {titulo:'Data',larguraMm:17},
+      {titulo:'Início',larguraMm:22},
+      {titulo:'Término',larguraMm:22},
+      {titulo:'OP',larguraMm:17},
+      {titulo:'Molde',larguraMm:14},
+      {titulo:'Quantidade',larguraMm:18,alinhar:'direita'},
+      {titulo:'Situação'}
+    ],linhas:slots.map(s=>[
+      (s.maquina_id&&machineMap.get(s.maquina_id)?.codigo)||'—',
+      dataRelatorio(s.data_hora_inicio),
+      dataHoraRelatorio(s.data_hora_inicio),
+      dataHoraRelatorio(s.data_hora_fim),
+      `OP-${orderMap.get(s.ordem_producao_id)?.numero_op??'—'}`,
+      s.molde_id?moldMap.get(s.molde_id)?.codigo??'Molde indisponível':'—',
+      quantidadeRelatorio(s.quantidade_programada),
+      s.status
+    ])},
+    {tipo:'tabela',titulo:'Carga por máquina no período',colunas:[
+      {titulo:'Máquina',larguraMm:46},
+      {titulo:'Programações',larguraMm:24,alinhar:'direita'},
+      {titulo:'Horas alocadas',larguraMm:26,alinhar:'direita'},
+      {titulo:'Peças programadas',larguraMm:30,alinhar:'direita'},
+      {titulo:'Situação cadastrada'}
+    ],linhas:machines.map(m=>{const list=slots.filter(s=>s.maquina_id===m.id);return [
+      `${m.codigo} — ${m.nome}`,
+      list.length,
+      quantidadeRelatorio(list.reduce((sum,s)=>sum+horasEntre(s.data_hora_inicio,s.data_hora_fim),0)),
+      quantidadeRelatorio(list.reduce((sum,s)=>sum+(Number.isFinite(Number(s.quantidade_programada))?Number(s.quantidade_programada):0),0)),
+      m.status??'Ativa'
+    ]})}
+   ]
+   blocos.push({tipo:'assinaturas',titulo:'Aprovações',assinantes:[
+     {papel:'Planejamento e controle da produção'},
+     {papel:'Liderança de produção'},
+     {papel:'Suprimentos e capacidade'}
+   ]})
+   await abrirRelatorio({
+    modulo:'PCP',
+    tipo:'Agenda de Máquinas',
+    titulo:`Agenda semanal de máquinas · ${weekLabel}`,
+    codigo:`AGENDA-${localValue(weekStart).slice(0,10)}`,
+    subtitulo:`${machines.length} máquina(s) · ${slots.length} programação(ões) · jornada ${calendar.horario_inicio_jornada.slice(0,5)}–${calendar.horario_fim_jornada.slice(0,5)}`,
+    blocos
+   })
+  }catch(e){setError(e instanceof Error?e.message:'Falha ao emitir o relatório da agenda de máquinas.')}
+ }
  return <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900 md:p-4 print:bg-white print:p-0">
   <div className="mx-auto max-w-[1800px]">
    <header className="mb-3 flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2 print:mb-2">
     <span className="flex h-8 w-8 items-center justify-center bg-[#123B50] text-white"><CalendarRange size={17}/></span>
     <div><p className="text-[9px] font-bold uppercase tracking-[.16em] text-[#2D8DB8]">MANUFATURA / PCP</p><h1 className="text-[16px] font-semibold leading-5">Agenda de máquinas · capacidade finita</h1><p className="text-[10px] text-slate-500">{weekLabel} · Jornada {calendar.horario_inicio_jornada.slice(0,5)}–{calendar.horario_fim_jornada.slice(0,5)}</p></div>
-    <div className="ml-auto flex flex-wrap gap-1 print:hidden"><button className={btn} onClick={()=>setWeekStart(d=>{const x=new Date(d);x.setDate(x.getDate()-7);return x})}>← Semana</button><button className={btn} onClick={()=>setWeekStart(monday(new Date()))}>Hoje</button><button className={btn} onClick={()=>setWeekStart(d=>{const x=new Date(d);x.setDate(x.getDate()+7);return x})}>Semana →</button><button className={btn} onClick={()=>setCalendarOpen(v=>!v)}>Jornada</button><button className={btn} onClick={()=>void load()} disabled={busy}><RefreshCw size={12}/> Atualizar</button><button className={btn} onClick={()=>window.print()}><Printer size={12}/> Imprimir</button></div>
+    <div className="ml-auto flex flex-wrap gap-1 print:hidden"><button className={btn} onClick={()=>setWeekStart(d=>{const x=new Date(d);x.setDate(x.getDate()-7);return x})}>← Semana</button><button className={btn} onClick={()=>setWeekStart(monday(new Date()))}>Hoje</button><button className={btn} onClick={()=>setWeekStart(d=>{const x=new Date(d);x.setDate(x.getDate()+7);return x})}>Semana →</button><button className={btn} onClick={()=>setCalendarOpen(v=>!v)}>Jornada</button><button className={btn} onClick={()=>void load()} disabled={busy}><RefreshCw size={12}/> Atualizar</button><button className={btn} onClick={()=>{void emitirAgenda()}}><Printer size={12}/> Imprimir</button></div>
    </header>
    {calendarOpen&&<form onSubmit={saveCalendar} className="mb-2 border border-slate-200 bg-white p-2 print:hidden"><div className="mb-2 flex flex-wrap items-end gap-3"><div><span className={label}>Dias de trabalho</span><div className="flex flex-wrap gap-2">{weekdays.map(d=><label key={d.key} className="flex items-center gap-1 text-[9px]"><input type="checkbox" checked={calendarDraft.dias_trabalho.includes(d.key)} onChange={e=>setCalendarDraft(v=>({...v,dias_trabalho:e.target.checked?[...v.dias_trabalho,d.key]:v.dias_trabalho.filter(k=>k!==d.key)}))}/>{d.label}</label>)}</div></div><label className={label}>Início da jornada<input className={input} type="time" value={calendarDraft.horario_inicio_jornada.slice(0,5)} onChange={e=>setCalendarDraft(v=>({...v,horario_inicio_jornada:e.target.value}))} required/></label><label className={label}>Fim da jornada<input className={input} type="time" value={calendarDraft.horario_fim_jornada.slice(0,5)} onChange={e=>setCalendarDraft(v=>({...v,horario_fim_jornada:e.target.value}))} required/></label><button type="submit" className={primary} disabled={busy}>Salvar jornada da empresa</button></div><p className="text-[9px] text-slate-500">Dias e horário aplicados ao filtro semanal e validados ao gravar uma programação.</p></form>}
    {error&&<div role="alert" className="mb-2 flex items-start gap-2 border border-rose-300 bg-rose-50 p-2 text-[10px] text-rose-800"><CircleAlert size={13}/>{error}</div>}

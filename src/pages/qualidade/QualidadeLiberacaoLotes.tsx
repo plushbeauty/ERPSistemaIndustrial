@@ -1,14 +1,13 @@
 /**
- * @DATA_REVISAO_APROVACAO: 2026-11-04
- * @REVISAO: REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta
  * @AUTOR: Fernando Schuinsekel
- * @STATUS_APROVACAO: PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04
+ * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o parecer SGQ do lote (ou o registro de pareceres) em A4 com dados reais do banco
+ * @STATUS_APROVACAO: ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — "Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório."
  */
 /**
- * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * Revisões anteriores desta tela (histórico preservado):
+ * 2026-11-04: REV-PADRAO-COR-CLARO — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta.
+ * 2026-10-30: REV-PADRAO-TELAS — card de abertura padrao (PageIntroCard) e identificacao de autoria.
  */
 
 /**
@@ -21,6 +20,8 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { AlertTriangle, CheckCircle2, ClipboardCheck, Plus, Printer, RefreshCw, Search, ShieldAlert, ShieldCheck, X } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
+import { abrirRelatorio } from '../../lib/report/abrirRelatorio'
+import type { Bloco } from '../../lib/report/documento'
 
 type Product = { id: string; codigo: string; nome: string }
 type LotStatus = 'APROVADO' | 'REPROVADO' | 'QUARENTENA'
@@ -47,6 +48,19 @@ type LotForm = {
 const inputClass = 'h-8 w-full min-w-0 rounded-none border border-slate-300 bg-[#EAF6FA] px-2 text-[11px] font-bold text-[#123B50] outline-none focus:border-[#2D8DB8] disabled:cursor-not-allowed disabled:opacity-60'
 const labelClass = 'mb-1 block text-[9px] font-black uppercase tracking-wider text-slate-500'
 const blankForm = (): LotForm => ({ codigo: '', produtoId: '', quantidade: '1', status: 'QUARENTENA', responsavel: '', observacoes: '' })
+
+function dataHoraRelatorio(valor: string | null | undefined): string {
+  if (!valor) return '—'
+  const data = new Date(valor)
+  if (!Number.isFinite(data.getTime())) return valor
+  return data.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
+
+function quantidadeRelatorio(valor: number | string | null | undefined): string {
+  const n = Number(valor ?? 0)
+  if (!Number.isFinite(n)) return '—'
+  return n.toLocaleString('pt-BR', { maximumFractionDigits: 2 })
+}
 
 export default function QualidadeLiberacaoLotes() {
   const [empresaId, setEmpresaId] = useState('')
@@ -162,6 +176,120 @@ export default function QualidadeLiberacaoLotes() {
 
   const countByStatus = (status: LotStatus) => rows.filter(row => row.status_sgq === status).length
 
+  /**
+   * Parecer SGQ em A4. Com um lote selecionado emite o documento individual; sem seleção emite
+   * o registro dos pareceres carregados na tela. Nenhuma consulta nova e nenhum dado inventado.
+   */
+  async function emitirRelatorioParecer() {
+    setError('')
+    try {
+      const linhasRegistro = filteredRows.map(row => {
+        const product = productById.get(row.produto_id)
+        return [
+          row.codigo_lote,
+          product ? `${product.codigo} · ${product.nome}` : row.produto_id,
+          `${quantidadeRelatorio(row.quantidade)} UN`,
+          row.status_sgq,
+          row.responsavel_liberacao,
+          dataHoraRelatorio(row.created_at)
+        ]
+      })
+      const tabelaRegistro: Bloco = {
+        tipo: 'tabela',
+        titulo: 'Pareceres SGQ registrados no banco',
+        colunas: [
+          { titulo: 'Código do lote', larguraMm: 26 },
+          { titulo: 'Produto / SKU', larguraMm: 36 },
+          { titulo: 'Volume', larguraMm: 16, alinhar: 'direita' },
+          { titulo: 'Parecer SGQ', larguraMm: 20, alinhar: 'centro' },
+          { titulo: 'Responsável', larguraMm: 26 },
+          { titulo: 'Registrado em', larguraMm: 28 }
+        ],
+        linhas: linhasRegistro
+      }
+
+      if (selected) {
+        const produto = productById.get(selected.produto_id)
+        const blocos: Bloco[] = [
+          {
+            tipo: 'campos',
+            titulo: 'Identificação do lote e da decisão',
+            colunas: 2,
+            itens: [
+              { rotulo: 'Código do lote', valor: selected.codigo_lote },
+              { rotulo: 'Produto / SKU', valor: produto ? `${produto.codigo} · ${produto.nome}` : selected.produto_id },
+              { rotulo: 'Volume físico', valor: `${quantidadeRelatorio(selected.quantidade)} UN` },
+              { rotulo: 'Parecer SGQ', valor: selected.status_sgq },
+              { rotulo: 'Responsável pela decisão', valor: selected.responsavel_liberacao },
+              { rotulo: 'Registro no banco', valor: selected.id },
+              { rotulo: 'Criado em', valor: dataHoraRelatorio(selected.created_at) },
+              { rotulo: 'Atualizado em', valor: dataHoraRelatorio(selected.updated_at) }
+            ]
+          }
+        ]
+        if (selected.observacoes?.trim()) {
+          blocos.push({ tipo: 'texto', titulo: 'Laudo / observações de rastreabilidade', texto: selected.observacoes.trim() })
+        }
+        blocos.push(tabelaRegistro)
+        blocos.push({
+          tipo: 'assinaturas',
+          titulo: 'Aprovações',
+          assinantes: [
+            { papel: 'Inspetor / responsável pela decisão', nome: selected.responsavel_liberacao },
+            { papel: 'Garantia da Qualidade / SGQ' }
+          ]
+        })
+        await abrirRelatorio({
+          modulo: 'Qualidade',
+          tipo: 'Liberacao de Lote',
+          titulo: `Parecer SGQ do lote ${selected.codigo_lote}`,
+          codigo: selected.codigo_lote,
+          subtitulo: produto ? `${produto.codigo} — ${produto.nome}` : 'Produto sem cadastro na tela',
+          blocos,
+          observacoes: 'Registro documental por empresa; não altera o status operacional do lote no estoque nem substitui a operação autorizada de quarentena.'
+        })
+        return
+      }
+
+      if (!filteredRows.length) throw new Error('Nenhum parecer SGQ carregado para emitir o relatório.')
+      const maisRecente = filteredRows[0]?.created_at ?? ''
+      const maisAntiga = filteredRows[filteredRows.length - 1]?.created_at ?? ''
+      await abrirRelatorio({
+        modulo: 'Qualidade',
+        tipo: 'Liberacao de Lote',
+        titulo: 'Registro de pareceres SGQ por lote',
+        codigo: maisRecente && maisAntiga ? `PARECERES-${maisAntiga.slice(0, 10)}A${maisRecente.slice(0, 10)}` : `PARECERES-${empresaId}`,
+        subtitulo: `${filteredRows.length} registro(s) · empresa da sessão`,
+        blocos: [
+          {
+            tipo: 'campos',
+            titulo: 'Identificação do relatório',
+            colunas: 2,
+            itens: [
+              { rotulo: 'Registros no recorte', valor: filteredRows.length },
+              { rotulo: 'Aprovados', valor: filteredRows.filter(row => row.status_sgq === 'APROVADO').length },
+              { rotulo: 'Em quarentena', valor: filteredRows.filter(row => row.status_sgq === 'QUARENTENA').length },
+              { rotulo: 'Reprovados', valor: filteredRows.filter(row => row.status_sgq === 'REPROVADO').length },
+              { rotulo: 'Período coberto', valor: `${dataHoraRelatorio(maisAntiga)} — ${dataHoraRelatorio(maisRecente)}` }
+            ]
+          },
+          tabelaRegistro,
+          {
+            tipo: 'assinaturas',
+            titulo: 'Aprovações',
+            assinantes: [
+              { papel: 'Responsável da qualidade' },
+              { papel: 'Garantia da Qualidade / SGQ' }
+            ]
+          }
+        ],
+        observacoes: 'Registro documental por empresa; não altera o status operacional do lote no estoque nem substitui a operação autorizada de quarentena.'
+      })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Falha ao emitir o relatório A4 de parecer SGQ.')
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[#F4FBFD] p-2.5 text-[#123B50] md:p-3">
       <div className="mx-auto max-w-[1680px] space-y-3">
@@ -171,7 +299,7 @@ export default function QualidadeLiberacaoLotes() {
             <div><p className="text-[9px] font-black uppercase tracking-[.18em] text-[#176487]">MOLDPLÁS ERP · SGQ</p><h1 className="text-sm font-black uppercase tracking-wide text-[#123B50]">Registro de parecer SGQ</h1><p className="mt-0.5 text-[10px] text-slate-500">Registro documental por empresa; não altera o status operacional do lote no estoque</p></div>
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
-            <button type="button" onClick={() => window.print()} className="inline-flex h-8 items-center gap-1.5 border border-[#CFE1E7] px-2.5 text-[10px] font-bold text-[#123B50] hover:bg-[#EAF6FA]"><Printer size={13} /> Imprimir</button>
+            <button type="button" onClick={() => void emitirRelatorioParecer()} className="inline-flex h-8 items-center gap-1.5 border border-[#CFE1E7] px-2.5 text-[10px] font-bold text-[#123B50] hover:bg-[#EAF6FA]"><Printer size={13} /> Imprimir</button>
             <button type="button" onClick={() => void load()} disabled={loading || busy} className="inline-flex h-8 items-center gap-1.5 border border-[#CFE1E7] px-2.5 text-[10px] font-bold text-[#123B50] hover:bg-[#EAF6FA] disabled:opacity-50"><RefreshCw size={13} /> Atualizar</button>
             <button type="button" onClick={startNew} className="inline-flex h-8 items-center gap-1.5 border border-[#2D8DB8] bg-[#2D8DB8] px-2.5 text-[10px] font-black text-white hover:bg-[#24799F]"><Plus size={13} /> Novo parecer</button>
           </div>

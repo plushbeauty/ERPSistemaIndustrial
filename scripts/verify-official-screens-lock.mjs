@@ -67,6 +67,13 @@ import path from 'node:path'
  * central de ajuda. A pausa por mouse, que antes valia pelo hero inteiro e congelava a rotacao com o
  * ponteiro em cima da tela, passou a valer so sobre o bloco de texto. Manifesto re-gerado com
  * npm run telas:manifest.
+ * Revisao 2026-11-05 (carrossel das artes): ordem explicita do proprietario — "a tela principal voltou
+ * tela antiga, nao mandei voltar tela antiga; mandei trocar as imagens do fundo com aquelas imagens que
+ * mandei para vc; vc nao criou travas para nao deixar telas antigas voltar". As cinco artes enviadas por
+ * ele em 2026-11-05 entram em public/images/carrossel/ travadas por hash, as cinco fotos geradas por
+ * maquina (public/images/cena-*.webp) sao deletadas e banidas, e o slide deixa de desenhar texto, scrim
+ * e moldura de navegador por cima da imagem. O guard scripts/verify-carousel-artes.mjs entrou no
+ * verify:production, entao qualquer retorno dessas telas antigas bloqueia o deploy da Vercel.
  * Mudanca neste contrato exige ordem explicita do proprietario.
  */
 
@@ -74,9 +81,9 @@ const ROOT = path.resolve(import.meta.dirname, '..')
 const read = rel => readFileSync(path.join(ROOT, rel), 'utf8')
 
 const oficiais = [
-  { path: 'src/PublicIndustrialHome.tsx', sha: 'a90346e68cf2ffc3379863fdb56d2db732a2b474', label: 'Publica / Home com carrossel da vitrine (REV-VITRINE-PUBLICA-20261104-03: ordem do proprietario — "TIRAR BOTOES ... DE 15 DIAS GRATIS QUE SE REPETE" e "AS IMAGENS NAO FICA NELES PARA VEM PASSANDO COMO UM CARROSSEL")' },
+  { path: 'src/PublicIndustrialHome.tsx', sha: 'a3391988874db8446c106d84ef271fb4e757e12c', label: 'Publica / Home com o carrossel das 5 artes enviadas pelo proprietario (REV-CARROSSEL-ARTES-20261105-01: ordem do proprietario — "MANDEI TROCAR AS IMAGENS DO FUNDO COM AQUELAS IMAGENS QUE MANDEI PARA VC"; o contrato das artes esta em scripts/verify-carousel-artes.mjs)' },
   { path: 'src/components/marketing/TelaVitrine.tsx', sha: 'befc9424504e57fcfb85ff3d593fa4172aedfe10', label: 'Publica / Replica de tela do sistema na vitrine' },
-  { path: 'src/styles/public-home-premium-20261101.css', sha: 'b44ab4a728b593b6bbcd64ac00728d7ed01b41a8', label: 'Publica / estilos do carrossel e vitrine (REV-VITRINE-PUBLICA-20261104-02: ordem do proprietario sobre print — "MUDAR A COR DEIXAR AZUL QUE NEM DO BOTAO DO LOGIN" no .ph-solid e as regras dos indicadores deletas junto da barra)' },
+  { path: 'src/styles/public-home-premium-20261101.css', sha: '7379e6d9ffab4afbb384eaebc3512224d524d2ba', label: 'Publica / estilos do carrossel e vitrine (REV-CARROSSEL-ARTES-20261105-01: folha 16:9 das artes do proprietario, sem scrim e sem texto do DOM sobre a imagem; antes REV-VITRINE-PUBLICA-20261104-02, o azul do .ph-solid e a barra de indicadores deleta)' },
   { path: 'src/pages/PlanosIndustrial.tsx', sha: '1070b2cc87cacb249390e69d99c5c11dcfd411a6', label: 'Publica / Planos' },
   { path: 'src/pages/CadastroEmpresa.tsx', sha: 'a860dc1434ece03bf9e60803d929d16bddd7f90b', label: 'Publica / Cadastro da empresa' },
   { path: 'src/pages/Blog.tsx', sha: 'aebf301d6e049f459f5c403527c7010e0b7eabf7', label: 'Publica / Blog' },
@@ -85,7 +92,7 @@ const oficiais = [
   { path: 'src/styles/industrial-login.css', sha: 'ab70c62276a2a9e2ce0dac770255ed346798e1ee', label: 'Login / estilos da tela sobre a foto da planta (REV-LOGIN-FOTO-MAIOR-20261104-01: ordem do proprietario — faixa da foto aumentada de 74vw/116vh para 80vw/128vh porque ficou pequena demais)' },
   { path: 'src/pages/CertificadoQualidade.tsx', sha: 'f83e55451a90c5867297cff6f4f532bcfb45cd91', label: 'Qualidade / Certificado de Qualidade com cotas dimensionais e desenho anexado (recebido em 2026-11-01; REV-CERTIFICADO-CARIMBO-20261103-01 so adicionou o cabecalho de autoria/aprovacao)' },
   { path: 'src/components/layout/ModuleTabletMenuModal.tsx', sha: '0e7259b7f3fb74769f32d0dc2b97125c09ee2554', label: 'Tablet / painel flutuante de módulos (entrada única do Sistema SGQ)' },
-  { path: 'src/components/quality/qualityTabletModules.ts', sha: '3d022298c7c578e1d0b4866dea139c121e479da4', label: 'Tablet / catálogo das rotinas do SGQ com cada rota conferida no roteador (REV-TABLET-CATALOGO-20261104-01: pente fino pediu o FMEA de projeto, que era a única tela real da Qualidade sem card; ishikawa/capa/rnc/sala-rnc/tablet ficaram fora por serem abas da RPNC unificada ou lançadores substituídos)' },
+  { path: 'src/components/quality/qualityTabletModules.ts', sha: '359db7ec82fbaeec15960ae87a81e3e4f9691344', label: 'Tablet / catálogo das rotinas do SGQ com cada rota conferida no roteador (REV-TABLET-CATALOGO-20261104-01: a conferência tela a tela pediu o FMEA de projeto, que era a única tela real da Qualidade sem card; ishikawa/capa/rnc/sala-rnc/tablet ficaram fora por serem abas da RPNC unificada ou lançadores substituídos)' },
   { path: 'src/styles/module-tablet-panel.css', sha: 'd18763d1a95bb3564e421bd43b79664c665b80aa', label: 'Tablet / estilos do painel flutuante (REV-TABLET-COMPACTO-20261104-01: ordem do proprietário — painel muito grande; card saiu da régua de 30px, mediu 117px de altura sem transbordo no harness de cascata)' },
   { path: 'src/pages/QualityRpncForm.tsx', sha: '50452b68f2663eb27ec2cfae7120d4c58d4b3478', label: 'Qualidade / RPNC com Ishikawa, 5 Porques e CAPA' },
   { path: 'src/pages/QualityRpncUnified.tsx', sha: '95335212fcf40881e37a37cc063f326d58335235', label: 'Qualidade / RPNC unificada em abas (REV-RPNC-ABAS-CARD-20261102-01: card das abas maior, descricao visivel)' },

@@ -1,15 +1,13 @@
 /**
- * @REVISAO: REV-COLUNAS-BANCO-20261104-01 — ordem do proprietário "telas travadas vc destrava": o seletor de OPs ordenava por 'criado_em', coluna que não existe em erp_ordens_producao; o Promise.all lançava e a tela não carregava. Leitura corrigida para 'created_at'.
- * @DATA_REVISAO_APROVACAO: 2026-11-04
- * @REVISAO: REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta
  * @AUTOR: Fernando Schuinsekel
- * @STATUS_APROVACAO: PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04
+ * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-RELATORIO-A4-20261105-01 — o botão Imprimir A4 deixa de capturar a tela e passa a emitir o CCPP da injetora em A4 pelo motor de relatório, com perfil térmico, amostragem e diário de bordo lidos do banco
+ * @STATUS_APROVACAO: ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — "Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório."
  */
 /**
- * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * HISTÓRICO: REV-COLUNAS-BANCO-20261104-01 — ordem do proprietário "telas travadas vc destrava": o seletor de OPs ordenava por 'criado_em', coluna que não existe em erp_ordens_producao; o Promise.all lançava e a tela não carregava. Leitura corrigida para 'created_at'.
+ * HISTÓRICO: REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta
+ * HISTÓRICO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  */
 
 /**
@@ -23,6 +21,8 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { AlertTriangle, Clock3, Factory, Plus, Printer, RefreshCw, Save, ShieldCheck, Thermometer } from 'lucide-react'
 import ERPHorizontalShell from '../../components/layout/ERPHorizontalShell'
 import { supabase } from '../../lib/supabaseClient'
+import { abrirRelatorio } from '../../lib/report/abrirRelatorio'
+import type { Bloco } from '../../lib/report/documento'
 
 type Lookup = { id: string; codigo?: string | null; nome?: string | null; nome_fantasia?: string | null; numero_op?: string | null; lote_interno?: string | null; status_inspecao?: string | null }
 type Control = {
@@ -81,6 +81,18 @@ const checks: { key: keyof FormState; label: string }[] = [
 ]
 function optionLabel(row: Lookup) { return row.codigo ? row.codigo + ' — ' + (row.nome ?? '') : row.numero_op ?? row.nome ?? row.nome_fantasia ?? row.lote_interno ?? row.id }
 function datePt(value: string) { return new Date(value).toLocaleString('pt-BR') }
+function quantidadeRelatorio(valor: number | string | null | undefined): string {
+  const n = Number(valor ?? 0)
+  return Number.isFinite(n) ? n.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) : '—'
+}
+function temperaturaRelatorio(valor: number | null): string {
+  return valor === null || valor === undefined || !Number.isFinite(valor) ? '—' : `${valor.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} °C`
+}
+function dataRelatorio(valor: string | null | undefined): string {
+  if (!valor) return '—'
+  const d = new Date(valor.length === 10 ? `${valor}T12:00:00` : valor)
+  return Number.isFinite(d.getTime()) ? d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : valor
+}
 
 export default function ControleProcessoInjetora() {
   const [empresaId, setEmpresaId] = useState('')
@@ -265,6 +277,156 @@ export default function ControleProcessoInjetora() {
     </label>
   )
 
+  /**
+   * CCPP em A4 pelo motor de relatório. Sai do registro aberto na tela (erp_qualidade_controles_injetora)
+   * mais a amostragem e o diário de bordo carregados para ele. Sem registro aberto nada é emitido.
+   */
+  const emitirCcpp = async () => {
+    setError(''); setNotice('')
+    try {
+      if (!empresaId) throw new Error('Empresa da sessão não identificada. Use Atualizar antes de imprimir.')
+      if (!selected) throw new Error('Abra um controle de processo em Registros recentes para emitir o CCPP.')
+      const registro = selected
+      const maquina = machines.find(row => row.id === registro.maquina_id)
+      const operador = operators.find(row => row.id === registro.operador_id)
+      const ordem = registro.ordem_producao_id ? orders.find(row => row.id === registro.ordem_producao_id) : null
+      const aprovadas = samples.filter(s => s.resultado === 'APROVADO').length
+      const reprovadas = samples.filter(s => s.resultado === 'REPROVADO').length
+      const inspecionadas = samples.reduce((total, s) => total + Number(s.quantidade_inspecionada ?? 0), 0)
+      const paradasAbertas = downtimes.filter(s => !s.hora_retorno).length
+      const codigo = ordem?.numero_op ? `CCPP-OP-${ordem.numero_op}-${registro.data_producao}` : `CCPP-${registro.id}`
+      const blocos: Bloco[] = [
+        {
+          tipo: 'campos',
+          titulo: 'Identificação do controle de processo',
+          colunas: 2,
+          itens: [
+            { rotulo: 'Data da produção', valor: dataRelatorio(registro.data_producao) },
+            { rotulo: 'Situação do registro', valor: registro.status.replaceAll('_', ' ') },
+            { rotulo: 'Máquina / injetora', valor: maquina ? `${maquina.codigo ?? '—'} — ${maquina.nome ?? ''}`.trim() : 'Máquina não localizada' },
+            { rotulo: 'Operador', valor: operador?.nome ?? 'Operador não localizado' },
+            { rotulo: 'Ordem de produção', valor: ordem?.numero_op ? `OP-${ordem.numero_op}` : 'Sem OP vinculada no registro' },
+            { rotulo: 'Início da produção', valor: registro.hora_inicio ?? '—' },
+            { rotulo: 'Término registrado', valor: registro.hora_fim ?? 'Em aberto' },
+            { rotulo: 'Material atual', valor: registro.material_atual },
+            { rotulo: 'Cor atual', valor: registro.cor_atual },
+            { rotulo: 'Registro criado em', valor: datePt(registro.criado_em) }
+          ]
+        },
+        {
+          tipo: 'campos',
+          titulo: 'Produção, perfil térmico e qualidade',
+          colunas: 3,
+          itens: [
+            { rotulo: 'Quantidade total de peças', valor: quantidadeRelatorio(registro.quantidade_total_pecas) },
+            { rotulo: 'Cavidades ativas', valor: registro.numero_cavidades },
+            { rotulo: 'Temperatura zona 1', valor: temperaturaRelatorio(registro.temp_zona1) },
+            { rotulo: 'Temperatura zona 2', valor: temperaturaRelatorio(registro.temp_zona2) },
+            { rotulo: 'Temperatura zona 3', valor: temperaturaRelatorio(registro.temp_zona3) },
+            { rotulo: 'Temperatura zona 4', valor: temperaturaRelatorio(registro.temp_zona4) },
+            { rotulo: 'Temperatura do bico', valor: temperaturaRelatorio(registro.temp_bico) },
+            { rotulo: 'Temperatura do molde', valor: temperaturaRelatorio(registro.temp_molde) },
+            { rotulo: 'Amostras registradas', valor: samples.length },
+            { rotulo: 'Peças inspecionadas', valor: quantidadeRelatorio(inspecionadas) },
+            { rotulo: 'Amostras aprovadas', valor: aprovadas },
+            { rotulo: 'Amostras reprovadas', valor: reprovadas },
+            { rotulo: 'Paradas no diário de bordo', valor: downtimes.length },
+            { rotulo: 'Paradas sem retorno registrado', valor: paradasAbertas }
+          ]
+        },
+        {
+          tipo: 'tabela',
+          titulo: 'Amostragem volante da qualidade',
+          colunas: [
+            { titulo: 'Injeção', larguraMm: 18, alinhar: 'centro' },
+            { titulo: 'Peças inspecionadas', larguraMm: 26, alinhar: 'direita' },
+            { titulo: 'Resultado', larguraMm: 22 },
+            { titulo: 'Segregação', larguraMm: 20 },
+            { titulo: 'Defeitos observados', larguraMm: 46 },
+            { titulo: 'Registrado em' }
+          ],
+          linhas: samples.map(s => [
+            s.numero_injecao,
+            quantidadeRelatorio(s.quantidade_inspecionada),
+            s.resultado,
+            s.material_segregado ? 'Sim' : 'Não',
+            s.defeitos_observados,
+            datePt(s.criado_em)
+          ])
+        },
+        {
+          tipo: 'tabela',
+          titulo: 'Diário de bordo — paradas do turno',
+          colunas: [
+            { titulo: 'Hora da parada', larguraMm: 24 },
+            { titulo: 'Hora do retorno', larguraMm: 24 },
+            { titulo: 'Motivo exato da parada', larguraMm: 70 },
+            { titulo: 'Registrado em' }
+          ],
+          linhas: downtimes.map(s => [s.hora_parada, s.hora_retorno ?? 'Em aberto', s.motivo, datePt(s.criado_em)])
+        },
+        {
+          tipo: 'lista',
+          titulo: 'Controles de segurança para POM / poliacetal',
+          itens: [
+            `Guilhotina do funil fechada antes do fim do lote: ${registro.pom_guilhotina_fechada ? 'confirmada no registro' : 'não confirmada no registro'}`,
+            `Resíduo do canhão consumido: ${registro.pom_residuo_consumido ? 'confirmado no registro' : 'não confirmado no registro'}`
+          ]
+        },
+        {
+          tipo: 'tabela',
+          titulo: 'Registros recentes de controle de processo',
+          colunas: [
+            { titulo: 'Data', larguraMm: 20 },
+            { titulo: 'Máquina', larguraMm: 18 },
+            { titulo: 'OP', larguraMm: 16 },
+            { titulo: 'Início', larguraMm: 14 },
+            { titulo: 'Término', larguraMm: 14 },
+            { titulo: 'Peças', larguraMm: 18, alinhar: 'direita' },
+            { titulo: 'Cavidades', larguraMm: 16, alinhar: 'direita' },
+            { titulo: 'Material', larguraMm: 20 },
+            { titulo: 'Situação' }
+          ],
+          linhas: records.map(row => {
+            const m = machines.find(item => item.id === row.maquina_id)
+            const o = row.ordem_producao_id ? orders.find(item => item.id === row.ordem_producao_id) : null
+            return [
+              dataRelatorio(row.data_producao),
+              m?.codigo ?? '—',
+              o?.numero_op ? `OP-${o.numero_op}` : null,
+              row.hora_inicio,
+              row.hora_fim,
+              quantidadeRelatorio(row.quantidade_total_pecas),
+              row.numero_cavidades,
+              row.material_atual,
+              row.status.replaceAll('_', ' ')
+            ]
+          }),
+          nota: 'Lista limitada aos 100 controles mais recentes retornados pela consulta da tela.'
+        }
+      ]
+      const observacoes = (registro.observacoes ?? '').trim()
+      if (observacoes) blocos.push({ tipo: 'texto', titulo: 'Observações do processo', texto: observacoes })
+      blocos.push({
+        tipo: 'assinaturas',
+        titulo: 'Aprovações',
+        assinantes: [
+          { papel: 'Operador de produção', nome: operador?.nome ?? undefined },
+          { papel: 'Liderança de produção' },
+          { papel: 'Controle da qualidade' }
+        ]
+      })
+      await abrirRelatorio({
+        modulo: 'PCP',
+        tipo: 'Controle de Processo',
+        titulo: `Controle de processo da injetora — ${maquina?.codigo ?? 'máquina não identificada'}`,
+        codigo,
+        subtitulo: `${dataRelatorio(registro.data_producao)} · ${quantidadeRelatorio(registro.quantidade_total_pecas)} peças · ${samples.length} amostra(s) · ${downtimes.length} parada(s)`,
+        blocos
+      })
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao emitir o controle de processo da injetora.') }
+  }
+
   return <ERPHorizontalShell>
     <main className="pcp-injetora-page min-h-screen bg-[#F4FBFD] p-3 text-[#123B50] antialiased">
       <style>{'@media print{.no-print{display:none!important}.pcp-injetora-page{background:#fff!important;color:#111827!important;padding:0!important}.pcp-injetora-page *{color:#111827!important;box-shadow:none!important}.pcp-injetora-page section,.pcp-injetora-page form,.pcp-injetora-page aside,.pcp-injetora-page header{background:#fff!important;border-color:#cbd5e1!important}.pcp-injetora-page input,.pcp-injetora-page select,.pcp-injetora-page textarea{background:#fff!important;border-color:#cbd5e1!important;color:#111827!important}.pcp-injetora-page{font-family:Arial,sans-serif!important}@page{size:A4 landscape;margin:10mm}}'}</style>
@@ -273,7 +435,7 @@ export default function ControleProcessoInjetora() {
         <header className="flex flex-wrap items-center gap-3 border border-[#CFE1E7] bg-white p-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-[2px] bg-[#123B50] text-white"><Factory size={18} /></div>
           <div><p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#2D8DB8]">SGQ • INJETADOS • IT-IJ-001 Rev. 00</p><h1 className="text-[15px] font-black">Controle de Processo da Injetora</h1><p className="text-[10px] text-slate-500">CCPP • liberação de máquina • amostragem • Diário de Bordo</p></div>
-          <div className="no-print ml-auto flex flex-wrap gap-2"><button className={secondaryClass} type="button" onClick={() => window.print()}><Printer size={13} /> Imprimir A4</button><button className={secondaryClass} type="button" onClick={() => void load()} disabled={loading || busy}><RefreshCw size={13} /> Atualizar</button><span className="self-center text-[9px] text-slate-500">Próxima revisão da IT: 05/06/2028</span></div>
+          <div className="no-print ml-auto flex flex-wrap gap-2"><button className={secondaryClass} type="button" onClick={() => { void emitirCcpp() }}><Printer size={13} /> Imprimir A4</button><button className={secondaryClass} type="button" onClick={() => void load()} disabled={loading || busy}><RefreshCw size={13} /> Atualizar</button><span className="self-center text-[9px] text-slate-500">Próxima revisão da IT: 05/06/2028</span></div>
         </header>
         <div className="border border-amber-200 bg-amber-50 p-2 text-[10px] leading-4 text-amber-800">
           <strong className="flex items-center gap-1"><AlertTriangle size={13} /> ALERTA CRÍTICO — POM / POLIACETAL</strong>

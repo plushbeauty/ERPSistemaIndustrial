@@ -1,21 +1,23 @@
 /**
- * @REVISAO: REV-GED-ARVORE-LARGA-20261104-01 — ordem do proprietário: "a barra lateral dos documentos está uma bagunça, muito apertado para caber os nomes dos procedimentos". Coluna da árvore ampliada (250-280px → 340-380px) e título do procedimento com três linhas legíveis em vez de duas linhas cortadas.
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o documento controlado A4 com a revisão, o conteúdo e a trilha de versões gravados no banco
+ * @STATUS_APROVACAO: ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — "Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório."
  */
 /**
  * ERPSis — QUALIDADE / GED DOCUMENTAL
  * Data: 2026-10-22 | Revisão: SGQ-DOC-2026-10-22-R1
  * Escopo: cabeçalho normativo com logotipo, título/código bloqueados em revisão e separação das rotas de nova emissão e atualização.
  * Escopo: responsividade da árvore, formulário e trilha de auditoria; persistência e controle de revisão preservados.
+ * Nota histórica (2026-11-04): REV-GED-ARVORE-LARGA — por ordem do proprietário, a coluna da árvore foi ampliada (250-280px → 340-380px) e o título do procedimento passou a ter três linhas legíveis em vez de duas linhas cortadas.
  */
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
 import { CircleHelp, ExternalLink, FilePlus2, FileText, History, Paperclip, RefreshCw, Save, Search, ShieldCheck, Upload, X } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { fetchAllPages } from '../../lib/supabasePagination'
+import { abrirRelatorio } from '../../lib/report/abrirRelatorio'
+import type { Bloco } from '../../lib/report/documento'
 
 type Revision = {
   id: string
@@ -39,6 +41,20 @@ const label = 'mb-[2px] block text-[9px] font-bold uppercase tracking-wider text
 
 function dateTime(value: string) {
   return new Date(value).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
+}
+
+function dataHoraRelatorio(valor: string | null | undefined): string {
+  if (!valor) return '—'
+  const data = new Date(valor)
+  if (!Number.isFinite(data.getTime())) return valor
+  return data.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
+
+function dataRelatorio(valor: string | null | undefined): string {
+  if (!valor) return '—'
+  const data = new Date(valor)
+  if (!Number.isFinite(data.getTime())) return valor
+  return data.toLocaleDateString('pt-BR')
 }
 
 export default function GEDDocumentos() {
@@ -312,6 +328,74 @@ export default function GEDDocumentos() {
   const activeDoc = selected ?? (codigo ? revisions.find(row => row.codigo_documento === codigo) ?? null : null)
   const history = revisions.filter(row => row.codigo_documento === (selected?.codigo_documento ?? codigo)).sort((a, b) => b.revisao - a.revisao)
 
+  /**
+   * Documento controlado em A4. Usa apenas a revisão selecionada, o conteúdo e a trilha de
+   * versões já carregados pela tela; sem seleção, nada é emitido.
+   */
+  async function emitirDocumentoControlado() {
+    setError('')
+    try {
+      if (!selected) throw new Error('Selecione um documento na árvore para emitir o relatório A4.')
+      const revisaoLabel = 'Rev. ' + String(selected.revisao).padStart(2, '0')
+      const blocos: Bloco[] = [
+        {
+          tipo: 'campos',
+          titulo: 'Identificação do documento controlado',
+          colunas: 2,
+          itens: [
+            { rotulo: 'Código', valor: selected.codigo_documento },
+            { rotulo: 'Título', valor: selected.titulo_documento },
+            { rotulo: 'Departamento / setor', valor: selected.departamento || 'QUALIDADE' },
+            { rotulo: 'Revisão', valor: revisaoLabel },
+            { rotulo: 'Status', valor: selected.status.replaceAll('_', ' ') },
+            { rotulo: 'Responsável', valor: selected.responsavel || '—' },
+            { rotulo: 'Emitido em', valor: dataHoraRelatorio(selected.criado_em) },
+            { rotulo: 'Vigência', valor: selected.data_vigencia ? dataRelatorio(selected.data_vigencia) : 'Pendente de aprovação' },
+            { rotulo: 'Arquivo original', valor: selected.nome_arquivo || 'Sem arquivo anexado' },
+            { rotulo: 'Anexo no GED', valor: selected.url_anexo ? 'Vinculado' : 'Pendente de vinculação' }
+          ]
+        },
+        { tipo: 'texto', titulo: 'Conteúdo do procedimento', texto: selected.conteudo_texto || 'Sem conteúdo gravado nesta revisão no banco.' }
+      ]
+
+      if (selected.motivo_alteracao) {
+        blocos.push({ tipo: 'texto', titulo: 'Motivo da alteração desta revisão', texto: selected.motivo_alteracao })
+      }
+
+      blocos.push({
+        tipo: 'historico',
+        titulo: 'Trilha de revisões registrada no banco',
+        itens: history.map(row => ({
+          quando: dataHoraRelatorio(row.criado_em),
+          quem: row.responsavel || 'Responsável não informado',
+          oque: 'Revisão ' + String(row.revisao).padStart(2, '0') + ' · ' + row.status.replaceAll('_', ' ') + (row.motivo_alteracao ? ' — ' + row.motivo_alteracao : '')
+        }))
+      })
+
+      blocos.push({
+        tipo: 'assinaturas',
+        titulo: 'Aprovações',
+        assinantes: [
+          { papel: 'Elaborado pelo responsável do documento', nome: selected.responsavel || undefined },
+          { papel: 'Garantia da Qualidade / SGQ' },
+          { papel: 'Aprovado pela direção' }
+        ]
+      })
+
+      await abrirRelatorio({
+        modulo: 'Qualidade',
+        tipo: 'Documento Controlado',
+        titulo: selected.titulo_documento,
+        codigo: selected.codigo_documento,
+        subtitulo: `${selected.departamento || 'QUALIDADE'} · ${revisaoLabel} · ${selected.status.replaceAll('_', ' ')}`,
+        blocos,
+        observacoes: 'Emissão de cópia para consulta. A distribuição controlada de cópias deve ser registrada no controle documental.'
+      })
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao emitir o documento controlado em A4.')
+    }
+  }
+
   return <main className="min-h-screen bg-[#F4FBFD] text-neutral-800"><div className="mx-auto max-w-[1800px] space-y-3 p-3">
     <div className="min-h-[calc(100vh-96px)] bg-[#F7F9FC] text-neutral-800">
       <div className="flex min-h-[42px] flex-wrap items-center justify-between gap-2 border-b border-neutral-200 bg-white px-3 py-1">
@@ -326,7 +410,7 @@ export default function GEDDocumentos() {
           <button type="button" onClick={startNew} className="inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-[#C6DFEF] bg-[#F2F8FC] px-2 text-[10px] font-semibold text-[#246F98] hover:bg-[#E6F3FB]"><FilePlus2 size={13}/> NOVO DOC</button>
           <label className="inline-flex h-[30px] cursor-pointer items-center gap-1 rounded-[2px] border border-neutral-200 bg-white px-2 text-[9px] font-semibold text-neutral-700 hover:bg-neutral-50"><Paperclip size={12}/> SELECIONAR ORIGINAIS<input type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.xlsm" className="hidden" onChange={event => setBulkFiles(Array.from(event.target.files ?? []))}/></label>
           {bulkFiles.length > 0 && <button type="button" disabled={busy} onClick={() => void attachBulkFiles()} className="inline-flex h-[30px] items-center gap-1 rounded-[2px] bg-[#2D8DB8] px-2 text-[9px] font-semibold text-white disabled:opacity-50"><Upload size={12}/>{busy ? 'IMPORTANDO ' + bulkProgress.done + '/' + bulkProgress.total : 'IMPORTAR ' + bulkFiles.length}</button>}
-          <button type="button" onClick={() => window.print()} className="hidden h-[30px] items-center gap-1 rounded-[2px] border border-neutral-200 px-2 text-[10px] text-neutral-600 hover:bg-neutral-50 sm:inline-flex"><ShieldCheck size={12}/> IMPRIMIR</button>
+          <button type="button" onClick={() => void emitirDocumentoControlado()} className="hidden h-[30px] items-center gap-1 rounded-[2px] border border-neutral-200 px-2 text-[10px] text-neutral-600 hover:bg-neutral-50 sm:inline-flex"><ShieldCheck size={12}/> IMPRIMIR</button>
         </div>
       </div>
 

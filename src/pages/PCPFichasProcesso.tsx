@@ -1,8 +1,8 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-RELATORIO-A4-20261105-01 — o botão Imprimir ficha deixa de capturar a tela e passa a emitir a ficha de processo em A4 pelo motor de relatório, com os parâmetros técnicos e o vínculo do registro lido do banco
+ * @STATUS_APROVACAO: ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — "Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório."
  */
 /**
  * REV-2026-10-23 — REV-FICHA-009: corrige contraste dos cartões após normalização dos fundos; texto escuro em superfícies claras e branco apenas em superfícies azul-petróleo/diagrama. Revisão visual autorizada pelo usuário.
@@ -20,6 +20,8 @@ import PCPMoldPhotoPanel from '../components/PCPMoldPhotoPanel'
 import PCPMachinePhotoPanel from '../components/PCPMachinePhotoPanel'
 import { useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import { abrirRelatorio } from '../lib/report/abrirRelatorio'
+import type { Bloco } from '../lib/report/documento'
 
 type Product = { id: string; codigo: string; nome: string }
 type Tool = { id: string; codigo: string; nome: string; tipo: string }
@@ -199,6 +201,17 @@ const processParamGroups: Partial<Record<Category,{title:string;keys:string[]}[]
 const inputClass = 'h-[30px] w-full min-w-0 max-w-[200px] rounded-[2px] border border-slate-300 bg-white px-2 text-xs font-semibold text-[#123B50] outline-none transition-colors placeholder:text-slate-400 focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20'
 const labelClass = 'mb-1 block text-[9px] font-black uppercase tracking-wider text-slate-600'
 const blankParameters = (category: Category) => Object.fromEntries(paramsFor(category).map(p => [p.key, ''])) as Record<string, string>
+const dataRelatorio = (valor: string | null | undefined): string => {
+ if (!valor) return '—'
+ const data = new Date(valor)
+ if (!Number.isFinite(data.getTime())) return valor
+ return data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+const quantidadeRelatorio = (valor: number | string | null | undefined): string => {
+ const n = Number(valor ?? 0)
+ if (!Number.isFinite(n)) return '—'
+ return n.toLocaleString('pt-BR', { maximumFractionDigits: 3 })
+}
 
 
 /**
@@ -392,13 +405,124 @@ export default function PCPFichasProcesso() {
    : []
  const pressCharge = Number(params.peso_carga_cavidade_g)>0&&Number(params.cavidades_ativas)>0?Number(params.peso_carga_cavidade_g)*Number(params.cavidades_ativas):null
 
+ /**
+  * Ficha de processo em A4 pelo motor de relatório. Sai do documento que a tela tem
+  * aberto (registro de erp_fichas_processo carregado na lista + parâmetros editados na
+  * própria tela). Sem código de ficha aberto não há documento a emitir — nada é inventado.
+  */
+ async function emitirFichaProcesso() {
+  setError(''); setNotice('')
+  try {
+   if (!company) throw new Error('Empresa da sessão não identificada. Use Recarregar lista antes de imprimir.')
+   if (!code.trim()) throw new Error('Abra uma ficha existente na lista para emitir a ficha de processo.')
+   const ficha = rows.find(row => row.codigo_ficha === code.trim())
+   const categoriaLabel = categories.find(item => item.value === category)?.label ?? category
+   const preenchidos = fields.filter(field => String(params[field.key] ?? '').trim() !== '')
+   const obrigatorios = fields.filter(field => field.required)
+   const faltantes = obrigatorios.filter(field => String(params[field.key] ?? '').trim() === '')
+   const diagramFields = fields.filter(field => diagramOwnedKeys.has(field.key))
+   const blocos: Bloco[] = [
+    {
+     tipo: 'campos',
+     titulo: 'Identificação do documento',
+     colunas: 2,
+     itens: [
+      { rotulo: 'Código da ficha', valor: ficha?.codigo_ficha ?? code.trim() },
+      { rotulo: 'Versão', valor: String(ficha?.versao_ficha ?? ficha?.revisao ?? version) },
+      { rotulo: 'Situação', valor: ficha?.status ?? status },
+      { rotulo: 'Modelo da ficha', valor: categoriaLabel },
+      { rotulo: 'Produto', valor: selectedProduct?.nome ?? null },
+      { rotulo: 'Código do produto', valor: selectedProduct?.codigo ?? null },
+      { rotulo: 'Máquina / equipamento', valor: selectedMachine ? `${selectedMachine.codigo} — ${selectedMachine.nome}` : 'Sem máquina vinculada' },
+      { rotulo: 'Ferramenta industrial', valor: selectedTool ? `${selectedTool.codigo} — ${selectedTool.nome}` : 'Sem ferramenta vinculada' },
+      { rotulo: 'Homologado em', valor: dataRelatorio(ficha?.data_homologacao ?? approvedAt) },
+      { rotulo: 'Assinatura técnica', valor: (ficha?.assinatura_tecnica ?? signature).trim() || 'Sem assinatura registrada' },
+      { rotulo: 'Categoria no banco', valor: ficha?.categoria_processo ?? category }
+     ]
+    },
+    {
+     tipo: 'campos',
+     titulo: 'Capacidade e tempos calculados da ficha',
+     colunas: 3,
+     itens: [
+      { rotulo: 'Tempo de ciclo (s)', valor: params.tempo_ciclo_seg || null },
+      { rotulo: 'Cavidades ativas', valor: params.cavidades_ativas || null },
+      { rotulo: 'Peças por hora previstas', valor: expectedPph > 0 ? quantidadeRelatorio(Math.round(expectedPph)) : '—' },
+      { rotulo: 'Tempo de setup (min)', valor: params.tempo_setup_min || null },
+      { rotulo: 'Tempo de limpeza (min)', valor: params.tempo_limpeza_min || null },
+      { rotulo: 'Peso da peça (g)', valor: params.peso_peca_g || null },
+      { rotulo: 'Peso do canal / refugo (g)', valor: params.peso_canal_g || null },
+      { rotulo: 'Carga calculada por ciclo (g)', valor: pressCharge !== null ? quantidadeRelatorio(pressCharge) : '—' },
+      { rotulo: 'Parâmetros preenchidos', valor: `${preenchidos.length} de ${fields.length}` }
+     ]
+    }
+   ]
+   if (diagramFields.length > 0) {
+    blocos.push({
+     tipo: 'tabela',
+     titulo: category === 'PRENSADOS' ? 'Perfil térmico editado no diagrama da prensa' : 'Perfil térmico editado no diagrama da injetora',
+     colunas: [
+      { titulo: 'Ponto de controle', larguraMm: 70 },
+      { titulo: 'Valor', larguraMm: 45, alinhar: 'direita' },
+      { titulo: 'Unidade', larguraMm: 20 }
+     ],
+     linhas: diagramFields.map(field => [field.label, params[field.key] || null, field.unit])
+    })
+   }
+   for (const card of parameterCards) {
+    blocos.push({
+     tipo: 'tabela',
+     titulo: card.title,
+     colunas: [
+      { titulo: 'Parâmetro técnico', larguraMm: 70 },
+      { titulo: 'Valor', larguraMm: 45, alinhar: 'direita' },
+      { titulo: 'Unidade', larguraMm: 20 }
+     ],
+     linhas: card.fields.map(field => [field.label, params[field.key] || null, field.unit]),
+     nota: card.fields.some(field => String(params[field.key] ?? '').trim() !== '')
+      ? undefined
+      : 'Nenhum valor gravado para este grupo nesta ficha.'
+    })
+   }
+   if (obrigatorios.length > 0) {
+    blocos.push({
+     tipo: 'lista',
+     titulo: 'Conferência dos parâmetros obrigatórios do modelo',
+     itens: obrigatorios.map(field => `${field.label} (${field.unit}): ${String(params[field.key] ?? '').trim() || 'em branco'}`)
+    })
+   }
+   const instrucoes = instructions.trim()
+   if (instrucoes) blocos.push({ tipo: 'texto', titulo: 'Instruções de preparação e roteiro', texto: instrucoes })
+   if (faltantes.length > 0) {
+    blocos.push({ tipo: 'texto', titulo: 'Ressalva da emissão', texto: `Parâmetro(s) obrigatório(s) sem valor no registro: ${faltantes.map(field => field.label).join(', ')}.` })
+   }
+   blocos.push({
+    tipo: 'assinaturas',
+    titulo: 'Aprovações',
+    assinantes: [
+     { papel: 'Engenharia de processo', nome: (ficha?.assinatura_tecnica ?? signature).trim() || undefined },
+     { papel: 'Liderança de produção' },
+     { papel: 'Controle da qualidade' }
+    ]
+   })
+   await abrirRelatorio({
+    modulo: 'PCP',
+    tipo: 'Ficha de Processo',
+    titulo: `Ficha técnica de processo — ${categoriaLabel}`,
+    codigo: ficha?.codigo_ficha ?? code.trim(),
+    subtitulo: selectedProduct ? `${selectedProduct.codigo} — ${selectedProduct.nome}` : 'Produto sem cadastro no banco',
+    blocos
+   })
+  } catch (e) { setError(e instanceof Error ? e.message : 'Falha ao emitir a ficha de processo.') }
+ }
+
  return <main className="pcp-process-page min-h-screen bg-[#F8FAFC] p-2 text-[#123B50] md:p-3">
   <div className="mx-auto max-w-[1650px]">
    <header className="mb-3 flex flex-wrap items-center gap-3 rounded-[2px] border border-slate-200 bg-white p-2.5 shadow-[0_3px_12px_rgba(18,59,80,0.07)]">
     <span className="flex h-10 w-10 items-center justify-center rounded-[2px] border border-[#48B7C7]/50 bg-[#123B50] text-[#48B7C7]"><Factory size={20}/></span>
     <div className="min-w-[240px]"><p className="text-[9px] font-black uppercase tracking-[.18em] text-[#48B7C7]">SYSNQRA SISTEMAS INDUSTRIAIS · SGQ / IT-PCP-001</p><h1 className="text-base font-black leading-5 md:text-lg">{category==='INJETADOS'?'Ficha técnica de processo — Injetados':category==='PRENSADOS'?'Ficha hidráulica de processo — Prensados':`Ficha de processo — ${categories.find(item=>item.value===category)?.label??category}`}</h1><p className="text-xs text-white">Parâmetros homologados, preparação, capacidade e rastreabilidade de revisão.</p></div>
     <div className="ml-auto grid min-w-[260px] flex-1 grid-cols-3 gap-2 md:max-w-[430px]">{[{label:'Documento',value:code||'Novo documento'},{label:'Revisão',value:version.padStart(2,'0')},{label:'Status',value:status}].map(item=><div key={item.label} className="rounded-lg border border-[#294456] bg-[#071522] px-3 py-2"><span className="block text-[10px] text-white">{item.label}</span><strong className={`mt-0.5 block truncate text-sm ${item.label==='Status'&&['APROVADA','LIBERADA'].includes(status)?'text-[#3A9D78]':'text-[#F4FBFD]'}`}>{item.value}</strong></div>)}</div>
-    <div className="flex w-full flex-wrap justify-end gap-2 print:hidden">{productId&&<a href={`/engenharia/bom?produto=${encodeURIComponent(productId)}`} className="inline-flex h-[30px] items-center gap-1.5 rounded-[2px] border border-[#2D8DB8] bg-[#123B50] px-3 text-[10px] font-black uppercase tracking-wider text-[#48B7C7] transition-colors hover:bg-[#2D8DB8] hover:text-white"><ExternalLink size={13}/> Ficha de Engenharia</a>}<button className="erp-premium-button erp-premium-button-secondary" type="button" onClick={()=>{if(!rows.some(row=>row.codigo_ficha===code)){setError('Abra uma ficha existente na lista para editar.');return}setNotice('Ficha pronta para edição. Altere os campos e clique em Atualizar ficha.')}}><FileSliders size={14}/> Editar ficha</button><button className="erp-premium-button erp-premium-button-secondary" type="button" onClick={()=>window.print()}><Printer size={14}/> Imprimir ficha</button><button className="erp-premium-button erp-premium-button-secondary" type="button" onClick={()=>void load()} disabled={busy}><RefreshCw size={14}/> Recarregar lista</button><button className="erp-premium-button" type="button" onClick={()=>{setCode('');setProductId('');setToolId('');setMachineId('');setVersion('1');setApprovedAt('');setSignature('');setStatus('RASCUNHO');setParams(blankParameters(category));setInstructions('');setSearchParams({tipo:category});setNotice('Nova ficha pronta para preencher. Preencha os campos agrupados e grave a ficha.');setError('')}}>Nova ficha</button></div>
+    <div className="flex w-full flex-wrap justify-end gap-2 print:hidden">{productId&&<a href={`/engenharia/bom?produto=${encodeURIComponent(productId)}`} className="inline-flex h-[30px] items-center gap-1.5 rounded-[2px] border border-[#2D8DB8] bg-[#123B50] px-3 text-[10px] font-black uppercase tracking-wider text-[#48B7C7] transition-colors hover:bg-[#2D8DB8] hover:text-white"><ExternalLink size={13}/> Ficha de Engenharia</a>}<button className="erp-premium-button erp-premium-button-secondary" type="button" onClick={()=>{if(!rows.some(row=>row.codigo_ficha===code)){setError('Abra uma ficha existente na lista para editar.');return}setNotice('Ficha pronta para edição. Altere os campos e clique em Atualizar ficha.')}}><FileSliders size={14}/> Editar ficha</button><button className="erp-premium-button erp-premium-button-secondary" type="button" onClick={()=>{void emitirFichaProcesso()}}><Printer size={14}/> Imprimir ficha</button><button className="erp-premium-button erp-premium-button-secondary" type="button" onClick={()=>void load()} disabled={busy}><RefreshCw size={14}/> Recarregar lista</button><button className="erp-premium-button" type="button" onClick={()=>{setCode('');setProductId('');setToolId('');setMachineId('');setVersion('1');setApprovedAt('');setSignature('');setStatus('RASCUNHO');setParams(blankParameters(category));setInstructions('');setSearchParams({tipo:category});setNotice('Nova ficha pronta para preencher. Preencha os campos agrupados e grave a ficha.');setError('')}}>Nova ficha</button></div>
    </header>
    {error && <div role="alert" className="mb-3 rounded-lg border border-[#D65B61]/50 bg-[#D65B61]/10 p-3 text-sm text-[#F4B8BB]">{error}</div>}
    {notice && <div role="status" className="mb-3 flex items-center gap-2 rounded-lg border border-[#3A9D78]/40 bg-[#3A9D78]/10 p-3 text-sm text-[#8ED0B4]"><CheckCircle2 size={16}/>{notice}</div>}

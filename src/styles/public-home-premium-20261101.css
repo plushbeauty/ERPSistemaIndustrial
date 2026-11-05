@@ -325,6 +325,16 @@
 }
 .ph-carousel-bg img.is-active { opacity: 1; }
 
+/* ================================================================
+   CARROSSEL DAS ARTES DO PROPRIETARIO — ordem de 2026-11-05: "mandei trocar as imagens do fundo
+   com aquelas imagens que mandei para vc". As cinco artes de public/images/carrossel/ ja trazem
+   marca, titulo e a lista de itens, entao nao sobra texto do DOM sobre a imagem: a folha do slide
+   e a propria arte em 16:9. O contrato (arquivos, hash de cada arte e a proibicao das cenas
+   geradas de volta) esta em scripts/verify-carousel-artes.mjs.
+   ================================================================ */
+.ph-hero--artes { aspect-ratio: 16 / 9; max-height: 84vh; padding: 0; background: #04101c; }
+.ph-hero--artes .ph-carousel-bg img { object-fit: cover; object-position: center; }
+
 /* rgba(0,0,0,.5) e mais: a foto da fábrica é detalhada demais para texto cru.
    Ordem do proprietario em 2026-11-04: "a imagem do fundo deixar um pouco mais clara". A camada
    caiu cerca de 15 pontos em toda a largura; o lado esquerdo continua escuro o suficiente para o

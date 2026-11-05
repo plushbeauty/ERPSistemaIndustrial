@@ -1,8 +1,8 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-RELATORIO-A4-20261105-01 — o botão Imprimir Ficha (A4) deixa de capturar a tela e passa a emitir a carteira de pedidos pendentes em A4 pelo motor de relatório, com itens, OPs, saldo e NF-e lidos do banco
+ * @STATUS_APROVACAO: ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — "Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório."
  */
 /**
  * =========================================================================
@@ -46,6 +46,8 @@ import {
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import { abrirRelatorio } from '../lib/report/abrirRelatorio'
+import type { Bloco } from '../lib/report/documento'
 import '../styles/synqra-premium.css'
 
 export type PieceStatus =
@@ -174,6 +176,13 @@ const dateBR = (value?: string | null) => {
   if (!value) return '—'
   const iso = value.length === 10 ? `${value}T12:00:00` : value
   return new Date(iso).toLocaleDateString('pt-BR')
+}
+const dataChaveRelatorio = (value?: string | null) => {
+  if (!value) return ''
+  const d = new Date(value.length === 10 ? `${value}T12:00:00` : value)
+  return Number.isFinite(d.getTime())
+    ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    : ''
 }
 
 // Configuração visual das 6 cores industriais por status da peça
@@ -659,6 +668,183 @@ export default function PCPPedidosPendentes() {
   const kpiFaturado = rows.filter(r => r.statusPeca === 'FATURADO').length
   const totalFaltaPecas = rows.reduce((acc, r) => acc + r.faltaFabricar, 0)
 
+  /**
+   * Ficha de pedidos pendentes em A4. Sai exclusivamente dos itens que a tela já montou
+   * a partir de pedidos, OPs, estoque, reservas e NF-e reais do banco, respeitando os
+   * filtros exibidos na grade.
+   */
+  async function emitirFichaPedidosPendentes() {
+    setError('')
+    try {
+      const maquinaFiltro = machineFilter ? machines.find(m => m.id === machineFilter) : null
+      const entradas = filtered
+        .map(r => r.dataEntrada)
+        .filter((v): v is string => Boolean(v))
+        .sort()
+      const saidas = filtered
+        .map(r => r.dataEntrega)
+        .filter((v): v is string => Boolean(v))
+        .sort()
+      const periodoEntrada =
+        entradas.length > 0
+          ? entradas[0] === entradas[entradas.length - 1]
+            ? dateBR(entradas[0])
+            : `${dateBR(entradas[0])} a ${dateBR(entradas[entradas.length - 1])}`
+          : 'Sem data de entrada registrada nos itens'
+      const pedidosDistintos = new Set(filtered.map(r => r.pedidoId)).size
+      const clientesDistintos = new Set(filtered.map(r => r.clienteId)).size
+      const somaPedida = filtered.reduce((acc, r) => acc + (r.quantidadePedida || 0), 0)
+      const somaReservada = filtered.reduce((acc, r) => acc + (r.quantidadeReservada || 0), 0)
+      const somaEmOP = filtered.reduce((acc, r) => acc + (r.quantidadeEmOP || 0), 0)
+      const somaProduzida = filtered.reduce((acc, r) => acc + (r.quantidadeProduzidaOP || 0), 0)
+      const somaFalta = filtered.reduce((acc, r) => acc + (r.faltaFabricar || 0), 0)
+      const itensComOp = filtered.filter(r => r.opNumero).length
+      const itensComNf = filtered.filter(r => r.notaFiscalNumero).length
+      const emFalta = filtered.filter(r => (r.faltaFabricar || 0) > 0)
+      const blocos: Bloco[] = [
+        {
+          tipo: 'campos',
+          titulo: 'Identificação da carteira impressa',
+          colunas: 2,
+          itens: [
+            { rotulo: 'Situação filtrada', valor: statusFilter === 'TODOS' ? 'Esteira completa (todas as situações)' : STATUS_CONFIG[statusFilter].label },
+            { rotulo: 'Máquina filtrada', valor: maquinaFiltro ? `${maquinaFiltro.codigo} — ${maquinaFiltro.nome}` : 'Todas as máquinas da fábrica' },
+            { rotulo: 'Pesquisa aplicada', valor: search.trim() || 'Sem texto de pesquisa' },
+            { rotulo: 'Período de entrada dos pedidos', valor: periodoEntrada },
+            { rotulo: 'Entrega prometida mais próxima', valor: saidas.length > 0 ? dateBR(saidas[0]) : 'Sem data de entrega' },
+            { rotulo: 'Itens de pedido no relatório', valor: filtered.length },
+            { rotulo: 'Pedidos distintos', valor: pedidosDistintos },
+            { rotulo: 'Clientes distintos', valor: clientesDistintos },
+            { rotulo: 'Itens carregados na tela', valor: rows.length },
+            { rotulo: 'Máquinas cadastradas', valor: machines.length }
+          ]
+        },
+        {
+          tipo: 'campos',
+          titulo: 'Quantidades e cobertura da carteira',
+          colunas: 3,
+          itens: [
+            { rotulo: 'Quantidade pedida', valor: fmt(somaPedida) },
+            { rotulo: 'Reservada em estoque', valor: fmt(somaReservada) },
+            { rotulo: 'Em ordem de produção', valor: fmt(somaEmOP) },
+            { rotulo: 'Produzido nas OPs', valor: fmt(somaProduzida) },
+            { rotulo: 'Falta fabricar', valor: fmt(somaFalta) },
+            { rotulo: 'Itens com OP vinculada', valor: itensComOp },
+            { rotulo: 'Itens com NF-e emitida', valor: itensComNf },
+            { rotulo: 'Falta total da carteira', valor: fmt(totalFaltaPecas) },
+            { rotulo: 'Itens aguardando PCP', valor: kpiAguardandoPcp }
+          ]
+        },
+        {
+          tipo: 'campos',
+          titulo: 'Esteira industrial da peça',
+          colunas: 3,
+          itens: [
+            { rotulo: STATUS_CONFIG.AGUARDANDO_PCP.shortLabel, valor: kpiAguardandoPcp },
+            { rotulo: STATUS_CONFIG.EM_PRODUCAO.shortLabel, valor: kpiEmProducao },
+            { rotulo: STATUS_CONFIG.EM_ESTOQUE.shortLabel, valor: kpiEmEstoque },
+            { rotulo: STATUS_CONFIG.PRODUZIDO.shortLabel, valor: kpiProduzido },
+            { rotulo: STATUS_CONFIG.PRONTO_EXPEDICAO.shortLabel, valor: kpiProntoExpedicao },
+            { rotulo: STATUS_CONFIG.FATURADO.shortLabel, valor: kpiFaturado },
+            { rotulo: 'Total de itens', valor: kpiTotal },
+            { rotulo: 'Itens no filtro atual', valor: filtered.length },
+            { rotulo: 'Itens sem cobertura', valor: emFalta.length }
+          ]
+        },
+        {
+          tipo: 'tabela',
+          titulo: 'Itens de pedido na esteira industrial',
+          colunas: [
+            { titulo: 'Pedido', larguraMm: 16 },
+            { titulo: 'Cliente', larguraMm: 26 },
+            { titulo: 'Produto', larguraMm: 30 },
+            { titulo: 'Pedida', larguraMm: 13, alinhar: 'direita' },
+            { titulo: 'Falta', larguraMm: 13, alinhar: 'direita' },
+            { titulo: 'OP', larguraMm: 14 },
+            { titulo: 'Máquina', larguraMm: 12 },
+            { titulo: 'Situação' }
+          ],
+          linhas: filtered.map(r => [
+            `PV ${r.pedidoCodigo}${r.pedidoClienteRef ? ` · ref. ${r.pedidoClienteRef}` : ''}`,
+            r.clienteNome,
+            `${r.produtoCodigo} — ${r.produtoNome}`,
+            fmt(r.quantidadePedida),
+            fmt(r.faltaFabricar),
+            r.opNumero ? `OP-${r.opNumero}` : null,
+            r.maquinaCodigo ?? null,
+            STATUS_CONFIG[r.statusPeca].shortLabel
+          ]),
+          nota: 'Quantidades pedidas, reservadas, em OP e produzidas vêm dos registros lidos pela própria tela; falta fabricar é o saldo calculado na grade.'
+        },
+        {
+          tipo: 'tabela',
+          titulo: 'Peças a fabricar sem cobertura de estoque',
+          colunas: [
+            { titulo: 'Pedido', larguraMm: 16 },
+            { titulo: 'Produto', larguraMm: 34 },
+            { titulo: 'Cliente', larguraMm: 26 },
+            { titulo: 'Pedida', larguraMm: 13, alinhar: 'direita' },
+            { titulo: 'Estoque', larguraMm: 13, alinhar: 'direita' },
+            { titulo: 'Reservado', larguraMm: 14, alinhar: 'direita' },
+            { titulo: 'Falta', larguraMm: 13, alinhar: 'direita' },
+            { titulo: 'Entrega prometida' }
+          ],
+          linhas: [...emFalta]
+            .sort((a, b) => b.faltaFabricar - a.faltaFabricar)
+            .map(r => [
+              `PV ${r.pedidoCodigo}`,
+              `${r.produtoCodigo} — ${r.produtoNome}`,
+              r.clienteNome,
+              fmt(r.quantidadePedida),
+              fmt(r.estoqueAtual),
+              fmt(r.quantidadeReservada),
+              fmt(r.faltaFabricar),
+              dateBR(r.dataEntrega)
+            ])
+        }
+      ]
+      if (itensComNf > 0) {
+        blocos.push({
+          tipo: 'tabela',
+          titulo: 'Itens com nota fiscal emitida',
+          colunas: [
+            { titulo: 'Pedido', larguraMm: 16 },
+            { titulo: 'NF-e', larguraMm: 18 },
+            { titulo: 'Produto', larguraMm: 34 },
+            { titulo: 'Cliente', larguraMm: 28 },
+            { titulo: 'Chave de acesso' }
+          ],
+          linhas: filtered
+            .filter(r => r.notaFiscalNumero)
+            .map(r => [`PV ${r.pedidoCodigo}`, r.notaFiscalNumero ?? null, `${r.produtoCodigo} — ${r.produtoNome}`, r.clienteNome, r.notaFiscalChave ?? null])
+        })
+      }
+      blocos.push({
+        tipo: 'assinaturas',
+        titulo: 'Aprovações',
+        assinantes: [
+          { papel: 'Planejamento e controle da produção' },
+          { papel: 'Liderança de produção' },
+          { papel: 'Expedição e faturamento' }
+        ]
+      })
+      await abrirRelatorio({
+        modulo: 'PCP',
+        tipo: 'Pedido Pendente',
+        titulo: 'Ficha de pedidos pendentes e rastreabilidade fabril',
+        codigo: maquinaFiltro
+          ? `PENDENTES-${maquinaFiltro.codigo}`
+          : entradas.length > 0
+            ? `PENDENTES-${dataChaveRelatorio(entradas[0])}A${dataChaveRelatorio(entradas[entradas.length - 1])}`
+            : `PENDENTES-${statusFilter}`,
+        subtitulo: `${filtered.length} item(ns) de pedido · ${clientesDistintos} cliente(s) · ${fmt(somaFalta)} peça(s) a fabricar`,
+        blocos
+      })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Falha ao emitir a ficha de pedidos pendentes.')
+    }
+  }
+
   return (
     <>
       {/* Folha de Impressão Oficial A4 — SYSNQRA SGQ IT-PCP-PEDIDOS-001 */}
@@ -737,7 +923,7 @@ export default function PCPPedidosPendentes() {
 
               <button
                 type="button"
-                onClick={() => window.print()}
+                onClick={() => { void emitirFichaPedidosPendentes() }}
                 className={`${btnClass} border border-slate-300 bg-white text-slate-700 hover:bg-slate-50`}
                 title="Imprimir Relatório A4"
               >

@@ -1,13 +1,16 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o protocolo 8D em A4 com as etapas D1–D8, o status e a RNC de origem carregados do banco
+ * @STATUS_APROVACAO: ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — "Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório."
+ * Revisão anterior (2026-10-30): card de abertura padrão (PageIntroCard) e identificação de autoria.
  */
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Save, Plus, Printer, RefreshCw } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { abrirRelatorio } from '../lib/report/abrirRelatorio'
+import type { Bloco } from '../lib/report/documento'
 
 type Rnc = { id: string; numero_rpnc: string; descricao_nao_conformidade: string; origem: string | null; gravidade: string | null; lote_producao: string | null; quantidade_segregada: number | null; bloqueia_lote: boolean | null; status: string; criado_em: string; data_ocorrencia?: string | null; inspetor_id?: string | null; disposicao_fisica?: string | null; requisito_violado?: string | null; evidencias_objetivas?: unknown; investigacao?: string | null }
 type OitoD = {
@@ -35,6 +38,13 @@ const steps = ['D1 - EQUIPE','D2 - PROBLEMA','D3 - CONTENÇÃO','D4 - CAUSA RAIZ
 const fields = ['d1_equipe','d2_problema','d3_contencao','d4_causa_raiz','d5_acoes','d6_validacao','d7_preventivas','d8_encerramento'] as const
 const blankTexts = (): string[] => Array.from({ length: 8 }, () => '')
 const codeFromRnc = (rnc: Rnc) => '8D-' + new Date(rnc.data_ocorrencia ?? rnc.criado_em).getFullYear() + '-' + rnc.id
+
+function dataHoraRelatorio(valor: string | null | undefined): string {
+  if (!valor) return '—'
+  const data = new Date(valor)
+  if (!Number.isFinite(data.getTime())) return valor
+  return data.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
 
 export default function QualidadeMetodologia8D() {
   const [searchParams] = useSearchParams()
@@ -173,8 +183,92 @@ export default function QualidadeMetodologia8D() {
     }
   }
 
+  /**
+   * Relatório 8D em A4. Usa o protocolo carregado/lançado na tela (código, status, etapas D1–D8)
+   * e a RNC de origem realmente lida do banco; sem conteúdo de etapa nada é emitido.
+   */
+  async function emitirRelatorio8D() {
+    setError('')
+    try {
+      const effectiveCode = codigo.trim()
+      if (!effectiveCode) throw new Error('Selecione a RNC de origem ou informe o código 8D antes de emitir o relatório.')
+      const record = records.find(item => item.id === recordId) ?? null
+      const linkedRnc = rncs.find(item => item.id === id) ?? null
+      const statusLabel: Record<string, string> = {
+        EM_ANALISE: 'EM ANÁLISE',
+        ACOES_EM_EXECUCAO: 'AÇÕES EM EXECUÇÃO',
+        VALIDACAO: 'VALIDAÇÃO',
+        ENCERRADO: 'ENCERRADO'
+      }
+      const filledSteps = steps.map((label, index) => ({ label, text: texts[index].trim() })).filter(step => step.text)
+      if (!filledSteps.length) throw new Error('Nenhuma etapa D1–D8 preenchida neste protocolo; registre o conteúdo da tratativa antes de emitir o relatório.')
+
+      const blocos: Bloco[] = [
+        {
+          tipo: 'campos',
+          titulo: 'Identificação do protocolo 8D',
+          colunas: 2,
+          itens: [
+            { rotulo: 'Código 8D', valor: effectiveCode },
+            { rotulo: 'Status', valor: statusLabel[status] ?? status },
+            { rotulo: 'Etapa atual', valor: record?.etapa_atual ?? `D${step + 1}` },
+            { rotulo: 'Nº RPNC de origem', valor: linkedRnc?.numero_rpnc ?? record?.numero_rpnc_origem },
+            { rotulo: 'Origem da RNC', valor: linkedRnc?.origem ?? record?.origem_rpnc },
+            { rotulo: 'Última atualização', valor: dataHoraRelatorio(record?.updated_at) },
+            { rotulo: 'Cliente de referência', valor: record?.cliente_referencia }
+          ]
+        }
+      ]
+
+      if (linkedRnc) {
+        blocos.push({
+          tipo: 'campos',
+          titulo: 'RNC de origem · fotografia histórica',
+          colunas: 2,
+          itens: [
+            { rotulo: 'Número', valor: linkedRnc.numero_rpnc },
+            { rotulo: 'Origem', valor: linkedRnc.origem },
+            { rotulo: 'Criticidade', valor: linkedRnc.gravidade },
+            { rotulo: 'Status', valor: linkedRnc.status },
+            { rotulo: 'Lote', valor: linkedRnc.lote_producao },
+            { rotulo: 'Quantidade segregada', valor: linkedRnc.quantidade_segregada === null || linkedRnc.quantidade_segregada === undefined ? null : Number(linkedRnc.quantidade_segregada).toLocaleString('pt-BR') },
+            { rotulo: 'Bloqueio do lote', valor: linkedRnc.bloqueia_lote === null || linkedRnc.bloqueia_lote === undefined ? null : linkedRnc.bloqueia_lote ? 'Sim' : 'Não' },
+            { rotulo: 'Ocorrência', valor: dataHoraRelatorio(linkedRnc.data_ocorrencia ?? linkedRnc.criado_em) }
+          ]
+        })
+        blocos.push({ tipo: 'texto', titulo: 'Descrição da não conformidade de origem', texto: linkedRnc.descricao_nao_conformidade })
+      }
+
+      for (const filled of filledSteps) {
+        blocos.push({ tipo: 'texto', titulo: 'Etapa ' + filled.label, texto: filled.text })
+      }
+
+      blocos.push({
+        tipo: 'assinaturas',
+        titulo: 'Aprovações',
+        assinantes: [
+          { papel: 'Responsável da qualidade' },
+          { papel: 'Equipe 8D · líder do protocolo' },
+          { papel: 'Aprovado pela direção' }
+        ]
+      })
+
+      await abrirRelatorio({
+        modulo: 'Qualidade',
+        tipo: 'Relatório 8D',
+        titulo: `Protocolo 8D — tratativa de anomalia ${effectiveCode}`,
+        codigo: effectiveCode,
+        subtitulo: linkedRnc ? `RPNC ${linkedRnc.numero_rpnc} — ${linkedRnc.descricao_nao_conformidade}` : record?.numero_rpnc_origem ? `RPNC ${record.numero_rpnc_origem}` : undefined,
+        blocos,
+        observacoes: 'Etapas D1–D8, vínculo e fotografia histórica da RPNC conforme gravados na tabela erp_qualidade_8D da empresa.'
+      })
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao emitir o relatório 8D em A4.')
+    }
+  }
+
   return <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900"><div className="mx-auto max-w-[1800px] space-y-3">
-    <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3"><div><p className="text-xs font-bold text-sky-700">QUALIDADE &gt; METODOLOGIA 8D</p><h1 className="text-xl font-bold text-slate-950">Tratativa de Anomalias — Protocolo 8D</h1></div><div className="flex flex-wrap gap-2"><button type="button" onClick={startNew} className="erp-row-action"><Plus size={14} className="mr-1"/>NOVO 8D</button><button type="button" onClick={() => void load()} disabled={busy} className="erp-row-action"><RefreshCw size={14} className="mr-1"/>ATUALIZAR</button><button type="button" onClick={() => void save()} disabled={busy} className="erp-row-action"><Save size={14} className="mr-1"/>SALVAR 8D</button><button type="button" onClick={() => window.print()} className="erp-row-action"><Printer size={14} className="mr-1"/>IMPRIMIR</button></div></header>
+    <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3"><div><p className="text-xs font-bold text-sky-700">QUALIDADE &gt; METODOLOGIA 8D</p><h1 className="text-xl font-bold text-slate-950">Tratativa de Anomalias — Protocolo 8D</h1></div><div className="flex flex-wrap gap-2"><button type="button" onClick={startNew} className="erp-row-action"><Plus size={14} className="mr-1"/>NOVO 8D</button><button type="button" onClick={() => void load()} disabled={busy} className="erp-row-action"><RefreshCw size={14} className="mr-1"/>ATUALIZAR</button><button type="button" onClick={() => void save()} disabled={busy} className="erp-row-action"><Save size={14} className="mr-1"/>SALVAR 8D</button><button type="button" onClick={() => void emitirRelatorio8D()} className="erp-row-action"><Printer size={14} className="mr-1"/>IMPRIMIR</button></div></header>
     {error && <p role="alert" className="border border-red-300 bg-red-50 p-3 text-sm text-red-900">{error}</p>}
     {msg && <p role="status" className="border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-900">{msg}</p>}
     <section className="grid grid-cols-1 gap-3 lg:grid-cols-3">

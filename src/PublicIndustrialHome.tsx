@@ -1,8 +1,16 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-11-04
- * @REVISAO: REV-VITRINE-PUBLICA-20261104-03 — botao de teste de 15 dias so no topo e rotacao do carrossel livre do mouse
- * @STATUS_APROVACAO: REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01; ajustes de 2026-11-04 ordenados pelo proprietário
+ * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-CARROSSEL-ARTES-20261105-01 — o carrossel do topo passa a ser as 5 artes enviadas pelo proprietario
+ * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-05 — "mandei trocar as imagens do fundo com aquelas
+ * imagens que mandei para vc" e "vc nao criou travas para nao deixar telas antigas voltar"
+ *
+ * Ordem do proprietario em 2026-11-05: as fotos de fundo geradas por maquina (cena-*.webp) saem do
+ * carrossel e entram as cinco artes que ele enviou, em public/images/carrossel/. Cada arte ja carrega
+ * a marca, o titulo e a lista de itens, entao nao sobra texto do DOM por cima da imagem — o slide e a
+ * propria arte, em 16:9, passando sozinha a cada 7s. O contrato das artes esta em
+ * scripts/verify-carousel-artes.mjs: trocar uma das cinco, apontar o carrossel de volta para uma cena
+ * gerada ou devolver a moldura de navegador para o hero reprova o build da Vercel.
  *
  * Ordem do proprietario em 2026-11-04: "mandei vc tirar botoes da tela principal de 15 dias gratis que
  * se repete e as imagens nao fica neles para vem passando como um carrossel". O botao de teste de 15 dias
@@ -38,7 +46,7 @@
  * réplicas montadas com o vocabulário visual do próprio sistema (TelaVitrine), cada uma com
  * a rota real na barra do navegador, em vez de arte desenhada à parte.
  */
-import { ArrowRight, BarChart3, Boxes, Bot, Check, ChevronDown, ClipboardCheck, Factory, FileText, PackageCheck, Receipt, Settings, ShieldCheck, Truck, Users, Wrench, X } from 'lucide-react'
+import { ArrowRight, BarChart3, Boxes, Bot, ChevronDown, ClipboardCheck, Factory, FileText, PackageCheck, Receipt, Settings, ShieldCheck, Truck, Users, Wrench, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { telasVitrine, TelaVitrineReplica, type TelaVitrine } from './components/marketing/TelaVitrine'
@@ -76,64 +84,16 @@ const screens: Screen[] = [
 
 type HeroSlide = {
   key: string
-  eyebrow: string
-  titleLead: string
-  titleAccent: string
-  titleTail: string
-  description: string
-  background: string
-  shot: Screen
-  secondary: { label: string; href: string }
-  assurances?: string[]
+  art: string
+  titulo: string
 }
 
 const heroSlides: HeroSlide[] = [
-  {
-    key: 'capa',
-    eyebrow: 'ERP & SGQ industrial integrado',
-    titleLead: 'A sua fábrica inteira em', titleAccent: 'uma única base', titleTail: ', do pedido ao custo.',
-    description: 'PCP, chão de fábrica, qualidade com SGQ, estoque, compras, fiscal e controladoria gravando na mesma base, separada por empresa. Sem planilha paralela, sem retrabalho de digitação e sem número inventado em relatório.',
-    background: '/images/cena-celula-injecao.webp',
-    shot: screens[0],
-    secondary: { label: 'Ver as telas do sistema', href: '#telas' },
-    assurances: ['Dados isolados por empresa', 'Telas feitas para uso no chão de fábrica', 'Trilha de auditoria nos registros'],
-  },
-  {
-    key: 'pcp',
-    eyebrow: 'PCP e produção',
-    titleLead: 'A fábrica programada em', titleAccent: 'uma tela só', titleTail: ' — do pedido ao apontamento.',
-    description: 'Gantt por máquina, ordens abertas com avanço real e carga de capacidade juntos. O planejador vê o dia, a semana e o mês sem abrir cinco relatórios.',
-    background: '/images/cena-pcp.webp',
-    shot: screens[0],
-    secondary: { label: 'Ver o PCP nos planos', href: '/planos?modulo=pcp' },
-  },
-  {
-    key: 'qualidade',
-    eyebrow: 'Qualidade e SGQ',
-    titleLead: 'Da não conformidade ao', titleAccent: 'plano de ação', titleTail: ' com evidência.',
-    description: 'RPNC, causa raiz com Ishikawa e 5 Porquês, CAPA com responsável e prazo, auditorias e documentos controlados no mesmo fluxo — prontos para a auditoria certificadora.',
-    background: '/images/cena-qualidade.webp',
-    shot: screens[1],
-    secondary: { label: 'Ver a Qualidade nos planos', href: '/planos?modulo=qualidade' },
-  },
-  {
-    key: 'estoque',
-    eyebrow: 'Estoque e almoxarifado',
-    titleLead: 'Saldo, lote e endereço no', titleAccent: 'mesmo lançamento', titleTail: '.',
-    description: 'O que está reservado e o que está realmente disponível, o mapa de endereços e a movimentação registrada por código de barras — sem digitação no portão.',
-    background: '/images/cena-almoxarifado.webp',
-    shot: screens[2],
-    secondary: { label: 'Ver o Estoque nos planos', href: '/planos?modulo=estoque' },
-  },
-  {
-    key: 'chao-de-fabrica',
-    eyebrow: 'Chão de fábrica',
-    titleLead: 'Posto de apontamento que o operador usa', titleAccent: 'com luva', titleTail: '.',
-    description: 'Botão grande, contador de peças e status da máquina no tablet ao lado do equipamento. Produção, parada, refugo e setup entram na ordem na hora, com usuário e turno.',
-    background: '/images/cena-chao-de-fabrica.webp',
-    shot: screens[3],
-    secondary: { label: 'Ver o Chão de Fábrica nos planos', href: '/planos?modulo=chao-de-fabrica' },
-  },
+  { key: 'pcp-chao-de-fabrica', art: '/images/carrossel/pcp-chao-de-fabrica.png', titulo: 'PCP e Chão de Fábrica — planejamento, controle e execução em tempo real' },
+  { key: 'qualidade-sgq', art: '/images/carrossel/qualidade-sgq.png', titulo: 'Qualidade e SGQ — controle total da qualidade do seu processo' },
+  { key: 'estoque-compras-vendas', art: '/images/carrossel/estoque-compras-vendas.png', titulo: 'Estoque, Compras e Vendas — gestão integrada da sua operação' },
+  { key: 'rh-manutencao-gestao', art: '/images/carrossel/rh-manutencao-gestao.png', titulo: 'RH, Manutenção e Gestão — tudo o que sua empresa precisa em um só sistema' },
+  { key: 'planos', art: '/images/carrossel/planos.png', titulo: 'Planos de funcionamento para todas as necessidades da sua indústria' },
 ]
 
 const modules: Module[] = [
@@ -226,59 +186,35 @@ const INTERVALO_SLIDE_MS = 7000
 
 function HeroCarousel() {
   const [indice, setIndice] = useState(0)
-  const [pausado, setPausado] = useState(false)
   const total = heroSlides.length
 
   useEffect(() => {
-    if (pausado) return undefined
     const timer = window.setInterval(() => setIndice(atual => (atual + 1) % total), INTERVALO_SLIDE_MS)
     return () => window.clearInterval(timer)
-  }, [pausado, total])
-
-  const slide = heroSlides[indice]
+  }, [total])
 
   return (
     <section
       id="inicio"
-      className="ph-hero ph-hero--carousel"
+      className="ph-hero ph-hero--carousel ph-hero--artes"
       aria-roledescription="carrossel"
-      aria-label="Telas e módulos do SYSNQRA ERP & SGQ Industrial"
+      aria-label="Módulos do SYSNQRA ERP & SGQ Industrial"
     >
-      <div className="ph-carousel-bg" aria-hidden="true">
+      <h1 className="ph-sr-only">SYSNQRA ERP Industrial: PCP, qualidade com SGQ, estoque, compras, vendas, RH, manutenção e planos em uma única base, separada por empresa.</h1>
+      <div className="ph-carousel-bg">
         {heroSlides.map((item, i) => (
-          <img key={item.key} src={item.background} alt="" className={i === indice ? 'is-active' : undefined} loading={i === 0 ? 'eager' : 'lazy'} decoding="async" />
+          <img
+            key={item.key}
+            src={item.art}
+            alt={i === indice ? item.titulo : ''}
+            aria-hidden={i === indice ? undefined : true}
+            className={i === indice ? 'is-active' : undefined}
+            loading={i === 0 ? 'eager' : 'lazy'}
+            decoding="async"
+          />
         ))}
       </div>
-      <div className="ph-carousel-scrim" aria-hidden="true" />
-
-      <div className="ph-wrap ph-carousel-grid" key={slide.key}>
-        <div
-          className="ph-slide-copy"
-          onMouseEnter={() => setPausado(true)}
-          onMouseLeave={() => setPausado(false)}
-          onFocusCapture={() => setPausado(true)}
-          onBlurCapture={() => setPausado(false)}
-        >
-          <span className="ph-kicker">{slide.eyebrow}</span>
-          <h1>{slide.titleLead} <em>{slide.titleAccent}</em>{slide.titleTail}</h1>
-          <p className="ph-lead">{slide.description}</p>
-          <div className="ph-cta-row">
-            <a className="ph-ghost" href={slide.secondary.href}>{slide.secondary.label} <ArrowRight size={16} /></a>
-          </div>
-          {slide.assurances && (
-            <div className="ph-assurances">
-              {slide.assurances.map(item => <span key={item} className="ph-assurance"><Check size={15} /> {item}</span>)}
-            </div>
-          )}
-          <p className="ph-cta-note">As imagens passam sozinhas, uma por módulo. Passe o mouse sobre o texto para ler com calma.</p>
-        </div>
-      </div>
-
-      {/* Ordem do proprietario em 2026-11-04: "tirar botoes da tela principal de 15 dias gratis que se
-          repete" e "as imagens nao ficam passando como um carrossel". O botao de teste fica so no topo
-          (ph-nav-actions); o slide nao repete mais o mesmo botao a cada volta, e mostra o link do modulo
-          que esta na foto. A pausa por mouse sai do hero inteiro — que cobre a tela e congelava a
-          rotacao — e passa a valer so sobre o bloco de texto. */}
+      <p className="ph-sr-only" aria-live="polite">{`Arte ${indice + 1} de ${total}: ${heroSlides[indice].titulo}`}</p>
     </section>
   )
 }
