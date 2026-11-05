@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import PCPTabletMenuModal from '../PCPTabletMenuModal'
 import ModuleTabletMenuModal, { type ModuleTabletKey } from './ModuleTabletMenuModal'
+import QuickAccessRail, { type QuickAccessItem } from './QuickAccessRail'
 import PageIntroCard from './PageIntroCard'
 import { fallbackPageIntro, hasNativeIntroCard, resolvePageIntro } from './pageIntroCatalog'
 
@@ -154,6 +155,10 @@ const menus: MenuItem[] = [
   ] }
 ]
 
+/** Módulos que o perfil OPERADOR_FABRIL enxerga no menu e na barra de acesso rápido.
+ *  O SGQ entra porque o paquímetro e a liberação de lote são rotinas de bancada, não de escritório. */
+const MODULOS_DO_OPERADOR = new Set(['Chão de Fábrica', 'Sistema SGQ'])
+
 export default function ERPHorizontalShell({ children, operatorName = 'Usuário ERP' }: { children: ReactNode; operatorName?: string }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
@@ -167,6 +172,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
   const [dataEpoch, setDataEpoch] = useState(0)
   const [sessionNivel, setSessionNivel] = useState(0)
+  const [sessionPerfil, setSessionPerfil] = useState('')
   const [sessionEmpresa, setSessionEmpresa] = useState('')
   const ref = useRef<HTMLDivElement>(null)
 
@@ -179,8 +185,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     })
   }, [operatorName])
 
-  // Nível administrativo da sessão: restringe itens do menu (ex.: Configurações de Usuário, nível 8/9).
-  // É apenas sinalização visual; a concessão real continua no RLS e nas RPCs security definer.
+  // Nível administrativo e perfil da sessão: restringem itens do menu (ex.: Configurações de Usuário, nível 8/9;
+  // OPERADOR_FABRIL vê apenas o Chão de Fábrica). É apenas sinalização visual; a concessão real continua no RLS
+  // e nas RPCs security definer — esconder o atalho nunca autoriza nem bloqueia dados.
   useEffect(() => {
     let ativo = true
     void (async () => {
@@ -188,12 +195,14 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       if (!data.user) return
       const usuario = await supabase
         .from('erp_usuarios')
-        .select('nivel_admin')
+        .select('nivel_admin,perfil')
         .eq('auth_user_id', data.user.id)
         .eq('ativo', true)
         .is('deleted_at', null)
-        .maybeSingle<{ nivel_admin: number }>()
-      if (ativo) setSessionNivel(Number(usuario.data?.nivel_admin ?? 0))
+        .maybeSingle<{ nivel_admin: number; perfil: string | null }>()
+      if (!ativo) return
+      setSessionNivel(Number(usuario.data?.nivel_admin ?? 0))
+      setSessionPerfil(String(usuario.data?.perfil ?? '').trim().toUpperCase())
     })()
     return () => { ativo = false }
   }, [])
@@ -271,6 +280,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'Fiscal'
     : null
   const visibleMenus: MenuItem[] = menus.filter(menu => menu.minNivel === undefined || sessionNivel >= menu.minNivel)
+    .filter(menu => sessionPerfil !== 'OPERADOR_FABRIL' || MODULOS_DO_OPERADOR.has(menu.label))
     .map(menu => (menu.children ? { ...menu, children: menu.children.filter(child => child.minNivel === undefined || sessionNivel >= child.minNivel) } : menu))
   const currentModuleMenu = moduleLabel
     ? visibleMenus.find(menu => menu.label === moduleLabel) ?? { label: moduleLabel, route: '/' + pathname.split('/')[1], icon: Home }
@@ -279,6 +289,12 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     ?? visibleMenus.find(menu => menu.route === pathname)
     ?? visibleMenus.find(menu => pathname.startsWith(menu.route + '/'))
   const current = routeMenu ?? currentModuleMenu
+
+  // Ordem do proprietário em 2026-11-05: barra fixa de acesso rápido no canto inferior esquerdo,
+  // abaixo do botão Menu, no lugar da antiga barra Windows 11. Os atalhos são exatamente os módulos
+  // que o menu já liberou para esta sessão (nivel_admin + recorte do perfil OPERADOR_FABRIL).
+  const quickAccessItems: QuickAccessItem[] = visibleMenus
+    .map(menu => ({ label: menu.label, route: menu.route, icon: menu.icon ?? Home, action: menu.action, tabletKey: menu.tabletKey }))
   const normalizedSearch = moduleSearch.trim().toLocaleLowerCase('pt-BR')
   const searchedMenus = normalizedSearch ? visibleMenus.map(menu => ({ ...menu, children: menu.children?.filter(child => child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)) })).filter(menu => menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.route.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || Boolean(menu.children?.length)) : visibleMenus
   useEffect(() => {
@@ -428,6 +444,12 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         {pageIntro && <PageIntroCard {...pageIntro} />}
         {children}
       </main>
+      <QuickAccessRail
+        items={quickAccessItems}
+        activeLabel={current?.label ?? null}
+        hidden={startMenuOpen}
+        onOpen={(item) => { setStartMenuOpen(false); openMenuItem(item) }}
+      />
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
       <ModuleTabletMenuModal moduleKey={sgqTabletKey} sessionNivel={sessionNivel} onClose={() => setSgqTabletKey(null)} onNavigate={(route) => { setSgqTabletKey(null); go(route) }} />
 
