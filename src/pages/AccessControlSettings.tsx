@@ -1,8 +1,8 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-ACCESS-CONTROL-20261030-01 — controle de acesso do chão de fábrica (setores, matriz por módulo e modelos por nível)
- * @STATUS_APROVACAO: INTEGRAÇÃO REAL COM SUPABASE · exige a migration 20261030160000_erp_access_control_sector_matrix_v1 e o deploy da Edge Function erp-user-admin
+ * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-ACCESS-CONTROL-SEM-MATRICULA-20261105-01 — erp_usuarios nao tem matricula; acesso do setor se identifica por login_nome e e-mail
+ * @STATUS_APROVACAO: CORRECAO DO HTTP 400 DO POSTGREST, AUTORIZADA PELO PROPRIETARIO EM 2026-11-05 · exige deploy da Edge Function erp-user-admin
  * Fontes: erp_setores, erp_postos_trabalho, erp_permissoes_modulos, erp_modulos_acesso,
  * erp_roles/erp_permissions/erp_role_permissions e auditoria em erp_audit_logs.
  * A criação de credenciais Auth é feita somente pela Edge Function erp-user-admin
@@ -20,7 +20,7 @@ type SectorRow = { id: string; codigo: string; nome: string }
 type WorkstationRow = { id: string; codigoPosto: string; nomePosto: string }
 type LevelTemplate = { roleId: string; codigo: string; nome: string; nivel: number; global: boolean; modulos: Record<string, MatrixFlags> }
 type SectorUser = {
-  id: string; nome: string; email: string; loginNome: string; matricula: string
+  id: string; nome: string; email: string; loginNome: string
   nivelAdmin: number; ativo: boolean; roleId: string; setorId: string
 }
 
@@ -110,7 +110,7 @@ type AdminResponse = {
 function normalizeUsers(raw: unknown): SectorUser[] {
   return asRecords(raw).map(item => ({
     id: text(item.id), nome: text(item.nome), email: text(item.email),
-    loginNome: text(item.login_nome), matricula: text(item.matricula),
+    loginNome: text(item.login_nome),
     nivelAdmin: integer(item.nivel_admin), ativo: item.ativo === true,
     roleId: text(item.role_id), setorId: text(item.setor_id),
   })).filter(item => item.id)
@@ -147,7 +147,6 @@ export default function AccessControlSettings() {
   const [formEmail, setFormEmail] = useState('')
   const [formSenha, setFormSenha] = useState('')
   const [formLogin, setFormLogin] = useState('')
-  const [formMatricula, setFormMatricula] = useState('')
   const [formTipo, setFormTipo] = useState<'COLETIVO' | 'POSTO'>('COLETIVO')
   const [formPostoId, setFormPostoId] = useState('')
   const [formRoleId, setFormRoleId] = useState('')
@@ -324,7 +323,6 @@ export default function AccessControlSettings() {
       action, nome: formNome.trim(), email: formEmail.trim(),
       setor_id: setorId || null, role_id: formRoleId || null,
       login_nome: (formLogin || suggestedLogin).trim().toLowerCase(),
-      matricula: formMatricula.trim() || null,
     }
     if (action === 'create_user' && formSenha) body.password = formSenha
 
@@ -341,7 +339,7 @@ export default function AccessControlSettings() {
       setMessage(`Acesso criado${created.login_nome ? ` para ${created.login_nome}` : ''}. Informe a senha temporária ao responsável do setor.`)
     }
     if (data.audit_warning) setError(data.audit_warning)
-    setFormNome(''); setFormEmail(''); setFormSenha(''); setFormLogin(''); setFormMatricula('')
+    setFormNome(''); setFormEmail(''); setFormSenha(''); setFormLogin('')
     await load()
   }
 
@@ -350,7 +348,6 @@ export default function AccessControlSettings() {
     setFormNome(user.nome)
     setFormEmail(user.email)
     setFormLogin(user.loginNome)
-    setFormMatricula(user.matricula)
     setFormRoleId(user.roleId)
     setFormSenha('')
     setMessage(`Editando ${user.nome || user.email}. O e-mail de autenticação permanece inalterado.`)
@@ -359,7 +356,7 @@ export default function AccessControlSettings() {
 
   const cancelEditUser = () => {
     setEditingUserId('')
-    setFormNome(''); setFormEmail(''); setFormSenha(''); setFormLogin(''); setFormMatricula(''); setFormRoleId('')
+    setFormNome(''); setFormEmail(''); setFormSenha(''); setFormLogin(''); setFormRoleId('')
     setMessage('Edição cancelada.')
   }
 
@@ -371,7 +368,7 @@ export default function AccessControlSettings() {
     setSaving(true); setError(''); setMessage('')
     const body: Record<string, unknown> = {
       action: 'update_user', user_id: user.id, empresa_id: empresaId || undefined,
-      nome: formNome.trim(), login_nome: formLogin.trim(), matricula: formMatricula.trim(),
+      nome: formNome.trim(), login_nome: formLogin.trim(),
       setor_id: user.setorId || null,
     }
     if (formRoleId) body.role_id = formRoleId
@@ -381,7 +378,7 @@ export default function AccessControlSettings() {
     if (!data || data.ok !== true) { setError(data?.error ?? 'O serviço não confirmou a edição do usuário.'); return }
     setMessage(data.message ?? 'Usuário atualizado com sucesso.')
     setEditingUserId('')
-    setFormNome(''); setFormEmail(''); setFormSenha(''); setFormLogin(''); setFormMatricula(''); setFormRoleId('')
+    setFormNome(''); setFormEmail(''); setFormSenha(''); setFormLogin(''); setFormRoleId('')
     await load()
   }
 
@@ -544,7 +541,6 @@ export default function AccessControlSettings() {
                   </div>
                   <div className="md:col-span-2"><span className={label}>E-mail de acesso</span><input type="email" className={input} value={formEmail} disabled={Boolean(editingUserId)} onChange={event => setFormEmail(event.target.value)} placeholder="cq.setor@empresa.com.br" /></div>
                   <div><span className={label}>Login (gerado do setor/posto)</span><input className={input} value={formLogin} onChange={event => setFormLogin(event.target.value)} placeholder={suggestedLogin || 'CQ-COLETIVO'} /></div>
-                  <div><span className={label}>Matrícula (opcional)</span><input className={input} value={formMatricula} onChange={event => setFormMatricula(event.target.value)} placeholder="1042" /></div>
                   <div><span className={label}>Perfil / nível de acesso</span>
                     <select className={input} value={formRoleId} onChange={event => setFormRoleId(event.target.value)}>
                       <option value="">Não definido</option>
@@ -567,15 +563,14 @@ export default function AccessControlSettings() {
               </form>
 
               <div className="overflow-auto rounded-md border border-slate-200 bg-white shadow-sm">
-                <table className="w-full min-w-[1040px] border-collapse text-[10px]">
-                  <thead><tr className="h-7 bg-[#123B50] text-white"><th className="px-2 text-left font-normal">Acesso do setor</th><th className="px-2 text-left font-normal">E-mail / login</th><th className="w-[90px] px-2 text-center font-normal">Nível</th><th className="w-[110px] px-2 text-center font-normal">Matrícula</th><th className="w-[110px] px-2 text-center font-normal">Status</th><th className="w-[330px] px-2 text-center font-normal">Ações</th></tr></thead>
+                <table className="w-full min-w-[920px] border-collapse text-[10px]">
+                  <thead><tr className="h-7 bg-[#123B50] text-white"><th className="px-2 text-left font-normal">Acesso do setor</th><th className="px-2 text-left font-normal">E-mail / login</th><th className="w-[90px] px-2 text-center font-normal">Nível</th><th className="w-[110px] px-2 text-center font-normal">Status</th><th className="w-[330px] px-2 text-center font-normal">Ações</th></tr></thead>
                   <tbody>
                     {sectorUsers.map(user => (
                       <tr key={user.id} className="h-[30px] border-b border-slate-100 even:bg-slate-50">
                         <td className="px-2 font-bold text-[#123B50]">{user.nome || '—'}<span className="ml-1 text-[8px] font-normal text-slate-400">{user.id.slice(0, 8)}</span></td>
                         <td className="px-2 text-slate-600">{user.email || '—'}<span className="block text-[8px] text-slate-400">login: {user.loginNome || '—'}</span>{userPasswords[user.id] && <span className="block text-[9px] font-bold text-[#8a5a12]">temporária: {userPasswords[user.id]}</span>}</td>
                         <td className="px-2 text-center">{user.nivelAdmin}</td>
-                        <td className="px-2 text-center">{user.matricula || '—'}</td>
                         <td className="px-2 text-center"><span className={`rounded px-1.5 py-0.5 text-[9px] font-bold ${user.ativo ? 'bg-[#e5f3ee] text-[#256c52]' : 'bg-slate-100 text-slate-500'}`}>{user.ativo ? 'ATIVO' : 'BLOQUEADO'}</span></td>
                         <td className="px-2">
                           <div className="flex flex-wrap justify-center gap-1">
@@ -587,7 +582,7 @@ export default function AccessControlSettings() {
                         </td>
                       </tr>
                     ))}
-                    {!sectorUsers.length && <tr><td colSpan={6} className="h-16 text-center text-slate-400"><Users size={18} className="mx-auto mb-1" />Nenhum usuário vinculado a este setor em erp_usuarios.</td></tr>}
+                    {!sectorUsers.length && <tr><td colSpan={5} className="h-16 text-center text-slate-400"><Users size={18} className="mx-auto mb-1" />Nenhum usuário vinculado a este setor em erp_usuarios.</td></tr>}
                   </tbody>
                 </table>
               </div>

@@ -1,13 +1,18 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-USUARIOS-SEM-MATRICULA-20261105-01 — erp_usuarios nao tem coluna matricula; consulta e formulario usam somente colunas existentes
+ * @STATUS_APROVACAO: CORRECAO DO HTTP 400 DO POSTGREST, AUTORIZADA PELO PROPRIETARIO EM 2026-11-05 (introspecao real do PostgreSQL)
  */
 /*
  * REVISÃO TÉCNICA: 16/10/2026
  * Revisado: fluxo de administração de usuários, escopo empresa/Master, contrato erp_has_permission(p_code), auditoria e sincronização Auth/ERP.
  * Não validado nesta revisão: Edge Function em produção, políticas RLS efetivas, type-check/build e testes autenticados ponta a ponta.
+ *
+ * 2026-11-05 — matrícula não é atributo de erp_usuarios. A coluna existe em rh_funcionarios (unique
+ * (empresa_id, matricula)) e não há FK provada nas migrations ligando funcionários a erp_usuarios,
+ * então esta tela não exibe nem grava matrícula: login é erp_usuarios.login_nome (e-mail é o identificador
+ * de acesso). Pendência real: vincular o usuário à ficha de RH exige relacionamento confirmado no banco.
  */
 import { useEffect, useMemo, useState } from 'react'
 import {
@@ -49,7 +54,6 @@ type User = {
   ativo: boolean
   login_nome: string | null
   created_at?: string | null
-  matricula?: string | null
   setor_id?: string | null
   cargo_id?: string | null
 }
@@ -63,10 +67,10 @@ type Company = {
   plano_status: string | null
 }
 type Role = { id: string; codigo: string; nome: string; nivel: number; empresa_id: string | null }
-type FormState = { nome: string; email: string; login_nome: string; matricula: string; role_id: string; password: string; empresa_id: string }
+type FormState = { nome: string; email: string; login_nome: string; role_id: string; password: string; empresa_id: string }
 type StatusFilter = 'all' | 'active' | 'inactive'
 
-const emptyForm: FormState = { nome: '', email: '', login_nome: '', matricula: '', role_id: '', password: '', empresa_id: '' }
+const emptyForm: FormState = { nome: '', email: '', login_nome: '', role_id: '', password: '', empresa_id: '' }
 const masterAccount = (user: User | null) => user?.is_master === true
   && Number(user.nivel_admin) >= 100
   && user.empresa_id === null
@@ -99,7 +103,7 @@ export default function UsuariosAdmin() {
       if (!auth) throw new Error('Sessão não encontrada.')
       const { data: actorRow, error: actorError } = await supabase
         .from('erp_usuarios')
-        .select('id,auth_user_id,empresa_id,nome,email,role,perfil,is_master,role_id,nivel_admin,ativo,login_nome,created_at,matricula,setor_id,cargo_id')
+        .select('id,auth_user_id,empresa_id,nome,email,role,perfil,is_master,role_id,nivel_admin,ativo,login_nome,created_at,setor_id,cargo_id')
         .eq('auth_user_id', auth.id)
         .is('deleted_at', null)
         .maybeSingle()
@@ -110,7 +114,7 @@ export default function UsuariosAdmin() {
 
       let usersQuery = supabase
         .from('erp_usuarios')
-        .select('id,auth_user_id,empresa_id,nome,email,role,perfil,is_master,role_id,nivel_admin,ativo,login_nome,created_at,matricula,setor_id,cargo_id')
+        .select('id,auth_user_id,empresa_id,nome,email,role,perfil,is_master,role_id,nivel_admin,ativo,login_nome,created_at,setor_id,cargo_id')
         .is('deleted_at', null)
         .order('nome')
       if (masterAccount(currentActor)) usersQuery = usersQuery.not('empresa_id', 'is', null)
@@ -151,7 +155,7 @@ export default function UsuariosAdmin() {
     return users.filter((user) => {
       const companyMatch = !companyFilter || user.empresa_id === companyFilter
       const statusMatch = statusFilter === 'all' || user.ativo === (statusFilter === 'active')
-      const searchMatch = !term || [user.nome, user.email, user.login_nome, user.matricula, user.role]
+      const searchMatch = !term || [user.nome, user.email, user.login_nome, user.role]
         .some((value) => String(value ?? '').toLocaleLowerCase('pt-BR').includes(term))
       return companyMatch && statusMatch && searchMatch
     })
@@ -178,7 +182,6 @@ export default function UsuariosAdmin() {
       nome: user.nome || '',
       email: user.email || '',
       login_nome: user.login_nome || '',
-      matricula: user.matricula || '',
       role_id: user.role_id || roles.find((role) => role.codigo === user.role && (role.empresa_id === null || role.empresa_id === user.empresa_id))?.id || '',
       password: '',
       empresa_id: user.empresa_id || '',
@@ -198,8 +201,8 @@ export default function UsuariosAdmin() {
       const action = modal === 'edit' ? 'update_user' : modal === 'invite' ? 'invite_user' : 'create_user'
       if (isMaster && !form.empresa_id) throw new Error('Selecione a empresa do novo usuário.')
       const body = modal === 'edit'
-        ? { action, user_id: editing?.id, empresa_id: form.empresa_id, nome: form.nome, login_nome: form.login_nome, matricula: form.matricula, role_id: form.role_id }
-        : { action, empresa_id: form.empresa_id, nome: form.nome, email: form.email, login_nome: form.login_nome, matricula: form.matricula, role_id: form.role_id, password: form.password || undefined }
+        ? { action, user_id: editing?.id, empresa_id: form.empresa_id, nome: form.nome, login_nome: form.login_nome, role_id: form.role_id }
+        : { action, empresa_id: form.empresa_id, nome: form.nome, email: form.email, login_nome: form.login_nome, role_id: form.role_id, password: form.password || undefined }
       const { data, error } = await supabase.functions.invoke('erp-user-admin', { body })
       if (error) throw error
       if (!data?.ok) throw new Error(data?.error || 'Não foi possível concluir a operação.')
@@ -321,7 +324,7 @@ export default function UsuariosAdmin() {
         <div className="user-admin-toolbar">
           <label className="user-admin-search">
             <Search size={17} />
-            <input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar nome, e-mail, login ou matrícula" aria-label="Buscar usuários" />
+            <input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar nome, e-mail ou login" aria-label="Buscar usuários" />
             {search && <button type="button" onClick={() => setSearch('')} aria-label="Limpar busca"><X size={15} /></button>}
           </label>
           {isMaster && <label className="user-admin-company-filter">
@@ -360,10 +363,10 @@ export default function UsuariosAdmin() {
                   <td>
                     <div className="user-admin-person">
                       <span className={`user-admin-avatar${user.ativo ? '' : ' is-inactive'}`} aria-hidden="true">{initials(user.nome)}</span>
-                      <span className="user-admin-person-details"><strong>{user.nome}</strong><small>{user.email || 'E-mail não informado'}</small><small>{user.login_nome || user.matricula || 'Login não informado'}</small></span>
+                      <span className="user-admin-person-details"><strong>{user.nome}</strong><small>{user.email || 'E-mail não informado'}</small><small>{user.login_nome || 'Login não informado'}</small></span>
                     </div>
                   </td>
-                  <td><span className="user-admin-company">{selectedCompanyName(user.empresa_id)}</span>{user.matricula && <small className="user-admin-subline">Matrícula {user.matricula}</small>}</td>
+                  <td><span className="user-admin-company">{selectedCompanyName(user.empresa_id)}</span></td>
                   <td><span className="user-admin-role">{masterRole(user.role) && <ShieldCheck size={15} />}{role?.nome || user.role || `Nível ${user.nivel_admin}`}</span><small className="user-admin-subline">Nível {role?.nivel ?? user.nivel_admin}</small></td>
                   <td><span className={`user-admin-status${user.ativo ? ' is-active' : ' is-inactive'}`}>{user.ativo ? <UserCheck size={14} /> : <UserX size={14} />}{user.ativo ? 'Ativo' : 'Inativo'}</span></td>
                   <td>
@@ -407,7 +410,6 @@ export default function UsuariosAdmin() {
             <label className="user-admin-field"><span>E-mail <b>*</b></span><input type="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} placeholder="nome@empresa.com" disabled={modal === 'edit'} autoComplete="email" /></label>
             {isMaster && modal !== 'edit' && <label className="user-admin-field user-admin-field--wide"><span>Empresa <b>*</b></span><select value={form.empresa_id} onChange={(event) => setForm({ ...form, empresa_id: event.target.value })}><option value="">Selecione a empresa</option>{companies.map((company) => <option key={company.id} value={company.id}>{company.nome_fantasia || company.razao_social || company.codigo || company.id}</option>)}</select></label>}
             <label className="user-admin-field"><span>Login</span><input value={form.login_nome} onChange={(event) => setForm({ ...form, login_nome: event.target.value })} placeholder="Identificador de acesso" autoComplete="username" /></label>
-            <label className="user-admin-field"><span>Matrícula</span><input value={form.matricula} onChange={(event) => setForm({ ...form, matricula: event.target.value })} placeholder="Código interno" /></label>
             <label className="user-admin-field user-admin-field--wide"><span>Perfil de acesso</span><select value={form.role_id} onChange={(event) => setForm({ ...form, role_id: event.target.value })}><option value="">Selecione um perfil</option>{availableRoles.map((role) => <option key={role.id} value={role.id}>{role.nome} — nível {role.nivel}</option>)}</select><small>Somente perfis permitidos para o seu nível de acesso são listados.</small></label>
             {modal === 'create' && <label className="user-admin-field user-admin-field--wide"><span>Senha inicial</span><input type="password" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} placeholder="Deixe em branco para gerar uma senha temporária" autoComplete="new-password" /><small>A política de senha é validada pelo serviço administrativo.</small></label>}
           </div>

@@ -47,7 +47,7 @@ type Action = {
   status:string
   eficacia:string|null
 }
-type User = { id:string; nome:string|null; matricula:string|null }
+type User = { id:string; nome:string|null; email:string|null }
 type Ishikawa = {
   id:string
   rpnc_id:string|null
@@ -90,7 +90,7 @@ export default function AcompanhamentoNaoConformidade(){
       const [r,a,u,i]=await Promise.all([
         supabase.from('erp_rpnc').select('id,numero_rpnc,descricao_nao_conformidade,acao_corretiva,status').order('criado_em',{ascending:false}).limit(1000),
         supabase.from('erp_qualidade_acoes').select('id,origem_id,what,why,where_to,when_date,who_id,how,how_much,status,eficacia').eq('origem_tipo','RPNC').order('when_date',{ascending:true}).limit(2000),
-        supabase.from('erp_usuarios').select('id,nome,matricula').eq('ativo',true).is('deleted_at',null).order('nome').limit(500),
+        supabase.from('erp_usuarios').select('id,nome,email').eq('ativo',true).is('deleted_at',null).order('nome').limit(500),
         supabase.from('erp_qualidade_ishikawa').select('id,rpnc_id,efeito,maquina,metodo,mao_de_obra,material,medicao,meio_ambiente,cinco_porques').order('created_at',{ascending:false}).limit(1000)
       ])
       for(const x of [r,a,u,i]) if(x.error) throw x.error
@@ -304,7 +304,7 @@ export default function AcompanhamentoNaoConformidade(){
         <Field label="Por quê?"><input value={actionForm.why} onChange={e=>setActionForm({...actionForm,why:e.target.value})} style={inputStyle}/></Field>
         <Field label="Onde?"><input value={actionForm.where_to} onChange={e=>setActionForm({...actionForm,where_to:e.target.value})} style={inputStyle}/></Field>
         <Field label="Quando?"><input type="date" value={actionForm.when_date} onChange={e=>setActionForm({...actionForm,when_date:e.target.value})} style={inputStyle}/></Field>
-        <Field label="Quem?"><select value={actionForm.who_id} onChange={e=>setActionForm({...actionForm,who_id:e.target.value})} style={inputStyle}><option value="">Selecionar responsável</option>{users.map(u=><option key={u.id} value={u.id}>{u.nome||u.matricula||u.id.slice(0,8)}</option>)}</select></Field>
+        <Field label="Quem?"><select value={actionForm.who_id} onChange={e=>setActionForm({...actionForm,who_id:e.target.value})} style={inputStyle}><option value="">Selecionar responsável</option>{users.map(u=><option key={u.id} value={u.id}>{u.nome||u.email||u.id.slice(0,8)}</option>)}</select></Field>
         <Field label="Quanto? (R$)"><input type="number" min="0" step="0.01" value={actionForm.how_much} onChange={e=>setActionForm({...actionForm,how_much:e.target.value})} style={inputStyle}/></Field>
       </div>
       <Field label="Como?"><textarea value={actionForm.how} onChange={e=>setActionForm({...actionForm,how:e.target.value})} style={{...inputStyle,minHeight:90,resize:'vertical'}}/></Field>

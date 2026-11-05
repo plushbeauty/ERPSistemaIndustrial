@@ -182,7 +182,7 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'list_users') {
-      let query = admin.from('erp_usuarios').select('id,empresa_id,nome,email,role,perfil,role_id,nivel_admin,ativo,login_nome,created_at,setor_id,cargo_id,matricula').is('deleted_at', null).not('empresa_id', 'is', null).order('nome')
+      let query = admin.from('erp_usuarios').select('id,empresa_id,nome,email,role,perfil,role_id,nivel_admin,ativo,login_nome,created_at,setor_id,cargo_id').is('deleted_at', null).not('empresa_id', 'is', null).order('nome')
       const requestedCompany = clean(body.empresa_id)
       if (actorIsMaster && requestedCompany) query = query.eq('empresa_id', requestedCompany)
       else if (!actorIsMaster && actor.empresa_id) query = query.eq('empresa_id', actor.empresa_id)
@@ -269,7 +269,7 @@ Deno.serve(async (req) => {
         const { error: profileError } = await admin.from('erp_usuarios').insert({
           id: authUserId, auth_user_id: authUserId, empresa_id: empresaId, nome, email, role: roleCode,
           nivel_admin: nivelAdmin, ativo: false, role_id: role?.id ?? null, setor_id: body.setor_id || null,
-          cargo_id: body.cargo_id || null, matricula: body.matricula ? String(body.matricula).trim() : null,
+          cargo_id: body.cargo_id || null,
           login_nome: loginNome,
         })
         if (profileError) {
@@ -310,7 +310,7 @@ Deno.serve(async (req) => {
       authUserId = created.data.user.id
       temporaryPassword = body.password ? null : password
 
-      const inserted = await admin.from('erp_usuarios').insert({ id: authUserId, auth_user_id: authUserId, empresa_id: empresaId, nome, email, role: roleCode, nivel_admin: nivelAdmin, ativo: true, role_id: role?.id ?? null, setor_id: body.setor_id || null, cargo_id: body.cargo_id || null, matricula: body.matricula ? String(body.matricula).trim() : null, login_nome: loginNome }).select('id,empresa_id,nome,email,role,nivel_admin,ativo,role_id,setor_id,cargo_id,matricula,login_nome').single()
+      const inserted = await admin.from('erp_usuarios').insert({ id: authUserId, auth_user_id: authUserId, empresa_id: empresaId, nome, email, role: roleCode, nivel_admin: nivelAdmin, ativo: true, role_id: role?.id ?? null, setor_id: body.setor_id || null, cargo_id: body.cargo_id || null, login_nome: loginNome }).select('id,empresa_id,nome,email,role,nivel_admin,ativo,role_id,setor_id,cargo_id,login_nome').single()
       if (inserted.error) {
         await admin.auth.admin.deleteUser(authUserId)
         return json({ error: inserted.error.message }, 400)
@@ -365,7 +365,6 @@ Deno.serve(async (req) => {
       const patch: Record<string, unknown> = { updated_at: new Date().toISOString() }
       if (body.nome !== undefined) patch.nome = String(body.nome).trim()
       if (body.login_nome !== undefined) patch.login_nome = String(body.login_nome).trim().toLowerCase() || null
-      if (body.matricula !== undefined) patch.matricula = String(body.matricula).trim() || null
       if (body.setor_id !== undefined) patch.setor_id = body.setor_id || null
       if (body.cargo_id !== undefined) patch.cargo_id = body.cargo_id || null
       if (body.role_id !== undefined) {
@@ -386,7 +385,7 @@ Deno.serve(async (req) => {
         patch.role = String(role.codigo).toUpperCase()
         patch.nivel_admin = Number(role.nivel)
       }
-      const { data: updated, error } = await admin.from('erp_usuarios').update(patch).eq('id', target.id).eq('empresa_id', target.empresa_id).select('id,empresa_id,nome,email,role,nivel_admin,ativo,role_id,login_nome,setor_id,cargo_id,matricula').single()
+      const { data: updated, error } = await admin.from('erp_usuarios').update(patch).eq('id', target.id).eq('empresa_id', target.empresa_id).select('id,empresa_id,nome,email,role,nivel_admin,ativo,role_id,login_nome,setor_id,cargo_id').single()
       if (error) throw error
       const auditWarning = await writeAudit(actor, 'user.updated', target.id, target, updated, req, target.empresa_id)
       return json({ ok: true, message: 'Usuário atualizado.', user: updated, audit_warning: auditWarning })

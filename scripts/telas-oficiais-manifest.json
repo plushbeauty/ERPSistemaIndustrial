@@ -13,9 +13,9 @@
     },
     {
       "path": "src/PublicIndustrialHome.tsx",
-      "sha": "efc9e69d4cae1584cf63abf3f03f362ce624b4a4",
+      "sha": "a90346e68cf2ffc3379863fdb56d2db732a2b474",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-VITRINE-PUBLICA-20261104-02 — botão de teste grátis no azul do login e barra de indicadores do carrossel removida",
+      "revisao": "REV-VITRINE-PUBLICA-20261104-03 — botao de teste de 15 dias so no topo e rotacao do carrossel livre do mouse",
       "aprovadaEm": "2026-11-04",
       "statusAprovacao": "REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01; ajustes de 2026-11-04 ordenados pelo proprietário"
     },
@@ -261,15 +261,15 @@
     },
     {
       "path": "src/pages/AccessControlSettings.tsx",
-      "sha": "64fbe7d0a0cb14e2aff8565f14fd713de2b13a00",
+      "sha": "fceea8908e7686ea8b58363e18712d9204fc8755",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-ACCESS-CONTROL-20261030-01 — controle de acesso do chão de fábrica (setores, matriz por módulo e modelos por nível)",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "INTEGRAÇÃO REAL COM SUPABASE · exige a migration 20261030160000_erp_access_control_sector_matrix_v1 e o deploy da Edge Function erp-user-admin"
+      "revisao": "REV-ACCESS-CONTROL-SEM-MATRICULA-20261105-01 — erp_usuarios nao tem matricula; acesso do setor se identifica por login_nome e e-mail",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "CORRECAO DO HTTP 400 DO POSTGREST, AUTORIZADA PELO PROPRIETARIO EM 2026-11-05 · exige deploy da Edge Function erp-user-admin"
     },
     {
       "path": "src/pages/AcompanhamentoNaoConformidade.tsx",
-      "sha": "de43b9fc8114eda2bc8110aaac7300a0f1566a9d",
+      "sha": "fdd00f1eb972c5995c9d771786e5d91573745719",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
       "aprovadaEm": "2026-10-30",
@@ -701,11 +701,11 @@
     },
     {
       "path": "src/pages/FinanceiroFluxoCaixa.tsx",
-      "sha": "155e898cc16a23be8964f89abd673ecc3b79f374",
+      "sha": "8e7f2e7649f339a310bab1ac826c2f4a906b06cf",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-FLUXO-CAIXA-CRUD-PARCIAL-20261105-03 — filtros de periodo/tipo/status no banco, edicao e baixa persistidas, previstos separados de liquidados",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "REVISAO TECNICA OBRIGATORIA DO PROPRIETARIO EM 2026-11-05; exclusao logica e historico seguem pendentes do laudo de schema"
     },
     {
       "path": "src/pages/FinanceiroGraficoDesvios.tsx",
@@ -965,11 +965,11 @@
     },
     {
       "path": "src/pages/PCPIndustrial.tsx",
-      "sha": "46e325232c883ff66026b3b7e8cf47a758200951",
+      "sha": "3dd9e3e44829e9d8eb08a0b3dcc830617a4c0295",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-PCP-CHIPE-DE-BANCO-REAL-20261105-01 — o selo fixo 'DADOS SUPABASE' passou a refletir sessao, empresa e retorno da consulta",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "REVISAO TECNICA DO PROPRIETARIO EM 2026-11-05, ITEM 4 — \"NAO EXIBIR SUPABASE CONNECTED COMO TEXTO FIXO SEM COMPROVAR A CONEXAO\""
     },
     {
       "path": "src/pages/PCPOrdens.tsx",
@@ -1349,11 +1349,11 @@
     },
     {
       "path": "src/pages/UsuariosAdmin.tsx",
-      "sha": "7d6444e8d7bd04da618c68e92388987454e27bb8",
+      "sha": "a333be90680c4b4c3d48a97dab9a54a4eef6a480",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-USUARIOS-SEM-MATRICULA-20261105-01 — erp_usuarios nao tem coluna matricula; consulta e formulario usam somente colunas existentes",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "CORRECAO DO HTTP 400 DO POSTGREST, AUTORIZADA PELO PROPRIETARIO EM 2026-11-05 (introspecao real do PostgreSQL)"
     },
     {
       "path": "src/pages/VendasAnaliseCustos.tsx",
@@ -1501,7 +1501,7 @@
     },
     {
       "path": "src/pages/cadastro-produtos/ModuloCadastroProdutos.tsx",
-      "sha": "7910c1e4bbf184322b03b8bf7aaebd8966ad1b31",
+      "sha": "99a1d9cb895772c27390392c4f00b4acab0a1c9c",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-PRODUTOS-TELA-UNICA-20261104-01 — vira a tela principal de /cadastros/produtos; abre a aba pela URL (?aba=) para absorver as rotas antigas de ficha técnica e de parâmetros",
       "aprovadaEm": "2026-11-04",
