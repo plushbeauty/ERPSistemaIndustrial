@@ -23,6 +23,7 @@ type MenuItem = {
 const menus: MenuItem[] = [
   { label: 'Financeiro', route: '/pageprincipal/financeiro', icon: Landmark, children: [
     { label: 'Central Financeira', route: '/pageprincipal/financeiro', icon: Wallet, isUpdated: true },
+    { label: 'Fluxo de Caixa', route: '/pageprincipal/financeiro/fluxo-caixa', icon: Wallet, isUpdated: true },
     { label: 'Conciliação Bancária', route: '/pageprincipal/financeiro/conciliacao-bancaria', icon: ClipboardList },
     { label: 'Importar Extratos', route: '/pageprincipal/financeiro/importar-extratos', icon: FileText, isUpdated: true },
     { label: 'Lista de Preços por Cliente', route: '/pageprincipal/financeiro/lista-precos-cliente', icon: ShoppingCart, isUpdated: true },
