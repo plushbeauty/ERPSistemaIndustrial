@@ -1,18 +1,22 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-11-05
- * @REVISAO: REV-FLUXO-CAIXA-COMPACTO-20261105-01
- * @STATUS: Tela dedicada integrada ao shell horizontal; não substitui a Central Financeira.
- *
- * Fluxo de caixa real por empresa. Auth, RLS e INSERT permanecem no Supabase.
- * Leitura paginada integral para não truncar o extrato no limite padrão do PostgREST.
+ * @REVISAO: FLUXO-CAIXA-PREMIUM-30PX-20261105
+ * @ESCOPO: Layout compacto dedicado, sem chrome legado duplicado, com dados reais por tenant.
  */
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { RefreshCw, Save, Wallet } from 'lucide-react'
+import {
+  AlertCircle,
+  ArrowDownRight,
+  ArrowUpRight,
+  CheckCircle2,
+  CircleDollarSign,
+  RefreshCw,
+  Save,
+  Wallet,
+} from 'lucide-react'
 import { supabase } from '../../../lib/supabaseClient'
 import { fetchAllPages } from '../../../lib/supabasePagination'
 import { SynqraLayoutProvider } from '../../../layout/SynqraLayoutContext'
-import IndustrialPageShell, { SectionCard, Table, Field } from '../../../components/industrial/IndustrialPageShell'
 import '../../../styles/financeiro-fluxo-caixa.css'
 
 type TipoCaixa = 'ENTRADA' | 'SAIDA'
@@ -30,11 +34,26 @@ interface LancamentoCaixa {
 
 const PAGE_SIZE = 25
 const money = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-const dateLabel = (value: string) => value ? new Date(value + 'T12:00:00').toLocaleDateString('pt-BR') : '—'
+const dateLabel = (value: string) => value
+  ? new Date(value.length === 10 ? value + 'T12:00:00' : value).toLocaleDateString('pt-BR')
+  : '—'
+
+function errorText(cause: unknown) {
+  if (cause && typeof cause === 'object' && 'message' in cause) {
+    const value = cause as { message?: unknown; code?: unknown; details?: unknown; hint?: unknown }
+    const message = typeof value.message === 'string' ? value.message : 'Falha inesperada ao consultar o fluxo de caixa.'
+    const code = typeof value.code === 'string' ? ' (' + value.code + ')' : ''
+    const details = typeof value.details === 'string' && value.details ? ' — ' + value.details : ''
+    const hint = typeof value.hint === 'string' && value.hint ? ' — ' + value.hint : ''
+    return message + code + details + hint
+  }
+  return cause instanceof Error ? cause.message : 'Falha inesperada ao consultar o fluxo de caixa.'
+}
 
 export default function FinanceiroFluxoCaixa() {
   const [rows, setRows] = useState<LancamentoCaixa[]>([])
   const [loading, setLoading] = useState(true)
+  const [loaded, setLoaded] = useState(false)
   const [saving, setSaving] = useState(false)
   const [page, setPage] = useState(0)
   const [empresaId, setEmpresaId] = useState<string | null>(null)
@@ -47,27 +66,22 @@ export default function FinanceiroFluxoCaixa() {
 
   const load = useCallback(async () => {
     setLoading(true)
+    setLoaded(false)
     setError('')
     setNotice('')
     try {
       const { data: authData, error: authError } = await supabase.auth.getUser()
       if (authError) throw authError
-      if (!authData.user) throw new Error('Sessão autenticada obrigatória para acessar o fluxo de caixa.')
+      if (!authData.user) throw new Error('Sua sessão expirou. Entre novamente para consultar o fluxo de caixa.')
 
-      const profile = await supabase
-        .from('erp_usuarios')
-        .select('empresa_id, ativo, deleted_at')
-        .eq('auth_user_id', authData.user.id)
-        .eq('ativo', true)
-        .is('deleted_at', null)
-        .maybeSingle()
-
-      if (profile.error) throw profile.error
-      if (!profile.data?.empresa_id) {
-        throw new Error('Usuário sem empresa ativa. Nenhuma consulta global foi executada.')
+      // Helper canônico do ERP: evita depender de uma consulta paralela ao cadastro de usuários.
+      const company = await supabase.rpc('erp_current_empresa_id')
+      if (company.error) throw company.error
+      if (typeof company.data !== 'string' || !company.data) {
+        throw new Error('A empresa da sessão não foi identificada. Verifique o vínculo do usuário e tente novamente.')
       }
 
-      const tenant = profile.data.empresa_id
+      const tenant = company.data
       setEmpresaId(tenant)
 
       const loadedRows = await fetchAllPages((from, to) => supabase
@@ -75,6 +89,7 @@ export default function FinanceiroFluxoCaixa() {
         .select('id, descricao, tipo, valor, data_vencimento, data_pagamento, status', { count: 'exact' })
         .eq('empresa_id', tenant)
         .order('data_vencimento', { ascending: true })
+        .order('id', { ascending: true })
         .range(from, to))
 
       setRows(loadedRows.map((row): LancamentoCaixa => ({
@@ -87,10 +102,11 @@ export default function FinanceiroFluxoCaixa() {
         status: row.status as StatusCaixa,
       })))
       setPage(0)
+      setLoaded(true)
     } catch (cause) {
       setRows([])
       setEmpresaId(null)
-      setError(cause instanceof Error ? cause.message : 'Falha ao consultar o fluxo de caixa.')
+      setError(errorText(cause))
     } finally {
       setLoading(false)
     }
@@ -100,16 +116,19 @@ export default function FinanceiroFluxoCaixa() {
 
   const totals = useMemo(() => rows.reduce((acc, row) => {
     if (row.tipo === 'ENTRADA') acc.entradas += row.valor
-    else acc.saidas += row.valor
+    else if (row.tipo === 'SAIDA') acc.saidas += row.valor
     if (row.status === 'PAGO') {
       if (row.tipo === 'ENTRADA') acc.recebido += row.valor
-      else acc.pago += row.valor
+      else if (row.tipo === 'SAIDA') acc.pago += row.valor
     }
     return acc
   }, { entradas: 0, saidas: 0, recebido: 0, pago: 0 }), [rows])
 
   const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE))
   const visibleRows = rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+  const saldoProjetado = totals.entradas - totals.saidas
+  const saldoLiquidado = totals.recebido - totals.pago
+  const metricValue = (value: number) => loading ? 'Carregando…' : loaded ? money(value) : '—'
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -117,8 +136,8 @@ export default function FinanceiroFluxoCaixa() {
     setNotice('')
     const amount = Number(valor)
 
-    if (!empresaId || !descricao.trim() || !vencimento || !Number.isFinite(amount) || amount <= 0) {
-      setError('Informe descrição, valor maior que zero e vencimento. A empresa precisa estar autenticada.')
+    if (!empresaId || !loaded || !descricao.trim() || !vencimento || !Number.isFinite(amount) || amount <= 0) {
+      setError('Informe descrição, valor maior que zero e vencimento. A sessão e a empresa precisam estar validadas.')
       return
     }
 
@@ -149,100 +168,178 @@ export default function FinanceiroFluxoCaixa() {
         status: data.status as StatusCaixa,
       }
 
-      setRows(current => [...current, saved].sort((a, b) => a.data_vencimento.localeCompare(b.data_vencimento)))
+      setRows(current => [...current, saved].sort((a, b) =>
+        a.data_vencimento.localeCompare(b.data_vencimento) || a.id.localeCompare(b.id)))
       setDescricao('')
       setTipo('ENTRADA')
       setValor('')
       setVencimento('')
-      setNotice('Lançamento confirmado pelo PostgreSQL.')
+      setNotice('Lançamento gravado e confirmado pelo PostgreSQL.')
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Não foi possível gravar o lançamento.')
+      setError(errorText(cause))
     } finally {
       setSaving(false)
     }
   }
 
-  const saldoProjetado = totals.entradas - totals.saidas
-  const saldoLiquidado = totals.recebido - totals.pago
-  const movementTag = (movement: TipoCaixa) => movement === 'ENTRADA' ? 'ips-tag ips-tag-entrada' : 'ips-tag ips-tag-saida'
-  const statusTag = (status: StatusCaixa) => status === 'PAGO' ? 'ips-tag ips-tag-pago' : 'ips-tag ips-tag-pendente'
+  const movementClass = (movement: TipoCaixa) => movement === 'ENTRADA'
+    ? 'ips-tag ips-tag-entrada'
+    : 'ips-tag ips-tag-saida'
+  const statusClass = (status: StatusCaixa) => status === 'PAGO'
+    ? 'ips-tag ips-tag-pago'
+    : 'ips-tag ips-tag-pendente'
 
   return (
     <SynqraLayoutProvider>
-      <IndustrialPageShell
-        module="Financeiro / Fluxo de Caixa"
-        title="Fluxo de Caixa e Disponibilidades"
-        actions={[{ label: 'ATUALIZAR', icon: <RefreshCw size={14} />, onClick: () => void load() }]}
-      >
-        {error && <p role="alert" className="ips-alert">{error}</p>}
-        {notice && <p role="status" className="ips-notice">{notice}</p>}
-
-        <SectionCard title="1. Indicadores financeiros" className="ips-section-card">
-          <div className="ips-kpis">
-            <div className="ips-kpi"><span>Previsão de entradas</span><strong>{money(totals.entradas)}</strong></div>
-            <div className="ips-kpi"><span>Previsão de saídas</span><strong>{money(totals.saidas)}</strong></div>
-            <div className={'ips-kpi' + (saldoProjetado < 0 ? ' ips-kpi-neg' : '')}><span>Saldo projetado</span><strong>{money(saldoProjetado)}</strong></div>
-            <div className={'ips-kpi' + (saldoLiquidado < 0 ? ' ips-kpi-neg' : '')}><span>Saldo liquidado</span><strong>{money(saldoLiquidado)}</strong></div>
+      <div className="ips-page" data-synqra-density="30px">
+        <header className="ips-bar">
+          <div className="ips-bar-title">
+            <span className="ips-eyebrow">SYSNQRA ERP INDUSTRIAL <span>/</span> FINANCEIRO</span>
+            <strong>Fluxo de Caixa e Disponibilidades</strong>
+            <span className="ips-subtitle">Previsão, vencimentos e liquidação por empresa</span>
           </div>
-          <p className="ips-hint">Calculados apenas com os {rows.length} lançamentos persistidos da empresa autenticada nesta tela.</p>
-        </SectionCard>
+          <div className="ips-toolbar">
+            <span className={'ips-connection' + (loaded ? ' is-ready' : error ? ' is-error' : '')}>
+              <span className="ips-connection-dot" />
+              {loading ? 'CONECTANDO' : loaded ? 'SUPABASE CONECTADO' : 'CONSULTA PENDENTE'}
+            </span>
+            <button type="button" className="ips-action" onClick={() => void load()} disabled={loading || saving}>
+              <RefreshCw size={13} className={loading ? 'ips-spin' : ''} /> ATUALIZAR
+            </button>
+          </div>
+        </header>
 
-        <SectionCard title="2. Lançamento manual" className="ips-section-card">
-          <form onSubmit={save}>
-            <div className="ips-grid-12">
-              <Field className="ips-col-5" label="Descrição" required>
-                <input required maxLength={255} value={descricao} onChange={event => setDescricao(event.target.value)} placeholder="Descrição do título" />
-              </Field>
-              <Field className="ips-col-2" label="Movimento">
-                <select value={tipo} onChange={event => setTipo(event.target.value as TipoCaixa)}>
-                  <option value="ENTRADA">Entrada</option>
-                  <option value="SAIDA">Saída</option>
-                </select>
-              </Field>
-              <Field className="ips-col-2" label="Valor (R$)" required>
-                <input required type="number" min="0.01" step="0.01" value={valor} onChange={event => setValor(event.target.value)} />
-              </Field>
-              <Field className="ips-col-3" label="Vencimento" required>
-                <input required type="date" value={vencimento} onChange={event => setVencimento(event.target.value)} />
-              </Field>
+        <div className="ips-workspace">
+          {error && (
+            <div className="ips-alert" role="alert">
+              <AlertCircle size={16} />
+              <div><strong>Não foi possível carregar os dados.</strong><span>{error}</span></div>
             </div>
-            <div className="ips-bottom-actions">
-              <button type="submit" disabled={saving || !empresaId} className="ips-action ips-action-primary">
-                <Save size={14} />{saving ? 'GRAVANDO…' : 'REGISTRAR TÍTULO'}
-              </button>
+          )}
+          {notice && (
+            <div className="ips-notice" role="status">
+              <CheckCircle2 size={16} /><span>{notice}</span>
             </div>
-          </form>
-        </SectionCard>
+          )}
 
-        <SectionCard title="3. Extrato projetado de contas" className="ips-section-card">
-          <Table>
-            <thead><tr><th>Movimento</th><th>Descrição</th><th>Vencimento</th><th>Baixa</th><th className="ips-num">Valor</th><th>Status</th></tr></thead>
-            <tbody>
-              {loading
-                ? <tr><td className="ips-empty" colSpan={6}>Consultando dados reais do Supabase…</td></tr>
-                : rows.length === 0
-                  ? <tr><td className="ips-empty" colSpan={6}>Nenhum lançamento encontrado para a empresa autenticada.</td></tr>
-                  : visibleRows.map(row => (
-                    <tr key={row.id}>
-                      <td><span className={movementTag(row.tipo)}>{row.tipo === 'ENTRADA' ? 'ENTRADA' : 'SAÍDA'}</span></td>
-                      <td>{row.descricao}</td>
-                      <td>{dateLabel(row.data_vencimento)}</td>
-                      <td>{row.data_pagamento ? dateLabel(row.data_pagamento) : '—'}</td>
-                      <td className="ips-num">{money(row.valor)}</td>
-                      <td><span className={statusTag(row.status)}>{row.status}</span></td>
-                    </tr>
-                  ))}
-            </tbody>
-          </Table>
-          <nav aria-label="Paginação do fluxo de caixa" className="ips-pager">
-            <button type="button" disabled={page === 0} onClick={() => setPage(current => Math.max(0, current - 1))} className="ips-action">ANTERIOR</button>
-            <p aria-live="polite">Página {page + 1} de {pageCount}</p>
-            <button type="button" disabled={page + 1 >= pageCount} onClick={() => setPage(current => Math.min(pageCount - 1, current + 1))} className="ips-action">PRÓXIMA</button>
-          </nav>
-        </SectionCard>
+          <section className="ips-section" aria-labelledby="ips-indicators-title">
+            <div className="ips-section-heading">
+              <div><span className="ips-section-index">01</span><h2 id="ips-indicators-title">Visão financeira</h2></div>
+              <span className="ips-section-meta">{loaded ? rows.length + ' LANÇAMENTO(S) NO PERÍODO CARREGADO' : 'VALORES SOMENTE APÓS CONSULTA'}</span>
+            </div>
+            <div className="ips-kpis">
+              <article className="ips-kpi ips-kpi-in">
+                <span className="ips-kpi-icon"><ArrowUpRight size={17} /></span>
+                <span className="ips-kpi-label">Entradas previstas</span>
+                <strong>{metricValue(totals.entradas)}</strong>
+                <small>{loaded ? money(totals.recebido) + ' recebido' : 'Aguardando dados reais'}</small>
+              </article>
+              <article className="ips-kpi ips-kpi-out">
+                <span className="ips-kpi-icon"><ArrowDownRight size={17} /></span>
+                <span className="ips-kpi-label">Saídas previstas</span>
+                <strong>{metricValue(totals.saidas)}</strong>
+                <small>{loaded ? money(totals.pago) + ' pago' : 'Aguardando dados reais'}</small>
+              </article>
+              <article className={'ips-kpi ips-kpi-balance' + (saldoProjetado < 0 ? ' is-negative' : '')}>
+                <span className="ips-kpi-icon"><CircleDollarSign size={17} /></span>
+                <span className="ips-kpi-label">Saldo projetado</span>
+                <strong>{metricValue(saldoProjetado)}</strong>
+                <small>Entradas menos saídas</small>
+              </article>
+              <article className={'ips-kpi ips-kpi-settled' + (saldoLiquidado < 0 ? ' is-negative' : '')}>
+                <span className="ips-kpi-icon"><Wallet size={17} /></span>
+                <span className="ips-kpi-label">Saldo liquidado</span>
+                <strong>{metricValue(saldoLiquidado)}</strong>
+                <small>Recebido menos pago</small>
+              </article>
+            </div>
+            <p className="ips-hint">
+              {loaded
+                ? 'Indicadores calculados exclusivamente com os ' + rows.length + ' títulos retornados do PostgreSQL para a empresa autenticada.'
+                : 'Os indicadores ficam indisponíveis até a consulta autenticada terminar. Nenhum valor de demonstração é exibido.'}
+            </p>
+          </section>
 
-        <footer className="ips-footer"><Wallet size={13} /> Acesso protegido pela sessão Supabase e pelas políticas RLS. Os indicadores refletem os lançamentos carregados integralmente para a empresa ativa.</footer>
-      </IndustrialPageShell>
+          <section className="ips-section" aria-labelledby="ips-entry-title">
+            <div className="ips-section-heading">
+              <div><span className="ips-section-index">02</span><h2 id="ips-entry-title">Novo lançamento</h2></div>
+              <span className="ips-section-meta">REGISTRO MANUAL • PERSISTÊNCIA REAL</span>
+            </div>
+            <form onSubmit={save}>
+              <div className="ips-form-grid">
+                <label className="ips-field ips-field-description">
+                  <span>Descrição <b>*</b></span>
+                  <input required maxLength={255} value={descricao} onChange={event => setDescricao(event.target.value)} placeholder="Ex.: Venda NF 1023 / Fornecedor de insumos" />
+                </label>
+                <label className="ips-field ips-field-type">
+                  <span>Movimento <b>*</b></span>
+                  <select value={tipo} onChange={event => setTipo(event.target.value as TipoCaixa)}>
+                    <option value="ENTRADA">Entrada</option>
+                    <option value="SAIDA">Saída</option>
+                  </select>
+                </label>
+                <label className="ips-field ips-field-amount">
+                  <span>Valor (R$) <b>*</b></span>
+                  <input required type="number" min="0.01" step="0.01" inputMode="decimal" value={valor} onChange={event => setValor(event.target.value)} placeholder="0,00" />
+                </label>
+                <label className="ips-field ips-field-date">
+                  <span>Vencimento <b>*</b></span>
+                  <input required type="date" value={vencimento} onChange={event => setVencimento(event.target.value)} />
+                </label>
+              </div>
+              <div className="ips-form-footer">
+                <span>O título será gravado como <b>PENDENTE</b>.</span>
+                <button type="submit" className="ips-action ips-action-primary" disabled={saving || loading || !loaded || !empresaId}>
+                  <Save size={13} /> {saving ? 'GRAVANDO…' : 'REGISTRAR TÍTULO'}
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section className="ips-section ips-extract" aria-labelledby="ips-extract-title">
+            <div className="ips-section-heading">
+              <div><span className="ips-section-index">03</span><h2 id="ips-extract-title">Extrato projetado</h2></div>
+              <span className="ips-section-meta">{loaded ? rows.length + ' REGISTRO(S)' : 'AGUARDANDO CONSULTA'}</span>
+            </div>
+            <div className="ips-tablewrap">
+              <table className="ips-table">
+                <thead><tr><th>Movimento</th><th>Descrição</th><th>Vencimento</th><th>Baixa</th><th className="ips-num">Valor</th><th>Status</th></tr></thead>
+                <tbody>
+                  {loading
+                    ? <tr><td className="ips-empty" colSpan={6}><RefreshCw size={14} className="ips-spin" /> Consultando PostgreSQL…</td></tr>
+                    : error
+                      ? <tr><td className="ips-empty ips-empty-error" colSpan={6}>Consulta não concluída. Corrija o erro acima e atualize a tela.</td></tr>
+                      : rows.length === 0
+                        ? <tr><td className="ips-empty" colSpan={6}>Nenhum lançamento cadastrado para a empresa autenticada.</td></tr>
+                        : visibleRows.map(row => (
+                          <tr key={row.id}>
+                            <td><span className={movementClass(row.tipo)}>{row.tipo === 'ENTRADA' ? 'ENTRADA' : 'SAÍDA'}</span></td>
+                            <td className="ips-description">{row.descricao}</td>
+                            <td>{dateLabel(row.data_vencimento)}</td>
+                            <td>{row.data_pagamento ? dateLabel(row.data_pagamento) : '—'}</td>
+                            <td className="ips-num">{money(row.valor)}</td>
+                            <td><span className={statusClass(row.status)}>{row.status}</span></td>
+                          </tr>
+                        ))}
+                </tbody>
+              </table>
+            </div>
+            <nav className="ips-pager" aria-label="Paginação do extrato">
+              <span>{loaded ? 'Exibindo ' + (rows.length ? page * PAGE_SIZE + 1 : 0) + '–' + Math.min((page + 1) * PAGE_SIZE, rows.length) + ' de ' + rows.length : '—'}</span>
+              <div>
+                <button type="button" className="ips-action" disabled={page === 0 || !loaded} onClick={() => setPage(current => Math.max(0, current - 1))}>ANTERIOR</button>
+                <strong>Página {page + 1} de {pageCount}</strong>
+                <button type="button" className="ips-action" disabled={page + 1 >= pageCount || !loaded} onClick={() => setPage(current => Math.min(pageCount - 1, current + 1))}>PRÓXIMA</button>
+              </div>
+            </nav>
+          </section>
+
+          <footer className="ips-footer">
+            <span><Wallet size={13} /> SYSNQRA ERP INDUSTRIAL</span>
+            <span><i /> Sessão Supabase • Isolamento por empresa via RLS</span>
+          </footer>
+        </div>
+      </div>
     </SynqraLayoutProvider>
   )
 }
