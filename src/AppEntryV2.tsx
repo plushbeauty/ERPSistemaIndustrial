@@ -32,6 +32,7 @@ const AdministracaoConfiguracoesGlobais = lazy(() => import('./pages/Administrac
 const AccessControlSettings = lazy(() => import('./pages/AccessControlSettings'))
 const CentralAjuda = lazy(() => import('./pages/CentralAjuda'))
 const FinanceiroWorkspace = lazy(() => import('./modules/financeiro/pages/FinanceiroWorkspace'))
+const FinanceiroFluxoCaixa = lazy(() => import('./modules/financeiro/pages/FinanceiroFluxoCaixa'))
 // Páginas existentes sem rota — integradas ao menu em 2026-10-30 (comando de integração global)
 const FileTreeGED = lazy(() => import('./pages/FileTreeGED'))
 const PostosTrabalho = lazy(() => import('./features/pcp/PostosTrabalho'))
@@ -86,6 +87,7 @@ export default function AppEntryV2() {
             <Route path="/pageprincipal" element={<PagePrincipal />}>
               <Route path="ajuda" element={<CentralAjuda />} />
               <Route path="financeiro" element={<FinanceiroWorkspace />} />
+              <Route path="financeiro/fluxo-caixa" element={<FinanceiroFluxoCaixa />} />
               <Route index element={<AppIndustrial />} />
               <Route path="compras" element={<ComprasWorkspace />} />
               <Route path="compras/solicitacao" element={<SolicitacaoCompra />} />
@@ -154,6 +156,7 @@ export default function AppEntryV2() {
             </Route>
             <Route path="/ajuda" element={<Navigate to="/pageprincipal/ajuda" replace />} />
             <Route path="/financeiro" element={<Navigate to="/pageprincipal/financeiro" replace />} />
+            <Route path="/financeiro/fluxo-caixa" element={<Navigate to="/pageprincipal/financeiro/fluxo-caixa" replace />} />
             <Route path="/compras" element={<Navigate to="/pageprincipal/compras" replace />} />
             <Route path="/rh" element={<Navigate to="/pageprincipal/rh" replace />} />
             <Route path="/pcp/fichas-processo" element={<Navigate to="/pageprincipal/pcp/fichas-processo" replace />} />
