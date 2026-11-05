@@ -194,6 +194,48 @@ Duas saídas honestas, e a escolha é sua:
 - **(A) Corrigir o código** — ler apenas `erp_usuarios` (origem única, como manda a regra de não restaurar tela/código antigo) e apagar a consulta legada. **Recomendado.**
 - **(B) Criar a tabela legada** — contraria "uma única origem" e criaria segunda fonte de verdade de permissão. Não recomendo.
 
+### 5.2 Migration do repo ≠ schema vivo: `erp_pcp_alertas`
+
+Medido hoje, coluna por coluna, com a publishable key e `limit=0` (nenhuma linha de produção lida):
+
+| Coluna pedida pelo código | Sonda ao vivo | Leitura |
+|---|---|---|
+| `id`, `empresa_id`, `tipo`, `severidade`, `mensagem`, `status`, `created_at` | **42501** | existe; `anon` sem grant, só sessão autenticada lê |
+| `criado_em` | **42703** | **não existe** no banco vivo |
+| `entidade_tipo`, `entidade_id` | **42703** | **não existem** no banco vivo |
+
+A migration `20260925123000_pcp_planejamento_avancado_v1.sql:45` cria a tabela com `criado_em` e as
+duas colunas `entidade_*`, mas usa `create table if not exists`: como a tabela **já existe** no banco
+(veio da baseline legada, com `created_at`), colar essa migration **não muda nada**. Ou seja, o
+código que lê `criado_em` quebra hoje e vai continuar quebrando depois do pacote do item 2.
+
+Consequência real: `src/pages/PCPPlanejamentoIndustrial.tsx:52` seleciona e ordena por `criado_em`; o
+42703 faz o `Promise.all` throw e **derruba a carga inteira da tela de Planejamento PCP**. O carimbo
+`REV-COLUNAS-BANCO-20261104-02` dessa linha afirma o contrário ("a tabela só tem `criado_em`") — foi
+escrito a partir do arquivo SQL, não do banco.
+
+A correção são 3 linhas (tipo `AlertRow` na linha 21, `select`/`order` na linha 52 e a célula de data
+na linha 154, todas `criado_em` → `created_at`, com `a.created_at ? … : 'sem data'` para não imprimir
+`Invalid Date`). **Ela não foi publicada**: essa tela está travada pelo manifesto de aprovação
+(`scripts/telas-oficiais-manifest.json`, sha `edac9ac7…`) e `npm run verify:production` reprova
+qualquer edição dela sem ordem sua. Fica como pendência de autorização, item 11 da sua ordem geral.
+Enquanto ela não for re-aprovada, a aba "Alertas" do Planejamento PCP continua quebrando a carga da
+tela inteira — os painéis da home, que leem a mesma tabela, já usam `created_at` e falham de forma
+isolada (aviso na tela, sem derrubar o resto).
+
+Dois detalhes da mesma sonda, que mudam o que se pode afirmar:
+
+- O PostgREST valida as colunas **antes** do grant. Por isso o `42501` na linha 1 da tabela prova que
+  **todas** as colunas daquele `select` existem; se alguma faltasse, a resposta teria sido `42703`
+  (como foi com `criado_em`). Sem essa precedência, um 42501 não diria nada sobre o schema.
+- `erp_inspecoes` e `erp_rpnc` respondem `200` para `anon`, mas com `Content-Range: */0`: a RLS deixa
+  **zero linhas** para quem não está logado. `200` não é prova de que a tela vai mostrar dados — é
+  prova de que o contrato das colunas está certo. Os números reais desses painéis só são confirmáveis
+  numa sessão autenticada.
+
+Regra prática que fica: para coluna, a prova é a sonda ao vivo; o arquivo de migration só prova a
+intenção. As 30 tabelas "exigem sessão autenticada" também precisam dessa checagem com login real.
+
 ## 6. O que falta fazer (ordem de dependência)
 
 1. **Banco:** colar o pacote do item 2 no SQL Editor do Supabase. Destrava as 4 telas da seção 4 e a maioria das RPCs. Sem isso, qualquer teste autenticado vai continuar dando 400/42703/PGRST205.
