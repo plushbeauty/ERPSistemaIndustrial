@@ -66,6 +66,24 @@ const REPAROS_OBRIGATORIOS = [
 ]
 for (const a of REPAROS_OBRIGATORIOS) entrar(a, 'reparo de defeito denunciado pelo proprio banco')
 
+/* --------------------------------------------------------------------------
+   EXCLUSOES explicitas. Uma tabela pedida por tela pode ter o create table dela
+   numa migration que NAO deve ir para o banco de producao — e o caso da baseline
+   0001, que cria 21 tabelas sem prefixo (usuarios, produtos, almoxarifados...)
+   ao lado das erp_* oficiais. Aplicar isso criaria uma segunda fonte de verdade,
+   que e exatamente a regressao que a regra "uma unica origem / nao restaurar
+   codigo legado" proibe. A exclusao e sempre declarada no cabecalho e no stdout:
+   nada aqui some em silencio.
+   -------------------------------------------------------------------------- */
+const EXCLUIDAS = new Map([
+  [
+    '0001_erp_industrial_core.sql',
+    'baseline de 2024 com 21 tabelas SEM prefixo (usuarios, produtos, almoxarifados...). ' +
+      'Quem pede "usuarios" e src/AppBootstrap.tsx:96, que e codigo legado do portao de autenticacao: ' +
+      'a correcao e ler so erp_usuarios, nao criar a tabela velha.'
+  ],
+])
+
 /* Fechamento por dependencia: toda tabela citada numa migration precisada, que ela
    mesma nao cria, puxa a migration que a cria (e assim por diante). */
 for (let i = 0; i < fila.length; i++) {
@@ -79,7 +97,8 @@ for (let i = 0; i < fila.length; i++) {
   }
 }
 
-const emOrdem = nomes.filter((f) => selecionadas.has(f))
+const emOrdem = nomes.filter((f) => selecionadas.has(f) && !EXCLUIDAS.has(f))
+const exclusoesPraticadas = nomes.filter((f) => selecionadas.has(f) && EXCLUIDAS.has(f))
 const existentes = (laudo.tabelas ?? []).filter((t) => t.estado === 'LEIVEL' || t.estado === 'EXISTE_SEM_GRANT_ANON').length
 const usadas = (laudo.tabelas ?? []).length
 const faltando = (laudo.faltantesCruzados ?? []).length
@@ -147,6 +166,15 @@ const relatorioRisco = [
   ...risco.funcao.map((r) => `--   [SO RODA SE CHAMAR A RPC] ${r.declaracao}${r.alvo ? ' ' + r.alvo : ''}  —  ${r.arquivo}:${r.linha}`)
 ].join('\n') || '--   nenhum statement de escrita destrutiva encontrado'
 
+const relatorioExclusoes = exclusoesPraticadas.length
+  ? `--
+-- ----------------------------------------------------------------------------
+-- EXCLUSOES DECLARADAS (nada some em silencio): ${exclusoesPraticadas.length} migration(oes) que a
+-- lista de dependencias puxou, mas que NAO vao para o banco de producao
+-- ----------------------------------------------------------------------------
+${exclusoesPraticadas.map((f) => `--   [FORA DO PACOTE] ${f} — ${EXCLUIDAS.get(f)}`).join('\n')}`
+  : ''
+
 const cabecalho = `-- ============================================================================
 -- SYSNQRA ERP INDUSTRIAL — APLICAR AS MIGRATIONS QUE O BANCO AINDA NAO TEM
 -- Gerado em ${new Date().toISOString().slice(0, 19)} por scripts/gerar-pacote-migrations-pendentes.mjs
@@ -154,8 +182,10 @@ const cabecalho = `-- ==========================================================
 --
 -- Medida no banco de agora: ${existentes} das ${usadas} tabelas que as telas usam existem.
 -- Faltam ${faltando}, e todas elas ja tem migration escrita neste repo — o codigo esta na
--- frente do banco. O pacote abaixo contem exatamente essas migrations, copiadas sem
--- alteracao, em ordem de timestamp e fechadas por dependencia (${emOrdem.length} arquivo(s)).
+-- frente do banco. O pacote abaixo contem ${emOrdem.length} arquivo(s), copiados sem alteracao,
+-- em ordem de timestamp e fechadas por dependencia.
+${exclusoesPraticadas.length ? `-- ${exclusoesPraticadas.length} migration que a lista de dependencias puxou foi EXCLUIDA por decisao tecnica
+-- e esta declarada no bloco EXCLUSOES abaixo — nada some em silencio.\n` : ''}
 --
 -- Como aplicar (uma vez so): SQL Editor do Supabase > New query > colar tudo > Run.
 -- As migrations do repo usam create table if not exists / create or replace function /
@@ -171,6 +201,7 @@ ${relatorioRisco}
 -- NADA aqui apaga tabela, coluna ou migration existente. Se os itens de cima nao
 -- forem aceitaveis agora, apague apenas os blocos marcados antes de colar: o pacote
 -- nao precisa dos DELETE para criar as tabelas que faltam.
+${relatorioExclusoes}
 -- ============================================================================
 
 `
@@ -192,5 +223,6 @@ console.log('PACOTE_GERADO ' + SAIDA)
 console.log('migrations_no_pacote=' + emOrdem.length + ' linhas=' + linhas + ' bytes=' + Buffer.byteLength(cabecalho + corpo + rodape))
 for (const f of emOrdem) console.log('  + ' + f + '  <- ' + (fila.find((x) => x.arquivo === f)?.motivo ?? ''))
 console.log('RISCO | roda_na_colagem=' + risco.agora.length + ' | so_se_chamar_rpc=' + risco.funcao.length)
+for (const f of exclusoesPraticadas) console.log('EXCLUIDA_DO_PACOTE ' + f + ' — ' + EXCLUIDAS.get(f))
 for (const r of risco.agora) console.log('  ! AGORA ' + r.declaracao + ' ' + r.alvo + ' — ' + r.arquivo + ':' + r.linha)
 for (const r of risco.funcao) console.log('  ~ FUNCAO ' + r.declaracao + ' ' + r.alvo + ' — ' + r.arquivo + ':' + r.linha)

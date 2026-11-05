@@ -19,6 +19,8 @@
     "verify:deploy-integrity": "node scripts/verify-deploy-integrity.mjs",
     "verify:release-lineage": "node scripts/verify-release-lineage.mjs",
     "telas:manifest": "node scripts/gerar-manifesto-telas.mjs",
+    "db:contract": "node scripts/auditar-contrato-banco-vivo.mjs",
+    "db:pending-package": "node scripts/gerar-pacote-migrations-pendentes.mjs",
     "verify:lockfile": "node scripts/verify-lockfile.mjs",
     "verify:vercel-config": "node scripts/verify-vercel-config.mjs",
     "verify:ci-policy": "node scripts/verify-ci-policy.mjs",
