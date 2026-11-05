@@ -6,6 +6,10 @@
  *             mesmo padrão, deixar elas no mesmo tamanho; a imagem do fundo deixar um pouco mais clara"):
  *             o index.css global impõe font-size:16px!important em todo <button>, então "Produtos do
  *             sistema" ficava maior que os links de 13px; a camada escura do carrossel caiu ~15 pontos.
+ * @REVISAO_3: REV-CARROSSEL-FULL-BLEED-20261105-01 — ordem do proprietário ("DEU CERTO A IMAGEM ELA
+ *             FICA TROCANDO MAIS SE VC VER ELA TEM QUE SER MAIS LARGA PEGANDO DO LADO ESQUERDO AO
+ *             LADO DIREITO TODO"): o max-height:84vh do slide encolhia a largura junto com a altura
+ *             e deixava faixa branca à direita. A folha agora é 100% da janela em qualquer altura.
  * @STATUS_APROVACAO: REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01 ("TIRAR O FUNDO AZUL E DEIXAR FUNDO BRANCO", "ARRUMAR TAMANHO PADRAO 13PX" NO MENU DO TOPO)
  *
  * Mesma paleta do sistema (navy #123B50, azul #2D8DB8, ciano #48B7C7, verde #3A9D78,
@@ -332,7 +336,12 @@
    e a propria arte em 16:9. O contrato (arquivos, hash de cada arte e a proibicao das cenas
    geradas de volta) esta em scripts/verify-carousel-artes.mjs.
    ================================================================ */
-.ph-hero--artes { aspect-ratio: 16 / 9; max-height: 84vh; padding: 0; background: #04101c; }
+/* Ordem do proprietario em 2026-11-05: "ELA TEM QUE SER MAIS LARGA PEGANDO DO LADO ESQUERDO AO
+   LADO DIREITO TODO". O max-height:84vh anterior encolhia a LARGURA junto (o bloco mantinha 16:9
+   e virava uma faixa com sobra branca à direita). Agora a folha e sempre 100% da janela: a altura
+   vem da proporcao da propria arte, entao a arte aparece inteira, de borda a borda, sem corte e
+   sem faixa lateral. */
+.ph-hero--artes { width: 100%; aspect-ratio: 16 / 9; max-height: none; padding: 0; background: #04101c; }
 .ph-hero--artes .ph-carousel-bg img { object-fit: cover; object-position: center; }
 
 /* rgba(0,0,0,.5) e mais: a foto da fábrica é detalhada demais para texto cru.

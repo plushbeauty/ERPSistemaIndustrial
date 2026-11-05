@@ -74,6 +74,12 @@ import path from 'node:path'
  * maquina (public/images/cena-*.webp) sao deletadas e banidas, e o slide deixa de desenhar texto, scrim
  * e moldura de navegador por cima da imagem. O guard scripts/verify-carousel-artes.mjs entrou no
  * verify:production, entao qualquer retorno dessas telas antigas bloqueia o deploy da Vercel.
+ * Revisao 2026-11-05 (carrossel de borda a borda): ordem explicita do proprietario sobre a mesma
+ * home — "DEU CERTO A IMAGEM ELA FICA TROCANDO MAIS SE VC VER ELA TEM QUE SER MAIS LARGA PEGANDO
+ * DO LADO ESQUERDO AO LADO DIREITO TODO". O print dele mostrava a arte terminando a ~900px numa
+ * janela de 1280px, com faixa branca à direita: o max-height:84vh do slide encolhia a largura junto com a
+ * altura porque o aspect-ratio era preservado. Sai o clamp e entra width:100%; a arte aparece
+ * inteira, de borda a borda, sem corte. PublicIndustrialHome.tsx permanece no mesmo hash.
  * Mudanca neste contrato exige ordem explicita do proprietario.
  */
 
@@ -83,7 +89,7 @@ const read = rel => readFileSync(path.join(ROOT, rel), 'utf8')
 const oficiais = [
   { path: 'src/PublicIndustrialHome.tsx', sha: 'a3391988874db8446c106d84ef271fb4e757e12c', label: 'Publica / Home com o carrossel das 5 artes enviadas pelo proprietario (REV-CARROSSEL-ARTES-20261105-01: ordem do proprietario — "MANDEI TROCAR AS IMAGENS DO FUNDO COM AQUELAS IMAGENS QUE MANDEI PARA VC"; o contrato das artes esta em scripts/verify-carousel-artes.mjs)' },
   { path: 'src/components/marketing/TelaVitrine.tsx', sha: 'befc9424504e57fcfb85ff3d593fa4172aedfe10', label: 'Publica / Replica de tela do sistema na vitrine' },
-  { path: 'src/styles/public-home-premium-20261101.css', sha: '7379e6d9ffab4afbb384eaebc3512224d524d2ba', label: 'Publica / estilos do carrossel e vitrine (REV-CARROSSEL-ARTES-20261105-01: folha 16:9 das artes do proprietario, sem scrim e sem texto do DOM sobre a imagem; antes REV-VITRINE-PUBLICA-20261104-02, o azul do .ph-solid e a barra de indicadores deleta)' },
+  { path: 'src/styles/public-home-premium-20261101.css', sha: 'a2ebb7a27de3fa7f91ca2cb111ddac68a383906a', label: 'Publica / estilos do carrossel e vitrine (REV-CARROSSEL-FULL-BLEED-20261105-01: ordem do proprietario — "ELA TEM QUE SER MAIS LARGA PEGANDO DO LADO ESQUERDO AO LADO DIREITO TODO"; o slide passou a ocupar 100% da janela e o max-height:84vh que encolhia a largura saiu. Antes REV-CARROSSEL-ARTES-20261105-01, folha 16:9 das artes do proprietario, sem scrim e sem texto do DOM sobre a imagem)' },
   { path: 'src/pages/PlanosIndustrial.tsx', sha: '1070b2cc87cacb249390e69d99c5c11dcfd411a6', label: 'Publica / Planos' },
   { path: 'src/pages/CadastroEmpresa.tsx', sha: 'a860dc1434ece03bf9e60803d929d16bddd7f90b', label: 'Publica / Cadastro da empresa' },
   { path: 'src/pages/Blog.tsx', sha: 'aebf301d6e049f459f5c403527c7010e0b7eabf7', label: 'Publica / Blog' },
