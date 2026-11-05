@@ -14,6 +14,7 @@
     "type-check": "tsc --noEmit",
     "verify:supabase-env": "node scripts/verify-supabase-env.mjs",
     "verify:supabase-guard": "node scripts/verify-supabase-guard.mjs",
+    "verify:migrations-sql": "node scripts/verificar-migrations-sql.mjs",
     "verify:deploy-integrity": "node scripts/verify-deploy-integrity.mjs",
     "verify:release-lineage": "node scripts/verify-release-lineage.mjs",
     "telas:manifest": "node scripts/gerar-manifesto-telas.mjs",

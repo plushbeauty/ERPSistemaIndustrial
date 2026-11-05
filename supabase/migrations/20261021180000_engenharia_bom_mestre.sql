@@ -181,14 +181,14 @@ begin
 
   return jsonb_build_object('id',v_bom_id,'ficha_mrp_id',v_ficha_id,'produto_pai_id',p_produto_pai_id,'versao',p_versao,'status','RASCUNHO','componentes',jsonb_array_length(p_componentes_json));
 end;
-$;
+$$;
 
 create or replace function public.erp_homologar_bom_mestre(p_bom_id uuid)
 returns jsonb
 language plpgsql
 security definer
 set search_path = pg_catalog, public
-as $
+as $$
 declare
   v_empresa uuid := public.erp_current_empresa_id();
   v_produto uuid;
@@ -228,7 +228,7 @@ begin
   if v_ficha is null then raise exception 'Ficha compatível com MRP não encontrada.'; end if;
   return jsonb_build_object('id',p_bom_id,'ficha_mrp_id',v_ficha,'status','HOMOLOGADA');
 end;
-$;
+$$;
 
 revoke all on function public.erp_salvar_bom_mestre(uuid,uuid,integer,text,jsonb) from public, anon;
 grant execute on function public.erp_salvar_bom_mestre(uuid,uuid,integer,text,jsonb) to authenticated;
