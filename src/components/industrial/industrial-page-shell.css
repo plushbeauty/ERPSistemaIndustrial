@@ -1,1 +1,286 @@
-.ips-page{min-height:100vh;background:#f8fafc;color:#0f172a;padding:24px;box-sizing:border-box}.ips-page-inner{max-width:1600px;margin:0 auto}.ips-header{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding:0 0 18px;margin-bottom:18px;border-bottom:1px solid #cbd5e1}.ips-heading{min-width:0}.ips-breadcrumb{font-size:12px;font-weight:900;letter-spacing:.07em;color:#475569;margin-bottom:5px}.ips-breadcrumb span{color:#94a3b8}.ips-heading h1{margin:0;color:#020617;font-size:24px;line-height:1.2;font-weight:800}.ips-heading p{margin:6px 0 0;color:#475569;font-size:15px;font-weight:600}.ips-toolbar{display:flex;justify-content:flex-end;align-items:center;gap:8px;flex-wrap:wrap;flex:none}.ips-action{height:44px;min-height:44px;padding:0 14px;border-radius:6px;border:1px solid transparent;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:900;white-space:nowrap;cursor:pointer}.ips-action:disabled{opacity:.45;cursor:not-allowed}.ips-action-blue{background:#2563eb;color:#fff;border-color:#1d4ed8}.ips-action-green{background:#16a34a;color:#fff;border-color:#15803d}.ips-action-red{background:#dc2626;color:#fff;border-color:#b91c1c}.ips-action-slate{background:#334155;color:#fff;border-color:#1e293b}.ips-workspace{display:grid;gap:18px}.ips-card{background:#fff;border:1px solid #cbd5e1;border-radius:6px;box-shadow:0 1px 2px rgba(15,23,42,.05);padding:18px}.ips-card h2{margin:0 0 15px;color:#020617;font-size:18px;font-weight:800}.ips-field{display:grid;gap:6px;color:#0f172a;font-size:16px;font-weight:700}.ips-field>span{color:#0f172a}.ips-field input,.ips-field select,.ips-field textarea{width:100%;box-sizing:border-box;min-height:48px;border:1px solid #94a3b8;border-radius:6px;background:#fff;color:#0f172a;padding:0 12px;font:inherit;outline:none}.ips-field textarea{padding:12px;min-height:120px;resize:vertical}.ips-field input:focus,.ips-field select:focus,.ips-field textarea:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}.ips-grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.ips-grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.ips-grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.ips-table-wrap{width:100%;overflow:auto}.ips-table{width:100%;border-collapse:collapse;min-width:760px}.ips-table th,.ips-table td{text-align:left;border-bottom:1px solid #e2e8f0;padding:0 12px;color:#0f172a}.ips-table th{height:54px;background:#f1f5f9;font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap}.ips-table td{height:54px;font-size:16px;font-weight:600}.ips-table tbody tr:hover{background:#f8fafc}.ips-status-green{background:#ecfdf5;color:#065f46}.ips-status-amber{background:#fffbeb;color:#92400e}.ips-status-rose{background:#fff1f2;color:#9f1239}.ips-bottom-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.ips-footer{display:flex;justify-content:space-between;gap:16px;padding:14px 2px;color:#64748b;font-size:12px;font-weight:700}.ips-close{width:42px;height:42px;border:1px solid #94a3b8;background:#fff;color:#0f172a;border-radius:6px;display:grid;place-items:center;cursor:pointer}.ips-page-tablet{background:#0f172a;color:#f8fafc;padding:16px}.ips-page-tablet .ips-header{border-bottom-color:#334155}.ips-page-tablet .ips-breadcrumb,.ips-page-tablet .ips-heading p{color:#cbd5e1}.ips-page-tablet .ips-heading h1{color:#fff}.ips-page-tablet .ips-card{background:#111827;border-color:#334155;color:#f8fafc}.ips-page-tablet .ips-card h2,.ips-page-tablet .ips-field,.ips-page-tablet .ips-field>span,.ips-page-tablet .ips-table td{color:#f8fafc}.ips-page-tablet .ips-field input,.ips-page-tablet .ips-field select,.ips-page-tablet .ips-field textarea{background:#1e293b;border-color:#475569;color:#fff}.ips-page-tablet .ips-table th{background:#1e293b;color:#fff}.ips-page-tablet .ips-table td{border-bottom-color:#334155}.ips-page-tablet .ips-footer{color:#94a3b8}@media(max-width:900px){.ips-page{padding:16px}.ips-header{flex-direction:column}.ips-toolbar{width:100%;justify-content:flex-start}.ips-grid-3,.ips-grid-4{grid-template-columns:1fr 1fr}}@media(max-width:620px){.ips-grid-2,.ips-grid-3,.ips-grid-4{grid-template-columns:1fr}.ips-toolbar{display:grid;grid-template-columns:1fr 1fr;width:100%}.ips-action{width:100%;height:48px}.ips-heading h1{font-size:21px}.ips-footer{flex-direction:column}}
+/*
+ * SYSNQRA ERP INDUSTRIAL — folha do IndustrialPageShell (telas operacionais inline).
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-SHELL-INLINE-COMPACTO-20261105-01
+ * @STATUS_APROVACAO: ordem do proprietario em 2026-11-05 sobre o print da rota
+ *   /pageprincipal/financeiro/fluxo-caixa: "ta uma merda de feia arrumar essa tela
+ *   depois edit grande de mais barra lateral azul feia de mais".
+ *
+ * Medicao que motivou esta folha (nada aqui e chute):
+ * 1) Este arquivo existia, mas NENHUM import dele existia no projeto. Sem folha, os campos
+ *    caíam no tamanho do navegador e o <IndustrialReferenceShell> ainda desenhava TRILHO NAVY
+ *    + BARRA proprios dentro do ERPHorizontalShell, que ja tem Menu, busca e card de abertura.
+ *    Dai a "barra lateral azul" duplicada.
+ * 2) O bloco "REGRA GLOBAL 2026" de src/styles/index.css crava font-size:16px!important em
+ *    button/input/select/textarea e em table td. A unica forma aprovada de derrubar isso e a
+ *    regua [data-synqra-density='30px'] (stock-sales-premium.css), ja usada por 10 telas de
+ *    Estoque/Almoxarifado aprovadas. O shell agora ativa esse atributo na propria raiz, entao
+ *    campo, botao, rotulo e celula de tabela entram em 30px/11px/9px sem esta folha brigar com
+ *    a regua: aqui so existe o que a regua nao define (grade, cartoes, KPI, tags, alerta, pagina).
+ *
+ * Regua do sistema: controle 30px, campo 11px, rotulo 9px, navy #123B50, borda #CFE1E7.
+ */
+
+.ips-page {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 2px 0 14px;
+  color: #17333f;
+}
+
+/* Cabecalho da tela: uma linha fininha. O card de abertura e o titulo da aba ja pertencem
+   ao ERPHorizontalShell, entao aqui nao se repete h1 de 24px nem botao AJUDA duplicado. */
+.ips-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  border: 1px solid #cfe1e7;
+  border-radius: 2px;
+  background: #fff;
+  padding: 6px 10px;
+}
+
+.ips-bar-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ips-bar-title strong {
+  color: #123b50;
+  font-size: 12px !important;
+  font-weight: 800;
+  line-height: 16px;
+}
+
+.ips-bar-title span {
+  color: #647b85;
+  font-size: 9px !important;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ips-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: none;
+}
+
+/* Modo hospedado: o card de abertura do ERPHorizontalShell ja traz titulo, modulo e ajuda,
+   entao a barra da tela fica so com as acoes (que o shell global nao tem onde desenhar). */
+.ips-bar-actions-only { justify-content: flex-end; }
+
+/* Cores dos botoes. Altura, raio, fonte e paddings vem da regua 30px.
+   As variantes usam o atributo da regua no seletor de proposito medido no harness de cascata:
+   [data-synqra-density='30px'] button (0,1,1) tambem pinta color:#123b50 em todo botao e, com
+   .ips-action-primary sozinho (0,1,1), dava empate — o texto do botao primario saia na cor do
+   fundo (navy sobre navy, invisivel). Com o atributo aqui o seletor passa a (0,2,0) e vence. */
+.ips-action {
+  border: 1px solid #d5e1e8;
+  background: #fff;
+  color: #123b50;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.ips-action:hover:not(:disabled) { background: #eaf5fa; border-color: #b9d2da; }
+
+[data-synqra-density='30px'] .ips-action-primary { border-color: #123b50; background: #123b50; color: #fff; }
+[data-synqra-density='30px'] .ips-action-primary:hover:not(:disabled) { background: #176487; border-color: #176487; }
+[data-synqra-density='30px'] .ips-action-success { border-color: #047857; background: #047857; color: #fff; }
+[data-synqra-density='30px'] .ips-action-success:hover:not(:disabled) { background: #065f46; border-color: #065f46; }
+[data-synqra-density='30px'] .ips-action-danger { border-color: #be123c; background: #be123c; color: #fff; }
+[data-synqra-density='30px'] .ips-action-danger:hover:not(:disabled) { background: #9f1239; border-color: #9f1239; }
+
+.ips-workspace { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+
+.ips-card {
+  border: 1px solid #cfe1e7;
+  border-radius: 2px;
+  background: #fff;
+  padding: 10px 12px;
+}
+
+.ips-card > h2 {
+  margin: 0 0 8px;
+  color: #123b50;
+  font-size: 12px !important;
+  font-weight: 800;
+  line-height: 16px;
+}
+
+.ips-hint { margin: 8px 0 0; color: #647b85; font-size: 10px !important; font-weight: 600; }
+
+.ips-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.ips-grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.ips-grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+
+/* Formulario de lancamento: grade de 12 colunas para o proprio arquivo de tela usar. */
+.ips-grid-12 { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 8px; align-items: end; }
+.ips-col-2 { grid-column: span 2; }
+.ips-col-3 { grid-column: span 3; }
+.ips-col-4 { grid-column: span 4; }
+.ips-col-5 { grid-column: span 5; }
+.ips-col-6 { grid-column: span 6; }
+.ips-col-12 { grid-column: span 12; }
+
+.ips-field { display: flex; flex-direction: column; min-width: 0; }
+.ips-field input, .ips-field select, .ips-field textarea { width: 100%; }
+
+/* Indicadores: eram campos de leitura ocupando a pagina inteira; viram ladrilho de 4 colunas,
+   sem caixa de edicao (o numero nao e editavel, entao nao deve parecer com uma). */
+.ips-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+
+.ips-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid #cfe1e7;
+  border-radius: 2px;
+  background: #f8fcfe;
+  padding: 7px 10px;
+}
+
+.ips-kpi span {
+  color: #536b76;
+  font-size: 9px !important;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.ips-kpi strong {
+  color: #123b50;
+  font-size: 16px !important;
+  font-weight: 800;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ips-kpi-neg strong { color: #be123c; }
+
+.ips-tablewrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #cfe1e7;
+  border-radius: 2px;
+  background: #fff;
+}
+
+.ips-table { width: 100%; min-width: 620px; border-collapse: collapse; }
+.ips-table th { text-align: left; white-space: nowrap; }
+.ips-table td { text-align: left; }
+.ips-table td:first-child, .ips-table th:first-child { padding-left: 10px !important; }
+.ips-table tbody tr:hover td { background: #f1f8fb; }
+.ips-num { font-variant-numeric: tabular-nums; text-align: right !important; white-space: nowrap; }
+
+/* Ações da linha (EDITAR / BAIXA / ESTORNAR). A regua crava min-height:30px e font-size:11px com
+   !important em todo button, entao a variante mini so encurta o padding e o icone pela mesma tecnica
+   usada em .ips-action-primary: o atributo da regua no seletor sobe a especificidade para (0,2,0). */
+.ips-row-actions { display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; }
+
+[data-synqra-density='30px'] .ips-action-mini { padding: 0 6px; gap: 3px; white-space: nowrap; }
+[data-synqra-density='30px'] .ips-action-mini svg { width: 11px; height: 11px; flex: none; }
+
+.ips-empty { padding: 16px 10px; color: #647b85; text-align: center; font-size: 11px !important; }
+
+/* Etiquetas de movimento e status: 9px, fundo suave, sem borda de 1px dentro de linha de 30px. */
+.ips-tag {
+  display: inline-block;
+  border-radius: 2px;
+  padding: 2px 6px;
+  font-size: 9px !important;
+  font-weight: 800;
+  letter-spacing: .04em;
+  line-height: 12px;
+}
+
+.ips-tag-pago { background: #e7f7ef; color: #065f46; }
+.ips-tag-pendente { background: #fdf3e0; color: #92400e; }
+.ips-tag-entrada { background: #eaf4f8; color: #17445a; }
+.ips-tag-saida { background: #fdeaec; color: #b42318; }
+
+.ips-alert, .ips-notice {
+  margin: 0 0 8px;
+  border-radius: 2px;
+  padding: 6px 10px;
+  font-size: 11px !important;
+  font-weight: 700;
+}
+
+.ips-alert { border: 1px solid #f3b4ad; background: #fff1f0; color: #b42318; }
+.ips-notice { border: 1px solid #b8dbe9; background: #eaf5fa; color: #145779; }
+
+.ips-bottom-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 8px; }
+
+.ips-pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.ips-pager p { margin: 0; color: #647b85; font-size: 10px !important; font-weight: 700; }
+
+.ips-footer {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: #647b85;
+  font-size: 9px !important;
+  font-weight: 700;
+  letter-spacing: .02em;
+  padding: 2px;
+}
+
+/* Estado de banco da propria tela (item 4 da revisao): o texto vem de quem consultou, nunca de
+   rotulo fixo. Sem consulta concluida, o ponto e âmbar; com erro, vermelho; nunca verde "de cara". */
+.ips-conn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.ips-conn i {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: #b8791c;
+}
+
+.ips-conn-ok i { background: #16845b; }
+.ips-conn-erro i { background: #be123c; }
+.ips-conn-erro { color: #b42318; }
+
+@media (max-width: 1000px) {
+  .ips-kpis, .ips-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ips-col-5, .ips-col-4, .ips-col-3, .ips-col-2 { grid-column: span 6; }
+}
+
+@media (max-width: 640px) {
+  .ips-kpis, .ips-grid-2, .ips-grid-3, .ips-grid-4 { grid-template-columns: minmax(0, 1fr); }
+  .ips-grid-12 { grid-template-columns: minmax(0, 1fr); }
+  .ips-col-2, .ips-col-3, .ips-col-4, .ips-col-5, .ips-col-6 { grid-column: span 1; }
+  .ips-bar { align-items: flex-start; flex-direction: column; }
+  .ips-toolbar { width: 100%; justify-content: stretch; }
+  .ips-toolbar .ips-action { flex: 1 1 auto; }
+}

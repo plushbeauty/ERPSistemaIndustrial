@@ -1,10 +1,24 @@
 /**
- * Desenvolvedor: FernandoSch
- * Status do Build Local: Não executado — validação será feita no gate remoto.
+ * SYSNQRA ERP & SGQ INDUSTRIAL — shell inline das telas operacionais.
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-SHELL-INLINE-COMPACTO-20261105-03 — modo hospedado sem titulo, rodape com estado de banco provado e ToolbarButton sem uso removido
+ * @STATUS_APROVACAO: revisao tecnica do proprietario em 2026-11-05 (itens 1, 4 e 6), sobre o incremento
+ *   aprovado visualmente em /pageprincipal/financeiro/fluxo-caixa.
+ *
+ * Divisao de papel com o ERPHorizontalShell (item 1 da revisao):
+ * - hospedado (padrao): o titulo, o modulo e a ajuda da tela ja saem no PageIntroCard do shell
+ *   global, entao esta folha nao desenha cabecalho nem breadcrumb — so a barra de acoes, que o
+ *   shell global nao tem espaco proprio (some-la tiraria funcionalidade da tela).
+ * - standalone (standalone={true}): para tela servida fora do shell global, ai o titulo e do shell.
+ * - [data-synqra-density='30px'] fica no MESMO elemento da raiz (.ips-page). A regua de
+ *   stock-sales-premium.css usa seletores sem tag ([data-synqra-density='30px'] table th), entao
+ *   ela pega o elemento pelo atributo e nao pelo nome da etiqueta.
+ * - nenhum estilo aqui depende de IndustrialReferenceShell: o trilho navy e a barra propia so
+ *   existiam naquele componente e nao sao mais montados nesta rota.
  */
 import type { ReactNode } from 'react'
-import { ArrowLeft, ClipboardList, HelpCircle, X } from 'lucide-react'
-import IndustrialReferenceShell from '../../layout/IndustrialReferenceShell'
+import './industrial-page-shell.css'
 
 export type PageAction = {
   label: string
@@ -14,96 +28,82 @@ export type PageAction = {
   disabled?: boolean
 }
 
+/**
+ * Estado de banco provado por consulta, nunca por texto fixo (revisao tecnica de 2026-11-05, item 4).
+ * quem desenha a tela e quem passou a consultar decide o status; o shell so veste o rotulo.
+ */
+export type PageConnection = {
+  status: 'consultando' | 'ok' | 'erro'
+  message: string
+}
+
 type Props = {
   module: string
   title: string
-  subtitle?: string
   children: ReactNode
   actions?: PageAction[]
-  backHref?: string
-  footer?: ReactNode
-  tablet?: boolean
+  /** true quando a tela e servida fora do ERPHorizontalShell (sem card de abertura global). */
+  standalone?: boolean
+  connection?: PageConnection
 }
 
 const actionClass: Record<NonNullable<PageAction['type']>, string> = {
-  primary: 'border-blue-700 bg-blue-700 text-white hover:bg-blue-800',
-  success: 'border-emerald-700 bg-emerald-700 text-white hover:bg-emerald-800',
-  danger: 'border-rose-700 bg-rose-700 text-white hover:bg-rose-800',
-  neutral: 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50',
+  primary: 'ips-action ips-action-primary',
+  success: 'ips-action ips-action-success',
+  danger: 'ips-action ips-action-danger',
+  neutral: 'ips-action',
 }
 
-export default function IndustrialPageShell({ module, title, subtitle, children, actions = [], backHref, footer }: Props) {
-  const nav = [{ id: 'current', label: title, icon: ClipboardList }]
-
-  const actionNodes = (
-    <>
-      <button type="button" className={`inline-flex min-h-[42px] items-center gap-2 rounded-xl border px-3 text-xs font-black shadow-sm ${actionClass.neutral}`} onClick={() => { window.location.href = '/manual-usuario' }}>
-        <HelpCircle size={16} /> AJUDA
-      </button>
-      {backHref && (
-        <button type="button" className={`inline-flex min-h-[42px] items-center gap-2 rounded-xl border px-3 text-xs font-black shadow-sm ${actionClass.neutral}`} onClick={() => { window.location.href = backHref }}>
-          <ArrowLeft size={16} /> VOLTAR
-        </button>
-      )}
-      {actions.map((action, index) => (
-        <button
-          key={action.label + index}
-          type="button"
-          disabled={action.disabled}
-          className={`inline-flex min-h-[42px] items-center gap-2 rounded-xl border px-3 text-xs font-black shadow-sm disabled:cursor-not-allowed disabled:opacity-50 ${actionClass[action.type ?? 'neutral']}`}
-          onClick={action.onClick}
-        >
-          {action.icon}
-          {action.label}
-        </button>
-      ))}
-    </>
-  )
-
+export default function IndustrialPageShell({ module, title, children, actions = [], standalone = false, connection }: Props) {
+  const showTitle = standalone
   return (
-    <IndustrialReferenceShell
-      moduleLabel={module}
-      title={title}
-      nav={nav}
-      activeId="current"
-      onNav={() => {}}
-      onHome={() => { window.location.href = '/tablet/dashboard' }}
-      actions={actionNodes}
-    >
-      <div className="erp-dense space-y-4">
-        {subtitle && (
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-sm font-semibold text-slate-500">{subtitle}</p>
+    <main data-synqra-density="30px" className="ips-page">
+      {(showTitle || actions.length > 0) && (
+        <div className={`ips-bar${showTitle ? '' : ' ips-bar-actions-only'}`}>
+          {showTitle && (
+            <div className="ips-bar-title">
+              <strong>{title}</strong>
+              <span>{module}</span>
+            </div>
+          )}
+          <div className="ips-toolbar">
+            {actions.map((action, index) => (
+              <button
+                key={action.label + index}
+                type="button"
+                disabled={action.disabled}
+                className={actionClass[action.type ?? 'neutral']}
+                onClick={action.onClick}
+              >
+                {action.icon}
+                {action.label}
+              </button>
+            ))}
           </div>
+        </div>
+      )}
+      <div className="ips-workspace">{children}</div>
+      <footer className="ips-footer">
+        <span>SYSNQRA ERP &amp; SGQ INDUSTRIAL</span>
+        {connection && (
+          <span className={`ips-conn ips-conn-${connection.status}`} role="status">
+            <i aria-hidden />
+            {connection.message}
+          </span>
         )}
-        {children}
-        {footer ?? (
-          <footer className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold text-slate-500 shadow-sm">
-            <span>SYSNQRA ERP & SGQ INDUSTRIAL</span>
-            <span>RLS por empresa · os números exibidos vêm das consultas feitas por esta tela</span>
-          </footer>
-        )}
-      </div>
-    </IndustrialReferenceShell>
+      </footer>
+    </main>
   )
 }
 
 export function SectionCard({ title, children, className = '' }: { title: string; children: ReactNode; className?: string }) {
-  return <section className={`rounded-xl border border-slate-200 bg-white p-4 shadow-sm ${className}`}><h2 className="mb-3 text-base font-black text-slate-900">{title}</h2>{children}</section>
+  return <section className={`ips-card ${className}`}><h2>{title}</h2>{children}</section>
 }
 
 export function Field({ label, children, required = false, className = '' }: { label: string; children: ReactNode; required?: boolean; className?: string }) {
-  return <label className={`grid gap-1 text-[12px] font-black text-slate-700 ${className}`}><span>{label}{required && ' *'}</span>{children}</label>
-}
-
-export function ToolbarButton({ children, onClick, tone = 'neutral', disabled = false }: { children: ReactNode; onClick?: () => void; tone?: PageAction['type']; disabled?: boolean }) {
-  return <button type="button" disabled={disabled} onClick={onClick} className={`inline-flex min-h-[42px] items-center gap-2 rounded-lg border px-3 text-[13px] font-black shadow-sm disabled:opacity-50 ${actionClass[tone ?? 'neutral']}`}>{children}</button>
+  return <label className={`ips-field ${className}`}><span>{label}{required && ' *'}</span>{children}</label>
 }
 
 export function Table({ children }: { children: ReactNode }) {
-  return <div className="overflow-x-auto rounded-xl border border-slate-200"><table className="w-full min-w-[760px] border-collapse text-[13px]">{children}</table></div>
-}
-
-export function CloseButton({ onClick }: { onClick: () => void }) {
-  return <button type="button" className="grid h-10 w-10 place-items-center rounded-lg border border-slate-300 bg-white text-slate-700 shadow-sm hover:bg-slate-50" onClick={onClick} aria-label="Fechar"><X size={20} /></button>
+  return <div className="ips-tablewrap"><table className="ips-table">{children}</table></div>
 }

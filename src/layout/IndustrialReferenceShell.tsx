@@ -8,10 +8,10 @@
  */
 
 /**
- * @DATA_REVISAO_APROVACAO: 2026-11-04
- * @REVISAO: REV-PADRAO-COR-CLARO-20261104-01 — shell convertido do tema escuro para o padrao industrial claro (trilho navy #123B50 com texto claro, area de conteudo #F4FBFD); nenhuma alteracao de logica ou de consulta
+ * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-SHELL-SEM-DUPLICACAO-20261105-01 — modo hospedado deixou de redesenhar eyebrow/h1 (o PageIntroCard do ERPHorizontalShell ja traz titulo, modulo e ajuda) e o selo 'SUPABASE CONNECTED' fixo virou estado real de sessao + consulta
  * @AUTOR: Fernando Schuinsekel
- * @STATUS_APROVACAO: PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04
+ * @STATUS_APROVACAO: REVISAO TECNICA DO PROPRIETARIO EM 2026-11-05 (itens 1 e 4); modo independente preservado para tela servida fora do shell global
  */
 
 import { useEffect, useState, type ReactNode } from 'react'
@@ -24,6 +24,23 @@ export type IndustrialReferenceNavItem = {
   id: string
   label: string
   icon: LucideIcon
+}
+
+/** Estado de banco provado por consulta — nunca rotulo fixo (revisao tecnica 2026-11-05, item 4). */
+type ConnState = 'verificando' | 'ativo' | 'sem_sessao' | 'falha'
+
+const connLabel: Record<ConnState, string> = {
+  verificando: 'VERIFICANDO SESSÃO E BANCO',
+  ativo: 'SESSÃO ATIVA · BANCO RESPONDEU',
+  sem_sessao: 'SEM SESSÃO ATIVA',
+  falha: 'FALHA NA CONSULTA AO BANCO',
+}
+
+const connDot: Record<ConnState, string> = {
+  verificando: 'bg-slate-400',
+  ativo: 'bg-emerald-500 shadow-[0_0_8px_#10b981]',
+  sem_sessao: 'bg-amber-500',
+  falha: 'bg-rose-500',
 }
 
 type Props = {
@@ -48,23 +65,29 @@ export default function IndustrialReferenceShell({
   actions,
 }: Props) {
   const hostedBySynqra = useSynqraLayout()
-  const [operator, setOperator] = useState('Administrador')
+  const [operator, setOperator] = useState('')
+  const [conn, setConn] = useState<ConnState>('verificando')
   const [clock, setClock] = useState(new Date())
 
   useEffect(() => {
     if (hostedBySynqra) return
     let alive = true
     void (async () => {
-      const { data: auth } = await supabase.auth.getUser()
-      if (!alive || !auth.user) return
-      const { data } = await supabase
+      const { data: auth, error: authError } = await supabase.auth.getUser()
+      if (!alive) return
+      if (authError) { setConn('falha'); return }
+      if (!auth.user) { setConn('sem_sessao'); return }
+      const profile = await supabase
         .from('erp_usuarios')
         .select('nome')
         .eq('auth_user_id', auth.user.id)
         .eq('ativo', true)
         .is('deleted_at', null)
         .maybeSingle()
-      if (alive && data?.nome) setOperator(data.nome)
+      if (!alive) return
+      if (profile.error) { setConn('falha'); return }
+      setConn('ativo')
+      if (profile.data?.nome) setOperator(profile.data.nome)
     })()
 
     const timer = window.setInterval(() => setClock(new Date()), 1000)
@@ -74,15 +97,16 @@ export default function IndustrialReferenceShell({
     }
   }, [hostedBySynqra])
 
+  // Modo hospedado: titulo, modulo e ajuda da tela ja pertencem ao PageIntroCard do
+  // ERPHorizontalShell, entao esta folha nao redesenha cabecalho nem breadcrumb (item 1).
+  // As acoes continuam aqui porque o shell global nao tem espaco proprio para elas.
   const pageContent = (
     <div className="synqra-reference-page p-4 bg-[#F4F7FE]">
-      <header className="synqra-reference-heading border-b border-slate-200 pb-4 mb-4 flex items-center justify-between">
-        <div className="synqra-reference-title">
-          <p className="text-[10px] font-black uppercase tracking-[.16em] text-blue-600">ERP INDUSTRIAL • {moduleLabel}</p>
-          <h1 className="text-xl font-extrabold tracking-tight text-slate-900 mt-1">{title}</h1>
+      {actions && (
+        <div className="synqra-reference-actions mb-3 flex flex-wrap items-center justify-end gap-2">
+          {actions}
         </div>
-        {actions && <div className="synqra-reference-actions flex items-center gap-2">{actions}</div>}
-      </header>
+      )}
       <div className="synqra-reference-body">
         <div className="synqra-reference-content">{children}</div>
       </div>
@@ -151,8 +175,8 @@ export default function IndustrialReferenceShell({
         </div>
 
         <div className="flex items-center justify-between border-t border-[#2D8DB8]/30 px-6 py-3 font-mono text-[9px] font-bold text-white/70 bg-[#2D8DB8]/10">
-          <span>SUPABASE CONNECTED</span>
-          <span className="h-1.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]" />
+          <span>{connLabel[conn]}</span>
+          <span className={`h-1.5 w-2.5 rounded-full ${connDot[conn]}`} />
         </div>
       </aside>
 
@@ -188,7 +212,7 @@ export default function IndustrialReferenceShell({
 
             <div className="flex h-8 items-center space-x-2 rounded-[2px] border border-slate-200 bg-slate-50 px-3 text-xs font-bold text-slate-600">
               <User className="h-3.5 w-3.5 text-slate-400" />
-              <span>Op: <strong className="text-slate-800 font-black">{operator}</strong></span>
+              <span>Op: <strong className="text-slate-800 font-black">{operator || (conn === 'sem_sessao' ? 'SEM SESSÃO' : 'CONSULTANDO…')}</strong></span>
             </div>
 
             <button

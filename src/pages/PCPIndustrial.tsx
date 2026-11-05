@@ -1,8 +1,8 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-PCP-CHIPE-DE-BANCO-REAL-20261105-01 — o selo fixo 'DADOS SUPABASE' passou a refletir sessao, empresa e retorno da consulta
+ * @STATUS_APROVACAO: REVISAO TECNICA DO PROPRIETARIO EM 2026-11-05, ITEM 4 — "NAO EXIBIR SUPABASE CONNECTED COMO TEXTO FIXO SEM COMPROVAR A CONEXAO"
  */
 /**
  * REVISÃO PCP — 2026-10-23 · REV-PCP-UI-003
@@ -272,7 +272,7 @@ const tabs:[Tab,string,string][]=[['visao','Visão geral','Gauge'],['novaop','Cr
   <section className="pcp-main">
    {!hostedBySynqra&&<header className="pcp-topbar">
     <div className="pcp-top-title"><div><strong>PCP Industrial</strong><small>PCP · PLANEJAMENTO E CONTROLE DA PRODUÇÃO</small></div></div>
-    <div className="pcp-top-actions"><span className="pcp-supabase-dot"><i/> DADOS SUPABASE</span><span className="pcp-top-user"><i/>{profileName}</span><span className="pcp-top-clock">{clock.toLocaleDateString('pt-BR')} · {clock.toLocaleTimeString('pt-BR')}</span><button type="button" className="pcp-top-light" onClick={()=>document.documentElement.classList.toggle("dark")}>☼ Light</button><button className="pcp-top-exit" onClick={()=>void supabase.auth.signOut().then(()=>window.location.replace('/login'))}>Sair</button></div>
+    <div className="pcp-top-actions"><span className="pcp-supabase-dot"><i style={{background: busy ? '#B8791C' : error ? '#C74646' : companyId ? '#16845B' : '#64748B'}} />{busy ? 'CONSULTANDO SUPABASE…' : error ? 'BANCO SEM RETORNO' : companyId ? `SUPABASE · ${ops.length} OPs DA EMPRESA AUTENTICADA` : 'SEM SESSÃO/EMPRESA IDENTIFICADA'}</span><span className="pcp-top-user"><i/>{profileName}</span><span className="pcp-top-clock">{clock.toLocaleDateString('pt-BR')} · {clock.toLocaleTimeString('pt-BR')}</span><button type="button" className="pcp-top-light" onClick={()=>document.documentElement.classList.toggle("dark")}>☼ Light</button><button className="pcp-top-exit" onClick={()=>void supabase.auth.signOut().then(()=>window.location.replace('/login'))}>Sair</button></div>
    </header>}
    <div className="pcp-page-head"><div className="pcp-page-heading-row"><div><span>PCP · PLANEJAMENTO E CONTROLE DA PRODUÇÃO</span><h1>{tab==='visao'?'PAINEL PCP':tab==='novaop'?'NOVA ORDEM DE PRODUÇÃO':help[tab].title.toUpperCase()}</h1><p>{tab==='visao'?'Visão geral da programação, produção, capacidade e qualidade da fábrica.':tab==='novaop'?'Cadastro operacional da OP, explosão de materiais e roteiro de produção.':help[tab].what}</p></div></div>
     {tab!=='visao'&&<div className="mt-2 flex items-center justify-between border-t border-slate-200 pt-2">

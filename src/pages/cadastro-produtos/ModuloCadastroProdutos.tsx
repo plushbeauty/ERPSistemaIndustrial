@@ -54,9 +54,8 @@ export default function ModuloCadastroProdutos() {
 
   return (
     <SynqraLayoutProvider>
-      {/* Dentro da área de trabalho global o card de abertura já traz módulo e título;
-          o cabeçalho interno da moldura é ocultado para não duplicar a identificação da tela. */}
-      <style>{'.erp-horizontal-workspace .synqra-reference-heading{display:none}'}</style>
+      {/* No modo hospedado o IndustrialReferenceShell deixou de desenhar o proprio cabecalho:
+          titulo, modulo e ajuda pertencem ao PageIntroCard do ERPHorizontalShell (revisao 2026-11-05, item 1). */}
       <IndustrialReferenceShell
         moduleLabel="Cadastro de Produtos"
         title="Cadastro e Identificação de Produtos"
