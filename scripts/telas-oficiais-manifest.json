@@ -1045,11 +1045,11 @@
     },
     {
       "path": "src/pages/PCPWorkspace.tsx",
-      "sha": "e43c56b8e35268ec7576adb75766908341c1168f",
+      "sha": "29804d7e4d70ab637627990b7bcccb2b7a4ab345",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-PCP-WORKSPACE-FICHA-20261106-01 — aba de Ficha de Processo usa a tela técnica completa com isolamento por empresa; estrutura visual do workspace preservada",
+      "aprovadaEm": "2026-11-06",
+      "statusAprovacao": "CORREÇÃO FUNCIONAL AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-06; sem alteração do layout aprovado."
     },
     {
       "path": "src/pages/PagePrincipal.tsx",
