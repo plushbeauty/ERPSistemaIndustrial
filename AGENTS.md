@@ -33,3 +33,8 @@ Estas regras valem para toda alteração neste repositório.
 
 ## Definition of Done
 Só marque como concluído quando o código estiver revisado e preservado, os testes aplicáveis passarem, o diff não apresentar regressões conhecidas, o PR estiver integrado à base destinada à publicação e o deploy estiver verificado. Caso contrário, declare o que permanece pendente.
+
+
+## ORDEM-MESTRE OBRIGATÓRIA — SYSNQRA ERP INDUSTRIAL
+
+Leia e cumpra integralmente [docs/ORDEM-MESTRE-SYSNQRA-ERP.md](docs/ORDEM-MESTRE-SYSNQRA-ERP.md) antes de qualquer alteração. Ela prevalece como procedimento operacional para IAs, Qoder, agentes e contribuidores: preservar telas aprovadas, corrigir a causa raiz, manter Supabase/RLS/tenant, executar gates completos, validar Preview real e nunca declarar sucesso sem evidência. Não atualizar hashes ou enfraquecer verificações para mascarar regressões. Não fazer merge/publicação em produção sem validar divergência da branch e obter autorização exigida.
