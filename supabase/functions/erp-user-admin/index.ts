@@ -113,7 +113,7 @@ async function writeAudit(actor: Actor, action: string, entityId: string | null,
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     if (!originAllowed(req)) return new Response('Origem não autorizada.', { status: 403, headers: corsHeaders(req) })
-    return new Response('ok', { status: 204, headers: corsHeaders(req) })
+    return new Response(null, { status: 204, headers: corsHeaders(req) })
   }
   if (!originAllowed(req)) return new Response('Origem não autorizada.', { status: 403, headers: corsHeaders(req) })
   if (req.method !== 'POST') return json(req,{ error: 'Método não permitido.' }, 405)
