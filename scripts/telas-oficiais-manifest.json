@@ -965,11 +965,11 @@
     },
     {
       "path": "src/pages/PCPFichasProcesso.tsx",
-      "sha": "93f7821fa20b22f105518c5612a6f5c1c54c4103",
+      "sha": "08341310a7005a88d3ae0012a959bf02776b6bec",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir ficha deixa de capturar a tela e passa a emitir a ficha de processo em A4 pelo motor de relatório, com os parâmetros técnicos e o vínculo do registro lido do banco",
-      "aprovadaEm": "2026-11-05",
-      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
+      "revisao": "REV-PCP-FICHA-SCHEMA-20261106-01 — correção funcional do timestamp para updated_at, conforme migration 20261003110000; sem alteração visual, campos ou impressão A4",
+      "aprovadaEm": "2026-11-06",
+      "statusAprovacao": "CORREÇÃO FUNCIONAL AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-06; alteração restrita ao nome da coluna de atualização, sem mudança visual."
     },
     {
       "path": "src/pages/PCPIndustrial.tsx",
