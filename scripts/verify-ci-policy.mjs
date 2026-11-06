@@ -16,7 +16,7 @@ for(const file of required){
   if(!/npm ci --legacy-peer-deps --no-audit --no-fund/.test(text)) failures.push(`.github/workflows/${file}: npm ci determinístico ausente`)
 }
 const ci=fs.existsSync(path.join(workflowsDir,'ci.yml'))?fs.readFileSync(path.join(workflowsDir,'ci.yml'),'utf8'):''
-const packageJson=JSON.parse(read('package.json'))
+const packageJson=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'))
 const productionGate=String(packageJson.scripts?.['verify:production'] ?? '')
 for(const command of ['npm run verify:migrations-sql','npm run verify:official-screens-lock','npm run verify:reset-contract','npm run verify:auth-master-contract','npm run verify-routes']) {
   if(!productionGate.includes(command)) failures.push(`package.json: verify:production precisa executar ${command}`)
