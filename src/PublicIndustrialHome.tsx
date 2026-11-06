@@ -1,9 +1,19 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-11-05
- * @REVISAO: REV-CARROSSEL-ARTES-20261105-01 — o carrossel do topo passa a ser as 5 artes enviadas pelo proprietario
- * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-05 — "mandei trocar as imagens do fundo com aquelas
- * imagens que mandei para vc" e "vc nao criou travas para nao deixar telas antigas voltar"
+ * @DATA_REVISAO_APROVACAO: 2026-11-06
+ * @REVISAO: REV-CARROSSEL-BAIXO-E-BARRA-FINA-20261106-01 — faixa do carrossel com altura própria e barra do topo sem o quadrado da marca
+ * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-06 — "A IMAGEM FICOU GRANDE DE MAIS ELE TA PEGANDO
+ * A TELA TODA PERFEITO MAIS ELA FICOU MUITNA ALTA PEGANDO A TELA MUITO PARA BAIXO CONSEGUE ARRUA" e
+ * "SABE A BARRA DO TOPO ACHO QUE PODEMOS TIRAR O LOGO DELA PORQUE JA TEM O LOGO NAS IMAGENS ASSIM
+ * DEIXANDO ESSA BARRA MAIS FINA"
+ *
+ * Ordem do proprietario em 2026-11-06: o slide 16:9 herdava a altura da largura inteira e, numa janela
+ * de notebook, empurrava o conteudo para baixo da dobra. A folha agora tem altura propria (a janela menos
+ * a barra do topo, com piso e teto) e a arte e exibida inteira sobre uma copia desfocada dela mesma,
+ * porque as artes tem marca no topo e faixa de slogan embaixo e qualquer corte (object-fit: cover)
+ * perderia justamente esses dois blocos. Na barra do topo saiu o quadrado da marca — as cinco artes ja
+ * trazem o logo — e a régua caiu de 66px para 52px. O slot quadrado do topo saiu da trava de
+ * scripts/verify-logo-assets.mjs junto; a marca continua travada no rodape desta mesma tela e nas demais.
  *
  * Ordem do proprietario em 2026-11-05: as fotos de fundo geradas por maquina (cena-*.webp) saem do
  * carrossel e entram as cinco artes que ele enviou, em public/images/carrossel/. Cada arte ja carrega
@@ -203,15 +213,24 @@ function HeroCarousel() {
       <h1 className="ph-sr-only">SYSNQRA ERP Industrial: PCP, qualidade com SGQ, estoque, compras, vendas, RH, manutenção e planos em uma única base, separada por empresa.</h1>
       <div className="ph-carousel-bg">
         {heroSlides.map((item, i) => (
-          <img
-            key={item.key}
-            src={item.art}
-            alt={i === indice ? item.titulo : ''}
-            aria-hidden={i === indice ? undefined : true}
-            className={i === indice ? 'is-active' : undefined}
-            loading={i === 0 ? 'eager' : 'lazy'}
-            decoding="async"
-          />
+          <div key={item.key} className={i === indice ? 'ph-carousel-slide is-active' : 'ph-carousel-slide'}>
+            <img
+              src={item.art}
+              alt=""
+              aria-hidden="true"
+              className="ph-carousel-fill"
+              loading={i === 0 ? 'eager' : 'lazy'}
+              decoding="async"
+            />
+            <img
+              src={item.art}
+              alt={i === indice ? item.titulo : ''}
+              aria-hidden={i === indice ? undefined : true}
+              className="ph-carousel-art"
+              loading={i === 0 ? 'eager' : 'lazy'}
+              decoding="async"
+            />
+          </div>
         ))}
       </div>
       <p className="ph-sr-only" aria-live="polite">{`Arte ${indice + 1} de ${total}: ${heroSlides[indice].titulo}`}</p>
@@ -234,7 +253,6 @@ export default function PublicIndustrialHome() {
   return <main className="sgq-public-home">
     <header className="ph-nav">
       <a href="/" className="ph-brand" aria-label="SYSNQRA ERP & SGQ INDUSTRIAL">
-        <img className="ph-brand-mark" src="/logo/logo-marca.png" alt="" aria-hidden="true" />
         <span className="ph-brand-text"><strong>SYSNQRA</strong><span>ERP &amp; SGQ Industrial</span></span>
       </a>
       <nav className="ph-nav-links" aria-label="Navegação principal">

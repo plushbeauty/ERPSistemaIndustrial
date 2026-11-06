@@ -27,9 +27,12 @@ const approvedLogoRefs = new Set(['/logo/logo.png', '/logo/logo-marca.png'])
 // Slots quadrados (menos de 80px de largura) esmagam o lockup horizontal. Cada um deles e travado
 // aqui: reescrever o src para /logo/logo.png reprova o CI. O cartao de cadastro fica fora desta
 // lista porque o CSS efetivo dele e width:180px/height:auto (company-signup.css), ou seja, slot largo.
+// Saida registrada em 2026-11-06, por ordem explicita do proprietario sobre a home publica: "a barra do
+// topo acho que podemos tirar o logo dela porque ja tem o logo nas imagens, assim deixando essa barra
+// mais fina". O slot ph-brand-mark do topo saiu do JSX e saiu daqui junto; a marca continua travada no
+// rodape da mesma tela (ph-footer-brand) e nas demais.
 const squareSlots = [
   { file: 'src/IndustrialLoginDirect.tsx', anchor: 'auth-brand-logo' },
-  { file: 'src/PublicIndustrialHome.tsx', anchor: 'ph-brand-mark' },
   { file: 'src/PublicIndustrialHome.tsx', anchor: 'ph-footer-brand' },
   { file: 'src/pages/PlanosIndustrial.tsx', anchor: 'ph-footer-brand' },
   { file: 'src/pages/ComprasIndustrial.tsx', anchor: '"buy-brand"><img' },

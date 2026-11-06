@@ -10,6 +10,11 @@
  *             FICA TROCANDO MAIS SE VC VER ELA TEM QUE SER MAIS LARGA PEGANDO DO LADO ESQUERDO AO
  *             LADO DIREITO TODO"): o max-height:84vh do slide encolhia a largura junto com a altura
  *             e deixava faixa branca à direita. A folha agora é 100% da janela em qualquer altura.
+ * @REVISAO_4: REV-CARROSSEL-BAIXO-E-BARRA-FINA-20261106-01 — ordem do proprietário ("ELA FICOU MUITNA
+ *             ALTA PEGANDO A TELA MUITO PARA BAIXO" + "PODEMOS TIRAR O LOGO DELA [do topo] PORQUE JA
+ *             TEM O LOGO NAS IMAGENS, ASSIM DEIXANDO ESSA BARRA MAIS FINA"): a barra do topo caiu de
+ *             66px para 52px e perdeu o quadrado da marca; o carrossel passou a ter altura própria
+ *             (a janela menos a barra, com teto) em vez de herdar 16:9 da largura inteira.
  * @STATUS_APROVACAO: REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01 ("TIRAR O FUNDO AZUL E DEIXAR FUNDO BRANCO", "ARRUMAR TAMANHO PADRAO 13PX" NO MENU DO TOPO)
  *
  * Mesma paleta do sistema (navy #123B50, azul #2D8DB8, ciano #48B7C7, verde #3A9D78,
@@ -27,6 +32,7 @@
   --ph-line: #DCE9EF;
   --ph-tint: #F4FBFD;
   --ph-shadow: 0 18px 44px rgba(18, 59, 80, .09);
+  --ph-nav-h: 52px;
   min-height: 100vh;
   background: #fff;
   color: var(--ph-ink);
@@ -43,24 +49,21 @@
 .sgq-public-home p { margin: 0; }
 
 /* ---------- topo: tipografia uniforme em 13px, pedido expresso pelo proprietário ---------- */
+/* Ordem do proprietário em 2026-11-06: "tirar o logo [do topo] porque já tem o logo nas imagens,
+   assim deixando essa barra mais fina". A barra caiu de 66px para a régua de 52px e o quadrado da
+   marca saiu do JSX — fica o wordmark SYSNQRA, que é o que sobra de legível numa barra dessa altura.
+   O slot quadrado continua existindo no rodapé (ph-footer-brand) e é travado em
+   scripts/verify-logo-assets.mjs. */
 .ph-nav {
   position: sticky; top: 0; z-index: 90;
   display: flex; align-items: center; gap: 14px;
-  height: 66px; padding: 0 clamp(14px, 3vw, 40px);
+  height: var(--ph-nav-h); padding: 0 clamp(14px, 3vw, 40px);
   background: rgba(255, 255, 255, .94);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--ph-line);
 }
 .ph-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.ph-brand-mark {
-  display: block; flex: 0 0 auto;
-  width: 36px; height: 36px;
-  border-radius: 9px;
-  background: #fff;
-  object-fit: cover;
-  object-position: top center;
-}
 .ph-brand-text { display: grid; min-width: 0; }
 .ph-brand-text strong { font-size: 17px; font-weight: 900; letter-spacing: .4px; color: #0B2837; line-height: 1.1; }
 .ph-brand-text span { font-size: 9px; font-weight: 800; letter-spacing: 1.4px; color: var(--ph-muted); text-transform: uppercase; }
@@ -286,7 +289,7 @@
 
 @media (max-width: 860px) {
   /* Esconder o menu deixava Blog e Contato inalcançáveis no celular; aqui ele vira uma linha própria, rolando na horizontal. */
-  .ph-nav { flex-wrap: wrap; height: auto; min-height: 66px; padding-top: 8px; padding-bottom: 8px; }
+  .ph-nav { flex-wrap: wrap; height: auto; min-height: var(--ph-nav-h); padding-top: 6px; padding-bottom: 6px; }
   .ph-nav-links { order: 3; width: 100%; margin: 2px 0 0; overflow-x: auto; scrollbar-width: none; }
   .ph-nav-links::-webkit-scrollbar { display: none; }
   .ph-plans { grid-template-columns: minmax(0, 1fr); }
@@ -294,7 +297,9 @@
 }
 
 @media (max-width: 560px) {
-  .ph-nav { height: 60px; padding: 0 12px; }
+  /* Altura fixa aqui cortava a segunda linha do menu (Blog/Contato) em telas estreitas: com o menu
+     quebrando em duas linhas desde os 860px, a barra precisa crescer com o conteudo. */
+  .ph-nav { height: auto; min-height: 48px; padding: 4px 12px; }
   .ph-modules { grid-template-columns: minmax(0, 1fr); }
   .ph-brand-text span { display: none; }
   .ph-product-menu { left: auto; right: 0; grid-template-columns: minmax(0, 1fr); }
@@ -320,14 +325,6 @@
 .ph-hero--carousel::before { display: none; }
 
 .ph-carousel-bg { position: absolute; inset: 0; z-index: -2; }
-.ph-carousel-bg img {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  object-fit: cover; object-position: center;
-  opacity: 0;
-  transition: opacity .9s ease;
-}
-.ph-carousel-bg img.is-active { opacity: 1; }
 
 /* ================================================================
    CARROSSEL DAS ARTES DO PROPRIETARIO — ordem de 2026-11-05: "mandei trocar as imagens do fundo
@@ -341,8 +338,35 @@
    e virava uma faixa com sobra branca à direita). Agora a folha e sempre 100% da janela: a altura
    vem da proporcao da propria arte, entao a arte aparece inteira, de borda a borda, sem corte e
    sem faixa lateral. */
-.ph-hero--artes { width: 100%; aspect-ratio: 16 / 9; max-height: none; padding: 0; background: #04101c; }
-.ph-hero--artes .ph-carousel-bg img { object-fit: cover; object-position: center; }
+/* Ordem do proprietario em 2026-11-06: "A IMAGEM FICOU GRANDE DE MAIS ... FICOU MUITNA ALTA PEGANDO
+   A TELA MUITO PARA BAIXO". A folha 16:9 herdava a altura da LARGURA, entao numa janela de notebook
+   ela empurrava o resto da pagina para baixo da dobra. A altura agora e propria (a janela menos a
+   barra do topo, com piso e teto) e a arte e mostrada INTEIRA sobre uma copia desfocada dela mesma:
+   as artes enviadas por ele tem marca no topo e faixa de slogan embaixo, entao recortar (object-fit:
+   cover) cortaria exatamente esses dois blocos. A faixa continua de borda a borda — o que sobra nas
+   laterais e a propria arte ampliada e desfocada, nao uma sobra branca. */
+.ph-hero--artes {
+  width: 100%;
+  height: clamp(340px, calc(100svh - var(--ph-nav-h)), 780px);
+  max-height: none;
+  padding: 0;
+  background: #04101c;
+}
+.ph-carousel-slide { position: absolute; inset: 0; opacity: 0; transition: opacity .9s ease; }
+.ph-carousel-slide.is-active { opacity: 1; }
+.ph-carousel-fill {
+  position: absolute; inset: -6%;
+  width: 112%; height: 112%;
+  object-fit: cover; object-position: center;
+  filter: blur(26px) saturate(1.15) brightness(.62);
+}
+.ph-carousel-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center; }
+
+/* Em janela estreita (celular), a arte em 16:9 ja cabe inteira na largura e a faixa fica baixa
+   sozinha: volta ao aspect-ratio e a copia desfocada desaparece porque nao sobra lateral. */
+@media (max-width: 860px) {
+  .ph-hero--artes { height: auto; aspect-ratio: 16 / 9; }
+}
 
 /* rgba(0,0,0,.5) e mais: a foto da fábrica é detalhada demais para texto cru.
    Ordem do proprietario em 2026-11-04: "a imagem do fundo deixar um pouco mais clara". A camada
@@ -388,5 +412,5 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .ph-carousel-grid { animation: none; }
-  .ph-carousel-bg img { transition: none; }
+  .ph-carousel-slide { transition: none; }
 }

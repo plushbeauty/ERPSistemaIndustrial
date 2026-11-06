@@ -1,7 +1,7 @@
 {
   "contrato": "SYNQRA-R-20261103-01",
   "geradoPor": "npm run telas:manifest",
-  "totalTelas": 224,
+  "totalTelas": 225,
   "telas": [
     {
       "path": "src/IndustrialLoginDirect.tsx",
@@ -13,11 +13,11 @@
     },
     {
       "path": "src/PublicIndustrialHome.tsx",
-      "sha": "a3391988874db8446c106d84ef271fb4e757e12c",
+      "sha": "a08f3edead04c7b4e99f9ccfc7475fd2a0354183",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-CARROSSEL-ARTES-20261105-01 — o carrossel do topo passa a ser as 5 artes enviadas pelo proprietario",
-      "aprovadaEm": "2026-11-05",
-      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-05 — \"mandei trocar as imagens do fundo com aquelas"
+      "revisao": "REV-CARROSSEL-BAIXO-E-BARRA-FINA-20261106-01 — faixa do carrossel com altura própria e barra do topo sem o quadrado da marca",
+      "aprovadaEm": "2026-11-06",
+      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-06 — \"A IMAGEM FICOU GRANDE DE MAIS ELE TA PEGANDO"
     },
     {
       "path": "src/components/layout/ModuleTabletMenuModal.tsx",
@@ -1061,11 +1061,11 @@
     },
     {
       "path": "src/pages/PlanosIndustrial.tsx",
-      "sha": "1070b2cc87cacb249390e69d99c5c11dcfd411a6",
+      "sha": "7ae126bea4df9da2698c770f76ba6c613561c326",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-VITRINE-PUBLICA-20261101-03 — arte do PCP trocada pela réplica da tela real",
-      "aprovadaEm": "2026-11-01",
-      "statusAprovacao": "REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01 (\"COISA MAIS FEIA DE SE VER … VEJA TODOS OS MODULOS DO SISTEMA PARA COLOCAR NOS PLANOS\")"
+      "revisao": "REV-PLANOS-SISTEMA-20261106-01 — grade comercial do proprietário, visual do próprio ERP e módulos conferidos tela a tela",
+      "aprovadaEm": "2026-11-06",
+      "statusAprovacao": "REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-06 — \"TELA DE PLANOS ESTA FEIA DE"
     },
     {
       "path": "src/pages/ProcessoIndustrialPage.tsx",
@@ -1780,8 +1780,16 @@
       "statusAprovacao": "AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO no preview do Vercel"
     },
     {
+      "path": "src/styles/planos-industrial-20261106.css",
+      "sha": "f4ddc3379787750ace62b8999dd059581d3e6987",
+      "autor": "Fernando Schuinsekel",
+      "revisao": "REV-PLANOS-SISTEMA-20261106-01 — tela /planos redesenhada com o vocabulário visual do próprio ERP",
+      "aprovadaEm": "2026-11-06",
+      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-06 — \"TELA DE PLANOS ESTA FEIA DE MAIS ARRUMAR ELA"
+    },
+    {
       "path": "src/styles/public-home-premium-20261101.css",
-      "sha": "a2ebb7a27de3fa7f91ca2cb111ddac68a383906a",
+      "sha": "28c368bc95e6111c4ddbeb16866ef70222dfe690",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-VITRINE-PUBLICA-20261101-01 — home pública em fundo branco com vitrine de telas",
       "aprovadaEm": "2026-11-04",
