@@ -325,7 +325,7 @@ Deno.serve(async (req) => {
       authUserId = created.data.user.id
       temporaryPassword = body.password ? null : password
 
-      const inserted = await admin.from('erp_usuarios').insert({ id: authUserId, auth_user_id: authUserId, empresa_id: empresaId, nome, email, role: roleCode, nivel_admin: nivelAdmin, ativo: true, role_id: role?.id ?? null, setor_id: body.setor_id || null, cargo_id: body.cargo_id || null }).select('id,empresa_id,nome,email,role,nivel_admin,ativo,role_id,setor_id,cargo_id).single()
+      const inserted = await admin.from('erp_usuarios').insert({ id: authUserId, auth_user_id: authUserId, empresa_id: empresaId, nome, email, role: roleCode, nivel_admin: nivelAdmin, ativo: true, role_id: role?.id ?? null, setor_id: body.setor_id || null, cargo_id: body.cargo_id || null }).select('id,empresa_id,nome,email,role,nivel_admin,ativo,role_id,setor_id,cargo_id').single()
       if (inserted.error) {
         await admin.auth.admin.deleteUser(authUserId)
         return json(req,{ error: inserted.error.message }, 400)
