@@ -16,9 +16,16 @@ for(const file of required){
   if(!/npm ci --legacy-peer-deps --no-audit --no-fund/.test(text)) failures.push(`.github/workflows/${file}: npm ci determinístico ausente`)
 }
 const ci=fs.existsSync(path.join(workflowsDir,'ci.yml'))?fs.readFileSync(path.join(workflowsDir,'ci.yml'),'utf8'):''
+const packageJson=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'))
+const productionGate=String(packageJson.scripts?.['verify:production'] ?? '')
+for(const command of ['npm run verify:migrations-sql','npm run verify:official-screens-lock','npm run verify:reset-contract','npm run verify:auth-master-contract','npm run verify-routes']) {
+  if(!productionGate.includes(command)) failures.push(`package.json: verify:production precisa executar ${command}`)
+}
+if(packageJson.scripts?.['build:vercel'] !== 'npm run verify:production') failures.push('package.json: build:vercel deve chamar verify:production')
 for(const command of [
   'npm run verify:lockfile','npm run verify:vercel-config','npm run verify:ci-policy',
   'npm run verify:public-naming','npm run verify:supabase-env','npm run verify:supabase-guard','npm run verify:deploy-integrity',
+  'npm run verify:release-lineage','npm run verify:reset-contract','npm run verify:official-screens-lock','npm run verify:migrations-sql',
   'npm run type-check','npm run lint:check','npm run audit:global','npm run audit:brutal',
   'npm run audit:interactions','npm run verify:lazy-imports','npm run build',
   'npm run verify:build','npm run verify-routes'

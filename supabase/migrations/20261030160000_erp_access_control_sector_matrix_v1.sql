@@ -130,13 +130,12 @@ set search_path = pg_catalog, public
 as $$
   select c.modulo,
          true as visualizar,
-         bool_or(split_part(p.codigo, '.', 2) in ('criar', 'registrar', 'lancar', 'apontar', 'movimentar', 'inventario', 'solicitar_alteracao')) as criar,
-         bool_or(split_part(p.codigo, '.', 2) in ('editar', 'retificar')) as editar,
-         bool_or(split_part(p.codigo, '.', 2) in ('excluir', 'estornar')) as excluir
+         bool_or(split_part(p.code, '.', 2) in ('criar', 'registrar', 'lancar', 'apontar', 'movimentar', 'inventario', 'solicitar_alteracao')) as criar,
+         bool_or(split_part(p.code, '.', 2) in ('editar', 'retificar')) as editar,
+         bool_or(split_part(p.code, '.', 2) in ('excluir', 'estornar')) as excluir
     from public.erp_modulos_acesso c
     join public.erp_permissions p
-      on p.ativo = true
-     and p.modulo = c.rbac_modulo
+      on split_part(p.code, '.', 1) = c.rbac_modulo
     join public.erp_role_permissions rp
       on rp.permission_id = p.id
      and rp.role_id = p_role_id
@@ -265,9 +264,23 @@ declare
   v_item jsonb;
   v_modulo text;
   v_saved integer := 0;
+  v_old_data jsonb;
 begin
   v_ctx := public.erp_access_control_contexto();
   v_empresa := (v_ctx ->> 'empresa_id')::uuid;
+
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'modulo', pm.modulo,
+    'visualizar', pm.visualizar,
+    'criar', pm.criar,
+    'editar', pm.editar,
+    'excluir', pm.excluir
+  ) order by pm.modulo), '[]'::jsonb)
+    into v_old_data
+    from public.erp_permissoes_modulos pm
+   where pm.empresa_id = v_empresa
+     and pm.setor_id = p_setor_id
+     and pm.usuario_id is null;
 
   if p_setor_id is null then
     raise exception 'Selecione um setor antes de gravar a matriz.' using errcode = '22023';
@@ -338,11 +351,11 @@ begin
   end loop;
 
   insert into public.erp_audit_logs
-    (empresa_id, actor_user_id, action, entity_type, entity_id, new_data)
+    (company_id, user_id, action, module, entity, entity_id, old_data, new_data)
   values (
     v_empresa, (v_ctx ->> 'actor_id')::uuid, 'access_control.setor_matrix_saved',
-    'erp_permissoes_modulos', p_setor_id,
-    jsonb_build_object('setor_id', p_setor_id, 'modulos_gravados', v_saved, 'matriz', p_matrix)
+    'administracao', 'erp_permissoes_modulos', p_setor_id,
+    v_old_data, jsonb_build_object('setor_id', p_setor_id, 'modulos_gravados', v_saved, 'matriz', p_matrix)
   );
 
   return v_saved;
@@ -366,9 +379,18 @@ declare
   v_codigo text := upper(btrim(coalesce(p_codigo, '')));
   v_nome text := btrim(coalesce(p_nome, ''));
   v_id uuid;
+  v_old_data jsonb;
 begin
   v_ctx := public.erp_access_control_contexto();
   v_empresa := (v_ctx ->> 'empresa_id')::uuid;
+
+  if p_setor_id is not null then
+    select jsonb_build_object('codigo', s.codigo, 'nome', s.nome, 'ativo', s.ativo)
+      into v_old_data
+      from public.erp_setores s
+     where s.id = p_setor_id
+       and s.empresa_id = v_empresa;
+  end if;
 
   if v_codigo !~ '^[A-Z][A-Z0-9_-]{1,29}$' then
     raise exception 'Código de setor inválido: use 2 a 30 caracteres, iniciando por letra (A-Z, 0-9, _ ou -).' using errcode = '22023';
@@ -402,12 +424,12 @@ begin
   end if;
 
   insert into public.erp_audit_logs
-    (empresa_id, actor_user_id, action, entity_type, entity_id, new_data)
+    (company_id, user_id, action, module, entity, entity_id, old_data, new_data)
   values (
     v_empresa, (v_ctx ->> 'actor_id')::uuid,
     case when p_setor_id is null then 'access_control.setor_created' else 'access_control.setor_updated' end,
-    'erp_setores', v_id,
-    jsonb_build_object('codigo', v_codigo, 'nome', v_nome)
+    'administracao', 'erp_setores', v_id,
+    v_old_data, jsonb_build_object('codigo', v_codigo, 'nome', v_nome)
   );
 
   return v_id;
@@ -415,7 +437,10 @@ end;
 $$;
 
 revoke all on function public.erp_access_control_contexto() from public, anon, authenticated;
-revoke all on function public.erp_access_control_nivel_modulos(uuid) from public, anon;
+revoke all on function public.erp_access_control_nivel_modulos(uuid) from public, anon, authenticated;
+revoke all on function public.erp_access_control_overview() from public, anon;
+revoke all on function public.erp_access_control_save_setor(uuid, text, text) from public, anon;
+revoke all on function public.erp_access_control_save_setor_matrix(uuid, jsonb) from public, anon;
 
 grant execute on function public.erp_access_control_nivel_modulos(uuid) to authenticated;
 grant execute on function public.erp_access_control_overview() to authenticated;

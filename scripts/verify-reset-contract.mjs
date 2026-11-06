@@ -15,7 +15,8 @@ const checks = [
   ['Página administrativa Master preservada', fs.existsSync('src/pages/Master.tsx')],
   ['Gate de sessão Supabase preservado', bootstrap.includes('function AccessGate') && bootstrap.includes('supabase.auth.getSession()')],
   ['Perfil ERP ativo e soft-delete verificados', bootstrap.includes(".from('erp_usuarios')") && bootstrap.includes(".eq('ativo', true)") && bootstrap.includes(".is('deleted_at', null)")],
-  ['Isolamento por empresa e validação Master preservados', bootstrap.includes("empresa_id") && bootstrap.includes("nivel_admin") && bootstrap.includes("is_master") && bootstrap.includes("MASTER")],
+  ['Isolamento por empresa e identidade Master estrita do banco preservados', bootstrap.includes("profile.is_master === true") && bootstrap.includes("Number(profile.nivel_admin) >= 100") && bootstrap.includes("toUpperCase() === 'MASTER'") && bootstrap.includes("profile.empresa_id === null") && bootstrap.includes("if (!master && !empresaId)") && bootstrap.includes(".eq('id', empresaId)")],
+  ['Portão consulta somente erp_usuarios (ORDEM MASTER 2026-11-06 §5)', !bootstrap.includes(".from('usuarios')")],
   ['Menu ativo contém os módulos preservados', shell.includes("label: 'Principal'") && shell.includes("label: 'Engenharia e PCP'") && shell.includes("label: 'Fiscal'") && shell.includes("label: 'Sistema SGQ'")],
 ]
 

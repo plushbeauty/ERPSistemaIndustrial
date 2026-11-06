@@ -1,5 +1,5 @@
 /**
- * @REVISAO: REV-COLUNAS-BANCO-20261104-02 — a trilha de auditoria filtrava por 'company_id' e selecionava 'entity'/'user_id', colunas que não existem em erp_audit_logs (contrato oficial: empresa_id/entity_type/actor_user_id). A consulta falhava e a tela inteira mostrava erro. Alias PostgREST preserva os nomes usados pela interface.
+ * @REVISAO: REV-CONTRATO-SUPABASE-20261106-01 — consultas administrativas alinhadas ao schema remoto confirmado: erp_usuarios sem login_nome; erp_permissions com code/name/description; erp_audit_logs com company_id/entity/user_id.
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
@@ -20,13 +20,13 @@ import SystemInstallationSettings from '../components/administration/SystemInsta
 type Section = 'empresa' | 'usuarios' | 'modulos' | 'logs' | 'instalacao'
 type CompanyRow = Record<string, unknown> & { id: string }
 type UserRow = {
-  id: string; nome: string | null; email: string | null; login_nome: string | null
+  id: string; nome: string | null; email: string | null
   perfil: string | null; nivel_admin: number | null; ativo: boolean | null
   role_id: string | null; is_master: boolean | null; deleted_at: string | null
   empresa_id: string | null; auth_user_id: string | null
 }
 type RoleRow = { id: string; codigo: string; nome: string; nivel: number; ativo: boolean }
-type PermissionRow = { id: string; codigo: string; nome: string; modulo: string; ativo: boolean }
+type PermissionRow = { id: string; code: string; name: string; description: string | null; created_at: string }
 type AuditRow = { id: string; action: string; module: string | null; entity: string | null; entity_id: string | null; created_at: string; user_id: string | null }
 const sections: { id: Section; label: string; description: string; icon: typeof Building2 }[] = [
   { id: 'empresa', label: 'Dados da empresa', description: 'Identidade corporativa e relatórios', icon: Building2 },
@@ -69,10 +69,10 @@ export default function AdministracaoConfiguracoesGlobais() {
       setTenantId(tenant)
       const [companyResult, usersResult, rolesResult, permissionsResult, logsResult] = await Promise.all([
         supabase.from('erp_empresas').select('*').eq('id', tenant).maybeSingle(),
-        supabase.from('erp_usuarios').select('id,nome,email,login_nome,perfil,nivel_admin,ativo,role_id,is_master,deleted_at,empresa_id,auth_user_id').eq('empresa_id', tenant).is('deleted_at', null).order('nome').limit(500),
+        supabase.from('erp_usuarios').select('id,nome,email,perfil,nivel_admin,ativo,role_id,is_master,deleted_at,empresa_id,auth_user_id').eq('empresa_id', tenant).is('deleted_at', null).order('nome').limit(500),
         supabase.from('erp_roles').select('id,codigo,nome,nivel,ativo').eq('ativo', true).order('nivel', { ascending: false }),
-        supabase.from('erp_permissions').select('id,codigo,nome,modulo,ativo').eq('ativo', true).order('modulo').order('codigo').limit(1000),
-        supabase.from('erp_audit_logs').select('id,action,module,entity:entity_type,entity_id,created_at,user_id:actor_user_id').eq('empresa_id', tenant).order('created_at', { ascending: false }).limit(200),
+        supabase.from('erp_permissions').select('id,code,name,description,created_at').order('code').limit(1000),
+        supabase.from('erp_audit_logs').select('id,action,module,entity,entity_id,created_at,user_id').eq('company_id', tenant).order('created_at', { ascending: false }).limit(200),
       ])
       const firstError = companyResult.error || usersResult.error || rolesResult.error || permissionsResult.error || logsResult.error
       if (firstError) throw firstError
@@ -139,7 +139,8 @@ export default function AdministracaoConfiguracoesGlobais() {
     finally { setBusyUser(null) }
   }
 
-  const modules = Array.from(new Set(permissions.map(item => item.modulo))).sort()
+  const moduleOf = (permission: PermissionRow) => permission.code.split('.')[0] || 'geral'
+  const modules = Array.from(new Set(permissions.map(moduleOf))).sort()
   const filteredLogs = logs.filter(row => [row.action, row.module, row.entity, row.entity_id, row.user_id].some(value => String(value ?? '').toLocaleLowerCase('pt-BR').includes(logSearch.trim().toLocaleLowerCase('pt-BR'))))
 
   return <main className="compras-page" aria-label="Administração e Configurações Globais">
@@ -164,12 +165,12 @@ export default function AdministracaoConfiguracoesGlobais() {
           </form>}
           {section === 'usuarios' && <section className="compras-panel admin-global-panel">
             <div className="compras-panel-heading"><div><h2>Controle de usuários e níveis de acesso</h2><p>Usuários existentes em erp_usuarios; convite e criação de credenciais Auth exigem o fluxo seguro de convite do servidor.</p></div><span className="admin-global-count">{users.length} usuários</span></div>
-            <div className="compras-table-scroll"><table className="compras-table"><thead><tr><th>Nome / login</th><th>E-mail</th><th>Perfil RBAC</th><th>Nível</th><th>Status</th></tr></thead><tbody>{users.map(user => <tr key={user.id}><td><strong>{user.nome || user.login_nome || 'Usuário sem nome'}</strong>{user.is_master && <small className="admin-global-master">MASTER</small>}</td><td>{user.email || '—'}</td><td>{user.is_master || user.nivel_admin === 100 ? <span>Master (protegido)</span> : <select className="h-10" value={user.role_id ?? ''} disabled={busyUser === user.id} onChange={event => void changeRole(user, event.target.value)}><option value="" disabled>Perfil não definido</option>{roles.filter(role => role.nivel < 100).map(role => <option key={role.id} value={role.id}>{role.nome} ({role.codigo})</option>)}</select>}</td><td>{user.nivel_admin ?? '—'}</td><td><label className="admin-global-active"><input type="checkbox" checked={Boolean(user.ativo)} disabled={busyUser === user.id || Boolean(user.is_master) || user.nivel_admin === 100} onChange={event => void toggleUser(user, event)}/>{user.ativo ? 'Ativo' : 'Inativo'}</label></td></tr>)}</tbody></table></div>
+            <div className="compras-table-scroll"><table className="compras-table"><thead><tr><th>Nome / login</th><th>E-mail</th><th>Perfil RBAC</th><th>Nível</th><th>Status</th></tr></thead><tbody>{users.map(user => <tr key={user.id}><td><strong>{user.nome || 'Usuário sem nome'}</strong>{user.is_master && <small className="admin-global-master">MASTER</small>}</td><td>{user.email || '—'}</td><td>{user.is_master || user.nivel_admin === 100 ? <span>Master (protegido)</span> : <select className="h-10" value={user.role_id ?? ''} disabled={busyUser === user.id} onChange={event => void changeRole(user, event.target.value)}><option value="" disabled>Perfil não definido</option>{roles.filter(role => role.nivel < 100).map(role => <option key={role.id} value={role.id}>{role.nome} ({role.codigo})</option>)}</select>}</td><td>{user.nivel_admin ?? '—'}</td><td><label className="admin-global-active"><input type="checkbox" checked={Boolean(user.ativo)} disabled={busyUser === user.id || Boolean(user.is_master) || user.nivel_admin === 100} onChange={event => void toggleUser(user, event)}/>{user.ativo ? 'Ativo' : 'Inativo'}</label></td></tr>)}</tbody></table></div>
             <p className="admin-global-note">A matriz de permissões é definida em <code>erp_permissions</code> e <code>erp_role_permissions</code>. Alterações respeitam as regras RBAC e o nível do administrador no banco.</p>
           </section>}
           {section === 'modulos' && <section className="compras-panel admin-global-panel">
             <div className="compras-panel-heading"><div><h2>Catálogo de módulos e permissões</h2><p>Leitura do catálogo RBAC existente. Instalação de módulos não é simulada nesta tela.</p></div><span className="admin-global-count">{modules.length} módulos</span></div>
-            <div className="admin-global-module-grid">{modules.map(module => <article className="admin-global-module" key={module}><div><Puzzle size={16}/><strong>{module.toLocaleUpperCase('pt-BR')}</strong></div><span>{permissions.filter(item => item.modulo === module).length} permissões cadastradas</span><ul>{permissions.filter(item => item.modulo === module).map(permission => <li key={permission.id}><span>{permission.nome}</span><code>{permission.codigo}</code></li>)}</ul></article>)}</div>
+            <div className="admin-global-module-grid">{modules.map(module => <article className="admin-global-module" key={module}><div><Puzzle size={16}/><strong>{module.toLocaleUpperCase('pt-BR')}</strong></div><span>{permissions.filter(item => moduleOf(item) === module).length} permissões cadastradas</span><ul>{permissions.filter(item => moduleOf(item) === module).map(permission => <li key={permission.id}><span>{permission.name}</span><code>{permission.code}</code></li>)}</ul></article>)}</div>
             <div className="admin-global-note">Para instalar ou ativar recursos, é necessário um fluxo de migração e autorização específico. O painel não altera o banco de dados nem declara módulos instalados sem confirmação do servidor.</div>
           </section>}
           {section === 'logs' && <section className="compras-panel admin-global-panel">

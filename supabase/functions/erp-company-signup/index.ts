@@ -97,7 +97,8 @@ Deno.serve(async (req) => {
     const { data:erpUser, error:userError } = await admin.from('erp_usuarios').insert({
       empresa_id:empresa.id, setor_id:admSetor.id, nome:nomeAdmin, email,
       perfil:'ADMIN', ativo:true, nivel_admin:1, auth_user_id:auth.user.id, is_master:false,
-      username:nomeAcesso,
+      // erp_resolver_login lê login_nome; gravar só username deixava o acesso do cadastro sem login.
+      login_nome:nomeAcesso, username:nomeAcesso,
     }).select('id,nome,email').single()
 
     if (userError || !erpUser) throw userError ?? new Error('ERP_USER_CREATE_FAILED')

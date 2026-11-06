@@ -88,11 +88,20 @@ function AccessGate({ children }: { children: ReactNode }) {
           .select('id,auth_user_id,empresa_id,ativo,is_master,nivel_admin,perfil,deleted_at')
           .eq('auth_user_id', user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
         if (profileError) throw profileError
-        // ORDEM MASTER 2026-11-06 §5: o Portão consulta somente erp_usuarios. A tabela legada
-        // `usuarios` não existe no banco (sonda PGRST205) e causava erro em vez de negação limpa.
-        const master = profile?.auth_user_id === user.id && profile?.is_master === true && Number(profile?.nivel_admin ?? 0) >= 100 && String(profile?.perfil ?? '').trim().toUpperCase() === 'MASTER' && profile?.empresa_id === null
-        const empresaId = profile?.empresa_id ?? null
-        if (!profile?.auth_user_id && !master) { if (alive) setState('denied'); return }
+        // ORDEM MASTER 2026-11-06 §5: identidade e autorização vêm exclusivamente do cadastro
+        // ativo em erp_usuarios — sem fallback para a tabela legada `usuarios` (PGRST205).
+        // O contrato estrito é o do banco: erp_is_master() (migration 20261012180000) e a Edge
+        // erp-master-bootstrap gravam perfil 'MASTER'; aceitar 'SUPER_ADMIN' aqui trancaria o dono.
+        if (!profile || profile.auth_user_id !== user.id) {
+          if (alive) setState('denied')
+          return
+        }
+        const master =
+          profile.is_master === true &&
+          Number(profile.nivel_admin) >= 100 &&
+          String(profile.perfil ?? '').trim().toUpperCase() === 'MASTER' &&
+          profile.empresa_id === null
+        const empresaId = profile.empresa_id ?? null
         if (!master && !empresaId) { if (alive) setState('denied'); return }
         if (!master) {
           const { data: empresa, error: empresaError } = await supabase.from('erp_empresas').select('id,ativo').eq('id', empresaId).eq('ativo', true).maybeSingle()
