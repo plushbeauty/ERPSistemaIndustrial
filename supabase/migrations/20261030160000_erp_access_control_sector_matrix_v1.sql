@@ -264,9 +264,23 @@ declare
   v_item jsonb;
   v_modulo text;
   v_saved integer := 0;
+  v_old_data jsonb;
 begin
   v_ctx := public.erp_access_control_contexto();
   v_empresa := (v_ctx ->> 'empresa_id')::uuid;
+
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'modulo', pm.modulo,
+    'visualizar', pm.visualizar,
+    'criar', pm.criar,
+    'editar', pm.editar,
+    'excluir', pm.excluir
+  ) order by pm.modulo), '[]'::jsonb)
+    into v_old_data
+    from public.erp_permissoes_modulos pm
+   where pm.empresa_id = v_empresa
+     and pm.setor_id = p_setor_id
+     and pm.usuario_id is null;
 
   if p_setor_id is null then
     raise exception 'Selecione um setor antes de gravar a matriz.' using errcode = '22023';
@@ -341,7 +355,7 @@ begin
   values (
     v_empresa, (v_ctx ->> 'actor_id')::uuid, 'access_control.setor_matrix_saved',
     'administracao', 'erp_permissoes_modulos', p_setor_id,
-    null, jsonb_build_object('setor_id', p_setor_id, 'modulos_gravados', v_saved, 'matriz', p_matrix)
+    v_old_data, jsonb_build_object('setor_id', p_setor_id, 'modulos_gravados', v_saved, 'matriz', p_matrix)
   );
 
   return v_saved;
@@ -365,9 +379,18 @@ declare
   v_codigo text := upper(btrim(coalesce(p_codigo, '')));
   v_nome text := btrim(coalesce(p_nome, ''));
   v_id uuid;
+  v_old_data jsonb;
 begin
   v_ctx := public.erp_access_control_contexto();
   v_empresa := (v_ctx ->> 'empresa_id')::uuid;
+
+  if p_setor_id is not null then
+    select jsonb_build_object('codigo', s.codigo, 'nome', s.nome, 'ativo', s.ativo)
+      into v_old_data
+      from public.erp_setores s
+     where s.id = p_setor_id
+       and s.empresa_id = v_empresa;
+  end if;
 
   if v_codigo !~ '^[A-Z][A-Z0-9_-]{1,29}$' then
     raise exception 'Código de setor inválido: use 2 a 30 caracteres, iniciando por letra (A-Z, 0-9, _ ou -).' using errcode = '22023';
@@ -406,7 +429,7 @@ begin
     v_empresa, (v_ctx ->> 'actor_id')::uuid,
     case when p_setor_id is null then 'access_control.setor_created' else 'access_control.setor_updated' end,
     'administracao', 'erp_setores', v_id,
-    null, jsonb_build_object('codigo', v_codigo, 'nome', v_nome)
+    v_old_data, jsonb_build_object('codigo', v_codigo, 'nome', v_nome)
   );
 
   return v_id;
