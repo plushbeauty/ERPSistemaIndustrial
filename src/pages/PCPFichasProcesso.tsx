@@ -367,7 +367,7 @@ export default function PCPFichasProcesso() {
     cavidades_ativas: Number(params.cavidades_ativas) || 1, revisao: versionNumber, versao_ficha: versionNumber,
     categoria_processo: category, data_homologacao: approvedAt || null, assinatura_tecnica: signature.trim() || null,
     status, parametros_tecnicos: { ...numericParams, instrucoes_setup: instructions.trim() || null },
-    ativo: status !== 'OBSOLETA', atualizado_em: new Date().toISOString(),
+    ativo: status !== 'OBSOLETA', updated_at: new Date().toISOString(),
    }
    const result = await supabase.from('erp_fichas_processo').upsert(payload, { onConflict: 'empresa_id,codigo_ficha' }).select('id,codigo_ficha,produto_id,ferramenta_id,maquina_id,categoria_processo,versao_ficha,status,data_homologacao,assinatura_tecnica,parametros_tecnicos,revisao').single()
    if (result.error) throw result.error
