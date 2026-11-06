@@ -12,7 +12,7 @@
 import { useState } from 'react'
 import { ClipboardList, Factory, Layers3, ScanLine } from 'lucide-react'
 import PainelOrdensProducao from '../features/pcp/PainelOrdensProducao'
-import PCPFichasProcesso from './PCPFichasProcesso'
+import FichaProcesso from '../features/pcp/FichaProcesso'
 import EngenhariaBOM from '../features/pcp/EngenhariaBOM'
 import ApuracaoTurno from '../features/pcp/ApuracaoTurno'
 
@@ -38,7 +38,7 @@ export default function PCPWorkspace() {
       </nav>
       <div className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
         {tab === 'ordens' && <PainelOrdensProducao />}
-        {tab === 'processo' && <PCPFichasProcesso />}
+        {tab === 'processo' && <FichaProcesso />}
         {tab === 'estrutura' && <EngenhariaBOM />}
         {tab === 'turno' && <ApuracaoTurno />}
       </div>
