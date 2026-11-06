@@ -1,8 +1,8 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-06
+ * @REVISAO: REV-PCP-WORKSPACE-FICHA-20261106-01 — aba de Ficha de Processo usa a tela técnica completa com isolamento por empresa; estrutura visual do workspace preservada
+ * @STATUS_APROVACAO: CORREÇÃO FUNCIONAL AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-06; sem alteração do layout aprovado
  */
 /**
  * SYSNQRA ERP INDUSTRIAL — central PCP.
@@ -12,7 +12,7 @@
 import { useState } from 'react'
 import { ClipboardList, Factory, Layers3, ScanLine } from 'lucide-react'
 import PainelOrdensProducao from '../features/pcp/PainelOrdensProducao'
-import FichaProcesso from '../features/pcp/FichaProcesso'
+import PCPFichasProcesso from './PCPFichasProcesso'
 import EngenhariaBOM from '../features/pcp/EngenhariaBOM'
 import ApuracaoTurno from '../features/pcp/ApuracaoTurno'
 
@@ -38,7 +38,7 @@ export default function PCPWorkspace() {
       </nav>
       <div className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
         {tab === 'ordens' && <PainelOrdensProducao />}
-        {tab === 'processo' && <FichaProcesso />}
+        {tab === 'processo' && <PCPFichasProcesso />}
         {tab === 'estrutura' && <EngenhariaBOM />}
         {tab === 'turno' && <ApuracaoTurno />}
       </div>
