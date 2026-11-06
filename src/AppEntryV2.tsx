@@ -186,7 +186,7 @@ const QualidadeAuditoriasPlanta = lazyPage(() => import('./pages/QualidadeAudito
 const QualidadeInstrumentosCadastro = lazyPage(() => import('./pages/QualidadeInstrumentosCadastro'), 'QualidadeInstrumentosCadastro')
 const QualidadeLiberacaoLotes = lazyPage(() => import('./pages/qualidade/QualidadeLiberacaoLotes'), 'QualidadeLiberacaoLotes')
 const QualidadeDashboardRNC = lazyPage(() => import('./pages/QualidadeDashboardRNC'), 'QualidadeDashboardRNC')
-const QualidadePFMEA = lazyPage(() => import('./pages/QualidadePFMEA'), 'QualidadePFMEA')
+const QualidadePlanoControle = lazyPage(() => import('./pages/qualidade/PlanoControle'), 'QualidadePlanoControle')
 const DocumentosQualidadeControle = lazyPage(() => import('./pages/DocumentosQualidadeControle'), 'DocumentosQualidadeControle')
 const QualidadeInspecaoProcesso = lazyPage(() => import('./pages/QualidadeInspecaoProcesso'), 'QualidadeInspecaoProcesso')
 const QualidadeFichasProcesso = lazyPage(() => import('./pages/qualidade/FichasProcesso'), 'QualidadeFichasProcesso')
@@ -450,7 +450,8 @@ export default function AppEntryV2() {
               <Route path="qualidade/instrumentos" element={<QualityPlanGate><QualidadeInstrumentosCadastro /></QualityPlanGate>} />
               <Route path="qualidade/liberacao-lote" element={<QualityPlanGate><QualidadeLiberacaoLotes /></QualityPlanGate>} />
               <Route path="qualidade/dashboard-rnc" element={<QualityPlanGate><QualidadeDashboardRNC /></QualityPlanGate>} />
-              <Route path="qualidade/pfmea" element={<QualityPlanGate><QualidadePFMEA /></QualityPlanGate>} />
+              <Route path="qualidade/pfmea" element={<Navigate to="/pageprincipal/qualidade/fmea" replace />} />
+              <Route path="qualidade/plano-controle" element={<QualityPlanGate><QualidadePlanoControle /></QualityPlanGate>} />
               <Route path="qualidade/documentos" element={<QualityPlanGate><DocumentosQualidadeControle /></QualityPlanGate>} />
               <Route path="qualidade/inspecao-processo" element={<QualityPlanGate><QualidadeInspecaoProcesso /></QualityPlanGate>} />
               <Route path="qualidade/fichas-processo" element={<QualityPlanGate><QualidadeFichasProcesso /></QualityPlanGate>} />

@@ -179,6 +179,32 @@
   color: #47607a;
 }
 
+/* Selo de controle: o QR do documento fica no cabeçalho de toda página da folha. */
+.sr-doc-qr {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1mm;
+  border: 0.3mm solid #b9cdd9;
+  padding: 1.6mm;
+  background: #fff;
+}
+
+.sr-doc-qr svg {
+  width: 18mm;
+  height: 18mm;
+  display: block;
+}
+
+.sr-doc-qr-caption {
+  font-size: 6pt;
+  line-height: 1.25;
+  color: #47607a;
+  text-align: center;
+  max-width: 22mm;
+}
+
 .sr-title {
   margin: 2.5mm 0 0;
   font-size: 13pt;

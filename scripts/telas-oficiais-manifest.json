@@ -37,7 +37,7 @@
     },
     {
       "path": "src/components/quality/qualityTabletModules.ts",
-      "sha": "359db7ec82fbaeec15960ae87a81e3e4f9691344",
+      "sha": "501f1d8a86f8cc44804df95b15a0c0c8350d6e2c",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-TABLET-CATALOGO-CARIMBO-20261103-01 — cabecalho de autoria/aprovacao adicionado; o catalogo de rotinas do SGQ segue identico",
       "aprovadaEm": "2026-11-03",
@@ -1101,7 +1101,7 @@
     },
     {
       "path": "src/pages/QualidadeCentralTablet.tsx",
-      "sha": "ec5641ec3118031b80317fa11481e23ef381ff7f",
+      "sha": "4c2f9bfbad4b944e69c0bee91b49720d465fc5ff",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — console do tablet convertido do tema escuro para o padrão industrial claro (fundo #F4FBFD, painéis brancos, texto #123B50) e marca alinhada para SYSNQRA; nenhuma alteração de lógica ou de consulta",
       "aprovadaEm": "2026-11-04",
@@ -1186,14 +1186,6 @@
       "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o protocolo 8D em A4 com as etapas D1–D8, o status e a RNC de origem carregados do banco",
       "aprovadaEm": "2026-11-05",
       "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
-    },
-    {
-      "path": "src/pages/QualidadePFMEA.tsx",
-      "sha": "7c807ccc3828b6f9d6136c1dba03db39f6d02fd2",
-      "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
     {
       "path": "src/pages/QualidadePaquimetroDigital.tsx",
@@ -1685,11 +1677,11 @@
     },
     {
       "path": "src/pages/qualidade/FMEA.tsx",
-      "sha": "be9f1549ee5fb7a893f29b1152ad4ea5dc9b0432",
+      "sha": "9e710502762d5aa88ba489efd62fa1abdb58bb1b",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-FMEA-PLANO-CONTROLE-20261106-01 — FMEA AIAG completo: cabeçalho controlado",
+      "aprovadaEm": "2026-11-06",
+      "statusAprovacao": "ORDEM MASTER DE EXECUÇÃO EM 2026-11-06 — \"FMEA conectado ao Plano de Controle,"
     },
     {
       "path": "src/pages/qualidade/FichasProcesso.tsx",
@@ -1706,6 +1698,14 @@
       "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o documento controlado A4 com a revisão, o conteúdo e a trilha de versões gravados no banco",
       "aprovadaEm": "2026-11-05",
       "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
+    },
+    {
+      "path": "src/pages/qualidade/PlanoControle.tsx",
+      "sha": "c4e8af72bd8a32779ddaf1fa9d7b0bd084b777c9",
+      "autor": "Fernando Schuinsekel",
+      "revisao": "REV-FMEA-PLANO-CONTROLE-20261106-01 — Plano de Controle (CPP) digital e impresso com QR",
+      "aprovadaEm": "2026-11-06",
+      "statusAprovacao": "ORDEM MASTER DE EXECUÇÃO EM 2026-11-06 — \"CPP digital e impresso com QR Code\" e"
     },
     {
       "path": "src/pages/qualidade/QualidadeAssinaturaIT.tsx",

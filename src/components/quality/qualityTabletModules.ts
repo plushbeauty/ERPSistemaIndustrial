@@ -6,7 +6,7 @@
  */
 import {
   Activity, Archive, Award, BarChart3, BookOpenCheck, Building2, ClipboardCheck, ClipboardList, FileCheck2,
-  FileText, FolderOpen, Gauge, GitBranch, Layers, ListChecks, Microscope, PenTool, Ruler, ScrollText, SearchCheck,
+  FileText, FolderOpen, Gauge, GitBranch, ListChecks, Microscope, PenTool, Ruler, ScrollText, SearchCheck,
   ShieldAlert, ShieldCheck, Signature, Target, TrendingDown, Wrench,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -25,6 +25,10 @@ import type { LucideIcon } from 'lucide-react'
  *          Qualidade sem card. As rotas /qualidade/ishikawa, /qualidade/capa, /qualidade/rnc,
  *          /qualidade/sala-rnc e /qualidade/tablet ficaram fora por decisão registrada no relatório: as duas
  *          primeiras são abas da RPNC unificada e as demais são lançadores/telas substituídas.
+ * @REVISAO_3: REV-FMEA-PLANO-CONTROLE-20261106-01 — o FMEA AIAG único (cabeçalho + matriz + QR) substitui
+ *          as duas telas concorrentes: /qualidade/pfmea agora redireciona para /qualidade/fmea, e o card
+ *          "FMEA de projeto" deu lugar ao Plano de Controle (CPP), que é o outro documento da pasta do
+ *          proprietário. Um módulo com duas telas para o mesmo registro contraria a regra de origem única.
  */
 
 export type QualityTabletModule = {
@@ -41,8 +45,8 @@ export const qualityTabletModules: QualityTabletModule[] = [
   { label: 'Painel de não conformidades', description: 'Indicador consolidado das RNCs abertas, em tratamento e encerradas.', route: '/pageprincipal/qualidade/dashboard-rnc', icon: BarChart3 },
   { label: 'Acompanhamento de RNC', description: 'Seguimento das não conformidades com responsável, prazo e eficácia.', route: '/pageprincipal/qualidade/acompanhamento-rnc', icon: ClipboardCheck },
   { label: 'Metodologia 8D', description: 'Investigação e tratamento estruturado de problemas.', route: '/pageprincipal/qualidade/metodologia-8d', icon: Target },
-  { label: 'FMEA / PFMEA', description: 'Análise de modos e efeitos de falha.', route: '/pageprincipal/qualidade/pfmea', icon: Activity },
-  { label: 'FMEA de projeto', description: 'Análise de risco de projeto (DFMEA) dos produtos.', route: '/pageprincipal/qualidade/fmea', icon: Layers },
+  { label: 'FMEA (AIAG) · matriz de risco', description: 'Cabeçalho controlado, linhas editáveis, NPR S×O×D e impressão A4 com QR Code.', route: '/pageprincipal/qualidade/fmea', icon: Activity },
+  { label: 'Plano de Controle (CPP)', description: 'Controles por operação ligados à linha do FMEA, com QR Code.', route: '/pageprincipal/qualidade/plano-controle', icon: ListChecks },
   { label: 'CEP / cartas de controle', description: 'Controle estatístico e cartas de processo.', route: '/pageprincipal/qualidade/cep', icon: ScrollText },
   { label: 'Inspeções de lotes', description: 'Inspeção de recebimento e controle dimensional de lotes.', route: '/pageprincipal/qualidade/inspecoes', icon: ClipboardCheck },
   { label: 'Inspeção em processo', description: 'Acompanhamento da qualidade durante a produção.', route: '/pageprincipal/qualidade/inspecao-processo', icon: Microscope },

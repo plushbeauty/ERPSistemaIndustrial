@@ -23,7 +23,7 @@ function requiredPlan(path: string): Plan {
 
   const goldRoutes = [
     '/qualidade/sala-rnc', '/qualidade/controle-injetora',
-    '/qualidade/especificacoes', '/qualidade/fmea', '/qualidade/pfmea', '/qualidade/rnc-capa',
+    '/qualidade/especificacoes', '/qualidade/fmea', '/qualidade/pfmea', '/qualidade/plano-controle', '/qualidade/rnc-capa',
     '/engenharia/bom', '/pcp/engenharia-bom', '/pcp/ordens', '/pcp/ordens-industriais',
     '/pcp/apontamentos', '/pcp/painel-ordens',
   ]

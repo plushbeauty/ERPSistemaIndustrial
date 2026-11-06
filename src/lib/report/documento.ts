@@ -35,6 +35,12 @@ export type Documento = {
   unidade?: string
   blocos: Bloco[]
   observacoes?: string
+  /*
+   * Selo de controle do documento. A ordem do proprietário para o FMEA e o Plano de Controle foi
+   * "impresso com QR Code": o QR vai no cabeçalho da folha, em toda página, porque é assim que o
+   * papel impresso é lido na planta e conferido contra o banco.
+   */
+  qrcode?: { valor: string; legenda?: string }
 }
 
 /*

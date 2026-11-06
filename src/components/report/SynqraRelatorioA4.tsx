@@ -7,6 +7,7 @@
  * "página X de Y", tabelas sem corte, assinaturas e identificação da empresa)
  */
 import { Fragment } from 'react'
+import { QRCodeSVG } from 'qrcode.react'
 
 import type { Bloco, Celula, Documento } from '../../lib/report/documento'
 import { paginar } from '../../lib/report/documento'
@@ -211,6 +212,12 @@ export function SynqraRelatorioA4({ documento, contexto, emissao, avisoEmissao }
                 <div className="sr-doc-module">{documento.modulo}</div>
                 {documento.unidade && <div className="sr-doc-module">Unidade: {documento.unidade}</div>}
               </div>
+              {documento.qrcode && (
+                <div className="sr-doc-qr">
+                  <QRCodeSVG value={documento.qrcode.valor} size={92} level="M" aria-label={`QR Code do documento ${documento.codigo}`} />
+                  {documento.qrcode.legenda && <span className="sr-doc-qr-caption">{documento.qrcode.legenda}</span>}
+                </div>
+              )}
             </div>
             <h1 className="sr-title">{documento.titulo}</h1>
             {documento.subtitulo && <p className="sr-subtitle">{documento.subtitulo}</p>}
