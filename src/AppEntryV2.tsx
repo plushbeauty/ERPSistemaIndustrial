@@ -226,6 +226,7 @@ const FichasProcesso = lazyPage(() => import('./pages/FichasProcesso'), 'FichasP
 const FinanceiroGraficoDesvios = lazyPage(() => import('./pages/FinanceiroGraficoDesvios'), 'FinanceiroGraficoDesvios')
 const FinanceiroCustoPadrao = lazyPage(() => import('./pages/FinanceiroCustoPadrao'), 'FinanceiroCustoPadrao')
 const AdminLogs = lazyPage(() => import('./pages/AdminLogs'), 'AdminLogs')
+const CentralEvolucao = lazyPage(() => import('./pages/CentralEvolucao'), 'CentralEvolucao')
 const OutlookConfiguracao = lazyPage(() => import('./pages/OutlookConfiguracao'), 'OutlookConfiguracao')
 const OutlookCaixaEntrada = lazyPage(() => import('./pages/OutlookCaixaEntrada'), 'OutlookCaixaEntrada')
 const ClientesIndustrial = lazyPage(() => import('./pages/ClientesIndustrial'), 'ClientesIndustrial')
@@ -501,6 +502,7 @@ export default function AppEntryV2() {
               <Route path="financeiro/grafico-desvios" element={<QualityPlanGate><FinanceiroGraficoDesvios /></QualityPlanGate>} />
               <Route path="financeiro/custo-padrao" element={<QualityPlanGate><FinanceiroCustoPadrao /></QualityPlanGate>} />
               <Route path="admin/logs" element={<AdminLogs />} />
+              <Route path="administracao/central-evolucao" element={<CentralEvolucao />} />
               <Route path="outlook/configuracao" element={<OutlookConfiguracao />} />
               <Route path="outlook/caixa-entrada" element={<OutlookCaixaEntrada />} />
               <Route path="fornecedores" element={<FornecedoresIndustrial />} />

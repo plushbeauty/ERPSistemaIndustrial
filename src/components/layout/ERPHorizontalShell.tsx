@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, UserCog, ChevronRight, Home, FileText, Factory, LogOut, Search, X, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, Warehouse, Percent, Scale, ShieldCheck, BookOpen, Landmark, Calculator, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode, Database, Package, Wrench, Clock, Calendar, CalendarDays, ListOrdered, PauseCircle } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, UserCog, ChevronRight, Home, FileText, Factory, LogOut, Search, X, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, Warehouse, Percent, Scale, ShieldCheck, BookOpen, Landmark, Calculator, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode, Database, Package, Wrench, Clock, Calendar, CalendarDays, ListOrdered, PauseCircle, ListChecks } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -93,7 +93,7 @@ const menus: MenuItem[] = [
     { label: 'Solicitações internas', route: '/pageprincipal/compras-solicitacao' },
     { label: 'Pedido de compra', route: '/pageprincipal/compras/pedido' },
     { label: 'Recebimentos', route: '/pageprincipal/recebimento-materiais' },
-    { label: 'Relatórios', route: '/pageprincipal/compras/relatorios' }  ] },  { label: 'Configurações', route: '/pageprincipal/administracao-configuracoes', icon: Settings },  { label: 'Configurações de Usuário', route: '/pageprincipal/configuracoes-usuario', icon: UserCog, minNivel: 8 },  { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText, children: [
+    { label: 'Relatórios', route: '/pageprincipal/compras/relatorios' }  ] },  { label: 'Configurações', route: '/pageprincipal/administracao-configuracoes', icon: Settings },  { label: 'Configurações de Usuário', route: '/pageprincipal/configuracoes-usuario', icon: UserCog, minNivel: 8 },  { label: 'Central de Evolução', route: '/pageprincipal/administracao/central-evolucao', icon: ListChecks, minNivel: 8 },  { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText, children: [
     { label: 'Central Fiscal', route: '/pageprincipal/fiscal', icon: FileText },
     { label: 'Ano Fiscal', route: '/pageprincipal/fiscal/ano', icon: BookOpen },
     { label: 'Classificação Fiscal', route: '/pageprincipal/fiscal/classificacao', icon: Landmark },
@@ -275,6 +275,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     : pathname.startsWith('/pageprincipal/rh') || pathname.startsWith('/rh') ? 'RH / Departamento Pessoal'
     : pathname.startsWith('/pageprincipal/paquimetro') ? 'Sistema SGQ'
     : pathname.startsWith('/pageprincipal/compras') || pathname.startsWith('/compras') ? 'Compras'
+    : pathname.startsWith('/pageprincipal/administracao/central-evolucao') ? 'Central de Evolução'
     : pathname.startsWith('/pageprincipal/administracao-configuracoes') || pathname.startsWith('/configuracoes-adm') || pathname.startsWith('/administracao-configuracoes') ? 'Configurações'
     : pathname.startsWith('/pageprincipal/financeiro') || pathname.startsWith('/financeiro') ? 'Financeiro'
     : pathname.startsWith('/pageprincipal/fiscal') || pathname.startsWith('/fiscal') ? 'Fiscal'
