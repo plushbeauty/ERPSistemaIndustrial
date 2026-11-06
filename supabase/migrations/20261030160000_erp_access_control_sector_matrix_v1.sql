@@ -337,11 +337,11 @@ begin
   end loop;
 
   insert into public.erp_audit_logs
-    (company_id, user_id, action, module, entity, entity_id)
+    (company_id, user_id, action, module, entity, entity_id, old_data, new_data)
   values (
     v_empresa, (v_ctx ->> 'actor_id')::uuid, 'access_control.setor_matrix_saved',
     'administracao', 'erp_permissoes_modulos', p_setor_id,
-    jsonb_build_object('setor_id', p_setor_id, 'modulos_gravados', v_saved, 'matriz', p_matrix)
+    null, jsonb_build_object('setor_id', p_setor_id, 'modulos_gravados', v_saved, 'matriz', p_matrix)
   );
 
   return v_saved;
@@ -401,12 +401,12 @@ begin
   end if;
 
   insert into public.erp_audit_logs
-    (company_id, user_id, action, module, entity, entity_id)
+    (company_id, user_id, action, module, entity, entity_id, old_data, new_data)
   values (
     v_empresa, (v_ctx ->> 'actor_id')::uuid,
     case when p_setor_id is null then 'access_control.setor_created' else 'access_control.setor_updated' end,
     'administracao', 'erp_setores', v_id,
-    jsonb_build_object('codigo', v_codigo, 'nome', v_nome)
+    null, jsonb_build_object('codigo', v_codigo, 'nome', v_nome)
   );
 
   return v_id;
