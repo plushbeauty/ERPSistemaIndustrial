@@ -16,6 +16,12 @@ for(const file of required){
   if(!/npm ci --legacy-peer-deps --no-audit --no-fund/.test(text)) failures.push(`.github/workflows/${file}: npm ci determinístico ausente`)
 }
 const ci=fs.existsSync(path.join(workflowsDir,'ci.yml'))?fs.readFileSync(path.join(workflowsDir,'ci.yml'),'utf8'):''
+const packageJson=JSON.parse(read('package.json'))
+const productionGate=String(packageJson.scripts?.['verify:production'] ?? '')
+for(const command of ['npm run verify:migrations-sql','npm run verify:official-screens-lock','npm run verify:reset-contract','npm run verify:auth-master-contract','npm run verify-routes']) {
+  if(!productionGate.includes(command)) failures.push(`package.json: verify:production precisa executar ${command}`)
+}
+if(packageJson.scripts?.['build:vercel'] !== 'npm run verify:production') failures.push('package.json: build:vercel deve chamar verify:production')
 for(const command of [
   'npm run verify:lockfile','npm run verify:vercel-config','npm run verify:ci-policy',
   'npm run verify:public-naming','npm run verify:supabase-env','npm run verify:supabase-guard','npm run verify:deploy-integrity',
