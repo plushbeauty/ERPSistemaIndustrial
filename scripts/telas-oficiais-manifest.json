@@ -285,9 +285,9 @@
     },
     {
       "path": "src/pages/AdministracaoConfiguracoesGlobais.tsx",
-      "sha": "4561e752e3726fcb11ced340b879dc14b48c89c6",
+      "sha": "7b9b64912146659b43b53946d2ad03f91e927b3f",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-COLUNAS-BANCO-20261104-02 — a trilha de auditoria filtrava por 'company_id' e selecionava 'entity'/'user_id', colunas que não existem em erp_audit_logs (contrato oficial: empresa_id/entity_type/actor_user_id). A consulta falhava e a tela inteira mostrava erro. Alias PostgREST preserva os nomes usados pela interface.",
+      "revisao": "REV-ADMIN-SCHEMA-20261106-01 — consultas da administração alinhadas aos nomes de colunas identificados; layout preservado.",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
@@ -997,9 +997,9 @@
     },
     {
       "path": "src/pages/PCPPlanejamentoIndustrial.tsx",
-      "sha": "edac9ac7201c2947fe59ca653bf43c01a9a3e870",
+      "sha": "38ee0cafbecea3f6c87f5dde149ce1cd32bc5310",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-MRP-SEM-TRUNCAMENTO-20261104-01 — a geração de ordens planejadas lia as necessidades do MRP com .limit(3000) e somava no navegador: run maior que isso gravava ordem com quantidade menor que a real. Agregação e gravação movidas para a RPC erp_pcp_gerar_ordens_planejadas_do_mrp (migration 20261104172000), sobre todas as linhas do último run da empresa.",
+      "revisao": "REV-PCP-ALERT-CREATED-AT-20261106-01 — timestamp dos alertas alinhado ao campo created_at; mudança funcional autorizada, sem alteração visual.",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
