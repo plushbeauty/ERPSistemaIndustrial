@@ -19,6 +19,7 @@ const ci=fs.existsSync(path.join(workflowsDir,'ci.yml'))?fs.readFileSync(path.jo
 for(const command of [
   'npm run verify:lockfile','npm run verify:vercel-config','npm run verify:ci-policy',
   'npm run verify:public-naming','npm run verify:supabase-env','npm run verify:supabase-guard','npm run verify:deploy-integrity',
+  'npm run verify:release-lineage','npm run verify:reset-contract','npm run verify:official-screens-lock','npm run verify:migrations-sql',
   'npm run type-check','npm run lint:check','npm run audit:global','npm run audit:brutal',
   'npm run audit:interactions','npm run verify:lazy-imports','npm run build',
   'npm run verify:build','npm run verify-routes'
