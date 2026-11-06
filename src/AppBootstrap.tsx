@@ -88,18 +88,18 @@ function AccessGate({ children }: { children: ReactNode }) {
           .select('id,auth_user_id,empresa_id,ativo,is_master,nivel_admin,perfil,deleted_at')
           .eq('auth_user_id', user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
         if (profileError) throw profileError
-        let master = false
-        let empresaId = profile?.empresa_id ?? null
-        if (profile?.auth_user_id === user.id) {
-          master = profile?.is_master === true && Number(profile?.nivel_admin ?? 0) >= 100 && String(profile?.perfil ?? '').trim().toUpperCase() === 'MASTER' && profile?.empresa_id === null
-        } else {
-          const { data: global, error: globalError } = await supabase.from('usuarios').select('id,auth_user_id,ativo,nivel_admin,perfil,empresa_id').eq('auth_user_id', user.id).eq('ativo', true).maybeSingle()
-          if (globalError) throw globalError
-          const globalRole = String(global?.perfil ?? '').trim().toUpperCase()
-          master = Boolean(global?.auth_user_id) && Number(global?.nivel_admin ?? 0) >= 100 && ['SUPER_ADMIN','MASTER','MASTER_ADMIN'].includes(globalRole) && global?.empresa_id === null
-          empresaId = global?.empresa_id ?? null
+        // A identidade e a autorização vêm exclusivamente do cadastro ativo em erp_usuarios.
+        // Não consultar a tabela legada "usuarios" nem conceder acesso por fallback global.
+        if (!profile || profile.auth_user_id !== user.id) {
+          if (alive) setState('denied')
+          return
         }
-        if (!profile?.auth_user_id && !master) { if (alive) setState('denied'); return }
+        const master =
+          profile.is_master === true &&
+          Number(profile.nivel_admin) === 100 &&
+          String(profile.perfil ?? '').trim().toUpperCase() === 'SUPER_ADMIN' &&
+          profile.empresa_id === null
+        const empresaId = profile.empresa_id ?? null
         if (!master && !empresaId) { if (alive) setState('denied'); return }
         if (!master) {
           const { data: empresa, error: empresaError } = await supabase.from('erp_empresas').select('id,ativo').eq('id', empresaId).eq('ativo', true).maybeSingle()
