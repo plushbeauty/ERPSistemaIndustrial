@@ -11,8 +11,8 @@
 --
 -- Decisão de esquema (registrada para a auditoria):
 --   * A tabela de linhas do FMEA continua sendo public.qualidade_fmea, que JÁ EXISTE na base viva e
---     é lida por 4 arquivos do sistema (qualidade/FMEA.tsx, QualidadePFMEA.tsx,
---     QualidadeCentralTablet.tsx, IndustrialDataWorkspace.tsx). Criar uma segunda tabela de FMEA
+--     é lida pelo sistema (qualidade/FMEA.tsx, QualidadeCentralTablet.tsx,
+--     IndustrialDataWorkspace.tsx). Criar uma segunda tabela de FMEA
 --     duplicaria a origem oficial, o que a ordem permanente dele proíbe.
 --   * public.erp_fmea (migration 20260925133000_fmea_process_v1.sql) NÃO está aplicada na base viva
 --     (probe: PGRST205) e nenhum arquivo do sistema a consulta. Ela fica marcada como superada por
@@ -252,6 +252,26 @@ revoke all on function public.erp_plano_controle_matriz(uuid) from public;
 grant execute on function public.erp_plano_controle_matriz(uuid) to authenticated;
 
 -- ============================ Triggers de updated_at ============================
+-- Defeito corrigido nesta revisão: a versão anterior deste bloco chamava
+-- public.erp_set_updated_at(), que não é criada por NENHUM arquivo deste repo (grep: apenas uma
+-- revogação em 20260912_security_performance_hardening.sql:24) e não é resolvível pela API
+-- (probe 2026-11-06 com publishable key: PGRST202 "Could not find the function"). Como a função
+-- nunca é definida aqui, aplica-la num banco novo daria falha no CREATE TRIGGER e a migration
+-- inteira pararia. A função própria é criada abaixo, com nome exclusivo, para não sobrescrever
+-- objeto de outro pacote que já use esse nome no banco vivo.
+
+create or replace function public.erp_stdq_touch_updated_at()
+returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $$
+begin
+  new.updated_at := now();
+  return new;
+end;
+$$;
+
+revoke all on function public.erp_stdq_touch_updated_at() from public, anon, authenticated;
 
 do $$
 declare
@@ -261,6 +281,6 @@ begin
     execute format('drop trigger if exists trg_%1$s_updated_at on public.%1$s', t);
     execute format(
       'create trigger trg_%1$s_updated_at before update on public.%1$s
-         for each row execute function public.erp_set_updated_at()', t);
+         for each row execute function public.erp_stdq_touch_updated_at()', t);
   end loop;
 end $$;
