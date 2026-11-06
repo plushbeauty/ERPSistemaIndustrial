@@ -254,8 +254,6 @@ Deno.serve(async (req) => {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json(req,{ error: 'Informe um e-mail válido.' }, 400)
       if (nivelAdmin >= actorLevel && !actorIsMaster) return json(req,{ error: 'Você só pode criar usuários com nível inferior ao seu.' }, 403)
       if (roleCode === 'MASTER' || nivelAdmin >= 100) return json(req,{ error: 'Perfis Master são exclusivos da plataforma.' }, 403)
-        if (duplicate) return json(req,{ error: 'Este login já está cadastrado nesta empresa.' }, 409)
-      }
       const { data: existing, error: existingError } = await admin.from('erp_usuarios').select('id').eq('empresa_id', empresaId).ilike('email', email).is('deleted_at', null).maybeSingle()
       if (existingError) throw existingError
       if (existing) return json(req,{ error: 'Este e-mail já está cadastrado nesta empresa.' }, 409)
