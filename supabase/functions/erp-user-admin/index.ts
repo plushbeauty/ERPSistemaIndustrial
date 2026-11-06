@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
     const { data: authData, error: authError } = await userClient.auth.getUser()
     if (authError || !authData.user) return json(req,{ error: 'Sessão inválida.' }, 401)
 
-    const parsedBody: unknown = await req.json(req,)
+    const parsedBody: unknown = await req.json()
     if (!parsedBody || typeof parsedBody !== 'object' || Array.isArray(parsedBody)) return json(req,{ error: 'Corpo de requisição inválido.' }, 400)
     const body = parsedBody as Record<string, unknown>
     const action = typeof body.action === 'string' ? body.action : ''
