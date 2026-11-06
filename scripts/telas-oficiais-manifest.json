@@ -1,7 +1,7 @@
 {
   "contrato": "SYNQRA-R-20261103-01",
   "geradoPor": "npm run telas:manifest",
-  "totalTelas": 225,
+  "totalTelas": 226,
   "telas": [
     {
       "path": "src/IndustrialLoginDirect.tsx",
@@ -386,6 +386,14 @@
       "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/CentralEvolucao.tsx",
+      "sha": "332064aa1935608f6c9cf77ab9c240cdd4f8a06e",
+      "autor": "Fernando Schuinsekel",
+      "revisao": "REV-CENTRAL-EVOLUCAO-20261106-01",
+      "aprovadaEm": "2026-11-06",
+      "statusAprovacao": "ORDEM MASTER 2026-11-06 §7 — painel permanente de acompanhamento do projeto,"
     },
     {
       "path": "src/pages/CertificadoQualidade.tsx",
