@@ -130,13 +130,12 @@ set search_path = pg_catalog, public
 as $$
   select c.modulo,
          true as visualizar,
-         bool_or(split_part(p.codigo, '.', 2) in ('criar', 'registrar', 'lancar', 'apontar', 'movimentar', 'inventario', 'solicitar_alteracao')) as criar,
-         bool_or(split_part(p.codigo, '.', 2) in ('editar', 'retificar')) as editar,
-         bool_or(split_part(p.codigo, '.', 2) in ('excluir', 'estornar')) as excluir
+         bool_or(split_part(p.code, '.', 2) in ('criar', 'registrar', 'lancar', 'apontar', 'movimentar', 'inventario', 'solicitar_alteracao')) as criar,
+         bool_or(split_part(p.code, '.', 2) in ('editar', 'retificar')) as editar,
+         bool_or(split_part(p.code, '.', 2) in ('excluir', 'estornar')) as excluir
     from public.erp_modulos_acesso c
     join public.erp_permissions p
-      on p.ativo = true
-     and p.modulo = c.rbac_modulo
+      on split_part(p.code, '.', 1) = c.rbac_modulo
     join public.erp_role_permissions rp
       on rp.permission_id = p.id
      and rp.role_id = p_role_id
@@ -338,10 +337,10 @@ begin
   end loop;
 
   insert into public.erp_audit_logs
-    (empresa_id, actor_user_id, action, entity_type, entity_id, new_data)
+    (company_id, user_id, action, module, entity, entity_id)
   values (
     v_empresa, (v_ctx ->> 'actor_id')::uuid, 'access_control.setor_matrix_saved',
-    'erp_permissoes_modulos', p_setor_id,
+    'administracao', 'erp_permissoes_modulos', p_setor_id,
     jsonb_build_object('setor_id', p_setor_id, 'modulos_gravados', v_saved, 'matriz', p_matrix)
   );
 
@@ -402,11 +401,11 @@ begin
   end if;
 
   insert into public.erp_audit_logs
-    (empresa_id, actor_user_id, action, entity_type, entity_id, new_data)
+    (company_id, user_id, action, module, entity, entity_id)
   values (
     v_empresa, (v_ctx ->> 'actor_id')::uuid,
     case when p_setor_id is null then 'access_control.setor_created' else 'access_control.setor_updated' end,
-    'erp_setores', v_id,
+    'administracao', 'erp_setores', v_id,
     jsonb_build_object('codigo', v_codigo, 'nome', v_nome)
   );
 
@@ -415,7 +414,10 @@ end;
 $$;
 
 revoke all on function public.erp_access_control_contexto() from public, anon, authenticated;
-revoke all on function public.erp_access_control_nivel_modulos(uuid) from public, anon;
+revoke all on function public.erp_access_control_nivel_modulos(uuid) from public, anon, authenticated;
+revoke all on function public.erp_access_control_overview() from public, anon;
+revoke all on function public.erp_access_control_save_setor(uuid, text, text) from public, anon;
+revoke all on function public.erp_access_control_save_setor_matrix(uuid, jsonb) from public, anon;
 
 grant execute on function public.erp_access_control_nivel_modulos(uuid) to authenticated;
 grant execute on function public.erp_access_control_overview() to authenticated;
