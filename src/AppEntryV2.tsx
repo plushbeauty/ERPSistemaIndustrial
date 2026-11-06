@@ -61,7 +61,6 @@ const ComprasWorkspace = lazy(() => import('./pages/ComprasWorkspace'))
 const SolicitacaoCompra = lazy(() => import('./pages/SolicitacaoCompra'))
 const ComprasRequisicoes = lazy(() => import('./pages/ComprasRequisicoes'))
 const RHIndustrial = lazy(() => import('./pages/RHIndustrial'))
-const FichaProcesso = lazy(() => import('./features/pcp/FichaProcesso'))
 // Telas do preview que nao tinham rota — registro feito no transplant de 2026-11-02
 const AcompanhamentoNaoConformidade = lazyPage(() => import('./pages/AcompanhamentoNaoConformidade'), 'AcompanhamentoNaoConformidade')
 const ComercialSuprimentos = lazyPage(() => import('./pages/ComercialSuprimentos'), 'ComercialSuprimentos')
@@ -74,7 +73,6 @@ const EngenhariaBOM = lazyPage(() => import('./pages/EngenhariaBOM'), 'Engenhari
 const FiscalCompras = lazyPage(() => import('./pages/FiscalCompras'), 'FiscalCompras')
 const PCPFichasProcesso = lazyPage(() => import('./pages/PCPFichasProcesso'), 'PCPFichasProcesso')
 const PCPIndustrial = lazyPage(() => import('./pages/PCPIndustrial'), 'PCPIndustrial')
-const PedidoCompra = lazyPage(() => import('./pages/PedidoCompra'), 'PedidoCompra')
 // Formulário RPNC (Ishikawa / 5 Porquês / CAPA / recorrência) e grade de auditorias — prompts SGQ de 2026-10-31
 const QualidadeRPNC = lazy(() => import('./pages/QualityRpncUnified'))
 const QualityAuditsList = lazy(() => import('./pages/QualityAuditsList'))
@@ -189,7 +187,6 @@ const QualidadeDashboardRNC = lazyPage(() => import('./pages/QualidadeDashboardR
 const QualidadePlanoControle = lazyPage(() => import('./pages/qualidade/PlanoControle'), 'QualidadePlanoControle')
 const DocumentosQualidadeControle = lazyPage(() => import('./pages/DocumentosQualidadeControle'), 'DocumentosQualidadeControle')
 const QualidadeInspecaoProcesso = lazyPage(() => import('./pages/QualidadeInspecaoProcesso'), 'QualidadeInspecaoProcesso')
-const QualidadeFichasProcesso = lazyPage(() => import('./pages/qualidade/FichasProcesso'), 'QualidadeFichasProcesso')
 const QualidadeInspecoesIndustrial = lazyPage(() => import('./pages/QualidadeInspecoesIndustrial'), 'QualidadeInspecoesIndustrial')
 const QualidadeCentralTablet = lazyPage(() => import('./pages/QualidadeCentralTablet'), 'QualidadeCentralTablet')
 const QualidadeMetodologia8D = lazyPage(() => import('./pages/QualidadeMetodologia8D'), 'QualidadeMetodologia8D')
@@ -229,9 +226,6 @@ const AdminLogs = lazyPage(() => import('./pages/AdminLogs'), 'AdminLogs')
 const CentralEvolucao = lazyPage(() => import('./pages/CentralEvolucao'), 'CentralEvolucao')
 const OutlookConfiguracao = lazyPage(() => import('./pages/OutlookConfiguracao'), 'OutlookConfiguracao')
 const OutlookCaixaEntrada = lazyPage(() => import('./pages/OutlookCaixaEntrada'), 'OutlookCaixaEntrada')
-const ClientesIndustrial = lazyPage(() => import('./pages/ClientesIndustrial'), 'ClientesIndustrial')
-const AjusteGlobal = lazyPage(() => import('./pages/AjusteGlobal'), 'AjusteGlobal')
-const CatalogoDigital = lazyPage(() => import('./pages/CatalogoDigital'), 'CatalogoDigital')
 const DiretoriaDashboard = lazyPage(() => import('./pages/DiretoriaDashboard'), 'DiretoriaDashboard')
 const FiscalPrevisaoCaixa = lazyPage(() => import('./pages/FiscalPrevisaoCaixa'), 'FiscalPrevisaoCaixa')
 const FiscalCarteiraNFe = lazyPage(() => import('./pages/FiscalCarteiraNFe'), 'FiscalCarteiraNFe')
@@ -254,7 +248,6 @@ const ManutencaoIndicadores = lazyPage(() => import('./pages/manutencao/Manutenc
 const ManutencaoOrdens = lazyPage(() => import('./pages/ManutencaoOrdens'), 'ManutencaoOrdens')
 const SalaRNC = lazyPage(() => import('./pages/qualidade/sala-rnc'), 'SalaRNC')
 const ControleProcessoInjetora = lazyPage(() => import('./pages/pcp/ControleProcessoInjetora'), 'ControleProcessoInjetora')
-const InjecaoIndustrial = lazyPage(() => import('./pages/InjecaoIndustrial'), 'InjecaoIndustrial')
 const ProcessoIndustrialPage = lazyPage(() => import('./pages/ProcessoIndustrialPage'), 'ProcessoIndustrialPage')
 
 function LoadingWorkspace() {
@@ -305,7 +298,7 @@ export default function AppEntryV2() {
               <Route path="compras/requisicoes" element={<ComprasRequisicoes />} />
               <Route path="rh" element={<RHIndustrial />} />
               <Route path="pcp/fichas-processo" element={<QualityPlanGate><FichasProcesso /></QualityPlanGate>} />
-              <Route path="pcp/roteiro-producao" element={<QualityPlanGate><FichaProcesso /></QualityPlanGate>} />
+              <Route path="pcp/roteiro-producao" element={<Navigate to="/pageprincipal/pcp/fichas-processo" replace />} />
               <Route path="qualidade/rpnc" element={<QualityPlanGate><QualidadeRPNC /></QualityPlanGate>} />
               <Route path="qualidade/rpnc-formulario" element={<Navigate to="/pageprincipal/qualidade/rpnc" replace />} />
               <Route path="qualidade/formulario-rpnc" element={<Navigate to="/pageprincipal/qualidade/rpnc" replace />} />
@@ -455,7 +448,7 @@ export default function AppEntryV2() {
               <Route path="qualidade/plano-controle" element={<QualityPlanGate><QualidadePlanoControle /></QualityPlanGate>} />
               <Route path="qualidade/documentos" element={<QualityPlanGate><DocumentosQualidadeControle /></QualityPlanGate>} />
               <Route path="qualidade/inspecao-processo" element={<QualityPlanGate><QualidadeInspecaoProcesso /></QualityPlanGate>} />
-              <Route path="qualidade/fichas-processo" element={<QualityPlanGate><QualidadeFichasProcesso /></QualityPlanGate>} />
+              <Route path="qualidade/fichas-processo" element={<Navigate to="/pageprincipal/pcp/fichas-processo" replace />} />
               <Route path="qualidade/inspecoes" element={<QualityPlanGate><QualidadeInspecoesIndustrial /></QualityPlanGate>} />
               <Route path="qualidade/tablet" element={<QualityPlanGate><QualidadeCentralTablet /></QualityPlanGate>} />
               <Route path="qualidade/metodologia-8d" element={<QualityPlanGate><QualidadeMetodologia8D /></QualityPlanGate>} />
@@ -506,10 +499,10 @@ export default function AppEntryV2() {
               <Route path="outlook/configuracao" element={<OutlookConfiguracao />} />
               <Route path="outlook/caixa-entrada" element={<OutlookCaixaEntrada />} />
               <Route path="fornecedores" element={<FornecedoresIndustrial />} />
-              <Route path="clientes" element={<ClientesIndustrial />} />
-              <Route path="tabela-precos" element={<AjusteGlobal />} />
-              <Route path="tabelas-preco" element={<AjusteGlobal />} />
-              <Route path="catalogo" element={<CatalogoDigital />} />
+              <Route path="clientes" element={<Navigate to="/pageprincipal/vendas/clientes" replace />} />
+              <Route path="tabela-precos" element={<Navigate to="/pageprincipal/vendas/reajuste" replace />} />
+              <Route path="tabelas-preco" element={<Navigate to="/pageprincipal/vendas/reajuste" replace />} />
+              <Route path="catalogo" element={<Navigate to="/pageprincipal/vendas/catalogo-digital" replace />} />
               <Route path="relatorios" element={<DiretoriaDashboard />} />
               <Route path="fiscal/previsao-caixa" element={<QualityPlanGate><FiscalPrevisaoCaixa /></QualityPlanGate>} />
               <Route path="fiscal/carteira-nfe" element={<QualityPlanGate><FiscalCarteiraNFe /></QualityPlanGate>} />
@@ -540,7 +533,7 @@ export default function AppEntryV2() {
               <Route path="pcp/controle-injetora" element={<ControleProcessoInjetora />} />
               <Route path="estoque/recebimento" element={<Navigate to="/pageprincipal/estoque/recebimento-lotes" replace />} />
               <Route path="fichas-processo" element={<QualityPlanGate><FichasProcesso /></QualityPlanGate>} />
-              <Route path="processos/injecao" element={<QualityPlanGate><InjecaoIndustrial /></QualityPlanGate>} />
+              <Route path="processos/injecao" element={<Navigate to="/pageprincipal/pcp/controle-injetora" replace />} />
               <Route path="processos/prensados" element={<QualityPlanGate><ProcessoIndustrialPage /></QualityPlanGate>} />
               <Route path="processos/estamparia" element={<QualityPlanGate><ProcessoIndustrialPage /></QualityPlanGate>} />
               <Route path="processos/ferramentaria" element={<QualityPlanGate><ProcessoIndustrialPage /></QualityPlanGate>} />
@@ -561,7 +554,7 @@ export default function AppEntryV2() {
               <Route path="fiscal/compras" element={<QualityPlanGate><ComprasRoute><FiscalCompras /></ComprasRoute></QualityPlanGate>} />
               <Route path="pcp/fichas-processo-mestre" element={<QualityPlanGate><PCPFichasProcesso /></QualityPlanGate>} />
               <Route path="pcp/industrial" element={<QualityPlanGate><PCPIndustrial /></QualityPlanGate>} />
-              <Route path="compras/pedido" element={<ComprasRoute><PedidoCompra /></ComprasRoute>} />
+              <Route path="compras/pedido" element={<Navigate to="/pageprincipal/compras" replace />} />
               <Route path="qualidade/rpnc-multiorigem" element={<Navigate to="/pageprincipal/qualidade/rpnc" replace />} />
               <Route path="*" element={<Navigate to="/pageprincipal" replace />} />
             </Route>

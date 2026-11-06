@@ -12,7 +12,7 @@
 import { useState } from 'react'
 import { ClipboardList, Factory, Layers3, ScanLine } from 'lucide-react'
 import PainelOrdensProducao from '../features/pcp/PainelOrdensProducao'
-import FichaProcesso from '../features/pcp/FichaProcesso'
+import FichaProcesso from './FichasProcesso'
 import EngenhariaBOM from '../features/pcp/EngenhariaBOM'
 import ApuracaoTurno from '../features/pcp/ApuracaoTurno'
 

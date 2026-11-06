@@ -31,7 +31,7 @@ const requiredFiles = [
   'src/pages/SolicitacaoCompra.tsx',
   'src/pages/ComprasRequisicoes.tsx',
   'src/pages/QualidadeRPNC.tsx',
-  'src/features/pcp/FichaProcesso.tsx',
+  'src/pages/FichasProcesso.tsx',
   'src/styles/erp-global-consistency-20261030.css',
   'src/pages/AdministracaoConfiguracoesGlobais.tsx',
   'src/styles/compras-workspace.css',

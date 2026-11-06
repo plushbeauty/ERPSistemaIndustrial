@@ -64,14 +64,6 @@ const introCatalog: Record<string, PageIntro> = {
       use: ['O roteiro é o esqueleto que a OP herda ao ser criada.', 'Mudar o roteiro não reescreve ordens já emitidas: vale para as próximas.'],
     },
   },
-  'pcp/roteiro-producao': {
-    module: 'Engenharia e PCP', title: 'Roteiro de Produção (tela anterior)',
-    description: 'Grade simples de operações, postos e tempos por produto. A ficha de processo em 4 abas está em Fichas de Processo.',
-    help: {
-      fill: ['Use apenas para consulta rápida de operações e tempos; a manutenção completa é feita em Fichas de Processo.'],
-      use: ['Esta tela permanece como visão resumida. Para matéria-prima, molde e qualidade, vá em Fichas de Processo.'],
-    },
-  },
   'pcp/capacidade': {
     module: 'Engenharia e PCP', title: 'Carga e Capacidade',
     description: 'Capacidade cadastrada por máquina confrontada com a carga real das ordens de produção abertas.',

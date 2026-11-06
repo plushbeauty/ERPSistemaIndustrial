@@ -1,7 +1,7 @@
 {
   "contrato": "SYNQRA-R-20261103-01",
   "geradoPor": "npm run telas:manifest",
-  "totalTelas": 226,
+  "totalTelas": 219,
   "telas": [
     {
       "path": "src/IndustrialLoginDirect.tsx",
@@ -37,7 +37,7 @@
     },
     {
       "path": "src/components/quality/qualityTabletModules.ts",
-      "sha": "501f1d8a86f8cc44804df95b15a0c0c8350d6e2c",
+      "sha": "abb98f4a26b4075d3b0cb7a8cd6c1e41187a6c2a",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-TABLET-CATALOGO-CARIMBO-20261103-01 — cabecalho de autoria/aprovacao adicionado; o catalogo de rotinas do SGQ segue identico",
       "aprovadaEm": "2026-11-03",
@@ -220,14 +220,6 @@
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
     {
-      "path": "src/features/pcp/FichaProcesso.tsx",
-      "sha": "d706c66a1585d3f783efaf4ccdb5e96ad478a8ae",
-      "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
-    },
-    {
       "path": "src/features/pcp/PainelOrdensProducao.tsx",
       "sha": "6de85ad7494197ac3f8889807fec300702222d75",
       "autor": "Fernando Schuinsekel",
@@ -292,14 +284,6 @@
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
     {
-      "path": "src/pages/AjusteGlobal.tsx",
-      "sha": "d9ed1b91bfee7b9fec61a1b70e052cd67f765c57",
-      "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
-    },
-    {
       "path": "src/pages/AlmoxarifadoInventario.tsx",
       "sha": "c02f2e85211246ac8a5730a3fe89c4751c028313",
       "autor": "Fernando Schuinsekel",
@@ -356,14 +340,6 @@
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
     {
-      "path": "src/pages/CatalogoDigital.tsx",
-      "sha": "18876cb9f1fc00bd20703f23ca32536a683d3f6a",
-      "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
-    },
-    {
       "path": "src/pages/CentraisIndustriais.tsx",
       "sha": "8e77faa588af13450155cd7f474748c756011565",
       "autor": "Fernando Schuinsekel",
@@ -410,14 +386,6 @@
       "revisao": "REV-CHAO-FABRICA-CARTAO-PONTO-20261104-02 — tela real por cartão de ponto + fileira da semana em trilho",
       "aprovadaEm": "2026-11-04",
       "statusAprovacao": "DETERMINADO PELO PROPRIETARIO (\"NAO QUERO ESSA TELA SÓ DE DEMOSTRAÇÃO DEVE VIR UM CAMPO PARA"
-    },
-    {
-      "path": "src/pages/ClientesIndustrial.tsx",
-      "sha": "0dd9a6084047a0b251aaf0a2527777e398008a5e",
-      "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
     {
       "path": "src/pages/ComercialSuprimentos.tsx",
@@ -804,14 +772,6 @@
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
     {
-      "path": "src/pages/InjecaoIndustrial.tsx",
-      "sha": "89dfd2d62b8bed9018aa1b0283f0230c75ae1924",
-      "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
-    },
-    {
       "path": "src/pages/MRPIndustrial.tsx",
       "sha": "ab8f03a923615b6077ab7a400329bbc7f822a671",
       "autor": "Fernando Schuinsekel",
@@ -1045,7 +1005,7 @@
     },
     {
       "path": "src/pages/PCPWorkspace.tsx",
-      "sha": "e43c56b8e35268ec7576adb75766908341c1168f",
+      "sha": "f735727473540e02cda3d0863f381f48893c403d",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
       "aprovadaEm": "2026-10-30",
@@ -1054,14 +1014,6 @@
     {
       "path": "src/pages/PagePrincipal.tsx",
       "sha": "cba845801083a18b2d7cb56a5a25be07ac8018fa",
-      "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
-    },
-    {
-      "path": "src/pages/PedidoCompra.tsx",
-      "sha": "a3057b16f0ca54b6ee47b826d87ff5001d45a2b0",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
       "aprovadaEm": "2026-10-30",
@@ -1690,14 +1642,6 @@
       "revisao": "REV-FMEA-PLANO-CONTROLE-20261106-01 — FMEA AIAG completo: cabeçalho controlado",
       "aprovadaEm": "2026-11-06",
       "statusAprovacao": "ORDEM MASTER DE EXECUÇÃO EM 2026-11-06 — \"FMEA conectado ao Plano de Controle,"
-    },
-    {
-      "path": "src/pages/qualidade/FichasProcesso.tsx",
-      "sha": "37394c5d2f95b13a88c0ee810ccde614b11f7ae2",
-      "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
     {
       "path": "src/pages/qualidade/GEDDocumentos.tsx",

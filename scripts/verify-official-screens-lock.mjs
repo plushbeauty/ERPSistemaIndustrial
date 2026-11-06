@@ -117,6 +117,15 @@ const oficiais = [
 
 // Telas antigas deletadas do sistema. Recriar qualquer um destes caminhos reprova o build.
 const banidos = [
+  // ORDEM 2026-11-06 (item 3/5): duplicatas legadas substituidas pelas telas novas e apagadas.
+  // As rotas antigas agora redirecionam para a tela aprovada; recriar estes arquivos reprova o build.
+  'src/pages/PedidoCompra.tsx',
+  'src/pages/CatalogoDigital.tsx',
+  'src/pages/AjusteGlobal.tsx',
+  'src/pages/ClientesIndustrial.tsx',
+  'src/pages/InjecaoIndustrial.tsx',
+  'src/features/pcp/FichaProcesso.tsx',
+  'src/pages/qualidade/FichasProcesso.tsx',
   'src/components/layout/BarraWindows11.tsx',
   'src/PublicIndustrial.tsx',
   'src/features/QualityRpncForm .tsx',
