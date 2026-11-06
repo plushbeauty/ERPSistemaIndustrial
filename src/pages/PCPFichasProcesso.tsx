@@ -1,8 +1,8 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-11-05
- * @REVISAO: REV-RELATORIO-A4-20261105-01 — o botão Imprimir ficha deixa de capturar a tela e passa a emitir a ficha de processo em A4 pelo motor de relatório, com os parâmetros técnicos e o vínculo do registro lido do banco
- * @STATUS_APROVACAO: ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — "Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório."
+ * @DATA_REVISAO_APROVACAO: 2026-11-06
+ * @REVISAO: REV-PCP-FICHA-SCHEMA-20261106-01 — correção funcional do timestamp de gravação para updated_at, coluna definida na migration 20261003110000; layout, campos e impressão A4 preservados
+ * @STATUS_APROVACAO: CORREÇÃO FUNCIONAL AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-06; alteração restrita ao nome da coluna de atualização, sem mudança visual.
  */
 /**
  * REV-2026-10-23 — REV-FICHA-009: corrige contraste dos cartões após normalização dos fundos; texto escuro em superfícies claras e branco apenas em superfícies azul-petróleo/diagrama. Revisão visual autorizada pelo usuário.
@@ -367,7 +367,7 @@ export default function PCPFichasProcesso() {
     cavidades_ativas: Number(params.cavidades_ativas) || 1, revisao: versionNumber, versao_ficha: versionNumber,
     categoria_processo: category, data_homologacao: approvedAt || null, assinatura_tecnica: signature.trim() || null,
     status, parametros_tecnicos: { ...numericParams, instrucoes_setup: instructions.trim() || null },
-    ativo: status !== 'OBSOLETA', atualizado_em: new Date().toISOString(),
+    ativo: status !== 'OBSOLETA', updated_at: new Date().toISOString(),
    }
    const result = await supabase.from('erp_fichas_processo').upsert(payload, { onConflict: 'empresa_id,codigo_ficha' }).select('id,codigo_ficha,produto_id,ferramenta_id,maquina_id,categoria_processo,versao_ficha,status,data_homologacao,assinatura_tecnica,parametros_tecnicos,revisao').single()
    if (result.error) throw result.error

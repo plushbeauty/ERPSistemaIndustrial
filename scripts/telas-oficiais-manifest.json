@@ -37,7 +37,7 @@
     },
     {
       "path": "src/components/quality/qualityTabletModules.ts",
-      "sha": "abb98f4a26b4075d3b0cb7a8cd6c1e41187a6c2a",
+      "sha": "501f1d8a86f8cc44804df95b15a0c0c8350d6e2c",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-TABLET-CATALOGO-CARIMBO-20261103-01 — cabecalho de autoria/aprovacao adicionado; o catalogo de rotinas do SGQ segue identico",
       "aprovadaEm": "2026-11-03",
@@ -925,11 +925,11 @@
     },
     {
       "path": "src/pages/PCPFichasProcesso.tsx",
-      "sha": "93f7821fa20b22f105518c5612a6f5c1c54c4103",
+      "sha": "08341310a7005a88d3ae0012a959bf02776b6bec",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir ficha deixa de capturar a tela e passa a emitir a ficha de processo em A4 pelo motor de relatório, com os parâmetros técnicos e o vínculo do registro lido do banco",
-      "aprovadaEm": "2026-11-05",
-      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
+      "revisao": "REV-PCP-FICHA-SCHEMA-20261106-01 — correção funcional do timestamp de gravação para updated_at, coluna definida na migration 20261003110000; layout, campos e impressão A4 preservados",
+      "aprovadaEm": "2026-11-06",
+      "statusAprovacao": "CORREÇÃO FUNCIONAL AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-06; alteração restrita ao nome da coluna de atualização, sem mudança visual."
     },
     {
       "path": "src/pages/PCPIndustrial.tsx",
@@ -1005,11 +1005,11 @@
     },
     {
       "path": "src/pages/PCPWorkspace.tsx",
-      "sha": "f735727473540e02cda3d0863f381f48893c403d",
+      "sha": "29804d7e4d70ab637627990b7bcccb2b7a4ab345",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-PCP-WORKSPACE-FICHA-20261106-01 — aba de Ficha de Processo usa a tela técnica completa com isolamento por empresa; estrutura visual do workspace preservada",
+      "aprovadaEm": "2026-11-06",
+      "statusAprovacao": "CORREÇÃO FUNCIONAL AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-06; sem alteração do layout aprovado"
     },
     {
       "path": "src/pages/PagePrincipal.tsx",
