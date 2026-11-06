@@ -91,7 +91,6 @@ const menus: MenuItem[] = [
     { label: 'Requisições de Compra', route: '/pageprincipal/compras/requisicoes', icon: ClipboardList },
     { label: 'Central de compras / RFQ', route: '/pageprincipal/compras/rfq' },
     { label: 'Solicitações internas', route: '/pageprincipal/compras-solicitacao' },
-    { label: 'Pedido de compra', route: '/pageprincipal/compras/pedido' },
     { label: 'Recebimentos', route: '/pageprincipal/recebimento-materiais' },
     { label: 'Relatórios', route: '/pageprincipal/compras/relatorios' }  ] },  { label: 'Configurações', route: '/pageprincipal/administracao-configuracoes', icon: Settings },  { label: 'Configurações de Usuário', route: '/pageprincipal/configuracoes-usuario', icon: UserCog, minNivel: 8 },  { label: 'Central de Evolução', route: '/pageprincipal/administracao/central-evolucao', icon: ListChecks, minNivel: 8 },  { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText, children: [
     { label: 'Central Fiscal', route: '/pageprincipal/fiscal', icon: FileText },
