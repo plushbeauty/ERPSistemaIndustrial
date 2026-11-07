@@ -77,7 +77,7 @@ type RegistroRPNC = {
 type AberturaRPNC = { id: string; numero_rpnc: string; status: string; pasta_evidencias: string; bucket: string }
 type Evidencia = { id: string; nome_arquivo: string; storage_path: string; mime_type: string | null; tamanho_bytes: number; finalidade: string | null; acao_id: string | null }
 type AcaoForm = { id?: string; tipo: 'Contencao' | 'Corretiva' | 'Preventiva'; descricao: string; causa_raiz: string; responsavel_id: string; prazo: string; status?: string }
-type AcaoSalva = AcaoForm & { id: string; responsavel: string | null }
+type AcaoSalva = AcaoForm & { id: string; responsavel: string | null; resultado_eficacia: string | null }
 type Recorrencia = {
   id: string
   numero_rpnc: string
@@ -224,6 +224,7 @@ export default function QualityRpncForm() {
   const [files, setFiles] = useState<File[]>([])
   const [evidenciasPendentes, setEvidenciasPendentes] = useState<File[]>([])
   const [fileParaAcao, setFileParaAcao] = useState<{ acaoId: string; file: File } | null>(null)
+  const [evidenciaAcao, setEvidenciaAcao] = useState<Record<string, string>>({})
   const [hasMoreRegistros, setHasMoreRegistros] = useState(false)
   const [loadingMoreRegistros, setLoadingMoreRegistros] = useState(false)
   const [buscaRegistros, setBuscaRegistros] = useState('')
@@ -260,7 +261,7 @@ export default function QualityRpncForm() {
         supabase.from('erp_sgq_auditorias').select('id,codigo_auditoria,escopo,status').eq('empresa_id', tenantId).order('data_inicio', { ascending: false }).limit(200),
         supabase.from('erp_rpnc')
           .select(SELECT_RPNC)
-          .eq('empresa_id', tenantId)
+          .eq('empresa_id', tenantId).not('sgq_origem', 'is', null)
           .order('criado_em', { ascending: false }).range(0, 29),
       ])
       const falha = setorRes.error ?? usuarioRes.error ?? clienteRes.error ?? produtoRes.error ?? auditoriaRes.error ?? registroRes.error
@@ -327,7 +328,7 @@ export default function QualityRpncForm() {
       ])
       const falha = evidenciaRes.error ?? acaoRes.error
       if (falha) throw falha
-      type AcaoRow = { id: string; tipo: string; descricao: string; causa_raiz: string | null; responsavel_id: string; prazo: string; status: string; responsavel: { nome: string } | null }
+      type AcaoRow = { id: string; tipo: string; descricao: string; causa_raiz: string | null; responsavel_id: string; prazo: string; status: string; resultado_eficacia: string | null; responsavel: { nome: string } | null }
       setRpnc(registro)
       setPasta(registro.sgq_pasta_evidencias ?? `${tenantId}/rpnc_${registro.numero_rpnc}`)
       setTratamento(normalizarTratamento(registro.sgq_tratamento_anomalia))
@@ -349,7 +350,7 @@ export default function QualityRpncForm() {
       setEficaciaAprovada(registro.eficacia_aprovada ?? true)
       setAcoes(((acaoRes.data ?? []) as unknown as AcaoRow[]).map((a) => ({
         id: a.id, tipo: a.tipo as AcaoForm['tipo'], descricao: a.descricao ?? '', causa_raiz: a.causa_raiz ?? '',
-        responsavel_id: a.responsavel_id, prazo: a.prazo ?? '', status: a.status, responsavel: a.responsavel?.nome ?? null,
+        responsavel_id: a.responsavel_id, prazo: a.prazo ?? '', status: a.status, responsavel: a.responsavel?.nome ?? null, resultado_eficacia: a.resultado_eficacia ?? null,
       })))
       setFiles([])
       setNotice(`Formulário de ${registro.numero_rpnc} carregado do banco.`)
@@ -660,7 +661,7 @@ export default function QualityRpncForm() {
       id: String(a.id), tipo: String(a.tipo) as AcaoForm['tipo'], descricao: String(a.descricao ?? ''),
       causa_raiz: String(a.causa_raiz ?? ''), responsavel_id: String(a.responsavel_id ?? ''),
       prazo: String(a.prazo ?? ''), status: String(a.status ?? 'Planejada'),
-      responsavel: a.responsavel ? String(a.responsavel) : null,
+      responsavel: a.responsavel ? String(a.responsavel) : null, resultado_eficacia: a.resultado_eficacia ? String(a.resultado_eficacia) : null,
     })))
   }
 
@@ -708,6 +709,81 @@ export default function QualityRpncForm() {
       setNotice(removida.id ? 'Ação removida do plano.' : 'Linha descartada.')
     } catch (cause) {
       setError(mensagem(cause))
+    }
+  }
+
+  const transicionarRPNC = async (status: 'em tratamento' | 'aguardando eficácia') => {
+    if (!rpnc) return
+    setSaving(true)
+    setError('')
+    setNotice('')
+    try {
+      if (status === 'aguardando eficácia') {
+        const pendentes = acoes.filter((acao) => acao.status !== 'Verificada' || acao.resultado_eficacia !== 'Eficaz' || !acao.causa_raiz.trim())
+        if (!acoes.length || pendentes.length) throw new Error('Antes de encaminhar para eficácia, todas as ações CAPA precisam estar verificadas como eficazes e possuir causa raiz.')
+      }
+      const result = await supabase.rpc('erp_sgq_transicionar_rpnc', { p_rpnc_id: rpnc.id, p_status: status })
+      if (result.error) throw result.error
+      if (!result.data) throw new Error('A RPC não retornou o novo estado da RPNC.')
+      const atualizada = result.data as unknown as RegistroRPNC
+      setRpnc((atual) => atual ? { ...atual, ...atualizada } : atualizada)
+      setRegistros((atuais) => atuais.map((registro) => registro.id === rpnc.id ? { ...registro, ...atualizada } : registro))
+      setNotice(`RPNC ${rpnc.numero_rpnc} avançou para "${status}".`)
+    } catch (cause) {
+      setError(mensagem(cause))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const atualizarEtapaAcao = async (acao: AcaoSalva, status: string, evidencia?: string) => {
+    if (!rpnc) return
+    setSaving(true)
+    setError('')
+    setNotice('')
+    try {
+      if (status === 'Aguardando aprovacao') {
+        if (!acao.causa_raiz.trim()) throw new Error('Informe a causa raiz antes de enviar a ação para aprovação.')
+        if (!evidencia?.trim()) throw new Error('Registre a evidência da conclusão antes de enviar para aprovação.')
+      }
+      const result = await supabase.from('erp_sgq_capa_acoes')
+        .update({ status, ...(evidencia ? { evidencia: evidencia.trim() } : {}) })
+        .eq('id', acao.id).eq('rpnc_id', rpnc.id).eq('empresa_id', companyId)
+        .select('id').single()
+      if (result.error) throw result.error
+      await carregarRegistro(rpnc)
+      setNotice(`Ação CAPA atualizada para "${status}".`)
+    } catch (cause) {
+      setError(mensagem(cause))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const decidirAcao = async (acao: AcaoSalva, decisao: 'aprovar' | 'reprovar' | 'verificar_eficaz' | 'verificar_ineficaz') => {
+    if (!rpnc) return
+    const evidencia = (evidenciaAcao[acao.id] ?? '').trim()
+    if (decisao.startsWith('verificar_') && evidencia.length < 10) {
+      setError('Para verificar a eficácia, registre uma evidência objetiva com pelo menos 10 caracteres.')
+      return
+    }
+    setSaving(true)
+    setError('')
+    setNotice('')
+    try {
+      const result = await supabase.rpc('erp_sgq_capa_decidir', {
+        p_acao_id: acao.id,
+        p_decisao: decisao,
+        p_evidencia: evidencia || null,
+      })
+      if (result.error) throw result.error
+      await carregarRegistro(rpnc)
+      const labels = { aprovar: 'aprovada', reprovar: 'reprovada', verificar_eficaz: 'verificada como eficaz', verificar_ineficaz: 'verificada como ineficaz' }
+      setNotice(`Ação CAPA ${labels[decisao]} no workflow do Supabase.`)
+    } catch (cause) {
+      setError(mensagem(cause))
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -981,7 +1057,14 @@ export default function QualityRpncForm() {
           <div className="min-w-64 flex-1">
             <p className="erp-label">Evidências da ocorrência</p>
             <input type="file" multiple accept=".pdf,.docx,.xlsx,.png,.jpg,.jpeg,.webp,.txt" disabled={saving || Boolean(rpnc)}
-              onChange={(e) => setFiles(Array.from(e.target.files ?? []).filter((f) => f.size <= MAX_ANEXO))}
+              onChange={(e) => {
+                const selecionados = Array.from(e.target.files ?? [])
+                const validos = selecionados.filter((file) => file.size <= MAX_ANEXO)
+                const rejeitados = selecionados.filter((file) => file.size > MAX_ANEXO)
+                setFiles(validos)
+                setError(rejeitados.length ? `Arquivo(s) acima do limite de ${tamanho(MAX_ANEXO)}: ${rejeitados.map((file) => file.name).join(', ')}` : '')
+                e.target.value = ''
+              }}
               className="text-xs" />
             <p className="mt-1 text-[10px] text-slate-500">{files.length ? `${files.length} arquivo(s) na fila · serão gravados em ${pasta || 'pasta criada na abertura'}` : 'PDF, DOCX, XLSX, PNG, JPEG, WEBP e TXT · 15 MB por arquivo.'}</p>
           </div>
@@ -1094,23 +1177,23 @@ export default function QualityRpncForm() {
                   {acoes.map((acao, index) => (
                     <tr key={acao.id} className="erp-tr">
                       <td className="erp-td">
-                        <select className="erp-input" value={acao.tipo} disabled={bloqueado}
+                        <select className="erp-input" value={acao.tipo} disabled={bloqueado || ['Aprovada', 'Verificada'].includes(acao.status ?? '')}
                           onChange={(e) => void atualizarAcao(index, 'tipo', e.target.value)}>
                           {TIPOS_ACAO.map((t) => <option key={t} value={t}>{t}</option>)}
                         </select>
                       </td>
-                      <td className="erp-td"><textarea className="erp-input qrf-textarea min-w-64" rows={2} value={acao.descricao} disabled={bloqueado}
+                      <td className="erp-td"><textarea className="erp-input qrf-textarea min-w-64" rows={2} value={acao.descricao} disabled={bloqueado || ['Aprovada', 'Verificada'].includes(acao.status ?? '')}
                         onChange={(e) => void atualizarAcao(index, 'descricao', e.target.value)} /></td>
-                      <td className="erp-td"><input className="erp-input min-w-40" value={acao.causa_raiz} disabled={bloqueado}
+                      <td className="erp-td"><input className="erp-input min-w-40" value={acao.causa_raiz} disabled={bloqueado || ['Aprovada', 'Verificada'].includes(acao.status ?? '')}
                         onChange={(e) => void atualizarAcao(index, 'causa_raiz', e.target.value)} /></td>
                       <td className="erp-td">
-                        <select className="erp-input min-w-40" value={acao.responsavel_id} disabled={bloqueado}
+                        <select className="erp-input min-w-40" value={acao.responsavel_id} disabled={bloqueado || ['Aprovada', 'Verificada'].includes(acao.status ?? '')}
                           onChange={(e) => void atualizarAcao(index, 'responsavel_id', e.target.value)}>
                           <option value="">Selecionar</option>
                           {usuarios.map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
                         </select>
                       </td>
-                      <td className="erp-td"><input type="date" className="erp-input" value={acao.prazo} disabled={bloqueado}
+                      <td className="erp-td"><input type="date" className="erp-input" value={acao.prazo} disabled={bloqueado || ['Aprovada', 'Verificada'].includes(acao.status ?? '')}
                         onChange={(e) => void atualizarAcao(index, 'prazo', e.target.value)} /></td>
                       <td className="erp-td"><span className="rounded-[2px] bg-slate-100 px-2 py-1 text-[10px] font-bold">{acao.status ?? 'Planejada'}</span></td>
                       <td className="erp-td">
@@ -1127,7 +1210,17 @@ export default function QualityRpncForm() {
                           </label>
                         </div>
                       </td>
-                      <td className="erp-td"><button type="button" className="erp-btn" disabled={bloqueado} onClick={() => void removerAcao(index)}><Trash2 size={13} /></button></td>
+                      <td className="erp-td">
+                        <div className="flex min-w-48 flex-col gap-1.5">
+                          {['Planejada', 'Reprovada'].includes(acao.status ?? '') && <button type="button" className="erp-btn" disabled={bloqueado} onClick={() => void atualizarEtapaAcao(acao, 'Em execucao')}>Iniciar execução</button>}
+                          {acao.status === 'Em execucao' && <button type="button" className="erp-btn" disabled={bloqueado} onClick={() => void atualizarEtapaAcao(acao, 'Concluida')}>Marcar concluída</button>}
+                          {['Concluida', 'Aguardando aprovacao', 'Aprovada'].includes(acao.status ?? '') && <textarea className="erp-input qrf-textarea min-w-48" rows={2} value={evidenciaAcao[acao.id] ?? ''} onChange={(event) => setEvidenciaAcao((current) => ({ ...current, [acao.id]: event.target.value }))} disabled={bloqueado} placeholder={acao.status === 'Aprovada' ? 'Evidência objetiva da eficácia' : 'Evidência / comentário da etapa'} />}
+                          {acao.status === 'Concluida' && <button type="button" className="erp-btn" disabled={bloqueado || !evidenciaAcao[acao.id]?.trim()} onClick={() => void atualizarEtapaAcao(acao, 'Aguardando aprovacao', evidenciaAcao[acao.id])}>Enviar para aprovação</button>}
+                          {acao.status === 'Aguardando aprovacao' && <div className="flex gap-1"><button type="button" className="erp-btn" disabled={bloqueado} onClick={() => void decidirAcao(acao, 'aprovar')}>Aprovar</button><button type="button" className="erp-btn" disabled={bloqueado} onClick={() => void decidirAcao(acao, 'reprovar')}>Reprovar</button></div>}
+                          {acao.status === 'Aprovada' && <div className="flex flex-wrap gap-1"><button type="button" className="erp-btn" disabled={bloqueado || (evidenciaAcao[acao.id] ?? '').trim().length < 10} onClick={() => void decidirAcao(acao, 'verificar_eficaz')}>Eficaz</button><button type="button" className="erp-btn" disabled={bloqueado || (evidenciaAcao[acao.id] ?? '').trim().length < 10} onClick={() => void decidirAcao(acao, 'verificar_ineficaz')}>Ineficaz</button></div>}
+                          {acao.status === 'Planejada' && <button type="button" className="erp-btn" disabled={bloqueado} onClick={() => void removerAcao(index)}><Trash2 size={13} /> Remover</button>}
+                        </div>
+                      </td>
                     </tr>
                   ))}
                   {!acoes.length && <tr><td className="erp-td italic text-slate-500" colSpan={8}>Nenhuma ação no banco. Adicione a primeira linha abaixo.</td></tr>}
@@ -1291,6 +1384,10 @@ export default function QualityRpncForm() {
                 <div>
                   <p className="text-xs font-bold text-slate-800">{rpnc.prazo_eficacia_dias ? `Carência: ${rpnc.prazo_eficacia_dias} dias` : 'Investigação ainda não programada'}</p>
                   <p className="text-[11px] text-slate-600">Data mínima para verificação: {dataEficacia ? dataBR(dataEficacia) : 'salve a investigação na aba “Investigação e equipe”'} · Status atual: {rpnc.status}</p>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {rpnc.status === 'em análise' && <button type="button" className="erp-btn" disabled={saving} onClick={() => void transicionarRPNC('em tratamento')}>Iniciar tratamento</button>}
+                  {rpnc.status === 'em tratamento' && <button type="button" className="erp-btn" disabled={saving} onClick={() => void transicionarRPNC('aguardando eficácia')}>Encaminhar para eficácia</button>}
                 </div>
                 <span className={`px-2 py-1 text-[10px] font-bold ${eficaciaPodeSerVerificada ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
                   {eficaciaPodeSerVerificada ? 'Prazo cumprido' : 'Aguardando carência'}
