@@ -23,6 +23,7 @@ const SolicitacaoCompra = lazy(() => import('./pages/SolicitacaoCompra'))
 const ComprasRequisicoes = lazy(() => import('./pages/ComprasRequisicoes'))
 const RHIndustrial = lazy(() => import('./pages/RHIndustrial'))
 const FichaProcesso = lazy(() => import('./features/pcp/FichaProcesso'))
+const FichaProcessoPrInjTeste = lazy(() => import('./pages/FichaProcessoPrInjTeste'))
 const QualidadeRPNC = lazy(() => import('./pages/QualidadeRPNC'))
 // Formulário RPNC (Ishikawa / 5 Porquês / CAPA / recorrência) e grade de auditorias — prompts SGQ de 2026-10-31
 const QualityRpncForm = lazy(() => import('./pages/QualityRpncForm'))
@@ -94,6 +95,7 @@ export default function AppEntryV2() {
               <Route path="compras/requisicoes" element={<ComprasRequisicoes />} />
               <Route path="rh" element={<RHIndustrial />} />
               <Route path="pcp/fichas-processo" element={<FichaProcesso />} />
+              <Route path="pcp/ficha-processo-pr-inj-teste" element={<FichaProcessoPrInjTeste />} />
               <Route path="qualidade/rpnc" element={<QualityPlanGate><QualidadeRPNC /></QualityPlanGate>} />
               <Route path="qualidade/rpnc-formulario" element={<QualityPlanGate><QualityRpncForm /></QualityPlanGate>} />
               <Route path="qualidade/auditorias" element={<QualityPlanGate><QualityAuditsList /></QualityPlanGate>} />

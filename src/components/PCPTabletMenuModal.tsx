@@ -23,6 +23,7 @@ const processSheetItems: readonly ModuleItem[] = [
   { number: 'FP02', label: 'INJETADOS', description: 'Material, secagem, molde, cavidades, temperaturas, injeção e ciclo.', route: '/pcp/fichas-processo?tipo=INJETADOS', icon: Boxes },
   { number: 'FP03', label: 'ACABAMENTO', description: 'Preparação, operação, equipamento, parâmetros e inspeção.', route: '/pcp/fichas-processo?tipo=ACABAMENTO', icon: Wrench },
   { number: 'FP04', label: 'MONTAGEM', description: 'Sequência de montagem, componentes, conferência e embalagem.', route: '/pcp/fichas-processo?tipo=MONTAGEM_EMBALAGEM', icon: PackageSearch },
+  { number: 'FP05', label: 'FICHA PR E INJ · TESTE', description: 'Prévia visual separada para comparar fichas de injeção e prensagem; valores demonstrativos, não homologados.', route: '/pageprincipal/pcp/ficha-processo-pr-inj-teste', icon: Activity },
 ]
 
 const modules: readonly ModuleItem[] = [
