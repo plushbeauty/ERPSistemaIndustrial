@@ -288,11 +288,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     ?? visibleMenus.find(menu => pathname.startsWith(menu.route + '/'))
   const current = routeMenu ?? currentModuleMenu
 
-  // Ordem do proprietário em 2026-11-05: barra fixa de acesso rápido no canto inferior esquerdo,
-  // abaixo do botão Menu, no lugar da antiga barra Windows 11. Os atalhos são exatamente os módulos
-  // que o menu já liberou para esta sessão (nivel_admin + recorte do perfil OPERADOR_FABRIL).
-  const quickAccessItems: QuickAccessItem[] = visibleMenus
-    .map(menu => ({ label: menu.label, route: menu.route, icon: menu.icon ?? Home, action: menu.action, tabletKey: menu.tabletKey }))
   const normalizedSearch = moduleSearch.trim().toLocaleLowerCase('pt-BR')
   const searchedMenus = normalizedSearch ? visibleMenus.map(menu => ({ ...menu, children: menu.children?.filter(child => child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)) })).filter(menu => menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.route.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || Boolean(menu.children?.length)) : visibleMenus
   useEffect(() => {
