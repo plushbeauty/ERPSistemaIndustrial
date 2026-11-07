@@ -5,7 +5,6 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import PCPTabletMenuModal from '../PCPTabletMenuModal'
 import ModuleTabletMenuModal, { type ModuleTabletKey } from './ModuleTabletMenuModal'
-import QuickAccessRail, { type QuickAccessItem } from './QuickAccessRail'
 import PageIntroCard from './PageIntroCard'
 import { fallbackPageIntro, hasNativeIntroCard, resolvePageIntro } from './pageIntroCatalog'
 
@@ -443,12 +442,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         {pageIntro && <PageIntroCard {...pageIntro} />}
         {children}
       </main>
-      <QuickAccessRail
-        items={quickAccessItems}
-        activeLabel={current?.label ?? null}
-        hidden={startMenuOpen}
-        onOpen={(item) => { setStartMenuOpen(false); openMenuItem(item) }}
-      />
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
       <ModuleTabletMenuModal moduleKey={sgqTabletKey} sessionNivel={sessionNivel} onClose={() => setSgqTabletKey(null)} onNavigate={(route) => { setSgqTabletKey(null); go(route) }} />
 
