@@ -61,6 +61,7 @@ const CustomerDnSettings = lazy(() => import('./pages/CustomerDnSettings'))
 const CustomerDnPod = lazy(() => import('./pages/CustomerDnPod'))
 const Master = lazy(() => import('./pages/Master'))
 const PCPAreaFuncionario = lazy(() => import('./pages/PCPAreaFuncionario'))
+const ChaoDeFabricaOperadorDemo = lazy(() => import('./pages/ChaoDeFabricaOperadorDemo'))
 const PCPCapacidade = lazy(() => import('./pages/PCPCapacidade'))
 // Cadastro de Produtos — migrado em 2026-10-30 da branch legada para a origem única de código
 const ProdutosVendasIndustrial = lazy(() => import('./pages/ProdutosVendasIndustrial'))
@@ -121,6 +122,7 @@ export default function AppEntryV2() {
               <Route path="pcp/capacidade" element={<QualityPlanGate><PCPCapacidade /></QualityPlanGate>} />
               <Route path="chao-de-fabrica/postos" element={<QualityPlanGate><PostosTrabalho /></QualityPlanGate>} />
               <Route path="chao-de-fabrica/portal-operador" element={<PCPAreaFuncionario />} />
+              <Route path="chao-de-fabrica/apontamento-operador" element={<ChaoDeFabricaOperadorDemo />} />
               <Route path="paquimetro" element={<QualityPlanGate><Paquimetro /></QualityPlanGate>} />
               <Route path="qualidade/ged" element={<QualityPlanGate><FileTreeGED /></QualityPlanGate>} />
               <Route path="estoque/auditoria-saldos" element={<QualityPlanGate><AuditoriaSaldos /></QualityPlanGate>} />
