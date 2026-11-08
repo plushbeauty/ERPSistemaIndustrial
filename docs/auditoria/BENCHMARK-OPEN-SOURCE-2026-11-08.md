@@ -71,6 +71,8 @@ Módulos com rota real no roteador desta branch:
 
 **Fiscal:** NF-e presente e completa no roteador. **NFS-e: nenhuma ocorrência** em `src/` (busca textual por `nfse`, `nfs-e`, `nota de servi` retornou zero).
 
+**Conferência de esquema (08/11/2026):** o código referencia 176 tabelas via `supabase.from(...)`; as migrations de `supabase/migrations` mais o pacote pendente declaram 240 `CREATE TABLE`. Nenhuma tabela referenciada ficou órfã — ou seja, as lacunas abaixo são de **aplicação no banco**, não de autoria de esquema. O que bloqueia tela hoje é o pacote de migrations ainda não executado no ambiente remoto.
+
 ---
 
 ## 4. Matriz de capacidade — SYSNQRA × referências
@@ -85,21 +87,21 @@ Legenda: **OK** = implementado com tela e persistência; **PARCIAL** = tela exis
 | Capacidade finita | MRPeasy, OFBiz, iDempiere | **PARCIAL** | `/pageprincipal/pcp/capacidade` existe; sem evidência de calendário finito por centro de trabalho |
 | Ordem de produção com apontamento | Odoo, ERPNext, Carbon, MyCompany | **OK** | `/pageprincipal/pcp/apontamentos`, Portal do Operador |
 | MES / chão de fábrica | Carbon, Nomus | **OK** | Chão de Fábrica (3 telas) + portal do operador |
-| Rastreabilidade / genealogia de lote | Odoo, ERPNext, Carbon, Dolibarr | **BLOQUEADO** | `/estoque/rastreabilidade`, `/qualidade/genealogia-lote`; `erp_qualidade_genealogia_lotes` ausente |
-| Quarentena de lote | Odoo, ERPNext | **PARCIAL** | `/qualidade/quarentena` existe; `erp_qualidade_liberacao_lotes` ausente |
-| Liberação de lote pela qualidade | Carbon, QMS Odoo/ERPNext | **BLOQUEADO** | `/qualidade/liberacao-lote`; `erp_qualidade_liberacao_lotes` ausente |
+| Rastreabilidade / genealogia de lote | Odoo, ERPNext, Carbon, Dolibarr | **BLOQUEADO** | `/estoque/rastreabilidade`, `/qualidade/genealogia-lote`; `erp_qualidade_genealogia_lotes` no pacote pendente |
+| Quarentena de lote | Odoo, ERPNext | **PARCIAL** | `/qualidade/quarentena` existe; `erp_qualidade_liberacao_lotes` no pacote pendente |
+| Liberação de lote pela qualidade | Carbon, QMS Odoo/ERPNext | **BLOQUEADO** | `/qualidade/liberacao-lote`; `erp_qualidade_liberacao_lotes` no pacote pendente |
 | Template de inspeção versionado | ERPNext | **AUSENTE** | Inspeções existem por tela (`/qualidade/inspecoes`, `/inspecao-processo`), sem template reutilizável |
-| FMEA AIAG com NPR | QMS Odoo/ERPNext, 8Quali | **BLOQUEADO** | `FMEA.tsx` usa `erp_fmea_cabecalho`; tabela ausente no pacote |
-| Plano de Controle (CPP) ligado ao FMEA | 8Quali | **BLOQUEADO** | `PlanoControle.tsx` usa `erp_plano_controle*`; tabelas ausentes |
+| FMEA AIAG com NPR | QMS Odoo/ERPNext, 8Quali | **BLOQUEADO** | `FMEA.tsx` usa `erp_fmea_cabecalho`; migration existe no repositório, aplicação pendente no banco |
+| Plano de Controle (CPP) ligado ao FMEA | 8Quali | **BLOQUEADO** | `PlanoControle.tsx` usa `erp_plano_controle*`; tabelas no pacote pendente |
 | RPNC / 8D / CAPA | QMS Odoo/ERPNext, DOO!, 8Quali | **OK** | `/qualidade/rpnc`, `/qualidade/metodologia-8d`, `/qualidade/acompanhamento-rnc` |
-| Evidências de RPNC | DOO!, 8Quali | **BLOQUEADO** | `erp_qualidade_rpnc_evidencias` ausente |
-| Auditorias por norma / planta / 5S | DOO!, 8Quali | **PARCIAL** | 3 telas no SGQ; `erp_qualidade_auditorias_planta` e `erp_sgq_auditorias` ausentes |
-| Documentos controlados, revisão e distribuição | DOO!, 8Quali, ERPNext | **PARCIAL** | GED, lista mestra, IT, assinatura existem; `erp_documentos_qualidade_aprovacoes` e `..._distribuicoes` ausentes |
+| Evidências de RPNC | DOO!, 8Quali | **BLOQUEADO** | `erp_qualidade_rpnc_evidencias` no pacote pendente |
+| Auditorias por norma / planta / 5S | DOO!, 8Quali | **PARCIAL** | 3 telas no SGQ; `erp_qualidade_auditorias_planta` e `erp_sgq_auditorias` no pacote pendente |
+| Documentos controlados, revisão e distribuição | DOO!, 8Quali, ERPNext | **PARCIAL** | GED, lista mestra, IT, assinatura existem; `erp_documentos_qualidade_aprovacoes` e `..._distribuicoes` no pacote pendente |
 | Calibração de instrumentos | QATrack+, 8Quali, DOO! | **OK (verificar alerta)** | `/qualidade/calibracao`, `/qualidade/instrumentos`, `/qualidade/metrologia` |
 | Manutenção de ativo | Carbon, Nomus | **OK** | `/pageprincipal/manutencao/*` (5 telas) |
-| Custos industriais por OP | iDempiere, Nomus, Carbon | **PARCIAL** | `/financeiro/custo-padrao` existe; `erp_financeiro_apuracao_custos` ausente |
-| Separação / expedição | Odoo, Bling | **BLOQUEADO** | `/estoque/separacao`; `erp_estoque_separacoes` e `erp_expedicao_nfe` ausentes |
-| Cadastro de regras fiscais | OCA, Bling, Omie | **BLOQUEADO** | `erp_regras_fiscais` ausente |
+| Custos industriais por OP | iDempiere, Nomus, Carbon | **PARCIAL** | `/financeiro/custo-padrao` existe; `erp_financeiro_apuracao_custos` no pacote pendente |
+| Separação / expedição | Odoo, Bling | **BLOQUEADO** | `/estoque/separacao`; `erp_estoque_separacoes` e `erp_expedicao_nfe` no pacote pendente |
+| Cadastro de regras fiscais | OCA, Bling, Omie | **BLOQUEADO** | `erp_regras_fiscais` no pacote pendente |
 | NF-e (emissão, entrada, carteira) | NFePHP, OCA, Focus, Bling | **OK** | `/pageprincipal/fiscal/emissao`, `/carteira-nfe`, `/nfe-entradas` |
 | **NFS-e (padrão nacional / DPS)** | OCA, Emissor NFS-e, Focus, Bling, Omie | **AUSENTE** | Zero ocorrência em `src/` |
 | Portal de indicadores do SGQ | 8Quali, DOO! | **PARCIAL** | Dashboards RNC, OEE e refugo existem; sem painel único consolidado do SGQ |
