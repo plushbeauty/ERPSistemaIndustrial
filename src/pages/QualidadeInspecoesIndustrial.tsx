@@ -1,4 +1,10 @@
 /**
+ * @AUTOR: FernandoSch
+ * @DATA_REVISAO_APROVACAO: 2026-11-08
+ * @REVISAO: REV-INSPECOES-IMPORT-PLUS-20261108-01 — corrigido import do ícone Plus ausente; nenhuma alteração visual, de consulta ou de fluxo
+ * @STATUS_APROVACAO: CORREÇÃO TÉCNICA NÃO VISUAL; APROVAÇÃO E CONTRATO VISUAL ANTERIORES PRESERVADOS
+ */
+/**
  * @DATA_REVISAO_APROVACAO: 2026-11-04
  * @REVISAO: REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta
  * @AUTOR: FernandoSch
@@ -21,7 +27,7 @@
  * Contrato de dados preservado: tabelas existentes, tenant ativo, RLS e RPC transacional.
  */
 import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, ClipboardCheck, RefreshCw, Search, ShieldCheck } from 'lucide-react'
+import { AlertTriangle, ClipboardCheck, Plus, RefreshCw, Search, ShieldCheck } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 
