@@ -69,7 +69,7 @@ create index if not exists idx_erp_qualidade_inspecao_template_itens_ordem
 create unique index if not exists uq_erp_produtos_empresa_id_id
   on public.erp_produtos (empresa_id, id);
 
-do $
+do $$
 begin
   if not exists (
     select 1 from pg_constraint
@@ -83,7 +83,7 @@ begin
       on delete restrict;
   end if;
 end;
-$;
+$$;
 
 alter table public.erp_inspecoes
   add column if not exists template_id uuid,
@@ -254,7 +254,7 @@ begin
   if tg_op = 'DELETE' then return old; end if;
   return new;
 end;
-$;
+$$;
 
 drop trigger if exists trg_erp_qualidade_inspecao_template_proteger_vigente
   on public.erp_qualidade_inspecao_templates;
@@ -283,7 +283,7 @@ begin
   if tg_op = 'DELETE' then return old; end if;
   return new;
 end;
-$;
+$$;
 
 drop trigger if exists trg_erp_qualidade_inspecao_template_item_proteger_vigente
   on public.erp_qualidade_inspecao_template_itens;
