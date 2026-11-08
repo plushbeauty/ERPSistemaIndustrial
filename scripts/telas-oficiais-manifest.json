@@ -421,11 +421,11 @@
     },
     {
       "path": "src/pages/ComprasPedidoForm.tsx",
-      "sha": "a20b6693ae845c6afaa8c4ff7687e62add2a31a2",
+      "sha": "5577d898ec5f1c5360b9c12d016d5954b4235779",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-CONTRATO-BANCO-20261103-01 — grava via erp_compras_salvar_pedido_completo e declara a migration quando a rotina ainda não existe no banco",
-      "aprovadaEm": "2026-11-03",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-COMPRAS-VALIDACAO-PEDIDO-20261108-01 — valida todas as linhas sem descarte silencioso, tenant e referências carregadas, NCM de 8 dígitos, valores não negativos e tributos apresentados sem somar ICMS em duplicidade",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "REVISAO TECNICA AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA REFORCAR A VALIDACAO DO PEDIDO, MANTENDO A RPC TRANSACIONAL E O PADRAO VISUAL"
     },
     {
       "path": "src/pages/ComprasRFQ.tsx",
@@ -893,11 +893,11 @@
     },
     {
       "path": "src/pages/PCPAreaFuncionario.tsx",
-      "sha": "f40fb07ffe9f15e3a0e28403732cb0ffcc8243f5",
+      "sha": "a60f836f5f5e01461c4a3f24388c1af3a254cd51",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PORTAL-OPERADOR-NOME-REAL-20261104-01 — cabecalo passou a ler nome_completo do RH (antes mostrava \"Identificando conta…\" para sempre quando o cadastro só tinha nome completo) e a fileira de dias virou trilho de rolagem no celular",
-      "aprovadaEm": "2026-11-04",
-      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-04: \"se a conta ja foi identificada, substitua o texto pelo nome real do operador em destaque\" + conferência responsiva tela a tela"
+      "revisao": "REV-OPERADOR-MAQUINAS-CPP-20261108-01 — painel responsivo de máquinas por programação real, cada OP preservada como cartão próprio e seleção abre o CPP correspondente; receita específica da máquina priorizada",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "REVISAO AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA INTEGRAR O PAINEL VISUAL DE MAQUINAS AOS DADOS REAIS DO PCP, PRESERVANDO AUTENTICACAO, CPP E APONTAMENTOS DO SERVIDOR"
     },
     {
       "path": "src/pages/PCPCapacidade.tsx",
