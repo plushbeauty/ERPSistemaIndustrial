@@ -1,7 +1,7 @@
 {
   "contrato": "SYNQRA-R-20261103-01",
   "geradoPor": "npm run telas:manifest",
-  "totalTelas": 222,
+  "totalTelas": 223,
   "telas": [
     {
       "path": "src/components/layout/ModuleTabletMenuModal.tsx",
@@ -820,6 +820,14 @@
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
     {
+      "path": "src/pages/FinanceiroCustoOP.tsx",
+      "sha": "e7191872141e8bbd9a84ad9a10c6eedff13404ed",
+      "autor": "FernandoSch",
+      "revisao": "REV-FINANCEIRO-CUSTO-OP-REAL-20261108-01 — consumo real por OP, mão de obra dos apontamentos, overhead e margem",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "INCREMENTO FUNCIONAL AUTORIZADO NA ORDEM ORDEM-EXECUCAO-SYSNQRA-20261108-01; depende da aplicação da migration no Supabase"
+    },
+    {
       "path": "src/pages/FinanceiroCustoPadrao.tsx",
       "sha": "ba678f37278f10c23c8bee25e8f38b85ff47acd9",
       "autor": "FernandoSch",
@@ -829,11 +837,11 @@
     },
     {
       "path": "src/pages/FinanceiroDashboardCaixa.tsx",
-      "sha": "4241c11d83486162c64ed69654cd6094fde636e2",
+      "sha": "16ccde58a2d645c263719d9121eabfe30769da3f",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 + REV-FINANCEIRO-CUSTO-OP-LINK-20261108-01 — acesso ao fechamento de custo real por OP; padrão visual preservado",
       "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "statusAprovacao": "PADRÃO VISUAL ORIGINAL APROVADO EM 2026-10-30; incremento aditivo de navegação autorizado pela ORDEM-EXECUCAO-SYSNQRA-20261108-01"
     },
     {
       "path": "src/pages/FinanceiroFluxoCaixa.tsx",
