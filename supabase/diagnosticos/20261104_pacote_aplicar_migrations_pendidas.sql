@@ -1,6 +1,6 @@
 -- ============================================================================
 -- SYSNQRA ERP INDUSTRIAL — APLICAR AS MIGRATIONS QUE O BANCO AINDA NAO TEM
--- Gerado em 2026-11-08T23:29:09 por scripts/gerar-pacote-migrations-pendentes.mjs
+-- Gerado em 2026-11-08T23:31:14 por scripts/gerar-pacote-migrations-pendentes.mjs
 -- Origem da lista: contrato medido no banco vivo (scripts/auditar-contrato-banco-vivo.mjs)
 --
 -- Medida no banco de agora: 148 das 176 tabelas que as telas usam existem.
@@ -5876,7 +5876,7 @@ select s.empresa_id, s.codigo, s.titulo, s.descricao, s.setor, s.modulo, s.tipo,
 -- SGQ-REL-001 — liberação transacional de lote operacional
 -- REV-SGQ-REL-001-20261108-01
 -- A tela usa exclusivamente erp_liberar_lote / erp_bloquear_lote.
--- Autorização operacional: nivel_admin >= 80 no tenant da sessão.
+-- Autorização operacional: nivel_admin >= 8 no tenant da sessão.
 -- Master universal sem empresa_id não opera lote de tenant sem contexto de empresa.
 
 ALTER TABLE public.erp_qualidade_liberacao_lotes
@@ -6006,8 +6006,8 @@ BEGIN
      AND u.ativo = true
      AND u.deleted_at IS NULL
    FOR SHARE;
-  IF NOT FOUND OR coalesce(v_nivel_admin, 0) < 80 THEN
-    RAISE EXCEPTION 'SEM_AUTORIZACAO_NIVEL_ADMIN_80_PARA_DECISAO_DE_LOTE'
+  IF NOT FOUND OR coalesce(v_nivel_admin, 0) < 8 THEN
+    RAISE EXCEPTION 'SEM_AUTORIZACAO_NIVEL_ADMIN_8_PARA_DECISAO_DE_LOTE'
       USING ERRCODE = '42501';
   END IF;
   v_nome := left(coalesce(nullif(btrim(v_nome), ''), nullif(btrim(v_email), ''), 'USUARIO'), 100);
