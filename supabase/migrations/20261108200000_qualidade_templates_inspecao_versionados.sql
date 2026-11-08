@@ -251,9 +251,10 @@ begin
   ) then
     raise exception 'TEMPLATE_VIGENTE_IMUTAVEL_CRIE_NOVA_REVISAO';
   end if;
-  return case when tg_op = 'DELETE' then old else new end;
+  if tg_op = 'DELETE' then return old; end if;
+  return new;
 end;
-$$;
+$;
 
 drop trigger if exists trg_erp_qualidade_inspecao_template_proteger_vigente
   on public.erp_qualidade_inspecao_templates;
@@ -279,9 +280,10 @@ begin
   if v_status = 'VIGENTE' then
     raise exception 'ITENS_DE_TEMPLATE_VIGENTE_IMUTAVEIS_CRIE_NOVA_REVISAO';
   end if;
-  return case when tg_op = 'DELETE' then old else new end;
+  if tg_op = 'DELETE' then return old; end if;
+  return new;
 end;
-$$;
+$;
 
 drop trigger if exists trg_erp_qualidade_inspecao_template_item_proteger_vigente
   on public.erp_qualidade_inspecao_template_itens;
@@ -374,7 +376,10 @@ begin
   if v_empresa is null or v_usuario_id is null or coalesce(v_nivel_admin, 0) < 8 then
     raise exception 'NIVEL_ADMIN_INSUFICIENTE_PARA_EDITAR_TEMPLATE';
   end if;
-  if jsonb_typeof(p_itens) is distinct from 'array' or jsonb_array_length(p_itens) = 0 then
+  if jsonb_typeof(p_itens) is distinct from 'array' then
+    raise exception 'ITENS_DO_TEMPLATE_DEVEM_SER_UM_ARRAY_JSON';
+  end if;
+  if jsonb_array_length(p_itens) = 0 then
     raise exception 'TEMPLATE_PRECISA_DE_AO_MENOS_UM_ITEM';
   end if;
 
@@ -504,8 +509,10 @@ begin
     if new.template_id is null or new.template_revisao is null or new.template_snapshot is null then
       raise exception 'INSPECAO_PROCESSO_EXIGE_TEMPLATE_VERSIONADO';
     end if;
-    if jsonb_typeof(new.template_snapshot->'itens') is distinct from 'array'
-       or jsonb_array_length(new.template_snapshot->'itens') = 0 then
+    if jsonb_typeof(new.template_snapshot->'itens') is distinct from 'array' then
+      raise exception 'SNAPSHOT_DO_TEMPLATE_SEM_ARRAY_DE_ITENS';
+    end if;
+    if jsonb_array_length(new.template_snapshot->'itens') = 0 then
       raise exception 'SNAPSHOT_DO_TEMPLATE_SEM_ITENS';
     end if;
 
@@ -530,11 +537,13 @@ begin
        or new.template_snapshot->>'revisao' is distinct from v_template.revisao::text then
       raise exception 'SNAPSHOT_DIVERGE_DA_REVISAO_DO_TEMPLATE';
     end if;
-    if jsonb_typeof(new.medicoes) is distinct from 'array'
-       or jsonb_array_length(new.medicoes) <> (
-         select count(*) from public.erp_qualidade_inspecao_template_itens i
-          where i.empresa_id = new.empresa_id and i.template_id = new.template_id
-       ) then
+    if jsonb_typeof(new.medicoes) is distinct from 'array' then
+      raise exception 'RESULTADOS_DA_INSPECAO_DEVEM_SER_ARRAY_JSON';
+    end if;
+    if jsonb_array_length(new.medicoes) <> (
+      select count(*) from public.erp_qualidade_inspecao_template_itens i
+       where i.empresa_id = new.empresa_id and i.template_id = new.template_id
+    ) then
       raise exception 'RESULTADOS_NAO_CORRESPONDEM_AOS_ITENS_DO_TEMPLATE';
     end if;
   end if;
