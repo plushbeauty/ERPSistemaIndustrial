@@ -12,12 +12,16 @@
 |Medida|Valor|
 |---|---|
 |Blocos de migration no pacote|28|
-|Tabelas tocadas pelos blocos|88|
+|Tabelas tocadas pelos blocos|89|
 |Funções criadas/substituídas|47|
 |Tabelas declaradas ausentes no banco remoto|28|
 |Telas que consultam alguma dessas tabelas|27|
 |Policies sem `drop policy if exists` (antes da correção)|19|
 |Policies sem `drop policy if exists` (depois da correção)|0|
+
+### Reconciliação com a ordem de execução
+
+A ordem solicitou uma matriz para 24 telas prioritárias. A varredura do pacote e das chamadas do código identificou 27 páginas dependentes das tabelas listadas. As 27 foram mantidas nesta matriz para não omitir dependências; as três entradas além das 24 prioritárias ficam registradas como dependências adicionais, não como autorização para removê-las ou declará-las concluídas.
 
 ## 2. Correção de idempotência aplicada nesta rodada
 
@@ -26,7 +30,7 @@ A varredura do pacote encontrou 19 `create policy` sem o `drop policy if exists`
 - Origem: `supabase/migrations/20260912160000_qms_controlled_documents_workflow_v1.sql` (11 policies) e `supabase/migrations/20260921130000_erp_fornecedores_iso_precos_clientes.sql` (8 policies).
 - Correção: `drop policy if exists <nome> on <tabela>;` imediatamente antes de cada `create policy`, nos dois arquivos de origem.
 - Pacote regerado pelo próprio gerador (`scripts/gerar-pacote-migrations-pendentes.mjs`), sem edição manual do artefato.
-- Conferido depois: 115 `create policy`, 0 sem `drop`; nenhum `create table`/`create index` sem `if not exists`; nenhuma `create function` sem `or replace`; 24 triggers com 23 drops e uma criação condicional.
+- Conferido no pacote atual: 123 declarações `create policy` (112 pares únicos tabela/policy), todas com `drop policy if exists` correspondente; 96 declarações `create table` cobrindo 89 tabelas únicas, todas com `if not exists`; 90 declarações `create index`, todas com `if not exists`; 48 declarações `create function` cobrindo 47 funções únicas, todas com `or replace`; 23 criações de trigger e 23 remoções explícitas.
 
 ## 3. Telas bloqueadas
 
