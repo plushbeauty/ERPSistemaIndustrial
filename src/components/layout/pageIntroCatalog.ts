@@ -590,8 +590,9 @@ const pagePrincipalPrefix = '/pageprincipal'
 // nesta lista, então o shell injetava uma segunda faixa idêntica acima delas.
 // 2026-11-08: /qualidade/dashboard-rnc saiu da lista porque passou a usar o card navy único do shell
 // (a tela já não desenha cabeçalho próprio); o verbete dela está no catálogo.
+// /financeiro/fluxo-caixa desenha a própria faixa (synqra-reference-page) e entrou na integração da main.
 const nativeIntroCardPaths = [
-  '/compras', '/financeiro', '/administracao-configuracoes', '/ajuda',
+  '/compras', '/financeiro', '/financeiro/fluxo-caixa', '/administracao-configuracoes', '/ajuda',
   '/qualidade/auditoria-5s', '/qualidade/especificacoes', '/compras/requisicoes',
 ]
 

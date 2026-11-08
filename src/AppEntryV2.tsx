@@ -567,6 +567,7 @@ export default function AppEntryV2() {
             </Route>
             <Route path="/ajuda" element={<Navigate to="/pageprincipal/ajuda" replace />} />
             <Route path="/financeiro" element={<Navigate to="/pageprincipal/financeiro" replace />} />
+            <Route path="/financeiro/fluxo-caixa" element={<Navigate to="/pageprincipal/financeiro/fluxo-caixa" replace />} />
             <Route path="/compras" element={<Navigate to="/pageprincipal/compras" replace />} />
             <Route path="/rh" element={<Navigate to="/pageprincipal/rh" replace />} />
             <Route path="/pcp/fichas-processo" element={<Navigate to="/pageprincipal/pcp/fichas-processo" replace />} />
@@ -614,6 +615,8 @@ export default function AppEntryV2() {
             <Route path="/pcp/capacidade" element={<Navigate to="/pageprincipal/pcp/capacidade" replace />} />
             <Route path="/pcp/portal-operador" element={<Navigate to="/pageprincipal/chao-de-fabrica/portal-operador" replace />} />
             <Route path="/chao-de-fabrica/apontamento-operador" element={<Navigate to="/pageprincipal/chao-de-fabrica/apontamento-operador" replace />} />
+            <Route path="/tablet/dashboard" element={<Navigate to="/pageprincipal/chao-de-fabrica/portal-operador" replace />} />
+            <Route path="/diretoria/dashboard" element={<Navigate to="/pageprincipal" replace />} />
             <Route path="/area-funcionario" element={<Navigate to="/pageprincipal/chao-de-fabrica/portal-operador" replace />} />
             <Route path="/master" element={<Navigate to="/pageprincipal/master" replace />} />
             <Route path="/*" element={<FlatWorkspaceRedirect />} />

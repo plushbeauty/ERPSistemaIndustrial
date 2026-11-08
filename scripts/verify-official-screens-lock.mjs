@@ -100,7 +100,7 @@ const oficiais = [
   { path: 'src/pages/CadastroEmpresa.tsx', sha: 'a860dc1434ece03bf9e60803d929d16bddd7f90b', label: 'Publica / Cadastro da empresa' },
   { path: 'src/pages/Blog.tsx', sha: 'aebf301d6e049f459f5c403527c7010e0b7eabf7', label: 'Publica / Blog' },
   { path: 'src/pages/Contato.tsx', sha: '770de58912bee0ed0e3e0bc4cddd7262c729ec80', label: 'Publica / Contato' },
-  { path: 'src/IndustrialLoginDirect.tsx', sha: '8e42f60fe545793e4382f049c490bb3289ea88d6', label: 'Login / tela sobre a foto da planta com cartao flutuante' },
+  { path: 'src/IndustrialLoginDirect.tsx', sha: 'ad97d631c2a00fc14f47998002b47f4cda4427e3', label: 'Login / tela sobre a foto da planta com cartao flutuante (REV-INTEGRACAO-MAIN-20261108-01: ordem de integracao main x prod-telas-novas — Master passa a abrir /pageprincipal/master, rota canonica do contrato de ajuda contextual; cartao, foto e login individual por Supabase Auth inalterados)' },
   { path: 'src/styles/industrial-login.css', sha: 'ab70c62276a2a9e2ce0dac770255ed346798e1ee', label: 'Login / estilos da tela sobre a foto da planta (REV-LOGIN-FOTO-MAIOR-20261104-01: ordem do proprietario — faixa da foto aumentada de 74vw/116vh para 80vw/128vh porque ficou pequena demais)' },
   { path: 'src/pages/CertificadoQualidade.tsx', sha: 'f83e55451a90c5867297cff6f4f532bcfb45cd91', label: 'Qualidade / Certificado de Qualidade com cotas dimensionais e desenho anexado (recebido em 2026-11-01; REV-CERTIFICADO-CARIMBO-20261103-01 so adicionou o cabecalho de autoria/aprovacao)' },
   { path: 'src/components/layout/ModuleTabletMenuModal.tsx', sha: '0e7259b7f3fb74769f32d0dc2b97125c09ee2554', label: 'Tablet / painel flutuante de módulos (entrada única do Sistema SGQ)' },

@@ -5,11 +5,11 @@
   "telas": [
     {
       "path": "src/IndustrialLoginDirect.tsx",
-      "sha": "8e42f60fe545793e4382f049c490bb3289ea88d6",
+      "sha": "ad97d631c2a00fc14f47998002b47f4cda4427e3",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-LOGIN-FOTO-INDUSTRIAL-20261101-01 — tela de acesso sobre a foto da planta, com cartão flutuante à direita",
+      "revisao": "REV-LOGIN-FOTO-INDUSTRIAL-20261101-01 — tela de acesso sobre a foto da planta, com cartão flutuante à direita · REV-INTEGRACAO-MAIN-20261108-01 — Master passa a abrir /pageprincipal/master, rota canônica exigida pelo contrato de ajuda contextual",
       "aprovadaEm": "2026-11-01",
-      "statusAprovacao": "LAYOUT APROVADO PELO PROPRIETÁRIO EM 2026-11-01 · contrato de autenticação inalterado"
+      "statusAprovacao": "LAYOUT APROVADO PELO PROPRIETÁRIO EM 2026-11-01 · destino do Master revisado em 2026-11-08 por ordem de integração (main ↔ prod-telas-novas), preservando o cartão e o login individual por Supabase Auth"
     },
     {
       "path": "src/PublicIndustrialHome.tsx",
@@ -349,11 +349,11 @@
     },
     {
       "path": "src/pages/CentralAjuda.tsx",
-      "sha": "0db3d0309c3e9eefa82058f8319b0f8bd33e11ac",
+      "sha": "845ac33ea183d34157c5f904526dfeb026e7c84b",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-CENTRAL-AJUDA-TELAS-20261104-01 — central passou a indexar o catalogo oficial de telas (busca + para que serve + como preencher + como usar)",
+      "revisao": "REV-CENTRAL-AJUDA-TELAS-20261104-01 — central passou a indexar o catalogo oficial de telas (busca + para que serve + como preencher + como usar) · REV-CENTRAL-AJUDA-CONTEXTUAL-20261105-01 — integração da main: aba de ajuda contextual por rota, preservando o catálogo de telas",
       "aprovadaEm": "2026-11-04",
-      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-04: \"todas as telas tem que explicar para que serve, como preencher e como usar\""
+      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-04: \"todas as telas tem que explicar para que serve, como preencher e como usar\" · catálogo contextual incorporado em 2026-11-08 pela ordem de integração main ↔ prod-telas-novas"
     },
     {
       "path": "src/pages/CentralCustosIndustrial.tsx",

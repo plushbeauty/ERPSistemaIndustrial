@@ -60,7 +60,7 @@ function AuthFrame({ children }: { children: ReactNode }) {
 
 function safeReturnTo(value?: string | null) {
   if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/login')) {
-    return '/erp-industrial'
+    return '/pageprincipal'
   }
   return value
 }
@@ -77,10 +77,10 @@ function isTabletDevice() {
 }
 
 function destinationAfterLogin(result: IndustrialDestination, requested?: string | null) {
-  if (result.isMaster) return '/diretoria/dashboard'
+  if (result.isMaster) return '/pageprincipal/master'
   if (isTabletDevice() || result.perfil === 'OPERADOR_FABRIL') return '/pageprincipal/chao-de-fabrica/portal-operador'
   const desktopProfiles = new Set(['DIRETOR', 'ADMINISTRADOR', 'ADMIN', 'PCP', 'PCPISTA', 'PLANEJADOR', 'PLANEJADOR_PCP'])
-  if (desktopProfiles.has(result.perfil)) return '/diretoria/dashboard'
+  if (desktopProfiles.has(result.perfil)) return '/pageprincipal'
   return safeReturnTo(requested)
 }
 

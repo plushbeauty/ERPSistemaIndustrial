@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 
 const app = readFileSync('src/AppEntryV2.tsx', 'utf8').replace(/\r\n/g, '\n')
 const shell = readFileSync('src/components/layout/ERPHorizontalShell.tsx', 'utf8')
