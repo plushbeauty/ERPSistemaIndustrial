@@ -169,13 +169,17 @@ export default function QualidadeLiberacaoLotes() {
         p_observacoes: observacoes.trim() || null,
       })
       if (result.error) throw result.error
-      const returned = Array.isArray(result.data) ? result.data[0] : result.data
-      if (!returned || typeof returned !== 'object' || !('id' in returned)) {
-        throw new Error('A RPC não retornou o registro transacional do lote; nenhuma liberação foi confirmada na tela.')
+      const payload = result.data as unknown as {
+        registro?: LotRow
+        lote?: { status_inspecao?: string | null; localizacao?: string | null }
+      } | null
+      const decision = payload?.registro
+      const operational = payload?.lote
+      if (!decision?.id || !operational) {
+        throw new Error('A RPC não retornou o parecer e o estado operacional do lote; nenhuma decisão foi confirmada na tela.')
       }
-      const decision = returned as LotRow & { localizacao?: string | null }
       setMessage(
-        `Lote ${decision.codigo_lote}: ${decision.status_sgq}. Status operacional: ${status}. Localização: ${decision.localizacao ?? selectedLot.localizacao ?? '—'}. Responsável registrado pelo banco: ${decision.responsavel_liberacao}.`,
+        `Lote ${decision.codigo_lote}: ${decision.status_sgq}. Status operacional confirmado pelo banco: ${operational.status_inspecao ?? '—'}. Localização: ${operational.localizacao ?? '—'}. Responsável registrado: ${decision.responsavel_liberacao}.`,
       )
       setSelected(decision)
       await load()
