@@ -2,6 +2,7 @@ import { Suspense, lazy, type ComponentType, type ReactNode } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import ERPHorizontalShell from './components/layout/ERPHorizontalShell'
 import QualityPlanGate from './components/quality/QualityPlanGate'
+import MetrologiaVencimentoAlerta from './components/quality/MetrologiaVencimentoAlerta'
 type LazyModule<P extends object> = { default?: ComponentType<P>; [key: string]: unknown }
 
 function recoverStaleChunk(error: unknown) {
@@ -457,8 +458,8 @@ export default function AppEntryV2() {
               <Route path="qualidade/auditoria-5s" element={<QualityPlanGate><QualidadeAuditoria5S /></QualityPlanGate>} />
               <Route path="qualidade/lista-mestre" element={<QualityPlanGate><QualidadeListaMestre /></QualityPlanGate>} />
               <Route path="qualidade/relatorios-documentos" element={<QualityPlanGate><QualidadeRelatoriosDocumentos /></QualityPlanGate>} />
-              <Route path="qualidade/metrologia" element={<QualityPlanGate><CentraisIndustriais module="metrologia" /></QualityPlanGate>} />
-              <Route path="qualidade/calibracao" element={<QualityPlanGate><CalibracaoIndustrial /></QualityPlanGate>} />
+              <Route path="qualidade/metrologia" element={<QualityPlanGate><MetrologiaVencimentoAlerta /><CentraisIndustriais module="metrologia" /></QualityPlanGate>} />
+              <Route path="qualidade/calibracao" element={<QualityPlanGate><MetrologiaVencimentoAlerta /><CalibracaoIndustrial /></QualityPlanGate>} />
               <Route path="qualidade/editor-it" element={<QualityPlanGate><QualidadeEditorIT /></QualityPlanGate>} />
               <Route path="qualidade/procedimentos" element={<QualityPlanGate><QualidadeProcedimentos /></QualityPlanGate>} />
               <Route path="qualidade/assinatura-it" element={<QualityPlanGate><QualidadeAssinaturaIT /></QualityPlanGate>} />
