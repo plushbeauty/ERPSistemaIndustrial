@@ -2,7 +2,7 @@
 -- VERIFICACAO POS-MIGRATIONS — REV-BANCO-20261108-01
 -- Somente leitura: NÃO contém CREATE, ALTER, INSERT, UPDATE, DELETE, GRANT ou DROP.
 -- Executar no SQL Editor do projeto Supabase após a aplicação autorizada das migrations.
--- Compara os 89 nomes de tabelas e 47 funções encontrados no pacote de 28 migrations
+-- Compara as tabelas e funções do pacote atualizado de 31 migrations, mais as migrations novas de templates de inspeção e custo real por OP
 -- com o catálogo real do PostgreSQL. O resultado não substitui testes de fluxo/RLS por usuário.
 
 -- 1) Tabelas: existência, empresa_id, RLS, políticas e privilégios de authenticated.
@@ -96,7 +96,23 @@ VALUES
   ('rh_epis'),
   ('rh_funcionario_turnos'),
   ('rh_funcionarios'),
-  ('rh_turnos')
+  ('rh_turnos'),
+  ('erp_apontamentos_processo'),
+  ('erp_custos_apontamentos'),
+  ('erp_custos_componentes'),
+  ('erp_custos_produtos'),
+  ('erp_empresas'),
+  ('erp_ficha_itens'),
+  ('erp_fichas_tecnicas'),
+  ('erp_funcionarios'),
+  ('erp_maquinas'),
+  ('erp_ordens_producao'),
+  ('erp_produtos'),
+  ('erp_qualidade_inspecao_template_itens'),
+  ('erp_qualidade_inspecao_templates'),
+  ('erp_estoque_movimentos'),
+  ('erp_usuarios'),
+  ('pcp_programacao_capacidade')
 )
 SELECT
   e.table_name,
@@ -212,7 +228,23 @@ VALUES
   ('rh_epis'),
   ('rh_funcionario_turnos'),
   ('rh_funcionarios'),
-  ('rh_turnos')
+  ('rh_turnos'),
+  ('erp_apontamentos_processo'),
+  ('erp_custos_apontamentos'),
+  ('erp_custos_componentes'),
+  ('erp_custos_produtos'),
+  ('erp_empresas'),
+  ('erp_ficha_itens'),
+  ('erp_fichas_tecnicas'),
+  ('erp_funcionarios'),
+  ('erp_maquinas'),
+  ('erp_ordens_producao'),
+  ('erp_produtos'),
+  ('erp_qualidade_inspecao_template_itens'),
+  ('erp_qualidade_inspecao_templates'),
+  ('erp_estoque_movimentos'),
+  ('erp_usuarios'),
+  ('pcp_programacao_capacidade')
 )
 SELECT
   e.table_name,
@@ -226,6 +258,93 @@ LEFT JOIN information_schema.columns col
  AND col.table_name = e.table_name
 GROUP BY e.table_name
 ORDER BY e.table_name;
+
+-- 2B) Colunas críticas dos novos contratos de template e custo real por OP.
+WITH esperadas(table_name, column_name) AS (
+VALUES
+  ('erp_qualidade_inspecao_templates', 'empresa_id'),
+  ('erp_qualidade_inspecao_templates', 'produto_id'),
+  ('erp_qualidade_inspecao_templates', 'operacao'),
+  ('erp_qualidade_inspecao_templates', 'codigo'),
+  ('erp_qualidade_inspecao_templates', 'nome'),
+  ('erp_qualidade_inspecao_templates', 'versao'),
+  ('erp_qualidade_inspecao_templates', 'revisao'),
+  ('erp_qualidade_inspecao_templates', 'status'),
+  ('erp_qualidade_inspecao_templates', 'vigencia_inicio'),
+  ('erp_qualidade_inspecao_templates', 'vigencia_fim'),
+  ('erp_qualidade_inspecao_template_itens', 'empresa_id'),
+  ('erp_qualidade_inspecao_template_itens', 'template_id'),
+  ('erp_qualidade_inspecao_template_itens', 'ordem'),
+  ('erp_qualidade_inspecao_template_itens', 'caracteristica'),
+  ('erp_qualidade_inspecao_template_itens', 'especificacao'),
+  ('erp_qualidade_inspecao_template_itens', 'metodo'),
+  ('erp_qualidade_inspecao_template_itens', 'frequencia'),
+  ('erp_custos_produtos', 'empresa_id'),
+  ('erp_custos_produtos', 'produto_id'),
+  ('erp_custos_produtos', 'ordem_producao_id'),
+  ('erp_custos_produtos', 'tipo_calculo'),
+  ('erp_custos_produtos', 'materiais'),
+  ('erp_custos_produtos', 'mao_obra'),
+  ('erp_custos_produtos', 'maquinas'),
+  ('erp_custos_produtos', 'energia'),
+  ('erp_custos_produtos', 'custos_indiretos'),
+  ('erp_custos_produtos', 'custo_total'),
+  ('erp_custos_produtos', 'quantidade_base'),
+  ('erp_custos_produtos', 'preco_venda'),
+  ('erp_custos_produtos', 'status_apuracao'),
+  ('erp_custos_produtos', 'revisao_apuracao'),
+  ('erp_custos_produtos', 'receita_estimada'),
+  ('erp_custos_produtos', 'apurado_em'),
+  ('erp_custos_produtos', 'apurado_por'),
+  ('erp_estoque_movimentos', 'empresa_id'),
+  ('erp_estoque_movimentos', 'produto_id'),
+  ('erp_estoque_movimentos', 'tipo'),
+  ('erp_estoque_movimentos', 'quantidade'),
+  ('erp_estoque_movimentos', 'custo_unitario'),
+  ('erp_estoque_movimentos', 'origem'),
+  ('erp_estoque_movimentos', 'ordem_producao_id'),
+  ('erp_apontamentos_processo', 'empresa_id'),
+  ('erp_apontamentos_processo', 'ordem_producao_id'),
+  ('erp_apontamentos_processo', 'operador_id'),
+  ('erp_apontamentos_processo', 'maquina_id'),
+  ('erp_apontamentos_processo', 'inicio_em'),
+  ('erp_apontamentos_processo', 'fim_em'),
+  ('erp_apontamentos_processo', 'quantidade_boa'),
+  ('erp_apontamentos_processo', 'quantidade_refugada'),
+  ('erp_funcionarios', 'empresa_id'),
+  ('erp_funcionarios', 'custo_hora_homem'),
+  ('erp_maquinas', 'empresa_id'),
+  ('erp_maquinas', 'custo_hora'),
+  ('erp_ordens_producao', 'empresa_id'),
+  ('erp_ordens_producao', 'numero_op'),
+  ('erp_ordens_producao', 'produto_id'),
+  ('erp_ordens_producao', 'status'),
+  ('erp_ordens_producao', 'quantidade'),
+  ('erp_produtos', 'empresa_id'),
+  ('erp_produtos', 'estoque_atual'),
+  ('erp_produtos', 'custo_medio'),
+  ('erp_produtos', 'preco_venda'),
+  ('erp_fichas_tecnicas', 'empresa_id'),
+  ('erp_fichas_tecnicas', 'produto_id'),
+  ('erp_fichas_tecnicas', 'ativa'),
+  ('erp_fichas_tecnicas', 'versao'),
+  ('erp_ficha_itens', 'ficha_id'),
+  ('erp_ficha_itens', 'produto_id'),
+  ('erp_ficha_itens', 'quantidade'),
+  ('erp_ficha_itens', 'perda_percentual'),
+  ('erp_custos_apontamentos', 'empresa_id'),
+  ('erp_custos_apontamentos', 'ordem_producao_id'),
+  ('erp_custos_apontamentos', 'produto_id'),
+  ('erp_custos_apontamentos', 'tipo'),
+  ('erp_custos_apontamentos', 'valor')
+)
+SELECT e.table_name,e.column_name,
+  CASE WHEN c.column_name IS NULL THEN 'FALTA_COLUNA' ELSE 'OK' END AS resultado,
+  c.data_type,c.is_nullable
+FROM esperadas e
+LEFT JOIN information_schema.columns c
+  ON c.table_schema='public' AND c.table_name=e.table_name AND c.column_name=e.column_name
+ORDER BY resultado DESC,e.table_name,e.column_name;
 
 -- 3) Políticas RLS: comando, papéis, USING e WITH CHECK.
 WITH esperadas(table_name) AS (
@@ -318,7 +437,23 @@ VALUES
   ('rh_epis'),
   ('rh_funcionario_turnos'),
   ('rh_funcionarios'),
-  ('rh_turnos')
+  ('rh_turnos'),
+  ('erp_apontamentos_processo'),
+  ('erp_custos_apontamentos'),
+  ('erp_custos_componentes'),
+  ('erp_custos_produtos'),
+  ('erp_empresas'),
+  ('erp_ficha_itens'),
+  ('erp_fichas_tecnicas'),
+  ('erp_funcionarios'),
+  ('erp_maquinas'),
+  ('erp_ordens_producao'),
+  ('erp_produtos'),
+  ('erp_qualidade_inspecao_template_itens'),
+  ('erp_qualidade_inspecao_templates'),
+  ('erp_estoque_movimentos'),
+  ('erp_usuarios'),
+  ('pcp_programacao_capacidade')
 )
 SELECT
   e.table_name,
@@ -387,7 +522,22 @@ VALUES
   ('erp_sgq_validar_transicao_rpnc'),
   ('erp_sgq_vincular_rpnc_auditoria'),
   ('erp_stdq_touch_updated_at'),
-  ('erp_tpm_sync_machine_status')
+  ('erp_tpm_sync_machine_status'),
+  ('erp_current_empresa_id'),
+  ('erp_is_master'),
+  ('erp_has_permission'),
+  ('erp_estoque_separar_material'),
+  ('erp_pcp_mrp_explodir'),
+  ('erp_pcp_validar_tenant_programacao'),
+  ('erp_inspecao_exigir_template_versionado'),
+  ('erp_qualidade_inspecao_template_item_proteger_vigente'),
+  ('erp_qualidade_inspecao_template_nova_revisao'),
+  ('erp_qualidade_inspecao_template_proteger_vigente'),
+  ('erp_qualidade_inspecao_template_publicar'),
+  ('erp_qualidade_inspecao_template_salvar_itens'),
+  ('erp_pcp_consumir_material_op'),
+  ('erp_financeiro_custo_op_registrar_indireto'),
+  ('erp_financeiro_custo_op_apurar')
 )
 SELECT
   e.routine_name,
@@ -403,13 +553,11 @@ LEFT JOIN pg_proc p
  AND p.proname = e.routine_name
 ORDER BY e.routine_name, assinatura;
 
--- 5) Estruturas planejadas nas fases 3.1/3.2 e RPCs de liberação SGQ-REL-001.
--- AUSENTE é o resultado esperado até a implementação e aplicação das migrations próprias.
+-- 5) SGQ-REL-001 ainda planejado e view de custo real por OP.
+-- As tabelas de templates e os RPCs de custo real estão nas migrations novas acima.
 WITH planejadas(object_name, object_type) AS (
   VALUES
-    ('erp_qualidade_inspecao_templates', 'TABLE'),
-    ('erp_qualidade_inspecao_template_itens', 'TABLE'),
-    ('erp_financeiro_custo_op', 'TABLE'),
+    ('erp_financeiro_custo_op', 'VIEW'),
     ('erp_liberar_lote', 'FUNCTION'),
     ('erp_bloquear_lote', 'FUNCTION')
 )
@@ -417,6 +565,7 @@ SELECT
   object_name,
   object_type,
   CASE
+    WHEN object_type = 'VIEW' AND to_regclass('public.' || object_name) IS NOT NULL THEN 'EXISTE'
     WHEN object_type = 'TABLE' AND to_regclass('public.' || object_name) IS NOT NULL THEN 'EXISTE'
     WHEN object_type = 'FUNCTION' AND EXISTS (
       SELECT 1 FROM pg_proc p
@@ -426,6 +575,20 @@ SELECT
   END AS situacao
 FROM planejadas
 ORDER BY object_type, object_name;
+
+-- View de custo: verificar security_invoker e colunas expostas.
+SELECT
+  c.relname AS view_name,
+  c.reloptions,
+  array_agg(col.column_name ORDER BY col.ordinal_position) AS colunas
+FROM pg_class c
+JOIN pg_namespace n ON n.oid = c.relnamespace
+LEFT JOIN information_schema.columns col
+  ON col.table_schema = 'public' AND col.table_name = c.relname
+WHERE n.nspname = 'public'
+  AND c.relname = 'erp_financeiro_custo_op'
+  AND c.relkind = 'v'
+GROUP BY c.relname, c.reloptions;
 
 -- LEITURA DO RESULTADO:
 -- * Tabela AUSENTE: migration não aplicada ou schema divergente.
