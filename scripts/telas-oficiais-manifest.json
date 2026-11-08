@@ -677,11 +677,11 @@
     },
     {
       "path": "src/pages/FinanceiroFluxoCaixa.tsx",
-      "sha": "8e7f2e7649f339a310bab1ac826c2f4a906b06cf",
+      "sha": "0dc83a10cca7482611a57fa8d8aa2bf880c64085",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-FLUXO-CAIXA-CRUD-PARCIAL-20261105-03 — filtros de periodo/tipo/status no banco, edicao e baixa persistidas, previstos separados de liquidados",
-      "aprovadaEm": "2026-11-05",
-      "statusAprovacao": "REVISAO TECNICA OBRIGATORIA DO PROPRIETARIO EM 2026-11-05; exclusao logica e historico seguem pendentes do laudo de schema"
+      "revisao": "REV-FLUXO-CAIXA-PAGINACAO-20261108-01 — leitura paginada integral, tenant da sessão autenticada, extrato e gravação real com controles compactos",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "REVISAO AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA INTEGRAR A VERSAO COM PAGINACAO COMPLETA E ISOLAMENTO POR EMPRESA, PRESERVANDO O SHELL HORIZONTAL GLOBAL"
     },
     {
       "path": "src/pages/FinanceiroGraficoDesvios.tsx",
@@ -1213,11 +1213,11 @@
     },
     {
       "path": "src/pages/QualityRpncForm.tsx",
-      "sha": "50452b68f2663eb27ec2cfae7120d4c58d4b3478",
+      "sha": "f52a573b7304cfc23e8c389b215f8b6c86fdaf21",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-SGQ-RPNC-ABAS-20261102-01 — três telas reunidas no formulário único com abas, Ishikawa editável e campos em cinco colunas",
-      "aprovadaEm": "2026-11-02",
-      "statusAprovacao": "FORMULÁRIO REAL; AGUARDA APLICAÇÃO DA MIGRATION 20261031100000_...SQL PELO PROPRIETÁRIO"
+      "revisao": "REV-SGQ-RPNC-EFICACIA-20261108-01 — integra análise de causa, eficácia, transições de workflow e decisão CAPA com RPCs do banco; cliente, lote e auditoria permanecem rastreáveis",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "REVISAO AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA INTEGRAR A RPNC COMPLETA; MIGRATIONS E STORAGE AINDA EXIGEM APLICACAO E VALIDACAO NO SUPABASE"
     },
     {
       "path": "src/pages/QualityRpncUnified.tsx",
