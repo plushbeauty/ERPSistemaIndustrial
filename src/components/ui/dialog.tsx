@@ -11,7 +11,7 @@
 /**
  * @DATA_REVISAO_APROVACAO: 2026-11-04
  * @REVISAO: REV-PADRAO-COR-CLARO-20261104-01 — superficie padrao do modal convertida do tema escuro para o padrao industrial claro (fundo branco, texto #123B50); o scrim bg-black/70 atras do modal permanece permitido; nenhuma alteracao de logica
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @STATUS_APROVACAO: PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04
  */
 
