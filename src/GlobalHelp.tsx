@@ -8,7 +8,6 @@
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 12:55 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
  * ID da Revisão: REV-057
  * Alterações: Consolidar cabeçalho e manter API de reconhecimento de voz com interfaces estritas.
  * Status do Build Local: Não executado — validação será feita pelo gate remoto.
