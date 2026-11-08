@@ -1,5 +1,5 @@
 /**
- * @AUTOR: FernandoSchu
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PRODUTOS-MIGRACAO-20261030-01 — migracao para a origem unica; rotas proprias e links internos remapeados
  * @STATUS_APROVACAO: MIGRACAO AUTORIZADA PELO PROPRIETARIO EM 2026-10-30 (opcao "migrar para a origem unica")
