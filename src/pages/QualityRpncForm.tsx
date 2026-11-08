@@ -1030,7 +1030,7 @@ export default function QualityRpncForm() {
       ],
       observacoes: 'Documento emitido a partir dos dados da RPNC carregados no SYSNQRA. A impressão não equivale a assinatura digital certificada nem substitui o workflow de aprovação no sistema.',
     }
-    abrirRelatorio(documento)
+    void abrirRelatorio(documento)
   }
 
   return (
