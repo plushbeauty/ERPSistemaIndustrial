@@ -160,6 +160,7 @@ const EstoqueAlmoxarifado = lazyPage(() => import('./pages/EstoqueAlmoxarifadoCo
 const ExpedicaoPortaria = lazyPage(() => import('./pages/ExpedicaoPortaria'), 'ExpedicaoPortaria')
 const EngenhariaCentral = lazyPage(() => import('./pages/EngenhariaCentral'), 'EngenhariaCentral')
 const CentraisIndustriais = lazyPage(() => import('./pages/CentraisIndustriais'), 'CentraisIndustriais')
+const MetrologiaIndustrial = lazyPage(() => import('./pages/qualidade/MetrologiaIndustrial'), 'MetrologiaIndustrial')
 const MRPIndustrial = lazyPage(() => import('./pages/MRPIndustrial'), 'MRPIndustrial')
 const OperacaoIndustrial = lazyPage(() => import('./pages/OperacaoIndustrial'), 'OperacaoIndustrial')
 const QualidadeIndustrial = lazyPage(() => import('./pages/QualidadeIndustrial'), 'QualidadeIndustrial')
@@ -464,7 +465,7 @@ export default function AppEntryV2() {
               <Route path="qualidade/auditoria-5s" element={<QualityPlanGate><QualidadeAuditoria5S /></QualityPlanGate>} />
               <Route path="qualidade/lista-mestre" element={<QualityPlanGate><QualidadeListaMestre /></QualityPlanGate>} />
               <Route path="qualidade/relatorios-documentos" element={<QualityPlanGate><QualidadeRelatoriosDocumentos /></QualityPlanGate>} />
-              <Route path="qualidade/metrologia" element={<QualityPlanGate><MetrologiaVencimentoAlerta /><CentraisIndustriais module="metrologia" /></QualityPlanGate>} />
+              <Route path="qualidade/metrologia" element={<QualityPlanGate><MetrologiaIndustrial /></QualityPlanGate>} />
               <Route path="qualidade/calibracao" element={<QualityPlanGate><MetrologiaVencimentoAlerta /><CalibracaoIndustrial /></QualityPlanGate>} />
               <Route path="qualidade/editor-it" element={<QualityPlanGate><QualidadeEditorIT /></QualityPlanGate>} />
               <Route path="qualidade/procedimentos" element={<QualityPlanGate><QualidadeProcedimentos /></QualityPlanGate>} />
