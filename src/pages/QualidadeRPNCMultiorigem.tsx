@@ -1,8 +1,8 @@
 /**
  * @AUTOR: FernandoSch
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-08
+ * @REVISAO: REV-RPNC-MULTIORIGEM-A4-20261108-01 — relatório de não conformidade emitido pelo SynqraRelatorioA4 compartilhado; fluxo e dados preservados
+ * @STATUS_APROVACAO: INCREMENTO DE IMPRESSAO A4 AUTORIZADO PELA ORDEM DO PROPRIETARIO DE 2026-11-08; PADRAO DE ABERTURA E FLUXO PRESERVADOS
  */
 /**
  * SYSNQRA — Central RPNC multiorigem e relatório para cliente
@@ -14,6 +14,8 @@
 import { useCallback,useEffect,useMemo,useState,type CSSProperties,type ReactNode } from 'react'
 import { FileText,Plus,Pencil,RefreshCw,Search,Download,X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { abrirRelatorio } from '../lib/report/abrirRelatorio'
+import type { Documento } from '../lib/report/documento'
 type Tipo='INTERNO'|'AUDITORIA_INTERNA'|'AUDITORIA_EXTERNA'|'RPNC_CLIENTE'|'RPNC_PROCESSO'
 type R={id:string;numero_rpnc:string|null;descricao_nao_conformidade:string|null;origem:string|null;gravidade:string|null;status:string|null;criado_em:string;sgq_tipo_registro:Tipo|null;sgq_cliente_id:string|null;sgq_produto_id:string|null;sgq_ordem_producao_id:string|null;sgq_lote:string|null;sgq_data_ocorrencia:string|null;sgq_responsavel_id:string|null;sgq_contencao:string|null;investigacao:string|null;acao_corretiva:string|null;sgq_acao_preventiva:string|null;sgq_verificacao_eficacia:string|null;sgq_data_prazo:string|null}
 type Lookup={id:string;label:string}
@@ -25,6 +27,7 @@ const lab:CSSProperties={display:'block',fontSize:9,fontWeight:900,letterSpacing
 const typeName=(v:string|null)=>TYPES.find(t=>t.value===v)?.label||'Não classificado'
 const safe=(v:string|null|undefined)=>(v||'—').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]||c))
 const cap=(v:string|null|undefined)=>v?v.charAt(0).toUpperCase()+v.slice(1):'Menor'
+const dateBR=(v:string|null|undefined)=>{if(!v)return '—';const d=new Date(v.length===10?v+'T12:00:00':v);return Number.isNaN(d.getTime())?'—':d.toLocaleDateString('pt-BR')}
 export default function QualidadeRPNCMultiorigem(){
  const [rows,setRows]=useState<R[]>([]),[selected,setSelected]=useState<R|null>(null),[loading,setLoading]=useState(false),[saving,setSaving]=useState(false),[query,setQuery]=useState(''),[tf,setTf]=useState('TODOS'),[sf,setSf]=useState('TODOS'),[formOpen,setFormOpen]=useState(false),[editingId,setEditingId]=useState<string|null>(null),[error,setError]=useState(''),[notice,setNotice]=useState('')
  const [clientes,setClientes]=useState<Lookup[]>([]),[produtos,setProdutos]=useState<Lookup[]>([]),[ops,setOps]=useState<Lookup[]>([]),[usuarios,setUsuarios]=useState<Lookup[]>([])
@@ -42,7 +45,65 @@ export default function QualidadeRPNCMultiorigem(){
  function openNew(){setEditingId(null);setF({tipo:'INTERNO',status:'aberta',descricao:'',origem:'',gravidade:'Menor',data:new Date().toISOString().slice(0,10),cliente:'',produto:'',op:'',lote:'',responsavel:'',prazo:'',contencao:'',causa:'',corretiva:'',preventiva:'',eficacia:''});setError('');setNotice('');setFormOpen(true)}
  function openEdit(r:R){setEditingId(r.id);setF({tipo:r.sgq_tipo_registro??'INTERNO',status:String(r.status||'aberta'),descricao:r.descricao_nao_conformidade??'',origem:r.origem??'',gravidade:cap(r.gravidade),data:r.sgq_data_ocorrencia??new Date().toISOString().slice(0,10),cliente:r.sgq_cliente_id??'',produto:r.sgq_produto_id??'',op:r.sgq_ordem_producao_id??'',lote:r.sgq_lote??'',responsavel:r.sgq_responsavel_id??'',prazo:r.sgq_data_prazo??'',contencao:r.sgq_contencao??'',causa:r.investigacao??'',corretiva:r.acao_corretiva??'',preventiva:r.sgq_acao_preventiva??'',eficacia:r.sgq_verificacao_eficacia??''});setError('');setNotice('');setFormOpen(true)}
  async function save(){setError('');setNotice('');if(f.descricao.trim().length<10){setError('Informe a descrição com pelo menos 10 caracteres.');return}if(!f.responsavel){setError('Selecione o responsável cadastrado.');return}if(f.tipo==='RPNC_CLIENTE'&&!f.cliente){setError('RPNC Cliente exige o cliente cadastrado.');return}if(f.status==='encerrada'&&f.eficacia.trim().length<10){setError('Para encerrar, registre a verificação de eficácia (mín. 10 caracteres) conforme SGQ.');return}setSaving(true);try{const {data:empresa,error:ee}=await supabase.rpc('erp_current_empresa_id');if(ee||!empresa)throw ee||new Error('Empresa da sessão não identificada.');const core={descricao_nao_conformidade:f.descricao.trim(),origem:f.origem.trim()||f.tipo.toLowerCase(),gravidade:f.gravidade.toLowerCase(),status:f.status,sgq_tipo_registro:f.tipo,sgq_cliente_id:f.cliente||null,sgq_produto_id:f.produto||null,sgq_ordem_producao_id:f.op||null,sgq_lote:f.lote.trim()||null,sgq_data_ocorrencia:f.data,sgq_responsavel_id:f.responsavel,sgq_data_prazo:f.prazo||null,sgq_contencao:f.contencao.trim()||null,investigacao:f.causa.trim()||null,acao_corretiva:f.corretiva.trim()||null,sgq_acao_preventiva:f.preventiva.trim()||null,sgq_verificacao_eficacia:f.eficacia.trim()||null};if(editingId){const {error}=await supabase.from('erp_rpnc').update(core).eq('id',editingId).eq('empresa_id',String(empresa));if(error)throw error;setNotice('RPNC atualizada no Supabase.')}else{const payload={...core,empresa_id:String(empresa),numero_rpnc:'RPNC-'+new Date().getFullYear()+'-'+crypto.randomUUID().replace(/-/g,'').slice(0,8).toUpperCase()};const {error}=await supabase.from('erp_rpnc').insert(payload);if(error)throw error;setNotice('Registro salvo no Supabase.')}setFormOpen(false);setSelected(null);await load()}catch(e){setError(e instanceof Error?e.message:'Falha ao gravar. Confirme o schema e as permissões RLS.')}finally{setSaving(false)}}
- function pdf(r:R){const html=`<!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>Relatório RPNC</title><style>@page{size:A4;margin:16mm}body{font:11px Arial;color:#203b49}header{border-bottom:3px solid #2d8db8;padding-bottom:12px}h1{font-size:20px;color:#123b50}h2{font-size:12px;background:#edf6f9;padding:7px}table{width:100%;border-collapse:collapse}td{border:1px solid #cbd8de;padding:7px;vertical-align:top}td:first-child{width:25%;font-weight:bold;background:#f4f8fa}.muted{font-size:9px;color:#647b86}.sign{display:flex;gap:30px;margin-top:45px}.sign div{border-top:1px solid #72858e;padding-top:6px;width:50%}</style><body><header><div class="muted">SYSNQRA · SISTEMA DE GESTÃO DA QUALIDADE</div><h1>Relatório de Não Conformidade</h1><div>Código: <b>${safe(r.numero_rpnc)}</b> · Emissão: ${new Date().toLocaleDateString('pt-BR')}</div></header><h2>1. Identificação e descrição</h2><table><tr><td>Tipo</td><td>${safe(typeName(r.sgq_tipo_registro))}</td></tr><tr><td>Status</td><td>${safe(r.status)}</td></tr><tr><td>Cliente (ID cadastrado)</td><td>${safe(nameOf(clientes,r.sgq_cliente_id))}</td></tr><tr><td>Data da ocorrência</td><td>${safe(r.sgq_data_ocorrencia)}</td></tr><tr><td>Produto / OP / Lote</td><td>${safe(nameOf(produtos,r.sgq_produto_id))} / ${safe(nameOf(ops,r.sgq_ordem_producao_id))} / ${safe(r.sgq_lote)}</td></tr><tr><td>Responsável</td><td>${safe(nameOf(usuarios,r.sgq_responsavel_id))}</td></tr><tr><td>Gravidade</td><td>${safe(r.gravidade)}</td></tr><tr><td>Descrição</td><td>${safe(r.descricao_nao_conformidade)}</td></tr></table><h2>2. Contenção, investigação e ações</h2><table><tr><td>Contenção</td><td>${safe(r.sgq_contencao)}</td></tr><tr><td>Causa raiz / investigação</td><td>${safe(r.investigacao)}</td></tr><tr><td>Ação corretiva</td><td>${safe(r.acao_corretiva)}</td></tr><tr><td>Ação preventiva</td><td>${safe(r.sgq_acao_preventiva)}</td></tr><tr><td>Verificação de eficácia</td><td>${safe(r.sgq_verificacao_eficacia)}</td></tr></table><p class="muted">Relatório para revisão e emissão controlada. A impressão para PDF não constitui assinatura digital certificada. Revise informações confidenciais antes de enviar externamente.</p><div class="sign"><div>Responsável da Qualidade / aprovação</div><div>Representante do cliente (quando aplicável)</div></div></body></html>`;const w=window.open('','_blank');if(!w){setError('Pop-up bloqueado pelo navegador. Autorize a janela para imprimir/salvar PDF.');return}w.document.write(html);w.document.close();w.focus();w.print()}
+ function pdf(r:R){
+  const codigo = r.numero_rpnc || r.id.slice(0, 8)
+  const documento: Documento = {
+   modulo: 'SGQ',
+   tipo: 'RPNC',
+   titulo: 'Relatório de Não Conformidade',
+   codigo,
+   subtitulo: 'Relatório para revisão e emissão controlada',
+   unidade: 'SYSNQRA ERP INDUSTRIAL',
+   qrcode: {
+    valor: window.location.origin + '/pageprincipal/qualidade/rpnc?registro=' + encodeURIComponent(r.id),
+    legenda: 'Consultar registro no SYSNQRA',
+   },
+   blocos: [
+    {
+     tipo: 'campos',
+     titulo: 'Identificação',
+     colunas: 2,
+     itens: [
+      { rotulo: 'Código', valor: codigo },
+      { rotulo: 'Tipo', valor: typeName(r.sgq_tipo_registro) },
+      { rotulo: 'Status', valor: r.status || '—' },
+      { rotulo: 'Origem', valor: r.origem || '—' },
+      { rotulo: 'Cliente', valor: nameOf(clientes, r.sgq_cliente_id) },
+      { rotulo: 'Data da ocorrência', valor: dateBR(r.sgq_data_ocorrencia || r.criado_em) },
+      { rotulo: 'Produto', valor: nameOf(produtos, r.sgq_produto_id) },
+      { rotulo: 'Ordem de produção', valor: nameOf(ops, r.sgq_ordem_producao_id) },
+      { rotulo: 'Lote', valor: r.sgq_lote || '—' },
+      { rotulo: 'Responsável', valor: nameOf(usuarios, r.sgq_responsavel_id) },
+      { rotulo: 'Gravidade', valor: r.gravidade || '—' },
+      { rotulo: 'Prazo', valor: dateBR(r.sgq_data_prazo) },
+     ],
+    },
+    { tipo: 'texto', titulo: 'Descrição da não conformidade', texto: r.descricao_nao_conformidade || '—' },
+    {
+     tipo: 'campos',
+     titulo: 'Contenção, investigação e ações',
+     colunas: 1,
+     itens: [
+      { rotulo: 'Contenção', valor: r.sgq_contencao || '—' },
+      { rotulo: 'Investigação / causa raiz', valor: r.investigacao || '—' },
+      { rotulo: 'Ação corretiva', valor: r.acao_corretiva || '—' },
+      { rotulo: 'Ação preventiva', valor: r.sgq_acao_preventiva || '—' },
+      { rotulo: 'Verificação de eficácia', valor: r.sgq_verificacao_eficacia || '—' },
+     ],
+    },
+    {
+     tipo: 'assinaturas',
+     titulo: 'Aprovação e ciência',
+     assinantes: [
+      { papel: 'Responsável da Qualidade / aprovação' },
+      { papel: 'Representante do cliente (quando aplicável)' },
+     ],
+    },
+   ],
+   observacoes: 'Relatório gerado a partir dos dados persistidos no Supabase. A impressão para PDF não constitui assinatura digital certificada. Revise informações confidenciais antes de compartilhar externamente.',
+  }
+  abrirRelatorio(documento)
+ }
  const Field=({title,children}:{title:string;children:ReactNode})=><label style={{display:'block',minWidth:0}}><span style={lab}>{title}</span>{children}</label>
  const SelectField=({k,title,list,required,span=6}:{k:keyof typeof f;title:string;list:Lookup[];required?:boolean;span?:number})=><label style={{display:'block',minWidth:0,gridColumn:`span ${span}`}}><span style={lab}>{title+(required?' *':'')}</span>
   <select value={f[k]} onChange={e=>set(k,e.target.value)} style={inp}><option value=''>— não vinculado —</option>{list.map(x=><option key={x.id} value={x.id}>{x.label}</option>)}{f[k]&&!list.some(x=>x.id===f[k])&&<option value={f[k]}>{f[k]} (fora da lista)</option>}</select>
