@@ -205,12 +205,12 @@ export default function QualidadeTemplatesInspecao() {
         p_itens: itemPayload,
       })
       if (saveItems.error) throw saveItems.error
-      setNotice(`Rascunho ${form.codigo.trim()} salvo com ${Number(saveItems.data ?? items.length)} item(ns). Ainda não está vigente.`)
       await load()
       const saved = (await supabase.from('erp_qualidade_inspecao_templates')
         .select('id,codigo,nome,produto_id,operacao,revisao,status,vigencia_inicio,vigencia_fim,aprovado_em')
         .eq('id', templateId).eq('empresa_id', empresaId).single())
       if (saved.data) await selectTemplate(saved.data as Template)
+      setNotice(`Rascunho ${form.codigo.trim()} salvo com ${items.length} item(ns). Ainda não está vigente.`)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao salvar o template de inspeção.')
     } finally {
@@ -250,12 +250,12 @@ export default function QualidadeTemplatesInspecao() {
     try {
       const result = await supabase.rpc('erp_qualidade_inspecao_template_publicar', { p_template_id: selected.id })
       if (result.error) throw result.error
-      setNotice(`Template ${selected.codigo} R${selected.revisao} publicado e vigente a partir de hoje.`)
       await load()
       const refreshed = await supabase.from('erp_qualidade_inspecao_templates')
         .select('id,codigo,nome,produto_id,operacao,revisao,status,vigencia_inicio,vigencia_fim,aprovado_em')
         .eq('id', selected.id).eq('empresa_id', empresaId).single()
       if (refreshed.data) await selectTemplate(refreshed.data as Template)
+      setNotice(`Template ${selected.codigo} R${selected.revisao} publicado e vigente a partir de hoje.`)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao publicar o template.')
     } finally {
