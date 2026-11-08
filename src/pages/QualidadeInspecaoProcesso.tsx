@@ -5,9 +5,9 @@
  * @STATUS_APROVACAO: INCREMENTO FUNCIONAL AUTORIZADO NA ORDEM DE EXECUÇÃO DE 2026-11-08; fluxo de inspeção preservado
  */
 /**
- * ERPSis — QUALIDADE / INSPEÇÃO EM PROCESSO
- * Data: 2026-10-16 | Revisão: REV-063
- * Escopo: padronização compacta de campos e ações sem alterar consultas, validações, RPCs ou persistência.
+ * SYSNQRA ERP INDUSTRIAL — QUALIDADE / INSPEÇÃO EM PROCESSO
+ * Data: 2026-11-08 | Revisão: REV-INSPECAO-TEMPLATE-20261108-01
+ * Escopo: inspeção baseada em template vigente, revisão imutável e snapshot persistido; sem fallback ad-hoc.
  */
 import { useEffect, useState } from 'react'
 import { ClipboardList, Printer, Save } from 'lucide-react'
