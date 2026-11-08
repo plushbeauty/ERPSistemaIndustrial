@@ -55,7 +55,7 @@ CREATE INDEX IF NOT EXISTS idx_erp_qualidade_liberacao_lotes_operacional
 -- A tabela de decisão fica somente leitura pela Data API. Toda mudança passa pelas RPCs.
 DROP POLICY IF EXISTS erp_qualidade_liberacao_lotes_insert_tenant ON public.erp_qualidade_liberacao_lotes;
 DROP POLICY IF EXISTS erp_qualidade_liberacao_lotes_update_tenant ON public.erp_qualidade_liberacao_lotes;
-REVOKE INSERT, UPDATE, DELETE ON public.erp_qualidade_liberacao_lotes FROM authenticated;
+REVOKE INSERT, UPDATE, DELETE ON public.erp_qualidade_liberacao_lotes FROM PUBLIC, anon, authenticated;
 GRANT SELECT ON public.erp_qualidade_liberacao_lotes TO authenticated;
 
 CREATE TABLE IF NOT EXISTS public.erp_qualidade_liberacao_lotes_auditoria (
@@ -88,7 +88,7 @@ CREATE POLICY erp_qualidade_liberacao_auditoria_select_tenant
   USING (empresa_id = public.erp_current_empresa_id());
 
 GRANT SELECT ON public.erp_qualidade_liberacao_lotes_auditoria TO authenticated;
-REVOKE INSERT, UPDATE, DELETE ON public.erp_qualidade_liberacao_lotes_auditoria FROM authenticated;
+REVOKE INSERT, UPDATE, DELETE ON public.erp_qualidade_liberacao_lotes_auditoria FROM PUBLIC, anon, authenticated;
 
 CREATE OR REPLACE FUNCTION public.erp_qualidade_decidir_lote(
   p_lote_operacional_id uuid,
@@ -106,6 +106,7 @@ DECLARE
   v_usuario_id uuid;
   v_nivel_admin integer;
   v_nome text;
+  v_email text;
   v_lote record;
   v_existente public.erp_qualidade_liberacao_lotes%ROWTYPE;
   v_decisao public.erp_qualidade_liberacao_lotes%ROWTYPE;
@@ -124,7 +125,7 @@ BEGIN
   END IF;
 
   SELECT u.id, coalesce(u.nivel_admin, 0), u.nome, u.email
-    INTO v_usuario_id, v_nivel_admin, v_nome
+    INTO v_usuario_id, v_nivel_admin, v_nome, v_email
     FROM public.erp_usuarios u
    WHERE u.auth_user_id = v_user
      AND u.empresa_id = v_empresa
@@ -135,7 +136,7 @@ BEGIN
     RAISE EXCEPTION 'SEM_AUTORIZACAO_NIVEL_ADMIN_80_PARA_DECISAO_DE_LOTE'
       USING ERRCODE = '42501';
   END IF;
-  v_nome := left(coalesce(nullif(btrim(v_nome), ''), 'USUARIO'), 100);
+  v_nome := left(coalesce(nullif(btrim(v_nome), ''), nullif(btrim(v_email), ''), 'USUARIO'), 100);
 
   PERFORM pg_advisory_xact_lock(hashtext(v_empresa::text), hashtext(p_lote_operacional_id::text));
 
@@ -156,7 +157,6 @@ BEGIN
     SELECT 1 FROM public.erp_produtos p
      WHERE p.id = v_lote.produto_id
        AND p.empresa_id = v_empresa
-       AND p.ativo = true
   ) THEN
     RAISE EXCEPTION 'PRODUTO_DO_LOTE_NAO_PERTENCE_A_EMPRESA';
   END IF;
