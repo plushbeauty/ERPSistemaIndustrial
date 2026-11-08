@@ -25,7 +25,6 @@ const inp:CSSProperties={width:'100%',height:30,border:'1px solid #cbd5e1',borde
 const panel:CSSProperties={background:'#fff',border:'1px solid #d5e2e7',borderRadius:2,padding:12}
 const lab:CSSProperties={display:'block',fontSize:9,fontWeight:900,letterSpacing:'.07em',textTransform:'uppercase',color:'#526d79',marginBottom:4}
 const typeName=(v:string|null)=>TYPES.find(t=>t.value===v)?.label||'Não classificado'
-const safe=(v:string|null|undefined)=>(v||'—').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]||c))
 const cap=(v:string|null|undefined)=>v?v.charAt(0).toUpperCase()+v.slice(1):'Menor'
 const dateBR=(v:string|null|undefined)=>{if(!v)return '—';const d=new Date(v.length===10?v+'T12:00:00':v);return Number.isNaN(d.getTime())?'—':d.toLocaleDateString('pt-BR')}
 export default function QualidadeRPNCMultiorigem(){
