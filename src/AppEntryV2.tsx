@@ -191,7 +191,7 @@ const QualidadeLiberacaoLotes = lazyPage(() => import('./pages/qualidade/Qualida
 const QualidadeDashboardRNC = lazyPage(() => import('./pages/QualidadeDashboardRNC'), 'QualidadeDashboardRNC')
 const QualidadePlanoControle = lazyPage(() => import('./pages/qualidade/PlanoControle'), 'QualidadePlanoControle')
 const DocumentosQualidadeControle = lazyPage(() => import('./pages/DocumentosQualidadeControle'), 'DocumentosQualidadeControle')
-const QualidadeInspecaoProcesso = lazyPage(() => import('./pages/QualidadeInspecaoProcesso'), 'QualidadeInspecaoProcesso')
+const QualidadeInspecaoProcesso = lazyPage(() => import('./pages/qualidade/QualidadeInspecaoProcessoVersionada'), 'QualidadeInspecaoProcessoVersionada')
 const QualidadeTemplatesInspecao = lazyPage(() => import('./pages/qualidade/QualidadeTemplatesInspecao'), 'QualidadeTemplatesInspecao')
 const QualidadeInspecoesIndustrial = lazyPage(() => import('./pages/QualidadeInspecoesIndustrial'), 'QualidadeInspecoesIndustrial')
 const QualidadeCentralTablet = lazyPage(() => import('./pages/QualidadeCentralTablet'), 'QualidadeCentralTablet')
