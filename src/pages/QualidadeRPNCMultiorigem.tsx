@@ -101,7 +101,7 @@ export default function QualidadeRPNCMultiorigem(){
    ],
    observacoes: 'Relatório gerado a partir dos dados persistidos no Supabase. A impressão para PDF não constitui assinatura digital certificada. Revise informações confidenciais antes de compartilhar externamente.',
   }
-  abrirRelatorio(documento)
+  void abrirRelatorio(documento)
  }
  const Field=({title,children}:{title:string;children:ReactNode})=><label style={{display:'block',minWidth:0}}><span style={lab}>{title}</span>{children}</label>
  const SelectField=({k,title,list,required,span=6}:{k:keyof typeof f;title:string;list:Lookup[];required?:boolean;span?:number})=><label style={{display:'block',minWidth:0,gridColumn:`span ${span}`}}><span style={lab}>{title+(required?' *':'')}</span>
