@@ -1,8 +1,8 @@
 /**
  * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-08
- * @REVISAO: REV-SGQ-RPNC-EFICACIA-20261108-01 — integra análise de causa, eficácia, transições de workflow e decisão CAPA com RPCs do banco; cliente, lote e auditoria permanecem rastreáveis
- * @STATUS_APROVACAO: REVISAO AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA INTEGRAR A RPNC COMPLETA; MIGRATIONS E STORAGE AINDA EXIGEM APLICACAO E VALIDACAO NO SUPABASE
+ * @REVISAO: REV-SGQ-RPNC-A4-COMPARTILHADO-20261108-02 — relatório RPNC convertido para SynqraRelatorioA4 compartilhado; investigação, ações, evidências e eficácia preservadas
+ * @STATUS_APROVACAO: REVISAO AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA INTEGRAR A RPNC COMPLETA; IMPRESSAO A4 COMPARTILHADA AUTORIZADA; MIGRATIONS E STORAGE AINDA EXIGEM APLICACAO E VALIDACAO NO SUPABASE
  */
 /**
  * SYSNQRA ERP INDUSTRIAL — Qualidade · Formulário RPNC (QualityRpncForm).
@@ -17,6 +17,8 @@ import {
   Paperclip, Plus, Printer, RefreshCw, Save, Search, Trash2, X,
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { abrirRelatorio } from '../lib/report/abrirRelatorio'
+import type { Documento } from '../lib/report/documento'
 import type { Ishikawa6MData } from '../types/qualidade'
 import '../styles/quality-rpnc-form.css'
 
@@ -883,6 +885,154 @@ export default function QualityRpncForm() {
     { id: 'eficacia', label: 'Eficácia' },
   ] as const
 
+  function imprimirRelatorio() {
+    if (!rpnc) {
+      setError('Selecione uma RPNC persistida antes de emitir o relatório.')
+      return
+    }
+    const origemLabel = ORIGENS.find((o) => o.value === rpnc.sgq_tipo_registro)?.label ?? '—'
+    const severidadeLabel = SEVERIDADES.find((s) => s.value === rpnc.sgq_severidade)?.label ?? '—'
+    const equipe = tratamento.equipe.filter((m) => m.nome.trim())
+    const causas6m = GRUPOS_6M.map((grupo) => {
+      const causas = fishbone[grupo.key] ?? []
+      return grupo.label + ': ' + (causas.length ? causas.join('; ') : 'Não aplicável / não identificado.')
+    })
+    const causas5 = [
+      'Causa 01: ' + porques.map((p, i) => (i + 1) + 'º porquê: ' + (p || '—')).join(' | '),
+      ...tratamento.cadeas.map((cadeia, index) =>
+        'Causa ' + String(index + 2).padStart(2, '0') + (cadeia.causa ? ' — ' + cadeia.causa : '') + ': ' +
+        cadeia.porques.map((p, i) => (i + 1) + 'º porquê: ' + (p || '—')).join(' | ')
+      ),
+    ]
+    const barreiras = Object.entries(tratamento.barreira_falhou)
+      .filter(([, valor]) => valor.trim())
+      .map(([chave, valor]) => chave + ': ' + valor)
+    const parecer = parecerEficacia.trim() || rpnc.parecer_eficacia || tratamento.eficacia_relato || '—'
+    const documento: Documento = {
+      modulo: 'SGQ',
+      tipo: 'RPNC · 8D · CAPA',
+      titulo: 'Relatório de Tratamento de Anomalia',
+      codigo: rpnc.numero_rpnc,
+      subtitulo: 'Item de controle/origem: ' + (codigoProduto || rpnc.numero_rpnc) +
+        (rpnc.sgq_lote ? ' · lote ' + rpnc.sgq_lote : ''),
+      unidade: 'SYSNQRA ERP INDUSTRIAL',
+      qrcode: {
+        valor: window.location.origin + '/pageprincipal/qualidade/rpnc?registro=' + encodeURIComponent(rpnc.id),
+        legenda: 'Consultar registro no SYSNQRA',
+      },
+      blocos: [
+        {
+          tipo: 'campos',
+          titulo: 'Identificação e controle',
+          colunas: 3,
+          itens: [
+            { rotulo: 'Protocolo', valor: rpnc.numero_rpnc },
+            { rotulo: 'Número de controle', valor: tratamento.numero_controle || '—' },
+            { rotulo: 'Data da ocorrência', valor: dataBR(rpnc.sgq_data_ocorrencia ?? rpnc.criado_em) },
+            { rotulo: 'Origem', valor: origemLabel },
+            { rotulo: 'Gravidade', valor: severidadeLabel },
+            { rotulo: 'Status', valor: rpnc.status },
+            { rotulo: 'Produto', valor: codigoProduto || '—' },
+            { rotulo: 'Cliente', valor: clientes.find((cliente) => cliente.id === rpnc.sgq_cliente_id)?.nome ?? '—' },
+            { rotulo: 'Lote', valor: rpnc.sgq_lote || lote || '—' },
+            { rotulo: 'Setor responsável', valor: sectores.find((setor) => setor.id === rpnc.setor_id)?.nome ?? '—' },
+            { rotulo: 'Auditoria de origem', valor: auditorias.find((auditoria) => auditoria.id === rpnc.sgq_auditoria_id)?.codigo_auditoria ?? '—' },
+            { rotulo: 'Emissão', valor: new Date().toLocaleDateString('pt-BR') },
+          ],
+        },
+        {
+          tipo: 'texto',
+          titulo: 'Relato do problema',
+          texto: rpnc.descricao_nao_conformidade || '—',
+        },
+        {
+          tipo: 'campos',
+          titulo: 'Ocorrência e requisito',
+          colunas: 2,
+          itens: [
+            { rotulo: 'Hora da ocorrência', valor: tratamento.hora_ocorrencia || '—' },
+            { rotulo: 'Hora da restauração', valor: tratamento.hora_restauracao || '—' },
+            { rotulo: 'Duração', valor: tratamento.duracao || '—' },
+            { rotulo: 'Tipo de ocorrência', valor: tratamento.tipo_ocorrencia === 'reincidencia' ? 'Reincidência' : 'Inicial' },
+            { rotulo: 'Quantidade afetada', valor: tratamento.quantidade_afetada || '—' },
+            { rotulo: 'Requisito violado', valor: tratamento.requisito_violado || '—' },
+            { rotulo: 'Causa imediata', valor: tratamento.causa_imediata || '—' },
+          ],
+        },
+        { tipo: 'texto', titulo: 'Investigação', texto: tratamento.investigacao || '—' },
+        { tipo: 'lista', titulo: 'Análise de causas · Ishikawa 6M', itens: causas6m },
+        { tipo: 'lista', titulo: 'Desdobramento · 5 Porquês', itens: causas5 },
+        ...(barreiras.length ? [{ tipo: 'lista' as const, titulo: 'Barreiras que falharam', itens: barreiras }] : []),
+        {
+          tipo: 'tabela',
+          titulo: 'Ações de contenção, corretivas e preventivas',
+          colunas: [
+            { titulo: 'Tipo' }, { titulo: 'Ação / causa raiz' }, { titulo: 'Responsável' },
+            { titulo: 'Prazo' }, { titulo: 'Status' }, { titulo: 'Eficácia' },
+          ],
+          linhas: acoes.length ? acoes.map((acao) => [
+            acao.tipo,
+            acao.descricao + (acao.causa_raiz ? ' · causa: ' + acao.causa_raiz : ''),
+            usuarios.find((usuario) => usuario.id === acao.responsavel_id)?.nome ?? acao.responsavel ?? '—',
+            dataBR(acao.prazo),
+            acao.status ?? 'Planejada',
+            acao.resultado_eficacia ?? '—',
+          ]) : [['—', 'Nenhuma ação registrada.', '—', '—', '—', '—']],
+        },
+        {
+          tipo: 'campos',
+          titulo: 'Padronização e eficácia',
+          colunas: 2,
+          itens: [
+            { rotulo: 'Sistema à prova de erro', valor: tratamento.padronizacao.poka_yoke === 'sim' ? 'Sim' : 'Não' },
+            { rotulo: 'Justificativa', valor: tratamento.padronizacao.justificativa || '—' },
+            { rotulo: 'Carência de eficácia', valor: rpnc.prazo_eficacia_dias ? rpnc.prazo_eficacia_dias + ' dias' : 'Não programada' },
+            { rotulo: 'Data de verificação', valor: dataBR(rpnc.data_verificacao_eficacia ?? dataEficacia) },
+            { rotulo: 'Resultado formal', valor: rpnc.eficacia_aprovada === null ? (eficaciaAprovada ? 'Eficaz (rascunho)' : 'Pendente') : rpnc.eficacia_aprovada ? 'Eficaz' : 'Ineficaz' },
+            { rotulo: 'Parecer de eficácia', valor: parecer },
+          ],
+        },
+        {
+          tipo: 'tabela',
+          titulo: 'Documentos revisados / padronização',
+          colunas: [{ titulo: 'Documento' }, { titulo: 'Responsável' }, { titulo: 'Prazo' }, { titulo: 'Situação' }],
+          linhas: tratamento.padronizacao.documentos.length
+            ? tratamento.padronizacao.documentos.map((doc) => [doc.documento || '—', doc.responsavel || '—', dataBR(doc.prazo), doc.situacao])
+            : [['—', '—', '—', 'Nenhum documento registrado.']],
+        },
+        {
+          tipo: 'tabela',
+          titulo: 'Equipe de tratamento',
+          colunas: [{ titulo: 'Nome' }, { titulo: 'Função' }, { titulo: 'Setor' }],
+          linhas: equipe.length ? equipe.map((membro) => [membro.nome, membro.funcao || '—', membro.setor || '—']) : [['—', '—', '—']],
+        },
+        {
+          tipo: 'tabela',
+          titulo: 'Evidências arquivadas',
+          colunas: [{ titulo: 'Arquivo' }, { titulo: 'Finalidade' }, { titulo: 'Tamanho' }],
+          linhas: evidencias.length
+            ? evidencias.map((evidencia) => [
+              evidencia.nome_arquivo,
+              evidencia.finalidade === 'Acao' ? 'Ação CAPA' : 'Ocorrência',
+              tamanho(evidencia.tamanho_bytes),
+            ])
+            : [['Nenhum arquivo arquivado.', '—', '—']],
+        },
+        {
+          tipo: 'assinaturas',
+          titulo: 'Aprovação e ciência',
+          assinantes: [
+            { papel: 'Elaborado por' },
+            { papel: 'Chefe / Gerência' },
+            { papel: 'Representante da direção' },
+          ],
+        },
+      ],
+      observacoes: 'Documento emitido a partir dos dados da RPNC carregados no SYSNQRA. A impressão não equivale a assinatura digital certificada nem substitui o workflow de aprovação no sistema.',
+    }
+    abrirRelatorio(documento)
+  }
+
   return (
     <main className="qrf space-y-3 p-2 text-slate-800">
       <header className="qrf-screen-only flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
@@ -896,7 +1046,7 @@ export default function QualityRpncForm() {
         </div>
         <button type="button" className="erp-btn" onClick={novoFormulario} disabled={saving}><Plus size={13} /> Novo formulário</button>
         <button type="button" className="erp-btn" onClick={() => void carregarListas()} disabled={loading || saving}><RefreshCw size={13} /> Atualizar</button>
-        <button type="button" className="erp-btn" onClick={() => window.print()} disabled={!rpnc}><Printer size={13} /> Imprimir relatório</button>
+        <button type="button" className="erp-btn" onClick={imprimirRelatorio} disabled={!rpnc}><Printer size={13} /> Imprimir relatório</button>
       </header>
 
       {error && <div role="alert" className="qrf-screen-only flex gap-2 rounded-[2px] border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800"><AlertCircle size={14} />{error}</div>}
