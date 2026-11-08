@@ -1,6 +1,6 @@
 /**
  * @REVISAO: REV-COLUNAS-BANCO-20261104-01 — ordem do proprietário "telas travadas vc destrava": a lista de OPs do apontamento ordenava por 'criado_em', coluna que não existe em erp_ordens_producao; a query falhava e travava a tela. Leitura corrigida para 'created_at'.
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
@@ -9,7 +9,7 @@
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 11:43 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * @AUTOR: FernandoSch
  * ID da Revisão: REV-064
  * Alterações: Usar window.location no retorno ao Tablet para evitar colisão com o estado location.
  * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
@@ -27,8 +27,8 @@
  * =========================================================================
  */
 
-import { FormEvent, useEffect, useState } from 'react'
-import { AlertTriangle, ArrowLeft, CheckCircle2, HelpCircle, Play, RefreshCw, Search, X, XCircle } from 'lucide-react'
+import { type FormEvent, useEffect, useState } from 'react'
+import { AlertTriangle, ArrowLeft, CheckCircle2, HelpCircle, Play, RefreshCw, Search, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout, { type SalesNavSection } from './VendasLayout'
@@ -47,7 +47,7 @@ export default function OperacaoIndustrial(){
  const current=ops.find(x=>x.id===selectedOp)
  const filtered=ops.filter(x=>!query||x.numero_op.toLowerCase().includes(query.toLowerCase())||String(x.status).toLowerCase().includes(query.toLowerCase()))
  const productName=(id:string|null)=>products.find(x=>x.id===id)?.codigo||'—'
- const launch=async(e:FormEvent)=>{e.preventDefault();const f=Number(found),b=Number(bad);if(!selectedOp){setError('Selecione a OP liberada para apontamento.');return}if(f<0||b<0||b>f){setError('Quantidade encontrada/defeituosa inválida.');return}setBusy(true);setError('');setMessage('');try{
+ const launch=async(e:FormEvent)=>{e.preventDefault();const f=Number(found),b=Number(bad);if(!selectedOp){setError('Selecione a OP liberada para apontamento.');return}if(!found.trim()||!bad.trim()||!Number.isFinite(f)||!Number.isFinite(b)||f<=0||b<0||b>f){setError('Informe quantidades válidas: produção encontrada maior que zero e defeitos entre zero e a quantidade encontrada.');return}setBusy(true);setError('');setMessage('');try{
   const defs=defectText.split('\n').map(x=>x.trim()).filter(Boolean).map(x=>{const p=x.split(':');return{defeito:p[0].trim(),quantidade:Number(p[1]||0),observacao:p.slice(2).join(':').trim()||null}}).filter(x=>x.defeito&&x.quantidade>0)
   const {data,error}=await supabase.rpc('erp_registrar_conferencia_producao',{p_ordem_producao_id:selectedOp,p_quantidade_encontrada:f,p_quantidade_defeituosa:b,p_defeitos:defs,p_localizacao_destino_id:location||null,p_acabamento:false,p_observacao:'Apontamento realizado no chão de fábrica'})
   if(error)throw error
