@@ -30,8 +30,10 @@ function diaEmUtc(valor: string): number | null {
   return Date.UTC(Number(partes[1]), Number(partes[2]) - 1, Number(partes[3]))
 }
 
-function listar(itens: Instrumento[]): string {
-  const visiveis = itens.slice(0, LIMITE_LISTA).map(item => `${item.codigo} (${item.proxima_calibracao})`)
+function listar(itens: Instrumento[], comData = true): string {
+  const visiveis = itens.slice(0, LIMITE_LISTA).map(item =>
+    comData && item.proxima_calibracao ? `${item.codigo} (${item.proxima_calibracao})` : item.codigo,
+  )
   const restantes = itens.length - visiveis.length
   return visiveis.join(' · ') + (restantes > 0 ? ` · +${restantes}` : '')
 }
@@ -39,6 +41,7 @@ function listar(itens: Instrumento[]): string {
 export default function MetrologiaVencimentoAlerta() {
   const [vencidos, setVencidos] = useState<Instrumento[]>([])
   const [aVencer, setAVencer] = useState<Instrumento[]>([])
+  const [semData, setSemData] = useState<Instrumento[]>([])
   const [pronto, setPronto] = useState(false)
 
   useEffect(() => {
@@ -54,30 +57,35 @@ export default function MetrologiaVencimentoAlerta() {
         .from('erp_equipamentos_medicao')
         .select('id,codigo,status,proxima_calibracao', { count: 'exact' })
         .eq('empresa_id', empresa.data)
-        .not('proxima_calibracao', 'is', null)
         .order('proxima_calibracao')
         .range(from, to))
       if (!ativo) return
       const atrasados: Instrumento[] = []
       const proximos: Instrumento[] = []
+      const semAgenda: Instrumento[] = []
       for (const linha of linhas) {
         if (String(linha.status ?? '').trim().toUpperCase() === 'INATIVO') continue
         const dia = linha.proxima_calibracao ? diaEmUtc(linha.proxima_calibracao) : null
-        if (dia === null) continue
+        if (dia === null) {
+          semAgenda.push(linha)
+          continue
+        }
         const dias = Math.round((dia - hoje) / 86400000)
         if (dias < 0) atrasados.push(linha)
         else if (dias <= JANELA_AVISO_DIAS) proximos.push(linha)
       }
       setVencidos(atrasados)
       setAVencer(proximos)
+      setSemData(semAgenda)
       setPronto(true)
     }
     void carregar().catch(() => undefined)
     return () => { ativo = false }
   }, [])
 
-  if (!pronto || (!vencidos.length && !aVencer.length)) return null
+  if (!pronto || (!vencidos.length && !aVencer.length && !semData.length)) return null
   const critico = vencidos.length > 0
+  const alerta = critico || aVencer.length > 0
 
   return (
     <div className="px-3 pt-3 print:hidden">
@@ -85,7 +93,11 @@ export default function MetrologiaVencimentoAlerta() {
         role={critico ? 'alert' : 'status'}
         aria-live={critico ? 'assertive' : 'polite'}
         className={`flex flex-wrap items-start gap-2 rounded-[2px] border px-2 py-1.5 text-[11px] leading-[1.45] ${
-          critico ? 'border-rose-300 bg-rose-50 text-rose-900' : 'border-amber-300 bg-amber-50 text-amber-900'
+          critico
+            ? 'border-rose-300 bg-rose-50 text-rose-900'
+            : alerta
+              ? 'border-amber-300 bg-amber-50 text-amber-900'
+              : 'border-slate-300 bg-slate-50 text-slate-700'
         }`}
       >
         <span className="inline-flex items-center gap-1 pt-[1px] text-[9px] font-bold uppercase tracking-[.05em]">
@@ -103,6 +115,12 @@ export default function MetrologiaVencimentoAlerta() {
             <p className={critico ? 'mt-1' : undefined}>
               <strong>{aVencer.length} instrumento(s) vencem em até {JANELA_AVISO_DIAS} dias</strong>
               <span className="block font-mono text-[10px]">{listar(aVencer)}</span>
+            </p>
+          )}
+          {semData.length > 0 && (
+            <p className={critico || aVencer.length > 0 ? 'mt-1' : undefined}>
+              <strong>{semData.length} instrumento(s) sem próxima calibração agendada</strong>
+              <span className="block font-mono text-[10px]">{listar(semData, false)}</span>
             </p>
           )}
         </div>
