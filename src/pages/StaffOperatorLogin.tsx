@@ -1,6 +1,7 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @DATA_REVISAO_APROVACAO: 2026-11-08
+ * @REVISAO: REV-OPERADOR-CARTAO-CPF3-20261108-01 — texto ajustado à ordem do proprietário em 2026-11-08: a identificação por cartão + 3 últimos dígitos do CPF acontece no terminal do chão de fábrica (RPC erp_operador_identificar_cartao); esta tela continua sendo a entrada do sistema com a conta individual do operador no Supabase Auth. Nenhuma regra de login mudou.
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
@@ -27,7 +28,7 @@ export default function StaffOperatorLogin() {
       if (!supabaseConfigurado) throw new Error('Ambiente Supabase não configurado.')
       const email = username.trim().toLowerCase()
       if (!email || !password) throw new Error('Informe usuário e senha.')
-      if (!email.includes('@')) throw new Error('Use o e-mail corporativo cadastrado no Supabase Auth. Acesso por PIN/crachá será liberado após implantação do validador seguro no servidor.')
+      if (!email.includes('@')) throw new Error('Use o e-mail corporativo cadastrado no Supabase Auth. A identificação por cartão + 3 dígitos do CPF é feita no terminal do Chão de Fábrica, não nesta entrada.')
 
       const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password })
       if (authError) throw authError
@@ -80,7 +81,7 @@ export default function StaffOperatorLogin() {
           <form onSubmit={authenticate} className="space-y-4">
             <label className="block space-y-1"><span className="erp-label">{mode==='operator'?'E-mail corporativo do operador':'E-mail do administrador'}</span><input className="erp-input w-full" type="email" autoComplete="username" required value={username} onChange={e=>setUsername(e.target.value)} placeholder="usuario@empresa.com"/></label>
             <label className="block space-y-1"><span className="erp-label">Senha</span><input className="erp-input w-full font-mono" type="password" autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="Digite sua senha"/></label>
-            {mode==='operator'&&<p className="border-l-2 border-[#2D8DB8] bg-[#F4FBFD] p-2 text-[10px] leading-4 text-slate-600">O acesso por crachá/PIN não é habilitado nesta versão porque exige validação server-side e sessão operacional própria. Esta tela utiliza Supabase Auth e valida o perfil de operador antes de liberar o Tablet.</p>}
+            {mode==='operator'&&<p className="border-l-2 border-[#2D8DB8] bg-[#F4FBFD] p-2 text-[10px] leading-4 text-slate-600">Esta é a entrada do sistema com a conta individual do operador (Supabase Auth). No posto de trabalho, o operador se identifica pelo <b>número do cartão + os 3 últimos dígitos do CPF</b>, conferidos no servidor pelo terminal do Chão de Fábrica; o cartão não substitui a conta de acesso.</p>}
             <div className="flex items-center gap-2 border-t border-slate-200 pt-3"><button type="button" className="erp-btn flex-1" disabled={loading} onClick={()=>{setUsername('');setPassword('');setError('')}}>Limpar</button><button type="submit" className="erp-btn-primary flex-1" disabled={loading}>{loading?'Autenticando...':'Autenticar Entrada'}</button></div>
           </form>
           <div className="flex items-center gap-2 border-t border-slate-100 pt-3 text-[10px] text-slate-500"><ShieldCheck size={15} className="shrink-0 text-[#2D8DB8]"/> Sessão gerenciada pelo Supabase Auth. Nenhuma credencial é salva manualmente no navegador.</div>

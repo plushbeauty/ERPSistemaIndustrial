@@ -1,4 +1,5 @@
 /**
+ * @REVISAO: REV-TELAS-CONSISTENTES-20261108-01 — ordem do proprietário em 2026-11-08 ("vc ficou de arrumar a page controle de documentos"): o cabeçalho branco duplicado saiu e a abertura passa a ser o card navy padrão do shell; contadores e Atualizar ficam na barra de seleção; as três tabelas entram na régua clara global. Consultas, RPCs e as 7 abas não mudaram.
  * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — distribuições (2000) e leituras (5000) eram cortadas no topo da lista e o percentual de conformidade de leitura era calculado sobre o trecho carregado, parecendo maior que o real. As duas tabelas de crescimento contínuo agora são lidas por paginação completa.
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-02
@@ -13,7 +14,7 @@
  * a falha do Supabase em vez de inventar registro.
  */
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from 'react'
-import { AlertTriangle, Archive, CheckCircle2, FileText, Paperclip, Printer, RefreshCw, Save, Search, Send, ShieldCheck, Upload, Users, X } from 'lucide-react'
+import { AlertTriangle, Archive, CheckCircle2, FileText, Paperclip, Printer, RefreshCw, Save, Search, Send, Upload, Users, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 
@@ -561,20 +562,12 @@ export default function DocumentosQualidadeControle() {
 
   return (
     <main className="space-y-3 p-2 text-slate-800">
-      <header className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
-        <span className="grid h-8 w-8 place-items-center rounded-lg bg-[#123B50] text-white"><ShieldCheck size={16} /></span>
-        <div className="min-w-0">
-          <p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#2D8DB8]">SGQ · ISO 9001:2015 · item 7.5</p>
-          <h1 className="text-sm font-extrabold text-[#123B50]">Controle de Documentos da Qualidade</h1>
-          <p className="text-[11px] text-slate-500">Sete abas sobre o mesmo cadastro: documentos, anexos versionados, obsoletos, revisão e aprovação, visualização controlada, distribuição com ciência de leitura e impressão.</p>
-        </div>
-        <div className="ml-auto flex flex-wrap items-center gap-2">
-          <span className="rounded-[2px] border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold text-slate-600">{documentos.length} documento(s)</span>
-          <span className="rounded-[2px] border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold text-slate-600">{revisoes.filter((r) => r.status === 'rascunho').length} rascunho(s)</span>
-          <span className={`rounded-[2px] border px-2 py-1 text-[10px] font-bold ${pode('aprovar') ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-500'}`}>{pode('aprovar') ? 'pode aprovar' : 'sem permissão de aprovação'}</span>
-          <button type="button" className={botao} onClick={() => void carregar()} disabled={carregando}><RefreshCw size={13} /> Atualizar</button>
-        </div>
-      </header>
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <span className="rounded-[2px] border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold text-slate-600">{documentos.length} documento(s)</span>
+        <span className="rounded-[2px] border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold text-slate-600">{revisoes.filter((r) => r.status === 'rascunho').length} rascunho(s)</span>
+        <span className={`rounded-[2px] border px-2 py-1 text-[10px] font-bold ${pode('aprovar') ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-500'}`}>{pode('aprovar') ? 'pode aprovar' : 'sem permissão de aprovação'}</span>
+        <button type="button" className={botao} onClick={() => void carregar()} disabled={carregando}><RefreshCw size={13} /> Atualizar</button>
+      </div>
 
       {erro && <div role="alert" className="flex items-start gap-2 rounded-[2px] border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800"><AlertTriangle size={15} className="mt-0.5 shrink-0" /><span>{erro}</span></div>}
       {aviso && <div role="status" className="flex items-start gap-2 rounded-[2px] border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800"><CheckCircle2 size={15} className="mt-0.5 shrink-0" /><span>{aviso}</span></div>}

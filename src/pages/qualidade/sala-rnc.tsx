@@ -1,13 +1,13 @@
 /**
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-TELAS-CONSISTENTES-20261108-01 — ordem do proprietário em 2026-11-08: a tela deixou de renderizar um segundo ERPHorizontalShell e o cabeçalho próprio; a abertura é o card navy padrão do shell e resta a barra de ações (Imprimir A4, Atualizar, Registrar RPNC). O formulário, as consultas e o relatório A4 não mudaram.
  * @REVISAO: REV-RELATORIO-A4-20261105-01 — o botão Imprimir A4 deixa de capturar a tela e passa a emitir o relatório da RPNC selecionada e do registro de não conformidades em A4 com dados do banco
  * @STATUS_APROVACAO: ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — "Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório."
  * Revisão anterior (2026-10-30): card de abertura padrão (PageIntroCard) e identificação de autoria.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, Check, CircleHelp, ClipboardList, Plus, Printer, RefreshCw, Save, ShieldCheck, Trash2 } from 'lucide-react'
-import ERPHorizontalShell from '../../components/layout/ERPHorizontalShell'
+import { AlertTriangle, Check, CircleHelp, Plus, Printer, RefreshCw, Save, ShieldCheck, Trash2 } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { fetchAllPages } from '../../lib/supabasePagination'
 import { abrirRelatorio } from '../../lib/report/abrirRelatorio'
@@ -276,25 +276,18 @@ export default function SalaRNC() {
   }
 
   return (
-    <ERPHorizontalShell>
-      <main className="rnc-print-document min-h-[calc(100vh-48px)] bg-[#F4FBFD] pb-12 text-slate-800 print:min-h-0 print:bg-white print:p-0">
-        <div className="rnc-print-header hidden grid-cols-3 border border-slate-400 bg-white text-center text-slate-900">
-          <div className="flex min-h-[48px] items-center justify-center border-r border-slate-400 p-2 text-[10px] font-bold uppercase">SYSNQRA ERP &amp; SGQ INDUSTRIAL</div>
-          <div className="flex flex-col justify-center border-r border-slate-400 p-2"><strong className="text-[10px] uppercase">Registro de Não Conformidade</strong><span className="text-[8px]">Sistema de Gestão da Qualidade · CAPA</span></div>
-          <div className="flex flex-col justify-center p-2 text-left text-[8px]"><span>CÓDIGO: {selectedRecord?.numero_rpnc || 'GERADO AO SALVAR'}</span><span>EMISSÃO: {new Date().toLocaleString('pt-BR')}</span></div>
+    <main className="rnc-print-document min-h-full bg-[#F4FBFD] pb-6 text-slate-800 print:min-h-0 print:bg-white print:p-0">
+      <div className="rnc-print-header hidden grid-cols-3 border border-slate-400 bg-white text-center text-slate-900">
+        <div className="flex min-h-[48px] items-center justify-center border-r border-slate-400 p-2 text-[10px] font-bold uppercase">SYSNQRA ERP &amp; SGQ INDUSTRIAL</div>
+        <div className="flex flex-col justify-center border-r border-slate-400 p-2"><strong className="text-[10px] uppercase">Registro de Não Conformidade</strong><span className="text-[8px]">Sistema de Gestão da Qualidade · CAPA</span></div>
+        <div className="flex flex-col justify-center p-2 text-left text-[8px]"><span>CÓDIGO: {selectedRecord?.numero_rpnc || 'GERADO AO SALVAR'}</span><span>EMISSÃO: {new Date().toLocaleString('pt-BR')}</span></div>
+      </div>
+      <div className="rnc-screen-header flex flex-wrap items-center gap-2 px-2 py-2 print:hidden">
+        <div className="ml-auto flex items-center gap-2">
+          <button type="button" className={secondaryButton} onClick={() => void emitirRelatorioRNC()} disabled={loading} title="Imprimir formulário em A4"><Printer size={12}/> Imprimir A4</button><button type="button" className={secondaryButton} onClick={() => void load()} disabled={loading || busy}><RefreshCw size={12}/> Atualizar</button>
+          <button type="button" className={buttonClass} onClick={() => void createRnc()} disabled={busy || loading}><Save size={12}/> {busy ? 'Salvando…' : 'Registrar RPNC'}</button>
         </div>
-        <header className="rnc-screen-header flex min-h-[64px] flex-wrap items-center gap-3 border-b border-slate-200 bg-white px-3 py-2 print:hidden">
-          <span className="grid size-9 place-items-center rounded-[2px] bg-[#123B50] text-white"><ClipboardList size={18}/></span>
-          <div className="min-w-0">
-            <p className="text-[9px] font-bold uppercase tracking-[.18em] text-[#2D8DB8]">SGQ · SALA DE NÃO CONFORMIDADES</p>
-            <h1 className="text-base font-semibold text-[#123B50]">Sala de RNC / RPNC</h1>
-            <p className="text-[10px] text-slate-500">Triagem, disposição física, análise dos 5 Porquês e ações mitigatórias 5W2H.</p>
-          </div>
-          <div className="ml-auto flex items-center gap-2">
-            <button type="button" className={secondaryButton} onClick={() => void emitirRelatorioRNC()} disabled={loading} title="Imprimir formulário em A4"><Printer size={12}/> Imprimir A4</button><button type="button" className={secondaryButton} onClick={() => void load()} disabled={loading || busy}><RefreshCw size={12}/> Atualizar</button>
-            <button type="button" className={buttonClass} onClick={() => void createRnc()} disabled={busy || loading}><Save size={12}/> {busy ? 'Salvando…' : 'Registrar RPNC'}</button>
-          </div>
-        </header>
+      </div>
 
         <div className="mx-auto grid max-w-[1600px] gap-3 p-3 print:max-w-none print:gap-2 print:p-0">
           {error && <div role="alert" className="flex items-start gap-2 border border-rose-300 bg-rose-50 p-2 text-[10px] text-rose-800"><AlertTriangle size={14} className="mt-0.5 shrink-0"/><span>{error}</span></div>}
@@ -367,7 +360,6 @@ export default function SalaRNC() {
           <span className="text-right">Dados por empresa · RLS ativo</span>
         </footer>
         <style>{'@media print{@page{size:A4 portrait;margin:10mm}.rnc-screen-header,.rnc-history-section{display:none!important}.rnc-print-header{display:grid!important}.rnc-print-document{max-width:none!important;width:100%!important}.rnc-actions-table{min-width:0!important;font-size:8px!important}.rnc-actions-table th,.rnc-actions-table td{padding:2px!important;overflow-wrap:anywhere}.rnc-actions-table input,.rnc-actions-table select{height:auto!important;min-height:0!important;padding:1px!important;border:0!important;background:transparent!important;font-size:8px!important;color:#111!important}.rnc-actions-table button,.group span[role=tooltip]{display:none!important}.rnc-section{margin-bottom:6px!important;break-inside:avoid}.rnc-signatures{padding-top:22px!important;padding-bottom:8px!important}.rnc-signatures div{min-height:22px}}'}</style>
-      </main>
-    </ERPHorizontalShell>
+    </main>
   )
 }

@@ -80,6 +80,11 @@ import path from 'node:path'
  * janela de 1280px, com faixa branca à direita: o max-height:84vh do slide encolhia a largura junto com a
  * altura porque o aspect-ratio era preservado. Sai o clamp e entra width:100%; a arte aparece
  * inteira, de borda a borda, sem corte. PublicIndustrialHome.tsx permanece no mesmo hash.
+ * Revisao 2026-11-08 (telas consistentes): ordem explicita do proprietario — "vc ficou de arrumar a page
+ * controle de documentos" e "tem telas com botoes laranja e outras nao tem cards azul fontes desalinhadas".
+ * O Controle de Documentos perdeu o cabecalho branco duplicado e passou a usar o card navy unico do shell;
+ * contadores, Atualizar, as 7 abas, consultas e RPCs continuam iguais. Hash atualizado apos revisao real
+ * (REV-TELAS-CONSISTENTES-20261108-01) e manifesto re-gerado com npm run telas:manifest.
  * Mudanca neste contrato exige ordem explicita do proprietario.
  */
 
@@ -105,7 +110,7 @@ const oficiais = [
   { path: 'src/pages/QualityRpncUnified.tsx', sha: '95335212fcf40881e37a37cc063f326d58335235', label: 'Qualidade / RPNC unificada em abas (REV-RPNC-ABAS-CARD-20261102-01: card das abas maior, descricao visivel)' },
   { path: 'src/styles/quality-rpnc-unified.css', sha: '38e62419f0b2e3798847abd7f2bbd6622a9acaa3', label: 'Qualidade / estilos das abas do RPNC unificado (isengao da regula de 30px)' },
   { path: 'src/pages/QualityAuditsList.tsx', sha: '34d4247238acaa0cab346056b56953a049c4ec2d', label: 'Qualidade / Painel de auditorias' },
-  { path: 'src/pages/DocumentosQualidadeControle.tsx', sha: 'f782c93e5c386329f1a8df21187101d75bf93c4d', label: 'Qualidade / Controle de Alteracao de Documentos em 7 abas (anexo pela URL assinada, nenhum status inventado) (REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03: distribuicoes e leituras deixaram de ser cortadas em 2000/5000; so a leitura paginada mudou)' },
+  { path: 'src/pages/DocumentosQualidadeControle.tsx', sha: 'e4343ed22e2af2d94eaed499b91febb4eaab37a6', label: 'Qualidade / Controle de Alteracao de Documentos em 7 abas (anexo pela URL assinada, nenhum status inventado) (REV-TELAS-CONSISTENTES-20261108-01: ordem do proprietario — cabecalho branco duplicado removido, card navy unico do shell, contadores e Atualizar na barra; consultas, RPCs e as 7 abas iguais)' },
   { path: 'src/pages/AccessControlSettings.tsx', sha: 'fceea8908e7686ea8b58363e18712d9204fc8755', label: 'Configuracoes / Controle de acesso por setor (REV-ACCESS-CONTROL-SEM-MATRICULA-20261105-01: ordem do proprietario — "public.erp_usuarios não possui a coluna matricula ... Corrigir todas as consultas que solicitam matricula de erp_usuarios"; so a coluna saiu da tela, CRUD e layout preservados)' },
   { path: 'src/pages/PCPCapacidade.tsx', sha: '7b26fa34132d8ffcf116d53e780e372383280f5a', label: 'PCP / Capacidade de maquinas' },
   { path: 'src/pages/NFeEmissao.tsx', sha: 'ab04bc518c81140a5bc5de9a0aab9cbe291beb98', label: 'Fiscal / Emissao de NF-e em etapas (transacional, na prod) + UF do transportador alinhado a regula de 72px' },

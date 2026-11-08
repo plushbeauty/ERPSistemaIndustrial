@@ -11,7 +11,7 @@ somente-leitura `scripts/auditar-contrato-banco-vivo.mjs`:
 | RPCs chamadas pelo código | 102 |
 | RPCs que o REST não resolveu | 98 (22 são criadas pelo pacote do passo 1; 76 estão listadas no Anexo A) |
 | Telas bloqueadas hoje por tabela ausente | **24** |
-| Migrations no repo | 266 |
+| Migrations no repo | 267 (266 medidas + a do operador, passo 6, criada depois da medição) |
 
 O código está na frente do banco. Nada aqui é para o assistente executar: **quem roda é o
 proprietário**, no SQL Editor do Supabase. Os arquivos abaixo são idempotentes
@@ -28,7 +28,8 @@ proprietário**, no SQL Editor do Supabase. Os arquivos abaixo são idempotentes
 | 3 | Conferir as 28 tabelas | SQL Editor | não |
 | 4 | Conferir as 76 funções do Anexo A | SQL Editor | não |
 | 5 | Conceder o módulo `qualidade_documentos` aos perfis | tela Configuração de Permissões | **sim** |
-| 6 | Smoke test por módulo | telas do sistema | não |
+| 6 | Aplicar a migration do operador (cartão + 3 dígitos do CPF) | SQL Editor | **sim** |
+| 7 | Smoke test por módulo | telas do sistema | não |
 
 ---
 
@@ -197,7 +198,56 @@ Se voltar vazio, nenhum usuário (fora admin de nível máximo) vai conseguir sa
 
 ---
 
-## 6. Passo 6 — smoke test por módulo
+## 6. Passo 6 — identificação do operador por cartão + 3 dígitos do CPF
+
+O pacote das 28 migrations **não** traz este fluxo. Rode este arquivo separado no SQL Editor:
+
+```
+supabase/migrations/20261108120000_erp_operador_cartao_cpf3_v1.sql
+```
+
+O que ele faz (idempotente):
+
+1. adiciona `erp_funcionarios.cpf` se ainda não existir;
+2. cria índices por empresa em `cpf` e `numero_cracha_rfid`;
+3. cria `erp_operador_identificacao_tentativa` (guardada só como hash do cartão, sem CPF);
+4. cria a RPC `erp_operador_identificar_cartao(p_cartao text, p_cpf3 text)`, `security definer`,
+   que confere cartão/matrícula + 3 últimos dígitos do CPF **na empresa da sessão** e devolve
+   apenas os dados públicos do crachá;
+5. bloqueia o cartão por 15 minutos após 8 tentativas erradas.
+
+Depois de aplicar, preencha o CPF dos operadores. O CPF pode estar formatado; a função usa só os
+dígitos:
+
+```sql
+-- conferir quantos operadores ativos já têm CPF preenchido
+select count(*) filter (where cpf is not null and btrim(cpf) <> '') as com_cpf,
+       count(*) filter (where cpf is null or btrim(cpf) = '') as sem_cpf
+  from public.erp_funcionarios
+ where lower(coalesce(status,'ativo')) not in ('inativo','desligado','demitido','cancelado','afastado');
+
+-- exemplo de carga pontual (troque empresa/crachá/CPF reais)
+-- update public.erp_funcionarios set cpf = '000.000.000-00'
+--  where empresa_id = '<uuid-da-empresa>' and numero_cracha_rfid = '<cartao>';
+```
+
+Conferência da função (somente leitura):
+
+```sql
+select p.proname, pg_get_function_identity_arguments(p.oid) as argumentos,
+       p.prosecdef as security_definer
+  from pg_proc p
+  join pg_namespace n on n.oid = p.pronamespace
+ where n.nspname = 'public' and p.proname = 'erp_operador_identificar_cartao';
+```
+
+Teste na tela: **Chão de Fábrica → Apontamento por cartão de ponto**. O operador digita o cartão e
+os 3 últimos dígitos do CPF; a agenda do dia/semana e a ficha de processo só abrem se os dois
+conferirem. Sem CPF cadastrado, o operador não entra — o RH precisa preencher antes.
+
+---
+
+## 7. Passo 7 — smoke test por módulo
 
 Somente leitura. Cada linha deve trazer um número (0 é resposta válida; erro não é).
 
@@ -234,12 +284,10 @@ inventa dado.
 
 ---
 
-## 7. O que este pacote não resolve
+## 8. O que este pacote não resolve
 
 - **Emissão de NF-e / NFS-e**: falta decidir o provedor (SEFIN/DPS direto ou API Focus/Webmania).
   Não é tabela; é integração e credencial.
-- **Operador do chão de fábrica (cartão + 3 dígitos do CPF)**: depende de `erp_funcionarios`
-  com matrícula/cartão e CPF; as colunas entram por migration própria quando o fluxo for aprovado.
 - **Dados reais**: o pacote cria estrutura, não popula produção. As únicas cargas são os 8 motivos
   de refugo por empresa e o catálogo da Central de Evolução.
 

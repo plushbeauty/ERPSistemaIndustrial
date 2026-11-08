@@ -1,6 +1,7 @@
 /**
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-TELAS-CONSISTENTES-20261108-01 — ordem do proprietário em 2026-11-08: a tela deixou de renderizar um segundo ERPHorizontalShell e o cabeçalho próprio; a abertura é o card navy padrão do shell e resta a barra de ações (Imprimir A4, Atualizar). Formulário, consultas e relatório A4 inalterados.
  * @REVISAO: REV-RELATORIO-A4-20261105-01 — o botão Imprimir A4 deixa de capturar a tela e passa a emitir o CCPP da injetora em A4 pelo motor de relatório, com perfil térmico, amostragem e diário de bordo lidos do banco
  * @STATUS_APROVACAO: ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — "Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório."
  */
@@ -18,8 +19,7 @@
  * Revisão visual: Steel Blue, controles compactos, cantos retos e impressão A4 paisagem.
  */
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { AlertTriangle, Clock3, Factory, Plus, Printer, RefreshCw, Save, ShieldCheck, Thermometer } from 'lucide-react'
-import ERPHorizontalShell from '../../components/layout/ERPHorizontalShell'
+import { AlertTriangle, Clock3, Plus, Printer, RefreshCw, Save, ShieldCheck, Thermometer } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { abrirRelatorio } from '../../lib/report/abrirRelatorio'
 import type { Bloco } from '../../lib/report/documento'
@@ -427,16 +427,14 @@ export default function ControleProcessoInjetora() {
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao emitir o controle de processo da injetora.') }
   }
 
-  return <ERPHorizontalShell>
-    <main className="pcp-injetora-page min-h-screen bg-[#F4FBFD] p-3 text-[#123B50] antialiased">
+  return <main className="pcp-injetora-page min-h-full bg-[#F4FBFD] p-2 text-[#123B50] antialiased">
       <style>{'@media print{.no-print{display:none!important}.pcp-injetora-page{background:#fff!important;color:#111827!important;padding:0!important}.pcp-injetora-page *{color:#111827!important;box-shadow:none!important}.pcp-injetora-page section,.pcp-injetora-page form,.pcp-injetora-page aside,.pcp-injetora-page header{background:#fff!important;border-color:#cbd5e1!important}.pcp-injetora-page input,.pcp-injetora-page select,.pcp-injetora-page textarea{background:#fff!important;border-color:#cbd5e1!important;color:#111827!important}.pcp-injetora-page{font-family:Arial,sans-serif!important}@page{size:A4 landscape;margin:10mm}}'}</style>
-      <div className="mx-auto max-w-[1600px] space-y-3">
+      <div className="mx-auto max-w-[1600px] space-y-2">
         <div className="hidden print:block border-b-2 border-slate-900 pb-2 text-[#123B50]"><h1 className="text-base font-black uppercase">MOLDPLÁS ERP INDUSTRIAL — Controle de Processo da Injetora</h1><p className="text-[9px]">Emitido em {new Date().toLocaleString()} • Desenvolvedor FernandoSch • Registro controlado do SGQ</p></div>
-        <header className="flex flex-wrap items-center gap-3 border border-[#CFE1E7] bg-white p-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-[2px] bg-[#123B50] text-white"><Factory size={18} /></div>
-          <div><p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#2D8DB8]">SGQ • INJETADOS • IT-IJ-001 Rev. 00</p><h1 className="text-[15px] font-black">Controle de Processo da Injetora</h1><p className="text-[10px] text-slate-500">CCPP • liberação de máquina • amostragem • Diário de Bordo</p></div>
-          <div className="no-print ml-auto flex flex-wrap gap-2"><button className={secondaryClass} type="button" onClick={() => { void emitirCcpp() }}><Printer size={13} /> Imprimir A4</button><button className={secondaryClass} type="button" onClick={() => void load()} disabled={loading || busy}><RefreshCw size={13} /> Atualizar</button><span className="self-center text-[9px] text-slate-500">Próxima revisão da IT: 05/06/2028</span></div>
-        </header>
+        <div className="no-print flex flex-wrap items-center justify-end gap-2">
+          <span className="mr-auto text-[9px] font-bold uppercase tracking-wide text-slate-500">IT-IJ-001 Rev. 00 · próxima revisão 05/06/2028</span>
+          <button className={secondaryClass} type="button" onClick={() => { void emitirCcpp() }}><Printer size={13} /> Imprimir A4</button><button className={secondaryClass} type="button" onClick={() => void load()} disabled={loading || busy}><RefreshCw size={13} /> Atualizar</button>
+        </div>
         <div className="border border-amber-200 bg-amber-50 p-2 text-[10px] leading-4 text-amber-800">
           <strong className="flex items-center gap-1"><AlertTriangle size={13} /> ALERTA CRÍTICO — POM / POLIACETAL</strong>
           Se o material atual for POM, confirme o procedimento de segurança. Uma hora antes do término planejado, fechar a guilhotina do funil para consumir o material do canhão; nunca encerrar o lote deixando POM no cilindro.
@@ -525,5 +523,4 @@ export default function ControleProcessoInjetora() {
         <footer className="flex flex-wrap justify-between gap-2 border-t border-[#CFE1E7] px-1 py-2 text-[9px] text-slate-500"><span>SYSNQRA ERP & SGQ INDUSTRIAL • IT-IJ-001 Rev. 00 • Departamento de Injetados</span><span>Registro operacional auditável • documentos originais permanecem sob controle do GED</span></footer>
       </div>
     </main>
-  </ERPHorizontalShell>
 }

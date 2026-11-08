@@ -189,9 +189,9 @@
     },
     {
       "path": "src/features/inventario/BalancoEstoque.tsx",
-      "sha": "d379987860b823cb8c7ed742012ced71e1a58f8c",
+      "sha": "99685125f88bd3a2ef18836fdd6ebf018fe533d0",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — a valoração parava em 5000 SKUs e o rodapé \"Custo Total Ativo\" somava só o trecho carregado. Agora percorre todos os SKUs ativos da empresa por paginação.",
+      "revisao": "REV-ACAO-PRIMARIA-NAVY-20261108-01 — ordem do proprietário em 2026-11-08: o botão Exportar XLSX deixou de ser âmbar (laranja) e usa a ação primária navy, igual às demais telas; consulta e exportação inalteradas.",
       "aprovadaEm": "2026-11-02",
       "statusAprovacao": "CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela"
     },
@@ -381,11 +381,11 @@
     },
     {
       "path": "src/pages/ChaoDeFabricaApontamento.tsx",
-      "sha": "98e4c20ea78fa67f1ac830fcb4bf528ca5179a3f",
+      "sha": "26fa261602c6fa956be1bd15d12973918b094442",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-CHAO-FABRICA-CARTAO-PONTO-20261104-02 — tela real por cartão de ponto + fileira da semana em trilho",
-      "aprovadaEm": "2026-11-04",
-      "statusAprovacao": "DETERMINADO PELO PROPRIETARIO (\"NAO QUERO ESSA TELA SÓ DE DEMOSTRAÇÃO DEVE VIR UM CAMPO PARA"
+      "revisao": "REV-OPERADOR-CARTAO-CPF3-20261108-01 — ordem do proprietário em 2026-11-08: o operador se identifica com o número do cartão + os 3 últimos dígitos do CPF. A conferência saiu do cliente e passou para a RPC security definer erp_operador_identificar_cartao, que valida a empresa da sessão, bloqueia após 8 falhas em 15 minutos e devolve só os dados públicos do crachá (o CPF nunca volta). Agenda, apontamento e ficha de processo inalterados.",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "DETERMINADO PELO PROPRIETARIO (\"NAO QUERO ESSA TELA SÓ DE DEMOSTRAÇÃO DEVE VIR UM CAMPO PARA COLOCAR NUMERO DO CARTÁO DE PONTO PARA PUXAR O NOME DO OPERADOR E SUA PROGRAMAÇAO DO PC PARA ELE O QUE VAI TER PARA FAZER NO DIA E NA SEMANA E AS MAQUINAS TER UM ABA PARA ELE PUXAR A FICHA DE PROCESSO DA PEÇA ONLINE\", 2026-11-04) E COMPLEMENTADO EM 2026-11-08 (\"o numero do cartao mais os 3 ultimos numeros do cpf\")"
     },
     {
       "path": "src/pages/ComercialSuprimentos.tsx",
@@ -533,9 +533,9 @@
     },
     {
       "path": "src/pages/DocumentosQualidadeControle.tsx",
-      "sha": "f782c93e5c386329f1a8df21187101d75bf93c4d",
+      "sha": "e4343ed22e2af2d94eaed499b91febb4eaab37a6",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — distribuições (2000) e leituras (5000) eram cortadas no topo da lista e o percentual de conformidade de leitura era calculado sobre o trecho carregado, parecendo maior que o real. As duas tabelas de crescimento contínuo agora são lidas por paginação completa.",
+      "revisao": "REV-TELAS-CONSISTENTES-20261108-01 — ordem do proprietário em 2026-11-08 (\"vc ficou de arrumar a page controle de documentos\"): o cabeçalho branco duplicado saiu e a abertura passa a ser o card navy padrão do shell; contadores e Atualizar ficam na barra de seleção; as três tabelas entram na régua clara global. Consultas, RPCs e as 7 abas não mudaram.",
       "aprovadaEm": "2026-11-02",
       "statusAprovacao": "ESTRUTURA DE 7 ABAS AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-02"
     },
@@ -1069,9 +1069,9 @@
     },
     {
       "path": "src/pages/QualidadeDashboardRNC.tsx",
-      "sha": "476b4fa683cea76410d138cc50061fa9bf1457f5",
+      "sha": "065299fcf06ba0d446cb719fd722f10145ef66dd",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-TELAS-CONSISTENTES-20261108-01 — ordem do proprietário em 2026-11-08 (\"tem telas com botões laranja e outras não, tem cards azuis e fontes desalinhadas\"): a tela deixou de renderizar um segundo ERPHorizontalShell e o cabeçalho próprio; a abertura é o card navy padrão do shell e resta só a barra de Atualizar. Consultas e indicadores inalterados.",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
@@ -1269,10 +1269,10 @@
     },
     {
       "path": "src/pages/StaffOperatorLogin.tsx",
-      "sha": "faff28e3e3beba8df251461019ea35ff8867ccd6",
+      "sha": "fd3493f7366d56bc0e8830878dcfc39aafbf346c",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
+      "revisao": "REV-OPERADOR-CARTAO-CPF3-20261108-01 — texto ajustado à ordem do proprietário em 2026-11-08: a identificação por cartão + 3 últimos dígitos do CPF acontece no terminal do chão de fábrica (RPC erp_operador_identificar_cartao); esta tela continua sendo a entrada do sistema com a conta individual do operador no Supabase Auth. Nenhuma regra de login mudou.",
+      "aprovadaEm": "2026-11-08",
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
     {
@@ -1613,9 +1613,9 @@
     },
     {
       "path": "src/pages/pcp/ControleProcessoInjetora.tsx",
-      "sha": "f54e7a8cda6ce5b2b505947c981baaca001aa48b",
+      "sha": "7f0cc2f17f654175a2a50dce13cbbf2c08d9944b",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir A4 deixa de capturar a tela e passa a emitir o CCPP da injetora em A4 pelo motor de relatório, com perfil térmico, amostragem e diário de bordo lidos do banco",
+      "revisao": "REV-TELAS-CONSISTENTES-20261108-01 — ordem do proprietário em 2026-11-08: a tela deixou de renderizar um segundo ERPHorizontalShell e o cabeçalho próprio; a abertura é o card navy padrão do shell e resta a barra de ações (Imprimir A4, Atualizar). Formulário, consultas e relatório A4 inalterados.",
       "aprovadaEm": "2026-11-05",
       "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
     },
@@ -1709,9 +1709,9 @@
     },
     {
       "path": "src/pages/qualidade/sala-rnc.tsx",
-      "sha": "011afe071db65c0d5182cf367d848e8ca090bcb1",
+      "sha": "4228170b65d0fff8aa4e3638715fd1a7209e6eb4",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir A4 deixa de capturar a tela e passa a emitir o relatório da RPNC selecionada e do registro de não conformidades em A4 com dados do banco",
+      "revisao": "REV-TELAS-CONSISTENTES-20261108-01 — ordem do proprietário em 2026-11-08: a tela deixou de renderizar um segundo ERPHorizontalShell e o cabeçalho próprio; a abertura é o card navy padrão do shell e resta a barra de ações (Imprimir A4, Atualizar, Registrar RPNC). O formulário, as consultas e o relatório A4 não mudaram.",
       "aprovadaEm": "2026-11-05",
       "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
     },

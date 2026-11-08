@@ -1,9 +1,12 @@
 /*
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-08
- * @REVISAO: REV-PREMIUM-GLOBAL-20261108-01 — régua premium única no conteúdo autenticado
+ * @REVISAO: REV-PREMIUM-GLOBAL-20261108-02 — ação primária única (navy), cabeçalho de tabela claro,
+ *   escala de títulos e menu do shell sem laranja
  * @STATUS_APROVACAO: ordem do proprietário em 2026-11-08 ("atualizar todas as pages com versões
- *   premium ... melhorar tudo"). Camada visual: não altera dados, rotas, permissões nem consultas.
+ *   premium ... melhorar tudo") e correção apontada por ele no mesmo dia ("tem telas com botões
+ *   laranja e outras não, tem cards azuis e fontes desalinhadas"). Camada visual: não altera dados,
+ *   rotas, permissões nem consultas.
  *
  * Por que esta folha existe, medido no código atual:
  * 1) src/styles/index.css mantém a "REGRA GLOBAL 2026" com font-size:16px!important em
@@ -351,5 +354,91 @@
 @media print {
   .erp-global-surface .erp-horizontal-workspace {
     font-size: inherit;
+  }
+}
+
+/*
+ * REV-PREMIUM-GLOBAL-20261108-02 — correção apontada pelo proprietário no mesmo dia:
+ * "tem telas com botões laranja e outras não, tem cards azuis e fontes desalinhadas".
+ * 1) Ação primária passa a ser uma só: navy. O laranja de Compras e o azul genérico de
+ *    erp-ui não pintam mais botão de gravação. Âmbar continua reservado a aviso/perigo.
+ * 2) Cabeçalho de tabela: as 50 telas com <thead> escuro entram na régua clara das outras 185.
+ * 3) Títulos: uma escala só (h1 17px, h2 13px, h3 11px) em vez de 12px a 30px na mesma função.
+ * 4) O menu do shell deixa de ficar laranja quando a tela de RH está aberta.
+ * Tudo em @media screen: as folhas A4 continuam com o contrato de impressão próprio.
+ */
+@media screen {
+  /* 1 — ação primária única */
+  .erp-global-surface .erp-horizontal-workspace :is(.compras-button--primary, .erp-button--primary) {
+    background: var(--prem-ink) !important;
+    border-color: #0e1e2f !important;
+    color: #fff !important;
+  }
+
+  .erp-global-surface .erp-horizontal-workspace :is(.compras-button--primary, .erp-button--primary):hover:not(:disabled) {
+    background: var(--prem-brand-deep) !important;
+    border-color: var(--prem-brand-deep) !important;
+  }
+
+  /* 2 — cabeçalho de tabela claro em toda a área autenticada.
+     As telas que já usavam #EAF4F8 não mudam; as que usavam slate-700/800/900 ou navy passam
+     a usar a mesma régua. Impressão, tablet, portal do operador, abas RPNC e cards SGQ ficam fora. */
+  .erp-global-surface .erp-horizontal-workspace table:where(:not(.sr-body *):not(.ficha-print-sheet *):not(.cep-print-sheet *):not(.op-print-sheet *):not(.cq-print *):not(.print-area *):not(.module-tablet-panel *):not(.operator-demo *):not(.erp-rpnc-abas *):not(.synqra-module-card *)) :is(thead, thead tr, thead th) {
+    background: var(--prem-soft) !important;
+    color: #17445a !important;
+    border-color: #cfe1e7 !important;
+  }
+
+  .erp-global-surface .erp-horizontal-workspace table:where(:not(.sr-body *):not(.ficha-print-sheet *):not(.cep-print-sheet *):not(.op-print-sheet *):not(.cq-print *):not(.print-area *):not(.module-tablet-panel *):not(.operator-demo *):not(.erp-rpnc-abas *):not(.synqra-module-card *)) thead th {
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: .06em !important;
+  }
+
+  /* 3 — uma escala de título para o conteúdo. O card de abertura do shell, o terminal de
+     metrologia, o tablet, o portal do operador e as folhas de impressão mantêm o próprio
+     contrato tipográfico. */
+  .erp-global-surface .erp-horizontal-workspace :is(h1, h2, h3, h4) {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif !important;
+    text-wrap: balance;
+  }
+
+  .erp-global-surface .erp-horizontal-workspace h1:not(.erp-page-intro h1):not(.quality-metrology-hero h1):not(.module-tablet-panel h1):not(.operator-demo h1):not(.rnc-print-document h1) {
+    font-size: 17px !important;
+    line-height: 1.25 !important;
+    font-weight: 800 !important;
+    letter-spacing: -.01em !important;
+  }
+
+  .erp-global-surface .erp-horizontal-workspace h2:not(.erp-page-intro h2):not(.quality-metrology-hero h2):not(.module-tablet-panel h2):not(.operator-demo h2):not(.rnc-print-document h2) {
+    font-size: 13px !important;
+    line-height: 1.3 !important;
+    font-weight: 800 !important;
+  }
+
+  .erp-global-surface .erp-horizontal-workspace h3:not(.erp-page-intro h3):not(.quality-metrology-hero h3):not(.module-tablet-panel h3):not(.operator-demo h3) {
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+    font-weight: 800 !important;
+  }
+
+  .erp-global-surface .erp-horizontal-workspace :is(button, input, select, textarea, th, td) {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif !important;
+  }
+
+  /* 4 — o menu do shell não muda de cor por causa da tela aberta. O estado ativo continua
+     dourado (#C9961C), que é o contrato aprovado das abas ativas. */
+  body:has(.rh-page) .erp-horizontal-menu button,
+  body:has(.rh-page) button[aria-label*="Menu"],
+  body:has(.rh-page) button[title*="Menu"] {
+    background: var(--prem-ink, #123b50) !important;
+    border-color: var(--prem-ink, #123b50) !important;
+    color: #fff !important;
+  }
+
+  body:has(.rh-page) .synqra-sidebar-link.is-active {
+    background: #c9961c !important;
+    border-left-color: #a87b12 !important;
+    color: #fff !important;
   }
 }

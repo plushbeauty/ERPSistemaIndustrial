@@ -1,5 +1,6 @@
 /**
- * @DATA_REVISAO_APROVACAO: 2026-11-04
+ * @DATA_REVISAO_APROVACAO: 2026-11-08
+ * @REVISAO: REV-TELAS-CONSISTENTES-20261108-01 — verbetes de Dashboard de RNC/CAPA, Sala de RNC/RPNC e Controle de Processo da Injetora; as três telas passam a usar o card de abertura navy único do shell em vez de cabeçalho próprio.
  * @REVISAO: REV-CENTRAL-AJUDA-TELAS-20261104-01 — cada verbete ganhou bloco de ajuda (como preencher / como usar / atenção) exibido no card de abertura
  * @AUTOR: Fernando Schuinsekel
  * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-04: "o cliente vai entrar e tem que ter nada para explicar para que serve a pagina, como preencher, como usar"
@@ -83,11 +84,11 @@ const introCatalog: Record<string, PageIntro> = {
   },
   'chao-de-fabrica/apontamento-operador': {
     module: 'Chão de Fábrica', title: 'Apontamento por cartão de ponto',
-    description: 'Terminal do posto: o número do cartão identifica o operador no RH e abre a programação do PCP do dia e da semana, as máquinas atribuídas e a ficha de processo da peça direto do banco.',
+    description: 'Terminal do posto: o número do cartão mais os 3 últimos dígitos do CPF identificam o operador no RH e abrem a programação do PCP do dia e da semana, as máquinas atribuídas e a ficha de processo da peça direto do banco.',
     help: {
-      fill: ['Digite o número do cartão (RFID) ou a matrícula cadastrada no RH da empresa e toque em Abrir minha programação.', 'Selecione a tarefa do dia antes de iniciar: o apontamento precisa de OP, máquina e ficha aprovada.', 'Ao finalizar, informe peças boas e refugadas; com refugo, a descrição do defeito é obrigatória.'],
+      fill: ['Digite o número do cartão (RFID) ou a matrícula cadastrada no RH e os 3 últimos dígitos do CPF do próprio operador; toque em Abrir minha programação.', 'Selecione a tarefa do dia antes de iniciar: o apontamento precisa de OP, máquina e ficha aprovada.', 'Ao finalizar, informe peças boas e refugadas; com refugo, a descrição do defeito é obrigatória.'],
       use: ['Início, fim, duração e a baixa na programação são carimbados pelo relógio do banco.', 'A aba Ficha de processo lê erp_fichas_processo, a sequência de operações e a receita aprovada do produto.', 'Parada registrada aqui entra em erp_producao_paradas e aparece no OEE; encerre a parada antes de trocar de motivo.'],
-      watch: 'Sem cartão cadastrado no RH (numero_cracha_rfid ou matrícula) a tela não abre a agenda — não existe operador de demonstração.',
+      watch: 'Sem cartão cadastrado no RH (numero_cracha_rfid ou matrícula) e sem CPF preenchido no cadastro do funcionário a tela não abre a agenda. Após 8 tentativas erradas o cartão fica bloqueado por 15 minutos; não existe operador de demonstração.',
     },
   },
   'chao-de-fabrica/postos': {
@@ -257,6 +258,31 @@ const introCatalog: Record<string, PageIntro> = {
     help: {
       fill: ['Preencha o relato antes de montar o Ishikawa; as 6M se editam diretamente nas espinhas, com causa e subcausa.', 'Nos 5 Porquês, responda encadeado até chegar à causa raiz, e não ao sintoma.', 'Em cada ação CAPA coloque responsável, prazo e forma de verificar a eficácia.'],
       use: ['O sistema avisa quando a mesma peça ou lote já teve não conformidade registrada.', 'Imprima o relatório para assinatura e arquivo do SGQ; o conteúdo impresso é o mesmo do banco.', 'Ações em atraso continuam visíveis no painel de RPNC.'],
+    },
+  },
+  'qualidade/dashboard-rnc': {
+    module: 'Qualidade / SGQ', title: 'Dashboard de RNC e CAPA',
+    description: 'Indicadores reais de não conformidades abertas, eficácia das ações CAPA, revisões documentais pendentes, inspeção de recebimento e inspeção dimensional.',
+    help: {
+      fill: ['Nada a preencher: a tela só lê os registros da empresa autenticada.', 'Se um indicador vier zerado, confirme se existe RNC, ação CAPA, revisão ou inspeção lançada no módulo correspondente.'],
+      use: ['Use os gráficos para priorizar setor e tipo de desvio antes de abrir uma nova RPNC.', 'Cada cartão leva ao módulo de origem: RPNC, documentos, recebimento ou metrologia.'],
+    },
+  },
+  'qualidade/sala-rnc': {
+    module: 'Qualidade / SGQ', title: 'Sala de RNC / RPNC',
+    description: 'Triagem, disposição física, análise dos 5 Porquês e ações mitigatórias 5W2H da não conformidade, com histórico e impressão em A4.',
+    help: {
+      fill: ['Registre a ocorrência com data real, criticidade e setor; a descrição deve permitir rastrear peça e lote.', 'Na análise, responda os 5 Porquês até a causa raiz e feche cada ação 5W2H com responsável e prazo.'],
+      use: ['A RPNC só é encerrada com disposição registrada e eficácia verificada.', 'Use Imprimir A4 para o formulário controlado do SGQ; o relatório usa os dados do banco, não a captura da tela.'],
+    },
+  },
+  'pcp/controle-injetora': {
+    module: 'Engenharia e PCP', title: 'Controle de Processo da Injetora',
+    description: 'Cartão de Controle de Processo Produtivo (CCPP): liberação de máquina, perfil térmico, amostragem e diário de bordo da injetora.',
+    help: {
+      fill: ['Selecione a OP e a máquina reais antes de preencher o CCPP.', 'Informe o perfil térmico e a amostragem medidos no turno; o diário de bordo registra o que ocorreu, não o que estava previsto.'],
+      use: ['A liberação da máquina vale para o lote em execução; troca de material ou molde exige novo registro.', 'Use Imprimir A4 para o CCPP controlado; o relatório é montado a partir dos dados gravados.'],
+      watch: 'Com POM/poliacetal, siga o alerta de segurança: fechar a guilhotina uma hora antes do fim e nunca deixar material no cilindro.',
     },
   },
   'qualidade/auditorias': {
@@ -560,11 +586,13 @@ const pagePrincipalPrefix = '/pageprincipal'
 
 /** Telas que já desenham o próprio cabeçalho de abertura; o shell não adiciona card acima (evita título duplicado). */
 // Ordem do proprietario em 2026-11-04, print de /qualidade/dashboard-rnc com dois cards navy:
-// "TEM DOIS CARDS AZUL TIRAR". As quatro telas abaixo desenham a própria faixa de abertura e
-// faltavam nesta lista, então o shell injetava uma segunda faixa idêntica acima delas.
+// "TEM DOIS CARDS AZUL TIRAR". As telas abaixo desenham a própria faixa de abertura e faltavam
+// nesta lista, então o shell injetava uma segunda faixa idêntica acima delas.
+// 2026-11-08: /qualidade/dashboard-rnc saiu da lista porque passou a usar o card navy único do shell
+// (a tela já não desenha cabeçalho próprio); o verbete dela está no catálogo.
 const nativeIntroCardPaths = [
   '/compras', '/financeiro', '/administracao-configuracoes', '/ajuda',
-  '/qualidade/dashboard-rnc', '/qualidade/auditoria-5s', '/qualidade/especificacoes', '/compras/requisicoes',
+  '/qualidade/auditoria-5s', '/qualidade/especificacoes', '/compras/requisicoes',
 ]
 
 export function hasNativeIntroCard(pathname: string): boolean {

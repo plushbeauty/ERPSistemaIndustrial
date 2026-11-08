@@ -1,6 +1,7 @@
 /**
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @REVISAO: REV-TELAS-CONSISTENTES-20261108-01 — ordem do proprietário em 2026-11-08 ("tem telas com botões laranja e outras não, tem cards azuis e fontes desalinhadas"): a tela deixou de renderizar um segundo ERPHorizontalShell e o cabeçalho próprio; a abertura é o card navy padrão do shell e resta só a barra de Atualizar. Consultas e indicadores inalterados.
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
@@ -9,7 +10,6 @@ import { AlertTriangle, BarChart3, CheckCircle2, ClipboardCheck, Gauge, RefreshC
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
-import ERPHorizontalShell from '../components/layout/ERPHorizontalShell'
 
 type Rpn = { id: string; status: string; setor_envolvido_id: string | null; setor?: { nome: string }[] | null }
 type Sector = { id: string; nome: string }
@@ -100,18 +100,12 @@ export default function QualidadeDashboardRNC() {
   const dimensionalStatus = [{ name: 'Conforme', value: dimensionalOk }, { name: 'Não conforme', value: dimensionalNok }, { name: 'Com restrição', value: Math.max(0, dimensionalInspections.length - dimensionalOk - dimensionalNok) }]
 
   return (
-    <ERPHorizontalShell>
-    <main data-quality-workspace className="min-h-screen bg-[radial-gradient(ellipse_at_top_left,_rgba(45,141,184,0.16),_transparent_42%),linear-gradient(135deg,#edf7fb_0%,#f4f7fc_52%,#edf2fa_100%)] p-3 text-slate-900 md:p-4">
-      <div className="mx-auto grid max-w-[1800px] gap-3 grid-cols-1">
+    <main data-quality-workspace className="min-h-full bg-[#F4FBFD] p-2 text-slate-800">
+      <div className="mx-auto grid max-w-[1800px] gap-2 grid-cols-1">
         <div className="min-w-0">
-          <header className="flex flex-wrap items-end gap-4 rounded-md border border-sky-200 bg-gradient-to-r from-[#123B50] via-[#185c78] to-[#2D8DB8] p-4 text-white shadow-sm">
-            <div>
-              <p className="text-[9px] font-bold uppercase tracking-[.16em] text-cyan-100">QUALIDADE › SGQ › VISÃO GERAL</p>
-              <h1 className="text-xl font-semibold md:text-2xl">Visão geral da qualidade</h1>
-              <p className="mt-1 text-xs text-sky-50">Indicadores de RNC, CAPA, controle documental, recebimento e inspeção dimensional.</p>
-            </div>
-            <button type="button" onClick={() => void load()} disabled={loading} className="ml-auto inline-flex h-[30px] min-h-[30px] items-center gap-2 rounded-[2px] border border-white/40 bg-white/10 px-3 text-[10px] font-semibold text-white hover:bg-white/20"><RefreshCw size={17}/>{loading ? 'Carregando…' : 'Atualizar'}</button>
-          </header>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <button type="button" onClick={() => void load()} disabled={loading} className="inline-flex h-[30px] min-h-[30px] items-center gap-2 rounded-[2px] border border-slate-300 bg-white px-3 text-[10px] font-semibold text-[#123B50] hover:border-[#2D8DB8]"><RefreshCw size={13}/>{loading ? 'Carregando…' : 'Atualizar'}</button>
+          </div>
 
           {error && <div role="alert" className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rose-200 bg-rose-50 p-4 font-semibold text-rose-900"><span>{error}</span><button type="button" onClick={() => void load()} className="rounded-md border border-rose-300 bg-white px-3 py-2 font-bold">Tentar novamente</button></div>}
           {loading && !error ? <p role="status" className="mt-5 rounded-lg border border-slate-200 bg-white p-6 text-center font-semibold text-slate-600">Carregando indicadores reais do SGQ…</p> : !error && <>
@@ -144,7 +138,6 @@ export default function QualidadeDashboardRNC() {
         </div>
       </div>
     </main>
-    </ERPHorizontalShell>
   )
 }
 

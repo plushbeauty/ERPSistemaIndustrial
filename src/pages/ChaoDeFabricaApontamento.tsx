@@ -1,23 +1,21 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-11-04
- * @REVISAO: REV-CHAO-FABRICA-CARTAO-PONTO-20261104-02 — tela real por cartão de ponto + fileira da semana em trilho
- *   de rolagem no celular e nome do operador lido de nome_completo quando o cadastro tiver os dois campos
- * @STATUS_APROVACAO: DETERMINADO PELO PROPRIETARIO ("NAO QUERO ESSA TELA SÓ DE DEMOSTRAÇÃO DEVE VIR UM CAMPO PARA
- *   COLOCAR NUMERO DO CARTÁO DE PONTO PARA PUXAR O NOME DO OPERADOR E SUA PROGRAMAÇAO DO PC PARA ELE O QUE VAI TER
- *   PARA FAZER NO DIA E NA SEMANA E AS MAQUINAS TER UM ABA PARA ELE PUXAR A FICHA DE PROCESSO DA PEÇA ONLINE", 2026-11-04)
- * Substitui o protótipo visual: o número do cartão resolve o funcionário em erp_funcionarios
- * (numero_cracha_rfid / matricula), a agenda vem de erp_pcp_programacoes atribuída a ele, o apontamento é
- * carimbado pelas RPCs erp_apontamento_iniciar / erp_apontamento_finalizar (relógio do banco) e a ficha de
- * processo é lida online de erp_fichas_processo + erp_ficha_processo_operacoes + receita APROVADA.
- * Sem dado de demonstração: consulta que falha é declarada na tela, nunca preenchida com exemplo.
+ * @DATA_REVISAO_APROVACAO: 2026-11-08
+ * @REVISAO: REV-OPERADOR-CARTAO-CPF3-20261108-01 — ordem do proprietário em 2026-11-08: o operador se identifica com o número do cartão + os 3 últimos dígitos do CPF. A conferência saiu do cliente e passou para a RPC security definer erp_operador_identificar_cartao, que valida a empresa da sessão, bloqueia após 8 falhas em 15 minutos e devolve só os dados públicos do crachá (o CPF nunca volta). Agenda, apontamento e ficha de processo inalterados.
+ * @REVISAO: REV-CHAO-FABRICA-CARTAO-PONTO-20261104-02 — tela real por cartão de ponto + fileira da semana em trilho de rolagem no celular e nome do operador lido de nome_completo quando o cadastro tiver os dois campos
+ * @STATUS_APROVACAO: DETERMINADO PELO PROPRIETARIO ("NAO QUERO ESSA TELA SÓ DE DEMOSTRAÇÃO DEVE VIR UM CAMPO PARA COLOCAR NUMERO DO CARTÁO DE PONTO PARA PUXAR O NOME DO OPERADOR E SUA PROGRAMAÇAO DO PC PARA ELE O QUE VAI TER PARA FAZER NO DIA E NA SEMANA E AS MAQUINAS TER UM ABA PARA ELE PUXAR A FICHA DE PROCESSO DA PEÇA ONLINE", 2026-11-04) E COMPLEMENTADO EM 2026-11-08 ("o numero do cartao mais os 3 ultimos numeros do cpf")
+ * Substitui o protótipo visual: cartão/matrícula + 3 últimos dígitos do CPF resolvem o funcionário
+ * pela RPC erp_operador_identificar_cartao, a agenda vem de erp_pcp_programacoes atribuída a ele, o
+ * apontamento é carimbado pelas RPCs erp_apontamento_iniciar / erp_apontamento_finalizar (relógio do
+ * banco) e a ficha de processo é lida online de erp_fichas_processo + erp_ficha_processo_operacoes +
+ * receita APROVADA. Sem dado de demonstração: consulta que falha é declarada na tela.
  */
 import { useCallback, useMemo, useState } from 'react'
 import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, ClipboardList, Clock3, Factory, FileText, LogIn, Package, Play, RefreshCw, Route, Square, Trash2, UserRound, Wrench } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 
-type Worker = { id: string; matricula: string | null; nome: string | null; nome_completo: string | null; email: string | null; status: string | null; turno_trabalho: string | null; departamento: string | null; cargo: string | null; numero_cracha_rfid: string | null }
+type Worker = { id: string; empresa_id: string | null; matricula: string | null; nome: string | null; nome_completo: string | null; email: string | null; status: string | null; turno_trabalho: string | null; departamento: string | null; cargo: string | null; numero_cracha_rfid: string | null }
 type Program = { id: string; ordem_producao_id: string | null; maquina_id: string | null; produto_id: string | null; inicio_planejado: string; fim_planejado: string | null; quantidade_planejada: number | null; quantidade_produzida: number | null; quantidade_refugada: number | null; status: string | null; operador_frente_id: string | null; operador_atras_id: string | null }
 type Order = { id: string; numero_op: string | number; produto_id: string | null; quantidade_planejada: number | null; quantidade: number | null; status: string | null; data_prevista: string | null }
 type Product = { id: string; codigo: string | null; nome: string | null; unidade: string | null }
@@ -33,7 +31,6 @@ type FinishedEntry = { id: string; fim_em: string; duracao_seg: number | null; q
 type TabKey = 'DIA' | 'SEMANA' | 'MAQUINAS' | 'FICHA'
 
 const MIGRATION_APONTAMENTO = '20261103100000_mes_apontamento_gravado_no_servidor.sql'
-const INATIVOS = ['inativo', 'desligado', 'demitido', 'cancelado', 'afastado']
 const BADGE_FORMAT = /^[A-Za-z0-9._/-]{2,32}$/
 const PARADA_MOTIVOS = ['Quebra de máquina', 'Falta de material', 'Ajuste de processo', 'Setup / troca de ferramenta', 'Manutenção planejada', 'Problema de qualidade', 'Sem operador', 'Outro']
 
@@ -79,6 +76,7 @@ function falhaDoApontamento(cause: unknown, fallback: string): string {
 
 export default function ChaoDeFabricaApontamento() {
   const [badge, setBadge] = useState('')
+  const [cpf3, setCpf3] = useState('')
   const [empresaId, setEmpresaId] = useState('')
   const [worker, setWorker] = useState<Worker | null>(null)
   const [programs, setPrograms] = useState<Program[]>([])
@@ -186,34 +184,29 @@ export default function ChaoDeFabricaApontamento() {
     setOperations(nextOperations)
   }, [])
 
-  const identify = useCallback(async (code: string) => {
+  const identify = useCallback(async (code: string, cpfDigits: string) => {
     const codigo = code.trim()
+    const digitos = cpfDigits.replace(/\D/g, '')
     setLoading(true)
     setError('')
     setNotice('')
     try {
       if (!BADGE_FORMAT.test(codigo)) throw new Error('Número do cartão inválido: use de 2 a 32 caracteres (números, letras, ponto, traço ou barra).')
-      const tenant = await supabase.rpc('erp_current_empresa_id')
-      if (tenant.error || typeof tenant.data !== 'string' || !tenant.data) {
-        throw tenant.error ?? new Error('Sessão corporativa não identificada. Faça login no ERP antes de usar o cartão.')
-      }
-      const lookup = await supabase.from('erp_funcionarios')
-        .select('id,matricula,nome,nome_completo,email,status,turno_trabalho,departamento,cargo,numero_cracha_rfid')
-        .eq('empresa_id', tenant.data)
-        .or('numero_cracha_rfid.eq.' + codigo + ',matricula.eq.' + codigo)
-        .limit(2)
+      if (digitos.length !== 3) throw new Error('Informe os 3 últimos dígitos numéricos do CPF do operador.')
+      const lookup = await supabase.rpc('erp_operador_identificar_cartao', { p_cartao: codigo, p_cpf3: digitos })
       if (lookup.error) {
-        if (/numero_cracha_rfid/.test(lookup.error.message)) {
-          throw new Error('A coluna numero_cracha_rfid não existe no banco ainda: aplique a migration 20261030170000_rh_industrial_operacional_v1.sql e tente de novo.')
+        const texto = String(lookup.error.message ?? '')
+        if (lookup.error.code === 'PGRST202' || /erp_operador_identificar_cartao|schema cache|Could not find the function/i.test(texto)) {
+          throw new Error('A identificação por cartão + CPF ainda não está aplicada no banco. Execute supabase/migrations/20261108120000_erp_operador_cartao_cpf3_v1.sql no SQL Editor e tente de novo.')
         }
-        throw lookup.error
+        throw new Error(texto || 'Não foi possível conferir cartão e CPF.')
       }
-      const rows = (lookup.data ?? []) as Worker[]
-      if (rows.length === 0) throw new Error('Cartão ' + codigo + ' não encontrado no RH desta empresa. Cadastre o número no cartão do funcionário (numero_cracha_rfid ou matrícula).')
-      if (rows.length > 1) throw new Error('Cartão duplicado no cadastro do RH: dois funcionários usam o número ' + codigo + '. Corrija antes de apontar produção.')
+      const rows = (Array.isArray(lookup.data) ? lookup.data : lookup.data ? [lookup.data] : []) as Worker[]
+      if (!rows.length) throw new Error('Cartão ou CPF não conferem. Confira o número do cartão e os 3 últimos dígitos do CPF.')
       const found = rows[0]
-      if (INATIVOS.includes(String(found.status).toLocaleLowerCase('pt-BR'))) throw new Error('Acesso bloqueado: o cadastro de ' + (found.nome ?? found.nome_completo ?? found.id) + ' está como ' + (found.status ?? 'inativo') + '.')
-      setEmpresaId(tenant.data)
+      const tenant = String(found.empresa_id ?? '')
+      if (!tenant) throw new Error('O cadastro do operador não tem empresa vinculada. Procure o RH antes de apontar produção.')
+      setEmpresaId(tenant)
       setWorker(found)
       setSelectedDay(dayKey(new Date()))
       setWeekOffset(0)
@@ -223,7 +216,8 @@ export default function ChaoDeFabricaApontamento() {
       setScrapQty('')
       setStopReason('')
       setObservations('')
-      await loadForWorker(found.id, tenant.data)
+      await loadForWorker(found.id, tenant)
+      setCpf3('')
       setNotice('Operador identificado: ' + (found.nome ?? found.nome_completo ?? 'sem nome') + '.')
     } catch (cause) {
       setWorker(null)
@@ -473,20 +467,24 @@ export default function ChaoDeFabricaApontamento() {
               <h1 className="mt-1 text-2xl font-black leading-tight text-[#123B50] md:text-3xl">Leia o cartão de ponto</h1>
             </div>
           </div>
-          <form className="mt-6 space-y-4" onSubmit={event => { event.preventDefault(); void identify(badge) }}>
+          <form className="mt-6 space-y-4" onSubmit={event => { event.preventDefault(); void identify(badge, cpf3) }}>
             <label className="block space-y-2">
               <span className={label}>Número do cartão / crachá ou matrícula</span>
               <input className={field} inputMode="numeric" autoComplete="off" autoFocus value={badge} onChange={event => setBadge(event.target.value)} placeholder="Ex.: 1042" aria-label="Número do cartão de ponto" />
             </label>
+            <label className="block space-y-2">
+              <span className={label}>3 últimos dígitos do CPF</span>
+              <input className={field} type="password" inputMode="numeric" autoComplete="off" maxLength={3} value={cpf3} onChange={event => setCpf3(event.target.value.replace(/\D/g, '').slice(0, 3))} placeholder="•••" aria-label="Três últimos dígitos do CPF" />
+            </label>
             <div className="flex flex-wrap gap-3">
-              <button type="submit" disabled={loading || badge.trim().length === 0} className={touchButton + ' flex-1 border-[#123B50] bg-[#123B50] text-white hover:bg-[#0d2c3d]'}>
+              <button type="submit" disabled={loading || badge.trim().length === 0 || cpf3.length !== 3} className={touchButton + ' flex-1 border-[#123B50] bg-[#123B50] text-white hover:bg-[#0d2c3d]'}>
                 {loading ? <RefreshCw size={22} className="animate-spin" /> : <UserRound size={22} />} {loading ? 'Identificando…' : 'Abrir minha programação'}
               </button>
-              <button type="button" onClick={() => { setBadge(''); setNotice(''); setError('') }} className={touchButton + ' border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}><Trash2 size={20} /> Limpar</button>
+              <button type="button" onClick={() => { setBadge(''); setCpf3(''); setNotice(''); setError('') }} className={touchButton + ' border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}><Trash2 size={20} /> Limpar</button>
             </div>
           </form>
           {(error || notice) && <p role={error ? 'alert' : 'status'} className={'mt-5 border p-4 text-sm font-bold ' + (error ? 'border-rose-200 bg-rose-50 text-rose-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800')}>{error || notice}</p>}
-          <p className="mt-5 text-xs leading-relaxed text-slate-500">O cartão é lido no cadastro do RH da empresa da sessão (<strong>numero_cracha_rfid</strong> ou <strong>matricula</strong>). Nada é exibido antes de identificar o operador — a tela não trabalha com dados de exemplo.</p>
+          <p className="mt-5 text-xs leading-relaxed text-slate-500">O cartão (<strong>numero_cracha_rfid</strong> ou <strong>matrícula</strong>) e os <strong>3 últimos dígitos do CPF</strong> são conferidos no servidor contra o cadastro do RH da empresa da sessão. Após 8 tentativas erradas, o cartão fica bloqueado por 15 minutos. Nada é exibido antes de identificar o operador — a tela não trabalha com dados de exemplo.</p>
         </section>
       </div>
     </main>
@@ -508,7 +506,7 @@ export default function ChaoDeFabricaApontamento() {
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1.5 border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-800"><CheckCircle2 size={15} /> {programs.length} tarefa(s) na agenda</span>
           <button type="button" onClick={() => void refresh()} disabled={loading} className={touchButton + ' min-h-[44px] border-slate-300 bg-white px-4 text-sm text-slate-700'}>{loading ? <RefreshCw size={16} className="animate-spin" /> : <RefreshCw size={16} />} Atualizar</button>
-          <button type="button" onClick={() => { setWorker(null); setPrograms([]); setEntries([]); setBadge(''); setError(''); setNotice('') }} className={touchButton + ' min-h-[44px] border-[#123B50] bg-[#123B50] px-4 text-sm text-white'}><LogIn size={16} /> Trocar cartão</button>
+          <button type="button" onClick={() => { setWorker(null); setPrograms([]); setEntries([]); setBadge(''); setCpf3(''); setError(''); setNotice('') }} className={touchButton + ' min-h-[44px] border-[#123B50] bg-[#123B50] px-4 text-sm text-white'}><LogIn size={16} /> Trocar cartão</button>
         </div>
       </section>
 
