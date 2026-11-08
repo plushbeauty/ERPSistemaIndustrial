@@ -549,3 +549,25 @@ A migration de templates também altera `erp_inspecoes` e cria trigger de valida
 - O último build Vercel inspecionado falhou por `Plus is not defined` em `QualidadeInspecoesIndustrial.tsx`; essa causa foi corrigida no commit subsequente. Não foi possível criar novo preview: a API Vercel retornou limite de deployments gratuito por 24 horas.
 - O commit atual tem status Vercel `failure` herdado de deployment anterior; não é evidência de que o commit posterior corrigido passou no build.
 - Nenhuma migration foi aplicada remotamente nesta revisão.
+
+### Revisão estática de idempotência e RLS do pacote de 32 migrations — 08/11/2026
+
+Auditoria do arquivo `supabase/diagnosticos/20261104_pacote_aplicar_migrations_pendidas.sql` (6.182 linhas):
+
+| Verificação estática | Resultado |
+|---|---:|
+| Migrations copiadas para o pacote | 32 |
+| Tabelas distintas criadas no pacote | 91 |
+| Declarações `CREATE TABLE` | 102; todas com `IF NOT EXISTS` |
+| Declarações `CREATE INDEX` | 99; todas com `IF NOT EXISTS` |
+| Tabelas cobertas por habilitação de RLS | 91/91, considerando os 5 blocos dinâmicos `FOREACH` e as declarações diretas |
+| Tabelas com políticas | 91/91, considerando políticas diretas e blocos dinâmicos |
+| Tabelas com GRANT explícito a `authenticated` | 91/91, considerando concessões diretas e blocos dinâmicos |
+| `DROP TABLE`, `DROP COLUMN`, `TRUNCATE` | 0 |
+| `DELETE FROM` | 3, todos dentro de RPCs transacionais e limitados ao tenant/registro em edição |
+
+Os três `DELETE` encontrados não são executados ao colar o pacote: pertencem a funções de gravação de BOM, ficha técnica e ações CAPA. Os dois primeiros substituem os itens do rascunho da própria empresa dentro da RPC; o terceiro remove apenas ações CAPA planejadas, criadas pelo usuário atual e não presentes na lista enviada. Ainda assim, testar esses fluxos em ambiente de homologação é obrigatório.
+
+**Conclusão estática:** o pacote de 32 migrations passou na checagem estrutural de idempotência de criação e cobertura RLS/grants. Isso não prova que as policies estão corretas no banco remoto nem que a execução completa não encontrará divergências de constraints, tipos ou dados existentes. O script `VERIFICACAO-POS-MIGRATIONS.sql` e os testes de duas empresas continuam obrigatórios após aplicação.
+
+**Não confundir:** essa conclusão refere-se somente às 32 migrations contidas no pacote. As migrations de templates e custo real listadas acima continuam fora do pacote; o conflito entre as duas versões de custo permanece bloqueado.
