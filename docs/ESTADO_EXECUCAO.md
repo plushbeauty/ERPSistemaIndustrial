@@ -70,3 +70,11 @@ Nenhum bloqueio externo definitivo neste momento. O deploy Vercel está em BUILD
 3. Validar a Edge Function `erp-company-signup` em cenários seguros de homologação sem expor credenciais.
 4. Confirmar persistência e vínculo Auth/ERP.
 5. Só então iniciar a bateria de testes do login e permissões.
+
+## REGISTRO DE INTEGRAÇÃO — 2026-11-08
+- Branch de telas: `prod-telas-novas`, integrada com `main` até `8464d41e` e com o remoto da própria branch até `2537695d`; push final `51b4c9aa`.
+- Autoria padronizada como `FernandoSch` em todo o código rastreado; crédito de IA removido dos cabeçalhos.
+- Nenhuma tela nova removida, nenhuma tela antiga restaurada; `scripts/verify-official-screens-lock.mjs` mantém 26 telas travadas por hash e 84 caminhos antigos banidos.
+- Manifesto oficial regerado pelo próprio script: 220 telas alcançáveis carimbadas.
+- `npm run verify:release` executado sem `|| true`: 83 verificações PASS, 0 falhas; 320 rotas e 189 imports lazy conferidos; type-check limpo; lint sem erros (70 avisos).
+- PR #299 aberto e mesclável sobre `main` `8464d41e`; promoção para produção depende de autorização explícita do proprietário.
