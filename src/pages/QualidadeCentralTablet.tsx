@@ -71,6 +71,23 @@ const qualityModules: readonly QualityModule[] = [
   { label: 'Relatórios do SGQ', description: 'Consultas e dossiês consolidados da Qualidade.', route: '/qualidade/relatorios-documentos', icon: FileText },
 ]
 
+const qualityCategories = [
+  'Todos',
+  'Inspeção e processo',
+  'RNC e melhoria',
+  'Rastreabilidade e risco',
+  'Documentação e auditoria',
+] as const
+
+type QualityCategory = typeof qualityCategories[number]
+
+function categoryForRoute(route: string): QualityCategory {
+  if (['/qualidade/inspecoes', '/qualidade/inspecao-processo', '/qualidade/especificacoes', '/qualidade/liberacao-lote', '/qualidade/quarentena', '/qualidade/cep', '/qualidade/calibracao'].includes(route)) return 'Inspeção e processo'
+  if (['/qualidade/sala-rnc', '/qualidade/rnc', '/qualidade/ishikawa', '/qualidade/capa', '/qualidade/metodologia-8d', '/qualidade/auditoria-5s'].includes(route)) return 'RNC e melhoria'
+  if (['/qualidade/genealogia-lote', '/qualidade/fmea', '/qualidade/plano-controle', '/qualidade/controle-desenhos'].includes(route)) return 'Rastreabilidade e risco'
+  return 'Documentação e auditoria'
+}
+
 const toneClasses = {
   green: 'border-l-emerald-500 text-emerald-700',
   amber: 'border-l-amber-500 text-amber-800',
@@ -88,6 +105,7 @@ export default function QualidadeCentralTablet() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [lastUpdated, setLastUpdated] = useState('')
+  const [activeCategory, setActiveCategory] = useState<QualityCategory>('Todos')
 
   const loadMetrics = useCallback(async () => {
     setLoading(true)
@@ -127,6 +145,10 @@ export default function QualidadeCentralTablet() {
   }, [])
 
   useEffect(() => { void loadMetrics() }, [loadMetrics])
+
+  const visibleModules = activeCategory === 'Todos'
+    ? qualityModules
+    : qualityModules.filter(module => categoryForRoute(module.route) === activeCategory)
 
   return (
     <main className="min-h-screen bg-[#F4FBFD] p-3 text-[#123B50] antialiased sm:p-4">
@@ -179,10 +201,25 @@ export default function QualidadeCentralTablet() {
               <h2 className="text-[11px] font-black uppercase tracking-wide text-[#123B50]">Módulos de conformidade e rastreabilidade</h2>
               <p className="text-[9px] font-medium text-slate-500">Atalhos operacionais do SGQ com grade responsiva de alta densidade.</p>
             </div>
-            <span className="shrink-0 border border-[#CFE1E7] bg-[#EAF6FA] px-2.5 py-1 text-[8px] font-black text-[#176487]">20 MÓDULOS</span>
+            <span className="shrink-0 border border-[#CFE1E7] bg-[#EAF6FA] px-2.5 py-1 text-[8px] font-black text-[#176487]">{qualityModules.length} MÓDULOS</span>
+          </div>
+          <div className="mb-3 flex flex-wrap gap-1.5" role="tablist" aria-label="Categorias do SGQ">
+            {qualityCategories.map(category => (
+              <button
+                key={category}
+                type="button"
+                role="tab"
+                aria-selected={activeCategory === category}
+                onClick={() => setActiveCategory(category)}
+                className={`inline-flex h-[30px] items-center border px-3 text-[9px] font-bold uppercase tracking-wide transition-colors ${activeCategory === category ? 'border-[#123B50] bg-[#123B50] text-white' : 'border-[#CFE1E7] bg-[#F8FAFC] text-[#456477] hover:border-[#2D8DB8] hover:bg-[#EAF6FA]'}`}
+              >
+                {category}
+                <span className="ml-1.5 opacity-75">{category === 'Todos' ? qualityModules.length : qualityModules.filter(module => categoryForRoute(module.route) === category).length}</span>
+              </button>
+            ))}
           </div>
           <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-            {qualityModules.map(({ label, description, route, icon: Icon, badge, badgeColor }) => (
+            {visibleModules.map(({ label, description, route, icon: Icon, badge, badgeColor }) => (
               <Link key={route} to={route} className="group relative flex min-h-[108px] min-w-0 flex-col justify-between rounded-none border border-[#CFE1E7] bg-[#F8FAFC] p-3 text-[#123B50] shadow-sm transition-colors hover:border-[#2D8DB8] hover:bg-[#EAF6FA] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2D8DB8]">
                 <div className="flex w-full min-w-0 items-start gap-2.5">
                   <span className="grid h-8 w-8 shrink-0 place-items-center border border-[#CFE1E7] bg-white text-[#176487] transition-colors group-hover:border-[#2D8DB8]">
