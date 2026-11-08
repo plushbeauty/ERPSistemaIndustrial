@@ -21,11 +21,11 @@
     },
     {
       "path": "src/components/quality/qualityTabletModules.ts",
-      "sha": "9efbba75f6b58a104cab1c09252c870ccb6025ee",
+      "sha": "2a5c219b0b85389cc1ea4f359e098b655dd25139",
       "autor": "FernandoSch",
-      "revisao": "REV-TABLET-CATALOGO-CARIMBO-20261103-01 — cabecalho de autoria/aprovacao adicionado; o catalogo de rotinas do SGQ segue identico",
+      "revisao": "REV-TABLET-TEMPLATE-INSPECAO-20261108-01 — card de templates versionados autorizado na ordem de execução de 2026-11-08",
       "aprovadaEm": "2026-11-03",
-      "statusAprovacao": "APROVADO PELO PROPRIETARIO (ordem de 2026-11-03: \"todas as telas novas vao ter revisao, aprovacao e travamento para o vercel nao pegar mais telas antigas\")"
+      "statusAprovacao": "INCREMENTO ADITIVO AUTORIZADO NA ORDEM ORDEM-EXECUCAO-SYSNQRA-20261108-01; rotas e cards aprovados preservados"
     },
     {
       "path": "src/features/banking/BankReconciliation.tsx",
