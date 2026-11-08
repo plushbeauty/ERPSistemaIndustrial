@@ -519,3 +519,33 @@ Depois da aplicação pelo proprietário:
 - `audit:ui-standardization` foi incluído nos comandos `verify:release` e `verify:production`.
 
 **Atenção:** a tela legada `QualidadeRNC.tsx` mantém uma impressão própria de Ishikawa/CAPA. Ela é uma rota distinta da RPNC unificada; não foi alterada nesta ordem porque o escopo A4 autorizado foi aplicado aos relatórios RPNC/FMEA/Plano de Controle/Certificado e o contrato visual dessa tela precisa ser confirmado separadamente.
+
+### Bloqueio identificado na revisão das migrations de custo — 08/11/2026
+
+**Não aplicar ainda as duas migrations de custo real em conjunto.** A revisão estática encontrou incompatibilidade estrutural:
+
+- `20261108210000_financeiro_custo_op_consumo_real.sql` cria `public.erp_financeiro_custo_op` como **tabela**, com RLS e RPCs `erp_confirmar_consumo_op`, `erp_apurar_custo_op` e `erp_fechar_custo_op`.
+- `20261108223500_financeiro_custo_op_real.sql` declara que a fonte única é `erp_custos_produtos` e executa `CREATE OR REPLACE VIEW public.erp_financeiro_custo_op`.
+- PostgreSQL não permite substituir uma tabela por uma view com `CREATE OR REPLACE VIEW`. Se a migration de 21:00 for executada antes da de 22:35, a segunda falhará. As duas também implementam contratos de custo diferentes.
+
+**Ação de segurança:** manter ambas sem aplicação até decidir um único modelo canônico e verificar o estado remoto. Não apagar tabela, não fazer `DROP` e não alterar migration histórica sem comprovar se já foi aplicada. O acesso Supabase usado nesta execução não retornou projetos autorizados; portanto não foi possível confirmar o histórico remoto.
+
+### Migrations de novas funcionalidades fora do pacote de 32
+
+A inspeção do pacote `20261104_pacote_aplicar_migrations_pendidas.sql` confirmou que ele contém a migration de liberação transacional de lote, mas não contém as migrations de templates versionados nem as migrations de custo real criadas posteriormente.
+
+Arquivos independentes encontrados:
+- `supabase/migrations/20261108200000_qualidade_templates_inspecao_versionados.sql`
+- `supabase/migrations/20261108210000_financeiro_custo_op_consumo_real.sql`
+- `supabase/migrations/20261108223500_financeiro_custo_op_real.sql`
+- `supabase/migrations/20261108225000_sgq_rel_001_liberacao_transacional_lote.sql`
+
+A migration de templates também altera `erp_inspecoes` e cria trigger de validação obrigatória do template. Não declarar a funcionalidade pronta até verificar compatibilidade com o schema remoto e aplicar/testar a migration.
+
+### Status de execução desta revisão
+
+- O alerta de calibração e o painel consolidado SGQ já existem no código da branch; suas consultas são tenant-scoped via `erp_current_empresa_id()` + `empresa_id`. Persistência e nomes reais das tabelas ainda dependem de verificação remota.
+- A correção de compilação em `QualidadeInspecoesIndustrial.tsx` adicionou o import de `Plus`; não alterou o layout aprovado.
+- O último build Vercel inspecionado falhou por `Plus is not defined` em `QualidadeInspecoesIndustrial.tsx`; essa causa foi corrigida no commit subsequente. Não foi possível criar novo preview: a API Vercel retornou limite de deployments gratuito por 24 horas.
+- O commit atual tem status Vercel `failure` herdado de deployment anterior; não é evidência de que o commit posterior corrigido passou no build.
+- Nenhuma migration foi aplicada remotamente nesta revisão.
