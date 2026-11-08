@@ -7,7 +7,7 @@
 -- e exigem nível administrativo 8/9 (ou Master). Escrita da matriz é feita por
 -- função security definer porque erp_permissoes_modulos só tem política de SELECT.
 -- Dependências: 20260912160000, 20260913000100, 20261003144000, 20261005180000.
--- Revisão: ACCESS-CONTROL-SECTOR-MATRIX-001 | 2026-10-30 | Fernando Schuinsekel
+-- Revisão: ACCESS-CONTROL-SECTOR-MATRIX-001 | 2026-10-30 | FernandoSchu
 
 begin;
 

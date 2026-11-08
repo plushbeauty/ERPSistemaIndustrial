@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSchu
  * @DATA_REVISAO_APROVACAO: 2026-11-05
  * @REVISAO: REV-FLUXO-CAIXA-COMPACTO-20261105-01
  * @STATUS: Tela dedicada integrada ao shell horizontal; não substitui a Central Financeira.

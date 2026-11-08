@@ -1,7 +1,7 @@
 /**
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-01 — catálogo de título e descrição de todas as telas
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSchu
  * @STATUS: CATÁLOGO ÚNICO DE ABERTURA DE TELAS · APROVADO PELO PROPRIETÁRIO EM 2026-10-30
  * Chaves: caminho já normalizado (sem o prefixo /pageprincipal e sem barra final).
  * Telas que já desenham o próprio card navy (Central de Compras, Financeiro,

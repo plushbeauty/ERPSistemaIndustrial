@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSchu
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-ACCESS-CONTROL-20261030-01 — controle de acesso do chão de fábrica (setores, matriz por módulo e modelos por nível)
  * @STATUS_APROVACAO: INTEGRAÇÃO REAL COM SUPABASE · exige a migration 20261030160000_erp_access_control_sector_matrix_v1 e o deploy da Edge Function erp-user-admin

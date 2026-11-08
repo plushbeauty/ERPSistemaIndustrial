@@ -1,7 +1,7 @@
 /**
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-01 — card de abertura compartilhado
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSchu
  * @STATUS: PADRÃO DE ABERTURA APLICADO A TODAS AS TELAS DO ERP EM 2026-10-30
  */
 import '../../styles/page-intro-card.css'

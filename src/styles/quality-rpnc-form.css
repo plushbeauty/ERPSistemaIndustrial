@@ -1,6 +1,6 @@
 /* Contrato visual do formulário RPNC (QualityRpncForm) e do painel de auditorias.
    Escopo limitado às classes .qrf / .qal para não alterar telas já aprovadas.
-   Autor: Fernando Schuinsekel · 2026-10-31 */
+   Autor: FernandoSchu · 2026-10-31 */
 
 .qrf {
   --qrf-line: var(--color-border);
