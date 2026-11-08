@@ -56,13 +56,20 @@ for (const r of laudo.faltantesCruzados ?? []) {
   for (const a of r.migrations ?? []) entrar(a, 'tabela ausente no banco: ' + r.nome)
 }
 
-/* Reparos escritos no repo para defeitos que o proprio banco denuncia, mas que nao
-   aparecem na lista de tabelas ausentes porque a tabela ja existe — o que falta e a
-   coluna/gatilho ou a politica. Sem estes dois arquivos, Chao de Fabrica (updated_em,
-   sqlstate 42703) e Central de Custos continuam travando depois do pacote. */
+/* Reparos obrigatorios identificados na auditoria:
+   - updated_em: coluna exigida pela trigger de apontamento;
+   - Central de Custos: tabelas e RLS por empresa;
+   - Estoque/Separacao: RPC atomica e RBAC para separacoes e cartoes;
+   - PCP/MRP: capacidade finita e contratos de programacao;
+   - Acabamentos: endurecimento de RLS/RBAC da tabela operacional.
+   Esses arquivos entram mesmo quando a tabela ja existe, pois o que falta pode ser
+   politica, RPC ou regra de integridade — nao apenas CREATE TABLE. */
 const REPAROS_OBRIGATORIOS = [
   '20261104190000_repair_updated_em_exigido_pela_trigger.sql',
-  '20261104200000_repair_central_custos_tabela_e_isolamento.sql'
+  '20261104200000_repair_central_custos_tabela_e_isolamento.sql',
+  '20261006140000_erp_stock_separation_atomic_rbac.sql',
+  '20261009200000_pcp_mrp_capacity_atomic.sql',
+  '20261010184500_pcp_acabamentos_tenant.sql'
 ]
 for (const a of REPAROS_OBRIGATORIOS) entrar(a, 'reparo de defeito denunciado pelo proprio banco')
 
