@@ -192,6 +192,7 @@ const QualidadeDashboardRNC = lazyPage(() => import('./pages/QualidadeDashboardR
 const QualidadePlanoControle = lazyPage(() => import('./pages/qualidade/PlanoControle'), 'QualidadePlanoControle')
 const DocumentosQualidadeControle = lazyPage(() => import('./pages/DocumentosQualidadeControle'), 'DocumentosQualidadeControle')
 const QualidadeInspecaoProcesso = lazyPage(() => import('./pages/QualidadeInspecaoProcesso'), 'QualidadeInspecaoProcesso')
+const QualidadeTemplatesInspecao = lazyPage(() => import('./pages/qualidade/QualidadeTemplatesInspecao'), 'QualidadeTemplatesInspecao')
 const QualidadeInspecoesIndustrial = lazyPage(() => import('./pages/QualidadeInspecoesIndustrial'), 'QualidadeInspecoesIndustrial')
 const QualidadeCentralTablet = lazyPage(() => import('./pages/QualidadeCentralTablet'), 'QualidadeCentralTablet')
 const QualidadeMetodologia8D = lazyPage(() => import('./pages/QualidadeMetodologia8D'), 'QualidadeMetodologia8D')
@@ -454,6 +455,7 @@ export default function AppEntryV2() {
               <Route path="qualidade/plano-controle" element={<QualityPlanGate><QualidadePlanoControle /></QualityPlanGate>} />
               <Route path="qualidade/documentos" element={<QualityPlanGate><DocumentosQualidadeControle /></QualityPlanGate>} />
               <Route path="qualidade/inspecao-processo" element={<QualityPlanGate><QualidadeInspecaoProcesso /></QualityPlanGate>} />
+              <Route path="qualidade/templates-inspecao" element={<QualityPlanGate><QualidadeTemplatesInspecao /></QualityPlanGate>} />
               <Route path="qualidade/fichas-processo" element={<Navigate to="/pageprincipal/pcp/fichas-processo" replace />} />
               <Route path="qualidade/inspecoes" element={<QualityPlanGate><QualidadeInspecoesIndustrial /></QualityPlanGate>} />
               <Route path="qualidade/tablet" element={<QualityPlanGate><QualidadeCentralTablet /></QualityPlanGate>} />
