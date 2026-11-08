@@ -12,7 +12,6 @@
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 13:00 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
  * ID da Revisão: REV-059
  * Data da revisão autorizada: 2026-10-22
  * @REVISAO_ANTERIOR: REV-PRODUTO-UI-013 — legibilidade do cadastro (campos preenchendo a célula do grid, tipografia e alturas no padrão ERP)
