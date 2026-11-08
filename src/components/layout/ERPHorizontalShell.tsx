@@ -39,6 +39,7 @@ const menus: MenuItem[] = [
     { label: 'Notas de Débito', route: '/pageprincipal/financeiro/notas-debito', icon: FileWarning },
     { label: 'Configurações de Notas de Débito', route: '/pageprincipal/financeiro/notas-debito/configuracoes', icon: Settings },
     { label: 'Custo padrão', route: '/pageprincipal/financeiro/custo-padrao' },
+    { label: 'Desvios de custo', route: '/pageprincipal/financeiro/grafico-desvios', icon: BarChart3 },
     { label: 'Contas a pagar', route: '/pageprincipal/financeiro/contas-pagar' },
     { label: 'Contas a receber', route: '/pageprincipal/financeiro/contas-receber' },
     { label: 'Caixa', route: '/pageprincipal/financeiro/caixa' }  ] },  { label: 'Comissões', route: '/pageprincipal/comissoes', icon: Calculator, children: [
@@ -94,6 +95,7 @@ const menus: MenuItem[] = [
     { label: 'Central de compras / RFQ', route: '/pageprincipal/compras/rfq' },
     { label: 'Solicitações internas', route: '/pageprincipal/compras-solicitacao' },
     { label: 'Recebimentos', route: '/pageprincipal/recebimento-materiais' },
+    { label: 'Análise de preços', route: '/pageprincipal/compras/analise-precos', icon: BarChart3 },
     { label: 'Relatórios', route: '/pageprincipal/compras/relatorios' }  ] },  { label: 'Configurações', route: '/pageprincipal/administracao-configuracoes', icon: Settings },  { label: 'Configurações de Usuário', route: '/pageprincipal/configuracoes-usuario', icon: UserCog, minNivel: 8 },  { label: 'Central de Evolução', route: '/pageprincipal/administracao/central-evolucao', icon: ListChecks, minNivel: 8 },  { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: FileText, children: [
     { label: 'Central Fiscal', route: '/pageprincipal/fiscal', icon: FileText },
     { label: 'Ano Fiscal', route: '/pageprincipal/fiscal/ano', icon: BookOpen },
@@ -138,7 +140,7 @@ const menus: MenuItem[] = [
   ] },  { label: 'Engenharia de Produto (BOM)', route: '/pageprincipal/engenharia', icon: Database, children: [
     { label: 'Central de Engenharia', route: '/pageprincipal/engenharia' },
     { label: 'Catálogo de itens', route: '/pageprincipal/engenharia/produtos' },
-    { label: 'Estrutura BOM', route: '/pageprincipal/engenharia/bom' },
+    { label: 'Estrutura BOM', route: '/pageprincipal/engenharia/bom-mestre' },
     { label: 'Roteiros de fabricação', route: '/pageprincipal/engenharia/roteiros' },
     { label: 'Revisões BOM', route: '/pageprincipal/engenharia/revisoes-bom' },
   ] },  { label: 'Manutenção', route: '/pageprincipal/manutencao', icon: Wrench, children: [
