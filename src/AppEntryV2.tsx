@@ -52,6 +52,8 @@ import './styles/erp-active-gold-20261101.css'
 import './styles/erp-action-contract-20261101.css'
 // Última camada: régua premium única do conteúdo autenticado (REV-PREMIUM-GLOBAL-20261108-01).
 import './styles/erp-premium-global-20261108.css'
+// Sistema visual v2: chrome navy, superfície neutra e uma cor de ação (REV-INDUSTRIAL-DS-20261108-01).
+import './styles/erp-industrial-ds-20261108.css'
 
 const PagePrincipal = lazy(() => import('./pages/PagePrincipal'))
 const AppIndustrial = lazy(() => import('./AppIndustrialV7'))
