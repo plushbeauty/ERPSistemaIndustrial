@@ -1475,7 +1475,7 @@ export default function QualityRpncForm() {
             <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 p-3">
               <p className="max-w-2xl text-[10px] text-slate-500">A gravação usa a RPC de segurança <code>erp_sgq_salvar_formulario_rpnc</code>: ela revalida empresa, permissão <code>qualidade:editar</code> e o contrato 6M no PostgreSQL. Campos de abertura (protocolo, descrição, gravidade, setor) permanecem imutáveis por trigger.</p>
               <div className="flex flex-wrap gap-2">
-                <button type="button" className="erp-btn" onClick={() => window.print()}><Printer size={14} /> Imprimir relatório</button>
+                <button type="button" className="erp-btn" onClick={imprimirRelatorio}><Printer size={14} /> Imprimir relatório</button>
                 <button type="button" className="erp-btn" disabled={saving || !rpnc || porques.some((resposta) => resposta.trim().length < 3)} onClick={() => void salvarInvestigacaoEficacia()}><CheckCircle2 size={13} /> Salvar investigação e prazo</button>
                 <button type="button" className="erp-btn-primary" disabled={saving} onClick={() => void salvarFormulario()}><Save size={14} /> Salvar formulário</button>
               </div>
