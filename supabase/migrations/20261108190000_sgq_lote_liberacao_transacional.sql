@@ -247,7 +247,7 @@ begin
 
   return jsonb_build_object('registro', to_jsonb(v_registro), 'lote', to_jsonb(v_lote));
 end;
-$;
+$$;
 
 -- 3) RPCs públicas da tela. Ambas usam a mesma transação e trilha de auditoria.
 create or replace function public.erp_liberar_lote(
