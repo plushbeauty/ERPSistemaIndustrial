@@ -421,11 +421,11 @@
     },
     {
       "path": "src/pages/ComprasPedidoForm.tsx",
-      "sha": "a20b6693ae845c6afaa8c4ff7687e62add2a31a2",
+      "sha": "ae7568ddece2a64f59f1cea97009db44c60ba610",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-CONTRATO-BANCO-20261103-01 — grava via erp_compras_salvar_pedido_completo e declara a migration quando a rotina ainda não existe no banco",
-      "aprovadaEm": "2026-11-03",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-COMPRAS-VALIDACAO-PEDIDO-20261108-01 — valida todas as linhas sem descarte silencioso, tenant e referências carregadas, NCM de 8 dígitos, valores não negativos e tributos apresentados sem somar ICMS em duplicidade",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "REVISAO TECNICA AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA REFORCAR A VALIDACAO DO PEDIDO, MANTENDO A RPC TRANSACIONAL E O PADRAO VISUAL"
     },
     {
       "path": "src/pages/ComprasRFQ.tsx",
@@ -677,11 +677,11 @@
     },
     {
       "path": "src/pages/FinanceiroFluxoCaixa.tsx",
-      "sha": "8e7f2e7649f339a310bab1ac826c2f4a906b06cf",
+      "sha": "0dc83a10cca7482611a57fa8d8aa2bf880c64085",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-FLUXO-CAIXA-CRUD-PARCIAL-20261105-03 — filtros de periodo/tipo/status no banco, edicao e baixa persistidas, previstos separados de liquidados",
-      "aprovadaEm": "2026-11-05",
-      "statusAprovacao": "REVISAO TECNICA OBRIGATORIA DO PROPRIETARIO EM 2026-11-05; exclusao logica e historico seguem pendentes do laudo de schema"
+      "revisao": "REV-FLUXO-CAIXA-PAGINACAO-20261108-01 — leitura paginada integral, tenant da sessão autenticada, extrato e gravação real com controles compactos",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "REVISAO AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA INTEGRAR A VERSAO COM PAGINACAO COMPLETA E ISOLAMENTO POR EMPRESA, PRESERVANDO O SHELL HORIZONTAL GLOBAL"
     },
     {
       "path": "src/pages/FinanceiroGraficoDesvios.tsx",
@@ -893,11 +893,11 @@
     },
     {
       "path": "src/pages/PCPAreaFuncionario.tsx",
-      "sha": "f40fb07ffe9f15e3a0e28403732cb0ffcc8243f5",
+      "sha": "a60f836f5f5e01461c4a3f24388c1af3a254cd51",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PORTAL-OPERADOR-NOME-REAL-20261104-01 — cabecalo passou a ler nome_completo do RH (antes mostrava \"Identificando conta…\" para sempre quando o cadastro só tinha nome completo) e a fileira de dias virou trilho de rolagem no celular",
-      "aprovadaEm": "2026-11-04",
-      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-04: \"se a conta ja foi identificada, substitua o texto pelo nome real do operador em destaque\" + conferência responsiva tela a tela"
+      "revisao": "REV-OPERADOR-MAQUINAS-CPP-20261108-01 — painel responsivo de máquinas por programação real, cada OP preservada como cartão próprio e seleção abre o CPP correspondente; receita específica da máquina priorizada",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "REVISAO AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA INTEGRAR O PAINEL VISUAL DE MAQUINAS AOS DADOS REAIS DO PCP, PRESERVANDO AUTENTICACAO, CPP E APONTAMENTOS DO SERVIDOR"
     },
     {
       "path": "src/pages/PCPCapacidade.tsx",
@@ -1213,11 +1213,11 @@
     },
     {
       "path": "src/pages/QualityRpncForm.tsx",
-      "sha": "50452b68f2663eb27ec2cfae7120d4c58d4b3478",
+      "sha": "f52a573b7304cfc23e8c389b215f8b6c86fdaf21",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-SGQ-RPNC-ABAS-20261102-01 — três telas reunidas no formulário único com abas, Ishikawa editável e campos em cinco colunas",
-      "aprovadaEm": "2026-11-02",
-      "statusAprovacao": "FORMULÁRIO REAL; AGUARDA APLICAÇÃO DA MIGRATION 20261031100000_...SQL PELO PROPRIETÁRIO"
+      "revisao": "REV-SGQ-RPNC-EFICACIA-20261108-01 — integra análise de causa, eficácia, transições de workflow e decisão CAPA com RPCs do banco; cliente, lote e auditoria permanecem rastreáveis",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "REVISAO AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA INTEGRAR A RPNC COMPLETA; MIGRATIONS E STORAGE AINDA EXIGEM APLICACAO E VALIDACAO NO SUPABASE"
     },
     {
       "path": "src/pages/QualityRpncUnified.tsx",

@@ -92,3 +92,20 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - Correção em `src/styles/industrial-login.css`: `grid-column: 2` + `justify-self: stretch` no painel e `grid-column: 1` no empilhamento de 1040px. Na medição seguinte o cartão ficou com 360px a 56px da borda (1150px de largura: 340px a 46px).
 - O texto dos campos é escuro sobre branco: a cor final medida é `#17333F` e a fonte 16px, ambas impostas pelas regras globais de legibilidade/anti-zoom de tablet (`src/styles/index.css`), que não foram combatidas para não regredir as demais telas.
 - `IndustrialLoginDirect.tsx` continua com hash `556ae8ec` — nenhuma alteração de markup ou autenticação.
+
+## Registro da revisão REV-OPERADOR-MAQUINAS-CPP-20261108-01 e REV-COMPRAS-VALIDACAO-PEDIDO-20261108-01 — 2026-11-08
+
+- Ordem do proprietário para aplicar os códigos de referência e colocar as páginas novas em funcionamento.
+- Área do Funcionário / Chão de Fábrica: painel responsivo passa a listar cada programação real por máquina/OP, sem esconder OPs concorrentes no mesmo equipamento; seleção leva ao CPP e mantém autenticação, programação e apontamentos por RPC do servidor.
+- Central de Compras / Pedido: todas as linhas são validadas, sem descarte silencioso; referências precisam carregar; NCM é normalizado e exige 8 dígitos; frete/desconto não negativos; ICMS permanece informativo e não é somado novamente ao total estimado.
+- Atualizados os hashes somente dessas duas telas no manifesto scripts/telas-oficiais-manifest.json; nenhuma proteção de telas aprovadas foi desativada.
+- A revisão não altera migrations remotas, permissões do Supabase nem publica diretamente em produção.
+
+## Registro da revisão REV-FLUXO-CAIXA-PAGINACAO-20261108-01 e REV-SGQ-RPNC-EFICACIA-20261108-01 — 2026-11-08
+
+- Fluxo de Caixa: substituída a listagem limitada pela leitura paginada completa, escopo da empresa da sessão e extrato com paginação; CSS isolado no padrão industrial compacto.
+- RPNC: integrada a versão completa com análise de causa, eficácia, transições de workflow, decisão CAPA e rastreabilidade de cliente/lote/auditoria.
+- Incluída a migration de política de upload e trilha de auditoria das evidências no bucket qualidade-evidencias.
+- O manifesto e o hash manual do RPNC foram atualizados deliberadamente; os gates de telas oficiais continuam ativos.
+- A migration transacional de Compras agora valida a requisição no tenant no servidor, exige NCM de 8 dígitos e calcula total-base sem somar ICMS novamente. IPI/ICMS ficam informativos até a implantação das regras fiscais por NCM, CFOP, UF e regime.
+- As migrations estão versionadas no repositório, mas ainda não foram aplicadas ao Supabase remoto; a validação autenticada do banco permanece pendente.

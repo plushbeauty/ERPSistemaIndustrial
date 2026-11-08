@@ -1,0 +1,18 @@
+/* SYSNQRA · Chão de Fábrica — adaptação do layout de referência do terminal do operador. */
+.operator-terminal-page { --operator-navy:#123B50; --operator-blue:#2D8DB8; --operator-muted:#66809c; --operator-border:#D3E3EA; }
+.operator-terminal-machine-panel { display:flex; flex-direction:column; gap:12px; min-width:0; padding:16px; border:1px solid var(--operator-border); background:#fff; box-shadow:0 2px 8px rgba(18,59,80,.04); }
+.operator-terminal-section-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.operator-terminal-section-heading h2 { margin:0; color:var(--operator-navy); font-size:14px; font-weight:900; letter-spacing:.02em; text-transform:uppercase; }
+.operator-terminal-section-heading p,.operator-terminal-section-heading>span { margin:3px 0 0; color:var(--operator-muted); font-size:11px; font-weight:700; }
+.operator-terminal-machines { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+.operator-terminal-machine { display:flex; min-width:0; min-height:96px; flex-direction:column; align-items:flex-start; justify-content:space-between; gap:7px; padding:12px; border:1px solid var(--operator-border); border-radius:3px; background:#F9FBFD; color:var(--operator-navy); text-align:left; cursor:pointer; transition:border-color 120ms ease,background 120ms ease,color 120ms ease; }
+.operator-terminal-machine>strong { font-size:22px; font-weight:900; line-height:1; }
+.operator-terminal-machine-name { overflow-wrap:anywhere; color:var(--operator-muted); font-size:12px; line-height:1.2; }
+.operator-terminal-machine-meta { color:var(--operator-muted); font-size:10px; font-weight:800; }
+.operator-terminal-machine.is-selected { border-color:var(--operator-blue); background:var(--operator-blue); color:#fff; }
+.operator-terminal-machine.is-selected .operator-terminal-machine-name,.operator-terminal-machine.is-selected .operator-terminal-machine-meta { color:#fff; }
+.operator-terminal-machine:focus-visible { outline:3px solid #155DA8; outline-offset:2px; }
+.operator-terminal-empty { margin:0; padding:16px; border:1px dashed var(--operator-border); color:var(--operator-muted); font-size:12px; font-weight:700; }
+@media(max-width:1050px){.operator-terminal-machines{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:480px){.operator-terminal-machine-panel{padding:12px}.operator-terminal-machines{gap:8px}.operator-terminal-machine{min-height:86px;padding:10px}.operator-terminal-machine>strong{font-size:19px}}
+@media(prefers-reduced-motion:reduce){.operator-terminal-page *,.operator-terminal-page *::before,.operator-terminal-page *::after{transition-duration:.01ms!important}}
