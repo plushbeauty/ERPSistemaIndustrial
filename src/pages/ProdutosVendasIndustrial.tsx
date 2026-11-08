@@ -1,6 +1,6 @@
 /**
  * @REVISAO: REV-COLUNAS-BANCO-20261104-02 — a trilha de auditoria do produto consultava company_id/entity e uma coluna 'module' inexistente em erp_audit_logs; contrato oficial é empresa_id/entity_type. Leitura corrigida e campo não usado removido da seleção.
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-04
  * @REVISAO: REV-PRODUTOS-PAGINACAO-REAL-20261104-01 — o cadastro sai do teto silencioso de 2000 linhas e le todas as paginas com fetchAllPages (produtos, fornecedores, grupos e localizacoes); lista paginada de 25 em 25 com Anterior/Próxima, contador e selecao de linha por Enter/Espaco; removido o estado de operador que era gravado e nunca lido
  * @STATUS_APROVACAO: CORRECAO DE DEFEITO DE LEITURA PARCIAL APLICADA POR ORDEM DO PROPRIETARIO EM 2026-11-04 ("verificar todas as pendencias e arrumar")
