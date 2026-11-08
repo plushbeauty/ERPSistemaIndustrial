@@ -13,7 +13,7 @@
 /**
  * @DATA_REVISAO_ANTERIOR: 2026-10-19
  * @DESENVOLVEDOR: FernandoSch
- * @NOME_SISTEMA: MOLDPLÁS ERP INDUSTRIAL
+ * @NOME_SISTEMA: SYSNQRA ERP INDUSTRIAL
  * @STATUS_ANTERIOR: LIBERACAO-LOTES-INTEGRADO-REVISAO
  * @ESCOPO: registro documental de parecer SGQ; não efetua liberação transacional do estoque.
  */
@@ -296,7 +296,7 @@ export default function QualidadeLiberacaoLotes() {
         <header className="flex flex-wrap items-center justify-between gap-3 border border-[#CFE1E7] bg-white p-3">
           <div className="flex min-w-0 items-center gap-2.5">
             <span className="grid h-9 w-9 shrink-0 place-items-center border border-[#2D8DB8] bg-[#123B50] text-[#48B7C7]"><ClipboardCheck size={20} /></span>
-            <div><p className="text-[9px] font-black uppercase tracking-[.18em] text-[#176487]">MOLDPLÁS ERP · SGQ</p><h1 className="text-sm font-black uppercase tracking-wide text-[#123B50]">Registro de parecer SGQ</h1><p className="mt-0.5 text-[10px] text-slate-500">Registro documental por empresa; não altera o status operacional do lote no estoque</p></div>
+            <div><p className="text-[9px] font-black uppercase tracking-[.18em] text-[#176487]">SYSNQRA ERP · SGQ</p><h1 className="text-sm font-black uppercase tracking-wide text-[#123B50]">Registro de parecer SGQ</h1><p className="mt-0.5 text-[10px] text-slate-500">Registro documental por empresa; não altera o status operacional do lote no estoque</p></div>
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
             <button type="button" onClick={() => void emitirRelatorioParecer()} className="inline-flex h-8 items-center gap-1.5 border border-[#CFE1E7] px-2.5 text-[10px] font-bold text-[#123B50] hover:bg-[#EAF6FA]"><Printer size={13} /> Imprimir</button>
