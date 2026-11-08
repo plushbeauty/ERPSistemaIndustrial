@@ -9,7 +9,7 @@ type ErroBanco = { code?: string; message?: string } | null | undefined
 
 export const MIGRACAO_CODIGO_PRODUTO = '20261103110000_erp_codigo_digitos_produto_v1.sql'
 export const MIGRACAO_LIBERACAO_ITEM_FISCAL = '20261102031000_erp_fiscal_liberacao_item_pedido_v1.sql'
-export const MIGRACAO_PEDIDO_COMPRA_COMPLETO = '20261102032000_erp_compras_salvar_pedido_completo_v1.sql'
+export const MIGRACAO_PEDIDO_COMPRA_COMPLETO = '20261103190000_erp_compras_pedido_completo_atomic.sql'
 export const MIGRACAO_NFE_PAGAMENTO = '20261102013000_erp_nfe_pagamento_v1.sql'
 export const MIGRACAO_MOLDES_MANUTENCAO = '20261103112000_erp_moldes_manutencao_historico_v1.sql'
 export const MIGRACAO_DATA_SERVIDOR = '20261103113000_erp_data_servidor_v1.sql'
