@@ -1,6 +1,6 @@
 -- ============================================================================
 -- SYSNQRA ERP INDUSTRIAL — APLICAR AS MIGRATIONS QUE O BANCO AINDA NAO TEM
--- Gerado em 2026-11-08T12:12:57 por scripts/gerar-pacote-migrations-pendentes.mjs
+-- Gerado em 2026-11-08T22:36:04 por scripts/gerar-pacote-migrations-pendentes.mjs
 -- Origem da lista: contrato medido no banco vivo (scripts/auditar-contrato-banco-vivo.mjs)
 --
 -- Medida no banco de agora: 148 das 176 tabelas que as telas usam existem.
@@ -97,16 +97,27 @@ alter table public.erp_documentos_qualidade_aprovacoes enable row level security
 alter table public.erp_permissoes_modulos enable row level security;
 create or replace function public.erp_qms_current_user() returns table(usuario_id uuid,empresa_id uuid,setor_id uuid,nivel_admin integer) language sql stable security definer set search_path=pg_catalog,public as $$ select u.id,u.empresa_id,u.setor_id,u.nivel_admin from public.erp_usuarios u where u.auth_user_id=auth.uid() and u.ativo=true limit 1 $$;
 create or replace function public.erp_qms_can(p_modulo text,p_acao text) returns boolean language sql stable security definer set search_path=pg_catalog,public as $$ select exists(select 1 from public.erp_qms_current_user() cu left join public.erp_permissoes_modulos pm on pm.empresa_id=cu.empresa_id and (pm.usuario_id=cu.usuario_id or (pm.usuario_id is null and pm.setor_id=cu.setor_id)) and pm.modulo=p_modulo where case p_acao when 'visualizar' then coalesce(pm.visualizar,false) when 'criar' then coalesce(pm.criar,false) when 'editar' then coalesce(pm.editar,false) when 'excluir' then coalesce(pm.excluir,false) when 'solicitar_alteracao' then coalesce(pm.solicitar_alteracao,false) when 'revisar' then coalesce(pm.revisar,false) when 'aprovar' then coalesce(pm.aprovar,false) when 'liberar' then coalesce(pm.liberar,false) when 'bloquear' then coalesce(pm.bloquear,false) else false end) or exists(select 1 from public.erp_qms_current_user() cu where cu.nivel_admin>=9 and p_acao in ('visualizar','criar','editar','solicitar_alteracao','revisar','aprovar','liberar','bloquear')) $$;
+drop policy if exists qms_rev_select on public.erp_documentos_qualidade_revisoes;
 create policy qms_rev_select on public.erp_documentos_qualidade_revisoes for select to authenticated using (empresa_id=(select empresa_id from public.erp_qms_current_user()) and public.erp_qms_can('qualidade_documentos','visualizar'));
+drop policy if exists qms_rev_insert on public.erp_documentos_qualidade_revisoes;
 create policy qms_rev_insert on public.erp_documentos_qualidade_revisoes for insert to authenticated with check (empresa_id=(select empresa_id from public.erp_qms_current_user()) and public.erp_qms_can('qualidade_documentos','criar'));
+drop policy if exists qms_rev_update on public.erp_documentos_qualidade_revisoes;
 create policy qms_rev_update on public.erp_documentos_qualidade_revisoes for update to authenticated using (empresa_id=(select empresa_id from public.erp_qms_current_user()) and public.erp_qms_can('qualidade_documentos','editar')) with check (empresa_id=(select empresa_id from public.erp_qms_current_user()));
+drop policy if exists qms_req_select on public.erp_documentos_qualidade_solicitacoes;
 create policy qms_req_select on public.erp_documentos_qualidade_solicitacoes for select to authenticated using (empresa_id=(select empresa_id from public.erp_qms_current_user()) and public.erp_qms_can('qualidade_documentos','visualizar'));
+drop policy if exists qms_req_insert on public.erp_documentos_qualidade_solicitacoes;
 create policy qms_req_insert on public.erp_documentos_qualidade_solicitacoes for insert to authenticated with check (empresa_id=(select empresa_id from public.erp_qms_current_user()) and public.erp_qms_can('qualidade_documentos','solicitar_alteracao'));
+drop policy if exists qms_req_update on public.erp_documentos_qualidade_solicitacoes;
 create policy qms_req_update on public.erp_documentos_qualidade_solicitacoes for update to authenticated using (empresa_id=(select empresa_id from public.erp_qms_current_user()) and (solicitante_id=(select usuario_id from public.erp_qms_current_user()) or public.erp_qms_can('qualidade_documentos','revisar'))) with check (empresa_id=(select empresa_id from public.erp_qms_current_user()));
+drop policy if exists qms_ciencia_select on public.erp_documentos_qualidade_ciencia;
 create policy qms_ciencia_select on public.erp_documentos_qualidade_ciencia for select to authenticated using (empresa_id=(select empresa_id from public.erp_qms_current_user()) and public.erp_qms_can('qualidade_documentos','visualizar'));
+drop policy if exists qms_ciencia_insert on public.erp_documentos_qualidade_ciencia;
 create policy qms_ciencia_insert on public.erp_documentos_qualidade_ciencia for insert to authenticated with check (empresa_id=(select empresa_id from public.erp_qms_current_user()) and usuario_id=(select usuario_id from public.erp_qms_current_user()));
+drop policy if exists qms_aprov_select on public.erp_documentos_qualidade_aprovacoes;
 create policy qms_aprov_select on public.erp_documentos_qualidade_aprovacoes for select to authenticated using (empresa_id=(select empresa_id from public.erp_qms_current_user()) and public.erp_qms_can('qualidade_documentos','visualizar'));
+drop policy if exists qms_aprov_insert on public.erp_documentos_qualidade_aprovacoes;
 create policy qms_aprov_insert on public.erp_documentos_qualidade_aprovacoes for insert to authenticated with check (empresa_id=(select empresa_id from public.erp_qms_current_user()) and public.erp_qms_can('qualidade_documentos','aprovar'));
+drop policy if exists qms_perm_select on public.erp_permissoes_modulos;
 create policy qms_perm_select on public.erp_permissoes_modulos for select to authenticated using (empresa_id=(select empresa_id from public.erp_qms_current_user()) and (usuario_id=(select usuario_id from public.erp_qms_current_user()) or (select nivel_admin from public.erp_qms_current_user())>=9));
 -- <<<<<<<<<<<<<< <<<< 20260912160000_qms_controlled_documents_workflow_v1.sql >>>>
 
@@ -179,13 +190,21 @@ alter table public.erp_clientes add column if not exists desconto_padrao_percent
 alter table public.erp_clientes add column if not exists tipo_cliente text;
 alter table public.erp_tabelas_preco enable row level security;
 alter table public.erp_tabelas_preco_itens enable row level security;
+drop policy if exists erp_tabelas_preco_select on public.erp_tabelas_preco;
 create policy erp_tabelas_preco_select on public.erp_tabelas_preco for select to authenticated using (empresa_id=public.erp_current_empresa_id());
+drop policy if exists erp_tabelas_preco_insert on public.erp_tabelas_preco;
 create policy erp_tabelas_preco_insert on public.erp_tabelas_preco for insert to authenticated with check (empresa_id=public.erp_current_empresa_id());
+drop policy if exists erp_tabelas_preco_update on public.erp_tabelas_preco;
 create policy erp_tabelas_preco_update on public.erp_tabelas_preco for update to authenticated using (empresa_id=public.erp_current_empresa_id()) with check (empresa_id=public.erp_current_empresa_id());
+drop policy if exists erp_tabelas_preco_delete on public.erp_tabelas_preco;
 create policy erp_tabelas_preco_delete on public.erp_tabelas_preco for delete to authenticated using (empresa_id=public.erp_current_empresa_id());
+drop policy if exists erp_tabelas_preco_itens_select on public.erp_tabelas_preco_itens;
 create policy erp_tabelas_preco_itens_select on public.erp_tabelas_preco_itens for select to authenticated using (empresa_id=public.erp_current_empresa_id());
+drop policy if exists erp_tabelas_preco_itens_insert on public.erp_tabelas_preco_itens;
 create policy erp_tabelas_preco_itens_insert on public.erp_tabelas_preco_itens for insert to authenticated with check (empresa_id=public.erp_current_empresa_id());
+drop policy if exists erp_tabelas_preco_itens_update on public.erp_tabelas_preco_itens;
 create policy erp_tabelas_preco_itens_update on public.erp_tabelas_preco_itens for update to authenticated using (empresa_id=public.erp_current_empresa_id()) with check (empresa_id=public.erp_current_empresa_id());
+drop policy if exists erp_tabelas_preco_itens_delete on public.erp_tabelas_preco_itens;
 create policy erp_tabelas_preco_itens_delete on public.erp_tabelas_preco_itens for delete to authenticated using (empresa_id=public.erp_current_empresa_id());
 insert into storage.buckets(id,name,public) values('erp-fornecedor-certificados','erp-fornecedor-certificados',false) on conflict(id) do nothing;
 drop policy if exists erp_supplier_cert_select on storage.objects;
