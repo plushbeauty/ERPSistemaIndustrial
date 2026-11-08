@@ -69,7 +69,8 @@ const REPAROS_OBRIGATORIOS = [
   '20261104200000_repair_central_custos_tabela_e_isolamento.sql',
   '20261006140000_erp_stock_separation_atomic_rbac.sql',
   '20261009200000_pcp_mrp_capacity_atomic.sql',
-  '20261010184500_pcp_acabamentos_tenant.sql'
+  '20261010184500_pcp_acabamentos_tenant.sql',
+  '20261108225000_sgq_rel_001_liberacao_transacional_lote.sql'
 ]
 for (const a of REPAROS_OBRIGATORIOS) entrar(a, 'reparo de defeito denunciado pelo proprio banco')
 
