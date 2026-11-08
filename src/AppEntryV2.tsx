@@ -201,6 +201,7 @@ const QualidadeEditorIT = lazyPage(() => import('./pages/qualidade/QualidadeEdit
 const QualidadeProcedimentos = lazyPage(() => import('./pages/qualidade/QualidadeProcedimentos'), 'QualidadeProcedimentos')
 const QualidadeAssinaturaIT = lazyPage(() => import('./pages/qualidade/QualidadeAssinaturaIT'), 'QualidadeAssinaturaIT')
 const QualidadeGenealogiaLote = lazyPage(() => import('./pages/qualidade/QualidadeGenealogiaLote'), 'QualidadeGenealogiaLote')
+const QualidadeControleDesenhos = lazyPage(() => import('./pages/qualidade/QualidadeControleDesenhos'), 'QualidadeControleDesenhos')
 const QualidadeQuarentena = lazyPage(() => import('./pages/qualidade/QualidadeQuarentena'), 'QualidadeQuarentena')
 const EstoqueAjustes = lazyPage(() => import('./pages/EstoqueAjustes'), 'EstoqueAjustes')
 const EstoqueSeparacao = lazyPage(() => import('./pages/EstoqueSeparacao'), 'EstoqueSeparacao')
@@ -464,6 +465,7 @@ export default function AppEntryV2() {
               <Route path="qualidade/procedimentos" element={<QualityPlanGate><QualidadeProcedimentos /></QualityPlanGate>} />
               <Route path="qualidade/assinatura-it" element={<QualityPlanGate><QualidadeAssinaturaIT /></QualityPlanGate>} />
               <Route path="qualidade/genealogia-lote" element={<QualityPlanGate><QualidadeGenealogiaLote /></QualityPlanGate>} />
+              <Route path="qualidade/controle-desenhos" element={<QualityPlanGate><QualidadeControleDesenhos /></QualityPlanGate>} />
               <Route path="qualidade/quarentena" element={<QualityPlanGate><QualidadeQuarentena /></QualityPlanGate>} />
               <Route path="estoque" element={<Navigate to="/pageprincipal/estoque/saldos" replace />} />
               <Route path="almoxarifado" element={<Navigate to="/pageprincipal/almoxarifado/inventario-mestre" replace />} />
