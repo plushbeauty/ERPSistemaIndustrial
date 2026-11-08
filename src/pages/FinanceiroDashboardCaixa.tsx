@@ -1,8 +1,8 @@
 /**
  * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @REVISAO: REV-PADRAO-TELAS-20261030-02 + REV-FINANCEIRO-CUSTO-OP-LINK-20261108-01 — acesso ao fechamento de custo real por OP; padrão visual preservado
+ * @STATUS_APROVACAO: PADRÃO VISUAL ORIGINAL APROVADO EM 2026-10-30; incremento aditivo de navegação autorizado pela ORDEM-EXECUCAO-SYSNQRA-20261108-01
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ArrowRight, CalendarClock, RefreshCw, Wallet, CreditCard, ArrowDownToLine, GitCompare, FileSpreadsheet, CalendarRange, Factory } from 'lucide-react'
@@ -11,7 +11,7 @@ import VendasLayout, { type SalesNavSection } from './VendasLayout'
 import { fetchAllPages } from '../lib/supabasePagination'
 
 type Direction = 'PAGAR' | 'RECEBER'
-const financeNav: SalesNavSection[] = [{ label:'Financeiro', items:[{label:'Caixa',href:'/financeiro/caixa',icon:CalendarClock},{label:'Contas a pagar',href:'/financeiro/contas-pagar',icon:CalendarClock},{label:'Contas a receber',href:'/financeiro/contas-receber',icon:CalendarClock},{label:'Fluxo de caixa',href:'/financeiro/fluxo-caixa',icon:CalendarClock},{label:'Conciliação',href:'/financeiro/reconciliacao',icon:CalendarClock},{label:'Importar extratos',href:'/financeiro/importar-extratos',icon:CalendarClock},{label:'Ano fiscal',href:'/financeiro/ano-fiscal',icon:CalendarClock},{label:'Custos padrão',href:'/financeiro/custo-padrao',icon:CalendarClock}] }]
+const financeNav: SalesNavSection[] = [{ label:'Financeiro', items:[{label:'Caixa',href:'/financeiro/caixa',icon:CalendarClock},{label:'Contas a pagar',href:'/financeiro/contas-pagar',icon:CalendarClock},{label:'Contas a receber',href:'/financeiro/contas-receber',icon:CalendarClock},{label:'Fluxo de caixa',href:'/financeiro/fluxo-caixa',icon:CalendarClock},{label:'Conciliação',href:'/financeiro/reconciliacao',icon:CalendarClock},{label:'Importar extratos',href:'/financeiro/importar-extratos',icon:CalendarClock},{label:'Ano fiscal',href:'/financeiro/ano-fiscal',icon:CalendarClock},{label:'Custos padrão',href:'/financeiro/custo-padrao',icon:CalendarClock},{label:'Custo real por OP',href:'/financeiro/custo-op',icon:Factory}] }]
 type TitleRef = { tipo: Direction; descricao: string }
 type RawInstallment = {
   id: string
