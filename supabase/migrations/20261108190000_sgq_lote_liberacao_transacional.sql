@@ -282,7 +282,7 @@ grant execute on function public.erp_bloquear_lote(uuid, text) to authenticated;
 
 -- 4) Impedir que a separação consuma lote não aprovado ou ainda localizado em quarentena.
 create or replace function public.erp_estoque_separar_material(
-  p_ordem_producao_id uuid,
+  p_ordem_id uuid,
   p_produto_id uuid,
   p_lote_id uuid,
   p_quantidade numeric
@@ -316,14 +316,14 @@ begin
     raise exception 'Usuário sem permissão estoque.movimentar.';
   end if;
 
-  if p_ordem_producao_id is null or p_produto_id is null or coalesce(p_quantidade, 0) <= 0 then
+  if p_ordem_id is null or p_produto_id is null or coalesce(p_quantidade, 0) <= 0 then
     raise exception 'OP, produto e quantidade são obrigatórios.';
   end if;
 
   if not exists (
     select 1
       from public.erp_ordens_producao op
-     where op.id = p_ordem_producao_id
+     where op.id = p_ordem_id
        and op.empresa_id = v_empresa
   ) then
     raise exception 'Ordem de produção não pertence à empresa atual.';
@@ -371,7 +371,7 @@ begin
   insert into public.erp_estoque_separacoes (
     empresa_id, ordem_producao_id, produto_id, lote_id, quantidade, status, codigo_barras
   ) values (
-    v_empresa, p_ordem_producao_id, p_produto_id, p_lote_id, p_quantidade, 'SEPARADO', null
+    v_empresa, p_ordem_id, p_produto_id, p_lote_id, p_quantidade, 'SEPARADO', null
   )
   returning id into v_separacao;
 
