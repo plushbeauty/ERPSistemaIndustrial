@@ -749,7 +749,7 @@
     },
     {
       "path": "src/pages/FornecedoresIndustrial.tsx",
-      "sha": "939e95c1ca0678bb44cb1a3934fdad1f7193d4cd",
+      "sha": "6fa27a540c417cf6128c5adba54f5de655a4fff8",
       "autor": "FernandoSch",
       "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
       "aprovadaEm": "2026-10-30",
@@ -861,7 +861,7 @@
     },
     {
       "path": "src/pages/OperacaoIndustrial.tsx",
-      "sha": "71d8c8483bec8b990b051e92ff3484035aa7ae75",
+      "sha": "a3188843a67bc980872b42deae11afd2251c50f9",
       "autor": "FernandoSch",
       "revisao": "REV-COLUNAS-BANCO-20261104-01 — ordem do proprietário \"telas travadas vc destrava\": a lista de OPs do apontamento ordenava por 'criado_em', coluna que não existe em erp_ordens_producao; a query falhava e travava a tela. Leitura corrigida para 'created_at'.",
       "aprovadaEm": "2026-10-30",
@@ -1261,7 +1261,7 @@
     },
     {
       "path": "src/pages/SolicitacaoCompra.tsx",
-      "sha": "1725607b9a63268852046f85f376bf37ad03bc66",
+      "sha": "1af179c7dfa2f321838c3e3a54894a4a0875efb2",
       "autor": "FernandoSch",
       "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
       "aprovadaEm": "2026-11-08",
