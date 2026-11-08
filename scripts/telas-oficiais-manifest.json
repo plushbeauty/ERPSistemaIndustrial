@@ -1461,11 +1461,11 @@
     },
     {
       "path": "src/pages/QualidadeInspecoesIndustrial.tsx",
-      "sha": "0fe5ede6a840e83016cd0716c5d7ecc5a66a0ef8",
+      "sha": "b040e5a250f767656f9a5860224fd2a2ed6c1544",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
+      "revisao": "REV-INSPECOES-IMPORT-PLUS-20261108-01 — correção não visual de import ausente; consulta, fluxo e layout preservados",
       "aprovadaEm": "2026-11-04",
-      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
+      "statusAprovacao": "CORREÇÃO TÉCNICA NÃO VISUAL AUTORIZADA PELA ORDEM DE EXECUÇÃO DE 2026-11-08; APROVAÇÃO VISUAL ORIGINAL PRESERVADA."
     },
     {
       "path": "src/pages/QualidadeInstrumentosCadastro.tsx",
