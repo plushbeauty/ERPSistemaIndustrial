@@ -17,6 +17,8 @@ O código está na frente do banco. Nada aqui é para o assistente executar: **q
 proprietário**, no SQL Editor do Supabase. Os arquivos abaixo são idempotentes
 (`create table if not exists`, `create or replace function`, `drop policy if exists` + `create policy`).
 
+> **Nota sobre a medição do cabeçalho:** os números de 176 tabelas, 148 existentes, 28 ausentes e 98 RPCs não resolvidas são o snapshot original do auditor em 08/11/2026, antes dos complementos descritos abaixo. Não representam uma nova leitura do banco após as alterações no repositório.
+
 ---
 
 ## 1. Ordem de execução
@@ -24,7 +26,7 @@ proprietário**, no SQL Editor do Supabase. Os arquivos abaixo são idempotentes
 | # | Passo | Onde | Escreve? |
 |---|---|---|---|
 | 1 | Backup / branch do projeto no Supabase | Dashboard do Supabase | não |
-| 2 | Rodar o pacote das 28 migrations | SQL Editor | **sim** |
+| 2 | Rodar o pacote atualizado das 32 migrations | SQL Editor | **sim** |
 | 3 | Conferir as 28 tabelas | SQL Editor | não |
 | 4 | Conferir as 76 funções do Anexo A | SQL Editor | não |
 | 5 | Conceder o módulo `qualidade_documentos` aos perfis | tela Configuração de Permissões | **sim** |
@@ -33,7 +35,7 @@ proprietário**, no SQL Editor do Supabase. Os arquivos abaixo são idempotentes
 
 ---
 
-## 2. Passo 2 — pacote das 28 migrations (copiar e executar)
+## 2. Passo 2 — pacote atualizado das 32 migrations (copiar e executar)
 
 Arquivo pronto, já consolidado e na ordem de dependência:
 
@@ -41,8 +43,7 @@ Arquivo pronto, já consolidado e na ordem de dependência:
 supabase/diagnosticos/20261104_pacote_aplicar_migrations_pendidas.sql
 ```
 
-5.494 linhas, 28 arquivos copiados sem alteração. Como aplicar: **SQL Editor → New query →
-colar o arquivo inteiro → Run** (uma vez). Rodar de novo não duplica nada.
+6.182 linhas, 32 blocos de migration. São as 28 migrations base mais 4 dependências adicionais de segurança/PCP/SGQ. O pacote foi atualizado depois da medição original. Como aplicar: **SQL Editor → New query → colar o arquivo inteiro → Run**, somente após backup e conferência do projeto Supabase.
 
 ### O que cada bloco desbloqueia
 
@@ -422,3 +423,81 @@ ELECTRON_RUN_AS_NODE=1 "C:\Users\Dri\AppData\Local\Programs\Qoder\Qoder.exe" scr
 
 A primeira linha do laudo tem que sair `TABELAS_FALTANDO=0`. O JSON completo fica em
 `%TEMP%\sysnqra-live-contract.json`.
+
+---
+
+## Complemento de execução — 08/11/2026 (após a medição original)
+
+### Pacote atualizado
+
+O pacote `supabase/diagnosticos/20261104_pacote_aplicar_migrations_pendidas.sql` agora contém **32 migrations**:
+
+- As 28 migrations-base listadas na tabela acima.
+- `20261006140000_erp_stock_separation_atomic_rbac.sql`: RPC transacional e RBAC de separação.
+- `20261009200000_pcp_mrp_capacity_atomic.sql`: capacidade/programação PCP e contratos auxiliares.
+- `20261010184500_pcp_acabamentos_tenant.sql`: endurecimento de RLS/RBAC de acabamentos.
+- `20261108225000_sgq_rel_001_liberacao_transacional_lote.sql`: FK ao lote operacional, auditoria e RPCs de liberação/bloqueio.
+
+O gerador `scripts/gerar-pacote-migrations-pendentes.mjs` foi atualizado para manter essas dependências obrigatórias no pacote.
+
+### Auditoria estática do pacote atualizado
+
+| Verificação | Resultado |
+|---|---:|
+| Blocos de migration | 32 |
+| CREATE TABLE encontrados | 99 |
+| Tabelas distintas | 91 |
+| CREATE POLICY estáticos | 120 |
+| DROP POLICY IF EXISTS estáticos | 132 |
+| Policies sem DROP anterior correspondente | 0 |
+| CREATE INDEX sem IF NOT EXISTS | 0 |
+| ADD COLUMN sem IF NOT EXISTS | 0 |
+| DROP TABLE / DROP COLUMN / TRUNCATE | 0 |
+| UPDATE/DELETE direto ao colar | 0 |
+| UPDATE/DELETE dentro de funções/RPCs | 30 |
+
+Os blocos dinâmicos de RLS também foram considerados na revisão manual. Essa auditoria é estática: não comprova que o Supabase remoto recebeu as migrations.
+
+### Novos arquivos de prova e rastreabilidade
+
+- `docs/banco/VERIFICACAO-POS-MIGRATIONS.sql`: script somente SELECT para conferir tabelas, colunas críticas, RLS, policies, grants, RPCs, contrato Auth/Master e a view de custo com `security_invoker`.
+- `docs/banco/MATRIZ-DESBLOQUEIO-24-TELAS.md`: matriz de 24 telas com arquivo, rota, menu, objetos Supabase e divergências de nomenclatura.
+
+### Migrations de funcionalidades novas
+
+Aplicar separadamente, depois do pacote base:
+
+1. `20261108200000_qualidade_templates_inspecao_versionados.sql`: templates de inspeção, itens versionados, publicação e snapshot da versão usada na inspeção.
+2. `20261108223500_financeiro_custo_op_real.sql`: custo real por OP, consumo de materiais, custos indiretos, apuração e view `erp_financeiro_custo_op`.
+
+A migration SGQ-REL-001 já está dentro do pacote de 32 migrations.
+
+### SGQ-REL-001 — regra de autorização
+
+A tela já chama `erp_liberar_lote` e `erp_bloquear_lote`. A nova migration acrescenta vínculo por FK ao lote operacional, histórico de auditoria e escrita somente pelas RPCs. A autorização exige usuário ativo no tenant com `nivel_admin >= 8`, alinhado ao padrão de nível administrativo usado pelas migrations recentes.
+
+### Limitação importante de RPC
+
+O snapshot antigo classificou 98 RPCs como não resolvidas pelo REST sem argumentos. Isso não prova que todas estejam ausentes: o PostgREST pode retornar erro de assinatura quando uma função exige parâmetros. A prova correta é consultar `pg_proc`, a assinatura exata e os grants. O novo script de verificação faz essa consulta para as funções cobertas pelo pacote e pelas novas migrations; o inventário completo das RPCs chamadas pelas telas ainda precisa ser concluído no CMP-002.
+
+### Divergências para não duplicar tabelas
+
+- A RNC/CAPA atual usa `qualidade_rnc_capa`, não `erp_qualidade_capa`.
+- A auditoria de planta usa `erp_qualidade_auditorias_planta`, não `erp_qualidade_auditorias`.
+- A ficha de processo atual usa `erp_fichas_processo`; não foi encontrado uso atual de `erp_historico_ajustes_maquina`.
+- `erp_log_etiquetas` está no pacote, mas a tela `EstoqueEtiquetas.tsx` conferida não grava nessa tabela. Confirmar antes de declarar histórico de impressão.
+- A tela MRP chama `erp_mrp_explodir`; a migration de capacidade também define `erp_pcp_mrp_explodir`. Não presumir que sejam a mesma assinatura.
+
+### Estado e próximos passos
+
+**Código e pacote preparados; banco remoto não comprovado.** Nenhum DDL foi executado no Supabase.
+
+Depois da aplicação pelo proprietário:
+
+1. Executar `docs/banco/VERIFICACAO-POS-MIGRATIONS.sql`.
+2. Resolver todos os resultados `FALTA_*`, `SEM_GRANT_AUTHENTICATED` e RPC ausente.
+3. Testar dois tenants e perfis com níveis administrativos diferentes.
+4. Concluir CMP-002 (rota × menu × permissão × escrita), CMP-003 (11 rotas `IndustrialDataWorkspace`) e CMP-004 (Auth/RBAC/RLS/Master).
+5. Executar auditoria visual e todos os gates, sem `|| true`.
+6. Validar preview Vercel. Produção continua bloqueada até autorização explícita.
+
