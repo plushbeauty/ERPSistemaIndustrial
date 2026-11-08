@@ -1,8 +1,8 @@
 /**
  * @AUTOR: FernandoSch (tela recebida do proprietario em 2026-11-01 em C:\\Users\\Dri\\Documents\\Qoder\\integracao-sgq-certificado-6006a807)
  * @DATA_REVISAO_APROVACAO: 2026-11-03
- * @REVISAO: REV-CERTIFICADO-CARIMBO-20261103-01 — somente o cabecalho de autoria/aprovacao foi adicionado; nenhuma linha de logica ou visual foi tocada
- * @STATUS_APROVACAO: APROVADO PELO PROPRIETARIO (ordem de 2026-11-03: "todas as telas novas vao ter revisao, aprovacao e travamento para o vercel nao pegar mais telas antigas")
+ * @REVISAO: REV-CERTIFICADO-A4-20261108-01 — impressão migrada para o relatório A4 compartilhado; dados e fluxo do certificado preservados
+ * @STATUS_APROVACAO: INCREMENTO DE IMPRESSÃO AUTORIZADO NA ORDEM DE EXECUÇÃO DE 2026-11-08; aprovação visual e fluxo operacional preservados
  */
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import {
@@ -10,6 +10,8 @@ import {
   LoaderCircle, Plus, Printer, RefreshCw, Ruler, ShieldCheck, Trash2, Upload,
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { abrirRelatorio } from '../lib/report/abrirRelatorio'
+import type { Documento } from '../lib/report/documento'
 
 type CotaForm = {
   id: string
@@ -168,6 +170,85 @@ export default function CertificadoQualidade() {
 
   const updateCota = (id: string, field: keyof Omit<CotaForm, 'id'>, value: string) =>
     setCotas((current) => current.map((cota) => cota.id === id ? { ...cota, [field]: value } : cota))
+
+  const emitirRelatorio = async () => {
+    if (!selected || !selectedCotas.length) return
+    setError('')
+    try {
+      const blocos: Documento['blocos'] = [
+        {
+          tipo: 'campos',
+          titulo: 'Identificação do certificado',
+          colunas: 2,
+          itens: [
+            { rotulo: 'Código da peça', valor: selected.codigo_peca },
+            { rotulo: 'Descrição', valor: selected.descricao_peca },
+            { rotulo: 'Ordem / lote', valor: selected.ordem_lote },
+            { rotulo: 'Cliente', valor: selected.cliente },
+            { rotulo: 'Número de série', valor: selected.numero_serie },
+            { rotulo: 'Data da inspeção', valor: formatDate(selected.data_inspecao) },
+            { rotulo: 'Inspetor autenticado', valor: selected.inspetor_nome },
+            { rotulo: 'Resultado', valor: statusLabel(selected.status) },
+            { rotulo: 'Desenho técnico', valor: selected.desenho_nome },
+          ],
+        },
+        {
+          tipo: 'tabela',
+          titulo: 'Resultados dimensionais',
+          colunas: [
+            { titulo: 'Identificação' },
+            { titulo: 'Descrição' },
+            { titulo: 'Nominal (mm)', alinhar: 'direita' },
+            { titulo: 'Mínimo (mm)', alinhar: 'direita' },
+            { titulo: 'Máximo (mm)', alinhar: 'direita' },
+            { titulo: 'Medido (mm)', alinhar: 'direita' },
+            { titulo: 'Resultado', alinhar: 'centro' },
+          ],
+          linhas: selectedCotas.map(cota => [
+            cota.identificador,
+            cota.descricao,
+            formatMeasure(cota.nominal_mm),
+            formatMeasure(cota.minimo_mm),
+            formatMeasure(cota.maximo_mm),
+            formatMeasure(cota.medido_mm),
+            cota.resultado,
+          ]),
+        },
+      ]
+      if (selected.status !== 'APROVADO') {
+        blocos.push({
+          tipo: 'texto',
+          titulo: 'Restrição de conformidade',
+          texto: selected.status === 'REPROVADO'
+            ? 'REPROVADO — este registro não declara conformidade.'
+            : 'PENDENTE — existem cotas sem medição; este registro não declara conformidade.',
+        })
+      }
+      if (selectedDrawingUrl && selected.desenho_mime.startsWith('image/')) {
+        blocos.push({ tipo: 'imagem', titulo: 'Desenho técnico', url: selectedDrawingUrl, legenda: selected.desenho_nome, alturaMm: 55 })
+      }
+      if (selected.observacoes) blocos.push({ tipo: 'texto', titulo: 'Observações', texto: selected.observacoes })
+      blocos.push({
+        tipo: 'assinaturas',
+        titulo: 'Responsabilidade',
+        assinantes: [
+          { papel: 'Inspetor responsável', nome: selected.inspetor_nome },
+          { papel: 'Qualidade / SGQ' },
+        ],
+      })
+      await abrirRelatorio({
+        modulo: 'Qualidade',
+        tipo: 'Certificado de Qualidade',
+        titulo: 'Certificado de Qualidade de Peças',
+        codigo: selected.numero_certificado,
+        subtitulo: `${selected.codigo_peca} · ${selected.descricao_peca}`,
+        unidade: selected.cliente ?? undefined,
+        blocos,
+      })
+    } catch (cause) {
+      setError(errorMessage(cause))
+    }
+  }
 
   const openRecord = async (record: CertificateRecord) => {
     setError('')
@@ -472,41 +553,14 @@ export default function CertificadoQualidade() {
                   {selected.status === 'REPROVADO' && <p className="border border-rose-200 bg-rose-50 p-2 text-[9px] font-bold leading-4 text-rose-800">REPROVADO — este registro é um relatório de inspeção e não declara conformidade.</p>}
                   {selected.status === 'PENDENTE' && <p className="border border-amber-200 bg-amber-50 p-2 text-[9px] leading-4 text-amber-800">PENDENTE — há cotas ainda sem medição; o documento não declara conformidade.</p>}
                   {selected.observacoes && <p className="border-t border-slate-100 pt-2 text-[9px] leading-4 text-slate-600"><strong>Observações:</strong> {selected.observacoes}</p>}
-                  <button type="button" onClick={() => window.print()} disabled={!selectedCotas.length} className="inline-flex h-8 w-full items-center justify-center gap-1.5 bg-[#123b50] px-3 text-[10px] font-bold text-white hover:bg-[#1b506a] disabled:opacity-40"><Printer size={13} /> Imprimir / salvar PDF</button>
+                  <button type="button" onClick={() => void emitirRelatorio()} disabled={!selectedCotas.length} className="inline-flex h-8 w-full items-center justify-center gap-1.5 bg-[#123b50] px-3 text-[10px] font-bold text-white hover:bg-[#1b506a] disabled:opacity-40"><Printer size={13} /> Imprimir / salvar PDF</button>
                 </div>
               </section>}
             </aside>
           </div>
         )}
 
-        {selected && selectedCotas.length > 0 && (
-          <section className="cq-print hidden bg-white p-8 text-slate-900">
-            <header className="flex items-start justify-between gap-4 border-b-2 border-[#123b50] pb-4">
-              <div><p className="text-[10px] font-bold uppercase tracking-[.2em] text-[#2d8db8]">SYSNQRA ERP INDUSTRIAL · QUALIDADE</p><h1 className="mt-2 text-2xl font-extrabold">Certificado de Qualidade de Peças</h1><p className="mt-1 text-sm">{selected.numero_certificado}</p></div>
-              <span className={`border px-3 py-2 text-xs font-extrabold ${resultTone(selected.status)}`}>{statusLabel(selected.status)}</span>
-            </header>
-            {selected.status !== 'APROVADO' && <p className="mt-4 border border-rose-500 p-3 text-sm font-extrabold">{selected.status === 'REPROVADO' ? 'REPROVADO — NÃO DECLARA CONFORMIDADE.' : 'PENDENTE — NÃO DECLARA CONFORMIDADE.'}</p>}
-            <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-              <div><dt className="text-xs text-slate-500">Código da peça</dt><dd className="font-bold">{selected.codigo_peca}</dd></div>
-              <div><dt className="text-xs text-slate-500">Descrição</dt><dd className="font-bold">{selected.descricao_peca}</dd></div>
-              <div><dt className="text-xs text-slate-500">Ordem / lote</dt><dd className="font-bold">{selected.ordem_lote}</dd></div>
-              <div><dt className="text-xs text-slate-500">Cliente / número de série</dt><dd className="font-bold">{selected.cliente || '—'} / {selected.numero_serie || '—'}</dd></div>
-              <div><dt className="text-xs text-slate-500">Data de inspeção</dt><dd className="font-bold">{formatDate(selected.data_inspecao)}</dd></div>
-              <div><dt className="text-xs text-slate-500">Inspetor autenticado</dt><dd className="font-bold">{selected.inspetor_nome}</dd></div>
-              <div className="col-span-2"><dt className="text-xs text-slate-500">Desenho técnico</dt><dd className="font-bold">{selected.desenho_nome}</dd></div>
-            </dl>
-            {selectedDrawingUrl && selected.desenho_mime.startsWith('image/') && <img src={selectedDrawingUrl} alt={`Desenho técnico ${selected.desenho_nome}`} className="mt-4 max-h-64 w-full object-contain" />}
-            <table className="mt-5">
-              <thead><tr><th>Identificação</th><th>Descrição</th><th>Nominal (mm)</th><th>Mínimo (mm)</th><th>Máximo (mm)</th><th>Medido (mm)</th><th>Resultado</th></tr></thead>
-              <tbody>{selectedCotas.map((cota) => <tr key={cota.id}><td>{cota.identificador}</td><td>{cota.descricao}</td><td>{formatMeasure(cota.nominal_mm)}</td><td>{formatMeasure(cota.minimo_mm)}</td><td>{formatMeasure(cota.maximo_mm)}</td><td>{formatMeasure(cota.medido_mm)}</td><td>{cota.resultado}</td></tr>)}</tbody>
-            </table>
-            {selected.observacoes && <p className="mt-4 whitespace-pre-wrap text-xs"><strong>Observações:</strong> {selected.observacoes}</p>}
-            <footer className="mt-10 grid grid-cols-2 gap-10 text-center text-xs">
-              <div className="border-t border-slate-500 pt-2">Inspetor responsável · {selected.inspetor_nome}</div>
-              <div className="border-t border-slate-500 pt-2">SYSNQRA ERP INDUSTRIAL · {formatDate(selected.data_inspecao)}</div>
-            </footer>
-          </section>
-        )}
+
       </div>
     </main>
   )
