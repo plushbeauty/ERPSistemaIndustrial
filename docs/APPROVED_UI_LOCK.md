@@ -100,3 +100,12 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - Central de Compras / Pedido: todas as linhas são validadas, sem descarte silencioso; referências precisam carregar; NCM é normalizado e exige 8 dígitos; frete/desconto não negativos; ICMS permanece informativo e não é somado novamente ao total estimado.
 - Atualizados os hashes somente dessas duas telas no manifesto scripts/telas-oficiais-manifest.json; nenhuma proteção de telas aprovadas foi desativada.
 - A revisão não altera migrations remotas, permissões do Supabase nem publica diretamente em produção.
+
+## Registro da revisão REV-FLUXO-CAIXA-PAGINACAO-20261108-01 e REV-SGQ-RPNC-EFICACIA-20261108-01 — 2026-11-08
+
+- Fluxo de Caixa: substituída a listagem limitada pela leitura paginada completa, escopo da empresa da sessão e extrato com paginação; CSS isolado no padrão industrial compacto.
+- RPNC: integrada a versão completa com análise de causa, eficácia, transições de workflow, decisão CAPA e rastreabilidade de cliente/lote/auditoria.
+- Incluída a migration de política de upload e trilha de auditoria das evidências no bucket qualidade-evidencias.
+- O manifesto e o hash manual do RPNC foram atualizados deliberadamente; os gates de telas oficiais continuam ativos.
+- A migration transacional de Compras agora valida a requisição no tenant no servidor, exige NCM de 8 dígitos e calcula total-base sem somar ICMS novamente. IPI/ICMS ficam informativos até a implantação das regras fiscais por NCM, CFOP, UF e regime.
+- As migrations estão versionadas no repositório, mas ainda não foram aplicadas ao Supabase remoto; a validação autenticada do banco permanece pendente.
