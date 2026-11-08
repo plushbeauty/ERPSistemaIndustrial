@@ -63,8 +63,8 @@ const menus: MenuItem[] = [
     { label: 'Entregas de EPI', route: '/pageprincipal/rh/epis/entregas', icon: ClipboardList },
   ] },  { label: 'Engenharia e PCP', route: '/pageprincipal/pcp', icon: Factory, children: [
     { label: 'Central PCP', route: '/pageprincipal/pcp', icon: ClipboardList },
-    { label: 'Fichas de Processo', route: '/pageprincipal/pcp/fichas-processo', icon: ClipboardList },
-    { label: 'Fichas por categoria · acabamento e montagem', route: '/pageprincipal/pcp/fichas-processo-mestre', icon: ClipboardList },
+    { label: 'Fichas de Processo · Injetados, Prensados, Acabamento e Montagem', route: '/pageprincipal/pcp/fichas-processo', icon: ClipboardList },
+    
     { label: 'Roteiro de Operações', route: '/pageprincipal/pcp/roteiros', icon: Route },
     { label: 'Carga e Capacidade', route: '/pageprincipal/pcp/capacidade', icon: BarChart3 },
     { label: 'Ordens de produção', route: '/pageprincipal/pcp/ordens', icon: Factory },
