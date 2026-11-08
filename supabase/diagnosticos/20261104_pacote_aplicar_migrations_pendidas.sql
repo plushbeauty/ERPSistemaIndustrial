@@ -1,14 +1,12 @@
 -- ============================================================================
 -- SYSNQRA ERP INDUSTRIAL — APLICAR AS MIGRATIONS QUE O BANCO AINDA NAO TEM
--- Gerado em 2026-11-05T19:43:19 por scripts/gerar-pacote-migrations-pendentes.mjs
+-- Gerado em 2026-11-08T12:12:57 por scripts/gerar-pacote-migrations-pendentes.mjs
 -- Origem da lista: contrato medido no banco vivo (scripts/auditar-contrato-banco-vivo.mjs)
 --
--- Medida no banco de agora: 149 das 174 tabelas que as telas usam existem.
--- Faltam 25, e todas elas ja tem migration escrita neste repo — o codigo esta na
--- frente do banco. O pacote abaixo contem 27 arquivo(s), copiados sem alteracao,
+-- Medida no banco de agora: 148 das 176 tabelas que as telas usam existem.
+-- Faltam 28, e todas elas ja tem migration escrita neste repo — o codigo esta na
+-- frente do banco. O pacote abaixo contem 28 arquivo(s), copiados sem alteracao,
 -- em ordem de timestamp e fechadas por dependencia.
--- 1 migration que a lista de dependencias puxou foi EXCLUIDA por decisao tecnica
--- e esta declarada no bloco EXCLUSOES abaixo — nada some em silencio.
 
 --
 -- Como aplicar (uma vez so): SQL Editor do Supabase > New query > colar tudo > Run.
@@ -22,10 +20,6 @@
 -- da mesma policy no mesmo arquivo, entao a politica nunca fica ausente.
 --   [SO RODA SE CHAMAR A RPC] UPDATE...SET erp_maquinas  —  20260927124000_erp_quality_finance_tpm_hardening.sql:33
 --   [SO RODA SE CHAMAR A RPC] UPDATE...SET erp_maquinas  —  20260927124000_erp_quality_finance_tpm_hardening.sql:37
---   [SO RODA SE CHAMAR A RPC] DROP FUNCTION erp_gravar_rascunho_pedido_venda  —  20261003110000_vendas_rebuild_relational_pricing_v1.sql:72
---   [SO RODA SE CHAMAR A RPC] UPDATE...SET erp_pedidos_venda  —  20261003110000_vendas_rebuild_relational_pricing_v1.sql:88
---   [SO RODA SE CHAMAR A RPC] DELETE erp_pedidos_venda_itens  —  20261003110000_vendas_rebuild_relational_pricing_v1.sql:90
---   [SO RODA SE CHAMAR A RPC] UPDATE...SET erp_pedidos_venda  —  20261003110000_vendas_rebuild_relational_pricing_v1.sql:100
 --   [SO RODA SE CHAMAR A RPC] UPDATE...SET erp_sgq_contadores  —  20261004100000_sgq_integrated_erp_v1.sql:285
 --   [SO RODA SE CHAMAR A RPC] UPDATE...SET erp_rpnc  —  20261004100000_sgq_integrated_erp_v1.sql:315
 --   [SO RODA SE CHAMAR A RPC] UPDATE...SET erp_sgq_capa_acoes  —  20261004100000_sgq_integrated_erp_v1.sql:497
@@ -37,6 +31,9 @@
 --   [SO RODA SE CHAMAR A RPC] UPDATE...SET erp_documentos_qualidade_revisoes  —  20261004100000_sgq_integrated_erp_v1.sql:642
 --   [SO RODA SE CHAMAR A RPC] UPDATE...SET erp_documentos_qualidade_revisoes  —  20261004100000_sgq_integrated_erp_v1.sql:645
 --   [SO RODA SE CHAMAR A RPC] UPDATE...SET erp_documentos_qualidade_leituras  —  20261004100000_sgq_integrated_erp_v1.sql:697
+--   [SO RODA SE CHAMAR A RPC] UPDATE...SET estoque_lotes  —  20261009180000_erp_industrial_engineering_wms_quality_pcp_fiscal_hr.sql:344
+--   [SO RODA SE CHAMAR A RPC] UPDATE...SET estoque_saldos  —  20261009180000_erp_industrial_engineering_wms_quality_pcp_fiscal_hr.sql:357
+--   [SO RODA SE CHAMAR A RPC] UPDATE...SET estoque_lotes  —  20261009180000_erp_industrial_engineering_wms_quality_pcp_fiscal_hr.sql:425
 --   [SO RODA SE CHAMAR A RPC] DELETE erp_engenharia_bom_itens  —  20261021180000_engenharia_bom_mestre.sql:141
 --   [SO RODA SE CHAMAR A RPC] DELETE erp_ficha_itens  —  20261021180000_engenharia_bom_mestre.sql:169
 --   [SO RODA SE CHAMAR A RPC] UPDATE...SET erp_engenharia_bom  —  20261021180000_engenharia_bom_mestre.sql:211
@@ -49,16 +46,12 @@
 --   [SO RODA SE CHAMAR A RPC] DELETE erp_sgq_capa_acoes  —  20261031100000_sgq_rpnc_formulario_auditorias_recorrencia_v1.sql:533
 --   [SO RODA SE CHAMAR A RPC] UPDATE...SET erp_rpnc  —  20261031100000_sgq_rpnc_formulario_auditorias_recorrencia_v1.sql:592
 --   [SO RODA SE CHAMAR A RPC] UPDATE...SET erp_qualidade_certificados  —  20261101120000_erp_qualidade_certificados_dimensional.sql:232
+--   [SO RODA SE CHAMAR A RPC] UPDATE...SET erp_central_evolucao_item  —  20261106150000_erp_central_evolucao_v1.sql:208
 --
 -- NADA aqui apaga tabela, coluna ou migration existente. Se os itens de cima nao
 -- forem aceitaveis agora, apague apenas os blocos marcados antes de colar: o pacote
 -- nao precisa dos DELETE para criar as tabelas que faltam.
---
--- ----------------------------------------------------------------------------
--- EXCLUSOES DECLARADAS (nada some em silencio): 1 migration(oes) que a
--- lista de dependencias puxou, mas que NAO vao para o banco de producao
--- ----------------------------------------------------------------------------
---   [FORA DO PACOTE] 0001_erp_industrial_core.sql — baseline de 2024 com 21 tabelas SEM prefixo (usuarios, produtos, almoxarifados...). Quem pede "usuarios" e src/AppBootstrap.tsx:96, que e codigo legado do portao de autenticacao: a correcao e ler so erp_usuarios, nao criar a tabela velha.
+
 -- ============================================================================
 
 -- >>>>>>>>>>>>>>>>>>>> 20260912160000_qms_controlled_documents_workflow_v1.sql  (tabela ausente no banco: erp_documentos_qualidade_aprovacoes) >>>>>>>>>>>>>>>>>>>>
@@ -557,114 +550,6 @@ with check (empresa_id = public.erp_current_empresa_id() or public.erp_is_master
 
 grant select,insert,update,delete on public.erp_caixas,public.erp_caixas_movimentos,public.erp_caixas_movimentos_itens,public.erp_rfq,public.erp_rfq_fornecedores,public.erp_rfq_itens to authenticated;
 -- <<<<<<<<<<<<<< <<<< 20261001120000_pos_rfq_operacao_comercial.sql >>>>
-
--- >>>>>>>>>>>>>>>>>>>> 20261003110000_vendas_rebuild_relational_pricing_v1.sql  (dependencia: erp_fichas_processo exigida por 20261020120000_erp_historico_ajustes_maquina.sql) >>>>>>>>>>>>>>>>>>>>
-/* VENDAS — reconstrução relacional do pedido industrial. */
-alter table public.erp_clientes add column if not exists fator_markup_comercial numeric(12,4) not null default 1.0000;
-alter table public.erp_maquinas add column if not exists valor_hora_custo numeric(18,6) not null default 0;
-
-create table if not exists public.erp_fichas_processo (
-  id uuid primary key default gen_random_uuid(),
-  empresa_id uuid not null references public.erp_empresas(id) on delete cascade,
-  produto_id uuid not null references public.erp_produtos(id) on delete restrict,
-  codigo_ficha text not null,
-  ativo boolean not null default true,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-  unique (empresa_id, codigo_ficha),
-  unique (empresa_id, id)
-);
-
-create table if not exists public.erp_ficha_processo_operacoes (
-  id uuid primary key default gen_random_uuid(),
-  empresa_id uuid not null references public.erp_empresas(id) on delete cascade,
-  ficha_processo_id uuid not null references public.erp_fichas_processo(id) on delete cascade,
-  sequencial_operacao integer not null check (sequencial_operacao > 0),
-  descricao_operacao text not null,
-  posto_trabalho_id uuid not null references public.erp_maquinas(id) on delete restrict,
-  tempo_minutos numeric(12,3) not null check (tempo_minutos >= 0),
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-  unique (empresa_id, ficha_processo_id, sequencial_operacao),
-  unique (empresa_id, id),
-  foreign key (empresa_id, ficha_processo_id) references public.erp_fichas_processo(empresa_id, id) on delete cascade
-);
-
-create index if not exists idx_erp_fichas_processo_empresa_produto on public.erp_fichas_processo(empresa_id, produto_id, ativo);
-create index if not exists idx_erp_ficha_processo_operacoes_ficha on public.erp_ficha_processo_operacoes(empresa_id, ficha_processo_id, sequencial_operacao);
-
-alter table public.erp_fichas_processo enable row level security;
-alter table public.erp_ficha_processo_operacoes enable row level security;
-
-drop policy if exists erp_fichas_processo_select on public.erp_fichas_processo;
-drop policy if exists erp_fichas_processo_write on public.erp_fichas_processo;
-create policy erp_fichas_processo_select on public.erp_fichas_processo for select to authenticated using (empresa_id = public.erp_current_empresa_id());
-create policy erp_fichas_processo_write on public.erp_fichas_processo for all to authenticated using (empresa_id = public.erp_current_empresa_id()) with check (empresa_id = public.erp_current_empresa_id());
-
-drop policy if exists erp_ficha_processo_operacoes_select on public.erp_ficha_processo_operacoes;
-drop policy if exists erp_ficha_processo_operacoes_write on public.erp_ficha_processo_operacoes;
-create policy erp_ficha_processo_operacoes_select on public.erp_ficha_processo_operacoes for select to authenticated using (empresa_id = public.erp_current_empresa_id());
-create policy erp_ficha_processo_operacoes_write on public.erp_ficha_processo_operacoes for all to authenticated using (empresa_id = public.erp_current_empresa_id()) with check (empresa_id = public.erp_current_empresa_id());
-
-create or replace function public.erp_calcular_preco_sugerido_venda(p_cliente_id uuid,p_produto_id uuid)
-returns table(custo_processo numeric,fator_markup numeric,preco_sugerido numeric,operacoes integer)
-language plpgsql security invoker set search_path=pg_catalog,public
-as $$
-declare v_empresa uuid := public.erp_current_empresa_id(); v_ficha uuid;
-begin
-  if v_empresa is null then raise exception 'Empresa da sessão não identificada.'; end if;
-  if not exists(select 1 from public.erp_clientes where id=p_cliente_id and empresa_id=v_empresa and ativo=true) then raise exception 'Cliente inválido para a empresa atual.'; end if;
-  if not exists(select 1 from public.erp_produtos where id=p_produto_id and empresa_id=v_empresa and ativo=true) then raise exception 'Produto inválido para a empresa atual.'; end if;
-  select f.id into v_ficha from public.erp_fichas_processo f where f.empresa_id=v_empresa and f.produto_id=p_produto_id and f.ativo=true order by f.updated_at desc,f.created_at desc limit 1;
-  return query
-  select round(coalesce(sum((o.tempo_minutos/60.0)*m.valor_hora_custo),0),2),
-    greatest(coalesce(c.fator_markup_comercial,1),0),
-    round(coalesce(sum((o.tempo_minutos/60.0)*m.valor_hora_custo),0)*greatest(coalesce(c.fator_markup_comercial,1),0),2),
-    count(o.id)::integer
-  from public.erp_clientes c
-  left join public.erp_ficha_processo_operacoes o on o.empresa_id=v_empresa and o.ficha_processo_id=v_ficha
-  left join public.erp_maquinas m on m.id=o.posto_trabalho_id and m.empresa_id=v_empresa
-  where c.id=p_cliente_id and c.empresa_id=v_empresa;
-end;
-$$;
-revoke all on function public.erp_calcular_preco_sugerido_venda(uuid,uuid) from public,anon;
-grant execute on function public.erp_calcular_preco_sugerido_venda(uuid,uuid) to authenticated;
-
-drop function if exists public.erp_gravar_rascunho_pedido_venda(uuid,uuid,jsonb,date,date,text,text,text,text,text,uuid,text,text,text,numeric,numeric,numeric);
-create or replace function public.erp_gravar_rascunho_pedido_venda(
-  p_pedido_id uuid default null,p_cliente_id uuid default null,p_itens jsonb default '[]'::jsonb,p_data_entrada date default current_date,p_data_entrega date default null,p_pedido_cliente text default null,p_observacoes text default null,p_condicao_pagamento text default null,p_vendedor_nome text default null,p_modalidade_frete text default null,p_transportadora_id uuid default null,p_via_entrada text default null,p_cfop text default null,p_forma_pagamento text default null,p_desconto numeric default 0,p_valor_frete numeric default 0,p_valor_outras_despesas numeric default 0
-) returns uuid language plpgsql security invoker set search_path=pg_catalog,public as $$
-declare v_empresa uuid:=public.erp_current_empresa_id(); v_pedido uuid:=p_pedido_id; v_numero bigint; v_item jsonb; v_produto uuid; v_qtd numeric; v_preco numeric; v_desc numeric; v_nome text; v_subtotal numeric:=0;
-begin
-  if v_empresa is null then raise exception 'Empresa da sessão não identificada.'; end if;
-  if p_cliente_id is null or not exists(select 1 from public.erp_clientes where id=p_cliente_id and empresa_id=v_empresa and ativo=true) then raise exception 'Cliente inválido para a empresa atual.'; end if;
-  if jsonb_typeof(p_itens)<>'array' or jsonb_array_length(p_itens)=0 then raise exception 'O rascunho precisa ter pelo menos um item.'; end if;
-  if p_transportadora_id is not null and not exists(select 1 from public.erp_transportadoras where id=p_transportadora_id and empresa_id=v_empresa and ativo=true) then raise exception 'Transportadora inválida para a empresa atual.'; end if;
-  perform pg_advisory_xact_lock(hashtext(v_empresa::text));
-  if v_pedido is null then
-    select coalesce(max(numero),0)+1 into v_numero from public.erp_pedidos_venda where empresa_id=v_empresa;
-    insert into public.erp_pedidos_venda(empresa_id,numero,cliente_id,status,total,subtotal,desconto_valor,valor_frete,valor_outras_despesas,data_entrada,data_entrega_prometida,pedido_cliente,observacoes,condicao_pagamento,vendedor_nome,modalidade_frete,id_transportadora,via_entrada,cfop,forma_pagamento,created_by)
-    values(v_empresa,v_numero,p_cliente_id,'RASCUNHO',0,0,greatest(coalesce(p_desconto,0),0),greatest(coalesce(p_valor_frete,0),0),greatest(coalesce(p_valor_outras_despesas,0),0),coalesce(p_data_entrada,current_date),p_data_entrega,nullif(trim(p_pedido_cliente),''),nullif(trim(p_observacoes),''),nullif(trim(p_condicao_pagamento),''),nullif(trim(p_vendedor_nome),''),nullif(trim(p_modalidade_frete),''),p_transportadora_id,nullif(trim(p_via_entrada),''),nullif(trim(p_cfop),''),nullif(trim(p_forma_pagamento),''),auth.uid()) returning id into v_pedido;
-  else
-    update public.erp_pedidos_venda set cliente_id=p_cliente_id,status='RASCUNHO',data_entrada=coalesce(p_data_entrada,current_date),data_entrega_prometida=p_data_entrega,pedido_cliente=nullif(trim(p_pedido_cliente),''),observacoes=nullif(trim(p_observacoes),''),condicao_pagamento=nullif(trim(p_condicao_pagamento),''),vendedor_nome=nullif(trim(p_vendedor_nome),''),modalidade_frete=nullif(trim(p_modalidade_frete),''),id_transportadora=p_transportadora_id,via_entrada=nullif(trim(p_via_entrada),''),cfop=nullif(trim(p_cfop),''),forma_pagamento=nullif(trim(p_forma_pagamento),''),desconto_valor=greatest(coalesce(p_desconto,0),0),valor_frete=greatest(coalesce(p_valor_frete,0),0),valor_outras_despesas=greatest(coalesce(p_valor_outras_despesas,0),0),updated_at=now() where id=v_pedido and empresa_id=v_empresa;
-    if not found then raise exception 'Rascunho não pertence à empresa atual.'; end if;
-    delete from public.erp_pedidos_venda_itens where pedido_id=v_pedido and empresa_id=v_empresa;
-  end if;
-  for v_item in select * from jsonb_array_elements(p_itens) loop
-    v_produto:=nullif(v_item->>'produto_id','')::uuid; v_qtd:=(v_item->>'quantidade')::numeric; v_preco:=greatest(coalesce(nullif(v_item->>'valor_unitario','')::numeric,0),0); v_desc:=greatest(coalesce(nullif(v_item->>'desconto','')::numeric,0),0);
-    select nome into v_nome from public.erp_produtos where id=v_produto and empresa_id=v_empresa and ativo=true;
-    if not found or v_qtd is null or v_qtd<=0 then raise exception 'Item de rascunho inválido.'; end if;
-    insert into public.erp_pedidos_venda_itens(empresa_id,pedido_id,produto_id,descricao,quantidade,valor_unitario,desconto,total,produto_cliente) values(v_empresa,v_pedido,v_produto,v_nome,v_qtd,v_preco,v_desc,round(greatest(v_qtd*v_preco-v_desc,0),2),nullif(trim(v_item->>'codigo_cliente'),''));
-    v_subtotal:=v_subtotal+greatest(round(v_qtd*v_preco-v_desc,2),0);
-  end loop;
-  if greatest(coalesce(p_desconto,0),0)>v_subtotal then raise exception 'Desconto do pedido não pode ser maior que o subtotal.'; end if;
-  update public.erp_pedidos_venda set subtotal=round(v_subtotal,2),desconto_valor=round(greatest(coalesce(p_desconto,0),0),2),total=round(v_subtotal-greatest(coalesce(p_desconto,0),0)+greatest(coalesce(p_valor_frete,0),0)+greatest(coalesce(p_valor_outras_despesas,0),0),2),updated_at=now() where id=v_pedido and empresa_id=v_empresa;
-  return v_pedido;
-end;
-$$;
-revoke all on function public.erp_gravar_rascunho_pedido_venda(uuid,uuid,jsonb,date,date,text,text,text,text,text,uuid,text,text,text,numeric,numeric,numeric) from public,anon;
-grant execute on function public.erp_gravar_rascunho_pedido_venda(uuid,uuid,jsonb,date,date,text,text,text,text,text,uuid,text,text,text,numeric,numeric,numeric) to authenticated;
--- <<<<<<<<<<<<<< <<<< 20261003110000_vendas_rebuild_relational_pricing_v1.sql >>>>
 
 -- >>>>>>>>>>>>>>>>>>>> 20261004100000_sgq_integrated_erp_v1.sql  (tabela ausente no banco: erp_documentos_qualidade_distribuicoes) >>>>>>>>>>>>>>>>>>>>
 create table if not exists public.erp_sgq_contadores (
@@ -1398,6 +1283,469 @@ grant select on public.erp_sgq_capa_acoes, public.erp_sgq_auditoria,
 grant insert, update on public.erp_sgq_capa_acoes to authenticated;
 -- <<<<<<<<<<<<<< <<<< 20261004100000_sgq_integrated_erp_v1.sql >>>>
 
+-- >>>>>>>>>>>>>>>>>>>> 20261009180000_erp_industrial_engineering_wms_quality_pcp_fiscal_hr.sql  (dependencia: qualidade_fmea exigida por 20261106120000_erp_fmea_plano_controle_aiag_v1.sql) >>>>>>>>>>>>>>>>>>>>
+-- ERP Industrial: engineering, WMS, SGQ, PCP, fiscal costing and HR foundation.
+-- Tenant isolation uses the ERP's established erp_current_empresa_id() contract.
+begin;
+
+create extension if not exists pgcrypto;
+
+create table if not exists public.engenharia_produtos (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  codigo text not null,
+  descricao_tecnica text not null,
+  unidade_medida text not null,
+  tipo_item text not null check (tipo_item in ('materia_prima','componente','subconjunto','produto_acabado','insumo_consumivel')),
+  peso_liquido numeric(18,6) not null default 0 check (peso_liquido >= 0),
+  peso_bruto numeric(18,6) not null default 0 check (peso_bruto >= 0),
+  ncm varchar(8),
+  desenho_url text,
+  ativo boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (empresa_id, codigo)
+);
+
+create table if not exists public.engenharia_bom (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  codigo_bom text not null,
+  produto_pai_id uuid not null references public.engenharia_produtos(id),
+  versao text not null default '1',
+  status text not null default 'em_revisao' check (status in ('ativo','em_revisao','obsoleto')),
+  vigente_desde date not null default current_date,
+  vigente_ate date,
+  observacoes text,
+  created_at timestamptz not null default now(),
+  unique (empresa_id, codigo_bom, versao),
+  check (vigente_ate is null or vigente_ate >= vigente_desde)
+);
+
+create table if not exists public.engenharia_bom_componentes (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  bom_id uuid not null references public.engenharia_bom(id) on delete cascade,
+  componente_id uuid not null references public.engenharia_produtos(id),
+  quantidade_liquida numeric(18,6) not null check (quantidade_liquida > 0),
+  perda_percentual numeric(9,4) not null default 0 check (perda_percentual >= 0 and perda_percentual < 100),
+  tipo_perda text not null default 'mecanica' check (tipo_perda in ('mecanica','quimica','galvanica')),
+  operacao_consumo text,
+  quantidade_bruta numeric(18,6) generated always as (quantidade_liquida / (1 - perda_percentual / 100)) stored,
+  created_at timestamptz not null default now(),
+  unique (bom_id, componente_id)
+);
+
+create table if not exists public.estoque_enderecos (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  codigo text not null,
+  descricao text,
+  tipo text not null check (tipo in ('materia_prima','insumos','quarentena','produto_acabado','refugo')),
+  rua text not null,
+  prateleira text not null,
+  nivel text not null,
+  capacidade_peso numeric(18,3),
+  capacidade_volume numeric(18,3),
+  ativo boolean not null default true,
+  unique (empresa_id, codigo),
+  unique (empresa_id, rua, prateleira, nivel)
+);
+
+create table if not exists public.estoque_lotes (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  produto_id uuid not null references public.engenharia_produtos(id),
+  numero_lote text not null,
+  fabricado_em date,
+  validade_em date,
+  certificado_qualidade text,
+  status text not null default 'quarentena' check (status in ('liberado','bloqueado','quarentena')),
+  custo_unitario numeric(18,6) not null default 0 check (custo_unitario >= 0),
+  created_at timestamptz not null default now(),
+  unique (empresa_id, produto_id, numero_lote)
+);
+
+create table if not exists public.estoque_saldos (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  produto_id uuid not null references public.engenharia_produtos(id),
+  lote_id uuid not null references public.estoque_lotes(id),
+  endereco_id uuid not null references public.estoque_enderecos(id),
+  quantidade numeric(18,6) not null default 0 check (quantidade >= 0),
+  custo_medio numeric(18,6) not null default 0 check (custo_medio >= 0),
+  updated_at timestamptz not null default now(),
+  unique (empresa_id, produto_id, lote_id, endereco_id)
+);
+
+create table if not exists public.qualidade_especificacoes (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  produto_id uuid not null references public.engenharia_produtos(id),
+  revisao text not null,
+  status text not null default 'rascunho' check (status in ('rascunho','ativa','obsoleta')),
+  aprovada_em timestamptz,
+  aprovador_id uuid,
+  vigente_desde date not null default current_date,
+  vigente_ate date,
+  parametros jsonb not null default '[]'::jsonb check (jsonb_typeof(parametros) = 'array'),
+  created_at timestamptz not null default now(),
+  unique (empresa_id, produto_id, revisao),
+  check (vigente_ate is null or vigente_ate >= vigente_desde)
+);
+
+create table if not exists public.qualidade_motivos_falha (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  codigo text not null,
+  descricao text not null,
+  categoria text not null default 'processo',
+  ativo boolean not null default true,
+  unique (empresa_id, codigo)
+);
+
+create table if not exists public.qualidade_inspecoes (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  tipo text not null check (tipo in ('recebimento','processo','produto_final')),
+  produto_id uuid not null references public.engenharia_produtos(id),
+  lote_id uuid not null references public.estoque_lotes(id),
+  ordem_producao_id uuid,
+  ordem_compra_id uuid,
+  quantidade_total numeric(18,6) not null check (quantidade_total >= 0),
+  tamanho_amostra integer not null check (tamanho_amostra >= 0),
+  medicoes jsonb not null default '[]'::jsonb check (jsonb_typeof(medicoes) = 'array'),
+  resultado text not null check (resultado in ('aprovado','reprovado','aprovado_com_restricao')),
+  inspetor_id uuid,
+  observacoes text,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.qualidade_rnc_capa (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  codigo text not null,
+  lote_id uuid references public.estoque_lotes(id),
+  inspecao_id uuid references public.qualidade_inspecoes(id),
+  origem text not null check (origem in ('fornecedor','interna','cliente')),
+  descricao text not null,
+  evidencia_urls text[] not null default '{}',
+  disposicao text check (disposicao in ('refugar','devolver','retrabalhar','concessao')),
+  cinco_porques jsonb not null default '[]'::jsonb,
+  ishikawa jsonb not null default '{}'::jsonb,
+  plano_5w2h jsonb not null default '[]'::jsonb,
+  status text not null default 'aberto' check (status in ('aberto','em_execucao','concluido','eficacia_validada')),
+  created_at timestamptz not null default now(),
+  unique (empresa_id, codigo)
+);
+
+create table if not exists public.qualidade_fmea (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  codigo_item_processo text not null,
+  funcao text not null,
+  modo_falha text not null,
+  efeito text not null,
+  severidade integer not null check (severidade between 1 and 10),
+  causa text not null,
+  ocorrencia integer not null check (ocorrencia between 1 and 10),
+  controles text,
+  deteccao integer not null check (deteccao between 1 and 10),
+  npr integer generated always as (severidade * ocorrencia * deteccao) stored,
+  acoes_recomendadas jsonb not null default '[]'::jsonb,
+  status_acao text not null default 'aberta',
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.pcp_roteiros (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  produto_id uuid not null references public.engenharia_produtos(id),
+  codigo text not null,
+  versao text not null default '1',
+  etapas jsonb not null default '[]'::jsonb check (jsonb_typeof(etapas) = 'array'),
+  ativo boolean not null default true,
+  unique (empresa_id, codigo, versao)
+);
+
+create table if not exists public.pcp_ordens_producao (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  numero text not null,
+  produto_id uuid not null references public.engenharia_produtos(id),
+  roteiro_id uuid references public.pcp_roteiros(id),
+  quantidade_planejada numeric(18,6) not null check (quantidade_planejada > 0),
+  aberta_em timestamptz not null default now(),
+  entrega_prevista date,
+  status text not null default 'planejada' check (status in ('planejada','liberada','em_andamento','suspensa','encerrada','cancelada')),
+  created_at timestamptz not null default now(),
+  unique (empresa_id, numero)
+);
+
+create table if not exists public.pcp_apontamentos (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  ordem_producao_id uuid not null references public.pcp_ordens_producao(id),
+  operacao_codigo text not null,
+  operador_id uuid,
+  centro_trabalho text not null,
+  setup_inicio timestamptz,
+  setup_fim timestamptz,
+  producao_inicio timestamptz,
+  producao_fim timestamptz,
+  pecas_boas numeric(18,6) not null default 0 check (pecas_boas >= 0),
+  pecas_refugadas numeric(18,6) not null default 0 check (pecas_refugadas >= 0),
+  motivo_refugo_id uuid references public.qualidade_motivos_falha(id),
+  motivo_parada text,
+  observacoes text,
+  created_at timestamptz not null default now(),
+  check (setup_fim is null or setup_inicio is null or setup_fim >= setup_inicio),
+  check (producao_fim is null or producao_inicio is null or producao_fim >= producao_inicio)
+);
+
+create table if not exists public.fiscal_parametros_tributarios (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  codigo text not null,
+  cfop varchar(4) not null,
+  ncm_sufixo text,
+  uf_origem char(2),
+  uf_destino char(2),
+  aliquota_icms numeric(7,4) not null default 0 check (aliquota_icms between 0 and 100),
+  aliquota_ipi numeric(7,4) not null default 0 check (aliquota_ipi between 0 and 100),
+  aliquota_pis numeric(7,4) not null default 0 check (aliquota_pis between 0 and 100),
+  aliquota_cofins numeric(7,4) not null default 0 check (aliquota_cofins between 0 and 100),
+  cst_csosn text,
+  tipo_operacao text not null check (tipo_operacao in ('entrada_compra','entrada_devolucao','saida_venda','saida_remessa')),
+  ativo boolean not null default true,
+  unique (empresa_id, codigo)
+);
+
+create table if not exists public.fiscal_nfe_entradas (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  chave_acesso varchar(44) not null check (chave_acesso ~ '^[0-9]{44}$'),
+  numero text not null,
+  serie text not null,
+  cnpj_emitente varchar(14) not null,
+  razao_social_emitente text not null,
+  valor_total numeric(18,2) not null check (valor_total >= 0),
+  itens jsonb not null check (jsonb_typeof(itens) = 'array' and jsonb_array_length(itens) > 0),
+  status text not null default 'rascunho' check (status in ('rascunho','escriturada','cancelada')),
+  escriturada_em timestamptz,
+  created_at timestamptz not null default now(),
+  unique (empresa_id, chave_acesso)
+);
+
+create table if not exists public.fiscal_historico_custos (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  produto_id uuid not null references public.engenharia_produtos(id),
+  lote_id uuid references public.estoque_lotes(id),
+  documento_origem text not null,
+  quantidade numeric(18,6) not null check (quantidade > 0),
+  valor_liquido_unitario numeric(18,6) not null check (valor_liquido_unitario >= 0),
+  saldo_anterior numeric(18,6) not null,
+  custo_medio_anterior numeric(18,6) not null,
+  custo_medio_novo numeric(18,6) not null,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.rh_funcionarios (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  matricula text not null,
+  nome_completo text not null,
+  cpf varchar(11),
+  rg text,
+  data_admissao date not null,
+  cargo text not null,
+  departamento text not null check (departamento in ('engenharia','pcp','producao','qualidade','almoxarifado','administrativo')),
+  taxa_horaria numeric(18,4) not null default 0 check (taxa_horaria >= 0),
+  status text not null default 'ativo' check (status in ('ativo','afastado','desligado')),
+  created_at timestamptz not null default now(),
+  unique (empresa_id, matricula)
+);
+
+create table if not exists public.rh_turnos (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  codigo text not null,
+  nome text not null,
+  inicio time not null,
+  termino time not null,
+  intervalo_inicio time,
+  intervalo_fim time,
+  escala text not null check (escala in ('5x2','6x2','12x36')),
+  carga_horaria_mensal numeric(8,2) not null check (carga_horaria_mensal > 0),
+  ativo boolean not null default true,
+  unique (empresa_id, codigo)
+);
+
+create table if not exists public.rh_funcionario_turnos (
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  funcionario_id uuid not null references public.rh_funcionarios(id) on delete cascade,
+  turno_id uuid not null references public.rh_turnos(id) on delete cascade,
+  vigente_desde date not null default current_date,
+  vigente_ate date,
+  primary key (empresa_id, funcionario_id, turno_id, vigente_desde),
+  check (vigente_ate is null or vigente_ate >= vigente_desde)
+);
+
+create table if not exists public.rh_epis (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  codigo text not null,
+  nome text not null,
+  numero_ca text not null,
+  ca_valido_ate date not null,
+  periodicidade_troca_dias integer not null check (periodicidade_troca_dias > 0),
+  ativo boolean not null default true,
+  unique (empresa_id, codigo)
+);
+
+create table if not exists public.rh_entregas_epis (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  epi_id uuid not null references public.rh_epis(id),
+  funcionario_id uuid not null references public.rh_funcionarios(id),
+  quantidade integer not null check (quantidade > 0),
+  entregue_em date not null default current_date,
+  confirmado_em timestamptz,
+  proxima_troca_em date generated always as (entregue_em + periodicidade_troca_dias) stored,
+  periodicidade_troca_dias integer not null check (periodicidade_troca_dias > 0)
+);
+
+create or replace function public.erp_quality_quarantine_lot()
+returns trigger
+language plpgsql
+security invoker
+set search_path = public
+as $$
+declare
+  v_quarantine_id uuid;
+  v_rnc_code text;
+begin
+  if new.resultado = 'reprovado' then
+    update public.estoque_lotes
+       set status = 'bloqueado'
+     where id = new.lote_id and empresa_id = new.empresa_id;
+
+    select id into v_quarantine_id
+      from public.estoque_enderecos
+     where empresa_id = new.empresa_id and tipo = 'quarentena' and ativo
+     order by codigo limit 1;
+
+    if v_quarantine_id is null then
+      raise exception 'QUARENTENA_ENDERECO_NAO_CONFIGURADO: cadastre um endereço ativo do tipo quarentena antes de reprovar lotes';
+    end if;
+
+    update public.estoque_saldos
+       set endereco_id = v_quarantine_id, updated_at = now()
+     where lote_id = new.lote_id and empresa_id = new.empresa_id;
+
+    v_rnc_code := 'RNC-' || to_char(now(), 'YYYYMMDD-HH24MISS') || '-' || substr(replace(gen_random_uuid()::text, '-', ''), 1, 6);
+    insert into public.qualidade_rnc_capa
+      (empresa_id, codigo, lote_id, inspecao_id, origem, descricao, status)
+    values
+      (new.empresa_id, v_rnc_code, new.lote_id, new.id, 'interna',
+       coalesce(nullif(new.observacoes, ''), 'Lote reprovado em inspeção de qualidade.'), 'aberto');
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_qualidade_inspecao_quarentena on public.qualidade_inspecoes;
+create trigger trg_qualidade_inspecao_quarentena
+after insert or update of resultado on public.qualidade_inspecoes
+for each row when (new.resultado = 'reprovado')
+execute function public.erp_quality_quarantine_lot();
+
+create or replace function public.erp_registrar_custo_medio_nfe(
+  p_produto_id uuid,
+  p_lote_id uuid,
+  p_endereco_id uuid,
+  p_quantidade numeric,
+  p_valor_liquido_unitario numeric,
+  p_documento_origem text
+) returns numeric
+language plpgsql
+security invoker
+set search_path = public
+as $$
+declare
+  v_empresa_id uuid := public.erp_current_empresa_id();
+  v_saldo numeric(18,6);
+  v_custo numeric(18,6);
+  v_novo_custo numeric(18,6);
+begin
+  if p_quantidade <= 0 or p_valor_liquido_unitario < 0 then
+    raise exception 'QUANTIDADE_OU_CUSTO_INVALIDO';
+  end if;
+
+  perform 1 from public.estoque_lotes
+   where id = p_lote_id and produto_id = p_produto_id and empresa_id = v_empresa_id
+   for update;
+  if not found then raise exception 'LOTE_NAO_ENCONTRADO_NO_TENANT'; end if;
+
+  select coalesce(sum(quantidade), 0), coalesce(
+    sum(quantidade * custo_medio) / nullif(sum(quantidade), 0), 0
+  )
+  into v_saldo, v_custo
+  from public.estoque_saldos
+  where produto_id = p_produto_id and empresa_id = v_empresa_id
+  for update;
+
+  v_novo_custo := case when v_saldo + p_quantidade = 0 then 0
+    else ((v_saldo * v_custo) + (p_quantidade * p_valor_liquido_unitario)) / (v_saldo + p_quantidade)
+  end;
+
+  insert into public.estoque_saldos
+    (empresa_id, produto_id, lote_id, endereco_id, quantidade, custo_medio, updated_at)
+  values (v_empresa_id, p_produto_id, p_lote_id, p_endereco_id, p_quantidade, v_novo_custo, now())
+  on conflict (empresa_id, produto_id, lote_id, endereco_id)
+  do update set quantidade = public.estoque_saldos.quantidade + excluded.quantidade,
+                custo_medio = v_novo_custo,
+                updated_at = now();
+
+  update public.estoque_lotes set custo_unitario = p_valor_liquido_unitario
+   where id = p_lote_id and empresa_id = v_empresa_id;
+
+  insert into public.fiscal_historico_custos
+    (empresa_id, produto_id, lote_id, documento_origem, quantidade, valor_liquido_unitario,
+     saldo_anterior, custo_medio_anterior, custo_medio_novo)
+  values (v_empresa_id, p_produto_id, p_lote_id, p_documento_origem, p_quantidade,
+          p_valor_liquido_unitario, v_saldo, v_custo, v_novo_custo);
+  return v_novo_custo;
+end;
+$$;
+
+create index if not exists idx_estoque_saldos_empresa_produto on public.estoque_saldos (empresa_id, produto_id);
+create index if not exists idx_estoque_saldos_lote on public.estoque_saldos (empresa_id, lote_id);
+create index if not exists idx_qualidade_inspecoes_lote on public.qualidade_inspecoes (empresa_id, lote_id, created_at desc);
+create index if not exists idx_qualidade_rnc_status on public.qualidade_rnc_capa (empresa_id, status, created_at desc);
+create index if not exists idx_pcp_op_status on public.pcp_ordens_producao (empresa_id, status, entrega_prevista);
+
+do $$
+declare t text;
+begin
+  foreach t in array array[
+    'engenharia_produtos','engenharia_bom','engenharia_bom_componentes',
+    'estoque_enderecos','estoque_lotes','estoque_saldos',
+    'qualidade_especificacoes','qualidade_motivos_falha','qualidade_inspecoes','qualidade_rnc_capa','qualidade_fmea',
+    'pcp_roteiros','pcp_ordens_producao','pcp_apontamentos',
+    'fiscal_parametros_tributarios','fiscal_nfe_entradas','fiscal_historico_custos',
+    'rh_funcionarios','rh_turnos','rh_funcionario_turnos','rh_epis','rh_entregas_epis'
+  ] loop
+    execute format('alter table public.%I enable row level security', t);
+    execute format('drop policy if exists tenant_isolation on public.%I', t);
+    execute format('create policy tenant_isolation on public.%I using (empresa_id = public.erp_current_empresa_id()) with check (empresa_id = public.erp_current_empresa_id())', t);
+  end loop;
+end $$;
+
+commit;
+-- <<<<<<<<<<<<<< <<<< 20261009180000_erp_industrial_engineering_wms_quality_pcp_fiscal_hr.sql >>>>
+
 -- >>>>>>>>>>>>>>>>>>>> 20261019150000_erp_qualidade_liberacao_lotes.sql  (tabela ausente no banco: erp_qualidade_liberacao_lotes) >>>>>>>>>>>>>>>>>>>>
 -- MOLDPLÁS ERP INDUSTRIAL — liberação de lotes por empresa
 -- Revisão: 2026-10-19. A migration cria a estrutura; não simula Git/Deploy nem gera hash criptográfico falso.
@@ -1535,83 +1883,6 @@ create policy erp_qualidade_genealogia_insert_tenant
 revoke all on table public.erp_qualidade_genealogia_lotes from anon;
 grant select, insert on table public.erp_qualidade_genealogia_lotes to authenticated;
 -- <<<<<<<<<<<<<< <<<< 20261019190000_erp_qualidade_genealogia_lotes.sql >>>>
-
--- >>>>>>>>>>>>>>>>>>>> 20261020120000_erp_historico_ajustes_maquina.sql  (tabela ausente no banco: erp_historico_ajustes_maquina) >>>>>>>>>>>>>>>>>>>>
-begin;
-
-create table if not exists public.erp_historico_ajustes_maquina (
-  id uuid primary key default gen_random_uuid(),
-  empresa_id uuid not null references public.erp_empresas(id) on delete cascade,
-  ficha_id uuid not null references public.erp_fichas_processo(id) on delete cascade,
-  data_ajuste timestamptz not null default now(),
-  responsavel text not null,
-  parametro text not null,
-  alteracao text not null,
-  status text not null default 'APROVADO',
-  criado_por uuid,
-  criado_em timestamptz not null default now(),
-  constraint erp_historico_ajustes_maquina_status_check
-    check (status in ('RASCUNHO', 'EM_ANALISE', 'APROVADO', 'REJEITADO'))
-);
-
-create index if not exists idx_erp_hist_ajustes_empresa_data
-  on public.erp_historico_ajustes_maquina (empresa_id, data_ajuste desc);
-
-create index if not exists idx_erp_hist_ajustes_ficha_data
-  on public.erp_historico_ajustes_maquina (empresa_id, ficha_id, data_ajuste desc);
-
-alter table public.erp_historico_ajustes_maquina enable row level security;
-
-drop policy if exists erp_hist_ajustes_tenant_select
-  on public.erp_historico_ajustes_maquina;
-create policy erp_hist_ajustes_tenant_select
-  on public.erp_historico_ajustes_maquina
-  for select to authenticated
-  using (empresa_id = public.erp_current_empresa_id());
-
-drop policy if exists erp_hist_ajustes_tenant_insert
-  on public.erp_historico_ajustes_maquina;
-create policy erp_hist_ajustes_tenant_insert
-  on public.erp_historico_ajustes_maquina
-  for insert to authenticated
-  with check (
-    empresa_id = public.erp_current_empresa_id()
-    and exists (
-      select 1
-      from public.erp_fichas_processo f
-      where f.id = ficha_id
-        and f.empresa_id = public.erp_current_empresa_id()
-    )
-  );
-
-drop policy if exists erp_hist_ajustes_tenant_update
-  on public.erp_historico_ajustes_maquina;
-create policy erp_hist_ajustes_tenant_update
-  on public.erp_historico_ajustes_maquina
-  for update to authenticated
-  using (empresa_id = public.erp_current_empresa_id())
-  with check (
-    empresa_id = public.erp_current_empresa_id()
-    and exists (
-      select 1
-      from public.erp_fichas_processo f
-      where f.id = ficha_id
-        and f.empresa_id = public.erp_current_empresa_id()
-    )
-  );
-
-drop policy if exists erp_hist_ajustes_tenant_delete
-  on public.erp_historico_ajustes_maquina;
-create policy erp_hist_ajustes_tenant_delete
-  on public.erp_historico_ajustes_maquina
-  for delete to authenticated
-  using (empresa_id = public.erp_current_empresa_id());
-
-revoke all on public.erp_historico_ajustes_maquina from anon;
-grant select, insert, update, delete on public.erp_historico_ajustes_maquina to authenticated;
-
-commit;
--- <<<<<<<<<<<<<< <<<< 20261020120000_erp_historico_ajustes_maquina.sql >>>>
 
 -- >>>>>>>>>>>>>>>>>>>> 20261021100000_logistica_expedicao_nfe_etiquetas.sql  (tabela ausente no banco: erp_expedicao_nfe) >>>>>>>>>>>>>>>>>>>>
 -- REV-LOG-EXPEDICAO-ETIQUETAS-001 | 2026-10-21
@@ -4287,5 +4558,937 @@ select '4_rlshabilitada',
          where n.nspname = 'public'
            and c.relname in ('erp_centros_custos','erp_custos_fixos'));
 -- <<<<<<<<<<<<<< <<<< 20261104200000_repair_central_custos_tabela_e_isolamento.sql >>>>
+
+-- >>>>>>>>>>>>>>>>>>>> 20261106120000_erp_fmea_plano_controle_aiag_v1.sql  (tabela ausente no banco: erp_fmea_cabecalho) >>>>>>>>>>>>>>>>>>>>
+-- SYSNQRA ERP INDUSTRIAL — FMEA (AIAG) e Plano de Controle (AIAG) com QR Code
+-- @AUTOR: Fernando Schuinsekel
+-- @DATA_REVISAO_APROVACAO: 2026-11-06
+-- @REVISAO: REV-FMEA-PLANO-CONTROLE-20261106-01
+-- @STATUS_APROVACAO: ORDEM MASTER DE EXECUCAO EM 2026-11-06 — "CPP digital e impresso com QR Code",
+--   "FMEA" e "Inspeções / RPNC / Plano de Controle" integram a lista de módulos a concluir.
+--
+-- Fonte do modelo: pasta de trabalho enviada pelo proprietário em 2026-10-23
+-- (FMEA-TAMPA VRLA AGM NOBREAK.xlsm), que tem exatamente duas abas: "FMEA" e "Plano de Controle",
+-- no formato AIAG. As colunas abaixo reproduzem aquela pasta, campo a campo. Nada foi inventado.
+--
+-- Decisão de esquema (registrada para a auditoria):
+--   * A tabela de linhas do FMEA continua sendo public.qualidade_fmea, que JÁ EXISTE na base viva e
+--     é lida pelo sistema (qualidade/FMEA.tsx, QualidadeCentralTablet.tsx,
+--     IndustrialDataWorkspace.tsx). Criar uma segunda tabela de FMEA
+--     duplicaria a origem oficial, o que a ordem permanente dele proíbe.
+--   * public.erp_fmea (migration 20260925133000_fmea_process_v1.sql) NÃO está aplicada na base viva
+--     (probe: PGRST205) e nenhum arquivo do sistema a consulta. Ela fica marcada como superada por
+--     esta migration; não é deletada aqui porque exclusão de tabela é operação destrutiva e exige
+--     aprovação explícita do proprietário.
+--   * Cabeçalho do FMEA e as duas tabelas do Plano de Controle são novas e usam o prefixo erp_.
+
+-- ============================ CABEÇALHO DO FMEA (aba 1 da pasta do proprietário) ============================
+
+create table if not exists public.erp_fmea_cabecalho (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null references public.erp_empresas(id) on delete cascade,
+  numero text not null,
+  tipo text not null default 'processo' check (tipo in ('processo','produto','projeto')),
+  pagina integer not null default 1,
+  total_paginas integer not null default 1,
+  codigo_peca text not null default '',
+  codigo_peca_cliente text not null default '',
+  nome_peca text not null default '',
+  cliente_projeto text not null default '',
+  fornecedor text not null default '',
+  codigo_fornecedor text not null default '',
+  areas_envolvidas text not null default '',
+  equipe_principal text not null default '',
+  contato_principal text not null default '',
+  telefone text not null default '',
+  data_primeira_emissao date,
+  data_revisao date,
+  aprovacao_engenharia_cliente text not null default '',
+  aprovacao_qualidade_cliente text not null default '',
+  aprovacao_fornecedor_planta text not null default '',
+  outra_aprovacao text not null default '',
+  status text not null default 'rascunho' check (status in ('rascunho','ativo','revisado','obsoleto')),
+  versao integer not null default 1,
+  criado_por uuid,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (empresa_id, numero, versao)
+);
+
+create index if not exists idx_erp_fmea_cabecalho_empresa
+  on public.erp_fmea_cabecalho (empresa_id, status, data_revisao desc);
+
+alter table public.erp_fmea_cabecalho enable row level security;
+drop policy if exists erp_fmea_cabecalho_tenant on public.erp_fmea_cabecalho;
+create policy erp_fmea_cabecalho_tenant on public.erp_fmea_cabecalho
+  for all to authenticated
+  using (empresa_id = public.erp_current_empresa_id() or public.erp_is_master())
+  with check (empresa_id = public.erp_current_empresa_id() or public.erp_is_master());
+
+-- ============================ LINHAS DO FMEA: colunas que faltavam na tabela viva ============================
+
+alter table public.qualidade_fmea
+  add column if not exists cabecalho_id uuid references public.erp_fmea_cabecalho(id) on delete set null,
+  add column if not exists ordem integer not null default 1,
+  add column if not exists funcao_requisito text not null default '',
+  add column if not exists mecanismo_falha text not null default '',
+  add column if not exists controle_prevencao text not null default '',
+  add column if not exists controle_deteccao text not null default '',
+  add column if not exists acao_recomendada text not null default '',
+  add column if not exists acao_responsavel text not null default '',
+  add column if not exists acao_prazo date,
+  add column if not exists acao_tomada text not null default '',
+  add column if not exists acao_resultado text not null default '',
+  add column if not exists caracteristica_especial text not null default 'nenhuma'
+    check (caracteristica_especial in ('nenhuma','critica','significativa','seguranca','regulatoria')),
+  add column if not exists severidade_apos integer check (severidade_apos between 1 and 10),
+  add column if not exists ocorrencia_apos integer check (ocorrencia_apos between 1 and 10),
+  add column if not exists deteccao_apos integer check (deteccao_apos between 1 and 10),
+  add column if not exists atualizado_por uuid;
+
+-- NPR após a ação: mesma fórmula da planilha do proprietário (S × O × D), só que da releitura.
+alter table public.qualidade_fmea
+  add column if not exists npr_apos integer generated always as
+    (coalesce(severidade_apos, severidade) * coalesce(ocorrencia_apos, ocorrencia) * coalesce(deteccao_apos, deteccao)) stored;
+
+create index if not exists idx_qualidade_fmea_cabecalho
+  on public.qualidade_fmea (cabecalho_id, ordem);
+
+-- ============================ PLANO DE CONTROLE (aba 2 da pasta do proprietário) ============================
+
+create table if not exists public.erp_plano_controle (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null references public.erp_empresas(id) on delete cascade,
+  numero text not null,
+  tipo text not null default 'producao' check (tipo in ('prototipo','pre_lancamento','producao')),
+  pagina integer not null default 1,
+  total_paginas integer not null default 1,
+  codigo_peca text not null default '',
+  nome_peca text not null default '',
+  fornecedor_planta text not null default '',
+  codigo_fornecedor text not null default '',
+  contato_principal text not null default '',
+  telefone text not null default '',
+  data_original date,
+  data_revisao date,
+  equipe_principal text not null default '',
+  aprovacao_engenharia_cliente text not null default '',
+  aprovacao_qualidade_cliente text not null default '',
+  aprovacao_fornecedor_planta text not null default '',
+  outra_aprovacao text not null default '',
+  produto_id uuid,
+  status text not null default 'rascunho' check (status in ('rascunho','ativo','revisado','obsoleto')),
+  versao integer not null default 1,
+  criado_por uuid,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (empresa_id, numero, versao)
+);
+
+create index if not exists idx_erp_plano_controle_empresa
+  on public.erp_plano_controle (empresa_id, status, data_revisao desc);
+
+alter table public.erp_plano_controle enable row level security;
+drop policy if exists erp_plano_controle_tenant on public.erp_plano_controle;
+create policy erp_plano_controle_tenant on public.erp_plano_controle
+  for all to authenticated
+  using (empresa_id = public.erp_current_empresa_id() or public.erp_is_master())
+  with check (empresa_id = public.erp_current_empresa_id() or public.erp_is_master());
+
+create table if not exists public.erp_plano_controle_linha (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null references public.erp_empresas(id) on delete cascade,
+  plano_id uuid not null references public.erp_plano_controle(id) on delete cascade,
+  ordem integer not null default 1,
+  item_numero text not null default '',
+  processo_operacao_numero text not null default '',
+  descricao_produto_processo text not null default '',
+  caracteristica_especial text not null default '' check (caracteristica_especial in ('','critica','significativa','nenhuma')),
+  maquina_dispositivo_ferramenta text not null default '',
+  numero_controle text not null default '',
+  metodo_manufatura text not null default '',
+  padrao_avaliacao text not null default '',
+  tecnica_medicao text not null default '',
+  tamanho_amostra text not null default '',
+  frequencia_amostra text not null default '',
+  metodo_controle text not null default '',
+  plano_reacao text not null default '',
+  fmea_linha_id uuid references public.qualidade_fmea(id) on delete set null,
+  inspecao_id uuid,
+  atualizado_por uuid,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_erp_plano_controle_linha_plano
+  on public.erp_plano_controle_linha (plano_id, ordem);
+create index if not exists idx_erp_plano_controle_linha_empresa
+  on public.erp_plano_controle_linha (empresa_id);
+
+alter table public.erp_plano_controle_linha enable row level security;
+drop policy if exists erp_plano_controle_linha_tenant on public.erp_plano_controle_linha;
+create policy erp_plano_controle_linha_tenant on public.erp_plano_controle_linha
+  for all to authenticated
+  using (empresa_id = public.erp_current_empresa_id() or public.erp_is_master())
+  with check (empresa_id = public.erp_current_empresa_id() or public.erp_is_master());
+
+-- ============================ RPC: matriz FMEA completa (cabeçalho + linhas) ============================
+
+create or replace function public.erp_fmea_matriz(p_cabecalho_id uuid)
+returns jsonb
+language sql
+stable
+security invoker
+set search_path = public
+as $$
+  select jsonb_build_object(
+    'cabecalho', coalesce((
+      select to_jsonb(c) from public.erp_fmea_cabecalho c
+      where c.id = p_cabecalho_id
+        and (c.empresa_id = public.erp_current_empresa_id() or public.erp_is_master())
+    ), 'null'::jsonb),
+    'linhas', coalesce((
+      select jsonb_agg(to_jsonb(f) order by f.ordem, f.created_at)
+      from public.qualidade_fmea f
+      where f.cabecalho_id = p_cabecalho_id
+        and (f.empresa_id = public.erp_current_empresa_id() or public.erp_is_master())
+    ), '[]'::jsonb)
+  );
+$$;
+
+revoke all on function public.erp_fmea_matriz(uuid) from public;
+grant execute on function public.erp_fmea_matriz(uuid) to authenticated;
+
+-- ============================ RPC: risco consolidado do FMEA (sem dados inventados) ============================
+
+create or replace function public.erp_fmea_resumo(p_cabecalho_id uuid)
+returns table (
+  total_linhas bigint,
+  npr_maximo integer,
+  npr_medio numeric,
+  criticas bigint,
+  acoes_abertas bigint,
+  acoes_concluidas bigint
+)
+language sql
+stable
+security invoker
+set search_path = public
+as $$
+  select
+    count(*)::bigint as total_linhas,
+    max(f.npr)::integer as npr_maximo,
+    round(avg(f.npr), 1) as npr_medio,
+    count(*) filter (where f.caracteristica_especial in ('critica','seguranca','regulatoria'))::bigint as criticas,
+    count(*) filter (where lower(f.status_acao) in ('aberta','em_andamento'))::bigint as acoes_abertas,
+    count(*) filter (where lower(f.status_acao) = 'concluida')::bigint as acoes_concluidas
+  from public.qualidade_fmea f
+  where f.cabecalho_id = p_cabecalho_id
+    and f.empresa_id = public.erp_current_empresa_id();
+$$;
+
+revoke all on function public.erp_fmea_resumo(uuid) from public;
+grant execute on function public.erp_fmea_resumo(uuid) to authenticated;
+
+-- ============================ RPC: plano de controle completo ============================
+
+create or replace function public.erp_plano_controle_matriz(p_plano_id uuid)
+returns jsonb
+language sql
+stable
+security invoker
+set search_path = public
+as $$
+  select jsonb_build_object(
+    'plano', coalesce((select to_jsonb(p) from public.erp_plano_controle p
+      where p.id = p_plano_id
+        and (p.empresa_id = public.erp_current_empresa_id() or public.erp_is_master())), 'null'::jsonb),
+    'linhas', coalesce((select jsonb_agg(to_jsonb(l) order by l.ordem)
+      from public.erp_plano_controle_linha l
+      where l.plano_id = p_plano_id
+        and (l.empresa_id = public.erp_current_empresa_id() or public.erp_is_master())), '[]'::jsonb)
+  );
+$$;
+
+revoke all on function public.erp_plano_controle_matriz(uuid) from public;
+grant execute on function public.erp_plano_controle_matriz(uuid) to authenticated;
+
+-- ============================ Triggers de updated_at ============================
+-- Defeito corrigido nesta revisão: a versão anterior deste bloco chamava
+-- public.erp_set_updated_at(), que não é criada por NENHUM arquivo deste repo (grep: apenas uma
+-- revogação em 20260912_security_performance_hardening.sql:24) e não é resolvível pela API
+-- (probe 2026-11-06 com publishable key: PGRST202 "Could not find the function"). Como a função
+-- nunca é definida aqui, aplica-la num banco novo daria falha no CREATE TRIGGER e a migration
+-- inteira pararia. A função própria é criada abaixo, com nome exclusivo, para não sobrescrever
+-- objeto de outro pacote que já use esse nome no banco vivo.
+
+create or replace function public.erp_stdq_touch_updated_at()
+returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $$
+begin
+  new.updated_at := now();
+  return new;
+end;
+$$;
+
+revoke all on function public.erp_stdq_touch_updated_at() from public, anon, authenticated;
+
+do $$
+declare
+  t text;
+begin
+  foreach t in array array['erp_fmea_cabecalho','erp_plano_controle','erp_plano_controle_linha'] loop
+    execute format('drop trigger if exists trg_%1$s_updated_at on public.%1$s', t);
+    execute format(
+      'create trigger trg_%1$s_updated_at before update on public.%1$s
+         for each row execute function public.erp_stdq_touch_updated_at()', t);
+  end loop;
+end $$;
+-- <<<<<<<<<<<<<< <<<< 20261106120000_erp_fmea_plano_controle_aiag_v1.sql >>>>
+
+-- >>>>>>>>>>>>>>>>>>>> 20261106150000_erp_central_evolucao_v1.sql  (tabela ausente no banco: erp_central_evolucao_item) >>>>>>>>>>>>>>>>>>>>
+-- SYSNQRA ERP INDUSTRIAL — CENTRAL DE EVOLUCAO E CONCLUSAO DO SISTEMA
+-- @AUTOR: Fernando Schuinsekel
+-- @DATA_REVISAO_APROVACAO: 2026-11-06
+-- @REVISAO: REV-CENTRAL-EVOLUCAO-20261106-01
+-- @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-06 — "VC JA TEM SUAS ORDENS PEGAR TODOS A
+--   REALIZAR TODAS E APLICAR TODAS NO SISTEMA DEIXANDO ELE PRONTO" e "SÓ PARA QUANDO TODAS AS TELAS
+--   ESTIVEREM PRONTO E APLICADAS NO SISTEMA". A ORDEM MASTER de 2026-11-06 pede a tela
+--   "Central de Evolução e Conclusão do SYSNQRA" com filtros por setor/prioridade/situação,
+--   historico de mudanca de status e relatorio A4.
+--
+-- O que esta tabela NÃO é: não é quadro de indicador inventado e não contém dado de produção.
+-- Cada linha do seed abaixo é um pendencia real medida neste repo ou no banco vivo em 2026-11-06,
+-- com a evidencia escrita na proprio "evidencia". Nada aqui foi preenchido por suposição.
+--
+-- Escopo das linhas (decisão registrada para a auditoria dele):
+--   * empresa_id NULL = item do PRODUTO SYSNQRA (agenda de conclusao do sistema, igual para todas
+--     as empresas). Só o MASTER validado no cadastro ERP enxerga e edita esses itens, porque a
+--     policy aprovada é "empresa_id = public.erp_current_empresa_id() or public.erp_is_master()" e
+--     NULL nunca iguala o uuid da sessão.
+--   * empresa_id preenchido = item de implantação daquela empresa (o que falta para aquele cliente).
+--     Nenhuma linha do seed usa empresa_id: não há como saber a empresa sem ler o banco autenticado,
+--     e inventar uuid viola a regra dele.
+--   * Nenhum INSERT do seed toca em tabela existente: são só linhas novas na tabela criada aqui.
+
+-- ============================ FUNÇÃO DE CARIMBO (autossuficiente) ============================
+-- O bloco abaixo repete, com corpo idêntico, a função criada em
+-- 20261106120000_erp_fmea_plano_controle_aiag_v1.sql. Ela é recriada aqui para esta migration
+-- aplicar sozinha num banco novo. Nome exclusivo: não sobrescreve objeto de outro pacote.
+
+create or replace function public.erp_stdq_touch_updated_at()
+returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $$
+begin
+  new.updated_at := now();
+  return new;
+end;
+$$;
+
+revoke all on function public.erp_stdq_touch_updated_at() from public, anon, authenticated;
+
+-- ============================ ITENS ============================
+
+create table if not exists public.erp_central_evolucao_item (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid references public.erp_empresas(id) on delete cascade,
+  codigo text not null,
+  titulo text not null,
+  descricao text not null default '',
+  setor text not null default 'geral',
+  modulo text not null default '',
+  tipo text not null default 'acao' check (tipo in ('acao','defeito','melhoria','pendencia_proprietario','auditoria')),
+  prioridade text not null default 'media' check (prioridade in ('baixa','media','alta','critica')),
+  situacao text not null default 'pendente' check (situacao in ('pendente','em_andamento','concluido','bloqueado','nao_aplicavel')),
+  responsavel text not null default '',
+  origem text not null default '',
+  arquivo text not null default '',
+  rota text not null default '',
+  dependencia text not null default '',
+  evidencia text not null default '',
+  ordem integer not null default 100,
+  criado_em timestamptz not null default now(),
+  criado_por uuid,
+  atualizado_por uuid,
+  updated_at timestamptz not null default now()
+);
+
+comment on table public.erp_central_evolucao_item is
+  'Agenda mensurável de conclusão do SYSNQRA: uma linha por pendência, com origem, arquivo, rota, dependência e evidência.';
+comment on column public.erp_central_evolucao_item.empresa_id is
+  'NULL = item do produto (visível só ao MASTER). UUID = item de implantação daquela empresa.';
+comment on column public.erp_central_evolucao_item.evidencia is
+  'Medição que sustenta a linha (probe do banco vivo, grep do repo ou documento auditsdo com SHA).';
+
+create index if not exists idx_erp_central_evolucao_item_situacao
+  on public.erp_central_evolucao_item (situacao, prioridade, ordem);
+create index if not exists idx_erp_central_evolucao_item_empresa
+  on public.erp_central_evolucao_item (empresa_id, setor);
+
+-- Unicidade por escopo. coalesce com o uuid nulo permite o mesmo codigo em empresas diferentes
+-- e impede duplicidade do catalogo do produto numa re-execução da migration.
+create unique index if not exists uniq_erp_central_evolucao_item_codigo
+  on public.erp_central_evolucao_item
+    (coalesce(empresa_id, '00000000-0000-0000-0000-000000000000'::uuid), codigo);
+
+alter table public.erp_central_evolucao_item enable row level security;
+
+drop policy if exists erp_central_evolucao_item_tenant on public.erp_central_evolucao_item;
+create policy erp_central_evolucao_item_tenant on public.erp_central_evolucao_item
+  for all to authenticated
+  using (empresa_id = public.erp_current_empresa_id() or public.erp_is_master())
+  with check (empresa_id = public.erp_current_empresa_id() or public.erp_is_master());
+
+-- ============================ HISTÓRICO DE STATUS ============================
+
+create table if not exists public.erp_central_evolucao_evento (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid references public.erp_empresas(id) on delete cascade,
+  item_id uuid not null references public.erp_central_evolucao_item(id) on delete cascade,
+  quando timestamptz not null default now(),
+  quem text not null default '',
+  tipo_evento text not null default 'situacao' check (tipo_evento in ('criado','situacao','prioridade','edicao')),
+  de_valor text not null default '',
+  para_valor text not null default '',
+  nota text not null default ''
+);
+
+comment on table public.erp_central_evolucao_evento is
+  'Rastro de cada mudança de situação/prioridade da agenda; escrito pelo gatilho, nunca pelo client.';
+
+create index if not exists idx_erp_central_evolucao_evento_item
+  on public.erp_central_evolucao_evento (item_id, quando desc);
+
+alter table public.erp_central_evolucao_evento enable row level security;
+
+drop policy if exists erp_central_evolucao_evento_tenant on public.erp_central_evolucao_evento;
+create policy erp_central_evolucao_evento_tenant on public.erp_central_evolucao_evento
+  for all to authenticated
+  using (empresa_id = public.erp_current_empresa_id() or public.erp_is_master())
+  with check (empresa_id = public.erp_current_empresa_id() or public.erp_is_master());
+
+grant select, insert, update, delete on table public.erp_central_evolucao_item to authenticated;
+grant select, insert on table public.erp_central_evolucao_evento to authenticated;
+
+-- ============================ GATILHO DE CARIMBO E DE ALTA ============================
+
+create or replace function public.erp_central_evolucao_ultima_quem()
+returns text
+language sql
+stable
+security invoker
+set search_path = public, pg_temp
+as $$
+  select coalesce(
+    (select u.nome from public.erp_usuarios u where u.auth_user_id = (select auth.uid()) limit 1),
+    ((select auth.uid())::text),
+    session_user::text
+  );
+$$;
+
+create or replace function public.erp_central_evolucao_registra_alta()
+returns trigger
+language plpgsql
+security invoker
+set search_path = public, pg_temp
+as $$
+begin
+  insert into public.erp_central_evolucao_evento
+    (empresa_id, item_id, quem, tipo_evento, de_valor, para_valor, nota)
+  values (new.empresa_id, new.id, public.erp_central_evolucao_ultima_quem(), 'criado', '', new.situacao,
+          'Item cadastrado');
+  return new;
+end;
+$$;
+
+revoke all on function public.erp_central_evolucao_ultima_quem() from public, anon;
+revoke all on function public.erp_central_evolucao_registra_alta() from public, anon, authenticated;
+
+drop trigger if exists trg_erp_central_evolucao_item_touch on public.erp_central_evolucao_item;
+create trigger trg_erp_central_evolucao_item_touch
+  before update on public.erp_central_evolucao_item
+  for each row execute function public.erp_stdq_touch_updated_at();
+
+drop trigger if exists trg_erp_central_evolucao_item_alta on public.erp_central_evolucao_item;
+create trigger trg_erp_central_evolucao_item_alta
+  after insert on public.erp_central_evolucao_item
+  for each row execute function public.erp_central_evolucao_registra_alta();
+
+-- ============================ RPC: MUDAR SITUAÇÃO COM NOTA ============================
+-- A mudança de situação e o rastro saem na mesma transação e sob RLS (SECURITY INVOKER): quem
+-- edita só alcança a própria empresa ou é MASTER. Se nenhuma linha foi afetada a função falha
+-- com erro explícito em vez de devolver um sucesso falso, que é a regra permanente dele.
+
+create or replace function public.erp_central_evolucao_mudar_situacao(
+  p_item_id uuid,
+  p_situacao text,
+  p_nota text default ''
+)
+returns boolean
+language plpgsql
+security invoker
+set search_path = public, pg_temp
+as $$
+declare
+  anterior text;
+  empresa uuid;
+begin
+  if p_situacao is null or p_situacao not in ('pendente','em_andamento','concluido','bloqueado','nao_aplicavel') then
+    raise exception 'Situação inválida: %', coalesce(p_situacao, 'null')
+      using errcode = '22023';
+  end if;
+
+  select situacao, empresa_id into anterior, empresa
+    from public.erp_central_evolucao_item
+   where id = p_item_id
+     for update;
+
+  if anterior is null then
+    raise exception 'Item da Central de Evolução não encontrado ou fora do seu escopo de acesso.'
+      using errcode = 'P0002';
+  end if;
+
+  if anterior = p_situacao then
+    return true;
+  end if;
+
+  update public.erp_central_evolucao_item
+     set situacao = p_situacao,
+         atualizado_por = (select auth.uid()),
+         updated_at = now()
+   where id = p_item_id;
+
+  insert into public.erp_central_evolucao_evento
+    (empresa_id, item_id, quem, tipo_evento, de_valor, para_valor, nota)
+  values (empresa, p_item_id, public.erp_central_evolucao_ultima_quem(), 'situacao',
+          anterior, p_situacao, coalesce(nullif(trim(p_nota), ''), ''));
+
+  return true;
+end;
+$$;
+
+revoke all on function public.erp_central_evolucao_mudar_situacao(uuid, text, text) from public, anon;
+grant execute on function public.erp_central_evolucao_mudar_situacao(uuid, text, text) to authenticated;
+
+comment on function public.erp_central_evolucao_mudar_situacao(uuid, text, text) is
+  'Grava a nova situação do item e o evento correspondente na mesma transação, sob RLS do papel atual.';
+
+-- ============================ RPC: RESUMO CONSOLIDADO ============================
+-- Percentual e contagens saem das linhas que o próprio usuário pode ver (RLS aplicada dentro da
+-- função, que é SECURITY INVOKER). Se a tabela estiver vazia, devolve zero: nenhum número é simulado.
+
+create or replace function public.erp_central_evolucao_resumo()
+returns jsonb
+language sql
+stable
+security invoker
+set search_path = public, pg_temp
+as $$
+  with f as (
+    select situacao, prioridade, setor
+      from public.erp_central_evolucao_item
+     where empresa_id = public.erp_current_empresa_id() or public.erp_is_master()
+  )
+  select jsonb_build_object(
+    'total', (select count(*) from f),
+    'pendente', (select count(*) from f where situacao = 'pendente'),
+    'em_andamento', (select count(*) from f where situacao = 'em_andamento'),
+    'concluido', (select count(*) from f where situacao = 'concluido'),
+    'bloqueado', (select count(*) from f where situacao = 'bloqueado'),
+    'nao_aplicavel', (select count(*) from f where situacao = 'nao_aplicavel'),
+    'criticas_abertas', (select count(*) from f where prioridade = 'critica' and situacao <> 'concluido'),
+    'percentual_concluido', (
+      select case when count(*) = 0 then 0
+                  else round(100.0 * count(*) filter (where situacao = 'concluido') / count(*), 1)
+             end
+        from f
+    ),
+    'por_setor', (
+      select coalesce(jsonb_object_agg(setor, n), '{}'::jsonb)
+        from (select setor, count(*) as n from f group by setor) g
+    )
+  );
+$$;
+
+revoke all on function public.erp_central_evolucao_resumo() from public, anon;
+grant execute on function public.erp_central_evolucao_resumo() to authenticated;
+
+comment on function public.erp_central_evolucao_resumo() is
+  'Contagens e percentual de conclusão da agenda, calculados sobre as linhas visíveis ao papel atual.';
+
+-- ============================ SEED: PENDÊNCIAS MEDIDAS EM 2026-11-06 ============================
+-- Origem de cada numero:
+--   * probe do banco vivo com a publishable key (somente GET, sem escrita): tabela ausente devolve
+--     PGRST205; tabela existente sem grant devolve 42501. Executado em 2026-11-06.
+--   * grep do repo nesta branch: contagem de arquivos com window.print.
+--   * docs/CONSULTA-TELAS-APLICADAS-2026-11-06.md (medido no SHA 40d2dced) para o par tela x tabela.
+-- Idempotente: o where not exists impede duplicar o catalogo se a migration rodar duas vezes.
+
+insert into public.erp_central_evolucao_item
+  (empresa_id, codigo, titulo, descricao, setor, modulo, tipo, prioridade, situacao,
+   responsavel, origem, arquivo, rota, dependencia, evidencia, ordem)
+select s.empresa_id, s.codigo, s.titulo, s.descricao, s.setor, s.modulo, s.tipo, s.prioridade, s.situacao,
+       s.responsavel, s.origem, s.arquivo, s.rota, s.dependencia, s.evidencia, s.ordem
+  from (values
+    -- ---------- BLOCO BANCO: migrations que só ele pode aplicar ----------
+    (null::uuid,'BCO-001','Aplicar a migration do FMEA AIAG e do Plano de Controle',
+     'Sem ela as telas /qualidade/fmea e /qualidade/plano-controle abrem mas avisam que a tabela não existe; nenhum dado é inventado na tela.',
+     'banco','Qualidade','pendencia_proprietario','critica','pendente',
+     'Proprietário','ORDEM MASTER 2026-11-06 (CPP digital e impresso com QR Code)',
+     'supabase/migrations/20261106120000_erp_fmea_plano_controle_aiag_v1.sql','/pageprincipal/qualidade/fmea',
+     'SQL Editor do Supabase (não há CLI nem service_role nesta sessão)',
+     'Probe 2026-11-06: erp_fmea_cabecalho e erp_plano_controle devolvem PGRST205 (tabela ausente no schema cache do banco vivo).',10),
+
+    (null,'BCO-002','Aplicar a migration da Central de Evolução',
+     'Cria erp_central_evolucao_item, erp_central_evolucao_evento, a RPC de resumo e o catálogo medido desta tela.',
+     'banco','Administração','pendencia_proprietario','alta','pendente',
+     'Proprietário','ORDEM MASTER 2026-11-06 (Central de Evolução e Conclusão do SYSNQRA)',
+     'supabase/migrations/20261106150000_erp_central_evolucao_v1.sql','/pageprincipal/administracao/central-evolucao',
+     'SQL Editor do Supabase',
+     'Probe 2026-11-06: erp_central_evolucao_item e erp_central_evolucao_resumo devolvem PGRST205.',20),
+
+    (null,'BCO-003','Aplicar o pacote das migrations pendentes (25 tabelas ausentes)',
+     'Pacote único já escrito no repo. É o gargalo que trava 21 telas prontas no código; não falta programação, falta execução no banco.',
+     'banco','Núcleo','pendencia_proprietario','critica','pendente',
+     'Proprietário','Ordem permanente: nada é declarado funcional sem o banco real',
+     'supabase/diagnosticos/20261104_pacote_aplicar_migrations_pendidas.sql','',
+     'Revisar o pacote antes de colar (ele tem 27 migrations e 4.291 linhas, sem statements destrutivos fora de corpo de função)',
+     'Probe 2026-11-06: as 25 tabelas abaixo devolvem PGRST205; erp_usuarios e erp_empresas devolvem 42501, ou seja existem e não têm grant para anon.',30),
+
+    (null,'BCO-004','Aplicar a migration da matriz de permissão por setor',
+     'A tela de controle de acesso chama a RPC que essa migration cria; sem ela a central mostra erro.',
+     'banco','Segurança','pendencia_proprietario','alta','pendente',
+     'Proprietário','Tarefa #25 e #26 (controle de acesso do chão de fábrica)',
+     'supabase/migrations/20261030160000_erp_access_control_sector_matrix_v1.sql','/pageprincipal/configuracoes-usuario',
+     'SQL Editor do Supabase',
+     'Probe 2026-11-06: RPC public.erp_access_control_overview devolve PGRST202 (função ausente).',40),
+
+    -- ---------- BLOCO BLOQUEADAS: decisão dele, não minha ----------
+    (null,'DEC-001','Decidir o conflito entre a ORDEM MASTER e as ordens de 2026-11-02',
+     'A ORDEM MASTER §6/§8 pede destaque laranja (isUpdated) e barra Windows 11; as ordens dele de 2026-11-02 mandaram deletar os dois, e as travas approved-ui-lock e quality-tablet-contract reprovam o build se voltarem. Não reintroduzi nada por conta própria.',
+     'interface','Global','pendencia_proprietario','critica','bloqueado',
+     'Proprietário','Conflito registrado nos relatórios; travas em scripts/verify-approved-ui-lock.mjs',
+     'scripts/verify-approved-ui-lock.mjs','',
+     'Decisão escrita dele sobre qual ordem prevalece',
+     'Build atual passa com os dois removidos; reintroduzir sem decisão dele quebra verify:production.',50),
+
+    (null,'DEC-002','Re-aprovar PCPPlanejamentoIndustrial.tsx no contrato de hash',
+     'A tela foi corrigida (criado_em para created_at) mas está travada no manifesto; re-aprovação de tela travada exige ordem explícita dele para aquela tela.',
+     'interface','PCP','pendencia_proprietario','alta','bloqueado',
+     'Proprietário','Memória do projeto: nunca re-gerar o manifesto só para o gate passar',
+     'scripts/verify-official-screens-lock.mjs','/pageprincipal/pcp/planejamento',
+     'Ordem explícita dele para essa tela',
+     'Trava oficiais[] do contrato de telas oficiais.',60),
+
+    (null,'DEC-003','Autorizar a publicação de prod-telas-novas em produção',
+     'Cada incremento vai para a branch e para o preview da Vercel. Produção só com ordem dele.',
+     'publicacao','Vercel','pendencia_proprietario','critica','bloqueado',
+     'Proprietário','Ordem permanente: produção só com ordem dele',
+     '','https://erp-sistema-industrial.vercel.app',
+     'Ordem dele',
+     'Branch viva prod-telas-novas; preview da branch publicado em cada incremento.',70),
+
+    (null,'DEC-004','Destravar Saída de Material (filtro de status das OPs)',
+     'Correção pronta para ser feita, mas ele mandou aguardar ordem antes de mexer nessa tela.',
+     'interface','Estoque','pendencia_proprietario','media','bloqueado',
+     'Proprietário','Tarefa #122',
+     'src/pages/AlmoxarifadoSaidaMaterial.tsx','/pageprincipal/almoxarifado/saida-material',
+     'Ordem dele',
+     'Tarefa registrada como aguardando ordem.',80),
+
+    -- ---------- BLOCO IMPRESSÃO A4 ----------
+    (null,'IMP-001','Converter as telas que ainda chamam window.print',
+     'Ordem permanente: o botão Imprimir gera documento A4 com dados reais, sem menu, sem filtros e sem barra de ação. O motor já existe (abrirRelatorio + SynqraRelatorioA4); falta aplicar tela a tela.',
+     'relatorios','Todos','acao','alta','em_andamento',
+     'SYSNQRA','Ordem permanente do proprietário (item 5 da ordem de 2026-11-05)',
+     'src/lib/report/abrirRelatorio.tsx','',
+     'Nenhuma dependência de banco; trabalho por módulo',
+     'grep 2026-11-06 nesta branch: 35 arquivos em src/pages e src/features ainda com window.print (fora o próprio motor A4).',90),
+
+    -- ---------- BLOCO CÓRIGO/SEGURANÇA ----------
+    (null,'AUT-001','Remover o fallback na tabela legada usuarios do AppBootstrap',
+     'Se o perfil não é resolvido em erp_usuarios, o boot cai numa tabela que não existe no banco vivo e devolve erro em vez de negar o acesso com clareza.',
+     'auth','Núcleo','defeito','alta','pendente',
+     'SYSNQRA','Tarefa #33 (unificar autenticação) e medição desta execução',
+     'src/AppBootstrap.tsx:96','',
+     'Nenhuma; é código desta branch',
+     'Probe 2026-11-06: SELECT em public.usuarios devolve PGRST205 (tabela legada inexistente).',100),
+
+    -- ---------- BLOCO TELAS PRONTAS NO CÓDIGO X TABELA AUSENTE ----------
+    (null,'TBC-001','Certificado de Qualidade aguarda a tabela de cotas',
+     'Tela pronta; a leitura falha porque a tabela não existe no banco vivo.',
+     'banco','Qualidade','defeito','alta','pendente','Proprietário',
+     'docs/CONSULTA-TELAS-APLICADAS-2026-11-06.md (SHA 40d2dced)',
+     'src/pages/CertificadoQualidade.tsx','/pageprincipal/qualidade/certificados',
+     'BCO-003',
+     'Probe 2026-11-06: erp_qualidade_certificado_cotas = PGRST205.',110),
+
+    (null,'TBC-002','Notas de débito aguardam a configuração de clientes DN',
+     'Tela pronta; tabela ausente no banco vivo.',
+     'banco','Financeiro','defeito','media','pendente','Proprietário',
+     'docs/CONSULTA-TELAS-APLICADAS-2026-11-06.md (SHA 40d2dced)',
+     'src/pages/CustomerDnSettings.tsx','/pageprincipal/financeiro/notas-debito/configuracoes',
+     'BCO-003',
+     'Probe 2026-11-06: erp_clientes_dn_config = PGRST205.',120),
+
+    (null,'TBC-003','Controle de Alteração de Documentos aguarda 4 tabelas e a matriz de permissões',
+     'Abas de distribuição, revisões, aprovações e solicitações prontas no código; leitura falha no banco.',
+     'banco','Qualidade','defeito','critica','pendente','Proprietário',
+     'docs/CONSULTA-TELAS-APLICADAS-2026-11-06.md (SHA 40d2dced)',
+     'src/pages/DocumentosQualidadeControle.tsx','/pageprincipal/qualidade/documentos',
+     'BCO-003',
+     'Probe 2026-11-06: erp_documentos_qualidade_distribuicoes, _revisoes, _aprovacoes, _solicitacoes e erp_permissoes_modulos = PGRST205.',130),
+
+    (null,'TBC-004','BOM mestre aguarda a tabela de estrutura',
+     'Tela pronta; tabela ausente.',
+     'banco','Engenharia','defeito','alta','pendente','Proprietário',
+     'docs/CONSULTA-TELAS-APLICADAS-2026-11-06.md (SHA 40d2dced)',
+     'src/pages/EngenhariaBOM.tsx','/pageprincipal/engenharia/bom-mestre',
+     'BCO-003',
+     'Probe 2026-11-06: erp_engenharia_bom = PGRST205 (a migration 20261021180000 tinha dollar-quote quebrado; a trava verificar-migrations-sql.mjs existe por causa disso).',140),
+
+    (null,'TBC-005','Revisões de BOM aguardam a tabela de revisões',
+     'Tela pronta; tabela ausente.',
+     'banco','Engenharia','defeito','alta','pendente','Proprietário',
+     'docs/CONSULTA-TELAS-APLICADAS-2026-11-06.md (SHA 40d2dced)',
+     'src/pages/EngenhariaRevisoesBOM.tsx','/pageprincipal/engenharia/revisoes-bom',
+     'BCO-003',
+     'Probe 2026-11-06: erp_bom_revisoes = PGRST205.',150),
+
+    (null,'TBC-006','Rastreabilidade de lotes aguarda separações e genealogia',
+     'Tela pronta; duas tabelas ausentes.',
+     'banco','Estoque','defeito','alta','pendente','Proprietário',
+     'docs/CONSULTA-TELAS-APLICADAS-2026-11-06.md (SHA 40d2dced)',
+     'src/pages/EstoqueRastreabilidadeLotes.tsx','/pageprincipal/estoque/rastreabilidade',
+     'BCO-003',
+     'Probe 2026-11-06: erp_estoque_separacoes e erp_qualidade_genealogia_lotes = PGRST205.',160),
+
+    (null,'TBC-007','Separação de material aguarda a tabela de separações',
+     'Tela e RPC atômicas escritas; banco ainda não tem a tabela.',
+     'banco','Estoque','defeito','alta','pendente','Proprietário',
+     'docs/CONSULTA-TELAS-APLICADAS-2026-11-06.md (SHA 40d2dced)',
+     'src/pages/EstoqueSeparacao.tsx','/pageprincipal/estoque/separacao',
+     'BCO-003',
+     'Probe 2026-11-06: erp_estoque_separacoes = PGRST205.',170),
+
+    (null,'TBC-008','Expedição NF-e aguarda a tabela de vínculo romaneio x nota',
+     'Tela pronta; tabela ausente.',
+     'banco','Logística','defeito','alta','pendente','Proprietário',
+     'docs/CONSULTA-TELAS-APLICADAS-2026-11-06.md (SHA 40d2dced)',
+     'src/pages/logistica/ExpedicaoNFe.tsx','/pageprincipal/logistica/expedicao-nfe',
+     'BCO-003',
+     'Probe 2026-11-06: erp_expedicao_nfe = PGRST205.',180),
+
+    (null,'TBC-009','Fichas de processo aguardam o histórico de ajustes de máquina',
+     'Abas prontas; a leitura do histórico falha por tabela ausente.',
+     'banco','Qualidade','defeito','media','pendente','Proprietário',
+     'docs/CONSULTA-TELAS-APLICADAS-2026-11-06.md (SHA 40d2dced)',
+     'src/pages/FichasProcesso.tsx','/pageprincipal/qualidade/fichas-processo',
+     'BCO-003',
+     'Probe 2026-11-06: erp_historico_ajustes_maquina = PGRST205.',190),
+
+    (null,'TBC-010','GED aguarda a pasta de evidências da RPNC',
+     'Anexos versionados dependem da tabela de evidências.',
+     'banco','Qualidade','defeito','alta','pendente','Proprietário',
+     'docs/CONSULTA-TELAS-APLICADAS-2026-11-06.md (SHA 40d2dced)',
+     'src/pages/qualidade/FileTreeGED.tsx','/pageprincipal/qualidade/ged',
+     'BCO-003',
+     'Probe 2026-11-06: erp_qualidade_rpnc_evidencias = PGRST205.',200),
+
+    (null,'TBC-011','Gráfico de desvios aguarda a apuração de custos',
+     'Tela pronta; tabela ausente.',
+     'banco','Financeiro','defeito','media','pendente','Proprietário',
+     'docs/CONSULTA-TELAS-APLICADAS-2026-11-06.md (SHA 40d2dced)',
+     'src/pages/FinanceiroGraficoDesvios.tsx','/pageprincipal/financeiro/grafico-desvios',
+     'BCO-003',
+     'Probe 2026-11-06: erp_financeiro_apuracao_custos = PGRST205.',210),
+
+    (null,'TBC-012','Central fiscal aguarda liberações por item de pedido',
+     'Tela pronta; tabela ausente.',
+     'banco','Fiscal','defeito','alta','pendente','Proprietário',
+     'docs/CONSULTA-TELAS-APLICADAS-2026-11-06.md (SHA 40d2dced)',
+     'src/features/fiscal/Fiscal.tsx','/pageprincipal/fiscal',
+     'BCO-003',
+     'Probe 2026-11-06: erp_fiscal_liberacoes_pedido_item = PGRST205.',220),
+
+    (null,'TBC-013','Impostos aguardam a tabela de regras fiscais',
+     'Tela pronta; tabela ausente.',
+     'banco','Fiscal','defeito','media','pendente','Proprietário',
+     'docs/CONSULTA-TELAS-APLICADAS-2026-11-06.md (SHA 40d2dced)',
+     'src/features/fiscal/FiscalImpostos.tsx','/pageprincipal/fiscal/impostos',
+     'BCO-003',
+     'Probe 2026-11-06: erp_regras_fiscais = PGRST205.',230),
+
+    (null,'TBC-014','Impressão de etiquetas aguarda o log de etiquetas',
+     'Tela pronta; tabela ausente.',
+     'banco','Logística','defeito','media','pendente','Proprietário',
+     'docs/CONSULTA-TELAS-APLICADAS-2026-11-06.md (SHA 40d2dced)',
+     'src/pages/logistica/ImpressaoEtiquetas.tsx','/pageprincipal/logistica/impressao-etiquetas',
+     'BCO-003',
+     'Probe 2026-11-06: erp_log_etiquetas = PGRST205.',240),
+
+    (null,'TBC-015','Auditorias de planta aguardam a tabela própria',
+     'Tela pronta; tabela ausente.',
+     'banco','Qualidade','defeito','media','pendente','Proprietário',
+     'docs/CONSULTA-TELAS-APLICADAS-2026-11-06.md (SHA 40d2dced)',
+     'src/pages/QualidadeAuditoriasPlanta.tsx','/pageprincipal/qualidade/auditorias-planta',
+     'BCO-003',
+     'Probe 2026-11-06: erp_qualidade_auditorias_planta = PGRST205.',250),
+
+    (null,'TBC-016','Genealogia de lote aguarda a tabela de genealogia',
+     'Tela pronta; tabela ausente.',
+     'banco','Qualidade','defeito','alta','pendente','Proprietário',
+     'docs/CONSULTA-TELAS-APLICADAS-2026-11-06.md (SHA 40d2dced)',
+     'src/pages/QualidadeGenealogiaLote.tsx','/pageprincipal/qualidade/genealogia-lote',
+     'BCO-003',
+     'Probe 2026-11-06: erp_qualidade_genealogia_lotes = PGRST205.',260),
+
+    (null,'TBC-017','Gráficos de refugo aguardam refugos e motivos de defeito',
+     'Tela pronta; duas tabelas ausentes.',
+     'banco','Qualidade','defeito','alta','pendente','Proprietário',
+     'docs/CONSULTA-TELAS-APLICADAS-2026-11-06.md (SHA 40d2dced)',
+     'src/pages/QualidadeGraficosRefugo.tsx','/pageprincipal/qualidade/graficos-refugo',
+     'BCO-003',
+     'Probe 2026-11-06: erp_qualidade_defeitos_motivos e erp_qualidade_refugos = PGRST205.',270),
+
+    (null,'TBC-018','Liberação de lotes aguarda a tabela de liberação',
+     'Tela pronta; tabela ausente.',
+     'banco','Qualidade','defeito','critica','pendente','Proprietário',
+     'docs/CONSULTA-TELAS-APLICADAS-2026-11-06.md (SHA 40d2dced)',
+     'src/pages/QualidadeLiberacaoLotes.tsx','/pageprincipal/qualidade/liberacao-lote',
+     'BCO-003',
+     'Probe 2026-11-06: erp_qualidade_liberacao_lotes = PGRST205.',280),
+
+    (null,'TBC-019','Refugos aguarda refugos e motivos de defeito',
+     'Tela pronta; duas tabelas ausentes.',
+     'banco','Qualidade','defeito','alta','pendente','Proprietário',
+     'docs/CONSULTA-TELAS-APLICADAS-2026-11-06.md (SHA 40d2dced)',
+     'src/pages/QualidadeRefugos.tsx','/pageprincipal/qualidade/refugos',
+     'BCO-003',
+     'Probe 2026-11-06: erp_qualidade_defeitos_motivos e erp_qualidade_refugos = PGRST205.',290),
+
+    (null,'TBC-020','Auditorias SGQ aguardam a tabela de auditorias',
+     'Tela pronta com vínculo de RPNC; tabela ausente.',
+     'banco','Qualidade','defeito','alta','pendente','Proprietário',
+     'docs/CONSULTA-TELAS-APLICADAS-2026-11-06.md (SHA 40d2dced)',
+     'src/pages/QualityAuditsList.tsx','/pageprincipal/qualidade/auditorias',
+     'BCO-003',
+     'Probe 2026-11-06: erp_sgq_auditorias = PGRST205.',300),
+
+    (null,'TBC-021','Plano de Controle e FMEA aguardam as tabelas novas',
+     'Telas desta revisão já ligadas ao contrato da migration; sem aplicação ficam com o aviso de pendência.',
+     'banco','Qualidade','defeito','critica','pendente','Proprietário',
+     'ORDEM MASTER 2026-11-06',
+     'src/pages/qualidade/PlanoControle.tsx','/pageprincipal/qualidade/plano-controle',
+     'BCO-001',
+     'Probe 2026-11-06: erp_plano_controle = PGRST205; qualidade_fmea existe mas sem as colunas novas.',310),
+
+    -- ---------- BLOCO AGENDA DE CONCLUSÃO ----------
+    (null,'AGR-001','Conferir os 34 módulos da matriz contra as telas reais',
+     'Auditoria módulo a módulo para declarar cobertura sem chutar tela inexistente.',
+     'auditoria','Global','auditoria','alta','pendente',
+     'SYSNQRA','Tarefa #160 (ordem do proprietário)',
+     'docs/TABLET-MATRIZ-SYNQRA.md','',
+     'Nenhuma',
+     'Matriz dele; a conferência tela a tela ainda não foi registrada como concluída.',320),
+
+    (null,'AGR-002','Entregar o relatório PESQUISA_OPORTUNIDADES_SYSNQRA.md',
+     'Pesquisa em 12 áreas com as 30 melhores oportunidades por impacto, com link e evidência lidos. As saídas dos agentes anteriores ficaram com 0 bytes, então as 4 primeiras fontes precisam ser recoletadas; nada será escrito sem evidência.',
+     'pesquisa','Global','acao','media','pendente',
+     'SYSNQRA','ORDEM DE PESQUISA 2026-11-06',
+     'docs/PESQUISA_OPORTUNIDADES_SYSNQRA.md','',
+     'Nenhuma',
+     'Arquivo ainda não existe no repo (ls docs/ em 2026-11-06).',330),
+
+    (null,'AGR-003','Auditoria comparativa de padrão visual (campos, botões de edição, cores)',
+     'Ele autorizou medir o SYSNQRA contra outros sistemas industriais e atualizar imagem e cor do sistema quando o visual sair do padrão.',
+     'interface','Global','melhoria','alta','em_andamento',
+     'SYSNQRA','Ordem de 2026-11-06 (pesquisa avançada em outros sistemas)',
+     'src/styles','',
+     'Nenhuma',
+     'Paleta oficial travada (#F4FBFD #123B50 #2D8DB8 #48B7C7 #3A9D78 #E6A34A #D65B61, Inter) e régua de 30px opt-in; comparação externa ainda não registrada.',340),
+
+    (null,'AGR-004','Central de Ajuda presente em todas as telas',
+     'A tela /ajuda existe; falta o ponto de entrada em todas as telas alcançáveis.',
+     'interface','Global','melhoria','media','pendente',
+     'SYSNQRA','Tarefa #128 e #130',
+     'src/pages/CentralAjuda.tsx','/pageprincipal/ajuda',
+     'Nenhuma',
+     'Rota registrada no roteador; entrada global ainda não aplicada.',350),
+
+    (null,'AGR-005','Fluxo de caixa: revisão 04 (paginação, concorrência, CONSULTAR, PAGO protegido)',
+     'Pendência registrada na auditoria; precisa fechar a proteção de título já pago e o estado de conexão real.',
+     'financeiro','Financeiro','defeito','media','pendente',
+     'SYSNQRA','Tarefa #146 e #144',
+     'src/features/financeiro/FinanceiroFluxoCaixa.tsx','/pageprincipal/financeiro/fluxo-de-caixa',
+     'Nenhuma',
+     'docs/ERP-CENTRAL-ERROS-PENDENCIAS.md, item ERP-2026-003 (paginação feita; concorrência e estado de conexão ainda sem prova autenticada).',360),
+
+    (null,'AGR-006','Pente fino responsivo mobile-first em todas as telas',
+     'Ordem dele: o sistema é usado em tablet de chão de fábrica e em painel; nenhum módulo pode quebrar em 768px.',
+     'interface','Global','melhoria','media','pendente',
+     'SYSNQRA','Tarefa #140',
+     'src/components/layout','',
+     'Depende da auditoria visual AGR-003',
+     'Verificação visual autenticada ainda não executada (preview da Vercel atrás de autenticação).',370),
+
+    (null,'AGR-007','Terminal de produção da máquina (HMI da injetora)',
+     'A partir do print dele: tela de operação por máquina com apontamento em tela de toque.',
+     'interface','PCP','melhoria','media','pendente',
+     'SYSNQRA','Tarefa #141',
+     'src/pages/pcp/ControleProcessoInjetora.tsx','/pageprincipal/pcp/controle-injetora',
+     'Nenhuma',
+     'Existe a tela de controle da injetora; o formato HMI do print ainda não foi aplicado.',380),
+
+    (null,'AGR-008','MRP do PCP: agregar necessidades no banco antes de gravar ordens',
+     'O cálculo hoje atravessa o client; a agregação deve virar RPC transacional para não gerar OP duplicada em concorrência.',
+     'producao','PCP','defeito','alta','em_andamento',
+     'SYSNQRA','Tarefa #133',
+     'src/pages/PCPDemanda.tsx','/pageprincipal/pcp/demanda',
+     'Migration nova (ainda escrita aqui)',
+     'docs/ERP-CENTRAL-ERROS-PENDENCIAS.md, item ERP-2026-018: cada OP usa a RPC de numeração, mas o lote continua em transações individuais.',390),
+
+    (null,'AGR-009','Portal do Operador: convite por e-mail, cartão e apontamento gravando no PCP',
+     'Fechar o ciclo do funcionário de chão de fábrica sem conta Auth: cartão de ponto, PIN e vínculo com a OP.',
+     'producao','PCP','acao','alta','em_andamento',
+     'SYSNQRA','Tarefa #81 e #134',
+     'src/pages/PortalDoOperador.tsx','/pageprincipal/pcp/portal-operador',
+     'Tarefa #153 (sigla da empresa, codigo_acesso e PIN com hash) e #154 (Edge Function de validação de PIN)',
+     'docs/ERP-CENTRAL-ERROS-PENDENCIAS.md, bloqueio: Deno não instalado, nenhuma Edge Function executada em runtime.',400),
+
+    (null,'AGR-010','Ficha de Processo: abas Acabamento e Montagem aplicadas no sistema',
+     'As abas do modelo dele ainda não estão na tela oficial.',
+     'qualidade','PCP','acao','media','pendente',
+     'SYSNQRA','Tarefa #135 e pasta Fichas de Processo enviada por ele',
+     'src/pages/FichasProcesso.tsx','/pageprincipal/qualidade/fichas-processo',
+     'TBC-009 para o histórico de ajustes',
+     'Ordem permanente: uma versão oficial por tela, sem restaurar tela antiga.',410),
+
+    (null,'AGR-011','Aplicar a migration do bucket erp-fichas-processo',
+     'Anexo da ficha de processo depende do bucket de Storage.',
+     'banco','Estoque','pendencia_proprietario','media','pendente',
+     'Proprietário','Tarefa #91',
+     'supabase/migrations','',
+     'SQL Editor / painel Storage do Supabase',
+     'Storage não é consultável pela publishable key sem sessão; a presença do bucket não pode ser provada nesta sessão.',420),
+
+    (null,'AGR-012','Provar os três serviços ponta a ponta com sessão autenticada',
+     'Ordem dele: não declarar acesso integral sem testar banco, Storage e Edge Function de verdade. Sem credencial autenticada nesta sessão, nada aqui é declarado funcional.',
+     'auditoria','Núcleo','auditoria','critica','pendente',
+     'SYSNQRA','Ordem permanente dele',
+     '','/pageprincipal',
+     'Sessão Supabase autenticada dele ou token com escopo suficiente',
+     'docs/ERP-CENTRAL-ERROS-PENDENCIAS.md, seção Bloqueios externos atuais: sem psql, sem CLI, sem sessão autenticada, sem Deno.',430)
+  ) as s(empresa_id, codigo, titulo, descricao, setor, modulo, tipo, prioridade, situacao,
+         responsavel, origem, arquivo, rota, dependencia, evidencia, ordem)
+ where not exists (
+   select 1 from public.erp_central_evolucao_item e
+    where e.empresa_id is null and e.codigo = s.codigo
+ );
+-- <<<<<<<<<<<<<< <<<< 20261106150000_erp_central_evolucao_v1.sql >>>>
 
 notify pgrst, 'reload schema';
