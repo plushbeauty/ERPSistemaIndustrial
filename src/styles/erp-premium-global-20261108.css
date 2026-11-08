@@ -1,8 +1,8 @@
 /*
  * @AUTOR: Fernando Schuinsekel
  * @DATA_REVISAO_APROVACAO: 2026-11-08
- * @REVISAO: REV-PREMIUM-GLOBAL-20261108-02 — ação primária única (navy), cabeçalho de tabela claro,
- *   escala de títulos e menu do shell sem laranja
+ * @REVISAO: REV-PREMIUM-GLOBAL-20261108-03 — ação primária única (navy), cabeçalho de tabela claro,
+ *   escala de títulos, régua de rótulo (9px) e menu do shell sem laranja
  * @STATUS_APROVACAO: ordem do proprietário em 2026-11-08 ("atualizar todas as pages com versões
  *   premium ... melhorar tudo") e correção apontada por ele no mesmo dia ("tem telas com botões
  *   laranja e outras não, tem cards azuis e fontes desalinhadas"). Camada visual: não altera dados,
@@ -440,5 +440,26 @@
     background: #c9961c !important;
     border-left-color: #a87b12 !important;
     color: #fff !important;
+  }
+}
+
+/*
+ * REV-PREMIUM-GLOBAL-20261108-03 — rodada de abrangência pedida pelo proprietário em 2026-11-08:
+ * "olhar e melhorar, deixar turbo com as telas que falta". Medido no código depois da revisão -02:
+ * 1) Rótulo de campo não tinha régua global; cada tela escolhia 8, 9, 10 ou 11px. Entra 9px, que é
+ *    a régua aprovada, sem mexer em cor/peso de cada tela.
+ * 2) Compras mantinha uma faixa laranja de 3px no topo do editor de pedido (#f97316) herdada do
+ *    layout antigo. Passa a navy, igual às demais superfícies.
+ * 3) A barra de categorias da ficha de processo (Injetados, Prensados, Acabamento, Montagem) usa
+ *    aria-current na aba ativa; o dourado continua vindo de erp-active-gold-20261101.css.
+ */
+@media screen {
+  .erp-global-surface .erp-horizontal-workspace label:not(.module-tablet-panel label):not(.operator-demo label):not(.ficha-print-sheet label):not(.cep-print-sheet label):not(.op-print-sheet label):not(.print-area label) {
+    font-size: 9px !important;
+    line-height: 1.3 !important;
+  }
+
+  .erp-global-surface .erp-horizontal-workspace .compras-order-editor {
+    border-top-color: var(--prem-ink) !important;
   }
 }

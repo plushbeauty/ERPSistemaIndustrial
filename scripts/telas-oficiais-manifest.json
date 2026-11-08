@@ -413,7 +413,7 @@
     },
     {
       "path": "src/pages/ComprasIndustrial.tsx",
-      "sha": "fefe6d13c87d8a85bef069d85305c458584acbc8",
+      "sha": "5e4aae26cfdd7343ed9499dd56ca625f47e0b501",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
       "aprovadaEm": "2026-10-30",
@@ -925,10 +925,10 @@
     },
     {
       "path": "src/pages/PCPFichasProcesso.tsx",
-      "sha": "08341310a7005a88d3ae0012a959bf02776b6bec",
+      "sha": "eea0ecc567af6d6725c0e8ec8b488cf62ce34842",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PCP-FICHA-SCHEMA-20261106-01 — correção funcional do timestamp de gravação para updated_at, coluna definida na migration 20261003110000; layout, campos e impressão A4 preservados",
-      "aprovadaEm": "2026-11-06",
+      "revisao": "REV-PCP-FICHA-ABAS-CATEGORIA-20261108-01 — ordem do proprietário: \"fichas de processo",
+      "aprovadaEm": "2026-11-08",
       "statusAprovacao": "CORREÇÃO FUNCIONAL AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-06; alteração restrita ao nome da coluna de atualização, sem mudança visual."
     },
     {

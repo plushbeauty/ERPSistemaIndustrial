@@ -1,7 +1,13 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-11-06
- * @REVISAO: REV-PCP-FICHA-SCHEMA-20261106-01 — correção funcional do timestamp de gravação para updated_at, coluna definida na migration 20261003110000; layout, campos e impressão A4 preservados
+ * @DATA_REVISAO_APROVACAO: 2026-11-08
+ * @REVISAO: REV-PCP-FICHA-ABAS-CATEGORIA-20261108-01 — ordem do proprietário: "fichas de processo
+ *   Injetados Prensados Acabamento e Montagem em abas". O seletor "Modelo da ficha" virou barra de
+ *   abas com as 9 categorias do banco; Acabamento (roteiro por posto) e Montagem/Embalagem (caixa,
+ *   etiqueta e paletização) ficam visíveis sem abrir lista suspensa. Campos, consultas, gravação e
+ *   impressão A4 preservados.
+ * @DATA_REVISAO_APROVACAO_ANTERIOR: 2026-11-06
+ * @REVISAO_ANTERIOR: REV-PCP-FICHA-SCHEMA-20261106-01 — correção funcional do timestamp de gravação para updated_at, coluna definida na migration 20261003110000; layout, campos e impressão A4 preservados
  * @STATUS_APROVACAO: CORREÇÃO FUNCIONAL AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-06; alteração restrita ao nome da coluna de atualização, sem mudança visual.
  */
 /**
@@ -527,7 +533,8 @@ export default function PCPFichasProcesso() {
    {error && <div role="alert" className="mb-3 rounded-lg border border-[#D65B61]/50 bg-[#D65B61]/10 p-3 text-sm text-[#F4B8BB]">{error}</div>}
    {notice && <div role="status" className="mb-3 flex items-center gap-2 rounded-lg border border-[#3A9D78]/40 bg-[#3A9D78]/10 p-3 text-sm text-[#8ED0B4]"><CheckCircle2 size={16}/>{notice}</div>}
    <section className="mb-3 rounded-[2px] border border-slate-200 bg-white p-2.5 shadow-sm print:hidden">
-    <div className="mb-3 grid min-w-0 grid-cols-1 items-end gap-3 sm:grid-cols-2 xl:grid-cols-4"><label className="min-w-0"><span className={labelClass}>Pesquisar ficha / produto</span><span className="relative block max-w-[240px]"><Search size={15} className="absolute left-2.5 top-2 text-white"/><input className={inputClass+' max-w-[240px] pl-8'} value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código ou produto"/></span></label><label className="min-w-0"><span className={labelClass}>Modelo da ficha</span><select className={inputClass+' max-w-[210px]'} value={category} onChange={e=>{const next=e.target.value as Category;setCategory(next);setParams(blankParameters(next));setSearchParams({tipo:next})}}>{categories.map(c=><option key={c.value} value={c.value}>{c.label}</option>)}</select></label></div>
+    <div className="mb-3 grid min-w-0 grid-cols-1 items-end gap-3 sm:grid-cols-2 xl:grid-cols-4"><label className="min-w-0"><span className={labelClass}>Pesquisar ficha / produto</span><span className="relative block max-w-[240px]"><Search size={15} className="absolute left-2.5 top-2 text-white"/><input className={inputClass+' max-w-[240px] pl-8'} value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código ou produto"/></span></label></div>
+    <nav role="tablist" aria-label="Categorias de ficha de processo" className="flex min-w-0 flex-wrap gap-1">{categories.map(c=><button key={c.value} type="button" role="tab" aria-selected={category===c.value} aria-current={category===c.value?'page':undefined} onClick={()=>{setCategory(c.value);setParams(blankParameters(c.value));setSearchParams({tipo:c.value})}} className={`shrink-0 rounded-[2px] border px-2.5 py-1 text-left text-[10px] font-bold leading-tight ${category===c.value?'border-[#123B50]':'border-slate-300 bg-white text-[#123B50] hover:border-[#2D8DB8]'}`}><span className="block">{c.label}</span>{c.badge&&<span className="block text-[8px] font-semibold opacity-70">{c.badge}</span>}</button>)}</nav>
     <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">{visibleRows.map(row=><button key={row.id} type="button" onClick={()=>openRow(row)} className="grid min-h-[52px] grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-lg border border-[#294456] bg-[#071522] px-3 text-left transition hover:border-[#48B7C7] hover:bg-[#123B50]"><span className="min-w-0"><span className="block truncate text-xs font-bold text-[#F4FBFD]">{row.codigo_ficha} · {products.find(p=>p.id===row.produto_id)?.codigo ?? 'Produto'}</span><span className="block truncate text-[11px] text-white">{categories.find(c=>c.value===row.categoria_processo)?.label ?? row.categoria_processo} · revisão {row.versao_ficha ?? row.revisao} · {row.status}</span></span><span className="text-xs font-semibold text-white">Abrir ficha →</span></button>)}</div>
    </section>
    <section className="pcp-ficha-print-sheet rounded-[2px] border border-[#2E4A62] bg-[#0D2638] p-3 shadow-lg shadow-black/10 print:border-0 print:p-0"><div className="mb-3 hidden border-b border-slate-400 pb-2 print:block"><h1 className="text-base font-bold">FICHA TÉCNICA DE PROCESSO INDUSTRIAL</h1><p className="text-[10px]">Documento operacional para consulta e assinatura no posto de trabalho.</p></div>
