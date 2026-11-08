@@ -58,7 +58,7 @@ create or replace function public.erp_qualidade_lote_decidir(
   p_status text,
   p_observacoes text default null
 )
-returns public.erp_qualidade_liberacao_lotes
+returns jsonb
 language plpgsql
 security definer
 set search_path = pg_catalog, public
@@ -245,16 +245,16 @@ begin
     v_depois
   );
 
-  return v_registro;
+  return jsonb_build_object('registro', to_jsonb(v_registro), 'lote', to_jsonb(v_lote));
 end;
-$$;
+$;
 
 -- 3) RPCs públicas da tela. Ambas usam a mesma transação e trilha de auditoria.
 create or replace function public.erp_liberar_lote(
   p_lote_operacional_id uuid,
   p_observacoes text default null
 )
-returns public.erp_qualidade_liberacao_lotes
+returns jsonb
 language sql
 security definer
 set search_path = pg_catalog, public
@@ -266,7 +266,7 @@ create or replace function public.erp_bloquear_lote(
   p_lote_operacional_id uuid,
   p_observacoes text default null
 )
-returns public.erp_qualidade_liberacao_lotes
+returns jsonb
 language sql
 security definer
 set search_path = pg_catalog, public
