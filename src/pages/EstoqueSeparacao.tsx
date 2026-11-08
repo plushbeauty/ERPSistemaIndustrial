@@ -1,8 +1,8 @@
 /**
  * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-02
- * @REVISAO: REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: "todos os edits do módulo estoque estão desalinhados e fora de tamanho". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).
- * @STATUS_APROVACAO: CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela
+ * @REVISAO: REV-ESTOQUE-CONSUMO-OP-20261108-01 — confirmação transacional do consumo, baixa de saldo e snapshot de custo médio por OP.
+ * @STATUS_APROVACAO: INCREMENTO FUNCIONAL AUTORIZADO NA ORDEM DE EXECUÇÃO DE 2026-11-08; aprovação visual original de 2026-11-02 preservada
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertCircle, ChevronLeft, ChevronRight, Printer, ScanLine } from 'lucide-react'
@@ -25,6 +25,10 @@ type SeparationRecord = {
   status: string
   codigo_barras: string
   created_at: string
+  custo_unitario_snapshot: number | null
+  custo_total_snapshot: number | null
+  consumo_confirmado_em: string | null
+  consumo_confirmado_por: string | null
 }
 
 type SeparationCard = {
@@ -82,6 +86,7 @@ export default function EstoqueSeparacao() {
   const [card, setCard] = useState<SeparationCard | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [consumoBusyId, setConsumoBusyId] = useState('')
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
 
@@ -91,7 +96,7 @@ export default function EstoqueSeparacao() {
     const from = pageToLoad * PAGE_SIZE
     const { data, error: queryError, count } = await supabase
       .from('erp_estoque_separacoes')
-      .select('id,ordem_producao_id,produto_id,lote_id,quantidade,status,codigo_barras,created_at', { count: 'exact' })
+      .select('id,ordem_producao_id,produto_id,lote_id,quantidade,status,codigo_barras,created_at,custo_unitario_snapshot,custo_total_snapshot,consumo_confirmado_em,consumo_confirmado_por', { count: 'exact' })
       .eq('empresa_id', companyId)
       .order('created_at', { ascending: false })
       .order('id', { ascending: false })
@@ -210,7 +215,7 @@ export default function EstoqueSeparacao() {
         throw new Error('O banco retornou dados incompletos para o cartão de rastreabilidade.')
       }
       setCard(newCard)
-      setMessage('Separação e cartão registrados. Esta gravação não altera nem reserva saldo de estoque.')
+      setMessage('Separação e cartão registrados. O saldo ainda não foi baixado; confirme o consumo na lista quando o material for efetivamente consumido.')
       setQuantity('')
       const company = await supabase.rpc('erp_current_empresa_id')
       if (company.error) throw company.error
@@ -219,6 +224,35 @@ export default function EstoqueSeparacao() {
       setError(cause instanceof Error ? cause.message : 'Não foi possível registrar a separação.')
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function confirmarConsumo(record: SeparationRecord) {
+    setConsumoBusyId(record.id)
+    setError('')
+    setMessage('')
+    try {
+      const result = await supabase.rpc('erp_confirmar_consumo_op', { p_separacao_id: record.id })
+      if (result.error) throw result.error
+      const payload = result.data as unknown as {
+        custo_unitario?: number
+        custo_total?: number
+        separacao?: { status?: string; codigo_barras?: string }
+        ja_confirmado?: boolean
+      } | null
+      if (!payload?.separacao || payload.separacao.status !== 'CONSUMIDO' || !Number.isFinite(Number(payload.custo_total))) {
+        throw new Error('O banco não confirmou a baixa de consumo e o snapshot de custo.')
+      }
+      setMessage(
+        `Consumo ${payload.ja_confirmado ? 'já confirmado' : 'confirmado'}: ${record.codigo_barras}. Custo unitário: R$ ${Number(payload.custo_unitario).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 6 })}; total: R$ ${Number(payload.custo_total).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`,
+      )
+      const company = await supabase.rpc('erp_current_empresa_id')
+      if (company.error) throw company.error
+      if (company.data) await loadPage(String(company.data), page)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível confirmar o consumo real.')
+    } finally {
+      setConsumoBusyId('')
     }
   }
 
@@ -331,7 +365,7 @@ export default function EstoqueSeparacao() {
           <span className="text-[10px] text-slate-600">{total} registro(s)</span>
         </div>
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[760px] border-collapse text-left text-sm">
+          <table className="w-full min-w-[980px] border-collapse text-left text-sm">
             <thead className="bg-slate-100 text-xs uppercase text-slate-700">
               <tr>
                 <th className="px-2 py-1">Data</th>
@@ -339,6 +373,8 @@ export default function EstoqueSeparacao() {
                 <th className="px-2 py-1">Material</th>
                 <th className="px-2 py-1">Lote</th>
                 <th className="px-2 py-1">Quantidade</th>
+                <th className="px-2 py-1">Status</th>
+                <th className="px-2 py-1">Custo registrado</th>
                 <th className="px-2 py-1">Código</th>
                 <th className="px-2 py-1">Ação</th>
               </tr>
@@ -355,17 +391,21 @@ export default function EstoqueSeparacao() {
                     <td className="px-2 py-1">{material?.codigo ?? record.produto_id} — {material?.nome ?? 'Material'}</td>
                     <td className="px-2 py-1">{lot?.codigo ?? '—'}</td>
                     <td className="px-2 py-1">{record.quantidade} {material?.unidade ?? ''}</td>
+                    <td className="px-2 py-1 font-semibold">{record.status}</td>
+                    <td className="px-2 py-1">{record.status === 'CONSUMIDO' && record.custo_total_snapshot != null ? `R$ ${Number(record.custo_total_snapshot).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—'}</td>
                     <td className="px-2 py-1 font-mono">{record.codigo_barras}</td>
                     <td className="px-2 py-1">
-                      <button type="button" onClick={() => restoreCard(record)} className="min-h-0 border-0 bg-transparent px-0 font-semibold text-blue-700 underline hover:bg-transparent hover:text-blue-900">
-                        Abrir cartão
-                      </button>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button type="button" onClick={() => restoreCard(record)} className="min-h-0 border-0 bg-transparent px-0 font-semibold text-blue-700 underline hover:bg-transparent hover:text-blue-900">Abrir cartão</button>
+                        {record.status === 'SEPARADO' && <button type="button" onClick={() => void confirmarConsumo(record)} disabled={consumoBusyId === record.id} className="min-h-0 border border-emerald-300 bg-emerald-50 px-2 py-1 text-[9px] font-bold text-emerald-800 disabled:opacity-50">{consumoBusyId === record.id ? 'Confirmando…' : 'Confirmar consumo'}</button>}
+                        {record.status === 'CONSUMIDO' && <span className="text-[9px] font-bold text-emerald-700">Baixado {record.consumo_confirmado_em ? new Date(record.consumo_confirmado_em).toLocaleString('pt-BR') : ''}</span>}
+                      </div>
                     </td>
                   </tr>
                 )
               })}
               {!loading && separations.length === 0 && (
-                <tr><td colSpan={7} className="px-2 py-4 text-center text-slate-500">Nenhuma separação registrada.</td></tr>
+                <tr><td colSpan={9} className="px-2 py-4 text-center text-slate-500">Nenhuma separação registrada.</td></tr>
               )}
             </tbody>
           </table>
