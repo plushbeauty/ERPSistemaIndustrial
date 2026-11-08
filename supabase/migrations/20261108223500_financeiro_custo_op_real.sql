@@ -82,6 +82,7 @@ DECLARE
   v_empresa uuid := public.erp_current_empresa_id();
   v_op record;
   v_prod record;
+  v_ficha_id uuid;
   v_movimento uuid;
 BEGIN
   IF auth.uid() IS NULL OR v_empresa IS NULL THEN
@@ -109,13 +110,21 @@ BEGIN
     RAISE EXCEPTION 'ORDEM_DE_PRODUCAO_NAO_ACEITA_CONSUMO';
   END IF;
 
+  SELECT f.id
+    INTO v_ficha_id
+    FROM public.erp_fichas_tecnicas f
+   WHERE f.empresa_id = v_empresa
+     AND f.produto_id = v_op.produto_id
+     AND f.ativa = true
+   ORDER BY f.versao DESC
+   LIMIT 1;
+  IF v_ficha_id IS NULL THEN
+    RAISE EXCEPTION 'FICHA_TECNICA_ATIVA_NAO_ENCONTRADA_PARA_A_OP';
+  END IF;
   IF NOT EXISTS (
     SELECT 1
-      FROM public.erp_fichas_tecnicas f
-      JOIN public.erp_ficha_itens i ON i.ficha_id = f.id
-     WHERE f.empresa_id = v_empresa
-       AND f.produto_id = v_op.produto_id
-       AND f.ativa = true
+      FROM public.erp_ficha_itens i
+     WHERE i.ficha_id = v_ficha_id
        AND i.produto_id = p_produto_id
   ) THEN
     RAISE EXCEPTION 'MATERIAL_NAO_PERTENCE_A_FICHA_TECNICA_ATIVA_DA_OP';
@@ -233,6 +242,7 @@ DECLARE
   v_material numeric(18,6) := 0;
   v_apontamentos integer := 0;
   v_apontamentos_abertos integer := 0;
+  v_apontamentos_duracao_invalida integer := 0;
   v_labor_sem_custo integer := 0;
   v_maquina_sem_custo integer := 0;
   v_mao_obra numeric(18,6) := 0;
@@ -295,6 +305,7 @@ BEGIN
 
   SELECT count(*),
          count(*) FILTER (WHERE a.fim_em IS NULL),
+         count(*) FILTER (WHERE a.fim_em IS NOT NULL AND a.fim_em <= a.inicio_em),
          count(*) FILTER (
            WHERE a.fim_em IS NOT NULL
              AND (a.operador_id IS NULL OR f.id IS NULL OR coalesce(f.custo_hora_homem, 0) <= 0)
@@ -310,7 +321,7 @@ BEGIN
            FILTER (WHERE a.fim_em IS NOT NULL AND a.maquina_id IS NOT NULL), 0),
          coalesce(sum(a.quantidade_boa) FILTER (WHERE a.fim_em IS NOT NULL), 0),
          coalesce(sum(a.quantidade_refugada) FILTER (WHERE a.fim_em IS NOT NULL), 0)
-    INTO v_apontamentos, v_apontamentos_abertos, v_labor_sem_custo, v_maquina_sem_custo,
+    INTO v_apontamentos, v_apontamentos_abertos, v_apontamentos_duracao_invalida, v_labor_sem_custo, v_maquina_sem_custo,
          v_mao_obra, v_maquinas, v_boa, v_refugo
     FROM public.erp_apontamentos_processo a
     LEFT JOIN public.erp_funcionarios f
@@ -325,8 +336,14 @@ BEGIN
   IF v_apontamentos_abertos > 0 THEN
     RAISE EXCEPTION 'EXISTE_APONTAMENTO_DE_PRODUCAO_ABERTO';
   END IF;
+  IF v_apontamentos_duracao_invalida > 0 THEN
+    RAISE EXCEPTION 'APONTAMENTO_COM_DURACAO_INVALIDA';
+  END IF;
   IF v_labor_sem_custo > 0 THEN
     RAISE EXCEPTION 'OPERADOR_SEM_CUSTO_HORA_HOMEM_CADASTRADO';
+  END IF;
+  IF v_mao_obra <= 0 THEN
+    RAISE EXCEPTION 'CUSTO_DE_MAO_DE_OBRA_NAO_APURADO';
   END IF;
   IF v_maquina_sem_custo > 0 THEN
     RAISE EXCEPTION 'MAQUINA_SEM_CUSTO_HORA_CADASTRADO';
@@ -361,7 +378,7 @@ BEGIN
     v_margem := v_receita - v_total;
     v_margem_percentual := CASE WHEN v_receita > 0 THEN (v_margem / v_receita) * 100 ELSE 0 END;
     v_markup := CASE WHEN v_total > 0 THEN (v_margem / v_total) * 100 ELSE 0 END;
-    v_status := 'APURADO';
+    v_status := CASE WHEN lower(coalesce(v_op.status, '')) IN ('concluida', 'concluído', 'encerrada', 'finalizada') THEN 'APURADO' ELSE 'APURADO_PARCIAL' END;
   ELSE
     v_margem := 0;
     v_margem_percentual := 0;
