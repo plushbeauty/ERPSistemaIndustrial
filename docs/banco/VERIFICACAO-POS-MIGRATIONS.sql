@@ -2,7 +2,7 @@
 -- VERIFICACAO POS-MIGRATIONS — REV-BANCO-20261108-01
 -- Somente leitura: NÃO contém CREATE, ALTER, INSERT, UPDATE, DELETE, GRANT ou DROP.
 -- Executar no SQL Editor do projeto Supabase após a aplicação autorizada das migrations.
--- Compara as tabelas e funções do pacote atualizado de 31 migrations, mais as migrations novas de templates de inspeção e custo real por OP
+-- Compara as tabelas e funções do pacote atualizado de 32 migrations, mais as migrations novas de templates de inspeção e custo real por OP
 -- com o catálogo real do PostgreSQL. O resultado não substitui testes de fluxo/RLS por usuário.
 
 -- 1) Tabelas: existência, empresa_id, RLS, políticas e privilégios de authenticated.
