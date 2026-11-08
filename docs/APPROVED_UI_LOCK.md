@@ -92,3 +92,11 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - Correção em `src/styles/industrial-login.css`: `grid-column: 2` + `justify-self: stretch` no painel e `grid-column: 1` no empilhamento de 1040px. Na medição seguinte o cartão ficou com 360px a 56px da borda (1150px de largura: 340px a 46px).
 - O texto dos campos é escuro sobre branco: a cor final medida é `#17333F` e a fonte 16px, ambas impostas pelas regras globais de legibilidade/anti-zoom de tablet (`src/styles/index.css`), que não foram combatidas para não regredir as demais telas.
 - `IndustrialLoginDirect.tsx` continua com hash `556ae8ec` — nenhuma alteração de markup ou autenticação.
+
+## Registro da revisão REV-OPERADOR-MAQUINAS-CPP-20261108-01 e REV-COMPRAS-VALIDACAO-PEDIDO-20261108-01 — 2026-11-08
+
+- Ordem do proprietário para aplicar os códigos de referência e colocar as páginas novas em funcionamento.
+- Área do Funcionário / Chão de Fábrica: painel responsivo passa a listar cada programação real por máquina/OP, sem esconder OPs concorrentes no mesmo equipamento; seleção leva ao CPP e mantém autenticação, programação e apontamentos por RPC do servidor.
+- Central de Compras / Pedido: todas as linhas são validadas, sem descarte silencioso; referências precisam carregar; NCM é normalizado e exige 8 dígitos; frete/desconto não negativos; ICMS permanece informativo e não é somado novamente ao total estimado.
+- Atualizados os hashes somente dessas duas telas no manifesto scripts/telas-oficiais-manifest.json; nenhuma proteção de telas aprovadas foi desativada.
+- A revisão não altera migrations remotas, permissões do Supabase nem publica diretamente em produção.
