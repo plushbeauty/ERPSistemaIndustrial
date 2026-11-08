@@ -501,3 +501,21 @@ Depois da aplicação pelo proprietário:
 5. Executar auditoria visual e todos os gates, sem `|| true`.
 6. Validar preview Vercel. Produção continua bloqueada até autorização explícita.
 
+### Complemento de auditoria de rotas e telas — 08/11/2026
+
+- Relatório CMP-002/003/004: `docs/auditoria/CMP-002-003-004-20261108.md`.
+- Matriz de 24 telas: `docs/banco/MATRIZ-DESBLOQUEIO-24-TELAS.md`.
+- CMP-003 classificou as 11 rotas diretas de `IndustrialDataWorkspace`: 3 cobertas pelo genérico para uso limitado e 8 que precisam de tela própria ou redirecionamento. Nenhuma rota foi removida.
+- CMP-002 encontrou 322 rotas no `AppEntryV2.tsx`, 114 rotas únicas no menu horizontal, 113 correspondências diretas e 209 rotas sem link direto. Estas últimas incluem subrotas, aliases e fluxos do SGQ tablet; não foram tratadas automaticamente como órfãs.
+- O CMP-002 continua parcial: o gate `verify-routes` não prova RBAC por ação nem persistência para cada rota.
+- O CMP-004 confirmou o contrato Master estático e identificou dependências de RLS sem filtro explícito de empresa em `IndustrialDataWorkspace.tsx` e `EngenhariaRevisoesBOM.tsx`. Ambos estão protegidos pelo manifesto; não foram alterados.
+
+### Complemento de impressão A4 e contrato Master
+
+- FMEA, Plano de Controle, Certificado e RPNC utilizam o motor compartilhado `abrirRelatorio` / componente `SynqraRelatorioA4`.
+- Os formulários de RPNC `QualityRpncForm.tsx` e `QualidadeRPNCMultiorigem.tsx` foram migrados da impressão local para o relatório A4 compartilhado, preservando dados, formulário e fluxo.
+- Os hashes das telas protegidas foram atualizados no manifesto, mantendo as datas históricas de aprovação.
+- `QualityPlanGate.tsx` agora consulta `setor_id` e exige `setor_id IS NULL` para reconhecer Master, alinhando o gate ao contrato estrito. `verify-auth-master-contract.mjs` verifica essa condição.
+- `audit:ui-standardization` foi incluído nos comandos `verify:release` e `verify:production`.
+
+**Atenção:** a tela legada `QualidadeRNC.tsx` mantém uma impressão própria de Ishikawa/CAPA. Ela é uma rota distinta da RPNC unificada; não foi alterada nesta ordem porque o escopo A4 autorizado foi aplicado aos relatórios RPNC/FMEA/Plano de Controle/Certificado e o contrato visual dessa tela precisa ser confirmado separadamente.
