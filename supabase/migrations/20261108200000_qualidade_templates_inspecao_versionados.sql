@@ -130,7 +130,7 @@ drop policy if exists erp_qualidade_inspecao_template_itens_delete_admin on publ
 create policy erp_qualidade_inspecao_templates_select_tenant
   on public.erp_qualidade_inspecao_templates
   for select to authenticated
-  using (empresa_id = public.erp_current_empresa_id());
+  using (empresa_id = public.erp_current_empresa_id() or public.erp_is_master());
 
 create policy erp_qualidade_inspecao_templates_insert_admin
   on public.erp_qualidade_inspecao_templates
@@ -184,7 +184,7 @@ create policy erp_qualidade_inspecao_templates_delete_draft_admin
 create policy erp_qualidade_inspecao_template_itens_select_tenant
   on public.erp_qualidade_inspecao_template_itens
   for select to authenticated
-  using (empresa_id = public.erp_current_empresa_id());
+  using (empresa_id = public.erp_current_empresa_id() or public.erp_is_master());
 
 create policy erp_qualidade_inspecao_template_itens_insert_admin
   on public.erp_qualidade_inspecao_template_itens
@@ -474,7 +474,10 @@ begin
 
   update public.erp_qualidade_inspecao_templates
      set status = 'OBSOLETO',
-         vigencia_fim = current_date - 1,
+         vigencia_fim = case
+           when vigencia_inicio is null then current_date - 1
+           else greatest(vigencia_inicio, current_date - 1)
+         end,
          updated_at = now()
    where empresa_id = v_empresa
      and codigo = v_template.codigo
@@ -540,11 +543,48 @@ begin
     if jsonb_typeof(new.medicoes) is distinct from 'array' then
       raise exception 'RESULTADOS_DA_INSPECAO_DEVEM_SER_ARRAY_JSON';
     end if;
+    if jsonb_array_length(new.template_snapshot->'itens') <> (
+      select count(*) from public.erp_qualidade_inspecao_template_itens i
+       where i.empresa_id = new.empresa_id and i.template_id = new.template_id
+    ) then
+      raise exception 'SNAPSHOT_NAO_CORRESPONDE_AO_NUMERO_DE_ITENS';
+    end if;
+    if exists (
+      select 1
+        from jsonb_array_elements(new.template_snapshot->'itens') as s(value)
+       where not exists (
+         select 1
+           from public.erp_qualidade_inspecao_template_itens i
+          where i.id = nullif(s.value->>'id', '')::uuid
+            and i.empresa_id = new.empresa_id
+            and i.template_id = new.template_id
+            and i.codigo_item = s.value->>'codigo_item'
+            and i.caracteristica = s.value->>'caracteristica'
+            and coalesce(i.metodo, '') = coalesce(s.value->>'metodo', '')
+            and coalesce(i.unidade, '') = coalesce(s.value->>'unidade', '')
+       )
+    ) then
+      raise exception 'SNAPSHOT_DIVERGE_DOS_ITENS_VIGENTES';
+    end if;
     if jsonb_array_length(new.medicoes) <> (
       select count(*) from public.erp_qualidade_inspecao_template_itens i
        where i.empresa_id = new.empresa_id and i.template_id = new.template_id
     ) then
       raise exception 'RESULTADOS_NAO_CORRESPONDEM_AOS_ITENS_DO_TEMPLATE';
+    end if;
+    if exists (
+      select 1
+        from jsonb_array_elements(new.medicoes) as m(value)
+       where not exists (
+         select 1
+           from public.erp_qualidade_inspecao_template_itens i
+          where i.id = nullif(m.value->>'template_item_id', '')::uuid
+            and i.empresa_id = new.empresa_id
+            and i.template_id = new.template_id
+            and (not i.obrigatorio or coalesce(trim(m.value->>'encontrado'), '') <> '')
+       )
+    ) then
+      raise exception 'RESULTADOS_DEVEM_CORRESPONDER_A_ITENS_E_OBRIGATORIOS_DO_TEMPLATE';
     end if;
   end if;
   return new;
