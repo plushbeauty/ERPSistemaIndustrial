@@ -629,7 +629,7 @@
     },
     {
       "path": "src/pages/FichaEngenharia.tsx",
-      "sha": "4b5e97ff536568a9599ae620db2eb621dd4eb534",
+      "sha": "0a4f31c31a4b3365a9b60f21fd815d15aef4555c",
       "autor": "FernandoSch",
       "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
       "aprovadaEm": "2026-10-30",
@@ -749,7 +749,7 @@
     },
     {
       "path": "src/pages/FornecedoresIndustrial.tsx",
-      "sha": "6b0804be7a2b4aa683631de370fc9942c81f0582",
+      "sha": "939e95c1ca0678bb44cb1a3934fdad1f7193d4cd",
       "autor": "FernandoSch",
       "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
       "aprovadaEm": "2026-10-30",
@@ -861,7 +861,7 @@
     },
     {
       "path": "src/pages/OperacaoIndustrial.tsx",
-      "sha": "80d441d66fea427d72d810201eb6715bfadf67b0",
+      "sha": "71d8c8483bec8b990b051e92ff3484035aa7ae75",
       "autor": "FernandoSch",
       "revisao": "REV-COLUNAS-BANCO-20261104-01 — ordem do proprietário \"telas travadas vc destrava\": a lista de OPs do apontamento ordenava por 'criado_em', coluna que não existe em erp_ordens_producao; a query falhava e travava a tela. Leitura corrigida para 'created_at'.",
       "aprovadaEm": "2026-10-30",
@@ -1037,7 +1037,7 @@
     },
     {
       "path": "src/pages/ProdutosVendasIndustrial.tsx",
-      "sha": "9716c3de5a983848c75a6661b229233bfc0680b1",
+      "sha": "e1675b1679a560e455ca63efa925c4f1d5c4c9fd",
       "autor": "FernandoSch",
       "revisao": "REV-COLUNAS-BANCO-20261104-02 — a trilha de auditoria do produto consultava company_id/entity e uma coluna 'module' inexistente em erp_audit_logs; contrato oficial é empresa_id/entity_type. Leitura corrigida e campo não usado removido da seleção.",
       "aprovadaEm": "2026-11-04",
