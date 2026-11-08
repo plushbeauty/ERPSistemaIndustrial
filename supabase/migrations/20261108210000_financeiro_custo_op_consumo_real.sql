@@ -144,18 +144,32 @@ begin
   if tg_op = 'DELETE' then
     v_empresa := old.empresa_id;
     v_ordem := old.ordem_producao_id;
+    if v_ordem is not null and exists (
+      select 1 from public.erp_financeiro_custo_op c
+       where c.empresa_id = v_empresa and c.ordem_producao_id = v_ordem and c.status = 'FECHADO'
+    ) then
+      raise exception 'CUSTO_OP_FECHADO_NAO_PERMITE_ALTERAR_APONTAMENTOS';
+    end if;
+    return old;
+  elsif tg_op = 'UPDATE' then
+    if exists (
+      select 1 from public.erp_financeiro_custo_op c
+       where c.empresa_id = old.empresa_id and c.ordem_producao_id = old.ordem_producao_id and c.status = 'FECHADO'
+    ) or exists (
+      select 1 from public.erp_financeiro_custo_op c
+       where c.empresa_id = new.empresa_id and c.ordem_producao_id = new.ordem_producao_id and c.status = 'FECHADO'
+    ) then
+      raise exception 'CUSTO_OP_FECHADO_NAO_PERMITE_ALTERAR_APONTAMENTOS';
+    end if;
   else
     v_empresa := new.empresa_id;
     v_ordem := new.ordem_producao_id;
-  end if;
-
-  if v_ordem is not null and exists (
-    select 1 from public.erp_financeiro_custo_op c
-     where c.empresa_id = v_empresa
-       and c.ordem_producao_id = v_ordem
-       and c.status = 'FECHADO'
-  ) then
-    raise exception 'CUSTO_OP_FECHADO_NAO_PERMITE_ALTERAR_APONTAMENTOS';
+    if v_ordem is not null and exists (
+      select 1 from public.erp_financeiro_custo_op c
+       where c.empresa_id = v_empresa and c.ordem_producao_id = v_ordem and c.status = 'FECHADO'
+    ) then
+      raise exception 'CUSTO_OP_FECHADO_NAO_PERMITE_ALTERAR_APONTAMENTOS';
+    end if;
   end if;
 
   if tg_op = 'DELETE' then return old; end if;
@@ -429,13 +443,17 @@ begin
   return jsonb_build_object(
     'custo', to_jsonb(v_custo),
     'completo', v_status = 'APURADO',
-    'pendencias', jsonb_build_array(
-      case when v_material_count = 0 then 'SEM_CONSUMO_CONFIRMADO' end,
-      case when v_mao_obra_count = 0 then 'SEM_APONTAMENTO_DE_MAO_DE_OBRA' end,
-      case when v_overhead_count = 0 then 'SEM_APONTAMENTO_DE_OVERHEAD' end,
-      case when v_qtd_produzida <= 0 then 'SEM_QUANTIDADE_PRODUZIDA' end,
-      case when v_preco_venda is null then 'SEM_PRECO_DE_VENDA_VINCULADO_AO_ITEM_DO_PEDIDO' end
-    ) - null
+    'pendencias', (
+      select coalesce(jsonb_agg(pendencia), '[]'::jsonb)
+        from (values
+          (case when v_material_count = 0 then 'SEM_CONSUMO_CONFIRMADO' end),
+          (case when v_mao_obra_count = 0 then 'SEM_APONTAMENTO_DE_MAO_DE_OBRA' end),
+          (case when v_overhead_count = 0 then 'SEM_APONTAMENTO_DE_OVERHEAD' end),
+          (case when v_qtd_produzida <= 0 then 'SEM_QUANTIDADE_PRODUZIDA' end),
+          (case when v_preco_venda is null then 'SEM_PRECO_DE_VENDA_VINCULADO_AO_ITEM_DO_PEDIDO' end)
+        ) as pendencias(pendencia)
+       where pendencia is not null
+    )
   );
 end;
 $$;
