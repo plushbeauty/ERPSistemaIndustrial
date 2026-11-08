@@ -300,7 +300,7 @@ export default function AppEntryV2() {
               <Route path="compras/solicitacao" element={<SolicitacaoCompra />} />
               <Route path="compras/requisicoes" element={<ComprasRequisicoes />} />
               <Route path="rh" element={<RHIndustrial />} />
-              <Route path="pcp/fichas-processo" element={<QualityPlanGate><FichasProcesso /></QualityPlanGate>} />
+              <Route path="pcp/fichas-processo" element={<QualityPlanGate><PCPFichasProcesso /></QualityPlanGate>} />
               <Route path="pcp/roteiro-producao" element={<Navigate to="/pageprincipal/pcp/fichas-processo" replace />} />
               <Route path="qualidade/rpnc" element={<QualityPlanGate><QualidadeRPNC /></QualityPlanGate>} />
               <Route path="qualidade/rpnc-formulario" element={<Navigate to="/pageprincipal/qualidade/rpnc" replace />} />
@@ -494,7 +494,7 @@ export default function AppEntryV2() {
               <Route path="engenharia" element={<QualityPlanGate><EngenhariaCentral /></QualityPlanGate>} />
               <Route path="engenharia/revisoes-bom" element={<QualityPlanGate><EngenhariaRevisoesBOM /></QualityPlanGate>} />
               <Route path="engenharia/ficha" element={<QualityPlanGate><FichaEngenharia /></QualityPlanGate>} />
-              <Route path="engenharia/fichas-processo" element={<QualityPlanGate><FichasProcesso /></QualityPlanGate>} />
+              <Route path="engenharia/fichas-processo" element={<QualityPlanGate><PCPFichasProcesso /></QualityPlanGate>} />
               <Route path="financeiro/grafico-desvios" element={<QualityPlanGate><FinanceiroGraficoDesvios /></QualityPlanGate>} />
               <Route path="financeiro/custo-padrao" element={<QualityPlanGate><FinanceiroCustoPadrao /></QualityPlanGate>} />
               <Route path="admin/logs" element={<AdminLogs />} />
@@ -535,7 +535,7 @@ export default function AppEntryV2() {
               <Route path="qualidade/sala-rnc" element={<QualityPlanGate><SalaRNC /></QualityPlanGate>} />
               <Route path="pcp/controle-injetora" element={<ControleProcessoInjetora />} />
               <Route path="estoque/recebimento" element={<Navigate to="/pageprincipal/estoque/recebimento-lotes" replace />} />
-              <Route path="fichas-processo" element={<QualityPlanGate><FichasProcesso /></QualityPlanGate>} />
+              <Route path="fichas-processo" element={<QualityPlanGate><PCPFichasProcesso /></QualityPlanGate>} />
               <Route path="processos/injecao" element={<Navigate to="/pageprincipal/pcp/controle-injetora" replace />} />
               <Route path="processos/prensados" element={<QualityPlanGate><ProcessoIndustrialPage /></QualityPlanGate>} />
               <Route path="processos/estamparia" element={<QualityPlanGate><ProcessoIndustrialPage /></QualityPlanGate>} />
