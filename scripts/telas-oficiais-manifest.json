@@ -349,7 +349,7 @@
     },
     {
       "path": "src/pages/CentralAjuda.tsx",
-      "sha": "845ac33ea183d34157c5f904526dfeb026e7c84b",
+      "sha": "695933b0442c3570aa5c9c034449d421f3de5d11",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-CENTRAL-AJUDA-TELAS-20261104-01 — central passou a indexar o catalogo oficial de telas (busca + para que serve + como preencher + como usar) · REV-CENTRAL-AJUDA-CONTEXTUAL-20261105-01 — integração da main: aba de ajuda contextual por rota, preservando o catálogo de telas",
       "aprovadaEm": "2026-11-04",
