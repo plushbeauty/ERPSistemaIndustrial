@@ -77,6 +77,7 @@ const menus: MenuItem[] = [
     { label: 'Paradas / setup', route: '/pageprincipal/pcp/paradas', icon: PauseCircle },
     { label: 'Auditoria PCP', route: '/pageprincipal/pcp/auditoria', icon: ShieldCheck },
   ] },  { label: 'Chão de Fábrica', route: '/pageprincipal/chao-de-fabrica/portal-operador', icon: Monitor, children: [
+    { label: 'Apontamento de Produção', route: '/pageprincipal/operacao-industrial', icon: ClipboardList },
     { label: 'Portal do Operador', route: '/pageprincipal/chao-de-fabrica/portal-operador', icon: Monitor },
     { label: 'Apontamento · cartão de ponto', route: '/pageprincipal/chao-de-fabrica/apontamento-operador', icon: Clock },
     { label: 'Postos de Trabalho', route: '/pageprincipal/chao-de-fabrica/postos', icon: ClipboardList },
@@ -85,6 +86,7 @@ const menus: MenuItem[] = [
      O dropdown de Qualidade foi substituido pelo painel flutuante do SGQ; a lista completa das rotinas
      (com cada rota conferida contra o roteador desta branch) esta em components/quality/qualityTabletModules.ts. */
   { label: 'Sistema SGQ', route: '/pageprincipal/qualidade', icon: ShieldCheck, action: 'sgqTablet' },  { label: 'Compras', route: '/pageprincipal/compras', icon: ShoppingCart, children: [
+    { label: 'Cadastro e Homologação de Fornecedores', route: '/pageprincipal/cadastros/fornecedores', icon: Users },
     { label: 'Central de Compras', route: '/pageprincipal/compras', icon: ShoppingCart },
     { label: 'Solicitação de Compra', route: '/pageprincipal/compras/solicitacao', icon: FilePlus2 },
     { label: 'Requisições de Compra', route: '/pageprincipal/compras/requisicoes', icon: ClipboardList },
