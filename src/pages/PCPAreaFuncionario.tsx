@@ -23,6 +23,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Clock3, Factory, FileText, Package, Play, RefreshCw, ShieldCheck, Square, UserRound } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import '../styles/operator-terminal.css'
 
 type Employee = { id: string; matricula: string | null; nome: string | null; nome_completo: string | null; email: string | null; status: string }
 type Program = { id: string; ordem_producao_id: string | null; maquina_id: string | null; produto_id: string | null; inicio_planejado: string; fim_planejado: string; quantidade_planejada: number; quantidade_produzida: number; quantidade_refugada: number; status: string; operador_frente_id: string | null; operador_atras_id: string | null }
@@ -152,7 +153,9 @@ export default function PCPAreaFuncionario() {
   const machine = program?.maquina_id ? machineMap.get(program.maquina_id) : undefined
   const recipe = useMemo(() => {
     if (!program || !productId) return undefined
-    return recipes.find(item => item.produto_id === productId && (!item.maquina_id || item.maquina_id === program.maquina_id))
+    return recipes
+      .filter(item => item.produto_id === productId && (!item.maquina_id || item.maquina_id === program.maquina_id))
+      .sort((a, b) => Number(Boolean(b.maquina_id)) - Number(Boolean(a.maquina_id)) || b.versao - a.versao)[0]
   }, [program, productId, recipes])
   const openEntry = entries.find(item => program?.ordem_producao_id === item.ordem_producao_id && !item.fim_em)
   const programMaterials = materials.filter(item => item.produto_pai_id === productId)
@@ -174,6 +177,7 @@ export default function PCPAreaFuncionario() {
     setSelectedDay(localDate(firstDay))
   }
   const dayPrograms = programs.filter(item => localDate(new Date(item.inicio_planejado)) === selectedDay)
+  const machinePrograms = Array.from(new Map(dayPrograms.filter(item => item.maquina_id).map(item => [item.maquina_id as string, item])).values())
   const selectedEntries = entries.filter(item => program?.ordem_producao_id === item.ordem_producao_id)
   const activeEntry = openEntry && openEntry.operador_id === employee?.id ? openEntry : null
 
@@ -228,7 +232,7 @@ export default function PCPAreaFuncionario() {
     if (!employee || !program || !activeEntry || !companyId) { setError('Não há apontamento em andamento para finalizar nesta OP.'); return }
     const good = Number(goodQty)
     const scrap = Number(scrapQty)
-    if (!Number.isFinite(good) || !Number.isFinite(scrap) || good < 0 || scrap < 0 || good + scrap <= 0) {
+    if (!Number.isFinite(good) || !Number.isFinite(scrap) || !Number.isInteger(good) || !Number.isInteger(scrap) || good < 0 || scrap < 0 || good + scrap <= 0) {
       setError('Informe quantidades válidas. A soma de peças boas e refugadas precisa ser maior que zero.')
       return
     }
@@ -268,7 +272,7 @@ export default function PCPAreaFuncionario() {
     }
   }
 
-  return <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900 md:p-5">
+  return <main className="operator-terminal-page min-h-screen bg-[#F4FBFD] p-3 text-slate-900 md:p-5">
     <div className="mx-auto w-full max-w-[1560px] space-y-4">
       <section aria-label="Descrição e uso da tela" className="grid items-start gap-4 border border-[#C8E3EE] bg-white p-4 shadow-[0_2px_8px_rgba(18,59,80,.04)] md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div><h2 className="text-sm font-black uppercase text-[#123B50]">O que esta tela faz</h2><p className="mt-2 text-sm leading-relaxed text-slate-600">Mostra a programação semanal do PCP que pertence a você — o operador autenticado, vinculado ao cadastro do RH pelo e-mail da sessão — e abre o Cartão de Processo Produtivo (CPP) da tarefa escolhida: OP, produto, máquina, quantidades planejadas, ficha de processo aprovada e insumos da estrutura.</p><p className="mt-2 text-sm leading-relaxed text-slate-600">É desta tela que sai o apontamento real de produção: o servidor carimba início e fim no relógio do banco — não no relógio do posto — grava <strong>erp_apontamentos_processo</strong> com peças boas, refugo e motivo de parada, e baixa a programação do PCP na mesma gravação.</p></div>
@@ -279,6 +283,33 @@ export default function PCPAreaFuncionario() {
       <section className="flex flex-wrap items-center justify-between gap-4 border border-slate-200 bg-white p-4">
         <div className="flex min-w-0 items-center gap-3"><span className="grid h-12 w-12 shrink-0 place-items-center border border-[#C8E3EE] bg-[#EAF6FA] text-[#2D8DB8]"><UserRound size={22}/></span><div className="min-w-0"><p className="text-[10px] font-black uppercase text-slate-500">Funcionário autenticado</p><p className="truncate text-lg font-black text-[#123B50] sm:text-xl">{(employee?.nome_completo || employee?.nome || '').trim() || (loading ? 'Identificando conta…' : 'Nome não informado no cadastro do RH')}</p></div></div>
         <div className="flex flex-wrap gap-2 text-xs font-bold"><span className="border border-slate-200 bg-slate-50 px-3 py-2">Matrícula: {employee?.matricula ?? '—'}</span><span className="border border-emerald-200 bg-emerald-50 px-3 py-2 text-emerald-800"><ShieldCheck size={14} className="mr-1 inline"/>Acesso autenticado</span></div>
+      </section>
+      <section className="operator-terminal-machine-panel" aria-label="Máquinas da programação do dia">
+        <div className="operator-terminal-section-heading">
+          <div><h2>Máquinas programadas</h2><p>Equipamentos vinculados às suas ordens reais do dia selecionado.</p></div>
+          <span>{machinePrograms.length} máquina(s)</span>
+        </div>
+        {machinePrograms.length ? <div className="operator-terminal-machines">
+          {machinePrograms.map(machineProgram => {
+            const assignedMachine = machineProgram.maquina_id ? machineMap.get(machineProgram.maquina_id) : undefined
+            const assignedOrder = machineProgram.ordem_producao_id ? orderMap.get(machineProgram.ordem_producao_id) : undefined
+            const selected = machineProgram.id === selectedProgramId
+            const status = String(machineProgram.status || 'PROGRAMADA').replaceAll('_', ' ')
+            return <button type="button" key={machineProgram.id} aria-pressed={selected} onClick={() => {
+              setSelectedProgramId(machineProgram.id)
+              setGoodQty('')
+              setScrapQty('')
+              setStopReason('')
+              setObservations('')
+              setMessage('')
+              setError('')
+            }} className={'operator-terminal-machine' + (selected ? ' is-selected' : '')}>
+              <strong>{assignedMachine?.codigo || 'Máquina'}</strong>
+              <span className="operator-terminal-machine-name">{assignedMachine?.nome || 'Equipamento sem descrição'}</span>
+              <span className="operator-terminal-machine-meta">OP {assignedOrder?.numero_op ?? '—'} · {status}</span>
+            </button>
+          })}
+        </div> : <p className="operator-terminal-empty">Nenhuma máquina vinculada à programação deste dia.</p>}
       </section>
       <section className="border border-slate-200 bg-white p-4 shadow-[0_2px_8px_rgba(18,59,80,.04)]">
         <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-3">
