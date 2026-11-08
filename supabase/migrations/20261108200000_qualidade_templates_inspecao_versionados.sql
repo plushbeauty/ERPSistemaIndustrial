@@ -66,6 +66,25 @@ create index if not exists idx_erp_qualidade_inspecao_templates_ativas
 create index if not exists idx_erp_qualidade_inspecao_template_itens_ordem
   on public.erp_qualidade_inspecao_template_itens (empresa_id, template_id, sequencia);
 
+create unique index if not exists uq_erp_produtos_empresa_id_id
+  on public.erp_produtos (empresa_id, id);
+
+do $
+begin
+  if not exists (
+    select 1 from pg_constraint
+     where conname = 'erp_qualidade_inspecao_templates_produto_fk'
+       and conrelid = 'public.erp_qualidade_inspecao_templates'::regclass
+  ) then
+    alter table public.erp_qualidade_inspecao_templates
+      add constraint erp_qualidade_inspecao_templates_produto_fk
+      foreign key (empresa_id, produto_id)
+      references public.erp_produtos (empresa_id, id)
+      on delete restrict;
+  end if;
+end;
+$;
+
 alter table public.erp_inspecoes
   add column if not exists template_id uuid,
   add column if not exists template_revisao integer,
@@ -118,6 +137,7 @@ create policy erp_qualidade_inspecao_templates_insert_admin
   for insert to authenticated
   with check (
     empresa_id = public.erp_current_empresa_id()
+    and status = 'RASCUNHO'
     and exists (
       select 1 from public.erp_usuarios u
        where u.auth_user_id = auth.uid()
@@ -132,6 +152,7 @@ create policy erp_qualidade_inspecao_templates_update_admin
   for update to authenticated
   using (
     empresa_id = public.erp_current_empresa_id()
+    and status = 'RASCUNHO'
     and exists (
       select 1 from public.erp_usuarios u
        where u.auth_user_id = auth.uid()
@@ -140,7 +161,10 @@ create policy erp_qualidade_inspecao_templates_update_admin
          and coalesce(u.nivel_admin, 0) >= 8
     )
   )
-  with check (empresa_id = public.erp_current_empresa_id());
+  with check (
+    empresa_id = public.erp_current_empresa_id()
+    and status = 'RASCUNHO'
+  );
 
 create policy erp_qualidade_inspecao_templates_delete_draft_admin
   on public.erp_qualidade_inspecao_templates
@@ -496,6 +520,23 @@ begin
     if not found then
       raise exception 'TEMPLATE_NAO_VIGENTE_OU_REVISAO_DIVERGENTE';
     end if;
+    if v_template.produto_id is not null and v_template.produto_id <> new.produto_id then
+      raise exception 'TEMPLATE_NAO_PERTENCE_AO_PRODUTO_DA_INSPECAO';
+    end if;
+    if v_template.operacao <> 'PROCESSO_METROLOGIA' then
+      raise exception 'TEMPLATE_NAO_PERTENCE_A_OPERACAO_DA_INSPECAO';
+    end if;
+    if new.template_snapshot->>'codigo' is distinct from v_template.codigo
+       or new.template_snapshot->>'revisao' is distinct from v_template.revisao::text then
+      raise exception 'SNAPSHOT_DIVERGE_DA_REVISAO_DO_TEMPLATE';
+    end if;
+    if jsonb_typeof(new.medicoes) is distinct from 'array'
+       or jsonb_array_length(new.medicoes) <> (
+         select count(*) from public.erp_qualidade_inspecao_template_itens i
+          where i.empresa_id = new.empresa_id and i.template_id = new.template_id
+       ) then
+      raise exception 'RESULTADOS_NAO_CORRESPONDEM_AOS_ITENS_DO_TEMPLATE';
+    end if;
   end if;
   return new;
 end;
@@ -503,7 +544,7 @@ $$;
 
 drop trigger if exists trg_erp_inspecao_exigir_template_versionado on public.erp_inspecoes;
 create trigger trg_erp_inspecao_exigir_template_versionado
-before insert or update of template_id, template_revisao, template_snapshot
+before insert or update of tipo, template_id, template_revisao, template_snapshot, medicoes
 on public.erp_inspecoes
 for each row execute function public.erp_inspecao_exigir_template_versionado();
 
