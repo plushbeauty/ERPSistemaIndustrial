@@ -1533,7 +1533,7 @@
     },
     {
       "path": "src/pages/QualidadeRPNCMultiorigem.tsx",
-      "sha": "67797da9da0f22fb5fd9450509acfdbe42810fa9",
+      "sha": "8e3f0b1809ebd8e237513eea9c9f2e0b024dfac9",
       "autor": "FernandoSch",
       "revisao": "REV-RPNC-MULTIORIGEM-A4-20261108-01 — relatório multiorigem emitido pela folha SynqraRelatorioA4 compartilhada",
       "aprovadaEm": "2026-10-30",
@@ -1557,7 +1557,7 @@
     },
     {
       "path": "src/pages/QualityRpncForm.tsx",
-      "sha": "9e6791b95aa4e7f3dcc4adef18ac279c7ab77ca3",
+      "sha": "e3c4aa6034e623b482ad671ebc2806515d7441f8",
       "autor": "FernandoSch",
       "revisao": "REV-SGQ-RPNC-A4-COMPARTILHADO-20261108-02 — relatório RPNC emitido pela folha SynqraRelatorioA4; workflow e evidências preservados",
       "aprovadaEm": "2026-11-08",
