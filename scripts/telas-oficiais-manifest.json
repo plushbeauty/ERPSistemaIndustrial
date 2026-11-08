@@ -1,7 +1,7 @@
 {
   "contrato": "SYNQRA-R-20261103-01",
   "geradoPor": "npm run telas:manifest",
-  "totalTelas": 219,
+  "totalTelas": 220,
   "telas": [
     {
       "path": "src/IndustrialLoginDirect.tsx",
@@ -1061,11 +1061,11 @@
     },
     {
       "path": "src/pages/QualidadeCentralTablet.tsx",
-      "sha": "4c2f9bfbad4b944e69c0bee91b49720d465fc5ff",
+      "sha": "e9ebb79e50bb7a057e5ed934805bd146f60d918f",
       "autor": "Fernando Schuinsekel",
-      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — console do tablet convertido do tema escuro para o padrão industrial claro (fundo #F4FBFD, painéis brancos, texto #123B50) e marca alinhada para SYSNQRA; nenhuma alteração de lógica ou de consulta",
-      "aprovadaEm": "2026-11-04",
-      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
+      "revisao": "REV-SGQ-CATEGORIAS-TABLET-20261108-01 — módulos organizados em abas por categoria, mantendo os 22 atalhos e indicadores existentes",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "ORDEM DO PROPRIETÁRIO PARA ORGANIZAR OS MÓDULOS DO TABLET SGQ EM ABAS POR CATEGORIA; rotas e consultas preservadas"
     },
     {
       "path": "src/pages/QualidadeDashboardRNC.tsx",
@@ -1754,6 +1754,14 @@
       "revisao": "REV-RPNC-CSS-CARIMBO-20261103-01 — carimbo de autoria/aprovacao exigido pelo manifesto de telas; nenhuma regra visual foi tocada",
       "aprovadaEm": "2026-11-03",
       "statusAprovacao": "APROVADO PELO PROPRIETARIO (ordem de 2026-11-03: \"todas as telas novas vao ter revisao, aprovacao e travamento para o vercel nao pegar mais telas antigas\")"
+    },
+    {
+      "path": "src/pages/qualidade/QualidadeControleDesenhos.tsx",
+      "sha": "9878be0c7cfdf6a4a0ee56b734c1101bee16447a",
+      "autor": "Fernando Schuinsekel",
+      "revisao": "REV-SGQ-CONTROLE-DESENHOS-20261108-01 — rota operacional para revisões e homologação de desenhos técnicos",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "INCLUSÃO AUTORIZADA NA CENTRAL SGQ; tela registrada e acessível pelo Tablet da Qualidade"
     }
   ]
 }
