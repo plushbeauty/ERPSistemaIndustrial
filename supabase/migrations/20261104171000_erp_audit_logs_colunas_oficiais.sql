@@ -1,6 +1,6 @@
 -- ============================================================================
 -- SYSNQRA ERP INDUSTRIAL — ERP_AUDIT_LOGS: UNICA GRAFIA DE COLUNAS
--- @AUTOR: Fernando Schuinsekel
+-- @AUTOR: FernandoSch
 -- Data: 2026-11-04
 --
 -- O DEFEITO QUE ESTA MIGRATION FECHA

@@ -1,5 +1,5 @@
 /**
- * @AUTOR: FernandoSchui
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-08
  * @REVISAO: REV-CENTRAL-AJUDA-MERGE-20261108-01 — união do catálogo oficial de telas com a ajuda contextual por rota, sem perder busca, instruções operacionais nem rotas
  * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-04 ("todas as telas tem que explicar para que serve, como preencher e como usar") + ordem de integração main ↔ prod-telas-novas em 2026-11-08

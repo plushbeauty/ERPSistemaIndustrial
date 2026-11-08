@@ -1,6 +1,6 @@
 /**
  * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — "A pagar/A receber" somavam apenas as parcelas cujo título estava dentro do teto de 1000 títulos e 5000 parcelas carregados: carteira maior que isso mostrava valor menor que o real, sem aviso. Títulos, parcelas, fornecedores e clientes passam a ser lidos por paginação completa.
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO

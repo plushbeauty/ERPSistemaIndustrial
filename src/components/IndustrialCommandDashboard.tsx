@@ -1,7 +1,7 @@
 /**
  * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-01 — a home soma KPIs sobre listas com teto de linhas (500 OPs, 5000 apontamentos, 3000 programações/produtos/equipamentos, 5000 paradas/RPNC). O excedente desaparecia sem aviso. Cada consulta agora pede count:'exact' e a tela assume publicamente o truncamento.
  * @REVISAO: REV-EXEC-QUALIDADE-20261105-01 — item 4 da lista de benchmarks do proprietário (Epicor Kin): a home passa a ler erp_pcp_alertas (abertos, por severidade), erp_inspecoes (dia e 7 dias, aprovadas × reprovadas) e liga as RPNC abertas às OPs em andamento (erp_rpnc.ordem_producao_id) na fileira. Contrato medido na sonda ao vivo (publishable key, limit=0): alertas tem created_at (42501 = existe, anon sem grant) e NAO tem criado_em/entidade_* (42703); inspecoes e rpnc.ordem_producao_id respondem 200 porem com count-exact zerado para anon (a RLS nao devolve linha), ou seja os numeros so sao reais em sessao autenticada. Falha de leitura desses dois painéis vira aviso na tela e não derruba o núcleo.
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @REVISAO: REV-HOME-PREMIUM-20261102-01 — tela principal reconstruida sobre a fundacao premium (#63)
  * @STATUS_APROVACAO: ORDEM EXPRESSA DO PROPRIETARIO (#63) — mesma regua dos tokens, sem <style> inline
  * @REVISAO: REV-CONTRATO-BANCO-20261103-01 — "hoje", atraso e vencimentos passam a usar o relógio do Postgres (regra do proprietário)

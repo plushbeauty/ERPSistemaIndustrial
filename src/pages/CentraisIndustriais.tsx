@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-04
  * @REVISAO: REV-CENTRAIS-TABELASREAIS-20261104-01 — treinamentos, paradas, refugos, auditoria e materiais passaram a consultar as tabelas que existem no banco (erp_rh_treinamentos_registros, erp_producao_paradas, erp_qualidade_refugos, erp_sgq_auditorias, erp_produtos); janelas de vencimento usam o relógio do servidor
  * @STATUS_APROVACAO: AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO (corrigida na ordem de 2026-11-03 "seguir com o cronograma"; sem chave real no PC, a conferência visual autenticada não foi feita)

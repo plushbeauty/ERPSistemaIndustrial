@@ -1,8 +1,8 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-08
  * @REVISAO: REV-SGQ-CONTROLE-DESENHOS-20261108-01 — rota operacional para revisões e homologação de desenhos técnicos
- * @STATUS: INTEGRADO AO TABLET CENTRAL DA QUALIDADE
+ * @STATUS_APROVACAO: INTEGRADO AO TABLET CENTRAL DA QUALIDADE — revisão registrada em 2026-11-08
  */
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { CheckCircle2, ExternalLink, FileCheck2, Plus, RefreshCw, Search, ShieldCheck } from 'lucide-react'

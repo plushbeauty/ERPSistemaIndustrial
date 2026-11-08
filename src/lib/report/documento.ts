@@ -1,6 +1,6 @@
 /*
  * SYSNQRA ERP INDUSTRIAL — modelo e paginação dos relatórios profissionais (A4)
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-05
  * @REVISAO: REV-RELATORIO-A4-20261105-01 — estrutura própria de relatório; os botões Imprimir
  * deixam de ser captura da tela do sistema

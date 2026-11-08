@@ -1,6 +1,6 @@
 /*
  * SYSNQRA ERP INDUSTRIAL — motor de impressão dos relatórios profissionais
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-05
  * @REVISAO: REV-RELATORIO-A4-20261105-01 — monta a folha A4 fora da árvore do sistema e imprime só ela
  * @STATUS_APROVACAO: ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — "O botão Imprimir deve

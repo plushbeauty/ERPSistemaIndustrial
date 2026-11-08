@@ -1,6 +1,6 @@
 /**
  * SYSNQRA ERP & SGQ INDUSTRIAL — shell inline das telas operacionais.
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-05
  * @REVISAO: REV-SHELL-INLINE-COMPACTO-20261105-03 — modo hospedado sem titulo, rodape com estado de banco provado e ToolbarButton sem uso removido
  * @STATUS_APROVACAO: revisao tecnica do proprietario em 2026-11-05 (itens 1, 4 e 6), sobre o incremento

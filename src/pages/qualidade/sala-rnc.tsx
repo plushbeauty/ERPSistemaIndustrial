@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-05
  * @REVISAO: REV-TELAS-CONSISTENTES-20261108-01 — ordem do proprietário em 2026-11-08: a tela deixou de renderizar um segundo ERPHorizontalShell e o cabeçalho próprio; a abertura é o card navy padrão do shell e resta a barra de ações (Imprimir A4, Atualizar, Registrar RPNC). O formulário, as consultas e o relatório A4 não mudaram.
  * @REVISAO: REV-RELATORIO-A4-20261105-01 — o botão Imprimir A4 deixa de capturar a tela e passa a emitir o relatório da RPNC selecionada e do registro de não conformidades em A4 com dados do banco

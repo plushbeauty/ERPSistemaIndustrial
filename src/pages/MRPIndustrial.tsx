@@ -1,6 +1,6 @@
 /**
  * @REVISAO: REV-MRP-SEM-TRUNCAMENTO-20261104-01 — a lista de produtos do seletor parava em 3000 por causa do .limit(): em cadastro maior, itens deixavam de aparecer para o cálculo e o nome caía no código bruto. Passa a usar fetchAllPages, a mesma origem paginada das outras telas de PCP.
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO

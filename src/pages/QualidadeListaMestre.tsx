@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-08
  * @REVISAO: REV-IMPRESSAO-A4-20261108-01 — os botoes Imprimir Lista Mestre e Imprimir Indice de Pasta passam a emitir relatorio A4 proprio (abrirRelatorio) com os documentos filtrados vindos do banco, em vez de capturar a tela
  * @STATUS_APROVACAO: ORDEM GERAL DE IMPRESSAO DE 2026-11-05, ITEM 5 — "Quero uma estrutura propria de relatorio, e nao uma captura da tela". AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO.

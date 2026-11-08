@@ -10,7 +10,7 @@
 /**
  * @DATA_REVISAO_APROVACAO: 2026-11-05
  * @REVISAO: REV-SHELL-SEM-DUPLICACAO-20261105-01 — modo hospedado deixou de redesenhar eyebrow/h1 (o PageIntroCard do ERPHorizontalShell ja traz titulo, modulo e ajuda) e o selo 'SUPABASE CONNECTED' fixo virou estado real de sessao + consulta
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @STATUS_APROVACAO: REVISAO TECNICA DO PROPRIETARIO EM 2026-11-05 (itens 1 e 4); modo independente preservado para tela servida fora do shell global
  */
 

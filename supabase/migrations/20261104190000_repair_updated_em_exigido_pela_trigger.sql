@@ -1,5 +1,5 @@
 -- SYSNQRA ERP INDUSTRIAL — REPARO DO CARIMBO updated_em EXIGIDO PELO BANCO
--- Autor: Fernando Schuinsekel | 2026-11-04
+-- Autor: FernandoSch | 2026-11-04
 --
 -- Defeito relatado pelo proprietario em 2026-11-04: ao gravar o apontamento no
 -- Chao de Fabrica (PCPTabletOperador / PCPExecucaoIndustrial / Portal do Operador),

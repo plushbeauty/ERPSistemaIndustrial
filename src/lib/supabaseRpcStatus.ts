@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-03
  * @REVISAO: REV-CONTRATO-BANCO-20261103-01 — nomes de migration que o frontend cita passaram a apontar para arquivos que existem no repo
  * @STATUS_APROVACAO: REGRAS DE NEGÓCIO AUTORIZADAS PELO PROPRIETÁRIO · AGUARDA APLICAÇÃO DAS MIGRATIONS CITADAS

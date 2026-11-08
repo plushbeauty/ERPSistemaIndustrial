@@ -1,6 +1,6 @@
 /**
  * @REVISAO: REV-COLUNAS-BANCO-20261104-02 — a trilha de auditoria leu company_id/user_id/entity, colunas que não existem em erp_audit_logs (contrato oficial: empresa_id/actor_user_id/entity_type); o throw derrubava a tela MASTER inteira. Seleção corrigida com alias PostgREST, sem alterar a interface da tela.
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO

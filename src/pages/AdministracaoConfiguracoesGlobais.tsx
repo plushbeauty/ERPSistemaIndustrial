@@ -1,6 +1,6 @@
 /**
  * @REVISAO: REV-CONTRATO-SUPABASE-20261106-01 — consultas administrativas alinhadas ao schema remoto confirmado: erp_usuarios sem login_nome; erp_permissions com code/name/description; erp_audit_logs com company_id/entity/user_id.
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO

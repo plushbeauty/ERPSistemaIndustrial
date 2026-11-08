@@ -1,6 +1,6 @@
 -- ============================================================================
 -- SYSNQRA ERP INDUSTRIAL — PCP: GERACAO DAS ORDENS PLANEJADAS A PARTIR DO MRP
--- @AUTOR: Fernando Schuinsekel
+-- @AUTOR: FernandoSch
 -- Data: 2026-11-04
 --
 -- O DEFEITO QUE ESTA MIGRATION FECHA

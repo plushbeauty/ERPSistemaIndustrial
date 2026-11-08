@@ -1,6 +1,6 @@
 /*
  * SYSNQRA ERP INDUSTRIAL — folha A4 do relatório profissional
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-05
  * @REVISAO: REV-RELATORIO-A4-20261105-01 — layout próprio de documento; substitui a captura da tela
  * @STATUS_APROVACAO: ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 (cabeçalho/rodapé, paginação

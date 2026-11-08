@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-08
  * @REVISAO: REV-OPERADOR-CARTAO-CPF3-20261108-01 — ordem do proprietário em 2026-11-08: o operador se identifica com o número do cartão + os 3 últimos dígitos do CPF. A conferência saiu do cliente e passou para a RPC security definer erp_operador_identificar_cartao, que valida a empresa da sessão, bloqueia após 8 falhas em 15 minutos e devolve só os dados públicos do crachá (o CPF nunca volta). Agenda, apontamento e ficha de processo inalterados.
  * @REVISAO: REV-CHAO-FABRICA-CARTAO-PONTO-20261104-02 — tela real por cartão de ponto + fileira da semana em trilho de rolagem no celular e nome do operador lido de nome_completo quando o cadastro tiver os dois campos

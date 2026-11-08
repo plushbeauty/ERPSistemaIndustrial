@@ -1,6 +1,6 @@
 /**
  * @REVISAO: REV-COLUNAS-BANCO-20261104-01 — ordem do proprietário "telas travadas vc destrava": a listagem de OPs ordenava por 'criado_em', coluna que não existe em erp_ordens_producao; a query falhava e derrubava o carregamento da tela. Leitura corrigida para 'created_at'.
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-02
  * @REVISAO: REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: "todos os edits do módulo estoque estão desalinhados e fora de tamanho". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).
  * @STATUS_APROVACAO: CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela

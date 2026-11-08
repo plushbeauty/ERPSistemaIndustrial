@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-05
  * @REVISAO: REV-ACCESS-CONTROL-SEM-MATRICULA-20261105-01 — erp_usuarios nao tem matricula; acesso do setor se identifica por login_nome e e-mail
  * @STATUS_APROVACAO: CORRECAO DO HTTP 400 DO POSTGREST, AUTORIZADA PELO PROPRIETARIO EM 2026-11-05 · exige deploy da Edge Function erp-user-admin

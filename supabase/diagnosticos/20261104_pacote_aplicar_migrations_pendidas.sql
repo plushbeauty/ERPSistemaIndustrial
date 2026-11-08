@@ -2947,7 +2947,7 @@ commit;
 -- >>>>>>>>>>>>>>>>>>>> 20261031100000_sgq_rpnc_formulario_auditorias_recorrencia_v1.sql  (tabela ausente no banco: erp_sgq_auditorias) >>>>>>>>>>>>>>>>>>>>
 -- SYSNQRA ERP INDUSTRIAL | SGQ | Formulário RPNC (modelo SoftExpert), auditorias,
 -- pasta virtual de evidências, varredura de recorrência e plano CAPA dinâmico.
--- Autor: Fernando Schuinsekel · 2026-10-31
+-- Autor: FernandoSch · 2026-10-31
 -- Migração 100% aditiva: não altera a RPC erp_sgq_abrir_rpnc, o fluxo da tela
 -- aprovada /pageprincipal/qualidade/rpnc nem as políticas de storage existentes.
 begin;
@@ -4026,7 +4026,7 @@ commit;
 
 -- >>>>>>>>>>>>>>>>>>>> 20261103140000_repair_centrais_rest_schema_v1.sql  (tabela ausente no banco: erp_bom_revisoes) >>>>>>>>>>>>>>>>>>>>
 -- SYSNQRA ERP INDUSTRIAL
--- Autor: Fernando Schuinsekel
+-- Autor: FernandoSch
 -- Revisão: REV-CONTRATO-BANCO-20261103-02
 --
 -- Reconciliação idempotente das tabelas que as telas consultam e que nenhuma migration
@@ -4247,7 +4247,7 @@ notify pgrst, 'reload schema';
 
 -- >>>>>>>>>>>>>>>>>>>> 20261104190000_repair_updated_em_exigido_pela_trigger.sql  (reparo de defeito denunciado pelo proprio banco) >>>>>>>>>>>>>>>>>>>>
 -- SYSNQRA ERP INDUSTRIAL — REPARO DO CARIMBO updated_em EXIGIDO PELO BANCO
--- Autor: Fernando Schuinsekel | 2026-11-04
+-- Autor: FernandoSch | 2026-11-04
 --
 -- Defeito relatado pelo proprietario em 2026-11-04: ao gravar o apontamento no
 -- Chao de Fabrica (PCPTabletOperador / PCPExecucaoIndustrial / Portal do Operador),
@@ -4443,7 +4443,7 @@ select '6_grant_de_escrita_apontamento',
 
 -- >>>>>>>>>>>>>>>>>>>> 20261104200000_repair_central_custos_tabela_e_isolamento.sql  (reparo de defeito denunciado pelo proprio banco) >>>>>>>>>>>>>>>>>>>>
 -- SYSNQRA ERP INDUSTRIAL — REPARO DA CENTRAL DE CUSTOS (SEM TABELA E SEM ISOLAMENTO)
--- Autor: Fernando Schuinsekel | 2026-11-04
+-- Autor: FernandoSch | 2026-11-04
 --
 -- Auditoria estatica pagina x banco (2026-11-04): das 83 tabelas que alguma tela
 -- escreve, duas nao tem NENHUM create table nem NENHUMA politica de isolamento em
@@ -4561,7 +4561,7 @@ select '4_rlshabilitada',
 
 -- >>>>>>>>>>>>>>>>>>>> 20261106120000_erp_fmea_plano_controle_aiag_v1.sql  (tabela ausente no banco: erp_fmea_cabecalho) >>>>>>>>>>>>>>>>>>>>
 -- SYSNQRA ERP INDUSTRIAL — FMEA (AIAG) e Plano de Controle (AIAG) com QR Code
--- @AUTOR: Fernando Schuinsekel
+-- @AUTOR: FernandoSch
 -- @DATA_REVISAO_APROVACAO: 2026-11-06
 -- @REVISAO: REV-FMEA-PLANO-CONTROLE-20261106-01
 -- @STATUS_APROVACAO: ORDEM MASTER DE EXECUCAO EM 2026-11-06 — "CPP digital e impresso com QR Code",
@@ -4850,7 +4850,7 @@ end $$;
 
 -- >>>>>>>>>>>>>>>>>>>> 20261106150000_erp_central_evolucao_v1.sql  (tabela ausente no banco: erp_central_evolucao_item) >>>>>>>>>>>>>>>>>>>>
 -- SYSNQRA ERP INDUSTRIAL — CENTRAL DE EVOLUCAO E CONCLUSAO DO SISTEMA
--- @AUTOR: Fernando Schuinsekel
+-- @AUTOR: FernandoSch
 -- @DATA_REVISAO_APROVACAO: 2026-11-06
 -- @REVISAO: REV-CENTRAL-EVOLUCAO-20261106-01
 -- @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-06 — "VC JA TEM SUAS ORDENS PEGAR TODOS A

@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-08
  * @REVISAO: REV-OPERADOR-MAQUINAS-CPP-20261108-01 — painel responsivo de máquinas por programação real, cada OP preservada como cartão próprio e seleção abre o CPP correspondente; receita específica da máquina priorizada
  * @STATUS_APROVACAO: REVISAO AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA INTEGRAR O PAINEL VISUAL DE MAQUINAS AOS DADOS REAIS DO PCP, PRESERVANDO AUTENTICACAO, CPP E APONTAMENTOS DO SERVIDOR

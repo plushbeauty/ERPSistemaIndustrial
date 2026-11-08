@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-03
  * @REVISAO: REV-CONFIGURACOES-INSTALACAO-SISTEMA-20261103-01 — aba "Instalação do sistema" de
  *   AdministracaoConfiguracoesGlobais, integrada por ordem do proprietário. Cria a estrutura documental

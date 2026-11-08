@@ -1,6 +1,6 @@
 -- ============================================================================
 -- SYSNQRA ERP INDUSTRIAL — LAUDO SOMENTE LEITURA: FLUXO DE CAIXA x USUARIOS x AUDITORIA
--- @AUTOR: Fernando Schuinsekel
+-- @AUTOR: FernandoSch
 -- Data: 2026-11-05
 -- Motivo: REVISAO TECNICA OBRIGATORIA — FLUXO DE CAIXA, itens 1 e 9:
 --   "Verifique no PostgreSQL as colunas reais de erp_usuarios e erp_fluxo_caixa.

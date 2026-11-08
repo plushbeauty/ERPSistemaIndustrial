@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-06
  * @REVISAO: REV-FMEA-PLANO-CONTROLE-20261106-01 — Plano de Controle (CPP) digital e impresso com QR
  * Code: cabeçalho erp_plano_controle, grade de linhas erp_plano_controle_linha com as colunas da aba

@@ -1,6 +1,6 @@
 -- ============================================================================
 -- SYSNQRA ERP INDUSTRIAL — EXPEDICAO: RASTREIO E VINCULO AO PEDIDO DE VENDA
--- @AUTOR: Fernando Schuinsekel
+-- @AUTOR: FernandoSch
 -- Data: 2026-11-04
 --
 -- POR QUE ESTA MIGRATION EXISTE

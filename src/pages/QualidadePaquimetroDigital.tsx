@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-02
  * @REVISAO: REV-METRO-INSTRUMENTOS-20261102-01 — controle de equipamentos de medição ISO 9001 na página do paquímetro
  * @STATUS_APROVACAO: CADASTRO REAL POR EMPRESA; MEDIÇÃO DEMONSTRATIVA REMOVIDA DESTA TELA

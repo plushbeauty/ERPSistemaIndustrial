@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-06
  * @REVISAO: REV-PCP-WORKSPACE-FICHA-20261106-01 — aba de Ficha de Processo usa a tela técnica completa com isolamento por empresa; estrutura visual do workspace preservada
  * @STATUS_APROVACAO: CORREÇÃO FUNCIONAL AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-06; sem alteração do layout aprovado

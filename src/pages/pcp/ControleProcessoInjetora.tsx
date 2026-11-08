@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-05
  * @REVISAO: REV-TELAS-CONSISTENTES-20261108-01 — ordem do proprietário em 2026-11-08: a tela deixou de renderizar um segundo ERPHorizontalShell e o cabeçalho próprio; a abertura é o card navy padrão do shell e resta a barra de ações (Imprimir A4, Atualizar). Formulário, consultas e relatório A4 inalterados.
  * @REVISAO: REV-RELATORIO-A4-20261105-01 — o botão Imprimir A4 deixa de capturar a tela e passa a emitir o CCPP da injetora em A4 pelo motor de relatório, com perfil térmico, amostragem e diário de bordo lidos do banco

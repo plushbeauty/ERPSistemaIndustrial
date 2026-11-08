@@ -1,11 +1,11 @@
 /**
  * @DATA_REVISAO_APROVACAO: 2026-11-04
  * @REVISAO: REV-PADRAO-COR-CLARO-20261104-01 — console do tablet convertido do tema escuro para o padrão industrial claro (fundo #F4FBFD, painéis brancos, texto #123B50) e marca alinhada para SYSNQRA; nenhuma alteração de lógica ou de consulta
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @STATUS_APROVACAO: PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04
  */
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @REVISAO: REV-TABELAS-REAIS-SGQ-20261104-01 — Central tablet: RNC em aberto consulta erp_rpnc e os 30 dias de calibração usam o relógio do Postgres

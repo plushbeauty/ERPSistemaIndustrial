@@ -1,4 +1,4 @@
--- @AUTOR: Fernando Schuinsekel
+-- @AUTOR: FernandoSch
 -- @DATA_REVISAO_APROVACAO: 2026-11-03
 -- @REVISAO: REV-CONTRATO-BANCO-20261103-01
 -- Regra do proprietário: prazo e vencimento são calculados pelo servidor, e não pelo relógio do navegador.

@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-02
  * @REVISAO: REV-PCP-FICHA-ABAS-20261102-01 — ordem do proprietário: ficha em abas com aba própria de Matéria-prima
  *           (Item, Cód. MP, Descrição, %, Qtde, Unid e botão +) e foto puxada do cadastro de produtos

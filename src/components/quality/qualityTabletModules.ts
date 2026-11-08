@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-03
  * @REVISAO: REV-TABLET-CATALOGO-CARIMBO-20261103-01 — cabecalho de autoria/aprovacao adicionado; o catalogo de rotinas do SGQ segue identico
  * @STATUS_APROVACAO: APROVADO PELO PROPRIETARIO (ordem de 2026-11-03: "todas as telas novas vao ter revisao, aprovacao e travamento para o vercel nao pegar mais telas antigas")
@@ -12,7 +12,7 @@ import {
 import type { LucideIcon } from 'lucide-react'
 
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-03
  * @REVISAO: REV-TABLET-SGQ-20261103-01 — ordem do proprietário (#108): "vai entrar aqui e colocar todas
  *           as telas no sistema, você não colocou o tablet da Qualidade" e "vamos deixar tudo no tablet

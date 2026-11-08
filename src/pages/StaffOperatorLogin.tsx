@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-08
  * @REVISAO: REV-OPERADOR-CARTAO-CPF3-20261108-01 — texto ajustado à ordem do proprietário em 2026-11-08: a identificação por cartão + 3 últimos dígitos do CPF acontece no terminal do chão de fábrica (RPC erp_operador_identificar_cartao); esta tela continua sendo a entrada do sistema com a conta individual do operador no Supabase Auth. Nenhuma regra de login mudou.
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria

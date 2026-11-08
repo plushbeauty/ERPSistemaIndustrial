@@ -1,6 +1,6 @@
 /**
  * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-02 — as três contagens passaram a head/count exato (o teto de linhas truncava o número mostrado); o faturamento usava as 500 NF-e MAIS ANTIGAS, agora lê a janela de 6 meses do relógio do servidor sem teto; o truncamento do OEE deixou de ser silencioso.
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-04
  * @REVISAO: REV-DIRETORIA-TABELAS-REAIS-20261104-03 — OEE lê erp_apontamentos_processo e erp_producao_paradas; RNC lê erp_rpnc; OPs abertas contadas por "não finalizada" em qualquer grafia; calibração de 30 dias pelo relógio do servidor
  * @STATUS_APROVACAO: AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO (correção do cronograma de 2026-11-03; sem chave real no PC, a conferência visual autenticada não foi feita)

@@ -7,7 +7,7 @@
 /**
  * @DATA_REVISAO_APROVACAO: 2026-11-04
  * @REVISAO: REV-PADRAO-COR-CLARO-20261104-01 — painel de rastreabilidade convertido do tema escuro (#0E1E2F) para o padrao industrial claro (fundo branco, texto #123B50); nenhuma alteracao de logica ou de consulta
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @STATUS_APROVACAO: PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04
  */
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'

@@ -1,6 +1,6 @@
 /**
  * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — a árvore do GED mostrava só as 1000 RPNC mais recentes e 5000 evidências: processo antigo simplesmente desaparecia da pasta sem aviso. As duas leituras passaram a cobrir todo o histórico da empresa por paginação.
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO

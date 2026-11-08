@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-02
  * @REVISAO: REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: "todos os edits do módulo estoque estão desalinhados e fora de tamanho". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).
  * @STATUS_APROVACAO: CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela

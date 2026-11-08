@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-02
  * @REVISAO: REV-SGQ-RPNC-UNIFICADA-20261102-01 — ordem do proprietário: três telas RPNC reunidas em uma página com abas
  * @STATUS_APROVACAO: FLUXOS REAIS PRESERVADOS; DISTRIBUIÇÃO REDUZIDA A UMA ÚNICA ORIGEM DE NAVEGAÇÃO

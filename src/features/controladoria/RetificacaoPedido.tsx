@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-02
  * @REVISAO: REV-RETIFICACAO-PEDIDO-ENTRADA-E-AJUDA-20261102-01 — tela ganha lista de pedidos e ajuda de uso
  * @STATUS_APROVACAO: DETERMINADO PELO PROPRIETARIO EM 2026-11-02 ("Retificacao de Pedido para que serve

@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-05
  * @REVISAO: REV-USUARIOS-SEM-MATRICULA-20261105-01 — erp_usuarios nao tem coluna matricula; consulta e formulario usam somente colunas existentes
  * @STATUS_APROVACAO: CORRECAO DO HTTP 400 DO POSTGREST, AUTORIZADA PELO PROPRIETARIO EM 2026-11-05 (introspecao real do PostgreSQL)

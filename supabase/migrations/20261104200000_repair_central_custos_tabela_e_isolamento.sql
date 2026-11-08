@@ -1,5 +1,5 @@
 -- SYSNQRA ERP INDUSTRIAL — REPARO DA CENTRAL DE CUSTOS (SEM TABELA E SEM ISOLAMENTO)
--- Autor: Fernando Schuinsekel | 2026-11-04
+-- Autor: FernandoSch | 2026-11-04
 --
 -- Auditoria estatica pagina x banco (2026-11-04): das 83 tabelas que alguma tela
 -- escreve, duas nao tem NENHUM create table nem NENHUMA politica de isolamento em

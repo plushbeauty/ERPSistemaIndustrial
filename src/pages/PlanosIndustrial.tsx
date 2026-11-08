@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-06
  * @REVISAO: REV-PLANOS-SISTEMA-20261106-01 — grade comercial do proprietário, visual do próprio ERP e módulos conferidos tela a tela
  * @STATUS_APROVACAO: REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-06 — "TELA DE PLANOS ESTA FEIA DE

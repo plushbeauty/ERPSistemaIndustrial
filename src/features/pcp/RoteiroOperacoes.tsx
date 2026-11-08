@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-04
  * @REVISAO: REV-ROTEIRO-ACESSIBILIDADE-20261104-01 — campos de cadastro recebem nomes acessiveis (aria-label), tempo passa a ser numérico com minimo zero, cabecalhos ganham scope=col, botoes ganham type=button e removido o estilo morto
  * @STATUS_APROVACAO: AJUSTE DE USABILIDADE E ACESSIBILIDADE POR ORDEM DO PROPRIETARIO EM 2026-11-04

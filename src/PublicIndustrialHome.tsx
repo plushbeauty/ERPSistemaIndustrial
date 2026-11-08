@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-06
  * @REVISAO: REV-CARROSSEL-BAIXO-E-BARRA-FINA-20261106-01 — faixa do carrossel com altura própria e barra do topo sem o quadrado da marca
  * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-06 — "A IMAGEM FICOU GRANDE DE MAIS ELE TA PEGANDO

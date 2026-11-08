@@ -1,5 +1,5 @@
 -- SYSNQRA ERP INDUSTRIAL — FMEA (AIAG) e Plano de Controle (AIAG) com QR Code
--- @AUTOR: Fernando Schuinsekel
+-- @AUTOR: FernandoSch
 -- @DATA_REVISAO_APROVACAO: 2026-11-06
 -- @REVISAO: REV-FMEA-PLANO-CONTROLE-20261106-01
 -- @STATUS_APROVACAO: ORDEM MASTER DE EXECUCAO EM 2026-11-06 — "CPP digital e impresso com QR Code",

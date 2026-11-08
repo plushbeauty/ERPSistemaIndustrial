@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-02
  * @REVISAO: REV-ATIVAR-ACESSO-OPERADOR-20261102-01 — ativação do convite recebido por e-mail na branch de produção
  * @STATUS_APROVACAO: PENDENTE DE VALIDAÇÃO VISUAL DO PROPRIETÁRIO NO PREVIEW (tela nova, sem revisão anterior)

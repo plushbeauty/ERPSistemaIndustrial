@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-03
  * @REVISAO: REV-PASTA-LOCAL-DOCUMENTOS-20261103-01 — cópia local de documentos do SGQ
  *

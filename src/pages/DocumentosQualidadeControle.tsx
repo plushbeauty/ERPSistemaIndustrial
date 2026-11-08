@@ -1,7 +1,7 @@
 /**
  * @REVISAO: REV-TELAS-CONSISTENTES-20261108-01 — ordem do proprietário em 2026-11-08 ("vc ficou de arrumar a page controle de documentos"): o cabeçalho branco duplicado saiu e a abertura passa a ser o card navy padrão do shell; contadores e Atualizar ficam na barra de seleção; as três tabelas entram na régua clara global. Consultas, RPCs e as 7 abas não mudaram.
  * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — distribuições (2000) e leituras (5000) eram cortadas no topo da lista e o percentual de conformidade de leitura era calculado sobre o trecho carregado, parecendo maior que o real. As duas tabelas de crescimento contínuo agora são lidas por paginação completa.
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-02
  * @REVISAO: REV-SGQ-DOCUMENTOS-7ABAS-20261102-01 — ordem do proprietário: Controle de Documentos da Qualidade em página única com 7 abas
  * @STATUS_APROVACAO: ESTRUTURA DE 7 ABAS AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-02

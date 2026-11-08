@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-08
  * @REVISAO: REV-PCP-FICHA-ABAS-CATEGORIA-20261108-01 — ordem do proprietário: "fichas de processo
  *   Injetados Prensados Acabamento e Montagem em abas". O seletor "Modelo da ficha" virou barra de

@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-02
  * @REVISAO: REV-ESTOQUE-RASTREABILIDADE-20261102-01 — ordem do proprietário: módulo de rastreabilidade de lotes dentro do menu Estoque
  * @STATUS_APROVACAO: DADOS 100% REAIS (erp_estoque_lotes, _rastreabilidade, genealogia, separações, OP, pedido de venda, cliente); nenhuma ligação é inferida

@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-06
  * @REVISAO: REV-CENTRAL-EVOLUCAO-20261106-01
  * @STATUS_APROVACAO: ORDEM MASTER 2026-11-06 §7 — painel permanente de acompanhamento do projeto,

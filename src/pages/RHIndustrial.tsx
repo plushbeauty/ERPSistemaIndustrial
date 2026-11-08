@@ -1,11 +1,11 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-04
  * @REVISAO: REV-RH-SEM-CARD-REPETIDO-20261104-01 — a fileira superior de indicadores saiu da tela (repetia a Visão geral e mostrava traço no que não era da aba aberta); as abas passaram ao topo e viram trilho de rolagem no celular
  * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-04 ("a primeira fileira de cards superiores exibe exatamente as mesmas métricas da fileira que está abaixo do menu de abas. O ideal é remover a primeira fileira de cima" + "exibir o número 0, exatamente como foi feito nos cards da fileira de baixo")
  */
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
@@ -23,7 +23,7 @@
  * dos campos vem do contrato de campo (30px), que faz dois campos caberem na linha que antes ocupava um.
  */
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-02
  * @REVISAO: REV-RH-CAMPOS-NA-REGUA-20261102-01 — cadastro de colaborador com largura por tipo de dado
  * @STATUS_APROVACAO: DETERMINADO PELO PROPRIETARIO EM 2026-11-02 ("olha os edits como estao grande; se

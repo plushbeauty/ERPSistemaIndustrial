@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-04
  * @REVISAO: REV-STATUS-OP-20261104-01 — domínio de status da ordem de produção com todas as grafias gravadas pelo sistema
  * @STATUS_APROVACAO: AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO

@@ -1,7 +1,7 @@
 /**
  * @REVISAO: REV-ACAO-PRIMARIA-NAVY-20261108-01 — ordem do proprietário em 2026-11-08: o botão Exportar XLSX deixou de ser âmbar (laranja) e usa a ação primária navy, igual às demais telas; consulta e exportação inalteradas.
  * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — a valoração parava em 5000 SKUs e o rodapé "Custo Total Ativo" somava só o trecho carregado. Agora percorre todos os SKUs ativos da empresa por paginação.
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-02
  * @REVISAO: REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: "todos os edits do módulo estoque estão desalinhados e fora de tamanho". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).
  * @STATUS_APROVACAO: CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela

@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-04
  * @REVISAO: REV-PRODUTOS-TELA-UNICA-20261104-01 — vira a tela principal de /cadastros/produtos; abre a aba pela URL (?aba=) para absorver as rotas antigas de ficha técnica e de parâmetros
  * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-04: "MANDEI TELA NOVA E NAO FOI APLICADO" e "NAO DEIXAR VARIAS TELAS COM MESMA FUNCÇAO OU PARECIDADAS"

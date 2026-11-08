@@ -1,5 +1,5 @@
 -- SYSNQRA ERP INDUSTRIAL — DIAGNOSTICO DE CONTRATO PAGINA x BANCO (somente leitura)
--- Autor: Fernando Schuinsekel | 2026-11-04
+-- Autor: FernandoSch | 2026-11-04
 -- Como usar: colar inteiro no SQL Editor do projeto zsklkydlawgvwgnvxwwx e executar.
 -- Nao escreve nada. Roda em qualquer papel (anon ou authenticated) porque so le catalogos.
 

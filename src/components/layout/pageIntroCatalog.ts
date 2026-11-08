@@ -2,7 +2,7 @@
  * @DATA_REVISAO_APROVACAO: 2026-11-08
  * @REVISAO: REV-TELAS-CONSISTENTES-20261108-01 — verbetes de Dashboard de RNC/CAPA, Sala de RNC/RPNC e Controle de Processo da Injetora; as três telas passam a usar o card de abertura navy único do shell em vez de cabeçalho próprio.
  * @REVISAO: REV-CENTRAL-AJUDA-TELAS-20261104-01 — cada verbete ganhou bloco de ajuda (como preencher / como usar / atenção) exibido no card de abertura
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-04: "o cliente vai entrar e tem que ter nada para explicar para que serve a pagina, como preencher, como usar"
  * Chaves: caminho já normalizado (sem o prefixo /pageprincipal e sem barra final).
  * Telas que já desenham o próprio cabeçalho (Central de Compras, Financeiro,

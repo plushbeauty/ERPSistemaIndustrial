@@ -1,6 +1,6 @@
 /**
  * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — o custo BOM buscava o custo de cada componente numa lista de produtos truncada em 3000: componente fora do trecho carregado entrava como R$ 0,00 no "Custo fábrica total" e no preço sugerido. Produtos e necessidades do MRP agora são lidos por paginação completa e a falha da carga é exibida em vez de passar como custo zero.
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO

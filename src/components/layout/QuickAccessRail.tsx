@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-05
  * @REVISAO: REV-ACESSO-RAPIDO-20261105-01 — barra fixa de acesso rápido no canto inferior esquerdo,
  * abaixo do botão Menu, no lugar da antiga barra Windows 11 (ordem do proprietário em 2026-11-05).

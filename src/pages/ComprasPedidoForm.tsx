@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-08
  * @REVISAO: REV-COMPRAS-VALIDACAO-PEDIDO-20261108-01 — valida todas as linhas sem descarte silencioso, tenant e referências carregadas, NCM de 8 dígitos, valores não negativos e tributos apresentados sem somar ICMS em duplicidade
  * @STATUS_APROVACAO: REVISAO TECNICA AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA REFORCAR A VALIDACAO DO PEDIDO, MANTENDO A RPC TRANSACIONAL E O PADRAO VISUAL

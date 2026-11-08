@@ -1,7 +1,7 @@
 /**
  * @DATA_REVISAO_APROVACAO: 2026-11-04
  * @REVISAO: REV-CENTRAL-AJUDA-TELAS-20261104-01 — card de abertura ganhou o bloco de ajuda (para que serve, como preencher, como usar) alimentado pelo catalogo
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-04: "todas as telas tem que explicar para que serve, como preencher e como usar"
  */
 import { useState } from 'react'

@@ -1,4 +1,4 @@
--- @AUTOR: Fernando Schuinsekel
+-- @AUTOR: FernandoSch
 -- @DATA_REVISAO_APROVACAO: 2026-11-03
 -- @REVISAO: REV-CONTRATO-BANCO-20261103-01
 -- Contrato que a tela src/pages/ComprasPedidoForm.tsx chama (erp_compras_salvar_pedido_completo).

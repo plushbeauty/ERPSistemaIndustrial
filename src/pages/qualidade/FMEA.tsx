@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-06
  * @REVISAO: REV-FMEA-PLANO-CONTROLE-20261106-01 — FMEA AIAG completo: cabeçalho controlado
  * (erp_fmea_cabecalho), grade de linhas inline-editável (qualidade_fmea), prevenção e detecção

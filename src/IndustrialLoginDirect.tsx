@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-01
  * @REVISAO: REV-LOGIN-FOTO-INDUSTRIAL-20261101-01 — tela de acesso sobre a foto da planta, com cartão flutuante à direita
  * @STATUS_APROVACAO: LAYOUT APROVADO PELO PROPRIETÁRIO EM 2026-11-01 · contrato de autenticação inalterado

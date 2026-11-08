@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-TELAS-CONSISTENTES-20261108-01 — ordem do proprietário em 2026-11-08 ("tem telas com botões laranja e outras não, tem cards azuis e fontes desalinhadas"): a tela deixou de renderizar um segundo ERPHorizontalShell e o cabeçalho próprio; a abertura é o card navy padrão do shell e resta só a barra de Atualizar. Consultas e indicadores inalterados.
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria

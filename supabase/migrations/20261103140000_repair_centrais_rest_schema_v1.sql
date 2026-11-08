@@ -1,5 +1,5 @@
 -- SYSNQRA ERP INDUSTRIAL
--- Autor: Fernando Schuinsekel
+-- Autor: FernandoSch
 -- Revisão: REV-CONTRATO-BANCO-20261103-02
 --
 -- Reconciliação idempotente das tabelas que as telas consultam e que nenhuma migration

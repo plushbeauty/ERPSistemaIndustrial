@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-02
  * @REVISAO: REV-ALMOX-SAIMATERIAL-20261102-01 — ordem do proprietário: módulo Controle e Saída de Material dentro do menu Almoxarifado
  * @STATUS_APROVACAO: GRAVAÇÃO EXCLUSIVA PELA RPC erp_estoque_registrar_movimento (RBAC estoque.movimentar); saldo e bloqueio de negativo calculados no servidor

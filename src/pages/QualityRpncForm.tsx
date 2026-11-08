@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-08
  * @REVISAO: REV-SGQ-RPNC-EFICACIA-20261108-01 — integra análise de causa, eficácia, transições de workflow e decisão CAPA com RPCs do banco; cliente, lote e auditoria permanecem rastreáveis
  * @STATUS_APROVACAO: REVISAO AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA INTEGRAR A RPNC COMPLETA; MIGRATIONS E STORAGE AINDA EXIGEM APLICACAO E VALIDACAO NO SUPABASE

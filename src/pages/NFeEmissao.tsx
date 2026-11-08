@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-02
  * @REVISAO: REV-FISCAL-NFE-EMISSOR-20261102-01 — tela reorganizada no formato do Emissor Gratuito da SEFAZ (abas, barra de ações, painel de advertências e grade Gerenciar/Transmitir notas); numeração reservada pelo banco, modalidade de frete real, cobrança pela RPC do banco, travamento automático quando o documento sai de Rascunho
  * @STATUS_APROVACAO: REGRAS CONFERIDAS NAS MIGRATIONS E NA EDGE FUNCTION emitir-nfe · VALIDAÇÃO ESTÁTICA (TYPECHECK, LINT, GUARDS, BUILD) · HOMOLOGAÇÃO NA SEFAZ PENDENTE DE CERTIFICADO DIGITAL E CREDENCIAIS DO CLIENTE
