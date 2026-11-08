@@ -112,7 +112,8 @@ VALUES
   ('erp_qualidade_inspecao_templates'),
   ('erp_estoque_movimentos'),
   ('erp_usuarios'),
-  ('pcp_programacao_capacidade')
+  ('pcp_programacao_capacidade'),
+  ('erp_qualidade_liberacao_lotes_auditoria')
 )
 SELECT
   e.table_name,
@@ -244,7 +245,8 @@ VALUES
   ('erp_qualidade_inspecao_templates'),
   ('erp_estoque_movimentos'),
   ('erp_usuarios'),
-  ('pcp_programacao_capacidade')
+  ('pcp_programacao_capacidade'),
+  ('erp_qualidade_liberacao_lotes_auditoria')
 )
 SELECT
   e.table_name,
@@ -336,7 +338,22 @@ VALUES
   ('erp_custos_apontamentos', 'ordem_producao_id'),
   ('erp_custos_apontamentos', 'produto_id'),
   ('erp_custos_apontamentos', 'tipo'),
-  ('erp_custos_apontamentos', 'valor')
+  ('erp_custos_apontamentos', 'valor'),
+  ('erp_qualidade_liberacao_lotes', 'lote_operacional_id'),
+  ('erp_qualidade_liberacao_lotes', 'localizacao_anterior'),
+  ('erp_qualidade_liberacao_lotes_auditoria', 'id'),
+  ('erp_qualidade_liberacao_lotes_auditoria', 'empresa_id'),
+  ('erp_qualidade_liberacao_lotes_auditoria', 'lote_operacional_id'),
+  ('erp_qualidade_liberacao_lotes_auditoria', 'liberacao_id'),
+  ('erp_qualidade_liberacao_lotes_auditoria', 'acao'),
+  ('erp_qualidade_liberacao_lotes_auditoria', 'status_operacional_anterior'),
+  ('erp_qualidade_liberacao_lotes_auditoria', 'status_operacional_novo'),
+  ('erp_qualidade_liberacao_lotes_auditoria', 'localizacao_anterior'),
+  ('erp_qualidade_liberacao_lotes_auditoria', 'localizacao_nova'),
+  ('erp_qualidade_liberacao_lotes_auditoria', 'responsavel_id'),
+  ('erp_qualidade_liberacao_lotes_auditoria', 'nivel_admin'),
+  ('erp_qualidade_liberacao_lotes_auditoria', 'observacoes'),
+  ('erp_qualidade_liberacao_lotes_auditoria', 'created_at')
 )
 SELECT e.table_name,e.column_name,
   CASE WHEN c.column_name IS NULL THEN 'FALTA_COLUNA' ELSE 'OK' END AS resultado,
@@ -453,7 +470,8 @@ VALUES
   ('erp_qualidade_inspecao_templates'),
   ('erp_estoque_movimentos'),
   ('erp_usuarios'),
-  ('pcp_programacao_capacidade')
+  ('pcp_programacao_capacidade'),
+  ('erp_qualidade_liberacao_lotes_auditoria')
 )
 SELECT
   e.table_name,
@@ -537,7 +555,10 @@ VALUES
   ('erp_qualidade_inspecao_template_salvar_itens'),
   ('erp_pcp_consumir_material_op'),
   ('erp_financeiro_custo_op_registrar_indireto'),
-  ('erp_financeiro_custo_op_apurar')
+  ('erp_financeiro_custo_op_apurar'),
+  ('erp_qualidade_decidir_lote'),
+  ('erp_liberar_lote'),
+  ('erp_bloquear_lote')
 )
 SELECT
   e.routine_name,
@@ -553,30 +574,17 @@ LEFT JOIN pg_proc p
  AND p.proname = e.routine_name
 ORDER BY e.routine_name, assinatura;
 
--- 5) SGQ-REL-001 ainda planejado e view de custo real por OP.
--- As tabelas de templates e os RPCs de custo real estão nas migrations novas acima.
+-- 5) View de custo real por OP — criada pela migration 20261108223500.
 WITH planejadas(object_name, object_type) AS (
-  VALUES
-    ('erp_financeiro_custo_op', 'VIEW'),
-    ('erp_liberar_lote', 'FUNCTION'),
-    ('erp_bloquear_lote', 'FUNCTION')
+  VALUES ('erp_financeiro_custo_op', 'VIEW')
 )
 SELECT
   object_name,
   object_type,
-  CASE
-    WHEN object_type = 'VIEW' AND to_regclass('public.' || object_name) IS NOT NULL THEN 'EXISTE'
-    WHEN object_type = 'TABLE' AND to_regclass('public.' || object_name) IS NOT NULL THEN 'EXISTE'
-    WHEN object_type = 'FUNCTION' AND EXISTS (
-      SELECT 1 FROM pg_proc p
-      WHERE p.pronamespace = 'public'::regnamespace AND p.proname = object_name
-    ) THEN 'EXISTE'
-    ELSE 'AUSENTE'
-  END AS situacao
-FROM planejadas
-ORDER BY object_type, object_name;
+  CASE WHEN to_regclass('public.' || object_name) IS NOT NULL THEN 'EXISTE' ELSE 'AUSENTE' END AS situacao
+FROM planejadas;
 
--- View de custo: verificar security_invoker e colunas expostas.
+-- Verificar security_invoker e colunas expostas.
 SELECT
   c.relname AS view_name,
   c.reloptions,
