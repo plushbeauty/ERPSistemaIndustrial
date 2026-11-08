@@ -1,8 +1,8 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-11-04
- * @REVISAO: REV-PORTAL-OPERADOR-NOME-REAL-20261104-01 — cabecalo passou a ler nome_completo do RH (antes mostrava "Identificando conta…" para sempre quando o cadastro só tinha nome completo) e a fileira de dias virou trilho de rolagem no celular
- * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-04: "se a conta ja foi identificada, substitua o texto pelo nome real do operador em destaque" + conferência responsiva tela a tela
+ * @DATA_REVISAO_APROVACAO: 2026-11-08
+ * @REVISAO: REV-OPERADOR-MAQUINAS-CPP-20261108-01 — painel responsivo de máquinas por programação real, cada OP preservada como cartão próprio e seleção abre o CPP correspondente; receita específica da máquina priorizada
+ * @STATUS_APROVACAO: REVISAO AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA INTEGRAR O PAINEL VISUAL DE MAQUINAS AOS DADOS REAIS DO PCP, PRESERVANDO AUTENTICACAO, CPP E APONTAMENTOS DO SERVIDOR
  * @REVISAO_ANTERIOR: REV-MES-APONTAMENTO-SERVIDOR-20261103-01 — apontamento gravado pelo servidor
  * @STATUS_ANTERIOR: DETERMINADO PELO PROPRIETARIO ("O prazo deve ser calculado pelo servidor, e não pelo
  *   relógio do navegador" + "Tela Chão de Fábrica · Apontamento gravando de verdade", 2026-11-03)
@@ -175,7 +175,7 @@ export default function PCPAreaFuncionario() {
     setSelectedDay(localDate(firstDay))
   }
   const dayPrograms = programs.filter(item => localDate(new Date(item.inicio_planejado)) === selectedDay)
-  const machinePrograms = Array.from(new Map(dayPrograms.filter(item => item.maquina_id).map(item => [item.maquina_id as string, item])).values())
+  const machinePrograms = dayPrograms.filter(item => item.maquina_id)
   const selectedEntries = entries.filter(item => program?.ordem_producao_id === item.ordem_producao_id)
   const activeEntry = openEntry && openEntry.operador_id === employee?.id ? openEntry : null
 
@@ -285,7 +285,7 @@ export default function PCPAreaFuncionario() {
       <section className="operator-terminal-machine-panel" aria-label="Máquinas da programação do dia">
         <div className="operator-terminal-section-heading">
           <div><h2>Máquinas programadas</h2><p>Equipamentos vinculados às suas ordens reais do dia selecionado.</p></div>
-          <span>{machinePrograms.length} máquina(s)</span>
+          <span>{machinePrograms.length} programação(ões)</span>
         </div>
         {machinePrograms.length ? <div className="operator-terminal-machines">
           {machinePrograms.map(machineProgram => {
