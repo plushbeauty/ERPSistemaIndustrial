@@ -60,6 +60,7 @@ const qualityModules: readonly QualityModule[] = [
   { label: 'Metodologia 8D', description: 'Resolução estruturada de problemas em oito disciplinas.', route: '/qualidade/metodologia-8d', icon: Target },
   { label: 'FMEA (AIAG)', description: 'Cabeçalho controlado, matriz de risco e impressão A4 com QR Code.', route: '/qualidade/fmea', icon: Activity },
   { label: 'Plano de Controle (CPP)', description: 'Controles por operação ligados à linha do FMEA.', route: '/qualidade/plano-controle', icon: ClipboardCheck },
+  { label: 'Mapa de Processo', description: 'Fluxo de etapas com característica, controle e registro, ligado ao Plano de Controle.', route: '/qualidade/mapa-processo', icon: GitBranch },
   { label: 'Documentos controlados', description: 'Documentos do SGQ, revisões e vigência.', route: '/qualidade/ged-documentos', icon: FileText },
   { label: 'Controle de desenhos técnicos', description: 'Revisões de moldes e homologação CAD.', route: '/qualidade/controle-desenhos', icon: FileCheck2 },
   { label: 'Procedimentos e PDFs', description: 'Manuais técnicos e instruções operacionais.', route: '/qualidade/procedimentos', icon: BookOpenCheck },
@@ -84,7 +85,7 @@ type QualityCategory = typeof qualityCategories[number]
 function categoryForRoute(route: string): QualityCategory {
   if (['/qualidade/inspecoes', '/qualidade/inspecao-processo', '/qualidade/especificacoes', '/qualidade/liberacao-lote', '/qualidade/quarentena', '/qualidade/cep', '/qualidade/calibracao'].includes(route)) return 'Inspeção e processo'
   if (['/qualidade/sala-rnc', '/qualidade/rnc', '/qualidade/ishikawa', '/qualidade/capa', '/qualidade/metodologia-8d', '/qualidade/auditoria-5s'].includes(route)) return 'RNC e melhoria'
-  if (['/qualidade/genealogia-lote', '/qualidade/fmea', '/qualidade/plano-controle', '/qualidade/controle-desenhos'].includes(route)) return 'Rastreabilidade e risco'
+  if (['/qualidade/genealogia-lote', '/qualidade/fmea', '/qualidade/plano-controle', '/qualidade/mapa-processo', '/qualidade/controle-desenhos'].includes(route)) return 'Rastreabilidade e risco'
   return 'Documentação e auditoria'
 }
 

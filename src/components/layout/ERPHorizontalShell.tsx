@@ -147,7 +147,6 @@ const menus: MenuItem[] = [
     { label: 'Central de manutenção', route: '/pageprincipal/manutencao' },
     { label: 'Ordens de manutenção', route: '/pageprincipal/manutencao/ordens' },
     { label: 'Cronograma', route: '/pageprincipal/manutencao/cronograma' },
-    { label: 'Plano mestre', route: '/pageprincipal/manutencao/plano-mestre' },
     { label: 'Indicadores', route: '/pageprincipal/manutencao/indicadores' },
     { label: 'Tablet Manutenção (painel flutuante)', route: '/pageprincipal/manutencao', icon: Monitor, action: 'moduleTablet', tabletKey: 'manutencao' },
   ] },  { label: 'Relatórios', route: '/pageprincipal/relatorios', icon: BarChart3, children: [

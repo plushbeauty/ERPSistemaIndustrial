@@ -29,6 +29,11 @@ import type { LucideIcon } from 'lucide-react'
  *          as duas telas concorrentes: /qualidade/pfmea agora redireciona para /qualidade/fmea, e o card
  *          "FMEA de projeto" deu lugar ao Plano de Controle (CPP), que é o outro documento da pasta do
  *          proprietário. Um módulo com duas telas para o mesmo registro contraria a regra de origem única.
+ * @REVISAO_4: REV-APQP-TRIO-20261108-01 — ordem do proprietário em 2026-11-08: "veja o FMEA para vc fazer
+ *          FMEA E Plano de Controle juntos ok e Mapa de Processo ... ai vc junta e elemina os outros".
+ *          FMEA, Plano de Controle e Mapa de Processo passam a ser abas da página única
+ *          src/pages/qualidade/FmeaPlanoControle.tsx; o card do Mapa de Processo é adicionado e as três
+ *          rotas continuam válidas para não quebrar QR Codes já impressos.
  */
 
 export type QualityTabletModule = {
@@ -47,6 +52,7 @@ export const qualityTabletModules: QualityTabletModule[] = [
   { label: 'Metodologia 8D', description: 'Investigação e tratamento estruturado de problemas.', route: '/pageprincipal/qualidade/metodologia-8d', icon: Target },
   { label: 'FMEA (AIAG) · matriz de risco', description: 'Cabeçalho controlado, linhas editáveis, NPR S×O×D e impressão A4 com QR Code.', route: '/pageprincipal/qualidade/fmea', icon: Activity },
   { label: 'Plano de Controle (CPP)', description: 'Controles por operação ligados à linha do FMEA, com QR Code.', route: '/pageprincipal/qualidade/plano-controle', icon: ListChecks },
+  { label: 'Mapa de Processo', description: 'Fluxo de etapas com característica, controle e registro, ligado ao Plano de Controle.', route: '/pageprincipal/qualidade/mapa-processo', icon: GitBranch },
   { label: 'CEP / cartas de controle', description: 'Controle estatístico e cartas de processo.', route: '/pageprincipal/qualidade/cep', icon: ScrollText },
   { label: 'Inspeções de lotes', description: 'Inspeção de recebimento e controle dimensional de lotes.', route: '/pageprincipal/qualidade/inspecoes', icon: ClipboardCheck },
   { label: 'Inspeção em processo', description: 'Acompanhamento da qualidade durante a produção.', route: '/pageprincipal/qualidade/inspecao-processo', icon: Microscope },

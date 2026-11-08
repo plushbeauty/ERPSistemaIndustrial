@@ -167,7 +167,7 @@ const QualidadeIndustrial = lazyPage(() => import('./pages/QualidadeIndustrial')
 const QualidadeRNC = lazyPage(() => import('./pages/QualidadeRNC'), 'QualidadeRNC')
 const IndustrialDataWorkspace = lazyPage(() => import('./pages/IndustrialDataWorkspace'), 'IndustrialDataWorkspace')
 const QualidadeEspecificacoesTecnicas = lazyPage(() => import('./pages/QualidadeEspecificacoesTecnicas'), 'QualidadeEspecificacoesTecnicas')
-const QualidadeFMEA = lazyPage(() => import('./pages/qualidade/FMEA'), 'QualidadeFMEA')
+const QualidadeFmeaPlano = lazyPage(() => import('./pages/qualidade/FmeaPlanoControle'), 'FmeaPlanoControle')
 const QualidadeCEP = lazyPage(() => import('./pages/qualidade/CEP'), 'QualidadeCEP')
 const GEDDocumentos = lazyPage(() => import('./pages/qualidade/GEDDocumentos'), 'GEDDocumentos')
 const CertificadoQualidade = lazyPage(() => import('./pages/CertificadoQualidade'), 'CertificadoQualidade')
@@ -190,7 +190,6 @@ const QualidadeAuditoriasPlanta = lazyPage(() => import('./pages/QualidadeAudito
 const QualidadeInstrumentosCadastro = lazyPage(() => import('./pages/QualidadeInstrumentosCadastro'), 'QualidadeInstrumentosCadastro')
 const QualidadeLiberacaoLotes = lazyPage(() => import('./pages/qualidade/QualidadeLiberacaoLotes'), 'QualidadeLiberacaoLotes')
 const QualidadeDashboardRNC = lazyPage(() => import('./pages/QualidadeDashboardRNC'), 'QualidadeDashboardRNC')
-const QualidadePlanoControle = lazyPage(() => import('./pages/qualidade/PlanoControle'), 'QualidadePlanoControle')
 const DocumentosQualidadeControle = lazyPage(() => import('./pages/DocumentosQualidadeControle'), 'DocumentosQualidadeControle')
 const QualidadeInspecaoProcesso = lazyPage(() => import('./pages/qualidade/QualidadeInspecaoProcessoVersionada'), 'QualidadeInspecaoProcessoVersionada')
 const QualidadeTemplatesInspecao = lazyPage(() => import('./pages/qualidade/QualidadeTemplatesInspecao'), 'QualidadeTemplatesInspecao')
@@ -252,7 +251,6 @@ const AssistenteAjudaERP = lazyPage(() => import('./pages/AssistenteAjudaERP'), 
 const ComprasSolicitacaoManual = lazyPage(() => import('./pages/ComprasSolicitacaoManual'), 'ComprasSolicitacaoManual')
 const ManutencaoCentral = lazyPage(() => import('./pages/ManutencaoCentral'), 'ManutencaoCentral')
 const ManutencaoCronograma = lazyPage(() => import('./pages/ManutencaoCronograma'), 'ManutencaoCronograma')
-const ManutencaoPlanoMestre = lazyPage(() => import('./pages/ManutencaoPlanoMestre'), 'ManutencaoPlanoMestre')
 const ManutencaoIndicadores = lazyPage(() => import('./pages/manutencao/ManutencaoIndicadores'), 'ManutencaoIndicadores')
 const ManutencaoOrdens = lazyPage(() => import('./pages/ManutencaoOrdens'), 'ManutencaoOrdens')
 const SalaRNC = lazyPage(() => import('./pages/qualidade/sala-rnc'), 'SalaRNC')
@@ -416,7 +414,7 @@ export default function AppEntryV2() {
               <Route path="estoque/enderecos" element={<IndustrialDataWorkspace />} />
               <Route path="estoque/movimentacoes" element={<IndustrialDataWorkspace />} />
               <Route path="qualidade/especificacoes" element={<QualityPlanGate><QualidadeEspecificacoesTecnicas /></QualityPlanGate>} />
-              <Route path="qualidade/fmea" element={<QualityPlanGate><QualidadeFMEA /></QualityPlanGate>} />
+              <Route path="qualidade/fmea" element={<QualityPlanGate><QualidadeFmeaPlano /></QualityPlanGate>} />
               <Route path="qualidade/ishikawa" element={<QualityPlanGate><QualidadeRNC initialTab="ishikawa" /></QualityPlanGate>} />
               <Route path="qualidade/capa" element={<QualityPlanGate><QualidadeRNC initialTab="capa" /></QualityPlanGate>} />
               <Route path="qualidade/cep" element={<QualityPlanGate><QualidadeCEP /></QualityPlanGate>} />
@@ -454,7 +452,8 @@ export default function AppEntryV2() {
               <Route path="qualidade/liberacao-lote" element={<QualityPlanGate><QualidadeLiberacaoLotes /></QualityPlanGate>} />
               <Route path="qualidade/dashboard-rnc" element={<QualityPlanGate><QualidadeDashboardRNC /></QualityPlanGate>} />
               <Route path="qualidade/pfmea" element={<Navigate to="/pageprincipal/qualidade/fmea" replace />} />
-              <Route path="qualidade/plano-controle" element={<QualityPlanGate><QualidadePlanoControle /></QualityPlanGate>} />
+              <Route path="qualidade/plano-controle" element={<QualityPlanGate><QualidadeFmeaPlano /></QualityPlanGate>} />
+              <Route path="qualidade/mapa-processo" element={<QualityPlanGate><QualidadeFmeaPlano /></QualityPlanGate>} />
               <Route path="qualidade/documentos" element={<QualityPlanGate><DocumentosQualidadeControle /></QualityPlanGate>} />
               <Route path="qualidade/inspecao-processo" element={<QualityPlanGate><QualidadeInspecaoProcesso /></QualityPlanGate>} />
               <Route path="qualidade/templates-inspecao" element={<QualityPlanGate><QualidadeTemplatesInspecao /></QualityPlanGate>} />
@@ -536,7 +535,7 @@ export default function AppEntryV2() {
               <Route path="compras-solicitacao" element={<ComprasSolicitacaoManual />} />
               <Route path="manutencao" element={<QualityPlanGate><ManutencaoCentral /></QualityPlanGate>} />
               <Route path="manutencao/cronograma" element={<QualityPlanGate><ManutencaoCronograma /></QualityPlanGate>} />
-              <Route path="manutencao/plano-mestre" element={<QualityPlanGate><ManutencaoPlanoMestre /></QualityPlanGate>} />
+              <Route path="manutencao/plano-mestre" element={<Navigate to="/pageprincipal/manutencao/cronograma" replace />} />
               <Route path="manutencao/indicadores" element={<QualityPlanGate><ManutencaoIndicadores /></QualityPlanGate>} />
               <Route path="manutencao/ordens" element={<QualityPlanGate><ManutencaoOrdens /></QualityPlanGate>} />
               <Route path="fiscal/carteira" element={<QualityPlanGate><FiscalCarteiraNFe /></QualityPlanGate>} />

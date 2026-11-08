@@ -1,8 +1,12 @@
 /**
  * @AUTOR: FernandoSch
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-08
+ * @REVISAO: REV-METROLOGIA-CORES-20261108-01 — coloração por situação de calibração (em dia, vence em 30 dias, vencida, sem data, bloqueado), legenda explícita, filtro por situação e contadores clicáveis
+ * @STATUS_APROVACAO: ORDEM EXPLICITA DO PROPRIETARIO EM 2026-11-08 — "equipamentos de medição fazer a tela colorida para melhor visualizacao colocar legenda nas cores"
+ */
+/**
+ * @REVISAO_ANTERIOR: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @STATUS_APROVACAO_ANTERIOR: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 /**
  * @REVISAO_ANTERIOR: SGQ-METROLOGIA-2026-10-22-R1
@@ -156,8 +160,27 @@ const actionClass = 'inline-flex h-[30px] items-center justify-center gap-1 roun
 const lightActionClass = 'inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2.5 text-[10px] font-semibold text-slate-700 disabled:opacity-50'
 const asNumber = (value: string): number | null => value.trim() === '' ? null : Number(value)
 const isUsable = (item: Equipment) => item.status.toUpperCase() === 'APROVADO' && Boolean(item.proxima_calibracao && item.proxima_calibracao >= new Date().toISOString().slice(0, 10))
-const isExpired = (item: Equipment) => Boolean(item.proxima_calibracao && item.proxima_calibracao < new Date().toISOString().slice(0, 10))
 const errorText = (error: unknown, fallback: string) => error instanceof Error ? error.message : fallback
+
+type SituacaoCalibracao = 'EM_DIA' | 'A_VENCER' | 'VENCIDO' | 'SEM_DATA' | 'BLOQUEADO'
+const SITUACAO_CALIBRACAO: Record<SituacaoCalibracao, { rotulo: string; cor: string; classe: string; linha: string; texto: string }> = {
+  EM_DIA: { rotulo: 'Em dia', cor: '#C6EFCE', classe: 'bg-[#C6EFCE] text-[#14532D]', linha: 'bg-white hover:bg-[#F4FBFD]', texto: 'text-[#14532D]' },
+  A_VENCER: { rotulo: 'Vence em até 30 dias', cor: '#FFF2CC', classe: 'bg-[#FFF2CC] text-[#78350F]', linha: 'bg-[#FFFBF0] hover:bg-[#FFF5DB]', texto: 'text-[#78350F]' },
+  VENCIDO: { rotulo: 'Calibração vencida', cor: '#FFC7CE', classe: 'bg-[#FFC7CE] text-[#7F1D1D]', linha: 'bg-[#FFF4F5] hover:bg-[#FFE9EC]', texto: 'text-[#7F1D1D]' },
+  SEM_DATA: { rotulo: 'Sem próxima calibração', cor: '#D9E1F2', classe: 'bg-[#D9E1F2] text-[#1E3A8A]', linha: 'bg-white hover:bg-[#F4FBFD]', texto: 'text-[#1E3A8A]' },
+  BLOQUEADO: { rotulo: 'Bloqueado / reprovado', cor: '#E0E0E0', classe: 'bg-[#E0E0E0] text-[#334155]', linha: 'bg-[#F7F8FA] hover:bg-[#EDEFF2]', texto: 'text-[#334155]' },
+}
+const ORDEM_SITUACAO: SituacaoCalibracao[] = ['EM_DIA', 'A_VENCER', 'VENCIDO', 'SEM_DATA', 'BLOQUEADO']
+const diasParaVencer = (item: Equipment) => item.proxima_calibracao
+  ? Math.round((Date.parse(item.proxima_calibracao) - Date.parse(new Date().toISOString().slice(0, 10))) / 86400000)
+  : null
+function situacaoCalibracao(item: Equipment): SituacaoCalibracao {
+  if (item.status.toUpperCase() !== 'APROVADO') return 'BLOQUEADO'
+  if (!item.proxima_calibracao) return 'SEM_DATA'
+  if (item.proxima_calibracao < new Date().toISOString().slice(0, 10)) return 'VENCIDO'
+  const dias = diasParaVencer(item) ?? 0
+  return dias <= 30 ? 'A_VENCER' : 'EM_DIA'
+}
 
 export default function CalibracaoIndustrial() {
   const [equipments, setEquipments] = useState<Equipment[]>([])
@@ -170,6 +193,7 @@ export default function CalibracaoIndustrial() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [query, setQuery] = useState('')
+  const [situacaoFiltro, setSituacaoFiltro] = useState<'TODAS' | SituacaoCalibracao>('TODAS')
   const [page, setPage] = useState(0)
   const [historyPage, setHistoryPage] = useState(0)
   const [equipmentForm, setEquipmentForm] = useState<EquipmentForm>(emptyEquipment)
@@ -208,8 +232,16 @@ export default function CalibracaoIndustrial() {
 
   const filtered = useMemo(() => {
     const term = query.trim().toLocaleLowerCase('pt-BR')
-    return equipments.filter(item => [item.codigo, item.descricao, item.fabricante, item.equipamento, item.modelo, item.numero_serie, item.setor, item.status, item.numero_certificado_atual].some(value => String(value ?? '').toLocaleLowerCase('pt-BR').includes(term)))
-  }, [equipments, query])
+    return equipments.filter(item => {
+      if (situacaoFiltro !== 'TODAS' && situacaoCalibracao(item) !== situacaoFiltro) return false
+      return [item.codigo, item.descricao, item.fabricante, item.equipamento, item.modelo, item.numero_serie, item.setor, item.status, item.numero_certificado_atual].some(value => String(value ?? '').toLocaleLowerCase('pt-BR').includes(term))
+    })
+  }, [equipments, query, situacaoFiltro])
+  const contagemSituacao = useMemo(() => {
+    const total: Record<SituacaoCalibracao, number> = { EM_DIA: 0, A_VENCER: 0, VENCIDO: 0, SEM_DATA: 0, BLOQUEADO: 0 }
+    for (const item of equipments) total[situacaoCalibracao(item)] += 1
+    return total
+  }, [equipments])
   const blockedCount = useMemo(() => equipments.filter(item => !isUsable(item)).length, [equipments])
   const approvedCount = useMemo(() => equipments.filter(isUsable).length, [equipments])
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
@@ -374,29 +406,54 @@ export default function CalibracaoIndustrial() {
         </div>
       </header>
       {(error || notice) && <div role={error ? 'alert' : 'status'} className={error ? 'border border-red-300 bg-red-50 p-2 text-[10px] text-red-800' : 'border border-emerald-300 bg-emerald-50 p-2 text-[10px] text-emerald-800'}>{error || notice}</div>}
-      <section className="grid grid-cols-2 gap-2 md:grid-cols-4">
-        <div className="border border-[#C8E3EE] bg-white p-2"><p className="text-[9px] uppercase text-slate-500">Instrumentos cadastrados</p><p className="text-[18px] font-semibold">{equipments.length}</p></div>
-        <div className="border border-[#C8E3EE] bg-white p-2"><p className="text-[9px] uppercase text-slate-500">Aptos para uso</p><p className="text-[18px] font-semibold text-emerald-700">{approvedCount}</p></div>
-        <div className="border border-[#C8E3EE] bg-white p-2"><p className="text-[9px] uppercase text-slate-500">Bloqueados / vencidos</p><p className="text-[18px] font-semibold text-rose-700">{blockedCount}</p></div>
-        <div className="border border-[#C8E3EE] bg-white p-2"><p className="text-[9px] uppercase text-slate-500">Históricos no resultado</p><p className="text-[18px] font-semibold">{history.length}</p></div>
+      <section className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-6">
+        <div className="border border-[#C8E3EE] bg-white p-2"><p className="text-[9px] uppercase text-slate-500">Instrumentos cadastrados</p><p className="text-[18px] font-semibold">{equipments.length}</p><p className="text-[8px] text-slate-500">{approvedCount} apto(s) · {blockedCount} bloqueado(s)</p></div>
+        {ORDEM_SITUACAO.map(chave => {
+          const ativo = situacaoFiltro === chave
+          return <button key={chave} type="button" onClick={() => setSituacaoFiltro(atual => atual === chave ? 'TODAS' : chave)} aria-pressed={ativo} className={'border p-2 text-left transition-colors ' + (ativo ? 'border-[#2D8DB8] ring-1 ring-[#2D8DB8]' : 'border-[#C8E3EE] hover:border-[#8CC4D8]')} style={{ backgroundColor: SITUACAO_CALIBRACAO[chave].cor }}>
+            <p className="text-[9px] font-semibold uppercase text-slate-700">{SITUACAO_CALIBRACAO[chave].rotulo}</p>
+            <p className={'text-[18px] font-semibold ' + SITUACAO_CALIBRACAO[chave].texto}>{contagemSituacao[chave]}</p>
+          </button>
+        })}
       </section>
       <section className="flex flex-wrap items-end gap-2 border border-[#C8E3EE] bg-white p-2 print:hidden">
         <label className={labelClass + ' min-w-[220px] flex-1'}>Pesquisar instrumento<input value={query} onChange={event => { setQuery(event.target.value); setPage(0) }} placeholder="Código, descrição, série, setor, certificado…" className={inputClass}/></label>
-        <p className="pb-1 text-[10px] text-slate-500">{filtered.length} resultado(s) · {loading ? 'carregando…' : 'dados do Supabase'}</p>
+        <label className={labelClass + ' w-[200px]'}>Situação<select aria-label="Filtrar por situação de calibração" className={inputClass} value={situacaoFiltro} onChange={event => { setSituacaoFiltro(event.target.value as 'TODAS' | SituacaoCalibracao); setPage(0) }}><option value="TODAS">Todas as situações</option>{ORDEM_SITUACAO.map(chave => <option key={chave} value={chave}>{SITUACAO_CALIBRACAO[chave].rotulo}</option>)}</select></label>
+        <button type="button" onClick={() => { setSituacaoFiltro('TODAS'); setQuery(''); setPage(0) }} className={lightActionClass}>LIMPAR FILTROS</button>
+        <p className="pb-1 text-[10px] text-slate-500">{filtered.length} de {equipments.length} resultado(s) · {loading ? 'carregando…' : 'dados do Supabase'}</p>
+      </section>
+      <section className="flex flex-wrap items-center gap-x-4 gap-y-1 border border-[#C8E3EE] bg-white px-2 py-1.5">
+        <span className="text-[9px] font-bold uppercase tracking-[.08em] text-[#17445A]">Legenda das cores</span>
+        {ORDEM_SITUACAO.map(chave => (
+          <span key={chave} className="inline-flex items-center gap-1.5 text-[9px] text-slate-600">
+            <span className="h-3 w-3 rounded-[1px] border border-black/10" style={{ backgroundColor: SITUACAO_CALIBRACAO[chave].cor }} />
+            {SITUACAO_CALIBRACAO[chave].rotulo}
+            <span className="font-semibold tabular-nums text-[#17445A]">{contagemSituacao[chave]}</span>
+          </span>
+        ))}
+        <span className="ml-auto text-[9px] text-slate-500">Apto ao uso = status APROVADO e próxima calibração vigente.</span>
       </section>
       <section className="overflow-x-auto border border-[#C8E3EE] bg-white">
         <table className="w-full min-w-[1100px] text-left">
           <thead className="bg-[#123B50] text-white"><tr>{['CÓDIGO / TAG','INSTRUMENTO','FAIXA / RESOLUÇÃO','SETOR','CERTIFICADO','PRÓXIMA CALIBRAÇÃO','STATUS','AÇÕES'].map(title => <th key={title} className="px-2 py-2 text-[9px] font-semibold">{title}</th>)}</tr></thead>
-          <tbody>{visibleEquipments.map(item => <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50">
+          <tbody>{visibleEquipments.map(item => {
+            const situacao = situacaoCalibracao(item)
+            const dias = diasParaVencer(item)
+            return <tr key={item.id} className={'border-b border-slate-100 transition-colors ' + SITUACAO_CALIBRACAO[situacao].linha}>
             <td className="px-2 py-2 text-[10px]"><strong>{item.codigo}</strong><p className="text-[9px] text-slate-500">{item.numero_serie || 'sem nº de série'}</p></td>
             <td className="px-2 py-2 text-[10px]">{item.descricao}<p className="text-[9px] text-slate-500">{[item.fabricante, item.modelo || item.equipamento].filter(Boolean).join(' · ') || '—'}</p></td>
             <td className="px-2 py-2 text-[10px]">{item.faixa_medicao || '—'}<p className="text-[9px] text-slate-500">{item.resolucao || '—'} {item.unidade_medida || ''}</p></td>
             <td className="px-2 py-2 text-[10px]">{item.setor || '—'}</td>
             <td className="px-2 py-2 text-[10px]">{item.numero_certificado_atual || '—'}<p className="text-[9px] text-slate-500">{item.certificado_rbc ? 'RBC acreditado' : 'RBC não informado'}</p></td>
-            <td className="px-2 py-2 text-[10px]">{item.proxima_calibracao || '—'}</td>
-            <td className="px-2 py-2"><span className={'inline-flex border px-1.5 py-0.5 text-[9px] font-semibold ' + (isUsable(item) ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-rose-200 bg-rose-50 text-rose-800')}>{isUsable(item) ? 'APTO' : isExpired(item) ? 'VENCIDO / BLOQUEADO' : item.status.toUpperCase()}</span></td>
+            <td className="px-2 py-2 text-[10px]">
+              <span className={'inline-flex items-center gap-1 rounded-[2px] px-1.5 py-0.5 font-semibold ' + SITUACAO_CALIBRACAO[situacao].classe}>
+                {item.proxima_calibracao ? item.proxima_calibracao.split('-').reverse().join('/') : 'sem data'}
+              </span>
+              {dias !== null && <p className={'mt-0.5 text-[9px] font-semibold ' + SITUACAO_CALIBRACAO[situacao].texto}>{dias < 0 ? `${Math.abs(dias)} dia(s) vencido(s)` : dias === 0 ? 'vence hoje' : `faltam ${dias} dia(s)`}</p>}
+            </td>
+            <td className="px-2 py-2"><span className={'inline-flex border border-black/10 px-1.5 py-0.5 text-[9px] font-semibold ' + SITUACAO_CALIBRACAO[situacao].classe}>{situacao === 'EM_DIA' ? 'APTO' : SITUACAO_CALIBRACAO[situacao].rotulo.toUpperCase()}</span></td>
             <td className="px-2 py-2"><div className="flex gap-1"><button type="button" onClick={() => void openEquipment(item)} className={lightActionClass}><History size={11}/> FICHA</button><button type="button" onClick={() => editEquipment(item)} className={`erp-edit-button ${lightActionClass}`}>EDITAR</button></div></td>
-          </tr>)}
+          </tr>})}
           {!visibleEquipments.length && <tr><td colSpan={8} className="px-3 py-6 text-center text-[10px] text-slate-500">{loading ? 'Carregando registros…' : 'Nenhum instrumento cadastrado para esta empresa.'}</td></tr>}</tbody>
         </table>
         <nav aria-label="Paginação dos instrumentos" className="flex items-center justify-between border-t border-slate-100 p-2 text-[10px]"><span>{filtered.length} registro(s) · página {page + 1}/{pageCount}</span><div className="flex gap-1"><button type="button" disabled={page === 0} onClick={() => setPage(value => Math.max(0, value - 1))} className={lightActionClass}>ANTERIOR</button><button type="button" disabled={page + 1 >= pageCount} onClick={() => setPage(value => Math.min(pageCount - 1, value + 1))} className={lightActionClass}>PRÓXIMA</button></div></nav>

@@ -11,6 +11,15 @@ import path from 'node:path'
  * 2. Toda tela em src/pages, src/features e src/modules precisa ser alcancavel a partir do entry
  *    (src/AppBootstrap.tsx + src/AppEntryV2.tsx) por import literal: tela sem rota nao pode voltar a existir.
  * 3. As telas antigas ja deletadas estao banidas: recriar um desses caminhos reprova o build.
+ * Revisao 2026-11-08 (trio APQP e cronograma colorido): ordem do proprietario — "veja o FMEA para vc
+ * fazer FMEA E Plano de Controle juntos ok e Mapa de Processo ... ai vc junta e elemina os outros" e
+ * "tela de Manutencao fazer tela de manutencao preventiva cronograma com corres". FMEA, Plano de
+ * Controle e Mapa de Processo passam a ser abas de src/pages/qualidade/FmeaPlanoControle.tsx (as rotas
+ * /qualidade/fmea, /qualidade/plano-controle e /qualidade/mapa-processo continuam validas para nao
+ * quebrar QR Codes ja impressos); src/pages/qualidade/FMEA.tsx e PlanoControle.tsx saem da base. O
+ * cronograma colorido substitui src/pages/ManutencaoPlanoMestre.tsx e /manutencao/plano-mestre passa a
+ * redirecionar para /manutencao/cronograma. O manifesto foi regerado com `npm run telas:manifest` depois
+ * da ordem, e o unico hash de componente re-carimbado foi o catalogo do tablet do SGQ.
  * Revisao 2026-11-08: por ordem do proprietario em 2026-11-08, a autoria e registrada apenas como
  * "FernandoSch" em todas as telas (sem nome completo); nenhum layout, rota, consulta ou permissao mudou.
  * Os 26 hashes foram recarimbados somente por causa dessa linha de cabecalho.
@@ -107,7 +116,7 @@ const oficiais = [
   { path: 'src/styles/industrial-login.css', sha: '2c03b7bd62fac429e15cc33fb4c67d674532f818', label: 'Login / estilos da tela sobre a foto da planta (REV-LOGIN-FOTO-MAIOR-20261104-01: ordem do proprietario — faixa da foto aumentada de 74vw/116vh para 80vw/128vh porque ficou pequena demais)' },
   { path: 'src/pages/CertificadoQualidade.tsx', sha: 'a5a62d087c45f0bb62b25681b4062929b78c3251', label: 'Qualidade / Certificado de Qualidade com cotas dimensionais e desenho anexado (recebido em 2026-11-01; REV-CERTIFICADO-A4-20261108-01: botão Imprimir passou a emitir a folha A4 compartilhada em vez de capturar a tela, cumprindo o item 5 da ordem de 2026-11-05 — cotas e desenho anexado preservados)' },
   { path: 'src/components/layout/ModuleTabletMenuModal.tsx', sha: '9866f2f8e4d240ab5dc0a37977e285d39c72c6e5', label: 'Tablet / painel flutuante de módulos (entrada única do Sistema SGQ)' },
-  { path: 'src/components/quality/qualityTabletModules.ts', sha: '2a5c219b0b85389cc1ea4f359e098b655dd25139', label: 'Tablet / catálogo SGQ — incremento aditivo REV-TABLET-TEMPLATE-INSPECAO-20261108-01 autorizado na ordem de 08/11/2026; card de templates versionados acrescentado sem remover rotas aprovadas' },
+  { path: 'src/components/quality/qualityTabletModules.ts', sha: '371842d00d8183e00e9858ecd97f8fab4b93d41e', label: 'Tablet / catálogo SGQ — incrementos aditivos autorizados em 2026-11-08: REV-TABLET-TEMPLATE-INSPECAO-20261108-01 (templates versionados) e REV-APQP-TRIO-20261108-01 (FMEA, Plano de Controle e Mapa de Processo em abas de uma página única, com o card do Mapa adicionado e as três rotas mantidas para não quebrar QR Codes impressos)' },
   { path: 'src/styles/module-tablet-panel.css', sha: 'ea7cd5ef04a872e2848e5675ec919e915e00f5ec', label: 'Tablet / estilos do painel flutuante (REV-TABLET-COMPACTO-20261104-01: ordem do proprietário — painel muito grande; card saiu da régua de 30px, mediu 117px de altura sem transbordo no harness de cascata)' },
   { path: 'src/pages/QualityRpncForm.tsx', sha: 'cd430c8c0a79c90db28bd4ede8984b4d7edc2d14', label: 'Qualidade / RPNC com Ishikawa, 5 Porques, CAPA, análise de causa, eficácia e workflow (REV-SGQ-RPNC-EFICACIA-20261108-01)' },
   { path: 'src/pages/QualityRpncUnified.tsx', sha: '99d6572db81b7f547bb01520a7739e7af90c8325', label: 'Qualidade / RPNC unificada em abas (REV-RPNC-ABAS-CARD-20261102-01: card das abas maior, descricao visivel)' },
