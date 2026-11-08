@@ -1533,11 +1533,11 @@
     },
     {
       "path": "src/pages/QualidadeRPNCMultiorigem.tsx",
-      "sha": "1d1462955a59396ad95a571e73f9a984a5e594e4",
+      "sha": "67797da9da0f22fb5fd9450509acfdbe42810fa9",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-RPNC-MULTIORIGEM-A4-20261108-01 — relatório multiorigem emitido pela folha SynqraRelatorioA4 compartilhada",
       "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "statusAprovacao": "INCREMENTO DE IMPRESSÃO A4 COMPARTILHADA AUTORIZADO PELA ORDEM DO PROPRIETÁRIO DE 2026-11-08; formulário, dados e navegação preservados."
     },
     {
       "path": "src/pages/QualidadeRPNCTratamento.tsx",
@@ -1557,11 +1557,11 @@
     },
     {
       "path": "src/pages/QualityRpncForm.tsx",
-      "sha": "cd430c8c0a79c90db28bd4ede8984b4d7edc2d14",
+      "sha": "9e6791b95aa4e7f3dcc4adef18ac279c7ab77ca3",
       "autor": "FernandoSch",
-      "revisao": "REV-SGQ-RPNC-EFICACIA-20261108-01 — integra análise de causa, eficácia, transições de workflow e decisão CAPA com RPCs do banco; cliente, lote e auditoria permanecem rastreáveis",
+      "revisao": "REV-SGQ-RPNC-A4-COMPARTILHADO-20261108-02 — relatório RPNC emitido pela folha SynqraRelatorioA4; workflow e evidências preservados",
       "aprovadaEm": "2026-11-08",
-      "statusAprovacao": "REVISAO AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA INTEGRAR A RPNC COMPLETA; MIGRATIONS E STORAGE AINDA EXIGEM APLICACAO E VALIDACAO NO SUPABASE"
+      "statusAprovacao": "INCREMENTO DE IMPRESSÃO A4 COMPARTILHADA AUTORIZADO PELA ORDEM DO PROPRIETÁRIO DE 2026-11-08; dados, RLS e workflow preservados; migrations e Storage ainda exigem aplicação/validação."
     },
     {
       "path": "src/pages/QualityRpncUnified.tsx",
