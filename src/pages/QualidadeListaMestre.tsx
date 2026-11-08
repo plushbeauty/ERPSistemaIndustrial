@@ -1,13 +1,15 @@
 /**
  * @AUTOR: Fernando Schuinsekel
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-08
+ * @REVISAO: REV-IMPRESSAO-A4-20261108-01 — os botoes Imprimir Lista Mestre e Imprimir Indice de Pasta passam a emitir relatorio A4 proprio (abrirRelatorio) com os documentos filtrados vindos do banco, em vez de capturar a tela
+ * @STATUS_APROVACAO: ORDEM GERAL DE IMPRESSAO DE 2026-11-05, ITEM 5 — "Quero uma estrutura propria de relatorio, e nao uma captura da tela". AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO.
  */
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ArrowRight, Printer, FileText } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import { abrirRelatorio } from '../lib/report/abrirRelatorio'
+import type { Bloco } from '../lib/report/documento'
 
 type Doc = {
   id: string
@@ -120,6 +122,68 @@ export default function QualidadeListaMestre() {
     setPage((current) => Math.min(current, pageCount))
   }, [pageCount])
 
+  async function emitir(indice: boolean) {
+    setError('')
+    if (!rows.length) {
+      setError('Nenhum documento no filtro atual; ajuste os filtros antes de imprimir.')
+      return
+    }
+    try {
+      const ordenados = [...rows].sort((a, b) => indice
+        ? (a.area || a.setor || '').localeCompare(b.area || b.setor || '', 'pt-BR') || a.codigo.localeCompare(b.codigo, 'pt-BR')
+        : a.codigo.localeCompare(b.codigo, 'pt-BR'))
+      const blocos: Bloco[] = [
+        {
+          tipo: 'campos',
+          titulo: 'Escopo do relatório',
+          colunas: 2,
+          itens: [
+            { rotulo: 'Situação', valor: status === 'ATIVOS' ? 'Documentos ativos' : status === 'OBSOLETOS' ? 'Documentos obsoletos' : 'Todos os documentos' },
+            { rotulo: 'Departamento / setor', valor: departamento },
+            { rotulo: 'Formulários incluídos', valor: incluirFormularios ? 'Sim' : 'Não' },
+            { rotulo: 'Documentos no relatório', valor: String(ordenados.length) },
+          ],
+        },
+        {
+          tipo: 'tabela',
+          titulo: indice ? 'Índice por pasta' : 'Documentos controlados',
+          colunas: [
+            { titulo: 'Código', larguraMm: 24 },
+            { titulo: 'Título', larguraMm: 58 },
+            { titulo: 'Tipo', larguraMm: 18 },
+            { titulo: 'Área / setor', larguraMm: 28 },
+            { titulo: 'Rev.', larguraMm: 10, alinhar: 'centro' },
+            { titulo: 'Situação', larguraMm: 18 },
+            { titulo: 'Emissão', larguraMm: 15 },
+            { titulo: 'Validade', larguraMm: 15 },
+          ],
+          linhas: ordenados.map((doc) => [
+            doc.codigo,
+            doc.titulo,
+            doc.tipo,
+            doc.area || doc.setor || '—',
+            `Rev. ${doc.revisao}`,
+            doc.status.toUpperCase(),
+            doc.data_emissao || '—',
+            doc.validade_ate || '—',
+          ]),
+          nota: 'Emitido a partir do cadastro do SGQ; a revisão vigente é sempre a registrada no banco de dados.',
+        },
+      ]
+      await abrirRelatorio({
+        modulo: 'Qualidade',
+        tipo: indice ? 'Índice de Pasta' : 'Lista Mestre',
+        titulo: 'Lista Mestre de Documentos do SGQ',
+        codigo: indice ? 'LM-INDICE' : 'LM-LISTA',
+        subtitulo: 'Controle de documentos · ISO 9001',
+        blocos,
+        observacoes: 'Documento gerado pelo SYSNQRA ERP INDUSTRIAL a partir dos registros do SGQ.',
+      })
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível emitir o relatório.')
+    }
+  }
+
   return (
     <main data-quality-workspace className="min-h-screen bg-slate-100 text-slate-900">
       <header className="border-b border-slate-700 bg-slate-900 px-4 py-3 text-white">
@@ -133,7 +197,7 @@ export default function QualidadeListaMestre() {
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => window.print()}
+              onClick={() => void emitir(false)}
               className="inline-flex h-[30px] items-center rounded-[2px] bg-[#2D8DB8] px-3 text-[11px] font-bold text-white"
             >
               <Printer className="mr-2 inline" size={18} />
@@ -141,7 +205,7 @@ export default function QualidadeListaMestre() {
             </button>
             <button
               type="button"
-              onClick={() => window.print()}
+              onClick={() => void emitir(true)}
               className="inline-flex h-[30px] items-center rounded-[2px] border border-slate-500 px-3 text-[11px] font-bold text-white"
             >
               <Printer className="mr-2 inline" size={18} />
