@@ -572,6 +572,42 @@ begin
     ) then
       raise exception 'RESULTADOS_NAO_CORRESPONDEM_AOS_ITENS_DO_TEMPLATE';
     end if;
+    if jsonb_array_length(new.template_snapshot->'itens') <> (
+      select count(*) from public.erp_qualidade_inspecao_template_itens i
+       where i.empresa_id = new.empresa_id and i.template_id = new.template_id
+    ) then
+      raise exception 'SNAPSHOT_NAO_CORRESPONDE_AOS_ITENS_DO_TEMPLATE';
+    end if;
+    if exists (
+      select 1
+        from jsonb_array_elements(new.medicoes) as medicao(value)
+       where not exists (
+         select 1
+           from public.erp_qualidade_inspecao_template_itens i
+          where i.id::text = medicao.value->>'template_item_id'
+            and i.empresa_id = new.empresa_id
+            and i.template_id = new.template_id
+       )
+    ) then
+      raise exception 'RESULTADO_CONTEM_ITEM_FORA_DO_TEMPLATE';
+    end if;
+    if exists (
+      select 1
+        from jsonb_array_elements(new.template_snapshot->'itens') as snapshot_item(value)
+       where not exists (
+         select 1
+           from public.erp_qualidade_inspecao_template_itens i
+          where i.id::text = snapshot_item.value->>'id'
+            and i.empresa_id = new.empresa_id
+            and i.template_id = new.template_id
+       )
+    ) then
+      raise exception 'SNAPSHOT_CONTEM_ITEM_FORA_DO_TEMPLATE';
+    end if;
+    if new.template_snapshot->>'operacao' is distinct from v_template.operacao
+       or new.template_snapshot->>'produto_id' is distinct from v_template.produto_id::text then
+      raise exception 'SNAPSHOT_DIVERGE_DA_OPERACAO_OU_PRODUTO_DO_TEMPLATE';
+    end if;
     if exists (
       select 1
         from jsonb_array_elements(new.medicoes) as m(value)
