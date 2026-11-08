@@ -49,6 +49,8 @@ import './styles/compras-workspace.css'
 import './styles/erp-global-consistency-20261030.css'
 import './styles/erp-active-gold-20261101.css'
 import './styles/erp-action-contract-20261101.css'
+// Última camada: régua premium única do conteúdo autenticado (REV-PREMIUM-GLOBAL-20261108-01).
+import './styles/erp-premium-global-20261108.css'
 
 const PagePrincipal = lazy(() => import('./pages/PagePrincipal'))
 const AppIndustrial = lazy(() => import('./AppIndustrialV7'))

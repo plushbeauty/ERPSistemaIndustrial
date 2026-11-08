@@ -1,0 +1,355 @@
+/*
+ * @AUTOR: Fernando Schuinsekel
+ * @DATA_REVISAO_APROVACAO: 2026-11-08
+ * @REVISAO: REV-PREMIUM-GLOBAL-20261108-01 — régua premium única no conteúdo autenticado
+ * @STATUS_APROVACAO: ordem do proprietário em 2026-11-08 ("atualizar todas as pages com versões
+ *   premium ... melhorar tudo"). Camada visual: não altera dados, rotas, permissões nem consultas.
+ *
+ * Por que esta folha existe, medido no código atual:
+ * 1) src/styles/index.css mantém a "REGRA GLOBAL 2026" com font-size:16px!important em
+ *    button/input/select/textarea e em table td. A .erp-global-surface já derruba os controles
+ *    para 30px, mas as células de tabela continuam em 10px do bloco universal e as linhas em
+ *    32px — ou seja, o corpo da tela fica fora da régua de 30px usada em Vendas/Estoque.
+ * 2) Cada família de página define seu próprio raio (3px, 4px, 18px, 20px), sombra e padding de
+ *    célula (px-4 py-3 do Tailwind). O resultado é o desalinhamento entre módulos.
+ * 3) O card navy de abertura (.erp-page-intro), as abas ativas douradas (erp-active-gold-20261101),
+ *    o painel flutuante do tablet, o Portal do Operador, as abas do RPNC e as folhas A4 de
+ *    impressão têm contrato próprio e ficam FORA desta folha de propósito.
+ *
+ * Régua aplicada: controle 30px, campo 11px, rótulo 9px, célula 11px, linha 30px, raio 2px,
+ * navy #123B50, borda #D5E1E8, cabeçalho de tabela #EAF4F8. Em telas de toque o controle sobe
+ * para 34px (≤1024px) e 38px (≤640px), porque 30px não é alvo confortável no dedo.
+ *
+ * Importada por último em src/AppEntryV2.tsx para vencer as folhas de módulo por ordem de cascata.
+ * Escopo: .erp-global-surface .erp-horizontal-workspace — só o conteúdo das rotas autenticadas.
+ * A navegação do shell fica fora do <main>; os modais de tablet são irmãos do <main>.
+ */
+
+.erp-global-surface .erp-horizontal-workspace {
+  --prem-ink: #123b50;
+  --prem-ink-2: #17333f;
+  --prem-muted: #5b7480;
+  --prem-line: #d5e1e8;
+  --prem-line-soft: #e6eef2;
+  --prem-soft: #eaf4f8;
+  --prem-brand: #2d8db8;
+  --prem-brand-deep: #216f96;
+  --prem-radius: 2px;
+  --prem-control: 30px;
+  color: var(--prem-ink-2);
+  font-size: 11px;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.erp-global-surface .erp-horizontal-workspace small {
+  font-size: 10px !important;
+  line-height: 1.4 !important;
+}
+
+/* Campos: a mesma régua do ERP aprovado, agora com borda e foco únicos. */
+.erp-global-surface .erp-horizontal-workspace input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']):not([type='hidden']):not([multiple]),
+.erp-global-surface .erp-horizontal-workspace select:not([multiple]) {
+  box-sizing: border-box;
+  height: var(--prem-control) !important;
+  min-height: var(--prem-control) !important;
+  padding: 0 8px !important;
+  border: 1px solid var(--prem-line) !important;
+  border-radius: var(--prem-radius) !important;
+  background: #fff;
+  color: var(--prem-ink-2) !important;
+  font-size: 11px !important;
+  line-height: 14px !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace textarea {
+  box-sizing: border-box;
+  min-height: 72px !important;
+  padding: 6px 8px !important;
+  border: 1px solid var(--prem-line) !important;
+  border-radius: var(--prem-radius) !important;
+  background: #fff;
+  color: var(--prem-ink-2) !important;
+  font-size: 11px !important;
+  line-height: 15px !important;
+  resize: vertical;
+}
+
+.erp-global-surface .erp-horizontal-workspace input::placeholder,
+.erp-global-surface .erp-horizontal-workspace textarea::placeholder {
+  color: #7b929c !important;
+  opacity: 1;
+}
+
+.erp-global-surface .erp-horizontal-workspace input:focus,
+.erp-global-surface .erp-horizontal-workspace select:focus,
+.erp-global-surface .erp-horizontal-workspace textarea:focus {
+  border-color: var(--prem-brand) !important;
+  outline: 0 !important;
+  box-shadow: 0 0 0 2px rgb(45 141 184 / 18%) !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace input:disabled,
+.erp-global-surface .erp-horizontal-workspace select:disabled,
+.erp-global-surface .erp-horizontal-workspace textarea:disabled {
+  background: #f4f8fa !important;
+  color: #7b929c !important;
+  cursor: not-allowed;
+}
+
+/* Botões: altura já vinha da régua; aqui entra alinhamento, raio e ritmo vertical.
+   Sem padding horizontal global de propósito: telas usam px-3/px-4 e botões-ícone
+   dependem da própria largura. Só o padding vertical é zerado para não estourar 30px. */
+.erp-global-surface .erp-horizontal-workspace button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button):not(.module-tablet-panel *):not(.operator-demo *):not(.erp-rpnc-abas *):not(.synqra-module-card):not(.erp-page-intro *) {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: var(--prem-control) !important;
+  min-height: var(--prem-control) !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-radius: var(--prem-radius) !important;
+  font-size: 11px !important;
+  font-weight: 700;
+  line-height: 14px !important;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.erp-global-surface .erp-horizontal-workspace button:disabled {
+  cursor: not-allowed !important;
+  opacity: .55;
+}
+
+.erp-global-surface .erp-horizontal-workspace :is(button, a[role='button'], input, select, textarea):focus-visible {
+  outline: 2px solid rgb(45 141 184 / 45%) !important;
+  outline-offset: 1px !important;
+}
+
+/* Tabelas: linha real de 30px. `height` em célula é mínimo no navegador, então descrição
+   longa continua crescendo em vez de ser cortada pelo servidor de estilo. */
+.erp-global-surface .erp-horizontal-workspace table:where(:not(.sr-body *):not(.ficha-print-sheet *):not(.cep-print-sheet *):not(.op-print-sheet *):not(.cq-print *):not(.print-area *)) {
+  border-collapse: collapse;
+  font-size: 11px !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace table:where(:not(.sr-body *):not(.ficha-print-sheet *):not(.cep-print-sheet *):not(.op-print-sheet *):not(.cq-print *):not(.print-area *)) thead tr,
+.erp-global-surface .erp-horizontal-workspace table:where(:not(.sr-body *):not(.ficha-print-sheet *):not(.cep-print-sheet *):not(.op-print-sheet *):not(.cq-print *):not(.print-area *)) tbody tr {
+  height: 30px !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace table:where(:not(.sr-body *):not(.ficha-print-sheet *):not(.cep-print-sheet *):not(.op-print-sheet *):not(.cq-print *):not(.print-area *)) :is(th, td) {
+  box-sizing: border-box;
+  height: 30px !important;
+  padding: 0 8px !important;
+  border-bottom: 1px solid var(--prem-line-soft) !important;
+  font-size: 11px !important;
+  line-height: 14px !important;
+  vertical-align: middle !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace table:where(:not(.sr-body *):not(.ficha-print-sheet *):not(.cep-print-sheet *):not(.op-print-sheet *):not(.cq-print *):not(.print-area *)) thead:not([class*='bg-']):not([class*='dark']) th:not([class*='bg-']) {
+  background: var(--prem-soft) !important;
+  color: #17445a !important;
+  border-bottom: 1px solid #cfe1e7 !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace table:where(:not(.sr-body *):not(.ficha-print-sheet *):not(.cep-print-sheet *):not(.op-print-sheet *):not(.cq-print *):not(.print-area *)) th {
+  font-size: 9px !important;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.erp-global-surface .erp-horizontal-workspace table:where(:not(.sr-body *):not(.ficha-print-sheet *):not(.cep-print-sheet *):not(.op-print-sheet *):not(.cq-print *):not(.print-area *)) td {
+  color: var(--prem-ink-2);
+}
+
+.erp-global-surface .erp-horizontal-workspace table:where(:not(.sr-body *):not(.ficha-print-sheet *):not(.cep-print-sheet *):not(.op-print-sheet *):not(.cq-print *):not(.print-area *)) tbody tr:hover {
+  background: #f3f8fb;
+}
+
+/* Controles dentro de célula não podem estourar a linha. */
+.erp-global-surface .erp-horizontal-workspace td input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']):not([type='hidden']):not([multiple]),
+.erp-global-surface .erp-horizontal-workspace td select:not([multiple]) {
+  height: 24px !important;
+  min-height: 24px !important;
+  font-size: 11px !important;
+  vertical-align: middle;
+}
+
+.erp-global-surface .erp-horizontal-workspace td button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button):not(.module-tablet-panel *):not(.operator-demo *):not(.erp-rpnc-abas *):not(.synqra-module-card):not(.erp-page-intro *) {
+  height: 24px !important;
+  min-height: 24px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  font-size: 10px !important;
+  vertical-align: middle;
+}
+
+/* Superfícies: cartões com o mesmo raio e a mesma sombra em qualquer módulo.
+   `rounded-full` fica de fora para não achatar avatares e indicadores redondos. */
+.erp-global-surface .erp-horizontal-workspace :is(
+  [class*='rounded-md'],
+  [class*='rounded-lg'],
+  [class*='rounded-xl'],
+  [class*='rounded-2xl'],
+  [class*='rounded-3xl']
+):where(:not(.erp-page-intro):not(.erp-page-intro *):not(.operator-demo *):not(.module-tablet-panel *):not(.synqra-module-card)) {
+  border-radius: var(--prem-radius) !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace :is(
+  .erp-card,
+  .erp-panel,
+  .module-card,
+  .crud-list,
+  .mw3-card,
+  .ips-card,
+  .stock-card
+):where(:not(.operator-demo *):not(.module-tablet-panel *)) {
+  border: 1px solid var(--prem-line) !important;
+  border-radius: var(--prem-radius) !important;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(18 59 80 / 6%) !important;
+}
+
+/* Elevação continua existindo para dropdown e modal; só deixa de competir com o conteúdo. */
+.erp-global-surface .erp-horizontal-workspace :is([class*='shadow-sm'], [class~='shadow']) {
+  box-shadow: 0 1px 2px rgb(18 59 80 / 6%) !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace :is([class*='shadow-md'], [class*='shadow-lg']) {
+  box-shadow: 0 8px 20px rgb(18 59 80 / 12%) !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace :is([class*='shadow-xl'], [class*='shadow-2xl']) {
+  box-shadow: 0 14px 34px rgb(18 59 80 / 16%) !important;
+}
+
+/* KPIs: mesmo ladrilho em PCP, SGQ, Compras e Financeiro. Padding e min-height das telas
+   aprovadas (PCP dash) não são tocados — só superfície, raio e tipografia do número. */
+.erp-global-surface .erp-horizontal-workspace :is(.quality-kpis, .sgq-adv-kpis, .mw3-kpis, .ips-kpis) article {
+  border: 1px solid var(--prem-line) !important;
+  border-radius: var(--prem-radius) !important;
+  background: #fff !important;
+  box-shadow: 0 1px 2px rgb(18 59 80 / 6%) !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace :is(.quality-kpis, .sgq-adv-kpis, .mw3-kpis, .ips-kpis) article :is(span, small) {
+  font-size: 9px !important;
+  font-weight: 700;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+}
+
+.erp-global-surface .erp-horizontal-workspace :is(.quality-kpis, .sgq-adv-kpis, .mw3-kpis, .ips-kpis) article :is(strong, b) {
+  color: var(--prem-ink) !important;
+  font-size: 18px !important;
+  line-height: 1.2 !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Busca e barra de ferramentas com a mesma altura das demais caixas. */
+.erp-global-surface .erp-horizontal-workspace :is(.module-search, .stock-search-box, .mw3-search) {
+  height: var(--prem-control) !important;
+  min-height: var(--prem-control) !important;
+  border: 1px solid var(--prem-line) !important;
+  border-radius: var(--prem-radius) !important;
+  background: #fff;
+}
+
+.erp-global-surface .erp-horizontal-workspace :is(.module-search, .stock-search-box, .mw3-search) input {
+  height: 28px !important;
+  min-height: 28px !important;
+  border: 0 !important;
+  padding: 0 !important;
+  background: transparent;
+  box-shadow: none !important;
+}
+
+/* Estados vazios: uma única moldura tracejada, sem hero. */
+.erp-global-surface .erp-horizontal-workspace :is(.crud-empty, .ips-empty, .mw3-empty, .qms-empty) {
+  border: 1px dashed #c3d6de;
+  border-radius: var(--prem-radius);
+  background: #fbfdfe;
+  color: var(--prem-muted);
+  padding: 20px 12px;
+  font-size: 11px !important;
+  text-align: center;
+}
+
+/* Avisos da tela. */
+.erp-global-surface .erp-horizontal-workspace :is(.notice, .error, .ips-notice, .ips-alert) {
+  border-radius: var(--prem-radius) !important;
+  padding: 6px 10px !important;
+  font-size: 11px !important;
+  font-weight: 700;
+}
+
+/* Rolagem discreta dentro do conteúdo (o shell e os modais mantêm a própria). */
+.erp-global-surface .erp-horizontal-workspace :is(div, section, table) {
+  scrollbar-width: thin;
+  scrollbar-color: #c3d6de transparent;
+}
+
+.erp-global-surface .erp-horizontal-workspace ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.erp-global-surface .erp-horizontal-workspace ::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: #c3d6de;
+  background-clip: content-box;
+}
+
+.erp-global-surface .erp-horizontal-workspace ::-webkit-scrollbar-thumb:hover {
+  background: #a8c3ce;
+  background-clip: content-box;
+}
+
+/* Tablet: alvo de toque maior sem mudar o desktop aprovado. */
+@media (max-width: 1024px) {
+  .erp-global-surface .erp-horizontal-workspace {
+    --prem-control: 34px;
+  }
+
+  .erp-global-surface .erp-horizontal-workspace button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button):not(.module-tablet-panel *):not(.operator-demo *):not(.erp-rpnc-abas *):not(.synqra-module-card):not(.erp-page-intro *) {
+    font-size: 12px !important;
+  }
+
+  .erp-global-surface .erp-horizontal-workspace table :is(th, td) {
+    height: 34px !important;
+  }
+
+  .erp-global-surface .erp-horizontal-workspace td input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']):not([type='hidden']):not([multiple]),
+  .erp-global-surface .erp-horizontal-workspace td select:not([multiple]),
+  .erp-global-surface .erp-horizontal-workspace td button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button):not(.module-tablet-panel *):not(.operator-demo *):not(.erp-rpnc-abas *):not(.synqra-module-card):not(.erp-page-intro *) {
+    height: 28px !important;
+    min-height: 28px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .erp-global-surface .erp-horizontal-workspace {
+    --prem-control: 38px;
+  }
+
+  .erp-global-surface .erp-horizontal-workspace table:where(:not(.sr-body *):not(.ficha-print-sheet *):not(.cep-print-sheet *):not(.op-print-sheet *):not(.cq-print *):not(.print-area *)) :is(th, td) {
+    padding: 0 6px !important;
+  }
+}
+
+/* Impressão: nada desta folha se aplica ao papel. As A4 já têm contrato próprio. */
+@media print {
+  .erp-global-surface .erp-horizontal-workspace {
+    font-size: inherit;
+  }
+}
