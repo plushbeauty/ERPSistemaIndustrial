@@ -57,7 +57,7 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 
 - [ ] CMP-001 — Validar os 247 padrões de rota únicos contra arquivos/exportações reais e classificar aliases, órfãs e curingas.
 - [ ] CMP-002 — Auditar funcionalmente todas as áreas da matriz comparativa; a presença de rota não é evidência de CRUD funcional.
-- [ ] CMP-003 — Validar as 11 rotas que usam `IndustrialDataWorkspace` com requisitos e contratos de dados próprios.
+- [x] CMP-003 — Classificar as 11 rotas que usam `IndustrialDataWorkspace` em coberta pelo genérico, parcial ou tela própria. Evidência: `docs/erp-standardization/CMP-003-INDUSTRIAL-DATA-WORKSPACE-20261108.md`. Conclusão estática; não prova RLS, menu, permissão nem E2E.
 - [ ] CMP-004 — Fechar autenticação, RBAC, tenant e RLS reais antes de declarar módulos prontos.
 - [ ] CMP-005 — Confirmar migrations e tabelas no Supabase ativo para rotas com 404.
 - [ ] CMP-006 — Validar ponta a ponta PCP + Engenharia/BOM + Estoque + Qualidade + Compras + Fiscal/Vendas.
