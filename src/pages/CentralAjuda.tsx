@@ -1,5 +1,5 @@
 /**
- * @AUTOR: Fernando Schuinsekel
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-08
  * @REVISAO: REV-CENTRAL-AJUDA-MERGE-20261108-01 — une o catálogo oficial de telas
  * com a ajuda contextual da main, sem perder busca, instruções operacionais ou rotas.
