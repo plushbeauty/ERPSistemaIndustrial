@@ -28,30 +28,34 @@ export default function ComprasPedidoForm({ onCancel, onSaved }: { onCancel: () 
   const [loadingRefs, setLoadingRefs] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [referenceError, setReferenceError] = useState<string | null>(null)
 
   useEffect(() => {
     let active = true
     const load = async () => {
       setLoadingRefs(true)
-      const { data: empresaId, error: tenantError } = await supabase.rpc('erp_current_empresa_id')
-      if (tenantError || typeof empresaId !== 'string' || !empresaId) {
-        if (active) { setError(tenantError?.message || 'Empresa da sessão autenticada não identificada.'); setLoadingRefs(false) }
-        return
-      }
-      const [supplierResult, productResult, requisitionResult, productionOrderResult] = await Promise.all([
+      setReferenceError(null)
+      try {
+        const { data: empresaId, error: tenantError } = await supabase.rpc('erp_current_empresa_id')
+        if (tenantError || typeof empresaId !== 'string' || !empresaId) throw tenantError ?? new Error('Empresa da sessão autenticada não identificada.')
+        const [supplierResult, productResult, requisitionResult, productionOrderResult] = await Promise.all([
         supabase.from('erp_fornecedores').select('id,razao_social,ativo').eq('empresa_id', empresaId).eq('ativo', true).order('razao_social'),
         supabase.from('erp_produtos').select('id,codigo,nome,ativo').eq('empresa_id', empresaId).eq('ativo', true).order('codigo'),
         supabase.from('erp_requisicoes_compra').select('id,codigo,status').eq('empresa_id', empresaId).order('created_at', { ascending: false }).limit(200),
         supabase.from('erp_ordens_producao').select('id,numero_op,status').eq('empresa_id', empresaId).order('numero_op', { ascending: false }).limit(300),
       ])
-      if (!active) return
-      const refErrors = [supplierResult.error, productResult.error, requisitionResult.error, productionOrderResult.error].filter(Boolean)
-      if (refErrors.length) setError('Falha ao carregar referências do pedido: ' + refErrors.map(item => item?.message).join(' | '))
-      setSuppliers((supplierResult.data ?? []) as Row[])
-      setProducts((productResult.data ?? []) as Row[])
-      setRequisitions((requisitionResult.data ?? []) as Row[])
-      setProductionOrders((productionOrderResult.data ?? []) as Row[])
-      setLoadingRefs(false)
+        if (!active) return
+        const refErrors = [supplierResult.error, productResult.error, requisitionResult.error, productionOrderResult.error].filter(Boolean)
+        if (refErrors.length) throw new Error('Falha ao carregar referências do pedido: ' + refErrors.map(item => item?.message).join(' | '))
+        setSuppliers((supplierResult.data ?? []) as Row[])
+        setProducts((productResult.data ?? []) as Row[])
+        setRequisitions((requisitionResult.data ?? []) as Row[])
+        setProductionOrders((productionOrderResult.data ?? []) as Row[])
+      } catch (cause) {
+        if (active) setReferenceError(cause instanceof Error ? cause.message : 'Falha ao carregar as referências do pedido.')
+      } finally {
+        if (active) setLoadingRefs(false)
+      }
     }
     void load()
     return () => { active = false }
@@ -70,12 +74,30 @@ export default function ComprasPedidoForm({ onCancel, onSaved }: { onCancel: () 
     setSaving(true)
     setError(null)
     try {
-      const validItems = items.filter(item => item.produtoId && Number(item.quantidade) > 0 && Number(item.preco) >= 0)
-      if (!header.fornecedorId) throw new Error('Selecione um fornecedor ativo.')
-      if (!validItems.length) throw new Error('Inclua ao menos um produto com quantidade maior que zero.')
-      for (const item of validItems) {
-        if (item.ordemProducaoId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(item.ordemProducaoId)) throw new Error('O vínculo da OP deve ser o UUID válido da ordem de produção.')
+      if (referenceError) throw new Error('As referências do pedido não foram carregadas: ' + referenceError)
+      if (!suppliers.some(row => asText(row, 'id') === header.fornecedorId)) throw new Error('Selecione um fornecedor ativo válido para esta empresa.')
+      if (header.requisicaoId && !requisitions.some(row => asText(row, 'id') === header.requisicaoId)) throw new Error('A requisição selecionada não pertence às referências carregadas desta empresa.')
+      if (!header.condicao.trim()) throw new Error('Informe a condição de pagamento.')
+      const validItems = items
+      if (!validItems.length) throw new Error('Inclua ao menos um item no pedido.')
+      for (const [index, item] of validItems.entries()) {
+        const quantity = Number(item.quantidade)
+        const price = Number(item.preco)
+        const ipi = Number(item.ipi)
+        const icms = Number(item.icms)
+        const line = index + 1
+        if (!item.produtoId || !products.some(row => asText(row, 'id') === item.produtoId)) throw new Error('Selecione um produto válido no item ' + line + '.')
+        if (!Number.isFinite(quantity) || quantity <= 0) throw new Error('Informe uma quantidade maior que zero no item ' + line + '.')
+        if (!Number.isFinite(price) || price < 0) throw new Error('Informe um preço unitário válido no item ' + line + '.')
+        if (!Number.isFinite(ipi) || ipi < 0 || ipi > 100 || !Number.isFinite(icms) || icms < 0 || icms > 100) throw new Error('As alíquotas de IPI e ICMS devem ficar entre 0 e 100 no item ' + line + '.')
+        if (!item.ncm.trim()) throw new Error('Informe o NCM no item ' + line + '.')
+        if (!item.entrega) throw new Error('Informe a data de entrega prometida no item ' + line + '.')
+        if (item.ordemProducaoId && (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(item.ordemProducaoId) || !productionOrders.some(row => asText(row, 'id') === item.ordemProducaoId))) throw new Error('A OP selecionada no item ' + line + ' não é válida para esta empresa.')
       }
+      const freight = Number(header.frete)
+      const discount = Number(header.desconto)
+      if (!Number.isFinite(freight) || freight < 0 || !Number.isFinite(discount) || discount < 0) throw new Error('Frete e desconto devem ser valores válidos e não negativos.')
+      if (discount > subtotal + ipiTotal + icmsTotal + freight) throw new Error('O desconto não pode superar o valor estimado do pedido.')
       const { data: empresaId, error: tenantError } = await supabase.rpc('erp_current_empresa_id')
       if (tenantError) throw tenantError
       if (typeof empresaId !== 'string' || !empresaId) throw new Error('Empresa da sessão autenticada não identificada.')
@@ -99,8 +121,8 @@ export default function ComprasPedidoForm({ onCancel, onSaved }: { onCancel: () 
           referencia_cotacao: header.cotacao.trim() || null,
           modalidade_frete: header.freteTipo,
           transportadora: header.transportadora.trim() || null,
-          valor_frete: Math.max(0, Number(header.frete) || 0),
-          valor_desconto: Math.max(0, Number(header.desconto) || 0),
+          valor_frete: freight,
+          valor_desconto: discount,
           numero_contrato: header.contrato.trim() || null,
           observacoes_recebimento: header.recebimento.trim() || null,
         },
@@ -121,6 +143,7 @@ export default function ComprasPedidoForm({ onCancel, onSaved }: { onCancel: () 
 
   return <section className="compras-panel compras-form-panel compras-order-editor">
     <div className="compras-panel-heading"><div><h2>Novo pedido de compra</h2><p>Cabeçalho, itens industriais e condições comerciais no mesmo formulário.</p></div><button type="button" className="compras-button compras-button--light" onClick={onCancel}><X size={14}/> Cancelar</button></div>
+    {referenceError && <div className="compras-error" role="alert"><strong>Referências indisponíveis.</strong><span>{referenceError}</span></div>}
     {error && <div className="compras-error" role="alert"><strong>Não foi possível concluir.</strong><span>{error}</span></div>}
     {loadingRefs && <div className="compras-loading">Carregando fornecedores, produtos e requisições da empresa autenticada…</div>}
     <form className="compras-form-grid" onSubmit={submit}>
@@ -146,7 +169,7 @@ export default function ComprasPedidoForm({ onCancel, onSaved }: { onCancel: () 
       <div className="compras-order-totals"><span>Subtotal <strong>{brl(subtotal)}</strong></span><span>IPI estimado <strong>{brl(ipiTotal)}</strong></span><span>ICMS estimado <strong>{brl(icmsTotal)}</strong></span><span>Total líquido estimado <strong>{brl(total)}</strong></span></div>
       <label className="compras-field compras-field--full"><span>Observações gerais</span><textarea rows={2} maxLength={3000} value={header.observacoes} onChange={event => setHeader(current => ({...current,observacoes:event.target.value}))} placeholder="Especificações, laudos de qualidade e instruções de entrega"/></label>
       <label className="compras-field compras-field--full"><span>Orientações para recebimento</span><textarea rows={2} maxLength={2000} value={header.recebimento} onChange={event => setHeader(current => ({...current,recebimento:event.target.value}))} placeholder="Conferência de lote, quantidade, nota fiscal e inspeção"/></label>
-      <div className="compras-form-footer"><span>O pedido e os itens são gravados por RPC autenticada, com validação de empresa, fornecedor, produtos e permissão. Impostos são estimativas informadas pelo comprador.</span><button className="compras-button compras-button--primary" type="submit" disabled={saving||loadingRefs||!suppliers.length||!products.length}>{saving?'Salvando…':'Salvar pedido de compra'}</button></div>
+      <div className="compras-form-footer"><span>O pedido e os itens são gravados em uma única RPC autenticada. O servidor deve validar tenant, fornecedor, produtos, requisição, OP e permissão. Impostos exibidos são estimativas; a apuração fiscal definitiva depende das regras tributárias aplicáveis.</span><button className="compras-button compras-button--primary" type="submit" disabled={saving||loadingRefs||Boolean(referenceError)||!suppliers.length||!products.length}>{saving?'Salvando…':'Salvar pedido de compra'}</button></div>
     </form>
   </section>
 }
