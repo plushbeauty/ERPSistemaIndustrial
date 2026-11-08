@@ -1,8 +1,8 @@
 /**
  * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-03
- * @REVISAO: REV-TABLET-CATALOGO-CARIMBO-20261103-01 — cabecalho de autoria/aprovacao adicionado; o catalogo de rotinas do SGQ segue identico
- * @STATUS_APROVACAO: APROVADO PELO PROPRIETARIO (ordem de 2026-11-03: "todas as telas novas vao ter revisao, aprovacao e travamento para o vercel nao pegar mais telas antigas")
+ * @REVISAO: REV-TABLET-TEMPLATE-INSPECAO-20261108-01 — novo card de templates versionados, autorizado na ordem de execução de 2026-11-08
+ * @STATUS_APROVACAO: INCREMENTO ADITIVO AUTORIZADO; rotas e cards aprovados preservados
  */
 import {
   Activity, Archive, Award, BarChart3, BookOpenCheck, Building2, ClipboardCheck, ClipboardList, FileCheck2,
@@ -50,6 +50,7 @@ export const qualityTabletModules: QualityTabletModule[] = [
   { label: 'CEP / cartas de controle', description: 'Controle estatístico e cartas de processo.', route: '/pageprincipal/qualidade/cep', icon: ScrollText },
   { label: 'Inspeções de lotes', description: 'Inspeção de recebimento e controle dimensional de lotes.', route: '/pageprincipal/qualidade/inspecoes', icon: ClipboardCheck },
   { label: 'Inspeção em processo', description: 'Acompanhamento da qualidade durante a produção.', route: '/pageprincipal/qualidade/inspecao-processo', icon: Microscope },
+  { label: 'Templates de inspeção', description: 'Critérios versionados por produto e operação; publicação controlada.', route: '/pageprincipal/qualidade/templates-inspecao', icon: ClipboardList },
   { label: 'Especificações técnicas', description: 'Especificações e critérios técnicos dos produtos.', route: '/pageprincipal/qualidade/especificacoes', icon: FileCheck2 },
   { label: 'Liberação de lotes', description: 'Parecer de qualidade para liberação de lotes.', route: '/pageprincipal/qualidade/liberacao-lote', icon: ShieldCheck },
   { label: 'Quarentena de lotes', description: 'Identificação e acompanhamento de lotes em quarentena.', route: '/pageprincipal/qualidade/quarentena', icon: ShieldAlert },
