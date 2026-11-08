@@ -49,7 +49,7 @@ $$;
 drop policy if exists erp_qualidade_liberacao_lotes_insert_tenant on public.erp_qualidade_liberacao_lotes;
 drop policy if exists erp_qualidade_liberacao_lotes_update_tenant on public.erp_qualidade_liberacao_lotes;
 grant select on public.erp_qualidade_liberacao_lotes to authenticated;
-revoke insert, update, delete on public.erp_qualidade_liberacao_lotes from authenticated;
+revoke insert, update, delete on public.erp_qualidade_liberacao_lotes from public, anon, authenticated;
 
 -- 2) Função interna: valida tenant/identidade/nivel_admin, altera o lote operacional,
 -- registra o parecer e grava a trilha SGQ na mesma transação.
