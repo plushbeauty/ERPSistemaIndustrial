@@ -1693,11 +1693,11 @@
     },
     {
       "path": "src/pages/qualidade/QualidadeLiberacaoLotes.tsx",
-      "sha": "3df75cfd4144166523b1421069f659c4ccc100ab",
+      "sha": "438a6c3db3f227e0106e5e157a506e2ea5125b6c",
       "autor": "FernandoSch",
-      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o parecer SGQ do lote (ou o registro de pareceres) em A4 com dados reais do banco",
+      "revisao": "REV-SGQ-REL001-20261108-01 — decisão operacional de lote por RPC, FK e trilha SGQ transacional",
       "aprovadaEm": "2026-11-05",
-      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
+      "statusAprovacao": "INCREMENTO FUNCIONAL AUTORIZADO NA ORDEM DE EXECUÇÃO DE 2026-11-08; folha A4 e padrão visual preservados"
     },
     {
       "path": "src/pages/qualidade/QualidadeProcedimentos.tsx",
