@@ -421,7 +421,7 @@
     },
     {
       "path": "src/pages/ComprasPedidoForm.tsx",
-      "sha": "5577d898ec5f1c5360b9c12d016d5954b4235779",
+      "sha": "ae7568ddece2a64f59f1cea97009db44c60ba610",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-COMPRAS-VALIDACAO-PEDIDO-20261108-01 — valida todas as linhas sem descarte silencioso, tenant e referências carregadas, NCM de 8 dígitos, valores não negativos e tributos apresentados sem somar ICMS em duplicidade",
       "aprovadaEm": "2026-11-08",
