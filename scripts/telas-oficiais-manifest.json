@@ -1685,7 +1685,7 @@
     },
     {
       "path": "src/pages/qualidade/QualidadeLiberacaoLotes.tsx",
-      "sha": "cc904b7b17438cb6479313f9cf91ba1594be1c41",
+      "sha": "6494a9b7d4e8ceb0e9784d4fce7afe5b56a692f3",
       "autor": "Fernando Schuinsekel",
       "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o parecer SGQ do lote (ou o registro de pareceres) em A4 com dados reais do banco",
       "aprovadaEm": "2026-11-05",
