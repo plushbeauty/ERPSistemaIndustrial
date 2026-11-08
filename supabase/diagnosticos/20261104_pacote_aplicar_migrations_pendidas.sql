@@ -1,12 +1,14 @@
 -- ============================================================================
 -- SYSNQRA ERP INDUSTRIAL — APLICAR AS MIGRATIONS QUE O BANCO AINDA NAO TEM
--- Gerado em 2026-11-08T22:36:04 por scripts/gerar-pacote-migrations-pendentes.mjs
+-- Gerado em 2026-11-08T23:22:29 por scripts/gerar-pacote-migrations-pendentes.mjs
 -- Origem da lista: contrato medido no banco vivo (scripts/auditar-contrato-banco-vivo.mjs)
 --
 -- Medida no banco de agora: 148 das 176 tabelas que as telas usam existem.
 -- Faltam 28, e todas elas ja tem migration escrita neste repo — o codigo esta na
--- frente do banco. O pacote abaixo contem 28 arquivo(s), copiados sem alteracao,
+-- frente do banco. O pacote abaixo contem 31 arquivo(s), copiados sem alteracao,
 -- em ordem de timestamp e fechadas por dependencia.
+-- Alem das 28 migrations selecionadas por tabelas ausentes, 3 dependencias foram
+-- adicionadas para RBAC de separacao, capacidade finita PCP e isolamento de acabamentos.
 
 --
 -- Como aplicar (uma vez so): SQL Editor do Supabase > New query > colar tudo > Run.
@@ -1302,6 +1304,169 @@ grant select on public.erp_sgq_capa_acoes, public.erp_sgq_auditoria,
 grant insert, update on public.erp_sgq_capa_acoes to authenticated;
 -- <<<<<<<<<<<<<< <<<< 20261004100000_sgq_integrated_erp_v1.sql >>>>
 
+-- >>>>>>>>>>>>>>>>>>>> 20261006140000_erp_stock_separation_atomic_rbac.sql  (reparo de defeito denunciado pelo proprio banco) >>>>>>>>>>>>>>>>>>>>
+begin;
+
+drop policy if exists erp_estoque_separacoes_select on public.erp_estoque_separacoes;
+drop policy if exists erp_estoque_separacoes_insert on public.erp_estoque_separacoes;
+drop policy if exists erp_estoque_separacoes_update on public.erp_estoque_separacoes;
+drop policy if exists erp_estoque_separacoes_delete on public.erp_estoque_separacoes;
+drop policy if exists erp_rastreabilidade_cartoes_select on public.erp_rastreabilidade_cartoes;
+drop policy if exists erp_rastreabilidade_cartoes_insert on public.erp_rastreabilidade_cartoes;
+drop policy if exists erp_rastreabilidade_cartoes_update on public.erp_rastreabilidade_cartoes;
+drop policy if exists erp_rastreabilidade_cartoes_delete on public.erp_rastreabilidade_cartoes;
+drop policy if exists erp_estoque_separacoes_rbac_select on public.erp_estoque_separacoes;
+drop policy if exists erp_rastreabilidade_cartoes_rbac_select on public.erp_rastreabilidade_cartoes;
+
+alter table public.erp_estoque_separacoes enable row level security;
+alter table public.erp_rastreabilidade_cartoes enable row level security;
+
+revoke insert, update, delete on public.erp_estoque_separacoes from authenticated;
+revoke insert, update, delete on public.erp_rastreabilidade_cartoes from authenticated;
+grant select on public.erp_estoque_separacoes to authenticated;
+grant select on public.erp_rastreabilidade_cartoes to authenticated;
+
+create index if not exists idx_erp_estoque_separacoes_empresa_data
+  on public.erp_estoque_separacoes (empresa_id, created_at desc, id desc);
+
+create policy erp_estoque_separacoes_rbac_select
+  on public.erp_estoque_separacoes
+  for select to authenticated
+  using (
+    empresa_id = public.erp_current_empresa_id()
+    and (public.erp_is_master() or public.erp_has_permission('estoque', 'ver'))
+  );
+
+create policy erp_rastreabilidade_cartoes_rbac_select
+  on public.erp_rastreabilidade_cartoes
+  for select to authenticated
+  using (
+    empresa_id = public.erp_current_empresa_id()
+    and (public.erp_is_master() or public.erp_has_permission('estoque', 'ver'))
+  );
+
+create or replace function public.erp_estoque_separar_material(
+  p_ordem_id uuid,
+  p_produto_id uuid,
+  p_lote_id uuid,
+  p_quantidade numeric
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $$
+declare
+  v_empresa uuid := public.erp_current_empresa_id();
+  v_id uuid := gen_random_uuid();
+  v_code text;
+  v_op text;
+  v_final_product_id uuid;
+  v_final_product_code text;
+  v_final_product_name text;
+  v_material_code text;
+  v_material_name text;
+  v_unit text;
+  v_lot_code text;
+  v_supplier_lot text;
+  v_created_at timestamptz := now();
+begin
+  if auth.uid() is null or v_empresa is null then
+    raise exception 'Sessão ou empresa não identificada.' using errcode = '42501';
+  end if;
+  if not (public.erp_is_master() or public.erp_has_permission('estoque', 'movimentar')) then
+    raise exception 'Usuário sem permissão para registrar separações de estoque.' using errcode = '42501';
+  end if;
+  if p_ordem_id is null or p_produto_id is null
+    or p_quantidade is null or p_quantidade <= 0
+    or p_quantidade::text in ('NaN', 'Infinity', '-Infinity') then
+    raise exception 'Informe OP, material e quantidade positiva válida.';
+  end if;
+
+  select coalesce(to_jsonb(o)->>'numero_op', to_jsonb(o)->>'numero', o.id::text),
+         o.produto_id
+    into v_op, v_final_product_id
+    from public.erp_ordens_producao o
+   where o.id = p_ordem_id
+     and o.empresa_id = v_empresa
+   for key share;
+  if not found then
+    raise exception 'Ordem de produção não encontrada nesta empresa.';
+  end if;
+
+  select p.codigo, p.nome
+    into v_final_product_code, v_final_product_name
+    from public.erp_produtos p
+   where p.id = v_final_product_id
+     and p.empresa_id = v_empresa;
+  if not found then
+    raise exception 'Produto final da OP não está cadastrado nesta empresa.';
+  end if;
+
+  select p.codigo, p.nome, p.unidade_medida
+    into v_material_code, v_material_name, v_unit
+    from public.erp_produtos p
+   where p.id = p_produto_id
+     and p.empresa_id = v_empresa
+     and p.ativo = true
+   for key share;
+  if not found then
+    raise exception 'Material ativo não encontrado nesta empresa.';
+  end if;
+
+  if p_lote_id is not null then
+    select l.lote_interno, l.lote_fornecedor
+      into v_lot_code, v_supplier_lot
+      from public.erp_estoque_lotes l
+     where l.id = p_lote_id
+       and l.empresa_id = v_empresa
+       and l.produto_id = p_produto_id
+     for key share;
+    if not found then
+      raise exception 'Lote não encontrado para o material selecionado nesta empresa.';
+    end if;
+  end if;
+
+  v_code := 'SEP-' || upper(replace(v_id::text, '-', ''));
+
+  insert into public.erp_estoque_separacoes (
+    id, empresa_id, ordem_producao_id, produto_id, lote_id,
+    quantidade, status, codigo_barras, created_at
+  ) values (
+    v_id, v_empresa, p_ordem_id, p_produto_id, p_lote_id,
+    p_quantidade, 'SEPARADO', v_code, v_created_at
+  );
+
+  insert into public.erp_rastreabilidade_cartoes (
+    empresa_id, separacao_id, codigo, created_at
+  ) values (
+    v_empresa, v_id, v_code, v_created_at
+  );
+
+  return jsonb_build_object(
+    'id', v_id,
+    'op', v_op,
+    'final_product', coalesce(v_final_product_code, ''),
+    'final_product_name', coalesce(v_final_product_name, ''),
+    'material', coalesce(v_material_code, ''),
+    'material_name', coalesce(v_material_name, ''),
+    'lot', coalesce(v_lot_code, ''),
+    'supplier_lot', coalesce(v_supplier_lot, ''),
+    'quantity', p_quantidade,
+    'unit', coalesce(v_unit, ''),
+    'code', v_code,
+    'created_at', v_created_at
+  );
+end;
+$$;
+
+revoke all on function public.erp_estoque_separar_material(uuid, uuid, uuid, numeric) from public, anon;
+grant execute on function public.erp_estoque_separar_material(uuid, uuid, uuid, numeric) to authenticated;
+
+commit;
+-- <<<<<<<<<<<<<< <<<< 20261006140000_erp_stock_separation_atomic_rbac.sql >>>>
+
+
 -- >>>>>>>>>>>>>>>>>>>> 20261009180000_erp_industrial_engineering_wms_quality_pcp_fiscal_hr.sql  (dependencia: qualidade_fmea exigida por 20261106120000_erp_fmea_plano_controle_aiag_v1.sql) >>>>>>>>>>>>>>>>>>>>
 -- ERP Industrial: engineering, WMS, SGQ, PCP, fiscal costing and HR foundation.
 -- Tenant isolation uses the ERP's established erp_current_empresa_id() contract.
@@ -1764,6 +1929,201 @@ end $$;
 
 commit;
 -- <<<<<<<<<<<<<< <<<< 20261009180000_erp_industrial_engineering_wms_quality_pcp_fiscal_hr.sql >>>>
+
+-- >>>>>>>>>>>>>>>>>>>> 20261009200000_pcp_mrp_capacity_atomic.sql  (reparo de defeito denunciado pelo proprio banco) >>>>>>>>>>>>>>>>>>>>
+begin;
+
+create table if not exists public.pcp_programacao_capacidade (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null default public.erp_current_empresa_id(),
+  ordem_producao_id uuid not null references public.pcp_ordens_producao(id) on delete cascade,
+  centro_trabalho text not null,
+  inicio_planejado timestamptz not null,
+  fim_planejado timestamptz not null,
+  setup_minutos numeric(12,2) not null default 0 check (setup_minutos >= 0),
+  quantidade_planejada numeric(18,6) not null check (quantidade_planejada > 0),
+  prioridade integer not null default 50 check (prioridade between 1 and 100),
+  status text not null default 'planejada' check (status in ('planejada','confirmada','em_execucao','concluida','cancelada')),
+  observacoes text,
+  criado_por uuid,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  check (fim_planejado > inicio_planejado),
+  unique (empresa_id, ordem_producao_id, centro_trabalho, inicio_planejado)
+);
+
+create index if not exists idx_pcp_programacao_centro_tempo
+  on public.pcp_programacao_capacidade (empresa_id, centro_trabalho, inicio_planejado, fim_planejado)
+  where status <> 'cancelada';
+
+create index if not exists idx_pcp_programacao_op
+  on public.pcp_programacao_capacidade (empresa_id, ordem_producao_id, status);
+
+alter table public.pcp_programacao_capacidade enable row level security;
+drop policy if exists tenant_isolation on public.pcp_programacao_capacidade;
+create policy tenant_isolation on public.pcp_programacao_capacidade
+  using (empresa_id = public.erp_current_empresa_id())
+  with check (empresa_id = public.erp_current_empresa_id());
+
+create or replace function public.erp_pcp_validar_tenant_programacao()
+returns trigger
+language plpgsql
+security invoker
+set search_path = public
+as $$
+begin
+  if new.empresa_id is distinct from public.erp_current_empresa_id() then
+    raise exception 'PCP_TENANT_MISMATCH';
+  end if;
+  if not exists (
+    select 1 from public.pcp_ordens_producao op
+     where op.id = new.ordem_producao_id and op.empresa_id = new.empresa_id
+  ) then
+    raise exception 'PCP_OP_FORA_DA_EMPRESA';
+  end if;
+  if new.fim_planejado <= new.inicio_planejado then
+    raise exception 'PCP_INTERVALO_INVALIDO';
+  end if;
+  new.updated_at := now();
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_pcp_validar_tenant_programacao on public.pcp_programacao_capacidade;
+create trigger trg_pcp_validar_tenant_programacao
+before insert or update on public.pcp_programacao_capacidade
+for each row execute function public.erp_pcp_validar_tenant_programacao();
+
+create or replace function public.erp_pcp_mrp_explodir(
+  p_produto_pai_id uuid,
+  p_quantidade numeric
+)
+returns table (
+  produto_id uuid,
+  codigo text,
+  descricao text,
+  nivel integer,
+  necessidade_bruta numeric,
+  saldo_disponivel numeric,
+  necessidade_liquida numeric,
+  perda_estimada numeric
+)
+language plpgsql
+security invoker
+set search_path = public
+as $$
+declare
+  v_empresa uuid := public.erp_current_empresa_id();
+begin
+  if v_empresa is null then raise exception 'PCP_EMPRESA_NAO_IDENTIFICADA'; end if;
+  if p_quantidade is null or p_quantidade <= 0 then raise exception 'PCP_QUANTIDADE_INVALIDA'; end if;
+  if not exists (
+    select 1 from public.engenharia_produtos p
+     where p.id = p_produto_pai_id and p.empresa_id = v_empresa and p.ativo
+  ) then raise exception 'PCP_PRODUTO_FORA_DA_EMPRESA'; end if;
+
+  return query
+  with recursive explosao(componente_id, quantidade_bruta, nivel, caminho, quantidade_liquida_base) as (
+    select c.componente_id,
+           p_quantidade * c.quantidade_bruta,
+           1,
+           array[p_produto_pai_id, c.componente_id]::uuid[],
+           p_quantidade * c.quantidade_liquida
+      from public.engenharia_bom b
+      join public.engenharia_bom_componentes c
+        on c.bom_id = b.id and c.empresa_id = b.empresa_id
+     where b.empresa_id = v_empresa
+       and b.produto_pai_id = p_produto_pai_id
+       and b.status = 'ativo'
+       and b.vigente_desde <= current_date
+       and (b.vigente_ate is null or b.vigente_ate >= current_date)
+    union all
+    select c.componente_id,
+           e.quantidade_bruta * c.quantidade_bruta,
+           e.nivel + 1,
+           e.caminho || c.componente_id,
+           e.quantidade_bruta * c.quantidade_liquida
+      from explosao e
+      join public.engenharia_bom b
+        on b.produto_pai_id = e.componente_id
+       and b.empresa_id = v_empresa
+       and b.status = 'ativo'
+       and b.vigente_desde <= current_date
+       and (b.vigente_ate is null or b.vigente_ate >= current_date)
+      join public.engenharia_bom_componentes c
+        on c.bom_id = b.id and c.empresa_id = b.empresa_id
+     where e.nivel < 20
+       and not c.componente_id = any(e.caminho)
+  ), agregada as (
+    select e.componente_id,
+           max(e.nivel)::integer as nivel,
+           sum(e.quantidade_bruta)::numeric as bruto,
+           sum(greatest(e.quantidade_bruta - e.quantidade_liquida_base, 0))::numeric as perda
+      from explosao e
+     group by e.componente_id
+  ), saldos as (
+    select s.produto_id, sum(s.quantidade)::numeric as quantidade
+      from public.estoque_saldos s
+     where s.empresa_id = v_empresa
+     group by s.produto_id
+  )
+  select p.id, p.codigo, p.descricao_tecnica, a.nivel, a.bruto,
+         coalesce(s.quantidade, 0),
+         greatest(a.bruto - coalesce(s.quantidade, 0), 0),
+         a.perda
+    from agregada a
+    join public.engenharia_produtos p
+      on p.id = a.componente_id and p.empresa_id = v_empresa
+    left join saldos s on s.produto_id = p.id
+   order by a.nivel, p.codigo;
+end;
+$$;
+
+commit;
+-- <<<<<<<<<<<<<< <<<< 20261009200000_pcp_mrp_capacity_atomic.sql >>>>
+
+-- >>>>>>>>>>>>>>>>>>>> 20261010184500_pcp_acabamentos_tenant.sql  (reparo de defeito denunciado pelo proprio banco) >>>>>>>>>>>>>>>>>>>>
+begin;
+create unique index if not exists erp_ordens_producao_empresa_id_id_uq
+  on public.erp_ordens_producao (empresa_id, id);
+
+create table if not exists public.erp_acabamentos (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null references public.erp_empresas(id) on delete restrict,
+  ordem_producao_id uuid not null,
+  posto_trabalho text not null,
+  quantidade_recebida numeric not null check (quantidade_recebida > 0),
+  quantidade_acabada numeric not null check (quantidade_acabada >= 0),
+  quantidade_refugo numeric not null default 0 check (quantidade_refugo >= 0),
+  status text not null default 'EM_PROCESSO'
+    check (status in ('EM_PROCESSO','CONCLUIDO','CANCELADO')),
+  created_by uuid null references public.erp_usuarios(id) on delete set null,
+  created_at timestamptz not null default now(),
+  constraint erp_acabamentos_empresa_op_fk
+    foreign key (empresa_id, ordem_producao_id)
+    references public.erp_ordens_producao (empresa_id, id) on delete restrict,
+  constraint erp_acabamentos_quantidades_ck
+    check (quantidade_acabada + quantidade_refugo <= quantidade_recebida)
+);
+
+create index if not exists erp_acabamentos_empresa_created_idx
+  on public.erp_acabamentos (empresa_id, created_at desc);
+create index if not exists erp_acabamentos_empresa_op_idx
+  on public.erp_acabamentos (empresa_id, ordem_producao_id, created_at desc);
+
+alter table public.erp_acabamentos enable row level security;
+revoke all on public.erp_acabamentos from public, anon;
+grant select, insert, update, delete on public.erp_acabamentos to authenticated;
+drop policy if exists erp_acabamentos_tenant on public.erp_acabamentos;
+create policy erp_acabamentos_tenant on public.erp_acabamentos
+  for all to authenticated
+  using (empresa_id = public.erp_current_empresa_id())
+  with check (empresa_id = public.erp_current_empresa_id());
+notify pgrst, 'reload schema';
+commit;
+-- <<<<<<<<<<<<<< <<<< 20261010184500_pcp_acabamentos_tenant.sql >>>>
+
+
 
 -- >>>>>>>>>>>>>>>>>>>> 20261019150000_erp_qualidade_liberacao_lotes.sql  (tabela ausente no banco: erp_qualidade_liberacao_lotes) >>>>>>>>>>>>>>>>>>>>
 -- MOLDPLÁS ERP INDUSTRIAL — liberação de lotes por empresa
