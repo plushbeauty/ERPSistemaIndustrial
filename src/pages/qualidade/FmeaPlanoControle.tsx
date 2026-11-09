@@ -4,7 +4,7 @@
  * @REVISAO: REV-FMEA-CPP-MAPA-20261108-01 — página única do trio APQP: FMEA (cabeçalho + matriz AIAG), Plano de Controle (CPP) e Mapa de Processo, com geração de um documento a partir do outro e impressão A4 com QR Code
  * @STATUS_APROVACAO: ORDEM EXPLICITA DO PROPRIETARIO EM 2026-11-08 — "veja o FMEA para vc fazer FMEA E Plano de Controle juntos ok e Mapa de Processo ... ai vc junta e elemina os outros"
  * Modelo de dados: FMEA e CPP em 20261106120000_erp_fmea_plano_controle_aiag_v1.sql (que reproduz a pasta
- * FMEA.xlsm enviada pelo proprietário); o mapa do processo em 20261108120000_erp_mapa_processo_v1.sql.
+ * FMEA.xlsm enviada pelo proprietário); o mapa do processo em 20261108230000_erp_mapa_processo_v1.sql.
  * Esta tela substitui src/pages/qualidade/FMEA.tsx e PlanoControle.tsx — as três rotas continuam válidas e
  * abrem a aba correspondente, para não quebrar os QR Codes já impressos.
  */
@@ -287,7 +287,7 @@ function explicarFalha(cause: unknown, migration: string): string {
 }
 
 const MIGRATION_FMEA = '20261106120000_erp_fmea_plano_controle_aiag_v1'
-const MIGRATION_MAPA = '20261108120000_erp_mapa_processo_v1'
+const MIGRATION_MAPA = '20261108230000_erp_mapa_processo_v1'
 
 /* ------------------------------------------------------------- componente */
 
@@ -640,9 +640,11 @@ export default function FmeaPlanoControle() {
     if (!companyId) { setErros(['Empresa ativa não identificada.']); return }
     if (!fmea.id) { setErros(['Salve o cabeçalho do FMEA antes de gravar as linhas de risco.']); return }
     const completas = fmeaLinhas.filter((linha) => linha.codigo_item_processo.trim() && linha.modo_falha.trim() && linha.causa.trim())
-    if (completas.length !== fmeaLinhas.length)
+    if (completas.length !== fmeaLinhas.length) {
       setErros(['Toda linha precisa de item/processo, modo de falha e causa. A planilha do proprietário não aceita linha em branco.'])
-    else setErros([])
+      return
+    }
+    setErros([])
     const alteradas = completas.filter((linha) => !linha.id || fmeaMarcas[linha.id] !== JSON.stringify(linha))
     if (alteradas.length === 0) {
       if (completas.length > 0) setAvisos(['Nenhuma linha alterada desde a última gravação.'])
@@ -801,9 +803,11 @@ export default function FmeaPlanoControle() {
     if (!companyId) { setErros(['Empresa ativa não identificada.']); return }
     if (!plano.id) { setErros(['Salve o cabeçalho do Plano de Controle antes de gravar as linhas.']); return }
     const completas = planoLinhas.filter((linha) => linha.descricao_produto_processo.trim() || linha.processo_operacao_numero.trim())
-    if (completas.length !== planoLinhas.length)
+    if (completas.length !== planoLinhas.length) {
       setErros(['Cada linha precisa de nº da operação ou da descrição do produto/processo.'])
-    else setErros([])
+      return
+    }
+    setErros([])
     const alteradas = completas.filter((linha) => !linha.id || planoMarcas[linha.id] !== JSON.stringify(linha))
     if (alteradas.length === 0) {
       if (completas.length > 0) setAvisos(['Nenhuma linha alterada desde a última gravação.'])
@@ -954,8 +958,11 @@ export default function FmeaPlanoControle() {
     if (!companyId) { setErros(['Empresa ativa não identificada.']); return }
     if (!mapa.id) { setErros(['Salve o cabeçalho do Mapa de Processo antes de gravar as etapas.']); return }
     const completas = mapaEtapas.filter((etapa) => etapa.etapa.trim())
-    if (completas.length !== mapaEtapas.length) setErros(['Toda etapa do fluxo precisa de um nome de etapa.'])
-    else setErros([])
+    if (completas.length !== mapaEtapas.length) {
+      setErros(['Toda etapa do fluxo precisa de um nome de etapa.'])
+      return
+    }
+    setErros([])
     const alteradas = completas.filter((etapa) => !etapa.id || mapaMarcas[etapa.id] !== JSON.stringify(etapa))
     if (alteradas.length === 0) {
       if (completas.length > 0) setAvisos(['Nenhuma etapa alterada desde a última gravação.'])
