@@ -85,26 +85,42 @@ function AccessGate({ children }: { children: ReactNode }) {
         if (!user) { if (alive) setState('denied'); return }
         const { data: profile, error: profileError } = await supabase
           .from('erp_usuarios')
-          .select('id,auth_user_id,empresa_id,ativo,is_master,nivel_admin,perfil,deleted_at')
+          .select('id,auth_user_id,empresa_id,ativo,is_master,nivel_admin,perfil,deleted_at,setor_id')
           .eq('auth_user_id', user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
         if (profileError) throw profileError
-        let master = false
-        let empresaId = profile?.empresa_id ?? null
-        if (profile?.auth_user_id === user.id) {
-          master = profile?.is_master === true && Number(profile?.nivel_admin ?? 0) >= 100 && String(profile?.perfil ?? '').trim().toUpperCase() === 'MASTER' && profile?.empresa_id === null
-        } else {
-          const { data: global, error: globalError } = await supabase.from('usuarios').select('id,auth_user_id,ativo,nivel_admin,perfil,empresa_id').eq('auth_user_id', user.id).eq('ativo', true).maybeSingle()
-          if (globalError) throw globalError
-          const globalRole = String(global?.perfil ?? '').trim().toUpperCase()
-          master = Boolean(global?.auth_user_id) && Number(global?.nivel_admin ?? 0) >= 100 && ['SUPER_ADMIN','MASTER','MASTER_ADMIN'].includes(globalRole) && global?.empresa_id === null
-          empresaId = global?.empresa_id ?? null
+        const perfil = String(profile?.perfil ?? '').trim().toUpperCase()
+        const nivel = Number(profile?.nivel_admin ?? 0)
+        if (!profile || profile.auth_user_id !== user.id) {
+          if (alive) setState('denied')
+          return
         }
-        if (!profile?.auth_user_id && !master) { if (alive) setState('denied'); return }
-        if (!master && !empresaId) { if (alive) setState('denied'); return }
+
+        const master = profile.is_master === true &&
+          perfil === 'MASTER' &&
+          nivel >= 100 &&
+          profile.empresa_id === null &&
+          (profile.setor_id === null || profile.setor_id === undefined)
+
+        if (profile.is_master === true || perfil === 'MASTER' || nivel >= 100) {
+          if (!master) throw new Error('ERP_IDENTIDADE_MASTER_INCONSISTENTE')
+        }
+
         if (!master) {
-          const { data: empresa, error: empresaError } = await supabase.from('erp_empresas').select('id,ativo').eq('id', empresaId).eq('ativo', true).maybeSingle()
+          if (!profile.empresa_id) {
+            if (alive) setState('denied')
+            return
+          }
+          const { data: empresa, error: empresaError } = await supabase
+            .from('erp_empresas')
+            .select('id,ativo')
+            .eq('id', profile.empresa_id)
+            .eq('ativo', true)
+            .maybeSingle()
           if (empresaError) throw empresaError
-          if (!empresa?.ativo) { if (alive) setState('denied'); return }
+          if (!empresa?.ativo) {
+            if (alive) setState('denied')
+            return
+          }
         }
         if (alive) setState('allowed')
       } catch (error) {
@@ -130,6 +146,6 @@ export default function AppBootstrap() {
   if (path === '/cadastro-master') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo cadastro Master…" />}><SetupADMInicial /></Suspense></BootstrapBoundary>
   if (path === '/' || path === '/home') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo SYSNQRA ERP & SGQ INDUSTRIAL…" />}><PublicIndustrialHome /></Suspense></BootstrapBoundary>
   const app = <BootstrapBoundary><Suspense fallback={<Loading />}><AppEntryV2 /></Suspense></BootstrapBoundary>
-  const isPublic = publicPaths.has(path) || path.startsWith('/modulos/')
+  const isPublic = publicPaths.has(path)
   return isPublic ? app : <AccessGate>{app}</AccessGate>
 }
