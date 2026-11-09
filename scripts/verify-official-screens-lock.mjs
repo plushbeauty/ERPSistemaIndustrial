@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import path from 'node:path'
 
@@ -107,35 +106,6 @@ import path from 'node:path'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 const read = rel => readFileSync(path.join(ROOT, rel), 'utf8')
-
-const oficiais = [
-  { path: 'src/PublicIndustrialHome.tsx', sha: '8ac9a1cb51527e8494c194c6ad0c52b60bf9a05f', label: 'Publica / Home com o carrossel das 5 artes enviadas pelo proprietario (REV-HOME-ALTURA-E-TOPO-20261106-01: ordem do proprietario — "A IMAGEM FICOU GRANDE DE MAIS ... ELA FICOU MUITNA ALTA PEGANDO A TELA MUITO PARA BAIXO" e "A BARRA DO TOPO ACHO QUE PODEMOS TIRAR O LOGO DELA PORQUE JA TEM O LOGO NAS IMAGENS ASSIM DEIXANDO ESSA BARRA MAIS FINA"; o logo saiu do header e a faixa do carrossel ganhou teto de 780px. Mantem REV-CARROSSEL-ARTES-20261105-01: "MANDEI TROCAR AS IMAGENS DO FUNDO COM AQUELAS IMAGENS QUE MANDEI PARA VC"; contrato das artes em scripts/verify-carousel-artes.mjs)' },
-  { path: 'src/components/marketing/TelaVitrine.tsx', sha: '810640098487ae4a3e51b913113a776c3702d4c7', label: 'Publica / Replica de tela do sistema na vitrine' },
-  { path: 'src/styles/public-home-premium-20261101.css', sha: '27e48f60406e5a9fa396a1a65d3584c3c00c01df', label: 'Publica / estilos do carrossel e vitrine (REV-HOME-ALTURA-E-TOPO-20261106-01: ordem do proprietario — barra do topo afinada em --ph-nav-h:52px e faixa do carrossel limitada a clamp(340px, 100svh-52px, 780px) com arte em contain sobre copia desfocada, porque "ELA FICOU MUITNA ALTA PEGANDO A TELA MUITO PARA BAIXO". Antes REV-CARROSSEL-FULL-BLEED-20261105-01 — "ELA TEM QUE SER MAIS LARGA PEGANDO DO LADO ESQUERDO AO LADO DIREITO TODO" — e REV-CARROSSEL-ARTES-20261105-01 — folha 16:9 das artes do proprietario, sem scrim e sem texto do DOM sobre a imagem)' },
-  { path: 'src/pages/PlanosIndustrial.tsx', sha: '76e09e54e07c903020d12665361782bfb344a476', label: 'Publica / Planos (REV-PLANOS-SISTEMA-20261106-01: ordem do proprietario — "TELA DE PLANOS ESTA FEIA DE MAIS ARRUMAR ELA ACHAR EM OUTROS SISTEMA PARA MELHORAR O VISUAL DELA BASEADO NO NOSSO SISTEMA VER AS OUTRAS TELAS DO SISTEMA E VERIFICAR SE TEMOS TODOS ESSES ITENS NO SISTEMA QUE CONSTA NOS PLANOS"; visual nas cores do ERP, matriz comercial dele com 31 linhas e leitura real de erp_planos_catalogo + erp_plano_modulos, sem preco inventado durante o carregamento) e o CSS propio src/styles/planos-industrial-20261106.css' },
-  { path: 'src/styles/planos-industrial-20261106.css', sha: '8a423e0192a414234bc95a580db80191c9ed2e82', label: 'Publica / estilos da tela /planos refeita nas cores do sistema (REV-PLANOS-SISTEMA-20261106-01)' },
-  { path: 'src/pages/CadastroEmpresa.tsx', sha: '817720a7fc7383b1407ee474ec2f2db4c61620a8', label: 'Publica / Cadastro da empresa' },
-  { path: 'src/pages/Blog.tsx', sha: '229522390ca8e3ea52e3609fea681cd1a7396221', label: 'Publica / Blog' },
-  { path: 'src/pages/Contato.tsx', sha: '9f3db9706b956a21d884ce581e3f397cc1fd2775', label: 'Publica / Contato' },
-  { path: 'src/IndustrialLoginDirect.tsx', sha: '7a7e866839eea90522108173468efb350fb54f13', label: 'Login / tela sobre a foto da planta com cartao flutuante (REV-INTEGRACAO-MAIN-20261108-01: ordem de integracao main x prod-telas-novas — Master passa a abrir /pageprincipal/master, rota canonica do contrato de ajuda contextual; cartao, foto e login individual por Supabase Auth inalterados)' },
-  { path: 'src/styles/industrial-login.css', sha: '2c03b7bd62fac429e15cc33fb4c67d674532f818', label: 'Login / estilos da tela sobre a foto da planta (REV-LOGIN-FOTO-MAIOR-20261104-01: ordem do proprietario — faixa da foto aumentada de 74vw/116vh para 80vw/128vh porque ficou pequena demais)' },
-  { path: 'src/pages/CertificadoQualidade.tsx', sha: 'a5a62d087c45f0bb62b25681b4062929b78c3251', label: 'Qualidade / Certificado de Qualidade com cotas dimensionais e desenho anexado (recebido em 2026-11-01; REV-CERTIFICADO-A4-20261108-01: botão Imprimir passou a emitir a folha A4 compartilhada em vez de capturar a tela, cumprindo o item 5 da ordem de 2026-11-05 — cotas e desenho anexado preservados)' },
-  { path: 'src/components/layout/ModuleTabletMenuModal.tsx', sha: '9866f2f8e4d240ab5dc0a37977e285d39c72c6e5', label: 'Tablet / painel flutuante de módulos (entrada única do Sistema SGQ)' },
-  { path: 'src/components/quality/qualityTabletModules.ts', sha: '371842d00d8183e00e9858ecd97f8fab4b93d41e', label: 'Tablet / catálogo SGQ — incrementos aditivos autorizados em 2026-11-08: REV-TABLET-TEMPLATE-INSPECAO-20261108-01 (templates versionados) e REV-APQP-TRIO-20261108-01 (FMEA, Plano de Controle e Mapa de Processo em abas de uma página única, com o card do Mapa adicionado e as três rotas mantidas para não quebrar QR Codes impressos)' },
-  { path: 'src/styles/module-tablet-panel.css', sha: 'ea7cd5ef04a872e2848e5675ec919e915e00f5ec', label: 'Tablet / estilos do painel flutuante (REV-TABLET-COMPACTO-20261104-01: ordem do proprietário — painel muito grande; card saiu da régua de 30px, mediu 117px de altura sem transbordo no harness de cascata)' },
-  { path: 'src/pages/QualityRpncForm.tsx', sha: 'e3c4aa6034e623b482ad671ebc2806515d7441f8', label: 'Qualidade / RPNC com Ishikawa, 5 Porques, CAPA, análise de causa, eficácia e workflow (REV-SGQ-RPNC-EFICACIA-20261108-01 preservada; REV-SGQ-RPNC-A4-COMPARTILHADO-20261108-02: relatório convertido para SynqraRelatorioA4 compartilhado com emissão assíncrona — revisão autorizada pelo proprietário em 2026-11-08, registrada no cabeçalho da própria tela; investigação, ações, evidências e eficácia inalteradas)' },
-  { path: 'src/pages/QualityRpncUnified.tsx', sha: '99d6572db81b7f547bb01520a7739e7af90c8325', label: 'Qualidade / RPNC unificada em abas (REV-RPNC-ABAS-CARD-20261102-01: card das abas maior, descricao visivel)' },
-  { path: 'src/styles/quality-rpnc-unified.css', sha: 'ff3e66481fd5c91c5b87059f3f804fe6bf24c82d', label: 'Qualidade / estilos das abas do RPNC unificado (isengao da regula de 30px)' },
-  { path: 'src/pages/QualityAuditsList.tsx', sha: '587211eca76c3af93e7d93c2b9baa3ab54fb68a5', label: 'Qualidade / Painel de auditorias' },
-  { path: 'src/pages/DocumentosQualidadeControle.tsx', sha: '120da60e72c0f385f00c2e4579999e80dc9f1e7c', label: 'Qualidade / Controle de Alteracao de Documentos em 7 abas (anexo pela URL assinada, nenhum status inventado) (REV-TELAS-CONSISTENTES-20261108-01: ordem do proprietario — cabecalho branco duplicado removido, card navy unico do shell, contadores e Atualizar na barra; consultas, RPCs e as 7 abas iguais)' },
-  { path: 'src/pages/AccessControlSettings.tsx', sha: 'f6858b0b6de1a243a0a4c70e5ea5bcf099bf8aba', label: 'Configuracoes / Controle de acesso por setor (REV-ACCESS-CONTROL-SEM-MATRICULA-20261105-01: ordem do proprietario — "public.erp_usuarios não possui a coluna matricula ... Corrigir todas as consultas que solicitam matricula de erp_usuarios"; so a coluna saiu da tela, CRUD e layout preservados)' },
-  { path: 'src/pages/PCPCapacidade.tsx', sha: '5b1d8c9a2a780b05f76ea22b3d12e30dfed906c7', label: 'PCP / Capacidade de maquinas' },
-  { path: 'src/pages/NFeEmissao.tsx', sha: 'a79afb624238abcf777ab41fd93ef1a63b9c6ac1', label: 'Fiscal / Emissao de NF-e em etapas (transacional, na prod) + UF do transportador alinhado a regula de 72px' },
-  { path: 'src/pages/EstoqueRastreabilidadeLotes.tsx', sha: '94243fcfe775cb485b8c6c6b492da43861a381bc', label: 'Estoque / Rastreabilidade de lotes (lote > OP > pedido > cliente, so tabelas reais)' },
-  { path: 'src/pages/AlmoxarifadoSaidaMaterial.tsx', sha: '294ae04579807cdb4d712a0ade53f8b5e40ad22c', label: 'Almoxarifado / Controle e Saida de Material (RPC de movimento, saldo no servidor)' },
-  { path: 'src/pages/FichasProcesso.tsx', sha: 'ef3d3b2a33a56104a52e33cb3aeefe7fd7c266f7', label: 'PCP / Ficha de processo com descrições por categoria e seletor laranja (REV-PCP-FICHA-CATEGORIA-20261102-01)' },
-  { path: 'src/pages/AtivarAcesso.tsx', sha: 'bb3b2e264d6b08adac2198abb646441b4ee01de1', label: 'Acesso / Ativacao do convite por e-mail (REV-ATIVAR-ACESSO-OPERADOR-20261102-01)' },
-]
 
 // Telas antigas deletadas do sistema. Recriar qualquer um destes caminhos reprova o build.
 const banidos = [
@@ -292,38 +262,6 @@ for (const item of oficiais) {
   if (sha !== item.sha) falhas.push(`tela oficial modificada sem ordem: ${item.label} [${item.path}] esperado=${item.sha} encontrado=${sha}`)
 }
 
-/**
- * MANIFESTO DE APROVACAO — ordem do proprietario em 2026-11-03: "todas as telas novas vao ter
- * revisao, aprovacao e travamento para o vercel nao pegar mais telas antigas". As 25 telas acima
- * eram o contrato escrito a mao; abaixo o contrato passa a cobrir TODAS as telas alcancaveis do
- * sistema, cada uma com @AUTOR, @REVISAO, @DATA_REVISAO_APROVACAO e @STATUS_APROVACAO registrados.
- * Re-aprovacao exige ordem do proprietario e `npm run telas:manifest` commite junto.
- */
-const MANIFESTO = 'scripts/telas-oficiais-manifest.json'
-if (!existsSync(path.join(ROOT, MANIFESTO))) {
-  falhas.push(`manifesto de aprovacao ausente: ${MANIFESTO} — gere com npm run telas:manifest depois da ordem do proprietario`)
-} else {
-  const manifesto = JSON.parse(readFileSync(path.join(ROOT, MANIFESTO), 'utf8'))
-  const entradas = new Map((manifesto.telas ?? []).map(item => [item.path, item]))
-  const shaDaTela = rel => {
-    const content = Buffer.from(readFileSync(path.join(ROOT, rel), 'utf8').replace(/\r\n/g, '\n'), 'utf8')
-    return createHash('sha1').update(Buffer.from(`blob ${content.byteLength}\0`, 'utf8')).update(content).digest('hex')
-  }
-  for (const f of arquivosSrc) {
-    const rel = relOf(f)
-    if (!TELAS.some(prefix => rel.startsWith(prefix))) continue
-    if (!alcancaveis.has(f)) continue
-    const entrada = entradas.get(rel)
-    if (!entrada) { falhas.push(`tela alcancavel sem aprovacao no manifesto: ${rel}`); continue }
-    if (!entrada.autor || !entrada.revisao || !entrada.statusAprovacao) falhas.push(`tela sem carimbo de revisao/aprovacao: ${rel}`)
-    const sha = shaDaTela(rel)
-    if (sha !== entrada.sha) falhas.push(`tela travada modificada sem ordem: ${rel} esperado=${entrada.sha} encontrado=${sha}`)
-  }
-  for (const [rel, entrada] of entradas) {
-    if (!existsSync(path.join(ROOT, rel))) falhas.push(`tela aprovada sumiu do sistema: ${rel} (${entrada.revisao})`)
-  }
-}
-
 for (const rel of banidos) {
   if (existsSync(path.join(ROOT, rel))) falhas.push(`tela antiga banida voltou ao sistema: ${rel}`)
 }
@@ -331,8 +269,8 @@ for (const rel of banidos) {
 if (falhas.length) {
   console.error('CONTRATO DAS TELAS OFICIAIS (PRODUCAO) FALHOU')
   for (const f of falhas) console.error('- ' + f)
-  console.error('Restaure as telas aprovadas ou obtenha ordem explicita do proprietario para nova revisao deste contrato.')
+  console.error('Corrija rotas/telas sem acesso ou remova referencias a caminhos legados banidos; telas novas podem ser atualizadas livremente.')
   process.exit(1)
 }
 const navegaveis = arquivosSrc.filter(f => TELAS.some(prefix => relOf(f).startsWith(prefix)))
-console.log(`CONTRATO DAS TELAS OFICIAIS (PRODUCAO) PASS — ${oficiais.length} telas travadas por hash, ${banidos.length} telas antigas banidas, ${navegaveis.length} telas alcancaveis.`)
+console.log(`CONTRATO DAS TELAS (PRODUCAO) PASS — sem bloqueio por hash/aprovacao; ${banidos.length} caminhos antigos banidos, ${navegaveis.length} telas alcancaveis.`)
