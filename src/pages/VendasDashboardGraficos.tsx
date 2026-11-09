@@ -5,7 +5,7 @@
  * @STATUS_APROVACAO: REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-09 — build e conferência de dados pendentes.
  */
 import { useEffect, useMemo, useState } from 'react'
-import { Activity, BarChart3, CircleDollarSign, ClipboardList, RefreshCw, TrendingUp, Users } from 'lucide-react'
+import { Activity, CircleDollarSign, ClipboardList, RefreshCw, TrendingUp, Users } from 'lucide-react'
 import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart,
   ResponsiveContainer, Tooltip, XAxis, YAxis,
@@ -25,7 +25,6 @@ type Pedido = {
   observacoes: string | null
   pedido_cliente: string | null
 }
-type Cliente = { id: string; nome: string | null; nome_fantasia: string | null }
 
 const brl = (value: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
 const monthValue = () => {
@@ -54,6 +53,7 @@ const palette = ['#123B50', '#2D8DB8', '#48B7C7', '#3A9D78', '#E6A34A', '#D65B61
 export default function VendasDashboardGraficos() {
   const [orders, setOrders] = useState<Pedido[]>([])
   const [testCount, setTestCount] = useState(0)
+  const [customerNames, setCustomerNames] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [period, setPeriod] = useState<'mes' | 'ano'>('mes')
@@ -74,12 +74,26 @@ export default function VendasDashboardGraficos() {
         .lt('created_at', end)
         .order('created_at', { ascending: true })
         .range(from, to)) as Pedido[]
-      const testRows = loaded.filter(isTestRecord)
-      setTestCount(testRows.length)
-      setOrders(loaded.filter(row => !isTestRecord(row)))
+      const operationalRows = loaded.filter(row => !isTestRecord(row))
+      const customerIds = [...new Set(operationalRows.map(row => row.cliente_id).filter((id): id is string => Boolean(id)))]
+      const names: Record<string, string> = {}
+      if (customerIds.length) {
+        const customers = await supabase.from('erp_clientes')
+          .select('id,nome,nome_fantasia,razao_social')
+          .eq('empresa_id', String(company.data))
+          .in('id', customerIds)
+        if (customers.error) throw customers.error
+        for (const customer of customers.data ?? []) {
+          names[customer.id] = customer.nome_fantasia || customer.nome || customer.razao_social || 'Cliente sem nome'
+        }
+      }
+      setCustomerNames(names)
+      setTestCount(loaded.length - operationalRows.length)
+      setOrders(operationalRows)
     } catch (cause) {
       setOrders([])
       setTestCount(0)
+      setCustomerNames({})
       setError(cause instanceof Error ? cause.message : 'Falha ao consultar os pedidos de venda.')
     } finally {
       setLoading(false)
@@ -99,7 +113,7 @@ export default function VendasDashboardGraficos() {
       const value = Number(row.total ?? 0) || 0
       const status = (row.status || 'Sem status').trim()
       const seller = row.vendedor_nome?.trim() || 'Não informado'
-      const customer = row.cliente_id || 'Sem cliente'
+      const customer = row.cliente_id ? (customerNames[row.cliente_id] ?? 'Cliente não identificado') : 'Sem cliente vinculado'
       const daily = byDay.get(day) ?? { dia: day, pedidos: 0, valor: 0 }
       daily.pedidos += 1; daily.valor += value; byDay.set(day, daily)
       byStatus.set(status, (byStatus.get(status) ?? 0) + 1)
@@ -116,7 +130,7 @@ export default function VendasDashboardGraficos() {
       total: orders.reduce((sum, row) => sum + (Number(row.total ?? 0) || 0), 0),
       pending: orders.filter(row => !['faturado', 'cancelado', 'concluido', 'concluído'].includes((row.status ?? '').toLowerCase())).length,
     }
-  }, [orders])
+  }, [orders, customerNames])
 
   const empty = !loading && !error && orders.length === 0
   const ChartEmpty = ({ children }: { children: string }) => (
@@ -128,6 +142,7 @@ export default function VendasDashboardGraficos() {
       title="Dashboard de vendas"
       subtitle="Indicadores e gráficos calculados a partir dos pedidos comerciais reais"
       onRefresh={() => void load()}
+      showStatusCards={false}
     >
       <div className="sales-workspace space-y-4">
         <section className="sales-page-heading">
