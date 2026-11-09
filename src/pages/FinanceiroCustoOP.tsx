@@ -101,8 +101,8 @@ export default function FinanceiroCustoOP() {
         .eq('empresa_id', empresaId).eq('produto_id', selectedOrder.produto_id)
         .eq('ativa', true).order('versao', { ascending: false }).limit(1).maybeSingle()
       if (ficha.error) throw ficha.error
-      const fichaId = ficha.data?.id
-      if (!fichaId) throw new Error('A OP não possui ficha técnica ativa. O consumo de material foi bloqueado para evitar apontamento fora da BOM.')
+      if (!ficha.data?.id) throw new Error('A OP não possui ficha técnica ativa. O consumo de material foi bloqueado para evitar apontamento fora da BOM.')
+      const fichaId = ficha.data.id
       const fichaRows = await fetchAllPages<FichaItem>((from, to) => supabase.from('erp_ficha_itens')
         .select('produto_id,quantidade,perda_percentual', { count: 'exact' })
         .eq('ficha_id', fichaId).range(from, to))

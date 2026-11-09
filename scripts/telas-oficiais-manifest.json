@@ -661,7 +661,7 @@
     },
     {
       "path": "src/pages/FinanceiroCustoOP.tsx",
-      "sha": "e7191872141e8bbd9a84ad9a10c6eedff13404ed",
+      "sha": "7d6bfa3917cd28e759c9193210e4d0ff0beb8715",
       "autor": "FernandoSch",
       "revisao": "REV-FINANCEIRO-CUSTO-OP-REAL-20261108-01 — consumo real por OP, mão de obra dos apontamentos, overhead e margem",
       "aprovadaEm": "2026-11-08",
@@ -1111,9 +1111,9 @@
       "path": "src/pages/QualidadeInspecoesIndustrial.tsx",
       "sha": "b040e5a250f767656f9a5860224fd2a2ed6c1544",
       "autor": "FernandoSch",
-      "revisao": "REV-INSPECOES-IMPORT-PLUS-20261108-01 — correção não visual de import ausente; consulta, fluxo e layout preservados",
-      "aprovadaEm": "2026-11-04",
-      "statusAprovacao": "CORREÇÃO TÉCNICA NÃO VISUAL AUTORIZADA PELA ORDEM DE EXECUÇÃO DE 2026-11-08; APROVAÇÃO VISUAL ORIGINAL PRESERVADA."
+      "revisao": "REV-INSPECOES-IMPORT-PLUS-20261108-01 — corrigido import do ícone Plus ausente; nenhuma alteração visual, de consulta ou de fluxo",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "CORREÇÃO TÉCNICA NÃO VISUAL; APROVAÇÃO E CONTRATO VISUAL ANTERIORES PRESERVADOS"
     },
     {
       "path": "src/pages/QualidadeInstrumentosCadastro.tsx",
@@ -1167,9 +1167,9 @@
       "path": "src/pages/QualidadeRPNCMultiorigem.tsx",
       "sha": "8e3f0b1809ebd8e237513eea9c9f2e0b024dfac9",
       "autor": "FernandoSch",
-      "revisao": "REV-RPNC-MULTIORIGEM-A4-20261108-01 — relatório multiorigem emitido pela folha SynqraRelatorioA4 compartilhada",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "INCREMENTO DE IMPRESSÃO A4 COMPARTILHADA AUTORIZADO PELA ORDEM DO PROPRIETÁRIO DE 2026-11-08; formulário, dados e navegação preservados."
+      "revisao": "REV-RPNC-MULTIORIGEM-A4-20261108-01 — relatório de não conformidade emitido pelo SynqraRelatorioA4 compartilhado; fluxo e dados preservados",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "INCREMENTO DE IMPRESSAO A4 AUTORIZADO PELA ORDEM DO PROPRIETARIO DE 2026-11-08; PADRAO DE ABERTURA E FLUXO PRESERVADOS"
     },
     {
       "path": "src/pages/QualidadeRPNCTratamento.tsx",
@@ -1207,9 +1207,9 @@
       "path": "src/pages/QualityRpncForm.tsx",
       "sha": "e3c4aa6034e623b482ad671ebc2806515d7441f8",
       "autor": "FernandoSch",
-      "revisao": "REV-SGQ-RPNC-A4-COMPARTILHADO-20261108-02 — relatório RPNC emitido pela folha SynqraRelatorioA4; workflow e evidências preservados",
+      "revisao": "REV-SGQ-RPNC-A4-COMPARTILHADO-20261108-02 — relatório RPNC convertido para SynqraRelatorioA4 compartilhado; investigação, ações, evidências e eficácia preservadas",
       "aprovadaEm": "2026-11-08",
-      "statusAprovacao": "INCREMENTO DE IMPRESSÃO A4 COMPARTILHADA AUTORIZADO PELA ORDEM DO PROPRIETÁRIO DE 2026-11-08; dados, RLS e workflow preservados; migrations e Storage ainda exigem aplicação/validação."
+      "statusAprovacao": "REVISAO AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA INTEGRAR A RPNC COMPLETA; IMPRESSAO A4 COMPARTILHADA AUTORIZADA; MIGRATIONS E STORAGE AINDA EXIGEM APLICACAO E VALIDACAO NO SUPABASE"
     },
     {
       "path": "src/pages/QualityRpncUnified.tsx",
