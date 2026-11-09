@@ -26,7 +26,7 @@ type MenuItem = {
  */
 const carimboBuild = `${__SYNQRA_CARIMBO__.branch}/${__SYNQRA_CARIMBO__.commit.slice(0, 7)}`
 const dataDoCommit = __SYNQRA_CARIMBO__.quando.slice(0, 10)
-const buildForaDaLinhagem = __SYNQRA_CARIMBO__.ambiente === 'production' && __SYNQRA_CARIMBO__.branch !== __SYNQRA_CARIMBO__.branchOficial
+const buildForaDaLinhagem = __SYNQRA_CARIMBO__.ambiente === 'production' && !__SYNQRA_CARIMBO__.branchesDeProducaoPermitidas.includes(__SYNQRA_CARIMBO__.branch)
 
 const menus: MenuItem[] = [
   { label: 'Financeiro', route: '/pageprincipal/financeiro', icon: Landmark, children: [
