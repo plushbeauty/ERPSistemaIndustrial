@@ -70,14 +70,14 @@ export default function ERPHeader() {
         onClick={() => navigate('/erp-industrial')}
         title="Central do ERP"
       >
-        <img src="/logo/logo.png" alt="SGQERP Industrial" />
+        <img src="/logo/logo.png" alt="SYSNQRA ERP INDUSTRIAL" />
         <span>
-          <strong>SGQERP INDUSTRIAL</strong>
+          <strong>SYSNQRA ERP INDUSTRIAL</strong>
           <small>Central de controle</small>
         </span>
       </button>
 
-      <div className="synqra-header-title"><strong>Sistema ERP industrial</strong><small>{companyName}</small></div>
+      <div className="synqra-header-title"><strong>SYSNQRA ERP INDUSTRIAL</strong><small>{companyName}</small></div>
 
       <div className="synqra-session">
         <div>
