@@ -381,9 +381,9 @@
     },
     {
       "path": "src/pages/ChaoDeFabricaApontamento.tsx",
-      "sha": "96c903a644e0c23c561bebf9bf52c689657a52b9",
+      "sha": "7ae5ce64b46541b7cb153f81bebc9c0ff27b8254",
       "autor": "FernandoSch",
-      "revisao": "REV-OPERADOR-CARTAO-CPF3-20261108-01 — ordem do proprietário em 2026-11-08: o operador se identifica com o número do cartão + os 3 últimos dígitos do CPF. A conferência saiu do cliente e passou para a RPC security definer erp_operador_identificar_cartao, que valida a empresa da sessão, bloqueia após 8 falhas em 15 minutos e devolve só os dados públicos do crachá (o CPF nunca volta). Agenda, apontamento e ficha de processo inalterados.",
+      "revisao": "REV-OPERADOR-CARTAO-CPF3-20261108-01 — ordem do proprietário em 2026-11-08: o operador se identifica com o número do cartão + os 3 últimos dígitos do CPF. A conferência saiu do cliente e passou para a RPC security definer erp_operador_identificar_cartao, que valida a empresa da sessão, bloqueia após 8 falhas em 15 minutos e devolve só os dados públicos do crachá (o CPF nunca volta). Agenda, apontamento e ficha de processo inalterados. REV-CARTAO-PRODUCAO-INDICADORES-20261109-01 — atualização autorizada em 2026-11-09: indicadores reais de produzidas, refugos e paradas; ações de iniciar/finalizar ampliadas; autenticação, agenda e RPCs preservadas.",
       "aprovadaEm": "2026-11-08",
       "statusAprovacao": "DETERMINADO PELO PROPRIETARIO (\"NAO QUERO ESSA TELA SÓ DE DEMOSTRAÇÃO DEVE VIR UM CAMPO PARA COLOCAR NUMERO DO CARTÁO DE PONTO PARA PUXAR O NOME DO OPERADOR E SUA PROGRAMAÇAO DO PC PARA ELE O QUE VAI TER PARA FAZER NO DIA E NA SEMANA E AS MAQUINAS TER UM ABA PARA ELE PUXAR A FICHA DE PROCESSO DA PEÇA ONLINE\", 2026-11-04) E COMPLEMENTADO EM 2026-11-08 (\"o numero do cartao mais os 3 ultimos numeros do cpf\")"
     },
