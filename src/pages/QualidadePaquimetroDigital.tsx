@@ -1,6 +1,8 @@
 /**
  * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-02
+ * @REVISAO: REV-PAQUIMETRO-TENANT-REVALIDADO-20261109-01 — revisão do proprietário: tabela erp_equipamentos_medicao existente, filtro empresa_id e política RLS confirmados; banco sem instrumentos cadastrados, sem dados demonstrativos.
+ * @STATUS_APROVACAO: CÓDIGO REVISADO; CADASTRO REAL POR EMPRESA, AGUARDANDO DADOS OPERACIONAIS.
  * @REVISAO: REV-METRO-INSTRUMENTOS-20261102-01 — controle de equipamentos de medição ISO 9001 na página do paquímetro
  * @STATUS_APROVACAO: CADASTRO REAL POR EMPRESA; MEDIÇÃO DEMONSTRATIVA REMOVIDA DESTA TELA
  */
