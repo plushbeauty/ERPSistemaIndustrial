@@ -12,7 +12,7 @@ const configuredOrigins = (Deno.env.get('ERP_ALLOWED_ORIGINS') || Deno.env.get('
   .split(',')
   .map((value) => value.trim())
   .filter(Boolean)
-const previewOriginPattern = /^https:\/\/erp-sistema-industrial-[a-z0-9-]+-plushbeauty\.vercel\.app$/
+const previewOriginPattern = /^https:\/\/erp-sistema-industrial-[a-z0-9-]+\.vercel\.app$/
 
 function originAllowed(req: Request) {
   const origin = req.headers.get('Origin')
