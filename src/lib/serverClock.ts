@@ -1,9 +1,7 @@
 /**
  * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-09
- * @REVISAO: REV-RELOGIO-SERVIDOR-RETORNO-TABLE-20261109-01
- * Aceita o contrato atual da RPC, que devolve TABLE(data_servidor, status_sistema, versao_api),
- * e mantém compatibilidade com versões que devolvam um timestamptz escalar.
+ * @REVISAO: REV-RELOGIO-SERVIDOR-RETORNO-TABLE-20261109-02 — ordem do proprietário em 2026-11-09: corrigir o alerta de data inválida no OEE; leitura tolerante a retorno escalar, TABLE, objeto e envelope JSON do PostgREST, sem usar relógio local como substituto.
  */
 import { supabase } from './supabaseClient'
 import { erroBancoNaoInstalado, MIGRACAO_DATA_SERVIDOR } from './supabaseRpcStatus'
@@ -13,13 +11,32 @@ export type RelogioServidor = { agora: Date | null; aviso: string }
 const VALIDADE_MS = 3 * 60 * 1000
 let cache: { agora: Date; obtidoEm: number } | null = null
 
-function extrairDataServidor(dados: unknown): unknown {
-  const linha = Array.isArray(dados) ? dados[0] : dados
-  if (linha && typeof linha === 'object') {
-    const registro = linha as Record<string, unknown>
-    return registro.data_servidor ?? registro.erp_data_servidor ?? registro.agora ?? registro.now
+function extrairDataServidor(dados: unknown, profundidade = 0): unknown {
+  if (profundidade > 5 || dados == null) return null
+  if (Array.isArray(dados)) {
+    for (const item of dados) {
+      const valor = extrairDataServidor(item, profundidade + 1)
+      if (valor != null) return valor
+    }
+    return null
   }
-  return linha
+  if (typeof dados === 'object') {
+    const registro = dados as Record<string, unknown>
+    const chaves = ['data_servidor', 'dataServidor', 'erp_data_servidor', 'agora', 'now', 'current_timestamp', 'result', 'data']
+    for (const chave of chaves) {
+      if (registro[chave] == null) continue
+      const valor = extrairDataServidor(registro[chave], profundidade + 1)
+      if (valor != null) return valor
+    }
+    return null
+  }
+  if (typeof dados === 'string') {
+    const texto = dados.trim()
+    if ((texto.startsWith('{') && texto.endsWith('}')) || (texto.startsWith('[') && texto.endsWith(']'))) {
+      try { return extrairDataServidor(JSON.parse(texto), profundidade + 1) } catch { /* string pode ser o timestamp */ }
+    }
+  }
+  return dados
 }
 
 export async function relogioDoServidor(): Promise<RelogioServidor> {
