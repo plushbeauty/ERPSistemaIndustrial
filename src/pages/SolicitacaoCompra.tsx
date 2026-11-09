@@ -114,7 +114,7 @@ export default function SolicitacaoCompra() {
 
       const permission = await supabase.rpc('erp_has_permission', {
         p_modulo: 'compras',
-        p_acao: 'editar',
+        p_acao: 'criar',
       })
       if (permission.error) throw permission.error
 
