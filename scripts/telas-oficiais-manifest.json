@@ -1253,11 +1253,11 @@
     },
     {
       "path": "src/pages/SolicitacaoCompra.tsx",
-      "sha": "b9b76a8b668121d68da6bd2813156734f8a6f34c",
+      "sha": "9255869fd0bef8bac662fcd7362345ef351149c6",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-SOLICITACAO-COMPRA-RPC-20261109-01 — revisão individual autorizada pelo proprietário em 2026-11-09; código e contrato verificados.",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-SOLICITACAO-COMPRA-RPC-20261109-01 — revisão individual autorizada pelo proprietário em 2026-11-09; código e contrato verificados. REV-COMPRAS-PERMISSAO-CRIAR-20261109-02 — permissão de abertura da tela alinhada a compras.criar, igual à RPC transacional.",
       "aprovadaEm": "2026-11-08",
-      "statusAprovacao": "REVISÃO DO PROPRIETÁRIO EM 2026-11-09 REGISTRADA EM COMMIT INDIVIDUAL; ver observações de completude no cabeçalho. Build pendente."
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-09 — código, permissão e RPC aplicados; validação de build pendente."
     },
     {
       "path": "src/pages/StaffOperatorLogin.tsx",
