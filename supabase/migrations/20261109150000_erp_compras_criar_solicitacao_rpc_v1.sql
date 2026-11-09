@@ -3,6 +3,14 @@
 -- Ordem do proprietário em 2026-11-09: corrigir a tela de Solicitação de Compra.
 -- A RPC estava ausente no banco remoto; a função valida empresa, perfil, permissão,
 -- fornecedor e produtos antes de criar cabeçalho e itens na mesma transação.
+-- Compatibilidade com o cadastro de solicitações já existente: preserva registros antigos.
+alter table public.erp_solicitacoes_compra
+  add column if not exists solicitante_id uuid
+  references public.erp_usuarios(id) on delete set null;
+
+create index if not exists idx_erp_solicitacoes_compra_solicitante
+  on public.erp_solicitacoes_compra(empresa_id, solicitante_id);
+
 create or replace function public.erp_compras_criar_solicitacao(
   p_descricao text,
   p_prioridade text,
