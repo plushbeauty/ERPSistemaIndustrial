@@ -13,6 +13,7 @@ declare const __APP_VERSION__: string
 declare const __SYNQRA_CARIMBO__: {
   contrato: string
   branchOficial: string
+  branchesDeProducaoPermitidas: string[]
   branch: string
   commit: string
   quando: string
