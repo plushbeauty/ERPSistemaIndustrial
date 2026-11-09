@@ -1,6 +1,8 @@
 /**
  * @AUTOR: FernandoSch
- * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @DATA_REVISAO_APROVACAO: 2026-11-09
+ * @REVISAO: REV-ESTORNO-CONTABIL-SOLICITACAO-20261109-01 — revisão do proprietário: RPC real e RLS por empresa conferidos; esta tela registra solicitação e não cancela NF-e nem efetua lançamento contábil.
+ * @STATUS_APROVACAO: CÓDIGO REVISADO; LIMITAÇÃO OPERACIONAL EXPLÍCITA NA TELA.
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
