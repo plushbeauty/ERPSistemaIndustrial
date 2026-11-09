@@ -1,9 +1,9 @@
 /**
- * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-01 — as três consultas do OEE tinham teto de 10.000 linhas e o excedente sumia em silêncio, inflando ou murchando os índices sem aviso. Agora cada consulta pede count:'exact' e a tela assume o truncamento numa faixa âmbar, em vez de apresentar número parcial como se fosse o período inteiro.
+ * @REVISAO: REV-OEE-RELOGIO-SERVIDOR-20261109-01 — ordem do proprietário em 2026-11-09: corrigir a leitura da data do Postgres no helper serverClock e atualizar o cache do PostgREST; banco confirma RPC operacional, mas atualmente existem 0 apontamentos e 0 paradas para alimentar os gráficos. Validação visual autenticada pendente.\n * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-01 — as três consultas do OEE tinham teto de 10.000 linhas e o excedente sumia em silêncio, inflando ou murchando os índices sem aviso. Agora cada consulta pede count:'exact' e a tela assume o truncamento numa faixa âmbar, em vez de apresentar número parcial como se fosse o período inteiro.
  * @AUTOR: FernandoSch
- * @DATA_REVISAO_APROVACAO: 2026-11-04
+ * @DATA_REVISAO_APROVACAO: 2026-11-09
  * @REVISAO: REV-OEE-TABELA-REAL-20261104-01 — o OEE passou a ler erp_apontamentos_processo e erp_producao_paradas (tabelas reais); a janela do período é medida pelo relógio do servidor
- * @STATUS_APROVACAO: AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO (correção do cronograma de 2026-11-03; sem chave real no PC, a conferência visual autenticada não foi feita)
+ * @STATUS_APROVACAO: REVISÃO TÉCNICA AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-09; validação visual autenticada pendente e gráficos dependem de apontamentos/paradas reais. (correção do cronograma de 2026-11-03; sem chave real no PC, a conferência visual autenticada não foi feita)
  */
 import { useEffect, useMemo, useState } from 'react'
 import { Activity, BarChart3, Clock3, Factory, Gauge, RefreshCw, ShieldCheck, TrendingUp } from 'lucide-react'
