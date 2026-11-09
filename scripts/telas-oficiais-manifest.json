@@ -1341,11 +1341,11 @@
     },
     {
       "path": "src/pages/VendasDashboardGraficos.tsx",
-      "sha": "363156faf762bf21de26ee84c702f3b4b996a865",
+      "sha": "3e2e7213b232e381402849dbac37d72d7f03e643",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-DASHBOARD-VENDAS-DADOS-REAIS-20261109-01 — ordem explícita do proprietário em 2026-11-09: indicadores e quatro gráficos de pedidos reais; filtros por empresa e período; exclusão explícita de homologação/teste; sem dados fictícios.",
       "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-09 — implementação registrada; validação de build e dados em andamento."
     },
     {
       "path": "src/pages/VendasLayout.tsx",
