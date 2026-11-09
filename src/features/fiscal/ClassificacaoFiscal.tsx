@@ -1,6 +1,8 @@
 /**
  * @AUTOR: FernandoSch
- * @DATA_REVISAO_APROVACAO: 2026-10-30
+ * @DATA_REVISAO_APROVACAO: 2026-11-09
+ * @REVISAO: REV-CLASSIFICACAO-FISCAL-REVISAO-20261109-01 — revisão do proprietário: consulta e cadastro em erp_classificacao_fiscal com RLS por empresa; sem alíquota presumida; edição e vínculo automático à NF-e continuam fora do escopo desta tela.
+ * @STATUS_APROVACAO: CÓDIGO REVISADO E REGISTRADO EM COMMIT; FUNCIONALIDADE PARCIAL DOCUMENTADA.
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
