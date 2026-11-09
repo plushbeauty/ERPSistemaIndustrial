@@ -1,4 +1,8 @@
-create or replace function public.erp_resolver_login(p_empresa text, p_setor text, p_identificador text)
+=========================================================
+  
+  
+  
+  create or replace function public.erp_resolver_login(p_empresa text, p_setor text, p_identificador text)
 returns table(
   auth_user_id uuid,
   nome text,
