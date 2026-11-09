@@ -16,6 +16,7 @@ const pkgVersion: string = JSON.parse(
 type CarimboDePublicacao = {
   contrato: string
   branchOficial: string
+  branchesDeProducaoPermitidas: string[]
   branch: string
   commit: string
   quando: string
@@ -42,6 +43,7 @@ const consultaGit = (comando: string): string => {
 const carimbo: CarimboDePublicacao = {
   contrato: linhagem.contrato,
   branchOficial: linhagem.branchOficial,
+  branchesDeProducaoPermitidas: linhagem.branchesDeProducaoPermitidas,
   branch: process.env.VERCEL_GIT_COMMIT_REF?.trim() || consultaGit('git rev-parse --abbrev-ref HEAD') || 'desconhecida',
   commit: process.env.VERCEL_GIT_COMMIT_SHA?.trim() || consultaGit('git rev-parse HEAD') || 'desconhecido',
   quando: process.env.VERCEL_GIT_COMMIT_TIMESTAMP?.trim() || consultaGit('git show -s --format=%cI HEAD') || 'desconhecido',
