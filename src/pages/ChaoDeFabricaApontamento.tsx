@@ -165,7 +165,7 @@ export default function ChaoDeFabricaApontamento() {
       machineIds.length
         ? fetchAllPages<Stoppage>((from, to) => supabase.from('erp_producao_paradas')
             .select('id,maquina_id,ordem_producao_id,motivo,inicio,fim,status', { count: 'exact' })
-            .eq('empresa_id', tenant).in('maquina_id', machineIds).eq('status', 'ABERTA').order('inicio', { ascending: false }).order('id').range(from, to))
+            .eq('empresa_id', tenant).in('maquina_id', machineIds).gte('inicio', windowStart.toISOString()).order('inicio', { ascending: false }).order('id').range(from, to))
         : Promise.resolve([] as Stoppage[]),
     ])
     const nextFichas = fichaChunks.flat()
@@ -271,6 +271,11 @@ export default function ChaoDeFabricaApontamento() {
     .sort((a, b) => a.sequencial_operacao - b.sequencial_operacao), [operations, ficha?.id])
   const openEntry = entries.find(item => item.ordem_producao_id === program?.ordem_producao_id && !item.fim_em) ?? null
   const openStoppage = program?.maquina_id ? stoppages.find(item => item.maquina_id === program.maquina_id && !item.fim) ?? null : null
+  const programEntries = useMemo(() => entries.filter(item => item.ordem_producao_id === program?.ordem_producao_id), [entries, program?.ordem_producao_id])
+  const totalGood = programEntries.reduce((sum, item) => sum + Number(item.quantidade_boa ?? 0), 0)
+  const totalScrap = programEntries.reduce((sum, item) => sum + Number(item.quantidade_refugada ?? 0), 0)
+  const programStoppages = stoppages.filter(item => item.maquina_id === program?.maquina_id && (!item.ordem_producao_id || item.ordem_producao_id === program?.ordem_producao_id))
+  const totalStopMinutes = programStoppages.reduce((sum, item) => sum + Math.max(0, Math.round(((item.fim ? new Date(item.fim).getTime() : Date.now()) - new Date(item.inicio).getTime()) / 60000)), 0)
   const planned = Number(program?.quantidade_planejada || order?.quantidade_planejada || order?.quantidade || 0)
   const produced = Number(program?.quantidade_produzida ?? 0)
   const draftedGood = Number(goodQty || 0)
@@ -575,6 +580,11 @@ export default function ChaoDeFabricaApontamento() {
             <h2 className="text-xl font-black text-[#123B50]">Apontamento do dia</h2>
             <p className="mt-2 max-w-md text-sm text-slate-500">Toque em uma tarefa da agenda para abrir a OP, a máquina e os botões de início, parada e finalização.</p>
           </div> : <>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="border-2 border-[#C8E3EE] bg-white p-3 text-center sm:p-4"><p className={label}>Produzidas</p><p className="mt-1 text-2xl font-black tabular-nums text-[#123B50] sm:text-3xl">{numberLabel(totalGood)}</p><p className="text-[10px] font-bold text-slate-500">peças boas</p></div>
+              <div className="border-2 border-rose-200 bg-white p-3 text-center sm:p-4"><p className={label}>Refugo total</p><p className="mt-1 text-2xl font-black tabular-nums text-rose-700 sm:text-3xl">{numberLabel(totalScrap)}</p><p className="text-[10px] font-bold text-slate-500">peças refugadas</p></div>
+              <div className="border-2 border-amber-200 bg-white p-3 text-center sm:p-4"><p className={label}>Parada total</p><p className="mt-1 text-2xl font-black tabular-nums text-amber-700 sm:text-3xl">{numberLabel(totalStopMinutes)}</p><p className="text-[10px] font-bold text-slate-500">minutos registrados</p></div>
+            </div>
             <div className={card + ' p-4'}>
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
                 <h2 className="text-sm font-black uppercase text-[#123B50]">OP ativa · {order?.numero_op ?? '—'}</h2>
@@ -620,8 +630,8 @@ export default function ChaoDeFabricaApontamento() {
                 <textarea className="min-h-[92px] w-full rounded-[4px] border-2 border-slate-300 p-3 text-base outline-none focus:border-[#2D8DB8]" value={observations} onChange={event => setObservations(event.target.value)} placeholder="Defeito, causa, ocorrência, ajuste feito…" />
               </label>
               <div className="mt-4 grid gap-2 md:grid-cols-2">
-                <button type="button" onClick={() => void startProduction()} disabled={saving || !!openEntry || !recipe} className={touchButton + ' border-[#2D8DB8] bg-[#2D8DB8] text-white'}><Play size={22} fill="currentColor" /> {openEntry ? 'JÁ EM ANDAMENTO' : 'INICIAR PRODUÇÃO'}</button>
-                <button type="button" onClick={() => void finishProduction()} disabled={saving || !openEntry} className={touchButton + ' border-[#123B50] bg-[#123B50] text-white'}><Square size={22} fill="currentColor" /> FINALIZAR E ENVIAR</button>
+                <button type="button" onClick={() => void startProduction()} disabled={saving || !!openEntry || !recipe} className={touchButton + ' min-h-[76px] text-lg border-[#2D8DB8] bg-[#2D8DB8] text-white'}><Play size={26} fill="currentColor" /> {openEntry ? 'JÁ EM ANDAMENTO' : 'INICIAR PRODUÇÃO'}</button>
+                <button type="button" onClick={() => void finishProduction()} disabled={saving || !openEntry} className={touchButton + ' min-h-[76px] text-lg border-[#123B50] bg-[#123B50] text-white'}><Square size={26} fill="currentColor" /> FINALIZAR E ENVIAR</button>
                 <button type="button" onClick={() => void registerStoppage()} disabled={saving || !!openStoppage} className={touchButton + ' border-amber-400 bg-amber-50 text-amber-900'}><Wrench size={20} /> REGISTRAR PARADA</button>
                 <button type="button" onClick={() => void closeStoppage()} disabled={saving || !openStoppage} className={touchButton + ' border-rose-300 bg-white text-rose-700'}><Trash2 size={20} /> {openStoppage ? 'ENCERRAR PARADA' : 'SEM PARADA ABERTA'}</button>
               </div>
