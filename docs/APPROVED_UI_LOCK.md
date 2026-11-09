@@ -9,7 +9,7 @@
 | Vendas → Novo Pedido — `src/pages/NovoPedido.tsx` | APROV-005, controles compactos; revisão expressamente autorizada em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | Vendas → Status do pedido — `src/pages/VendasCentral.tsx` | APROV-006, alinhamento dos cards e legenda visível; revisão autorizada em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | Cadastro de Produtos — `src/pages/ProdutosVendasIndustrial.tsx` | Referência aprovada anterior | Hash Git do arquivo verificado no CI |
-| Login institucional — `src/styles/industrial-login.css` | APROV-005, texto institucional branco com contorno escuro | Hash Git do arquivo verificado no CI |
+| Login institucional — `src/styles/industrial-login.css` | APROV-005 / REV-LOGIN-BLOCO-DIREITA-20261102-02: campos brancos com texto preto, caixa estreita encostada à direita na trilha 2 do shell | Hash Git do arquivo verificado no CI |
 | PCP → Submenu de fichas — `src/components/PCPTabletMenuModal.tsx` | Submenu de fichas aprovado em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | Shell horizontal — `src/components/layout/ERPHorizontalShell.tsx` | APROV-014: menu SGQ direto e Paquímetro Digital visível; Central de Compras abre em `/compras` | Hash Git do arquivo verificado no CI |
 | Dashboard industrial — `src/components/IndustrialCommandDashboard.tsx` | Restaurado da referência aprovada em 2026-10-18 | Hash Git do arquivo verificado no CI |
@@ -76,3 +76,36 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - Tablet PCP do operador: registra a revisão do código operacional enviada em 20/10, sem substituir os fluxos reais de apontamento e sessão.
 - Modal do PCP: registra a inclusão do atalho de Programação Gantt solicitada pelo usuário; os módulos e destinos permanecem congelados após esta revisão.
 - O protótipo separado `/pcp/ficha-processo-teste` não substitui a ficha aprovada.
+
+
+## Registro da revisão REV-LOGIN-CAMPOS-PRETOS-20261102-01 — 2026-11-02
+
+- Ordem explícita do proprietário (tarefa #82): texto preto nos campos da tela de login, caixa mais estreita, bloco encostado à direita e escala de abertura menor.
+- `src/styles/industrial-login.css`: campos passam de vidro translúcido com texto branco para fundo branco com texto `#0B1F2A` (inclusive autofill), ícones e alternador de senha escuros; coluna do cartão reduzida de `380–452px` para `300–360px`, conteúdo interno de 396px para 312px, `justify-self: end`; título de 24–29px para 18–21px, campos de 52px para 42px e alturas/margens das pilares, avisos e botões secundários reduzidos.
+- `src/IndustrialLoginDirect.tsx` permanece com o mesmo hash: nenhum markup nem contrato de autenticação mudou — só o CSS.
+- `src/components/auth/FloatingLoginModal.css` recebeu as cores escuras do cartão branco que faltavam (título, labels, pilares, divisor, botões secundários e avisos estavam em texto claro sobre fundo branco no modal).
+- Abaixo de 1040px o cartão volta a ser centralizado, com largura máxima de 380px.
+
+## Registro da revisão REV-LOGIN-BLOCO-DIREITA-20261102-02 — 2026-11-02
+
+- Medição da tela real (1440×900) provou que a revisão anterior não encostava o bloco à direita: o cartão media 582px e deixava 398px à esquerda e 459px à direita, porque `.auth-brand` fica `display:none` na tela cheia e `.auth-panel`, em auto-place, ocupava a trilha larga do grid.
+- Correção em `src/styles/industrial-login.css`: `grid-column: 2` + `justify-self: stretch` no painel e `grid-column: 1` no empilhamento de 1040px. Na medição seguinte o cartão ficou com 360px a 56px da borda (1150px de largura: 340px a 46px).
+- O texto dos campos é escuro sobre branco: a cor final medida é `#17333F` e a fonte 16px, ambas impostas pelas regras globais de legibilidade/anti-zoom de tablet (`src/styles/index.css`), que não foram combatidas para não regredir as demais telas.
+- `IndustrialLoginDirect.tsx` continua com hash `556ae8ec` — nenhuma alteração de markup ou autenticação.
+
+## Registro da revisão REV-OPERADOR-MAQUINAS-CPP-20261108-01 e REV-COMPRAS-VALIDACAO-PEDIDO-20261108-01 — 2026-11-08
+
+- Ordem do proprietário para aplicar os códigos de referência e colocar as páginas novas em funcionamento.
+- Área do Funcionário / Chão de Fábrica: painel responsivo passa a listar cada programação real por máquina/OP, sem esconder OPs concorrentes no mesmo equipamento; seleção leva ao CPP e mantém autenticação, programação e apontamentos por RPC do servidor.
+- Central de Compras / Pedido: todas as linhas são validadas, sem descarte silencioso; referências precisam carregar; NCM é normalizado e exige 8 dígitos; frete/desconto não negativos; ICMS permanece informativo e não é somado novamente ao total estimado.
+- Atualizados os hashes somente dessas duas telas no manifesto scripts/telas-oficiais-manifest.json; nenhuma proteção de telas aprovadas foi desativada.
+- A revisão não altera migrations remotas, permissões do Supabase nem publica diretamente em produção.
+
+## Registro da revisão REV-FLUXO-CAIXA-PAGINACAO-20261108-01 e REV-SGQ-RPNC-EFICACIA-20261108-01 — 2026-11-08
+
+- Fluxo de Caixa: substituída a listagem limitada pela leitura paginada completa, escopo da empresa da sessão e extrato com paginação; CSS isolado no padrão industrial compacto.
+- RPNC: integrada a versão completa com análise de causa, eficácia, transições de workflow, decisão CAPA e rastreabilidade de cliente/lote/auditoria.
+- Incluída a migration de política de upload e trilha de auditoria das evidências no bucket qualidade-evidencias.
+- O manifesto e o hash manual do RPNC foram atualizados deliberadamente; os gates de telas oficiais continuam ativos.
+- A migration transacional de Compras agora valida a requisição no tenant no servidor, exige NCM de 8 dígitos e calcula total-base sem somar ICMS novamente. IPI/ICMS ficam informativos até a implantação das regras fiscais por NCM, CFOP, UF e regime.
+- As migrations estão versionadas no repositório, mas ainda não foram aplicadas ao Supabase remoto; a validação autenticada do banco permanece pendente.

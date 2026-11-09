@@ -1,8 +1,8 @@
 /**
- * @AUTOR: FernandoSchu
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @REVISAO: REV-RPNC-A4-20261108-01 — relatório RPNC emitido pela folha A4 compartilhada
+ * @STATUS_APROVACAO: INCREMENTO DE IMPRESSÃO AUTORIZADO NA ORDEM DE EXECUÇÃO DE 2026-11-08; fluxo RPNC preservado
  */
 /**
  * SYSNQRA ERP INDUSTRIAL — RPNC / Tela A: Abertura e triagem.
@@ -10,10 +10,12 @@
  * Integra a RPC atômica existente e o bucket privado de evidências; sem dados demonstrativos.
  */
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
-import { AlertCircle, CheckCircle2, ClipboardCheck, RefreshCw, Save, ShieldCheck } from 'lucide-react'
+import { AlertCircle, CheckCircle2, ClipboardCheck, Printer, RefreshCw, Save, ShieldCheck } from 'lucide-react'
 import DragDropEvidencias from '../components/qualidade/DragDropEvidencias'
 import QualidadeRPNCTratamento from './QualidadeRPNCTratamento'
 import { supabase } from '../lib/supabaseClient'
+import { abrirRelatorio } from '../lib/report/abrirRelatorio'
+import type { Documento } from '../lib/report/documento'
 
 type Sector = { id: string; nome: string; codigo: string | null }
 type RPNCRecord = {
@@ -184,6 +186,90 @@ export default function QualidadeRPNC() {
     }
   }
 
+
+  const emitirRelatorio = async (record: RPNCRecord) => {
+    if (!companyId) {
+      setError('Empresa da sessão não identificada; relatório não emitido.')
+      return
+    }
+    setError('')
+    try {
+      const result = await supabase.from('erp_rpnc')
+        .select('id,numero_rpnc,descricao_nao_conformidade,status,sgq_origem,sgq_severidade,criado_em,ishikawa_data,cinco_porques,prazo_eficacia_dias,data_verificacao_eficacia,parecer_eficacia,eficacia_aprovada')
+        .eq('id', record.id)
+        .eq('empresa_id', companyId)
+        .single()
+      if (result.error) throw result.error
+      const detalhe = result.data
+      const fishbone = (detalhe.ishikawa_data ?? {}) as Record<string, string[]>
+      const grupos = [
+        ['Metodo', 'Método'],
+        ['Maquina', 'Máquina'],
+        ['Medida', 'Medição'],
+        ['MeioAmbiente', 'Meio ambiente'],
+        ['MaoDeObra', 'Mão de obra'],
+        ['Material', 'Material'],
+      ] as const
+      const causas = grupos.flatMap(([key, label]) =>
+        (Array.isArray(fishbone[key]) ? fishbone[key] : []).map(causa => `${label}: ${causa}`),
+      )
+      const porques = Array.isArray(detalhe.cinco_porques)
+        ? detalhe.cinco_porques.filter((item: unknown): item is string => typeof item === 'string' && item.trim().length > 0)
+        : []
+      const eficacia = detalhe.eficacia_aprovada === true
+        ? 'Eficaz'
+        : detalhe.eficacia_aprovada === false
+          ? 'Ineficaz'
+          : 'Pendente'
+      const blocos: Documento['blocos'] = [
+        {
+          tipo: 'campos',
+          titulo: 'Identificação da não conformidade',
+          colunas: 2,
+          itens: [
+            { rotulo: 'Protocolo', valor: detalhe.numero_rpnc },
+            { rotulo: 'Origem', valor: detalhe.sgq_origem },
+            { rotulo: 'Severidade', valor: detalhe.sgq_severidade },
+            { rotulo: 'Status', valor: detalhe.status },
+            { rotulo: 'Abertura', valor: new Date(detalhe.criado_em).toLocaleString('pt-BR') },
+          ],
+        },
+        { tipo: 'texto', titulo: 'Descrição da não conformidade', texto: detalhe.descricao_nao_conformidade },
+        { tipo: 'lista', titulo: 'Ishikawa 6M', itens: causas.length ? causas : ['Nenhuma causa registrada no banco.'] },
+        { tipo: 'lista', titulo: '5 Porquês', itens: porques.length ? porques.map((item, index) => `${index + 1}. ${item}`) : ['Nenhuma resposta registrada no banco.'] },
+        {
+          tipo: 'campos',
+          titulo: 'Verificação de eficácia',
+          colunas: 2,
+          itens: [
+            { rotulo: 'Prazo de eficácia', valor: detalhe.prazo_eficacia_dias ? `${detalhe.prazo_eficacia_dias} dias` : 'Não definido' },
+            { rotulo: 'Data de verificação', valor: detalhe.data_verificacao_eficacia ? new Date(`${detalhe.data_verificacao_eficacia}T00:00:00`).toLocaleDateString('pt-BR') : 'Não definida' },
+            { rotulo: 'Resultado', valor: eficacia },
+          ],
+        },
+        { tipo: 'texto', titulo: 'Parecer de eficácia', texto: detalhe.parecer_eficacia || 'Nenhum parecer registrado no banco.' },
+        {
+          tipo: 'assinaturas',
+          titulo: 'Responsabilidade',
+          assinantes: [
+            { papel: 'Responsável pela tratativa' },
+            { papel: 'Qualidade / SGQ' },
+          ],
+        },
+      ]
+      await abrirRelatorio({
+        modulo: 'Qualidade',
+        tipo: 'RPNC',
+        titulo: 'Relatório de Não Conformidade',
+        codigo: detalhe.numero_rpnc,
+        subtitulo: detalhe.descricao_nao_conformidade,
+        blocos,
+      })
+    } catch (cause) {
+      setError(errorMessage(cause))
+    }
+  }
+
   return (
     <main className="space-y-3 p-2 text-slate-800">
       <header className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
@@ -245,7 +331,7 @@ export default function QualidadeRPNC() {
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <header className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2"><h2 className="text-xs font-extrabold">RPNC recentes</h2><span className="text-[10px] text-slate-500">{records.length} registros · dados do banco</span></header>
         {loading ? <p className="p-4 text-xs text-slate-500">Consultando o Supabase…</p> : records.length ? (
-          <div className="overflow-x-auto"><table className="w-full text-left text-xs"><thead className="bg-slate-800 text-white"><tr><th className="p-2.5">Protocolo</th><th className="p-2.5">Descrição</th><th className="p-2.5">Origem</th><th className="p-2.5">Severidade</th><th className="p-2.5">Status</th><th className="p-2.5">Abertura</th><th className="p-2.5">Ações</th></tr></thead><tbody>{records.map((record) => <tr key={record.id} className="border-t border-slate-100 even:bg-slate-50"><td className="whitespace-nowrap p-2.5 font-mono font-bold">{record.numero_rpnc}</td><td className="min-w-64 max-w-xl p-2.5">{record.descricao_nao_conformidade}</td><td className="p-2.5">{record.sgq_origem ?? '—'}</td><td className="p-2.5">{record.sgq_severidade ?? '—'}</td><td className="p-2.5">{record.status}</td><td className="whitespace-nowrap p-2.5">{new Date(record.criado_em).toLocaleString('pt-BR')}</td><td className="whitespace-nowrap p-2.5"><button type="button" onClick={() => setSelectedForInvestigation(record)} className={buttonClass}>Investigar / eficácia</button></td></tr>)}</tbody></table></div>
+          <div className="overflow-x-auto"><table className="w-full text-left text-xs"><thead className="bg-slate-800 text-white"><tr><th className="p-2.5">Protocolo</th><th className="p-2.5">Descrição</th><th className="p-2.5">Origem</th><th className="p-2.5">Severidade</th><th className="p-2.5">Status</th><th className="p-2.5">Abertura</th><th className="p-2.5">Ações</th></tr></thead><tbody>{records.map((record) => <tr key={record.id} className="border-t border-slate-100 even:bg-slate-50"><td className="whitespace-nowrap p-2.5 font-mono font-bold">{record.numero_rpnc}</td><td className="min-w-64 max-w-xl p-2.5">{record.descricao_nao_conformidade}</td><td className="p-2.5">{record.sgq_origem ?? '—'}</td><td className="p-2.5">{record.sgq_severidade ?? '—'}</td><td className="p-2.5">{record.status}</td><td className="whitespace-nowrap p-2.5">{new Date(record.criado_em).toLocaleString('pt-BR')}</td><td className="whitespace-nowrap p-2.5"><div className="flex items-center gap-1"><button type="button" onClick={() => setSelectedForInvestigation(record)} className={buttonClass}>Investigar / eficácia</button><button type="button" onClick={() => void emitirRelatorio(record)} className={buttonClass} aria-label={`Imprimir RPNC ${record.numero_rpnc}`} title="Imprimir relatório A4"><Printer size={13} /> A4</button></div></td></tr>)}</tbody></table></div>
         ) : <p className="p-4 text-xs text-slate-500">Nenhuma RPNC encontrada para esta empresa ou o usuário não possui acesso de leitura.</p>}
       </section>
       {selectedForInvestigation && <QualidadeRPNCTratamento companyId={companyId} record={selectedForInvestigation} onClose={() => setSelectedForInvestigation(null)} onSaved={() => { void load() }} />}

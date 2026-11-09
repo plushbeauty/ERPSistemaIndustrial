@@ -1,0 +1,186 @@
+/*
+ * @AUTOR: FernandoSch
+ * @DATA_REVISAO_APROVACAO: 2026-11-01
+ * @REVISAO: REV-CONTRATO-ACAO-20261101-01 — altura, raio e corpo unicos para todo botao de acao do ERP
+ * @STATUS_APROVACAO: PADRONIZACAO DE TELAS AUTORIZADA PELO PROPRIETARIO EM 2026-11-01
+ *
+ * O pente fino de 2026-11-01 contou 15 alturas diferentes de botao em producao (24 a 50px) porque cada
+ * tela carregava a propria familia de classe. Este arquivo e importado por ultimo e define UM contrato:
+ * 30px de altura, raio 2px, texto 11px para todo controle de acao da area operacional.
+ * Os seletores [class~="h-7"] casam o token Tailwind exato, entao a normalizacao alcanca as telas que
+ * ainda usam utilitarios copiados (h-7 / h-8 / h-9) sem precisar reescrever cada pagina.
+ * Escopos de toque com luva (.erp-touch-scope) ficam de fora de proposito: la o alvo minimo e 44px.
+ */
+:root {
+  --erp-control-height: 30px;
+  --erp-control-radius: 2px;
+  --erp-control-font: 11px;
+  --erp-touch-height: 46px;
+}
+
+/* Familias de classe proprias de cada modulo: todas convergem para o mesmo controle. */
+.erp-global-surface .erp-btn,
+.erp-global-surface .erp-btn-primary,
+.erp-global-surface .erp-row-action,
+.erp-global-surface .erp-edit-button,
+.erp-global-surface .smp-btn,
+.erp-global-surface .smp-btn--icon,
+.erp-global-surface .sxp-btn,
+.erp-global-surface .compras-button,
+.erp-global-surface .fiscal-button,
+.erp-global-surface .fiscal-button-small,
+.erp-global-surface .primary,
+.erp-global-surface .secondary-v2 {
+  height: var(--erp-control-height) !important;
+  min-height: var(--erp-control-height) !important;
+  max-height: var(--erp-control-height) !important;
+  border-radius: var(--erp-control-radius) !important;
+  font-size: var(--erp-control-font) !important;
+  gap: 5px;
+  padding: 0 10px;
+}
+
+/* Telas que ainda usam utilitarios Tailwind copiados (h-6 a h-10) na mesma tela. */
+.erp-global-surface button[class~="h-6"],
+.erp-global-surface button[class~="h-7"],
+.erp-global-surface button[class~="h-8"],
+.erp-global-surface button[class~="h-9"],
+.erp-global-surface button[class~="h-10"],
+.erp-global-surface a[class~="h-7"],
+.erp-global-surface a[class~="h-8"],
+.erp-global-surface a[class~="h-9"] {
+  height: var(--erp-control-height) !important;
+  min-height: var(--erp-control-height) !important;
+  border-radius: var(--erp-control-radius) !important;
+}
+
+.erp-global-surface button[class~="h-6"],
+.erp-global-surface button[class~="h-7"],
+.erp-global-surface button[class~="h-8"],
+.erp-global-surface button[class~="h-9"],
+.erp-global-surface button[class~="h-10"],
+.erp-global-surface button[class~="h-[30px]"] {
+  font-size: var(--erp-control-font) !important;
+}
+
+/* Larguras fixas arbitrarias (w-20, w-[95px], w-[150px]) fazem o mesmo rotulo mudar de tamanho entre modulos. */
+.erp-global-surface button[class*="w-["],
+.erp-global-surface button[class~="w-20"] {
+  width: auto !important;
+  min-width: 0;
+  padding-inline: 10px;
+}
+
+/* O raio dos links de acao escapa do override global de <button>; aqui ele passa a valer tambem. */
+.erp-global-surface a[class*="btn"],
+.erp-global-surface a.primary,
+.erp-global-surface a.secondary-v2 {
+  border-radius: var(--erp-control-radius) !important;
+}
+
+/* Barra de acao da pagina: o primario ("Novo", "Gravar") fica sempre no canto direito do cabecalho. */
+.erp-global-surface .erp-page-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-inline-start: auto;
+}
+
+/* Cor. As classes .primary e .secondary-v2 nasceram nas paginas publicas de cadastro e continuam
+   verdes (#157347) ou escuras dentro do ERP. O azul institucional e unico para todas as telas. */
+.erp-global-surface .primary {
+  background: #2D8DB8 !important;
+  border-color: #236F93 !important;
+  color: #fff !important;
+  text-transform: none !important;
+}
+
+.erp-global-surface .primary:hover {
+  background: #17445A !important;
+}
+
+.erp-global-surface .secondary-v2 {
+  background: #fff !important;
+  border: 1px solid #B8CDD5 !important;
+  color: #123B50 !important;
+  font-size: var(--erp-control-font) !important;
+  text-transform: none !important;
+}
+
+.erp-global-surface .secondary-v2:hover {
+  background: #F4FBFD !important;
+}
+
+/* ---------------------------------------------------------------------------
+   CAMPOS (input / select / textarea). REV-CAMPO-COMPACTO-20261101-01, 01/11/2026.
+   Queixa do proprietario: "os edits estão grandes demais para os campos, fazendo as
+   telas ficarem grandes, tendo que descer até lá embaixo para preencher". O caso pior
+   era o cadastro de colaborador do RH (h-9 = 36px, texto 14px, gap 16px). O campo passa
+   a ter a MESMA altura do botao (30px), texto 12px e raio 2px, entao dois campos cabem
+   na linha que antes ocupava um. TextArea fica multilinha de proposito.
+   ------------------------------------------------------------------------- */
+.erp-global-surface input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="image"]),
+.erp-global-surface select {
+  height: var(--erp-control-height) !important;
+  min-height: 0 !important;
+  max-height: var(--erp-control-height) !important;
+  border-radius: var(--erp-control-radius) !important;
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  padding: 0 8px;
+}
+
+.erp-global-surface textarea {
+  height: auto !important;
+  min-height: 44px !important;
+  border-radius: var(--erp-control-radius) !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+  padding: 5px 8px;
+}
+
+/* Rotulo de campo: 11px e 3px de respiro. Menos isso e o dono perde a legenda do campo. */
+.erp-global-surface label[for] {
+  margin-bottom: 3px !important;
+  font-size: 11px !important;
+  line-height: 1.25;
+}
+
+/* Grelha dos formularios: 10px entre linhas. Limitado a <form> de proposito — os painéis de KPI
+   do workspace premium usam grid fora de form e manteriam o respiro aprovado. */
+.erp-global-surface form [class*="grid"] {
+  row-gap: 10px;
+}
+
+/* Escopo de toque: chao de fabrica e impressao de etiquetas. Alvo minimo de 46px, nao 30px. */
+.erp-global-surface .erp-touch-scope button,
+.erp-global-surface .erp-touch-scope a[class*="btn"] {
+  height: var(--erp-touch-height) !important;
+  min-height: var(--erp-touch-height) !important;
+  min-width: var(--erp-touch-height);
+  max-height: none !important;
+  border-radius: var(--erp-control-radius) !important;
+  font-size: 13px !important;
+}
+
+.erp-global-surface .erp-touch-scope input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.erp-global-surface .erp-touch-scope select,
+.erp-global-surface .erp-touch-scope textarea {
+  height: var(--erp-touch-height) !important;
+  min-height: var(--erp-touch-height) !important;
+  font-size: 13px !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .erp-global-surface .erp-btn,
+  .erp-global-surface .erp-btn-primary,
+  .erp-global-surface .primary,
+  .erp-global-surface .secondary-v2,
+  .erp-global-surface .compras-button,
+  .erp-global-surface .fiscal-button {
+    transition: none !important;
+    transform: none !important;
+  }
+}

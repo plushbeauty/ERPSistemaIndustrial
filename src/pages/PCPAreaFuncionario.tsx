@@ -1,20 +1,31 @@
 /**
- * @AUTOR: FernandoSchu
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @AUTOR: FernandoSch
+ * @DATA_REVISAO_APROVACAO: 2026-11-08
+ * @REVISAO: REV-OPERADOR-MAQUINAS-CPP-20261108-01 — painel responsivo de máquinas por programação real, cada OP preservada como cartão próprio e seleção abre o CPP correspondente; receita específica da máquina priorizada
+ * @STATUS_APROVACAO: REVISAO AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA INTEGRAR O PAINEL VISUAL DE MAQUINAS AOS DADOS REAIS DO PCP, PRESERVANDO AUTENTICACAO, CPP E APONTAMENTOS DO SERVIDOR
+ * @REVISAO_ANTERIOR: REV-MES-APONTAMENTO-SERVIDOR-20261103-01 — apontamento gravado pelo servidor
+ * @STATUS_ANTERIOR: DETERMINADO PELO PROPRIETARIO ("O prazo deve ser calculado pelo servidor, e não pelo
+ *   relógio do navegador" + "Tela Chão de Fábrica · Apontamento gravando de verdade", 2026-11-03)
+ * Início e fim saem do relógio do banco (erp_apontamento_iniciar / erp_apontamento_finalizar), a ficha aprovada é
+ * conferida no banco e a finalização dá baixa em erp_pcp_programacoes na mesma transação. Sem migration aplicada o
+ * erro é declarado na tela; não há fallback para o horário do navegador.
+ *
+ * @REVISAO_ANTERIOR: REV-PORTAL-OPERADOR-DESCRICAO-E-SEMANA-20261102-01 — Portal do Operador em uma só abertura
+ * (header navy proprio removido, card de descricao adicionado, sete dias por breakpoint 2/4/7 colunas)
  */
 /**
  * SYSNQRA ERP · Área do Funcionário / CPP
- * @REVISAO_ANTERIOR: PCP-AREA-FUNCIONARIO-2026-10-22-R2
+ * @REVISAO_ANTERIOR: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @REVISAO_ANTERIOR_2: PCP-AREA-FUNCIONARIO-2026-10-22-R2
  * Acesso autenticado; programação filtrada pelo funcionário associado ao e-mail da sessão.
  * Registros enviados ao ERP: erp_apontamentos_processo. Sem dados de demonstração.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Clock3, Factory, FileText, Package, Play, RefreshCw, ShieldCheck, Square, UserRound } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import '../styles/operator-terminal.css'
 
-type Employee = { id: string; matricula: string; nome: string; email: string | null; status: string }
+type Employee = { id: string; matricula: string | null; nome: string | null; nome_completo: string | null; email: string | null; status: string }
 type Program = { id: string; ordem_producao_id: string | null; maquina_id: string | null; produto_id: string | null; inicio_planejado: string; fim_planejado: string; quantidade_planejada: number; quantidade_produzida: number; quantidade_refugada: number; status: string; operador_frente_id: string | null; operador_atras_id: string | null }
 type Order = { id: string; numero_op: string | number; produto_id: string | null; quantidade_planejada: number | null; quantidade: number | null; status: string; data_prevista: string | null }
 type Product = { id: string; codigo: string; nome: string; unidade: string | null; descricao?: string | null }
@@ -22,6 +33,20 @@ type Machine = { id: string; codigo: string; nome: string; status?: string }
 type Recipe = { id: string; processo_id: string; produto_id: string | null; maquina_id: string | null; ferramenta_id: string | null; versao: number; status: string; parametros: Record<string, unknown>; ciclo_seg: number | null; setup_min: number | null; observacoes: string | null }
 type ProcessEntry = { id: string; ordem_producao_id: string; operador_id: string | null; inicio_em: string; fim_em: string | null; quantidade_boa: number; quantidade_refugada: number; motivo_parada: string | null; observacoes: string | null }
 type Material = { id: string; produto_pai_id: string; sku_insumo: string; qtd: number; unidade: string }
+type StartedEntry = { id: string; ordem_producao_id: string; operador_id: string; inicio_em: string; fim_em: string | null; quantidade_boa: number | null; quantidade_refugada: number | null }
+type FinishedEntry = { id: string; fim_em: string; duracao_seg: number | null; quantidade_boa: number | null; quantidade_refugada: number | null }
+const MIGRATION_APONTAMENTO_SERVIDOR = '20261103100000_mes_apontamento_gravado_no_servidor.sql'
+
+/** O erro do PostgREST chega com a mensagem do raise no banco; PGRST202 significa migration ainda não aplicada. */
+function falhaDoApontamento(cause: unknown, fallback: string): string {
+  if (cause instanceof Error) {
+    if ((cause as Error & { code?: string }).code === 'PGRST202') {
+      return 'O banco ainda não tem as funções de apontamento com horário do servidor. Aplique a migration ' + MIGRATION_APONTAMENTO_SERVIDOR + ' no Supabase e toque em Atualizar.'
+    }
+    return cause.message || fallback
+  }
+  return fallback
+}
 const input = 'h-[36px] w-full min-w-0 rounded-[3px] border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20'
 const smallButton = 'inline-flex min-h-[36px] items-center justify-center gap-2 rounded-[3px] border px-3 text-xs font-black disabled:cursor-not-allowed disabled:opacity-50'
 const localDate = (date: Date) => {
@@ -83,7 +108,7 @@ export default function PCPAreaFuncionario() {
       setCompanyId(tenant.data)
       setUserId(authData.user.id)
       const employeeResult = await supabase.from('erp_funcionarios')
-        .select('id,matricula,nome,email,status')
+        .select('id,matricula,nome,nome_completo,email,status')
         .eq('empresa_id', tenant.data)
         .ilike('email', email)
         .maybeSingle()
@@ -128,7 +153,7 @@ export default function PCPAreaFuncionario() {
   const machine = program?.maquina_id ? machineMap.get(program.maquina_id) : undefined
   const recipe = useMemo(() => {
     if (!program || !productId) return undefined
-    return recipes.find(item => item.produto_id === productId && (!item.maquina_id || item.maquina_id === program.maquina_id))
+    return recipes.filter(item => item.produto_id === productId && (!item.maquina_id || item.maquina_id === program.maquina_id)).sort((a, b) => Number(Boolean(b.maquina_id)) - Number(Boolean(a.maquina_id)) || b.versao - a.versao)[0]
   }, [program, productId, recipes])
   const openEntry = entries.find(item => program?.ordem_producao_id === item.ordem_producao_id && !item.fim_em)
   const programMaterials = materials.filter(item => item.produto_pai_id === productId)
@@ -150,6 +175,7 @@ export default function PCPAreaFuncionario() {
     setSelectedDay(localDate(firstDay))
   }
   const dayPrograms = programs.filter(item => localDate(new Date(item.inicio_planejado)) === selectedDay)
+  const machinePrograms = dayPrograms.filter(item => item.maquina_id)
   const selectedEntries = entries.filter(item => program?.ordem_producao_id === item.ordem_producao_id)
   const activeEntry = openEntry && openEntry.operador_id === employee?.id ? openEntry : null
 
@@ -165,26 +191,36 @@ export default function PCPAreaFuncionario() {
     try {
       const { data: tenantData, error: tenantError } = await supabase.rpc('erp_current_empresa_id')
       if (tenantError || tenantData !== companyId) throw tenantError ?? new Error('A empresa da sessão mudou. Atualize a página.')
-      const response = await supabase.from('erp_apontamentos_processo').insert({
-        empresa_id: companyId,
-        processo_id: recipe.processo_id,
-        receita_id: recipe.id,
-        ordem_producao_id: order.id,
-        maquina_id: machine.id,
-        ferramenta_id: recipe.ferramenta_id,
-        inicio_em: new Date().toISOString(),
-        quantidade_planejada: Number(program.quantidade_planejada || order.quantidade_planejada || order.quantidade || 0),
-        quantidade_boa: 0,
-        quantidade_refugada: 0,
-        operador_id: employee.id,
-        criado_por: userId,
-        parametros_reais: { origem: 'AREA_FUNCIONARIO_CPP', programacao_id: program.id, revisao_receita: recipe.versao }
-      }).select('id,ordem_producao_id,operador_id,inicio_em,fim_em,quantidade_boa,quantidade_refugada,motivo_parada,observacoes').single()
+      // O horário de início é carimbado pelo banco (erp_apontamento_iniciar): o relógio do posto não define prazo nem duração.
+      const response = await supabase.rpc('erp_apontamento_iniciar', {
+        p_programacao_id: program.id,
+        p_ordem_producao_id: order.id,
+        p_processo_id: recipe.processo_id,
+        p_receita_id: recipe.id,
+        p_maquina_id: machine.id,
+        p_ferramenta_id: recipe.ferramenta_id,
+        p_operador_id: employee.id,
+        p_quantidade_planejada: Number(program.quantidade_planejada || order.quantidade_planejada || order.quantidade || 0)
+      })
       if (response.error) throw response.error
-      setEntries(current => [response.data as ProcessEntry, ...current])
-      setMessage('Início de produção registrado. Ao terminar, informe peças boas, refugos e eventuais paradas.')
+      const started = response.data as StartedEntry | null
+      if (!started || typeof started.id !== 'string' || typeof started.inicio_em !== 'string') {
+        throw new Error('O servidor não confirmou o apontamento criado. Atualize a tela antes de iniciar novamente.')
+      }
+      setEntries(current => [{
+        id: started.id,
+        ordem_producao_id: started.ordem_producao_id,
+        operador_id: started.operador_id,
+        inicio_em: started.inicio_em,
+        fim_em: started.fim_em,
+        quantidade_boa: Number(started.quantidade_boa ?? 0),
+        quantidade_refugada: Number(started.quantidade_refugada ?? 0),
+        motivo_parada: null,
+        observacoes: null
+      }, ...current])
+      setMessage('Início de produção registrado pelo servidor. Ao terminar, informe peças boas, refugos e eventuais paradas.')
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Falha ao registrar início da produção.')
+      setError(falhaDoApontamento(cause, 'Falha ao registrar início da produção.'))
     } finally {
       setSaving(false)
     }
@@ -194,7 +230,7 @@ export default function PCPAreaFuncionario() {
     if (!employee || !program || !activeEntry || !companyId) { setError('Não há apontamento em andamento para finalizar nesta OP.'); return }
     const good = Number(goodQty)
     const scrap = Number(scrapQty)
-    if (!Number.isFinite(good) || !Number.isFinite(scrap) || good < 0 || scrap < 0 || good + scrap <= 0) {
+    if (!Number.isFinite(good) || !Number.isFinite(scrap) || !Number.isInteger(good) || !Number.isInteger(scrap) || good < 0 || scrap < 0 || good + scrap <= 0) {
       setError('Informe quantidades válidas. A soma de peças boas e refugadas precisa ser maior que zero.')
       return
     }
@@ -203,51 +239,88 @@ export default function PCPAreaFuncionario() {
     setError('')
     setMessage('')
     try {
-      const response = await supabase.from('erp_apontamentos_processo').update({
-        fim_em: new Date().toISOString(),
-        quantidade_boa: good,
-        quantidade_refugada: scrap,
-        motivo_parada: stopReason.trim() || null,
-        observacoes: observations.trim() || null
-      }).eq('empresa_id', companyId).eq('id', activeEntry.id).eq('operador_id', employee.id).is('fim_em', null).select('id').maybeSingle()
+      // Fim, duração e baixa da programação acontecem em uma única transação no banco, com o horário do servidor.
+      const response = await supabase.rpc('erp_apontamento_finalizar', {
+        p_apontamento_id: activeEntry.id,
+        p_operador_id: employee.id,
+        p_programacao_id: program.id,
+        p_quantidade_boa: good,
+        p_quantidade_refugada: scrap,
+        p_motivo_parada: stopReason.trim() || null,
+        p_observacoes: observations.trim() || null
+      })
       if (response.error) throw response.error
-      if (!response.data) throw new Error('Nenhum apontamento foi atualizado. Confirme se o registro ainda está aberto e pertence ao seu usuário.')
-      setMessage('Apontamento gravado e enviado ao PCP para conferência.')
+      const finished = response.data as FinishedEntry | null
+      if (!finished || typeof finished.fim_em !== 'string') {
+        throw new Error('O servidor não confirmou a finalização do apontamento. Confira abaixo antes de repetir.')
+      }
+      const minutos = Math.round(Number(finished.duracao_seg ?? 0) / 60)
+      const resumo = 'Apontamento gravado com horário do servidor e baixado na programação do PCP (' + numberLabel(good) + ' peças boas, duração ' + numberLabel(minutos) + ' min).'
       setGoodQty('')
       setScrapQty('')
       setStopReason('')
       setObservations('')
       await load()
+      // load() limpa o aviso da tela: a confirmação precisa vir depois do recarregamento.
+      setMessage(resumo)
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Falha ao finalizar o apontamento.')
+      setError(falhaDoApontamento(cause, 'Falha ao finalizar o apontamento.'))
     } finally {
       setSaving(false)
     }
   }
 
-  return <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900 md:p-5">
+  return <main className="operator-terminal-page min-h-screen bg-[#F4FBFD] p-3 text-slate-900 md:p-5">
     <div className="mx-auto w-full max-w-[1560px] space-y-4">
-      <header className="flex flex-wrap items-center justify-between gap-3 border border-[#C8E3EE] bg-white p-4 shadow-[0_3px_12px_rgba(18,59,80,.07)]">
-        <div className="flex items-center gap-3"><span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-[3px] border border-[#C8E3EE] bg-[#123B50]"><img src="/icons/pcp-portal-operador.svg" alt="Portal do Operador — Chão de Fábrica" className="h-full w-full object-cover" /></span><div><p className="text-[10px] font-black uppercase tracking-[.15em] text-[#2D8DB8]">SYSNQRA · CHÃO DE FÁBRICA</p><h1 className="text-2xl font-black text-[#123B50]">Área do Funcionário</h1><p className="text-xs text-slate-500">Programação semanal e Cartão de Processo Produtivo (CPP)</p></div></div>
-        <button type="button" onClick={()=>void load()} disabled={loading} className={smallButton+' min-h-[40px] border-slate-300 bg-white px-4 text-sm text-slate-700'}><RefreshCw size={16} className={loading?'animate-spin':''}/> Atualizar</button>
-      </header>
+      <section aria-label="Descrição e uso da tela" className="grid items-start gap-4 border border-[#C8E3EE] bg-white p-4 shadow-[0_2px_8px_rgba(18,59,80,.04)] md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div><h2 className="text-sm font-black uppercase text-[#123B50]">O que esta tela faz</h2><p className="mt-2 text-sm leading-relaxed text-slate-600">Mostra a programação semanal do PCP que pertence a você — o operador autenticado, vinculado ao cadastro do RH pelo e-mail da sessão — e abre o Cartão de Processo Produtivo (CPP) da tarefa escolhida: OP, produto, máquina, quantidades planejadas, ficha de processo aprovada e insumos da estrutura.</p><p className="mt-2 text-sm leading-relaxed text-slate-600">É desta tela que sai o apontamento real de produção: o servidor carimba início e fim no relógio do banco — não no relógio do posto — grava <strong>erp_apontamentos_processo</strong> com peças boas, refugo e motivo de parada, e baixa a programação do PCP na mesma gravação.</p></div>
+        <div><h2 className="text-sm font-black uppercase text-[#123B50]">Como usar</h2><ol className="mt-2 space-y-1.5 text-sm leading-relaxed text-slate-600"><li><strong>1.</strong> Toque no dia da semana para listar as tarefas programadas para você.</li><li><strong>2.</strong> Toque na tarefa para abrir o CPP e conferir OP, produto, máquina e ficha aprovada.</li><li><strong>3.</strong> Pressione <strong>Iniciar produção</strong>; o servidor carimba o horário e o vínculo com OP, máquina e ficha aprovada.</li><li><strong>4.</strong> Ao terminar, informe peças boas, refugo e ocorrências e pressione <strong>Finalizar e enviar ao PCP</strong>.</li></ol><p className="mt-3 text-xs font-bold text-slate-500">Sem tarefa no dia? O PCP é quem atribui a programação e o operador — o botão Atualizar recarrega a agenda.</p></div>
+      </section>
       {(error || message) && <p role={error?'alert':'status'} className={'border p-4 text-sm font-bold '+(error?'border-rose-200 bg-rose-50 text-rose-800':'border-emerald-200 bg-emerald-50 text-emerald-800')}>{error||message}</p>}
       {!loading && !employee && !error && <p className="border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">Conta ainda não vinculada a um funcionário no RH.</p>}
       <section className="flex flex-wrap items-center justify-between gap-4 border border-slate-200 bg-white p-4">
-        <div className="flex items-center gap-3"><span className="grid h-12 w-12 place-items-center border border-[#C8E3EE] bg-[#EAF6FA] text-[#2D8DB8]"><UserRound size={22}/></span><div><p className="text-[10px] font-black uppercase text-slate-500">Funcionário autenticado</p><p className="text-lg font-black text-[#123B50]">{employee?.nome ?? 'Identificando conta…'}</p></div></div>
+        <div className="flex min-w-0 items-center gap-3"><span className="grid h-12 w-12 shrink-0 place-items-center border border-[#C8E3EE] bg-[#EAF6FA] text-[#2D8DB8]"><UserRound size={22}/></span><div className="min-w-0"><p className="text-[10px] font-black uppercase text-slate-500">Funcionário autenticado</p><p className="truncate text-lg font-black text-[#123B50] sm:text-xl">{(employee?.nome_completo || employee?.nome || '').trim() || (loading ? 'Identificando conta…' : 'Nome não informado no cadastro do RH')}</p></div></div>
         <div className="flex flex-wrap gap-2 text-xs font-bold"><span className="border border-slate-200 bg-slate-50 px-3 py-2">Matrícula: {employee?.matricula ?? '—'}</span><span className="border border-emerald-200 bg-emerald-50 px-3 py-2 text-emerald-800"><ShieldCheck size={14} className="mr-1 inline"/>Acesso autenticado</span></div>
       </section>
-      <section className="border border-slate-200 bg-white p-4 shadow-[0_2px_8px_rgba(18,59,80,.04)]">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2"><CalendarDays size={20} className="text-[#2D8DB8]"/><div><h2 className="text-sm font-black uppercase text-[#123B50]">Minha semana</h2><p className="text-xs text-slate-500">Toque em uma data para ver os produtos programados para você.</p></div></div>
-          <div className="flex items-center gap-2">
-            <button type="button" onClick={()=>changeWeek(-1)} aria-label="Semana anterior" className="grid h-10 w-10 shrink-0 place-items-center border border-slate-300 bg-white text-[#123B50] hover:bg-[#F4FBFD]"><ChevronLeft size={18}/></button>
-            <p className="min-w-[178px] text-center text-sm font-black text-[#123B50]">{new Date(days[0]+'T12:00:00').toLocaleDateString('pt-BR')} — {new Date(days[6]+'T12:00:00').toLocaleDateString('pt-BR')}</p>
-            <button type="button" onClick={()=>changeWeek(1)} aria-label="Próxima semana" className="grid h-10 w-10 shrink-0 place-items-center border border-slate-300 bg-white text-[#123B50] hover:bg-[#F4FBFD]"><ChevronRight size={18}/></button>
-          </div>
+      <section className="operator-terminal-machine-panel" aria-label="Máquinas da programação do dia">
+        <div className="operator-terminal-section-heading">
+          <div><h2>Máquinas programadas</h2><p>Equipamentos vinculados às suas ordens reais do dia selecionado.</p></div>
+          <span>{machinePrograms.length} programação(ões)</span>
         </div>
-        <div className="grid grid-cols-7 gap-2 pb-1">
-          {days.map(day=>{const count=programs.filter(item=>localDate(new Date(item.inicio_planejado))===day).length;const isSelected=selectedDay===day;return <button type="button" key={day} onClick={()=>setSelectedDay(day)} aria-pressed={isSelected} aria-label={new Date(day+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})+(count?', '+count+' tarefa(s) programada(s)':' sem tarefas programadas')} className={'flex min-h-[132px] min-w-0 flex-col items-center justify-center rounded-[3px] border px-1 py-4 text-center transition-colors sm:px-2 '+(isSelected?'border-[#123B50] bg-[#123B50] text-white shadow-[0_3px_8px_rgba(18,59,80,.2)]':'border-slate-200 bg-white text-slate-700 hover:border-[#2D8DB8] hover:bg-[#F4FBFD]')}><span className="block text-xs font-black uppercase leading-tight sm:text-sm">{new Date(day+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</span><span className="my-2 block text-3xl font-black leading-none sm:text-4xl">{day.slice(8,10)}</span><span className={'mb-1 block h-2.5 w-2.5 shrink-0 rounded-full '+(count?'bg-emerald-500':'bg-slate-200')}/><span className="block text-[11px] font-bold leading-tight sm:text-xs">{count?count+' tarefa(s)':'Livre'}</span></button>})}
+        {machinePrograms.length ? <div className="operator-terminal-machines">
+          {machinePrograms.map(machineProgram => {
+            const assignedMachine = machineProgram.maquina_id ? machineMap.get(machineProgram.maquina_id) : undefined
+            const assignedOrder = machineProgram.ordem_producao_id ? orderMap.get(machineProgram.ordem_producao_id) : undefined
+            const selected = machineProgram.id === selectedProgramId
+            const status = String(machineProgram.status || 'PROGRAMADA').replaceAll('_', ' ')
+            return <button type="button" key={machineProgram.id} aria-pressed={selected} onClick={() => {
+              setSelectedProgramId(machineProgram.id)
+              setGoodQty('')
+              setScrapQty('')
+              setStopReason('')
+              setObservations('')
+              setMessage('')
+              setError('')
+            }} className={'operator-terminal-machine' + (selected ? ' is-selected' : '')}>
+              <strong>{assignedMachine?.codigo || 'Máquina'}</strong>
+              <span className="operator-terminal-machine-name">{assignedMachine?.nome || 'Equipamento sem descrição'}</span>
+              <span className="operator-terminal-machine-meta">OP {assignedOrder?.numero_op ?? '—'} · {status}</span>
+            </button>
+          })}
+        </div> : <p className="operator-terminal-empty">Nenhuma máquina vinculada à programação deste dia.</p>}
+      </section>
+      <section className="border border-slate-200 bg-white p-4 shadow-[0_2px_8px_rgba(18,59,80,.04)]">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-3">
+          <div className="flex items-center gap-2"><CalendarDays size={20} className="text-[#2D8DB8]"/><div><h2 className="text-sm font-black uppercase text-[#123B50]">Minha semana</h2><p className="text-xs text-slate-500">Toque em uma data para ver os produtos programados para você.</p></div></div>
+          <button type="button" onClick={()=>void load()} disabled={loading} className={smallButton+' border-slate-300 bg-white px-4 text-sm text-slate-700'}><RefreshCw size={16} className={loading?'animate-spin':''}/> Atualizar</button>
+        </div>
+        <div className="my-3 flex flex-wrap items-center justify-center gap-2">
+          <button type="button" onClick={()=>changeWeek(-1)} aria-label="Semana anterior" className="grid h-10 w-10 shrink-0 place-items-center border border-slate-300 bg-white text-[#123B50] hover:bg-[#F4FBFD]"><ChevronLeft size={18}/></button>
+          <p className="min-w-[232px] text-center text-sm font-black text-[#123B50]">{new Date(days[0]+'T12:00:00').toLocaleDateString('pt-BR')} — {new Date(days[6]+'T12:00:00').toLocaleDateString('pt-BR')}</p>
+          <button type="button" onClick={()=>changeWeek(1)} aria-label="Próxima semana" className="grid h-10 w-10 shrink-0 place-items-center border border-slate-300 bg-white text-[#123B50] hover:bg-[#F4FBFD]"><ChevronRight size={18}/></button>
+        </div>
+        <div data-synqra-weekrail="1" className="grid grid-cols-2 gap-2 pb-1 sm:grid-cols-4 lg:grid-cols-7">
+          {days.map(day=>{const count=programs.filter(item=>localDate(new Date(item.inicio_planejado))===day).length;const isSelected=selectedDay===day;return <button type="button" key={day} onClick={()=>setSelectedDay(day)} aria-pressed={isSelected} aria-label={new Date(day+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})+(count?', '+count+' tarefa(s) programada(s)':' sem tarefas programadas')} className={'flex min-h-[92px] min-w-0 flex-col items-center justify-center rounded-[3px] border px-3 py-3 text-center transition-colors lg:min-h-[104px] '+(isSelected?'border-[#123B50] bg-[#123B50] text-white shadow-[0_3px_8px_rgba(18,59,80,.2)]':'border-slate-200 bg-white text-slate-700 hover:border-[#2D8DB8] hover:bg-[#F4FBFD]')}><span className="block text-[11px] font-black uppercase leading-tight tracking-wide sm:text-xs">{new Date(day+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</span><span className="mt-1.5 block text-2xl font-black leading-none sm:text-[26px]">{day.slice(8,10)}</span><span className="mt-2 flex items-center gap-1.5"><span className={'block h-2.5 w-2.5 shrink-0 rounded-full '+(count?'bg-emerald-500':'bg-slate-200')}/><span className="block text-[11px] font-bold leading-tight sm:text-xs">{count?count+' tarefa(s)':'Livre'}</span></span></button>})}
         </div>
       </section>
       <section className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]">

@@ -1,11 +1,11 @@
 /**
- * @AUTOR: FernandoSchu
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PRODUTOS-MIGRACAO-20261030-01 — migracao para a origem unica de codigo; abas proprias e saida da moldura fixa
- * @STATUS_APROVACAO: MIGRACAO AUTORIZADA PELO PROPRIETARIO EM 2026-10-30 (opcao "migrar para a origem unica")
+ * @AUTOR: FernandoSch
+ * @DATA_REVISAO_APROVACAO: 2026-11-04
+ * @REVISAO: REV-PRODUTOS-TELA-UNICA-20261104-01 — vira a tela principal de /cadastros/produtos; abre a aba pela URL (?aba=) para absorver as rotas antigas de ficha técnica e de parâmetros
+ * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-04: "MANDEI TELA NOVA E NAO FOI APLICADO" e "NAO DEIXAR VARIAS TELAS COM MESMA FUNCÇAO OU PARECIDADAS"
  * @DATA_REVISAO_ANTERIOR: 2026-10-30
- * @REVISAO_ANTERIOR: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_ANTERIOR: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @REVISAO_ANTERIOR: REV-PRODUTOS-MIGRACAO-20261030-01 — migracao para a origem unica de codigo; abas proprias e saida da moldura fixa
+ * @STATUS_ANTERIOR: MIGRACAO AUTORIZADA PELO PROPRIETARIO EM 2026-10-30 (opcao "migrar para a origem unica")
  */
 /**
  * SYNQRA ERP — CONTROLE MESTRE DE CADASTRO DE PRODUTOS
@@ -17,7 +17,7 @@
 
 import { Barcode, ClipboardList, Home, PackagePlus, Settings2 } from 'lucide-react'
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import IndustrialReferenceShell from '../../layout/IndustrialReferenceShell'
 import { SynqraLayoutProvider } from '../../layout/SynqraLayoutContext'
 import ListagemProdutos from './ListagemProdutos'
@@ -34,9 +34,17 @@ const nav = [
   { id: 'regras', label: 'Regras do Código', icon: Settings2 },
 ] as const
 
+const VIEWS = nav.map(item => item.id) as View[]
+
+/** Aba pedida na URL (?aba=ficha) — as rotas antigas de ficha técnica e de parâmetros apontam para cá. */
+function abaInicial(param: string | null): View {
+  return param && VIEWS.includes(param as View) ? (param as View) : 'lista'
+}
+
 export default function ModuloCadastroProdutos() {
   const navigate = useNavigate()
-  const [view, setView] = useState<View>('lista')
+  const [searchParams] = useSearchParams()
+  const [view, setView] = useState<View>(() => abaInicial(searchParams.get('aba')))
   const [id, setId] = useState<string | undefined>()
 
   const open = (productId?: string) => {
@@ -46,9 +54,8 @@ export default function ModuloCadastroProdutos() {
 
   return (
     <SynqraLayoutProvider>
-      {/* Dentro da área de trabalho global o card de abertura já traz módulo e título;
-          o cabeçalho interno da moldura é ocultado para não duplicar a identificação da tela. */}
-      <style>{'.erp-horizontal-workspace .synqra-reference-heading{display:none}'}</style>
+      {/* No modo hospedado o IndustrialReferenceShell deixou de desenhar o proprio cabecalho:
+          titulo, modulo e ajuda pertencem ao PageIntroCard do ERPHorizontalShell (revisao 2026-11-05, item 1). */}
       <IndustrialReferenceShell
         moduleLabel="Cadastro de Produtos"
         title="Cadastro e Identificação de Produtos"

@@ -1,18 +1,53 @@
 /**
- * @AUTOR: FernandoSchu
+ * @AUTOR: FernandoSch
+ * @DATA_REVISAO_APROVACAO: 2026-11-04
+ * @REVISAO: REV-RH-SEM-CARD-REPETIDO-20261104-01 — a fileira superior de indicadores saiu da tela (repetia a Visão geral e mostrava traço no que não era da aba aberta); as abas passaram ao topo e viram trilho de rolagem no celular
+ * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-04 ("a primeira fileira de cards superiores exibe exatamente as mesmas métricas da fileira que está abaixo do menu de abas. O ideal é remover a primeira fileira de cima" + "exibir o número 0, exatamente como foi feito nos cards da fileira de baixo")
+ */
+/**
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 /**
+ * @REVISAO: REV-EDIT-UNIFORME-20261101-01 — botao "Editar" da lista passa a usar a classe do contrato unico
+ * de acao (erp-edit-button, 30px e raio 2px). Autorizado pelo proprietario na auditoria visual de 2026-11-01.
+ */
+/**
+ * @REVISAO: REV-RH-UM-CARD-E-CAMPO-COMPACTO-20261101-01 — 01/11/2026, por determinacao do proprietario.
+ * (1) O header azul-marinho proprio da tela foi removido: o card de abertura do shell (PageIntroCard) ja
+ * e o card de cima, e a tela ficava com DOIS cards. O botao Atualizar passou para a barra de abas.
+ * (2) As abas ganharam role=tablist/role=tab + aria-selected, que e o gancho do contrato de aba ativa
+ * dourada (erp-active-gold-20261101.css). (3) Grelha do formulario de 16px para 10px de respiro; a altura
+ * dos campos vem do contrato de campo (30px), que faz dois campos caberem na linha que antes ocupava um.
+ */
+/**
+ * @AUTOR: FernandoSch
+ * @DATA_REVISAO_APROVACAO: 2026-11-02
+ * @REVISAO: REV-RH-CAMPOS-NA-REGUA-20261102-01 — cadastro de colaborador com largura por tipo de dado
+ * @STATUS_APROVACAO: DETERMINADO PELO PROPRIETARIO EM 2026-11-02 ("olha os edits como estao grande; se
+ *   deixar menor o sistema vai ficar mais organizado")
+ *
+ * Defeito: cada campo era um w-full dentro de um grid de 12 colunas, entao CPF, RG e data de nascimento
+ * recebiam ~700px de caixa e a tela inteira descia ate o fim da pagina para ser preenchida. O formulario
+ * passa aos grupos de um cadastro de pessoal (Identificacao, Contato, Vinculo/jornada/custo) e cada campo
+ * recebe a largura da regua aprovada em src/styles/erp-design-system-2026.css (erp-field-name,
+ * erp-field-cpf, erp-field-date, erp-field-money, ...). A largura fica no involucro e o controle continua
+ * w-full dentro dele: o campo nao briga com o grid e quebra sozinho em tela estreita. As abas operacionais
+ * (ponto, ausencias, treinamentos, avaliacoes, acidentes, documentos) seguem a mesma regua por tipo.
+ * Nada de leitura ou gravacao no Supabase foi alterado.
+ */
+/**
  * SYSNQRA ERP INDUSTRIAL — RH operacional
- * @DATA_REVISAO_APROVACAO 30/10/2026
+ * @DATA_REVISAO_APROVACAO 03/11/2026
  * @STATUS_APROVACAO Em validação
- * @REVISAO REV-RH-20261030
+ * @REVISAO REV-CONTRATO-BANCO-20261103-01 — o carimbo atualizado_em passou a vir do relógio do servidor
  * Dados persistidos no Supabase; isolamento por empresa/RLS; sem dados fictícios.
  */
 import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { relogioDoServidor } from '../lib/serverClock'
 import { CalendarDays, Camera, CheckCircle2, Clock3, FileText, GraduationCap, RefreshCw, Save, Search, UserRound, Users, X } from 'lucide-react'
 
 type Staff = {
@@ -41,6 +76,35 @@ type Staff = {
 type Row = Record<string, string | number | boolean | null | undefined> & { id: string }
 type Tab = 'Visão geral' | 'Funcionários' | 'Ponto / Presença' | 'Treinamentos' | 'Avaliações' | 'Ausências' | 'Acidentes' | 'Documentos'
 type Field = { key: string; label: string; type?: string; required?: boolean; options?: string[] }
+/**
+ * Cadastro de colaborador em grupos, cada campo com a largura da régua aprovada
+ * (src/styles/erp-design-system-2026.css). A largura fica no invólucro e o controle continua
+ * w-full, então o campo nunca briga com o grid e quebra sozinho em telas estreitas.
+ */
+const employeeGroups: { title: string; keys: string[] }[] = [
+  { title: 'Identificação', keys: ['nome_completo', 'data_nascimento', 'cpf', 'rg'] },
+  { title: 'Contato', keys: ['celular', 'telefone', 'email'] },
+  { title: 'Vínculo, jornada e custo', keys: ['matricula', 'data_admissao', 'cargo', 'departamento', 'regime_trabalho', 'turno_trabalho', 'numero_cracha_rfid', 'salario_nominal', 'custo_hora_homem', 'status'] },
+]
+const employeeFieldWidth: Record<string, string> = {
+  nome_completo: 'erp-field-name',
+  data_nascimento: 'erp-field-date',
+  cpf: 'erp-field-cpf',
+  rg: 'erp-field-number',
+  celular: 'erp-field-phone',
+  telefone: 'erp-field-phone',
+  email: 'erp-field-email',
+  matricula: 'erp-field-code',
+  data_admissao: 'erp-field-date',
+  cargo: 'erp-field-text',
+  departamento: 'erp-field-text',
+  regime_trabalho: 'erp-field-text',
+  turno_trabalho: 'erp-field-text',
+  numero_cracha_rfid: 'erp-field-number',
+  salario_nominal: 'erp-field-money',
+  custo_hora_homem: 'erp-field-money',
+  status: 'erp-field-text',
+}
 const tabs: { label: Tab; icon: typeof Users }[] = [
   { label: 'Visão geral', icon: Users },
   { label: 'Funcionários', icon: Users },
@@ -51,6 +115,13 @@ const tabs: { label: Tab; icon: typeof Users }[] = [
   { label: 'Acidentes', icon: CalendarDays },
   { label: 'Documentos', icon: FileText },
 ]
+const operationalFieldWidth = (field: Field) => {
+  if (field.key === 'observacoes' || field.key === 'justificativa') return 'erp-field-description'
+  if (field.type === 'date') return 'erp-field-date'
+  if (field.type === 'datetime-local') return 'erp-field-datetime'
+  if (field.type === 'number') return 'erp-field-money'
+  return 'erp-field-text'
+}
 const schemas: Record<Exclude<Tab, 'Funcionários' | 'Visão geral'>, { table: string; fields: Field[] }> = {
   'Ponto / Presença': { table: 'erp_rh_ponto_eventos', fields: [
     { key: 'funcionario_id', label: 'Funcionário', type: 'staff', required: true },
@@ -135,7 +206,8 @@ export default function RHIndustrial() {
     { key: 'data_nascimento', label: 'Data de nascimento', type: 'date', required: true },
     { key: 'cpf', label: 'CPF', required: true },
     { key: 'rg', label: 'RG' },
-    { key: 'celular', label: 'Celular / WhatsApp' },
+    { key: 'celular', label: 'Celular / WhatsApp', type: 'tel' },
+    { key: 'telefone', label: 'Telefone fixo', type: 'tel' },
     { key: 'email', label: 'E-mail corporativo', type: 'email' },
     { key: 'matricula', label: 'Matrícula', required: true },
     { key: 'data_admissao', label: 'Data de admissão', type: 'date', required: true },
@@ -240,7 +312,9 @@ export default function RHIndustrial() {
     if (!empresaId) return
     setBusy(true); setMessage('')
     try {
-      const payload: Record<string, unknown> = { empresa_id: empresaId, nome: form.nome_completo.trim(), nome_completo: form.nome_completo.trim(), atualizado_em: new Date().toISOString() }
+      const relogio = await relogioDoServidor()
+      if (!relogio.agora) throw new Error(relogio.aviso || 'Relógio do servidor indisponível; nenhum cadastro foi gravado.')
+      const payload: Record<string, unknown> = { empresa_id: empresaId, nome: form.nome_completo.trim(), nome_completo: form.nome_completo.trim(), atualizado_em: relogio.agora.toISOString() }
       for (const field of employeeFields) {
         const value = (form[field.key] ?? '').trim()
         if (field.required && !value) throw new Error('Preencha: ' + field.label)
@@ -298,33 +372,26 @@ export default function RHIndustrial() {
 
   const filteredStaff = staff.filter(person => [person.nome_completo, person.nome, person.cpf, person.matricula, person.cargo].some(value => String(value ?? '').toLowerCase().includes(query.toLowerCase())))
   const activeCount = staff.filter(person => !['desligado', 'inativo'].includes(String(person.status ?? '').toLowerCase())).length
-  const pendingTrainings = tab === 'Treinamentos' ? rows.filter(row => ['PENDENTE', 'VENCIDO', 'REPROVADO'].includes(String(row.status))) : []
   const staffName = (id: unknown) => staff.find(person => person.id === id)?.nome_completo ?? staff.find(person => person.id === id)?.nome ?? 'Funcionário não localizado'
 
   const fieldControl = (field: Field) => {
-    const common = { id: field.key, name: field.key, required: field.required, value: form[field.key] ?? '', onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => setForm(previous => ({ ...previous, [field.key]: event.target.value })), className: 'w-full min-w-0 h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100' }
+    const common = { id: field.key, name: field.key, required: field.required, value: form[field.key] ?? '', onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => setForm(previous => ({ ...previous, [field.key]: event.target.value })), className: 'w-full min-w-0 h-[30px] rounded-[2px] border border-slate-300 bg-white px-2 text-xs font-semibold text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20' }
     if (field.type === 'select') return <select {...common}><option value="">Selecione…</option>{(field.options ?? []).map(option => <option key={option} value={option}>{option}</option>)}</select>
     if (field.type === 'staff') return <select {...common}><option value="">Selecione o colaborador…</option>{staff.map(person => <option key={person.id} value={person.id}>{person.matricula ? person.matricula + ' — ' : ''}{person.nome_completo ?? person.nome ?? person.id}</option>)}</select>
-    if (field.key === 'observacoes' || field.key === 'justificativa') return <textarea {...common} rows={2} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800" />
+    if (field.key === 'observacoes' || field.key === 'justificativa') return <textarea {...common} rows={2} className="w-full rounded-[2px] border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-800 outline-none focus:border-[#2D8DB8]" />
     return <input {...common} type={field.type ?? 'text'} step={field.type === 'number' ? '0.01' : undefined} />
   }
 
   return <main className="rh-page min-h-[70vh] bg-slate-50 p-3 text-slate-800 md:p-5">
-    <header className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-900 px-5 py-4 text-white shadow-sm">
-      <div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-sky-300">SYSNQRA ERP INDUSTRIAL · GESTÃO DE PESSOAS</p><h1 className="mt-1 text-xl font-extrabold text-white">Recursos Humanos</h1><p className="mt-1 text-xs text-slate-300">Cadastro, jornada, ocorrências, capacitação e férias</p></div>
-      <button onClick={() => empresaId && void reload(empresaId, tab)} className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-600 px-3 text-sm font-semibold text-white hover:bg-slate-800"><RefreshCw size={15}/> Atualizar</button>
-    </header>
-
-    <section className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><Users className="mb-2 text-sky-700" size={19}/><p className="text-xs text-slate-500">Funcionários cadastrados</p><strong className="text-2xl">{staff.length}</strong></div>
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CheckCircle2 className="mb-2 text-emerald-700" size={19}/><p className="text-xs text-slate-500">Ativos</p><strong className="text-2xl">{activeCount}</strong></div>
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><Clock3 className="mb-2 text-amber-700" size={19}/><p className="text-xs text-slate-500">Eventos de ponto no período</p><strong className="text-2xl">{tab === 'Ponto / Presença' ? rows.length : '—'}</strong></div>
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><GraduationCap className="mb-2 text-violet-700" size={19}/><p className="text-xs text-slate-500">Treinamentos pendentes</p><strong className="text-2xl">{tab === 'Treinamentos' ? pendingTrainings.length : '—'}</strong></div>
-    </section>
-
-    <nav className="mb-4 flex gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm" aria-label="Abas do módulo RH">
-      {tabs.map(item => { const Icon = item.icon; return <button key={item.label} onClick={() => { setTab(item.label); setForm(item.label === 'Funcionários' ? blank(employeeFields) : item.label === 'Visão geral' ? {} : blank(schemas[item.label as Exclude<Tab, 'Funcionários' | 'Visão geral'>].fields)); setEditingId(null); setMessage('') }} className={`flex min-h-10 shrink-0 items-center gap-2 rounded-lg px-3 text-xs font-bold transition ${tab === item.label ? 'bg-sky-700 text-white' : 'text-slate-600 hover:bg-slate-100'}`}><Icon size={15}/>{item.label}</button> })}
-    </nav>
+    {/* Ordem do proprietario em 2026-11-04: a fileira superior de cards repetia exatamente os indicadores da
+        Visão geral e ainda mostrava traço (—) no que não era da aba aberta. Saiu; as abas assumem o topo e os
+        numeros passam a ser lidos na Visão geral, onde todo valor ausente chega como 0 do banco. */}
+    <div className="mb-4 flex flex-wrap items-start gap-2">
+      <nav role="tablist" aria-label="Abas do módulo RH" className="flex min-w-0 flex-1 flex-nowrap gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm md:flex-wrap">
+        {tabs.map(item => { const Icon = item.icon; return <button key={item.label} type="button" role="tab" aria-selected={tab === item.label} onClick={() => { setTab(item.label); setForm(item.label === 'Funcionários' ? blank(employeeFields) : item.label === 'Visão geral' ? {} : blank(schemas[item.label as Exclude<Tab, 'Funcionários' | 'Visão geral'>].fields)); setEditingId(null); setMessage('') }} className={`flex min-h-[30px] shrink-0 items-center gap-2 rounded-[2px] px-3 text-xs font-bold transition ${tab === item.label ? 'bg-sky-700 text-white' : 'text-slate-600 hover:bg-slate-100'}`}><Icon size={15}/>{item.label}</button> })}
+      </nav>
+      <button type="button" onClick={() => empresaId && void reload(empresaId, tab)} className="inline-flex h-[30px] shrink-0 items-center gap-2 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"><RefreshCw size={14}/> Atualizar</button>
+    </div>
 
     {message && <div role="status" className={`mb-4 flex items-start gap-2 rounded-lg border px-3 py-2 text-sm ${/sucesso|salvo|gravado|enviado/i.test(message) ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-amber-200 bg-amber-50 text-amber-900'}`}>{message}</div>}
 
@@ -341,27 +408,32 @@ export default function RHIndustrial() {
           </div>
           <p className="pt-1 text-xs text-slate-500">Preencha os dados do colaborador. Os campos pessoais respeitam as proporções especificadas e os dados são gravados no banco da empresa selecionada.</p>
         </div>
-        <div className="grid grid-cols-1 content-start gap-4 md:grid-cols-12">
-          {employeeFields.map(field => {
-            const span = field.key === 'nome_completo' ? 'md:col-span-9' : field.key === 'data_nascimento' ? 'md:col-span-3' : ['cpf','rg','celular'].includes(field.key) ? 'md:col-span-3' : field.key === 'email' ? 'md:col-span-6' : 'md:col-span-6'
-            return <div key={field.key} className={span}><label htmlFor={field.key} className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-600">{field.label}{field.required ? ' *' : ''}</label>{fieldControl(field)}</div>
+        <div className="space-y-4">
+          {employeeGroups.map(group => {
+            const fields = group.keys.map(key => employeeFields.find(field => field.key === key)).filter((field): field is Field => Boolean(field))
+            return <div key={group.title}>
+              <h3 className="mb-2 border-b border-slate-200 pb-1 text-[10px] font-bold uppercase tracking-widest text-[#2D8DB8]">{group.title}</h3>
+              <div className="flex flex-wrap gap-x-4 gap-y-3">
+                {fields.map(field => <div key={field.key} className={employeeFieldWidth[field.key] ?? 'erp-field-text'}><label htmlFor={field.key} className="block text-[10px] font-bold uppercase tracking-wider text-slate-600">{field.label}{field.required ? ' *' : ''}</label>{fieldControl(field)}</div>)}
+              </div>
+            </div>
           })}
         </div>
         <div className="mt-5 flex flex-wrap justify-end gap-2 border-t border-slate-200 pt-4">
-          <button type="button" onClick={startNew} className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-300 px-4 text-sm font-semibold text-slate-700"><X size={15}/> Cancelar</button>
-          <button disabled={busy} type="submit" className="inline-flex h-9 items-center gap-2 rounded-lg bg-sky-700 px-4 text-sm font-bold text-white disabled:opacity-60"><Save size={15}/>{busy ? 'Gravando…' : 'Gravar'}</button>
+          <button type="button" onClick={startNew} className="inline-flex h-[30px] items-center gap-2 rounded-[2px] border border-slate-300 px-4 text-sm font-semibold text-slate-700"><X size={15}/> Cancelar</button>
+          <button disabled={busy} type="submit" className="inline-flex h-[30px] items-center gap-2 rounded-[2px] bg-sky-700 px-4 text-sm font-bold text-white disabled:opacity-60"><Save size={15}/>{busy ? 'Gravando…' : 'Gravar'}</button>
         </div>
       </form>
       <div className="border-t border-slate-200 p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><h3 className="font-bold">Funcionários cadastrados</h3><label className="relative"><Search size={14} className="absolute left-3 top-2.5 text-slate-400"/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Buscar nome, CPF, matrícula…" className="h-9 w-64 max-w-full rounded-lg border border-slate-300 pl-8 pr-3 text-sm"/></label></div>
-        <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-xs"><thead className="bg-slate-100 text-[10px] uppercase tracking-wide text-slate-600"><tr><th className="p-3">Matrícula</th><th className="p-3">Colaborador</th><th className="p-3">Cargo / departamento</th><th className="p-3">Situação</th><th className="p-3">Ação</th></tr></thead><tbody>{filteredStaff.map(person => <tr key={person.id} className="border-b border-slate-100"><td className="p-3">{display(person.matricula)}</td><td className="p-3 font-semibold">{display(person.nome_completo ?? person.nome)}<div className="mt-1 font-normal text-slate-500">{display(person.cpf)}</div></td><td className="p-3">{display(person.cargo)}<div className="mt-1 text-slate-500">{display(person.departamento)}</div></td><td className="p-3">{display(person.status)}</td><td className="p-3"><button onClick={() => void editStaff(person)} className="erp-edit-button erp-row-action rounded-md border border-slate-300 px-3 py-1.5 font-semibold hover:bg-slate-50">Editar</button></td></tr>)}{filteredStaff.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-slate-500">{busy ? 'Carregando registros…' : 'Nenhum funcionário encontrado.'}</td></tr>}</tbody></table></div>
+        <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-xs"><thead className="bg-slate-100 text-[10px] uppercase tracking-wide text-slate-600"><tr><th className="p-3">Matrícula</th><th className="p-3">Colaborador</th><th className="p-3">Cargo / departamento</th><th className="p-3">Situação</th><th className="p-3">Ação</th></tr></thead><tbody>{filteredStaff.map(person => <tr key={person.id} className="border-b border-slate-100"><td className="p-3">{display(person.matricula)}</td><td className="p-3 font-semibold">{display(person.nome_completo ?? person.nome)}<div className="mt-1 font-normal text-slate-500">{display(person.cpf)}</div></td><td className="p-3">{display(person.cargo)}<div className="mt-1 text-slate-500">{display(person.departamento)}</div></td><td className="p-3">{display(person.status)}</td><td className="p-3"><button type="button" onClick={() => void editStaff(person)} className="erp-edit-button border border-slate-300 font-semibold text-slate-700 hover:bg-slate-50">Editar</button></td></tr>)}{filteredStaff.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-slate-500">{busy ? 'Carregando registros…' : 'Nenhum funcionário encontrado.'}</td></tr>}</tbody></table></div>
       </div>
     </section> : <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-200 bg-slate-100 px-4 py-3"><h2 className="font-bold text-slate-900">{tab}</h2><p className="mt-1 text-xs text-slate-500">Registros persistidos no Supabase com isolamento por empresa.</p></div>
       {tab === 'Ponto / Presença' && <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 p-4"><label className="text-xs font-bold text-slate-600">Consultar dia <input type="date" value={filterDate} onChange={event => setFilterDate(event.target.value)} className="ml-2 h-9 rounded-lg border border-slate-300 px-3 font-normal"/></label><span className="text-xs text-slate-500">Para controle físico de catraca ou relógio, conecte o equipamento ou a integração de origem.</span></div>}
-      <form onSubmit={saveOperational} className="grid grid-cols-1 gap-4 p-4 md:grid-cols-3">
-        {schemas[tab].fields.map(field => <div key={field.key}><label htmlFor={field.key} className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-600">{field.label}{field.required ? ' *' : ''}</label>{fieldControl(field)}</div>)}
-        <div className="flex items-end"><button disabled={busy} type="submit" className="inline-flex h-9 items-center gap-2 rounded-lg bg-sky-700 px-4 text-sm font-bold text-white disabled:opacity-60"><Save size={15}/> Gravar registro</button></div>
+      <form onSubmit={saveOperational} className="flex flex-wrap content-start items-end gap-x-4 gap-y-3 p-4">
+        {schemas[tab].fields.map(field => <div key={field.key} className={operationalFieldWidth(field)}><label htmlFor={field.key} className="block text-[10px] font-bold uppercase tracking-wider text-slate-600">{field.label}{field.required ? ' *' : ''}</label>{fieldControl(field)}</div>)}
+        <div className="flex items-end"><button disabled={busy} type="submit" className="inline-flex h-[30px] items-center gap-2 rounded-[2px] bg-sky-700 px-4 text-xs font-bold text-white disabled:opacity-60"><Save size={15}/> Gravar registro</button></div>
       </form>
       <div className="overflow-x-auto border-t border-slate-200 p-4"><table className="w-full min-w-[760px] text-left text-xs"><thead className="bg-slate-100 text-[10px] uppercase text-slate-600"><tr><th className="p-3">Funcionário</th>{schemas[tab].fields.filter(field => field.key !== 'funcionario_id' && field.key !== 'observacoes' && field.key !== 'justificativa').slice(0,4).map(field => <th key={field.key} className="p-3">{field.label}</th>)}<th className="p-3">Anexo</th></tr></thead><tbody>{rows.map(row => <tr key={row.id} className="border-b border-slate-100"><td className="p-3 font-semibold">{staffName(row.funcionario_id)}</td>{schemas[tab].fields.filter(field => field.key !== 'funcionario_id' && field.key !== 'observacoes' && field.key !== 'justificativa').slice(0,4).map(field => <td key={field.key} className="p-3">{display(row[field.key])}</td>)}<td className="p-3">{(tab === 'Ausências' || tab === 'Treinamentos' || tab === 'Documentos') && <label className="cursor-pointer font-semibold text-sky-700 underline">{row[tab === 'Ausências' ? 'anexo_path' : tab === 'Treinamentos' ? 'certificado_path' : 'documento_path'] ? 'Substituir anexo' : 'Anexar arquivo'}<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" className="sr-only" onChange={event => { const file = event.target.files?.[0]; if (!file) return; if (file.size > 5 * 1024 * 1024) { setMessage('O arquivo deve ter no máximo 5 MB.'); return } void uploadOperationalAttachment(file, row.id, tab === 'Ausências' ? 'anexo_path' : tab === 'Treinamentos' ? 'certificado_path' : 'documento_path').catch(error => setMessage(errorText(error))) }}/></label>}{tab !== 'Ausências' && tab !== 'Treinamentos' && tab !== 'Documentos' ? '—' : null}</td></tr>)}{rows.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-slate-500">{busy ? 'Carregando registros…' : 'Nenhum registro para os filtros atuais.'}</td></tr>}</tbody></table></div>
     </section>}

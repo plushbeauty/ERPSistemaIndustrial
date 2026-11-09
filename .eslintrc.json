@@ -55,6 +55,8 @@
     "no-extra-semi": "off"
   },
   "globals": {
-    "React": "readonly"
+    "React": "readonly",
+    "__APP_VERSION__": "readonly",
+    "__SYNQRA_CARIMBO__": "readonly"
   }
 }

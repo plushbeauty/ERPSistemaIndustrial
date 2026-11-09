@@ -1,6 +1,6 @@
 -- SYSNQRA ERP INDUSTRIAL | SGQ | Formulário RPNC (modelo SoftExpert), auditorias,
 -- pasta virtual de evidências, varredura de recorrência e plano CAPA dinâmico.
--- Autor: FernandoSchu · 2026-10-31
+-- Autor: FernandoSch · 2026-10-31
 -- Migração 100% aditiva: não altera a RPC erp_sgq_abrir_rpnc, o fluxo da tela
 -- aprovada /pageprincipal/qualidade/rpnc nem as políticas de storage existentes.
 begin;

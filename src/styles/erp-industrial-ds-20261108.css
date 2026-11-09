@@ -1,0 +1,557 @@
+/*
+ * @AUTOR: FernandoSch
+ * @DATA_REVISAO_APROVACAO: 2026-11-08
+ * @REVISAO: REV-INDUSTRIAL-DS-20261108-01 — sistema visual unico do ERP: chrome navy, superficie
+ *   clara, acento institucional unico, estados semanticos e convergencia das familias legadas
+ * @STATUS_APROVACAO: ordem do proprietario em 2026-11-08 ("pode mudar cor do sistema todo e
+ *   aprimorar ele baseado nos melhores sistemas ERP industrial"). Camada visual apenas: nao altera
+ *   dados, rotas, permissoes, consultas nem os arquivos travados em scripts/verify-approved-ui-lock.mjs.
+ *
+ * O que foi medido antes de escrever esta folha:
+ * 1) A barra superior do shell e branca, entao o conteudo e o chrome tem o mesmo peso visual. Os ERPs
+ *    industriais de referencia (SAP Fiori/Horizon, Ignition, AVEVA) separam navegacao de trabalho com
+ *    uma barra escura e mantem o conteudo claro. Aqui a barra vira navy institucional (#123B50) e o
+ *    conteudo fica branco sobre fundo neutro.
+ * 2) O fundo da area de trabalho e um gradiente azul-claro e os cartoes usam .bg-white = #f8fcfe; a
+ *    diferenca entre cartao e fundo e quase nula. Passa a existir uma superficie branca sobre um fundo
+ *    neutro unico (#F2F7F9).
+ * 3) Sobraram familias com paleta propria: .industrial-primary (gradiente azul), .mw3-btn.primary e
+ *    .erp-premium-button (#2563EB), .primary (#2D8DB8), .admin-global-nav.is-active (#1D5FD1). Todas
+ *    convergem para a acao primaria navy. Verde, ambar e vermelho continuam reservados a semantica.
+ * 4) O dourado #C9961C continua sendo o unico estado ATIVO (abas, item de menu, item de sidebar).
+ * 5) As telas A4 de impressao, o card navy de abertura (.erp-page-intro), o painel de tablet, o Portal
+ *    do Operador, as abas RPNC e os cards SGQ mantem contrato proprio e ficam FORA desta folha.
+ *
+ * Escopo: .erp-global-surface (chrome do shell + conteudo autenticado). Importada depois de
+ * erp-premium-global-20261108.css em src/AppEntryV2.tsx para vencer a cascata por ordem e por
+ * especificidade (o <style> interno de ERPHorizontalShell usa seletores de uma classe).
+ */
+
+:root {
+  --ds-navy: #123b50;
+  --ds-navy-deep: #0a2233;
+  --ds-navy-soft: #17445a;
+  --ds-brand: #2d8db8;
+  --ds-brand-deep: #1f7d9e;
+  --ds-brand-soft: #eaf4f8;
+  --ds-bg: #f2f7f9;
+  --ds-surface: #ffffff;
+  --ds-soft: #f0f6f9;
+  --ds-line: #d5e1e8;
+  --ds-line-strong: #b8cdd5;
+  --ds-ink: #123b50;
+  --ds-ink-2: #1f3a47;
+  --ds-muted: #5b7480;
+  --ds-ok: #1f7a4d;
+  --ds-ok-soft: #eaf7ef;
+  --ds-ok-line: #b7e4c7;
+  --ds-warn: #9a5b08;
+  --ds-warn-soft: #fff4df;
+  --ds-warn-line: #f0d79a;
+  --ds-danger: #b4232d;
+  --ds-danger-soft: #fff0f0;
+  --ds-danger-line: #f6c6c9;
+  --ds-info: #176487;
+  --ds-info-soft: #eaf6fa;
+  --ds-info-line: #bfe0e9;
+  --ds-gold: #c9961c;
+  --ds-gold-deep: #a87b12;
+  --ds-radius: 2px;
+  --ds-shadow-1: 0 1px 2px rgb(18 59 80 / 6%);
+  --ds-shadow-2: 0 10px 28px rgb(18 59 80 / 16%);
+}
+
+/* ---------------------------------------------------------------------------
+   1. CHROME DO SHELL. Barra escura, conteudo do menu branco. O estado ativo
+   continua dourado, igual as abas; nada aqui usa laranja ou azul de link.
+   ------------------------------------------------------------------------- */
+.erp-global-surface .erp-horizontal-shell {
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+}
+
+.erp-global-surface .erp-windows-topbar {
+  background: linear-gradient(90deg, #0a2233 0%, #123b50 58%, #164a63 100%) !important;
+  border-bottom: 1px solid #08202f !important;
+  box-shadow: inset 0 -2px 0 rgb(201 150 28 / 45%), 0 2px 8px rgb(10 34 51 / 18%) !important;
+  color: #fff !important;
+}
+
+.erp-global-surface .erp-windows-start-button {
+  border-color: rgb(255 255 255 / 22%) !important;
+  border-radius: var(--ds-radius) !important;
+  background: rgb(255 255 255 / 8%) !important;
+}
+
+.erp-global-surface .erp-windows-start-button:hover {
+  border-color: rgb(255 255 255 / 40%) !important;
+  background: rgb(255 255 255 / 18%) !important;
+}
+
+.erp-global-surface .erp-windows-start-button.is-open {
+  border-color: var(--ds-gold-deep) !important;
+  background: var(--ds-gold) !important;
+}
+
+.erp-global-surface .erp-windows-start-label {
+  color: #fff !important;
+}
+
+.erp-global-surface .erp-windows-start-button.is-open .erp-windows-start-label {
+  color: var(--ds-navy) !important;
+}
+
+.erp-global-surface .erp-windows-system-title strong {
+  color: #fff !important;
+}
+
+.erp-global-surface .erp-windows-system-title span {
+  color: #a9c6d3 !important;
+}
+
+.erp-global-surface .erp-windows-session {
+  color: #d7e6ee !important;
+}
+
+.erp-global-surface .erp-windows-session time span {
+  color: #7fa3b5 !important;
+}
+
+.erp-global-surface .erp-windows-user {
+  border-left-color: rgb(255 255 255 / 18%) !important;
+}
+
+.erp-global-surface .erp-windows-user span {
+  color: #eaf4f8 !important;
+}
+
+.erp-global-surface .erp-windows-help,
+.erp-global-surface .erp-windows-logout {
+  border-color: rgb(255 255 255 / 22%) !important;
+  border-radius: var(--ds-radius) !important;
+  background: rgb(255 255 255 / 8%) !important;
+  color: #eaf4f8 !important;
+}
+
+.erp-global-surface .erp-windows-help:hover,
+.erp-global-surface .erp-windows-logout:hover {
+  border-color: rgb(255 255 255 / 42%) !important;
+  background: rgb(255 255 255 / 20%) !important;
+  color: #fff !important;
+}
+
+/* Busca global: campo translucido sobre o navy, texto branco. */
+.erp-global-surface .erp-windows-quick-search {
+  border-color: rgb(255 255 255 / 22%) !important;
+  border-radius: var(--ds-radius) !important;
+  background: rgb(255 255 255 / 10%) !important;
+  color: #d7e6ee !important;
+}
+
+.erp-global-surface .erp-windows-quick-search input {
+  color: #fff !important;
+}
+
+.erp-global-surface .erp-windows-quick-search input::placeholder {
+  color: #a9c6d3 !important;
+  opacity: 1;
+}
+
+.erp-global-surface .erp-windows-quick-search button {
+  color: #d7e6ee !important;
+}
+
+.erp-global-surface .erp-windows-quick-search:focus-within {
+  border-color: #48b7c7 !important;
+  background: rgb(255 255 255 / 16%) !important;
+  box-shadow: 0 0 0 2px rgb(72 183 199 / 26%) !important;
+}
+
+/* Menu de modulos: painel branco, cabecalho navy, filete dourado de estado ativo. */
+.erp-global-surface .erp-windows-start-menu {
+  border: 1px solid var(--ds-line-strong) !important;
+  border-top: 3px solid var(--ds-gold) !important;
+  border-radius: 0 0 var(--ds-radius) var(--ds-radius) !important;
+  box-shadow: var(--ds-shadow-2) !important;
+}
+
+.erp-global-surface .erp-windows-start-heading {
+  border-bottom-color: #0f2e42 !important;
+  background: #0f2e42 !important;
+}
+
+.erp-global-surface .erp-windows-start-heading strong {
+  color: #fff !important;
+}
+
+.erp-global-surface .erp-windows-start-heading small {
+  color: #a9c6d3 !important;
+}
+
+.erp-global-surface .erp-windows-start-heading > button {
+  color: #eaf4f8 !important;
+}
+
+.erp-global-surface .erp-windows-menu-search {
+  border-radius: var(--ds-radius) !important;
+}
+
+.erp-global-surface .erp-windows-menu-row.is-active {
+  border-color: #dbe9ef !important;
+  background: #f2f8fa !important;
+  box-shadow: inset 3px 0 var(--ds-gold);
+}
+
+.erp-global-surface .erp-windows-menu-main {
+  color: var(--ds-ink-2) !important;
+}
+
+.erp-global-surface .erp-windows-menu-main:hover,
+.erp-global-surface .erp-windows-menu-expand:hover {
+  background: #eef6fa !important;
+}
+
+.erp-global-surface .erp-windows-menu-children {
+  border-left-color: var(--ds-line) !important;
+}
+
+.erp-global-surface .erp-windows-menu-children button {
+  color: #33525f !important;
+}
+
+.erp-global-surface .erp-windows-menu-children button:hover {
+  background: #eef6fa !important;
+  color: var(--ds-ink) !important;
+}
+
+.erp-global-surface .erp-windows-menu-children button.is-active,
+.erp-global-surface .erp-windows-menu-children button.is-rfq-active {
+  border-color: var(--ds-line) !important;
+  background: var(--ds-brand-soft) !important;
+  color: var(--ds-ink) !important;
+  box-shadow: inset 3px 0 var(--ds-gold) !important;
+  font-weight: 800;
+}
+
+.erp-global-surface .erp-windows-start-footer {
+  border-top-color: var(--ds-line) !important;
+  background: #f4f9fb !important;
+  color: #33525f !important;
+}
+
+.erp-global-surface .erp-windows-help-panel {
+  border-color: var(--ds-line-strong) !important;
+  border-radius: var(--ds-radius) !important;
+  box-shadow: var(--ds-shadow-2) !important;
+}
+
+/* ---------------------------------------------------------------------------
+   2. SUPERFICIE DE TRABALHO. Fundo neutro unico; cartao branco de verdade.
+   A faixa de alerta de build fora da linhagem continua vermelha de proposito.
+   ------------------------------------------------------------------------- */
+.erp-global-surface .erp-horizontal-workspace {
+  background: var(--ds-bg) !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace .bg-white {
+  background-color: var(--ds-surface) !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace .bg-slate-50 {
+  background-color: #f4f9fb !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace .bg-slate-100 {
+  background-color: #eaf1f5 !important;
+}
+
+/* ---------------------------------------------------------------------------
+   3. CONTROLES. A altura e a tipografia ja vem da camada premium; aqui entram
+   hover, cor de selecao e foco visivel fora do input.
+   ------------------------------------------------------------------------- */
+.erp-global-surface .erp-horizontal-workspace input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='hidden']):hover,
+.erp-global-surface .erp-horizontal-workspace select:not([multiple]):hover {
+  border-color: var(--ds-line-strong) !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace :is(input[type='checkbox'], input[type='radio'], input[type='range'], progress) {
+  accent-color: var(--ds-brand);
+}
+
+.erp-global-surface .erp-horizontal-workspace :is(button, a, [role='tab'], [role='button'], summary):focus-visible {
+  outline: 2px solid var(--ds-brand) !important;
+  outline-offset: 1px !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+/* ---------------------------------------------------------------------------
+   4. BOTOES. Uma acao primaria navy para todo o ERP. Verde/ambar/vermelho
+   permanecem para sucesso/aviso/erro. Azul generico e laranja viram navy.
+   ------------------------------------------------------------------------- */
+.erp-global-surface .erp-horizontal-workspace :is(
+  .primary,
+  .industrial-primary,
+  .erp-primary-action,
+  .erp-premium-button,
+  .mw3-btn.primary,
+  .pcp-top-tablet,
+  .compras-button--primary,
+  .erp-button--primary,
+  button[data-variant='primary']
+) {
+  border-color: #0e2c3d !important;
+  background: var(--ds-navy) !important;
+  color: #fff !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace :is(
+  .primary,
+  .industrial-primary,
+  .erp-primary-action,
+  .erp-premium-button,
+  .mw3-btn.primary,
+  .pcp-top-tablet,
+  .compras-button--primary,
+  .erp-button--primary,
+  button[data-variant='primary']
+):hover:not(:disabled) {
+  border-color: var(--ds-brand-deep) !important;
+  background: var(--ds-brand-deep) !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace :is(.industrial-secondary, .compras-button--light, .secondary-v2) {
+  border-color: var(--ds-line-strong) !important;
+  background: #fff !important;
+  color: var(--ds-ink) !important;
+}
+
+/* Utilitarios copiados do Tailwind: azul/indigo/sky/ciano e laranja deixam de
+   competir com a acao primaria. Vermelho e verde ficam intactos (semantica). */
+.erp-global-surface .erp-horizontal-workspace :is(button, a[role='button']):is(
+  [class*='bg-[#2563eb]'],
+  [class*='bg-[#2563EB]'],
+  [class*='bg-[#1d4ed8]'],
+  [class*='bg-[#1D4ED8]'],
+  [class*='bg-[#1e40af]'],
+  [class*='bg-[#2D8DB8]'],
+  [class*='bg-[#2d8db8]'],
+  [class*='bg-blue-6'],
+  [class*='bg-indigo-6'],
+  [class*='bg-sky-6'],
+  [class*='bg-cyan-6'],
+  [class*='bg-violet-6'],
+  [class*='bg-purple-6'],
+  [class*='bg-[#f97316]'],
+  [class*='bg-[#F97316]'],
+  [class*='bg-orange-5'],
+  [class*='bg-orange-6']
+) {
+  border-color: #0e2c3d !important;
+  background: var(--ds-navy) !important;
+  color: #fff !important;
+}
+
+/* Texto de destaque azul legado passa a usar o acento institucional. */
+.erp-global-surface .erp-horizontal-workspace :is(
+  [class*='text-[#2563eb]'],
+  [class*='text-[#2563EB]'],
+  [class*='text-[#1d4ed8]'],
+  [class*='text-[#1D4ED8]'],
+  [class*='text-sky-7'],
+  [class*='text-blue-7']
+):not([class*='text-white']) {
+  color: var(--ds-brand-deep) !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace :is([class*='text-[#0f172a]'], [class*='text-slate-900']) {
+  color: var(--ds-ink) !important;
+}
+
+/* ---------------------------------------------------------------------------
+   5. TABELAS. Cabecalho claro unico, zebra quase invisivel e hover legivel.
+   Linhas que trazem cor propria (status) continuam com a cor da tela.
+   ------------------------------------------------------------------------- */
+.erp-global-surface .erp-horizontal-workspace table:where(:not(.sr-body *):not(.ficha-print-sheet *):not(.cep-print-sheet *):not(.op-print-sheet *):not(.cq-print *):not(.print-area *)) tbody tr:nth-child(even):not([class*='bg-']) {
+  background-color: #f8fbfc !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace table:where(:not(.sr-body *):not(.ficha-print-sheet *):not(.cep-print-sheet *):not(.op-print-sheet *):not(.cq-print *):not(.print-area *)) tbody tr:hover:not([class*='bg-']) {
+  background-color: #eef7fa !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace table:where(:not(.sr-body *):not(.ficha-print-sheet *):not(.cep-print-sheet *):not(.op-print-sheet *):not(.cq-print *):not(.print-area *)) thead th {
+  color: #17445a !important;
+  border-bottom: 1px solid #cfe1e7 !important;
+}
+
+/* ---------------------------------------------------------------------------
+   6. ABAS. O dourado de estado ativo e intocado (erp-active-gold-20261101).
+   Aqui so entra o raio e a transicao das inativas.
+   ------------------------------------------------------------------------- */
+.erp-global-surface .erp-horizontal-workspace :is([role='tab'], [role='tablist'] button, .compras-tab, .fiscal-tab, .rh-tab, .industrial-tabs button, .mw3-tabs button) {
+  border-radius: var(--ds-radius);
+}
+
+/* ---------------------------------------------------------------------------
+   7. SELOS E AVISOS. Mesma paleta semantica em qualquer modulo.
+   ------------------------------------------------------------------------- */
+.erp-global-surface .erp-horizontal-workspace :is(
+  .compras-status,
+  .status-badge,
+  .industrial-status,
+  .ips-badge,
+  .sgq-badge
+) {
+  border-radius: var(--ds-radius) !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+
+.erp-global-surface .erp-horizontal-workspace :is(
+  .compras-status--success,
+  .compras-notice--success,
+  .notice--success,
+  .ips-notice--success
+) {
+  border-color: var(--ds-ok-line) !important;
+  background: var(--ds-ok-soft) !important;
+  color: var(--ds-ok) !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace :is(
+  .compras-status--warning,
+  .compras-notice--warning,
+  .notice--warning,
+  .ips-notice--warning
+) {
+  border-color: var(--ds-warn-line) !important;
+  background: var(--ds-warn-soft) !important;
+  color: var(--ds-warn) !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace :is(
+  .compras-status--danger,
+  .compras-notice--error,
+  .notice--error,
+  .error,
+  .ips-alert,
+  .ips-notice--error
+) {
+  border-color: var(--ds-danger-line) !important;
+  background: var(--ds-danger-soft) !important;
+  color: var(--ds-danger) !important;
+}
+
+/* ---------------------------------------------------------------------------
+   8. CARTOES, KPIs E PAINEIS. Superficie branca, raio 2px, sombra minima e
+   uma unica escala de numero. Vale tambem para as familias de Compras e
+   Administracao, que ainda tinham raios de 6 a 10px.
+   ------------------------------------------------------------------------- */
+.erp-global-surface .erp-horizontal-workspace :is(
+  .compras-panel,
+  .compras-header,
+  .compras-tabs,
+  .compras-kpi,
+  .compras-notice,
+  .compras-table-scroll,
+  .compras-flow-step,
+  .compras-quick-actions button,
+  .compras-search,
+  .compras-order-totals,
+  .compras-grid-input,
+  .compras-remove-item,
+  .admin-global-panel,
+  .admin-global-sidebar,
+  .admin-global-logo-row,
+  .admin-global-module,
+  .admin-global-note
+) {
+  border-radius: var(--ds-radius) !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace .compras-search {
+  height: var(--ds-control) !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace :is(
+  .compras-kpi,
+  .industrial-k-grid article,
+  .ips-kpi,
+  .sgq-adv-kpi,
+  .mw3-kpi
+) {
+  border: 1px solid var(--ds-line) !important;
+  border-radius: var(--ds-radius) !important;
+  background: #fff !important;
+  box-shadow: var(--ds-shadow-1) !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace :is(
+  .compras-kpi,
+  .industrial-k-grid article,
+  .ips-kpi,
+  .sgq-adv-kpi,
+  .mw3-kpi
+) :is(strong, b) {
+  color: var(--ds-ink) !important;
+  font-size: 18px !important;
+  line-height: 1.2 !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sidebar da Administracao: mesmo navy do shell e estado ativo dourado. */
+.erp-global-surface .erp-horizontal-workspace .admin-global-sidebar {
+  border-color: #0d2a3c !important;
+  background: #0f2e42 !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace .admin-global-nav.is-active {
+  border-color: var(--ds-gold-deep) !important;
+  background: var(--ds-gold) !important;
+  color: var(--ds-navy) !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace .admin-global-nav.is-active small {
+  color: #4a3a12 !important;
+}
+
+/* ---------------------------------------------------------------------------
+   9. DETALHES GERAIS. Selecao de texto, transicoes e estados vazios.
+   ------------------------------------------------------------------------- */
+.erp-global-surface .erp-horizontal-workspace ::selection {
+  background: #cfe7f0;
+  color: var(--ds-navy-deep);
+}
+
+.erp-global-surface .erp-horizontal-workspace :is(.crud-empty, .ips-empty, .mw3-empty, .qms-empty) {
+  border-color: #c3d6de !important;
+  background: #fbfdfe !important;
+  color: var(--ds-muted) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .erp-global-surface .erp-windows-quick-search,
+  .erp-global-surface .erp-windows-start-button,
+  .erp-global-surface .erp-windows-menu-main {
+    transition: none !important;
+  }
+}
+
+/* Papel: nada deste contrato de tela vale na impressao. As folhas A4 continuam
+   com o proprio @page e as duas cores institucionais nao sao impressas. */
+@media print {
+  .erp-global-surface .erp-horizontal-workspace {
+    background: #fff !important;
+  }
+
+  .erp-global-surface .erp-windows-start-menu,
+  .erp-global-surface .erp-windows-help-panel {
+    display: none !important;
+  }
+}

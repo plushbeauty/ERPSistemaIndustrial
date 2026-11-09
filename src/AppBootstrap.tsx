@@ -26,7 +26,7 @@ const PublicIndustrialHome = lazyPage(() => import('./PublicIndustrialHome'), 'P
 const AppEntryV2 = lazyPage(() => import('./AppEntryV2'), 'AppEntryV2')
 const SetupADMInicial = lazyPage(() => import('./pages/SetupADMInicial'), 'SetupADMInicial')
 const StaffOperatorLogin = lazyPage(() => import('./pages/StaffOperatorLogin'), 'StaffOperatorLogin')
-const publicPaths = new Set(['/','/home','/login','/login-operador','/planos'])
+const publicPaths = new Set(['/','/home','/login','/login-operador','/planos','/cadastro-empresa','/ativar-acesso','/blog','/contato'])
 
 class BootstrapBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state = { error: null as Error | null }
@@ -88,18 +88,20 @@ function AccessGate({ children }: { children: ReactNode }) {
           .select('id,auth_user_id,empresa_id,ativo,is_master,nivel_admin,perfil,deleted_at')
           .eq('auth_user_id', user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
         if (profileError) throw profileError
-        let master = false
-        let empresaId = profile?.empresa_id ?? null
-        if (profile?.auth_user_id === user.id) {
-          master = profile?.is_master === true && Number(profile?.nivel_admin ?? 0) >= 100 && String(profile?.perfil ?? '').trim().toUpperCase() === 'MASTER' && profile?.empresa_id === null
-        } else {
-          const { data: global, error: globalError } = await supabase.from('usuarios').select('id,auth_user_id,ativo,nivel_admin,perfil,empresa_id').eq('auth_user_id', user.id).eq('ativo', true).maybeSingle()
-          if (globalError) throw globalError
-          const globalRole = String(global?.perfil ?? '').trim().toUpperCase()
-          master = Boolean(global?.auth_user_id) && Number(global?.nivel_admin ?? 0) >= 100 && ['SUPER_ADMIN','MASTER','MASTER_ADMIN'].includes(globalRole) && global?.empresa_id === null
-          empresaId = global?.empresa_id ?? null
+        // ORDEM MASTER 2026-11-06 §5: identidade e autorização vêm exclusivamente do cadastro
+        // ativo em erp_usuarios — sem fallback para a tabela legada `usuarios` (PGRST205).
+        // O contrato estrito é o do banco: erp_is_master() (migration 20261012180000) e a Edge
+        // erp-master-bootstrap gravam perfil 'MASTER'; aceitar 'SUPER_ADMIN' aqui trancaria o dono.
+        if (!profile || profile.auth_user_id !== user.id) {
+          if (alive) setState('denied')
+          return
         }
-        if (!profile?.auth_user_id && !master) { if (alive) setState('denied'); return }
+        const master =
+          profile.is_master === true &&
+          Number(profile.nivel_admin) >= 100 &&
+          String(profile.perfil ?? '').trim().toUpperCase() === 'MASTER' &&
+          profile.empresa_id === null
+        const empresaId = profile.empresa_id ?? null
         if (!master && !empresaId) { if (alive) setState('denied'); return }
         if (!master) {
           const { data: empresa, error: empresaError } = await supabase.from('erp_empresas').select('id,ativo').eq('id', empresaId).eq('ativo', true).maybeSingle()

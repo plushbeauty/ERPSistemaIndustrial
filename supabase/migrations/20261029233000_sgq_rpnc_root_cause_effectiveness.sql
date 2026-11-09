@@ -15,7 +15,7 @@ alter table public.erp_rpnc
   check (prazo_eficacia_dias is null or prazo_eficacia_dias in (30, 60));
 
 create or replace function public.erp_sgq_validar_transicao_rpnc()
-returns trigger language plpgsql set search_path = pg_catalog, public as $
+returns trigger language plpgsql set search_path = pg_catalog, public as $$
 declare
   v_actor uuid;
   v_ineficaz boolean := coalesce(current_setting('app.sgq_eficacia_ineficaz', true), '') = 'true';
@@ -75,7 +75,7 @@ begin
   end if;
   return new;
 end
-$;
+$$;
 
 create or replace function public.erp_sgq_salvar_analise_rpnc(
   p_rpnc_id uuid,

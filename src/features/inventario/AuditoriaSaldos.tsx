@@ -1,8 +1,8 @@
 /**
- * @AUTOR: FernandoSchu
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @AUTOR: FernandoSch
+ * @DATA_REVISAO_APROVACAO: 2026-11-02
+ * @REVISAO: REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: "todos os edits do módulo estoque estão desalinhados e fora de tamanho". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).
+ * @STATUS_APROVACAO: CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela
  */
 import { ArrowLeft, Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -18,8 +18,8 @@ export default function AuditoriaSaldos(){
  const navigate=useNavigate();const [date,setDate]=useState('');const [motivo,setMotivo]=useState('');const [sku,setSku]=useState('');const [rows,setRows]=useState<Log[]>([]);const [loading,setLoading]=useState(false);const [error,setError]=useState('')
  const load=async()=>{setLoading(true);setError('');try{let q=supabase.from('erp_inventario_auditoria_saldos').select('id,ajustado_em,operador,sku,saldo_antigo,saldo_novo,ajuste_financeiro,motivo,justificativa').order('ajustado_em',{ascending:false}).limit(500);if(date)q=q.gte('ajustado_em',date+'T00:00:00').lt('ajustado_em',date+'T23:59:59');if(motivo)q=q.eq('motivo',motivo);if(sku)q=q.ilike('sku','%'+sku+'%');const r=await q;if(r.error)throw r.error;setRows((r.data??[]) as Log[])}catch(e){setError(e instanceof Error?e.message:'Falha ao carregar auditoria.')}finally{setLoading(false)}}
  useEffect(()=>{void load()},[])
- return <main className="min-h-screen bg-slate-50 p-3 text-gray-800"><div className="mx-auto max-w-[1600px] space-y-2">
-  <div className="flex items-center gap-2"><button type="button" onClick={()=>navigate('/estoque')} className={button+' border border-gray-200 bg-white text-gray-600'}><ArrowLeft size={12}/>Voltar</button><h1 className="text-[13px] font-bold text-gray-700">AUDITORIA DE SALDOS E INVENTÁRIO FÍSICO</h1></div>
+ return <main data-synqra-density="30px" className="min-h-screen bg-slate-50 p-3 text-gray-800"><div className="mx-auto max-w-[1600px] space-y-2">
+  <div className="flex items-center gap-2"><button type="button" onClick={()=>navigate('/pageprincipal/estoque/saldos')} className={button+' border border-gray-200 bg-white text-gray-600'}><ArrowLeft size={12}/>Voltar</button><p className="text-[9px] font-black uppercase tracking-wider text-slate-500">Auditoria de saldos e inventário físico</p></div>
   {error&&<div className="border border-red-200 bg-red-50 px-2 py-1 text-[10px] text-red-700">{error}</div>}
   <section className="rounded-md border border-gray-200 bg-white p-2 shadow-sm"><div className="flex items-end gap-2">
    <div className="w-[110px] shrink-0"><label className={label}>Data Ajuste</label><input id="edDataLog" className={input+' w-[110px]'} type="date" value={date} onChange={e=>setDate(e.target.value)}/></div>

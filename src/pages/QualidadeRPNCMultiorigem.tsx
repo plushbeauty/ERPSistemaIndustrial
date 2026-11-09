@@ -1,0 +1,118 @@
+/**
+ * @AUTOR: FernandoSch
+ * @DATA_REVISAO_APROVACAO: 2026-11-08
+ * @REVISAO: REV-RPNC-MULTIORIGEM-A4-20261108-01 — relatório de não conformidade emitido pelo SynqraRelatorioA4 compartilhado; fluxo e dados preservados
+ * @STATUS_APROVACAO: INCREMENTO DE IMPRESSAO A4 AUTORIZADO PELA ORDEM DO PROPRIETARIO DE 2026-11-08; PADRAO DE ABERTURA E FLUXO PRESERVADOS
+ */
+/**
+ * SYSNQRA — Central RPNC multiorigem e relatório para cliente
+ * @REVISAO_ANTERIOR: RPNC-MULTIORIGEM-2026-10-30-R1
+ * Ajuste: ciclo SGQ completo (8D simplificado) — criação E edição do registro com transição de status,
+ * verificação de eficácia, e seleção de cliente/produto/OP/responsável por cadastro (sem UUID manual).
+ * Dados reais em erp_rpnc; acesso condicionado à sessão e ao RLS existente.
+ */
+import { useCallback,useEffect,useMemo,useState,type CSSProperties,type ReactNode } from 'react'
+import { FileText,Plus,Pencil,RefreshCw,Search,Download,X } from 'lucide-react'
+import { supabase } from '../lib/supabaseClient'
+import { abrirRelatorio } from '../lib/report/abrirRelatorio'
+import type { Documento } from '../lib/report/documento'
+type Tipo='INTERNO'|'AUDITORIA_INTERNA'|'AUDITORIA_EXTERNA'|'RPNC_CLIENTE'|'RPNC_PROCESSO'
+type R={id:string;numero_rpnc:string|null;descricao_nao_conformidade:string|null;origem:string|null;gravidade:string|null;status:string|null;criado_em:string;sgq_tipo_registro:Tipo|null;sgq_cliente_id:string|null;sgq_produto_id:string|null;sgq_ordem_producao_id:string|null;sgq_lote:string|null;sgq_data_ocorrencia:string|null;sgq_responsavel_id:string|null;sgq_contencao:string|null;investigacao:string|null;acao_corretiva:string|null;sgq_acao_preventiva:string|null;sgq_verificacao_eficacia:string|null;sgq_data_prazo:string|null}
+type Lookup={id:string;label:string}
+const TYPES:{value:Tipo;label:string}[]=[{value:'INTERNO',label:'RPNC Interno'},{value:'AUDITORIA_INTERNA',label:'Auditoria Interna'},{value:'AUDITORIA_EXTERNA',label:'Auditoria Externa'},{value:'RPNC_CLIENTE',label:'RPNC Cliente'},{value:'RPNC_PROCESSO',label:'RPNC Processo'}]
+const STATUSES=['aberta','em análise','em tratamento','aguardando eficácia','encerrada']
+const inp:CSSProperties={width:'100%',height:30,border:'1px solid #cbd5e1',borderRadius:2,padding:'4px 7px',fontSize:11,color:'#123B50',background:'#fff',boxSizing:'border-box'}
+const panel:CSSProperties={background:'#fff',border:'1px solid #d5e2e7',borderRadius:2,padding:12}
+const lab:CSSProperties={display:'block',fontSize:9,fontWeight:900,letterSpacing:'.07em',textTransform:'uppercase',color:'#526d79',marginBottom:4}
+const typeName=(v:string|null)=>TYPES.find(t=>t.value===v)?.label||'Não classificado'
+const cap=(v:string|null|undefined)=>v?v.charAt(0).toUpperCase()+v.slice(1):'Menor'
+const dateBR=(v:string|null|undefined)=>{if(!v)return '—';const d=new Date(v.length===10?v+'T12:00:00':v);return Number.isNaN(d.getTime())?'—':d.toLocaleDateString('pt-BR')}
+export default function QualidadeRPNCMultiorigem(){
+ const [rows,setRows]=useState<R[]>([]),[selected,setSelected]=useState<R|null>(null),[loading,setLoading]=useState(false),[saving,setSaving]=useState(false),[query,setQuery]=useState(''),[tf,setTf]=useState('TODOS'),[sf,setSf]=useState('TODOS'),[formOpen,setFormOpen]=useState(false),[editingId,setEditingId]=useState<string|null>(null),[error,setError]=useState(''),[notice,setNotice]=useState('')
+ const [clientes,setClientes]=useState<Lookup[]>([]),[produtos,setProdutos]=useState<Lookup[]>([]),[ops,setOps]=useState<Lookup[]>([]),[usuarios,setUsuarios]=useState<Lookup[]>([])
+ const [f,setF]=useState({tipo:'INTERNO' as Tipo,status:'aberta',descricao:'',origem:'',gravidade:'Menor',data:new Date().toISOString().slice(0,10),cliente:'',produto:'',op:'',lote:'',responsavel:'',prazo:'',contencao:'',causa:'',corretiva:'',preventiva:'',eficacia:''})
+ const set=(k:keyof typeof f,v:string)=>setF(p=>({...p,[k]:v}))
+ const load=useCallback(async()=>{setLoading(true);setError('');try{const {data:empresa,error:empresaError}=await supabase.rpc('erp_current_empresa_id');if(empresaError||!empresa)throw empresaError||new Error('Empresa da sessão não identificada.');const {data,error}=await supabase.from('erp_rpnc').select('id,numero_rpnc,descricao_nao_conformidade,origem,gravidade,status,criado_em,sgq_tipo_registro,sgq_cliente_id,sgq_produto_id,sgq_ordem_producao_id,sgq_lote,sgq_data_ocorrencia,sgq_responsavel_id,sgq_contencao,investigacao,acao_corretiva,sgq_acao_preventiva,sgq_verificacao_eficacia,sgq_data_prazo').eq('empresa_id',String(empresa)).order('criado_em',{ascending:false}).limit(1000);if(error)throw error;setRows((data||[]) as R[])}catch(e){setError(e instanceof Error?e.message:'Falha ao consultar RPNC. Verifique migração e permissões.')}finally{setLoading(false)}},[])
+ const loadLookups=useCallback(async()=>{try{const {data:empresa}=await supabase.rpc('erp_current_empresa_id');if(!empresa)return;const tid=String(empresa);const [cl,pr,op,us]=await Promise.all([supabase.from('erp_clientes').select('id,codigo,nome').eq('empresa_id',tid).eq('ativo',true).order('nome').limit(3000),supabase.from('erp_produtos').select('id,codigo,nome').eq('empresa_id',tid).eq('ativo',true).order('codigo').limit(3000),supabase.from('erp_ordens_producao').select('id,numero_op').eq('empresa_id',tid).order('created_at',{ascending:false}).limit(2000),supabase.from('erp_usuarios').select('id,nome').eq('ativo',true).is('deleted_at',null).order('nome').limit(1000)])
+ setClientes((cl.data??[]).map(x=>({id:x.id,label:(x.codigo?x.codigo+' · ':'')+(x.nome??x.id.slice(0,8))})))
+ setProdutos((pr.data??[]).map(x=>({id:x.id,label:(x.codigo?x.codigo+' · ':'')+(x.nome??x.id.slice(0,8))})))
+ setOps((op.data??[]).map(x=>({id:x.id,label:x.numero_op?('OP '+x.numero_op):x.id.slice(0,8)})))
+ setUsuarios((us.data??[]).map(x=>({id:x.id,label:x.nome??x.id.slice(0,8)})))}catch{/* lookups são opcional; UUID manual permanece possível pela lista */}},[])
+ useEffect(()=>{void load();void loadLookups()},[load,loadLookups])
+ const visible=useMemo(()=>rows.filter(r=>(!query.trim()||[r.numero_rpnc,r.descricao_nao_conformidade,r.origem,r.sgq_lote].some(v=>String(v||'').toLowerCase().includes(query.toLowerCase())))&&(tf==='TODOS'||r.sgq_tipo_registro===tf)&&(sf==='TODOS'||String(r.status||'').toLowerCase()===sf)),[rows,query,tf,sf])
+ const nameOf=(list:Lookup[],id:string|null)=>list.find(x=>x.id===id)?.label||id||'—'
+ function openNew(){setEditingId(null);setF({tipo:'INTERNO',status:'aberta',descricao:'',origem:'',gravidade:'Menor',data:new Date().toISOString().slice(0,10),cliente:'',produto:'',op:'',lote:'',responsavel:'',prazo:'',contencao:'',causa:'',corretiva:'',preventiva:'',eficacia:''});setError('');setNotice('');setFormOpen(true)}
+ function openEdit(r:R){setEditingId(r.id);setF({tipo:r.sgq_tipo_registro??'INTERNO',status:String(r.status||'aberta'),descricao:r.descricao_nao_conformidade??'',origem:r.origem??'',gravidade:cap(r.gravidade),data:r.sgq_data_ocorrencia??new Date().toISOString().slice(0,10),cliente:r.sgq_cliente_id??'',produto:r.sgq_produto_id??'',op:r.sgq_ordem_producao_id??'',lote:r.sgq_lote??'',responsavel:r.sgq_responsavel_id??'',prazo:r.sgq_data_prazo??'',contencao:r.sgq_contencao??'',causa:r.investigacao??'',corretiva:r.acao_corretiva??'',preventiva:r.sgq_acao_preventiva??'',eficacia:r.sgq_verificacao_eficacia??''});setError('');setNotice('');setFormOpen(true)}
+ async function save(){setError('');setNotice('');if(f.descricao.trim().length<10){setError('Informe a descrição com pelo menos 10 caracteres.');return}if(!f.responsavel){setError('Selecione o responsável cadastrado.');return}if(f.tipo==='RPNC_CLIENTE'&&!f.cliente){setError('RPNC Cliente exige o cliente cadastrado.');return}if(f.status==='encerrada'&&f.eficacia.trim().length<10){setError('Para encerrar, registre a verificação de eficácia (mín. 10 caracteres) conforme SGQ.');return}setSaving(true);try{const {data:empresa,error:ee}=await supabase.rpc('erp_current_empresa_id');if(ee||!empresa)throw ee||new Error('Empresa da sessão não identificada.');const core={descricao_nao_conformidade:f.descricao.trim(),origem:f.origem.trim()||f.tipo.toLowerCase(),gravidade:f.gravidade.toLowerCase(),status:f.status,sgq_tipo_registro:f.tipo,sgq_cliente_id:f.cliente||null,sgq_produto_id:f.produto||null,sgq_ordem_producao_id:f.op||null,sgq_lote:f.lote.trim()||null,sgq_data_ocorrencia:f.data,sgq_responsavel_id:f.responsavel,sgq_data_prazo:f.prazo||null,sgq_contencao:f.contencao.trim()||null,investigacao:f.causa.trim()||null,acao_corretiva:f.corretiva.trim()||null,sgq_acao_preventiva:f.preventiva.trim()||null,sgq_verificacao_eficacia:f.eficacia.trim()||null};if(editingId){const {error}=await supabase.from('erp_rpnc').update(core).eq('id',editingId).eq('empresa_id',String(empresa));if(error)throw error;setNotice('RPNC atualizada no Supabase.')}else{const payload={...core,empresa_id:String(empresa),numero_rpnc:'RPNC-'+new Date().getFullYear()+'-'+crypto.randomUUID().replace(/-/g,'').slice(0,8).toUpperCase()};const {error}=await supabase.from('erp_rpnc').insert(payload);if(error)throw error;setNotice('Registro salvo no Supabase.')}setFormOpen(false);setSelected(null);await load()}catch(e){setError(e instanceof Error?e.message:'Falha ao gravar. Confirme o schema e as permissões RLS.')}finally{setSaving(false)}}
+ function pdf(r:R){
+  const codigo = r.numero_rpnc || r.id.slice(0, 8)
+  const documento: Documento = {
+   modulo: 'SGQ',
+   tipo: 'RPNC',
+   titulo: 'Relatório de Não Conformidade',
+   codigo,
+   subtitulo: 'Relatório para revisão e emissão controlada',
+   unidade: 'SYSNQRA ERP INDUSTRIAL',
+   qrcode: {
+    valor: window.location.origin + '/pageprincipal/qualidade/rpnc?registro=' + encodeURIComponent(r.id),
+    legenda: 'Consultar registro no SYSNQRA',
+   },
+   blocos: [
+    {
+     tipo: 'campos',
+     titulo: 'Identificação',
+     colunas: 2,
+     itens: [
+      { rotulo: 'Código', valor: codigo },
+      { rotulo: 'Tipo', valor: typeName(r.sgq_tipo_registro) },
+      { rotulo: 'Status', valor: r.status || '—' },
+      { rotulo: 'Origem', valor: r.origem || '—' },
+      { rotulo: 'Cliente', valor: nameOf(clientes, r.sgq_cliente_id) },
+      { rotulo: 'Data da ocorrência', valor: dateBR(r.sgq_data_ocorrencia || r.criado_em) },
+      { rotulo: 'Produto', valor: nameOf(produtos, r.sgq_produto_id) },
+      { rotulo: 'Ordem de produção', valor: nameOf(ops, r.sgq_ordem_producao_id) },
+      { rotulo: 'Lote', valor: r.sgq_lote || '—' },
+      { rotulo: 'Responsável', valor: nameOf(usuarios, r.sgq_responsavel_id) },
+      { rotulo: 'Gravidade', valor: r.gravidade || '—' },
+      { rotulo: 'Prazo', valor: dateBR(r.sgq_data_prazo) },
+     ],
+    },
+    { tipo: 'texto', titulo: 'Descrição da não conformidade', texto: r.descricao_nao_conformidade || '—' },
+    {
+     tipo: 'campos',
+     titulo: 'Contenção, investigação e ações',
+     colunas: 1,
+     itens: [
+      { rotulo: 'Contenção', valor: r.sgq_contencao || '—' },
+      { rotulo: 'Investigação / causa raiz', valor: r.investigacao || '—' },
+      { rotulo: 'Ação corretiva', valor: r.acao_corretiva || '—' },
+      { rotulo: 'Ação preventiva', valor: r.sgq_acao_preventiva || '—' },
+      { rotulo: 'Verificação de eficácia', valor: r.sgq_verificacao_eficacia || '—' },
+     ],
+    },
+    {
+     tipo: 'assinaturas',
+     titulo: 'Aprovação e ciência',
+     assinantes: [
+      { papel: 'Responsável da Qualidade / aprovação' },
+      { papel: 'Representante do cliente (quando aplicável)' },
+     ],
+    },
+   ],
+   observacoes: 'Relatório gerado a partir dos dados persistidos no Supabase. A impressão para PDF não constitui assinatura digital certificada. Revise informações confidenciais antes de compartilhar externamente.',
+  }
+  void abrirRelatorio(documento)
+ }
+ const Field=({title,children}:{title:string;children:ReactNode})=><label style={{display:'block',minWidth:0}}><span style={lab}>{title}</span>{children}</label>
+ const SelectField=({k,title,list,required,span=6}:{k:keyof typeof f;title:string;list:Lookup[];required?:boolean;span?:number})=><label style={{display:'block',minWidth:0,gridColumn:`span ${span}`}}><span style={lab}>{title+(required?' *':'')}</span>
+  <select value={f[k]} onChange={e=>set(k,e.target.value)} style={inp}><option value=''>— não vinculado —</option>{list.map(x=><option key={x.id} value={x.id}>{x.label}</option>)}{f[k]&&!list.some(x=>x.id===f[k])&&<option value={f[k]}>{f[k]} (fora da lista)</option>}</select>
+ </label>
+ return <main style={{minHeight:'calc(100vh - 80px)',background:'#F4FBFD',padding:12,color:'#123B50'}}><div style={{maxWidth:1700,margin:'0 auto'}}><header style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:10,flexWrap:'wrap',borderBottom:'1px solid #d2e2e8',paddingBottom:12,marginBottom:12}}><div><div style={{fontSize:9,fontWeight:900,letterSpacing:'.12em',color:'#2D8DB8'}}>SYSNQRA · SGQ · RNC/RPNC</div><h1 style={{fontSize:22,fontWeight:900,margin:'3px 0'}}>Gestão de Não Conformidades</h1><p style={{fontSize:11,color:'#617783',margin:0}}>Registro multiorigem, ciclo de tratamento (contenção → causa → ação → eficácia) e relatório de cliente.</p></div><div style={{display:'flex',gap:6}}><button onClick={()=>void load()} style={{...inp,width:'auto',display:'flex',alignItems:'center',gap:5,cursor:'pointer'}}><RefreshCw size={13}/>{loading?'Atualizando':'Atualizar'}</button><button onClick={openNew} style={{height:30,border:0,borderRadius:2,padding:'0 12px',background:'#123B50',color:'#fff',fontSize:11,fontWeight:800,display:'flex',alignItems:'center',gap:6,cursor:'pointer'}}><Plus size={13}/> Nova RPNC</button></div></header>{(error||notice)&&<div role="alert" style={{...panel,marginBottom:10,borderColor:error?'#d65b61':'#48b7c7',color:error?'#a82f36':'#176d70',fontSize:11}}>{error||notice}</div>}<section style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr))',gap:8,marginBottom:10}}>{[['REGISTROS',rows.length],['EM ABERTO',rows.filter(r=>!['encerrada','fechada','cancelada'].includes(String(r.status).toLowerCase())).length],['CLIENTE',rows.filter(r=>r.sgq_tipo_registro==='RPNC_CLIENTE').length],['AUDITORIAS',rows.filter(r=>String(r.sgq_tipo_registro||'').startsWith('AUDITORIA')).length]].map(([l,v])=><div key={String(l)} style={{...panel,borderTop:'2px solid #2D8DB8'}}><div style={{fontSize:9,fontWeight:900,color:'#627b86'}}>{l}</div><div style={{fontSize:22,fontWeight:900,marginTop:3}}>{v}</div></div>)}</section><section style={{...panel,display:'grid',gridTemplateColumns:'minmax(200px,1fr) 220px 220px',gap:8,marginBottom:10}}><label style={{position:'relative'}}><Search size={13} style={{position:'absolute',left:7,top:8,color:'#7a929d'}}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Pesquisar código, descrição, lote..." style={{...inp,paddingLeft:26}}/></label><select value={tf} onChange={e=>setTf(e.target.value)} style={inp}><option value="TODOS">Todos os tipos</option>{TYPES.map(t=><option key={t.value} value={t.value}>{t.label}</option>)}</select><select value={sf} onChange={e=>setSf(e.target.value)} style={inp}><option value="TODOS">Todos os status</option>{STATUSES.map(s=><option key={s} value={s}>{s}</option>)}</select></section><section style={{...panel,padding:0,overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:11}}><thead><tr>{['Código','Tipo','Descrição','Origem','Status','Prazo','Data','Ações'].map(h=><th key={h} style={{textAlign:'left',padding:'9px 10px',background:'#eaf4f7',borderBottom:'1px solid #cfdee4',fontSize:9,textTransform:'uppercase'}}>{h}</th>)}</tr></thead><tbody>{visible.map(r=><tr key={r.id} onClick={()=>setSelected(r)} style={{cursor:'pointer',background:selected?.id===r.id?'#edf8fb':'#fff'}}>{[r.numero_rpnc||r.id.slice(0,8),typeName(r.sgq_tipo_registro),r.descricao_nao_conformidade||'—',r.origem||'—',r.status||'—',r.sgq_data_prazo||'—',r.sgq_data_ocorrencia||r.criado_em?.slice(0,10)||'—'].map((v,i)=><td key={i} style={{padding:'9px 10px',borderBottom:'1px solid #edf2f4',maxWidth:i===2?340:160,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:i===2?'nowrap':'normal'}}>{v}</td>)}<td style={{padding:8,whiteSpace:'nowrap'}}><button onClick={e=>{e.stopPropagation();openEdit(r)}} style={{...inp,width:'auto',display:'inline-flex',gap:4,alignItems:'center',cursor:'pointer',marginRight:4}}><Pencil size={12}/> Editar</button><button onClick={e=>{e.stopPropagation();pdf(r)}} style={{...inp,width:'auto',display:'inline-flex',gap:4,alignItems:'center',cursor:'pointer'}}><Download size={12}/> PDF</button></td></tr>)}{visible.length===0&&<tr><td colSpan={8} style={{padding:24,textAlign:'center',color:'#718994'}}>{loading?'Carregando dados reais…':'Nenhum registro encontrado.'}</td></tr>}</tbody></table></section>{selected&&<section style={{...panel,marginTop:10}}><button onClick={()=>setSelected(null)} style={{...inp,width:'auto',float:'right',cursor:'pointer'}}><X size={12}/></button><strong>Detalhe · {selected.numero_rpnc||selected.id}</strong><p style={{fontSize:11}}>{selected.descricao_nao_conformidade}</p><div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:6,fontSize:10,marginTop:6}}>
+  <span><b>Tipo:</b> {typeName(selected.sgq_tipo_registro)} · <b>Status:</b> {selected.status}</span>
+  <span><b>Responsável:</b> {nameOf(usuarios,selected.sgq_responsavel_id)}</span>
+  <span><b>Cliente:</b> {nameOf(clientes,selected.sgq_cliente_id)}</span>
+  <span><b>Produto:</b> {nameOf(produtos,selected.sgq_produto_id)}</span>
+  <span><b>OP:</b> {nameOf(ops,selected.sgq_ordem_producao_id)} · <b>Lote:</b> {selected.sgq_lote||'—'}</span>
+  <span><b>Prazo:</b> {selected.sgq_data_prazo||'não definido'}</span>
+ </div><div style={{display:'flex',gap:6,marginTop:8}}><button onClick={()=>openEdit(selected)} style={{...inp,width:'auto',display:'inline-flex',alignItems:'center',gap:5,cursor:'pointer'}}><Pencil size={12}/> Editar tratamento</button><p style={{margin:0}}><button onClick={()=>pdf(selected)} style={{...inp,width:'auto',display:'inline-flex',alignItems:'center',gap:5,cursor:'pointer'}}><FileText size={12}/> Relatório para revisão</button></p></div></section>}{formOpen&&<div role="dialog" aria-modal="true" style={{position:'fixed',inset:0,zIndex:1000,background:'#0a202b7a',display:'grid',placeItems:'center',padding:12}}><section style={{background:'#fff',width:'min(1050px,100%)',maxHeight:'94vh',overflowY:'auto',border:'1px solid #cbdde3',borderRadius:2,padding:14}}><header style={{display:'flex',justifyContent:'space-between',marginBottom:12}}><strong>{editingId?'Editar não conformidade':'Nova não conformidade'}</strong><button onClick={()=>setFormOpen(false)} style={{...inp,width:'auto',cursor:'pointer'}}><X size={13}/></button></header><div style={{display:'grid',gridTemplateColumns:'repeat(12,minmax(0,1fr))',gap:9}}><div style={{gridColumn:'span 4'}}><Field title="Tipo de registro *"><select value={f.tipo} onChange={e=>set('tipo',e.target.value)} style={inp}>{TYPES.map(t=><option key={t.value} value={t.value}>{t.label}</option>)}</select></Field></div><div style={{gridColumn:'span 4'}}><Field title="Status"><select value={editingId?f.status:'aberta'} disabled={!editingId} onChange={e=>set('status',e.target.value)} style={{...inp,...(editingId?{}:{background:'#eef3f6'})}}>{STATUSES.map(s=><option key={s} value={s}>{s}</option>)}</select>{!editingId&&<span style={{fontSize:9,color:'#748b95'}}>Novos registros iniciam como "aberta".</span>}</Field></div><div style={{gridColumn:'span 4'}}><Field title="Gravidade"><select value={f.gravidade} onChange={e=>set('gravidade',e.target.value)} style={inp}><option>Menor</option><option>Maior</option><option>Critica</option></select></Field></div><div style={{gridColumn:'span 4'}}><Field title="Data da ocorrência *"><input type="date" value={f.data} onChange={e=>set('data',e.target.value)} style={inp}/></Field></div><div style={{gridColumn:'span 4'}}><Field title="Prazo de tratamento"><input type="date" value={f.prazo} onChange={e=>set('prazo',e.target.value)} style={inp}/></Field></div><div style={{gridColumn:'span 6'}}><Field title="Origem / referência"><input type="text" value={f.origem} onChange={e=>set('origem',e.target.value)} style={inp}/></Field></div><SelectField k='responsavel' title='Responsável (cadastro)' list={usuarios} required/>{f.tipo==='RPNC_CLIENTE'?<SelectField k='cliente' title='Cliente (cadastro)' list={clientes} required/>:<SelectField k='cliente' title='Cliente (cadastro)' list={clientes}/>}<SelectField k='produto' title='Produto (cadastro)' list={produtos}/><SelectField k='op' title='Ordem de produção' list={ops}/><div style={{gridColumn:'span 3'}}>{<Field title="Lote afetado"><input type="text" value={f.lote} onChange={e=>set('lote',e.target.value)} style={inp}/></Field>}</div>{[['descricao','Descrição da não conformidade *','span 12'],['contencao','Contenção imediata (ação de correção imediata — 8D D3)','span 6'],['causa','Investigação / causa raiz (8D D4)','span 6'],['corretiva','Ação corretiva (8D D5/D6)','span 4'],['preventiva','Ação preventiva (8D D7)','span 4'],['eficacia','Verificação de eficácia (8D D8 — obrigatória para encerrar)','span 4']].map(([k,t,span])=><div key={k} style={{gridColumn:span}}><Field title={t}><textarea value={f[k as keyof typeof f]} onChange={e=>set(k as keyof typeof f,e.target.value)} style={{...inp,height:k==='descricao'?62:58,resize:'vertical'}}/></Field></div>)}</div><footer style={{display:'flex',justifyContent:'flex-end',gap:7,marginTop:14,borderTop:'1px solid #e0e9ed',paddingTop:12}}><button onClick={()=>setFormOpen(false)} style={{...inp,width:'auto',cursor:'pointer'}}>Cancelar</button><button onClick={()=>void save()} disabled={saving} style={{...inp,width:'auto',padding:'0 16px',background:'#123B50',color:'#fff',border:0,fontWeight:900,cursor:'pointer'}}>{saving?'Salvando…':editingId?'Salvar alterações':'Salvar RPNC'}</button></footer></section></div>}<footer style={{fontSize:9,color:'#748b95',padding:'12px 2px'}}>RPNC-MULTIORIGEM-2026-10-30-R1 · Dados sob sessão autenticada e RLS do Supabase.</footer></div></main>
+}

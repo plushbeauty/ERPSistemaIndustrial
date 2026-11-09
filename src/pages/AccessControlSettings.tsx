@@ -1,15 +1,15 @@
 /**
- * @AUTOR: FernandoSchu
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-ACCESS-CONTROL-20261030-01 — controle de acesso do chão de fábrica (setores, matriz por módulo e modelos por nível)
- * @STATUS_APROVACAO: INTEGRAÇÃO REAL COM SUPABASE · exige a migration 20261030160000_erp_access_control_sector_matrix_v1 e o deploy da Edge Function erp-user-admin
+ * @AUTOR: FernandoSch
+ * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-ACCESS-CONTROL-SEM-MATRICULA-20261105-01 — erp_usuarios nao tem matricula; acesso do setor se identifica por login_nome e e-mail
+ * @STATUS_APROVACAO: CORRECAO DO HTTP 400 DO POSTGREST, AUTORIZADA PELO PROPRIETARIO EM 2026-11-05 · exige deploy da Edge Function erp-user-admin
  * Fontes: erp_setores, erp_postos_trabalho, erp_permissoes_modulos, erp_modulos_acesso,
  * erp_roles/erp_permissions/erp_role_permissions e auditoria em erp_audit_logs.
  * A criação de credenciais Auth é feita somente pela Edge Function erp-user-admin
  * (service role no servidor); a navegador cabem apenas sessão autenticada, RPC e RLS.
  */
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, CheckCircle2, Copy, KeyRound, Lock, RefreshCw, Save, ShieldCheck, UserPlus, Users } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Copy, KeyRound, Lock, Pencil, RefreshCw, Save, ShieldCheck, Trash2, UserPlus, Users } from 'lucide-react'
 import { invokeSecureEdgeFunction, supabase } from '../lib/supabaseClient'
 
 type Tab = 'matriz' | 'usuarios' | 'niveis'
@@ -20,7 +20,7 @@ type SectorRow = { id: string; codigo: string; nome: string }
 type WorkstationRow = { id: string; codigoPosto: string; nomePosto: string }
 type LevelTemplate = { roleId: string; codigo: string; nome: string; nivel: number; global: boolean; modulos: Record<string, MatrixFlags> }
 type SectorUser = {
-  id: string; nome: string; email: string; loginNome: string; matricula: string
+  id: string; nome: string; email: string; loginNome: string
   nivelAdmin: number; ativo: boolean; roleId: string; setorId: string
 }
 
@@ -110,7 +110,7 @@ type AdminResponse = {
 function normalizeUsers(raw: unknown): SectorUser[] {
   return asRecords(raw).map(item => ({
     id: text(item.id), nome: text(item.nome), email: text(item.email),
-    loginNome: text(item.login_nome), matricula: text(item.matricula),
+    loginNome: text(item.login_nome),
     nivelAdmin: integer(item.nivel_admin), ativo: item.ativo === true,
     roleId: text(item.role_id), setorId: text(item.setor_id),
   })).filter(item => item.id)
@@ -147,10 +147,10 @@ export default function AccessControlSettings() {
   const [formEmail, setFormEmail] = useState('')
   const [formSenha, setFormSenha] = useState('')
   const [formLogin, setFormLogin] = useState('')
-  const [formMatricula, setFormMatricula] = useState('')
   const [formTipo, setFormTipo] = useState<'COLETIVO' | 'POSTO'>('COLETIVO')
   const [formPostoId, setFormPostoId] = useState('')
   const [formRoleId, setFormRoleId] = useState('')
+  const [editingUserId, setEditingUserId] = useState('')
   const [generatedPassword, setGeneratedPassword] = useState('')
   const [userPasswords, setUserPasswords] = useState<Record<string, string>>({})
 
@@ -171,8 +171,7 @@ export default function AccessControlSettings() {
         } else {
           setError(rpcError.message)
         }
-        return
-      }
+      } else {
       const overview = normalizeOverview(data)
       snapshotEmpresa = overview.empresaId
       setEmpresaId(overview.empresaId)
@@ -187,6 +186,7 @@ export default function AccessControlSettings() {
         if (stillValid) return current
         return overview.setores[0]?.id ?? ''
       })
+      }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível carregar o controle de acesso.')
       return
@@ -241,7 +241,7 @@ export default function AccessControlSettings() {
     return [...map.entries()]
   }, [modulos])
   const sectorUsers = useMemo(
-    () => users.filter(user => user.setorId === setorId || (!setorId && user.setorId)),
+    () => users.filter(user => !setorId || user.setorId === setorId),
     [users, setorId],
   )
   const assignableRoles = useMemo(() => niveis.filter(level => nivelAdmin === 100 ? true : level.nivel < nivelAdmin), [niveis, nivelAdmin])
@@ -323,7 +323,6 @@ export default function AccessControlSettings() {
       action, nome: formNome.trim(), email: formEmail.trim(),
       setor_id: setorId || null, role_id: formRoleId || null,
       login_nome: (formLogin || suggestedLogin).trim().toLowerCase(),
-      matricula: formMatricula.trim() || null,
     }
     if (action === 'create_user' && formSenha) body.password = formSenha
 
@@ -340,11 +339,50 @@ export default function AccessControlSettings() {
       setMessage(`Acesso criado${created.login_nome ? ` para ${created.login_nome}` : ''}. Informe a senha temporária ao responsável do setor.`)
     }
     if (data.audit_warning) setError(data.audit_warning)
-    setFormNome(''); setFormEmail(''); setFormSenha(''); setFormLogin(''); setFormMatricula('')
+    setFormNome(''); setFormEmail(''); setFormSenha(''); setFormLogin('')
     await load()
   }
 
-  const runUserAction = async (user: SectorUser, action: 'set_active' | 'reset_password', payload: Record<string, unknown> = {}) => {
+  const beginEditUser = (user: SectorUser) => {
+    setEditingUserId(user.id)
+    setFormNome(user.nome)
+    setFormEmail(user.email)
+    setFormLogin(user.loginNome)
+    setFormRoleId(user.roleId)
+    setFormSenha('')
+    setMessage(`Editando ${user.nome || user.email}. O e-mail de autenticação permanece inalterado.`)
+    setError('')
+  }
+
+  const cancelEditUser = () => {
+    setEditingUserId('')
+    setFormNome(''); setFormEmail(''); setFormSenha(''); setFormLogin(''); setFormRoleId('')
+    setMessage('Edição cancelada.')
+  }
+
+  const updateUser = async (event: { preventDefault: () => void }) => {
+    event.preventDefault()
+    const user = users.find(item => item.id === editingUserId)
+    if (!user) { setError('Usuário selecionado não foi encontrado. Atualize a lista.'); return }
+    if (formNome.trim().length < 3) { setError('Informe um nome com pelo menos 3 caracteres.'); return }
+    setSaving(true); setError(''); setMessage('')
+    const body: Record<string, unknown> = {
+      action: 'update_user', user_id: user.id, empresa_id: empresaId || undefined,
+      nome: formNome.trim(), login_nome: formLogin.trim(),
+      setor_id: user.setorId || null,
+    }
+    if (formRoleId) body.role_id = formRoleId
+    const { data, error: invokeError } = await invokeSecureEdgeFunction<AdminResponse>('erp-user-admin', body)
+    setSaving(false)
+    if (invokeError) { setError(invokeError.message); return }
+    if (!data || data.ok !== true) { setError(data?.error ?? 'O serviço não confirmou a edição do usuário.'); return }
+    setMessage(data.message ?? 'Usuário atualizado com sucesso.')
+    setEditingUserId('')
+    setFormNome(''); setFormEmail(''); setFormSenha(''); setFormLogin(''); setFormRoleId('')
+    await load()
+  }
+
+  const runUserAction = async (user: SectorUser, action: 'set_active' | 'reset_password' | 'delete_user', payload: Record<string, unknown> = {}) => {
     setBusyUser(user.id); setError(''); setMessage('')
     const { data, error: invokeError } = await invokeSecureEdgeFunction<AdminResponse>('erp-user-admin', {
       action, user_id: user.id, empresa_id: empresaId || undefined, ...payload,
@@ -483,9 +521,9 @@ export default function AccessControlSettings() {
 
           {tab === 'usuarios' && (
             <section className="space-y-2">
-              <form className="rounded-md border border-slate-200 bg-white p-2 shadow-sm" onSubmit={event => void createUser(event, 'create_user')}>
-                <div className="mb-2 flex items-center gap-2 text-[11px] font-bold text-[#123B50]"><KeyRound size={13}/>Novo acesso de setor
-                  <span className="font-normal text-slate-500">— {selectedSector ? `${selectedSector.codigo} · ${selectedSector.nome}` : 'selecione o setor na aba Matriz'}</span>
+              <form className="rounded-md border border-slate-200 bg-white p-2 shadow-sm" onSubmit={event => void (editingUserId ? updateUser(event) : createUser(event, 'create_user'))}>
+                <div className="mb-2 flex items-center gap-2 text-[11px] font-bold text-[#123B50]"><KeyRound size={13}/>{editingUserId ? 'Editar acesso de usuário' : 'Novo acesso de setor'}
+                  <span className="font-normal text-slate-500">— {selectedSector ? `${selectedSector.codigo} · ${selectedSector.nome}` : 'vínculo com setor opcional'}</span>
                 </div>
                 <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
                   <div className="md:col-span-2"><span className={label}>Nome do acesso (setor ou posto)</span><input className={input} value={formNome} onChange={event => setFormNome(event.target.value)} placeholder="CQ — Inspeção de entrada" /></div>
@@ -501,21 +539,20 @@ export default function AccessControlSettings() {
                       {postos.map(item => <option key={item.id} value={item.id}>{item.codigoPosto} · {item.nomePosto}</option>)}
                     </select>
                   </div>
-                  <div className="md:col-span-2"><span className={label}>E-mail de acesso</span><input type="email" className={input} value={formEmail} onChange={event => setFormEmail(event.target.value)} placeholder="cq.setor@empresa.com.br" /></div>
+                  <div className="md:col-span-2"><span className={label}>E-mail de acesso</span><input type="email" className={input} value={formEmail} disabled={Boolean(editingUserId)} onChange={event => setFormEmail(event.target.value)} placeholder="cq.setor@empresa.com.br" /></div>
                   <div><span className={label}>Login (gerado do setor/posto)</span><input className={input} value={formLogin} onChange={event => setFormLogin(event.target.value)} placeholder={suggestedLogin || 'CQ-COLETIVO'} /></div>
-                  <div><span className={label}>Matrícula (opcional)</span><input className={input} value={formMatricula} onChange={event => setFormMatricula(event.target.value)} placeholder="1042" /></div>
                   <div><span className={label}>Perfil / nível de acesso</span>
                     <select className={input} value={formRoleId} onChange={event => setFormRoleId(event.target.value)}>
                       <option value="">Não definido</option>
                       {assignableRoles.map(item => <option key={item.roleId} value={item.roleId}>{item.nome} · nível {item.nivel}</option>)}
                     </select>
                   </div>
-                  <div className="md:col-span-2"><span className={label}>Senha (mín. 12 com A-Z, a-z, 0-9 e símbolo)</span><input type="password" className={input} value={formSenha} onChange={event => setFormSenha(event.target.value)} placeholder="em branco = senha temporária gerada pelo servidor" /></div>
+                  <div className="md:col-span-2"><span className={label}>Senha (mín. 12 com A-Z, a-z, 0-9 e símbolo)</span><input type="password" className={input} value={formSenha} disabled={Boolean(editingUserId)} onChange={event => setFormSenha(event.target.value)} placeholder="em branco = senha temporária gerada pelo servidor" /></div>
                 </div>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <button type="submit" className={primaryButton} disabled={saving || !setorId}><UserPlus size={12}/>{saving ? 'Enviando…' : 'Criar acesso do setor'}</button>
-                  <button type="button" className={lightButton} disabled={saving || !setorId} onClick={event => { event.preventDefault(); void createUser(event, 'invite_user') }}>Enviar convite por e-mail</button>
-                  <span className="text-[9px] text-slate-500">A identidade Auth é criada pela Edge Function erp-user-admin com service role no servidor; o navegador nunca recebe credencial privada.</span>
+                  <button type="submit" className={primaryButton} disabled={saving}>{editingUserId ? <Save size={12}/> : <UserPlus size={12}/>}{saving ? 'Salvando…' : editingUserId ? 'Salvar alterações' : 'Criar acesso do setor'}</button>
+                  {editingUserId ? <button type="button" className={lightButton} disabled={saving} onClick={cancelEditUser}>Cancelar edição</button> : <button type="button" className={lightButton} disabled={saving} onClick={event => { event.preventDefault(); void createUser(event, 'invite_user') }}>Enviar convite por e-mail</button>}
+                  <span className="text-[9px] text-slate-500">{editingUserId ? 'O e-mail de autenticação não é alterado nesta rotina. Toda mudança é validada no servidor e auditada.' : 'A identidade Auth é criada pela Edge Function erp-user-admin com service role no servidor; o navegador nunca recebe credencial privada.'}</span>
                 </div>
                 {generatedPassword && (
                   <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-[#E6A34A] bg-[#fdf6ea] px-2 py-1 text-[10px] text-[#8a5a12]">
@@ -526,25 +563,26 @@ export default function AccessControlSettings() {
               </form>
 
               <div className="overflow-auto rounded-md border border-slate-200 bg-white shadow-sm">
-                <table className="w-full min-w-[860px] border-collapse text-[10px]">
-                  <thead><tr className="h-7 bg-[#123B50] text-white"><th className="px-2 text-left font-normal">Acesso do setor</th><th className="px-2 text-left font-normal">E-mail / login</th><th className="w-[90px] px-2 text-center font-normal">Nível</th><th className="w-[110px] px-2 text-center font-normal">Matrícula</th><th className="w-[110px] px-2 text-center font-normal">Status</th><th className="w-[210px] px-2 text-center font-normal">Ações</th></tr></thead>
+                <table className="w-full min-w-[920px] border-collapse text-[10px]">
+                  <thead><tr className="h-7 bg-[#123B50] text-white"><th className="px-2 text-left font-normal">Acesso do setor</th><th className="px-2 text-left font-normal">E-mail / login</th><th className="w-[90px] px-2 text-center font-normal">Nível</th><th className="w-[110px] px-2 text-center font-normal">Status</th><th className="w-[330px] px-2 text-center font-normal">Ações</th></tr></thead>
                   <tbody>
                     {sectorUsers.map(user => (
                       <tr key={user.id} className="h-[30px] border-b border-slate-100 even:bg-slate-50">
                         <td className="px-2 font-bold text-[#123B50]">{user.nome || '—'}<span className="ml-1 text-[8px] font-normal text-slate-400">{user.id.slice(0, 8)}</span></td>
                         <td className="px-2 text-slate-600">{user.email || '—'}<span className="block text-[8px] text-slate-400">login: {user.loginNome || '—'}</span>{userPasswords[user.id] && <span className="block text-[9px] font-bold text-[#8a5a12]">temporária: {userPasswords[user.id]}</span>}</td>
                         <td className="px-2 text-center">{user.nivelAdmin}</td>
-                        <td className="px-2 text-center">{user.matricula || '—'}</td>
                         <td className="px-2 text-center"><span className={`rounded px-1.5 py-0.5 text-[9px] font-bold ${user.ativo ? 'bg-[#e5f3ee] text-[#256c52]' : 'bg-slate-100 text-slate-500'}`}>{user.ativo ? 'ATIVO' : 'BLOQUEADO'}</span></td>
                         <td className="px-2">
-                          <div className="flex justify-center gap-1">
+                          <div className="flex flex-wrap justify-center gap-1">
+                            <button type="button" className={lightButton} disabled={busyUser === user.id} onClick={() => beginEditUser(user)}><Pencil size={11}/>Editar</button>
                             <button type="button" className={lightButton} disabled={busyUser === user.id} onClick={() => void runUserAction(user, 'set_active', { ativo: !user.ativo })}><ShieldCheck size={11}/>{user.ativo ? 'Bloquear' : 'Ativar'}</button>
                             <button type="button" className={lightButton} disabled={busyUser === user.id} onClick={() => void runUserAction(user, 'reset_password')}><KeyRound size={11}/>Nova senha</button>
+                            <button type="button" className={`${button} border border-[#D65B61] bg-white text-[#a33b42] hover:bg-[#fdf1f2]`} disabled={busyUser === user.id} onClick={() => { if (window.confirm(`Arquivar o acesso de ${user.nome || user.email}? O histórico será preservado e o login será bloqueado.`)) void runUserAction(user, 'delete_user') }}><Trash2 size={11}/>Excluir</button>
                           </div>
                         </td>
                       </tr>
                     ))}
-                    {!sectorUsers.length && <tr><td colSpan={6} className="h-16 text-center text-slate-400"><Users size={18} className="mx-auto mb-1" />Nenhum usuário vinculado a este setor em erp_usuarios.</td></tr>}
+                    {!sectorUsers.length && <tr><td colSpan={5} className="h-16 text-center text-slate-400"><Users size={18} className="mx-auto mb-1" />Nenhum usuário vinculado a este setor em erp_usuarios.</td></tr>}
                   </tbody>
                 </table>
               </div>

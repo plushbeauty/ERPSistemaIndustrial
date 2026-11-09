@@ -1,7 +1,7 @@
 /**
- * @AUTOR: FernandoSchu
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @AUTOR: FernandoSch
+ * @DATA_REVISAO_APROVACAO: 2026-11-03
+ * @REVISAO: REV-CONTRATO-BANCO-20261103-01 — nomes citados na tela passaram a ser a rotina real erp_gerar_codigo
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 /**
@@ -26,7 +26,7 @@ export default function HelpFichaTecnica() {
         </header>
         <section className="space-y-1.5">
           <h2 className="flex items-center gap-1 text-[10px] font-black uppercase text-slate-800"><Tag size={12} className="text-teal-700" /> 1. Chave estrutural SKU e prefixos</h2>
-          <p className="pl-4 font-medium text-slate-600">Selecione o tipo de item e uma regra cadastrada em Regras do Código. A geração do SKU é solicitada à rotina de banco <code>erp_gerar_codigo_produto</code>; não digite nem altere manualmente a chave mestre. Em edições, o SKU existente permanece somente para leitura para preservar rastreabilidade.</p>
+          <p className="pl-4 font-medium text-slate-600">Selecione o tipo de item e uma regra cadastrada em Regras do Código. A geração do SKU é solicitada à rotina de banco <code>erp_gerar_codigo</code>; não digite nem altere manualmente a chave mestre. Em edições, o SKU existente permanece somente para leitura para preservar rastreabilidade.</p>
         </section>
         <section className="space-y-1.5">
           <h2 className="flex items-center gap-1 text-[10px] font-black uppercase text-slate-800"><ShieldCheck size={12} className="text-emerald-700" /> 2. Empresa, acesso e persistência</h2>

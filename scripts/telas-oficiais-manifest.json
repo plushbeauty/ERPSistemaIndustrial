@@ -1,0 +1,1775 @@
+{
+  "contrato": "SYNQRA-R-20261103-01",
+  "geradoPor": "npm run telas:manifest",
+  "totalTelas": 221,
+  "telas": [
+    {
+      "path": "src/IndustrialLoginDirect.tsx",
+      "sha": "7a7e866839eea90522108173468efb350fb54f13",
+      "autor": "FernandoSch",
+      "revisao": "REV-LOGIN-FOTO-INDUSTRIAL-20261101-01 — tela de acesso sobre a foto da planta, com cartão flutuante à direita",
+      "aprovadaEm": "2026-11-01",
+      "statusAprovacao": "LAYOUT APROVADO PELO PROPRIETÁRIO EM 2026-11-01 · contrato de autenticação inalterado"
+    },
+    {
+      "path": "src/PublicIndustrialHome.tsx",
+      "sha": "8ac9a1cb51527e8494c194c6ad0c52b60bf9a05f",
+      "autor": "FernandoSch",
+      "revisao": "REV-CARROSSEL-BAIXO-E-BARRA-FINA-20261106-01 — faixa do carrossel com altura própria e barra do topo sem o quadrado da marca",
+      "aprovadaEm": "2026-11-06",
+      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-06 — \"A IMAGEM FICOU GRANDE DE MAIS ELE TA PEGANDO"
+    },
+    {
+      "path": "src/components/layout/ModuleTabletMenuModal.tsx",
+      "sha": "9866f2f8e4d240ab5dc0a37977e285d39c72c6e5",
+      "autor": "FernandoSch",
+      "revisao": "REV-TABLET-CARIMBO-20261103-01 — cabecalho de autoria/aprovacao adicionado; nenhuma linha de logica ou visual foi tocada",
+      "aprovadaEm": "2026-11-03",
+      "statusAprovacao": "APROVADO PELO PROPRIETARIO (ordem de 2026-11-03: \"todas as telas novas vao ter revisao, aprovacao e travamento para o vercel nao pegar mais telas antigas\")"
+    },
+    {
+      "path": "src/components/marketing/TelaVitrine.tsx",
+      "sha": "810640098487ae4a3e51b913113a776c3702d4c7",
+      "autor": "FernandoSch",
+      "revisao": "REV-VITRINE-TELAS-REAIS-20261101-01",
+      "aprovadaEm": "2026-11-01",
+      "statusAprovacao": "APLICACAO A VITRINE PUBLICA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01"
+    },
+    {
+      "path": "src/components/quality/qualityTabletModules.ts",
+      "sha": "371842d00d8183e00e9858ecd97f8fab4b93d41e",
+      "autor": "FernandoSch",
+      "revisao": "REV-TABLET-TEMPLATE-INSPECAO-20261108-01 — novo card de templates versionados, autorizado na ordem de execução de 2026-11-08",
+      "aprovadaEm": "2026-11-03",
+      "statusAprovacao": "INCREMENTO ADITIVO AUTORIZADO; rotas e cards aprovados preservados"
+    },
+    {
+      "path": "src/features/banking/BankReconciliation.tsx",
+      "sha": "bf3f938a1b592d674e6d454674d059552730a8ea",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/features/banking/BankStatementImporter.tsx",
+      "sha": "66dcd7bd07c834f6cb41865c67059f70c43ab1ab",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/features/banking/ListaPrecosCliente.tsx",
+      "sha": "c297eef156673f80c6b16fc6025ad7aa266262bb",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/features/comissoes/CadastroRegras.tsx",
+      "sha": "230297d9968b56547683b87523f845858fc8b635",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/features/comissoes/CalculoComissao.tsx",
+      "sha": "0e07e22e1d98b6b02591e890122469233adec83c",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/features/comissoes/PerfilVendedor.tsx",
+      "sha": "08ef08fb02a0e790f99d95deb030b28061a55833",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/features/controladoria/AssistenteRetificacao.tsx",
+      "sha": "5639a7dff5d8c3ded3c1971e74a2d3b6bc2a5836",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/features/controladoria/AuditoriaComissoes.tsx",
+      "sha": "f0035bf4590cb62a71ae4c2276db9b0fac864135",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/features/controladoria/CadastroDecimais.tsx",
+      "sha": "2e216e660f84371af1ea5d9b5d416586b87e6b84",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/features/controladoria/PainelLucratividade.tsx",
+      "sha": "cd36a330a6737b0fb3f3c204e60d235903957526",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/features/controladoria/PainelRazaoGeral.tsx",
+      "sha": "ec35cd8dbe31fe73f75e9b7c3c47f79622d51ef4",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/features/controladoria/RetificacaoPedido.tsx",
+      "sha": "a8c7d6f4a485273386f9f112d27ebef3ef49ad8a",
+      "autor": "FernandoSch",
+      "revisao": "REV-RETIFICACAO-PEDIDO-ENTRADA-E-AJUDA-20261102-01 — tela ganha lista de pedidos e ajuda de uso",
+      "aprovadaEm": "2026-11-02",
+      "statusAprovacao": "DETERMINADO PELO PROPRIETARIO EM 2026-11-02 (\"Retificacao de Pedido para que serve"
+    },
+    {
+      "path": "src/features/fiscal/AnoFiscal.tsx",
+      "sha": "9294f4ded7e0c3549dfb1511c2c9e4fb76c36d07",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/features/fiscal/AuditoriaDocumental.tsx",
+      "sha": "7b1600f2513e2f51babe67a2b1c8058ec04872b9",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/features/fiscal/ClassificacaoFiscal.tsx",
+      "sha": "798fdf8d9ce9819b096a63bb69cffba78ac3c090",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/features/fiscal/EstornoLancamentos.tsx",
+      "sha": "99e41e23ec75d9f4f7298d9d93d3c371c4500032",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/features/fiscal/PainelRazaoGeral.tsx",
+      "sha": "27f7be58f0f54fb4b5fdcdb18dc88004e3cd8672",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/features/inventario/AuditoriaSaldos.tsx",
+      "sha": "dfde73f75cab2b5ef7e5dbff07d2d3f548928ad9",
+      "autor": "FernandoSch",
+      "revisao": "REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: \"todos os edits do módulo estoque estão desalinhados e fora de tamanho\". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).",
+      "aprovadaEm": "2026-11-02",
+      "statusAprovacao": "CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela"
+    },
+    {
+      "path": "src/features/inventario/BalancoEstoque.tsx",
+      "sha": "6c293956ca1afc8f190f68fa51cc7c193ff0ee68",
+      "autor": "FernandoSch",
+      "revisao": "REV-ACAO-PRIMARIA-NAVY-20261108-01 — ordem do proprietário em 2026-11-08: o botão Exportar XLSX deixou de ser âmbar (laranja) e usa a ação primária navy, igual às demais telas; consulta e exportação inalteradas.",
+      "aprovadaEm": "2026-11-02",
+      "statusAprovacao": "CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela"
+    },
+    {
+      "path": "src/features/inventario/RegrasDepreciacao.tsx",
+      "sha": "3dfa5717bb17f3a74b277314a4cb8d6b32b092b5",
+      "autor": "FernandoSch",
+      "revisao": "REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: \"todos os edits do módulo estoque estão desalinhados e fora de tamanho\". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).",
+      "aprovadaEm": "2026-11-02",
+      "statusAprovacao": "CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela"
+    },
+    {
+      "path": "src/features/pcp/ApuracaoTurno.tsx",
+      "sha": "81c7b7f50a26dcc6b8e97eedbe238b831a446442",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/features/pcp/EngenhariaBOM.tsx",
+      "sha": "f54d96bec895d2bb03c42923c2e25b0d4bf5d34c",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/features/pcp/PainelOrdensProducao.tsx",
+      "sha": "869c1506d6851924fbd919c1d84fe164c7182d01",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/features/pcp/PostosTrabalho.tsx",
+      "sha": "5c0301e4f4b7298c39ec2afa12bd6d448c524de9",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/features/pcp/RoteiroOperacoes.tsx",
+      "sha": "d354f59092ff3e698678fec83afb4b5f24495e7c",
+      "autor": "FernandoSch",
+      "revisao": "REV-ROTEIRO-ACESSIBILIDADE-20261104-01 — campos de cadastro recebem nomes acessiveis (aria-label), tempo passa a ser numérico com minimo zero, cabecalhos ganham scope=col, botoes ganham type=button e removido o estilo morto",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "AJUSTE DE USABILIDADE E ACESSIBILIDADE POR ORDEM DO PROPRIETARIO EM 2026-11-04"
+    },
+    {
+      "path": "src/modules/financeiro/pages/FinanceiroWorkspace.tsx",
+      "sha": "9f1f50e8e5ea4327e7fd8d9ac93f75eb8958e0b8",
+      "autor": "FernandoSch",
+      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — \"A pagar/A receber\" somavam apenas as parcelas cujo título estava dentro do teto de 1000 títulos e 5000 parcelas carregados: carteira maior que isso mostrava valor menor que o real, sem aviso. Títulos, parcelas, fornecedores e clientes passam a ser lidos por paginação completa.",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/AccessControlSettings.tsx",
+      "sha": "f6858b0b6de1a243a0a4c70e5ea5bcf099bf8aba",
+      "autor": "FernandoSch",
+      "revisao": "REV-ACCESS-CONTROL-SEM-MATRICULA-20261105-01 — erp_usuarios nao tem matricula; acesso do setor se identifica por login_nome e e-mail",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "CORRECAO DO HTTP 400 DO POSTGREST, AUTORIZADA PELO PROPRIETARIO EM 2026-11-05 · exige deploy da Edge Function erp-user-admin"
+    },
+    {
+      "path": "src/pages/AcompanhamentoNaoConformidade.tsx",
+      "sha": "feab32294702a6c32e96e27a24ae238f602f2758",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/AdminLogs.tsx",
+      "sha": "ee485cab4bba6e9a4a45a57c3e6de127d74ba660",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/AdministracaoConfiguracoesGlobais.tsx",
+      "sha": "9ff80eb4bd7dd3e8b83e0bea37dd43eed4be2eed",
+      "autor": "FernandoSch",
+      "revisao": "REV-CONTRATO-SUPABASE-20261106-01 — consultas administrativas alinhadas ao schema remoto confirmado: erp_usuarios sem login_nome; erp_permissions com code/name/description; erp_audit_logs com company_id/entity/user_id.",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/AlmoxarifadoInventario.tsx",
+      "sha": "4c23d4d45764b313e183fc7941f69d6d5b1086be",
+      "autor": "FernandoSch",
+      "revisao": "REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: \"todos os edits do módulo estoque estão desalinhados e fora de tamanho\". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).",
+      "aprovadaEm": "2026-11-02",
+      "statusAprovacao": "CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela"
+    },
+    {
+      "path": "src/pages/AlmoxarifadoSaidaMaterial.tsx",
+      "sha": "294ae04579807cdb4d712a0ade53f8b5e40ad22c",
+      "autor": "FernandoSch",
+      "revisao": "REV-ALMOX-SAIMATERIAL-20261102-01 — ordem do proprietário: módulo Controle e Saída de Material dentro do menu Almoxarifado",
+      "aprovadaEm": "2026-11-02",
+      "statusAprovacao": "GRAVAÇÃO EXCLUSIVA PELA RPC erp_estoque_registrar_movimento (RBAC estoque.movimentar); saldo e bloqueio de negativo calculados no servidor"
+    },
+    {
+      "path": "src/pages/AssistenteAjudaERP.tsx",
+      "sha": "7d7d8efec1e23fd322cea43a9ed594bdcd65d12b",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/AtivarAcesso.tsx",
+      "sha": "bb3b2e264d6b08adac2198abb646441b4ee01de1",
+      "autor": "FernandoSch",
+      "revisao": "REV-ATIVAR-ACESSO-OPERADOR-20261102-01 — ativação do convite recebido por e-mail na branch de produção",
+      "aprovadaEm": "2026-11-02",
+      "statusAprovacao": "PENDENTE DE VALIDAÇÃO VISUAL DO PROPRIETÁRIO NO PREVIEW (tela nova, sem revisão anterior)"
+    },
+    {
+      "path": "src/pages/Blog.tsx",
+      "sha": "229522390ca8e3ea52e3609fea681cd1a7396221",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/CadastroEmpresa.tsx",
+      "sha": "817720a7fc7383b1407ee474ec2f2db4c61620a8",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/CalibracaoIndustrial.tsx",
+      "sha": "592c2cde29b2893c3de0ddebdf010a686de2e624",
+      "autor": "FernandoSch",
+      "revisao": "REV-METROLOGIA-CORES-20261108-01 — coloração por situação de calibração (em dia, vence em 30 dias, vencida, sem data, bloqueado), legenda explícita, filtro por situação e contadores clicáveis",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "ORDEM EXPLICITA DO PROPRIETARIO EM 2026-11-08 — \"equipamentos de medição fazer a tela colorida para melhor visualizacao colocar legenda nas cores\""
+    },
+    {
+      "path": "src/pages/CentraisIndustriais.tsx",
+      "sha": "bcc423685bada700464d8d2d6b701e0ba885515a",
+      "autor": "FernandoSch",
+      "revisao": "REV-CENTRAIS-TABELASREAIS-20261104-01 — treinamentos, paradas, refugos, auditoria e materiais passaram a consultar as tabelas que existem no banco (erp_rh_treinamentos_registros, erp_producao_paradas, erp_qualidade_refugos, erp_sgq_auditorias, erp_produtos); janelas de vencimento usam o relógio do servidor",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO (corrigida na ordem de 2026-11-03 \"seguir com o cronograma\"; sem chave real no PC, a conferência visual autenticada não foi feita)"
+    },
+    {
+      "path": "src/pages/CentralAjuda.tsx",
+      "sha": "2b44510353094bc31f2e48522cc2d0eaeb651e15",
+      "autor": "FernandoSch",
+      "revisao": "REV-CENTRAL-AJUDA-MERGE-20261108-01 — união do catálogo oficial de telas com a ajuda contextual por rota, sem perder busca, instruções operacionais nem rotas",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-04 (\"todas as telas tem que explicar para que serve, como preencher e como usar\") + ordem de integração main ↔ prod-telas-novas em 2026-11-08"
+    },
+    {
+      "path": "src/pages/CentralCustosIndustrial.tsx",
+      "sha": "8f9c6b4ecd50d1c2b2acd94fbfdfc1a6c1f28710",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/CentralEvolucao.tsx",
+      "sha": "537650f5ea58c02cc516ff30c1360db86776721c",
+      "autor": "FernandoSch",
+      "revisao": "REV-CENTRAL-EVOLUCAO-20261106-01",
+      "aprovadaEm": "2026-11-06",
+      "statusAprovacao": "ORDEM MASTER 2026-11-06 §7 — painel permanente de acompanhamento do projeto,"
+    },
+    {
+      "path": "src/pages/CertificadoQualidade.tsx",
+      "sha": "a5a62d087c45f0bb62b25681b4062929b78c3251",
+      "autor": "FernandoSch (tela recebida do proprietario em 2026-11-01 em C:\\\\Users\\\\Dri\\\\Documents\\\\Qoder\\\\integracao-sgq-certificado-6006a807)",
+      "revisao": "REV-CERTIFICADO-A4-20261108-01 — impressão migrada para o relatório A4 compartilhado; dados e fluxo do certificado preservados",
+      "aprovadaEm": "2026-11-03",
+      "statusAprovacao": "INCREMENTO DE IMPRESSÃO AUTORIZADO NA ORDEM DE EXECUÇÃO DE 2026-11-08; aprovação visual e fluxo operacional preservados"
+    },
+    {
+      "path": "src/pages/ChaoDeFabricaApontamento.tsx",
+      "sha": "96c903a644e0c23c561bebf9bf52c689657a52b9",
+      "autor": "FernandoSch",
+      "revisao": "REV-OPERADOR-CARTAO-CPF3-20261108-01 — ordem do proprietário em 2026-11-08: o operador se identifica com o número do cartão + os 3 últimos dígitos do CPF. A conferência saiu do cliente e passou para a RPC security definer erp_operador_identificar_cartao, que valida a empresa da sessão, bloqueia após 8 falhas em 15 minutos e devolve só os dados públicos do crachá (o CPF nunca volta). Agenda, apontamento e ficha de processo inalterados.",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "DETERMINADO PELO PROPRIETARIO (\"NAO QUERO ESSA TELA SÓ DE DEMOSTRAÇÃO DEVE VIR UM CAMPO PARA COLOCAR NUMERO DO CARTÁO DE PONTO PARA PUXAR O NOME DO OPERADOR E SUA PROGRAMAÇAO DO PC PARA ELE O QUE VAI TER PARA FAZER NO DIA E NA SEMANA E AS MAQUINAS TER UM ABA PARA ELE PUXAR A FICHA DE PROCESSO DA PEÇA ONLINE\", 2026-11-04) E COMPLEMENTADO EM 2026-11-08 (\"o numero do cartao mais os 3 ultimos numeros do cpf\")"
+    },
+    {
+      "path": "src/pages/ComercialSuprimentos.tsx",
+      "sha": "f0ed6797e75e4fb30caf8009f2998d207c0f633c",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/ComprasAjuda.tsx",
+      "sha": "269f5001a1f74e76f983e858d67f279761ab62d9",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/ComprasAnalisePrecos.tsx",
+      "sha": "1418f30d76e0b9207dff47ad5065a8a48b9f6529",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/ComprasIndustrial.tsx",
+      "sha": "69d84ce94ce7adb1a9dd22205686cb7009b6f103",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/ComprasPedidoForm.tsx",
+      "sha": "87ce7c8dddc3d295ff85753c69988b0e01a9152b",
+      "autor": "FernandoSch",
+      "revisao": "REV-COMPRAS-VALIDACAO-PEDIDO-20261108-01 — valida todas as linhas sem descarte silencioso, tenant e referências carregadas, NCM de 8 dígitos, valores não negativos e tributos apresentados sem somar ICMS em duplicidade",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "REVISAO TECNICA AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA REFORCAR A VALIDACAO DO PEDIDO, MANTENDO A RPC TRANSACIONAL E O PADRAO VISUAL"
+    },
+    {
+      "path": "src/pages/ComprasRFQ.tsx",
+      "sha": "a883deceb7da42fd177cef021181dfb5d9514fee",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/ComprasRelatorios.tsx",
+      "sha": "2750ce868560724b41c419a9ae68a2bd05aff075",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/ComprasRequisicoes.tsx",
+      "sha": "4dcf0621ee10c37ab92944d0c895cc7808549a11",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/ComprasSolicitacaoManual.tsx",
+      "sha": "0c66a92f019968170d596a68bf68e0e75f09e5dc",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/ComprasWorkspace.tsx",
+      "sha": "de550ad0a6dbe9842b8570ab4da00a4dd6cb2da6",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/ConfiguracaoLote.tsx",
+      "sha": "6c67c976a6b4c0f31e7c5d9763784efae49a5d1d",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/ConfiguracaoLotePCP.tsx",
+      "sha": "96cde4df4012f81550137d8d36480a3e83a31aad",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/Contato.tsx",
+      "sha": "9f3db9706b956a21d884ce581e3f397cc1fd2775",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/CustomerDnList.tsx",
+      "sha": "9c2a2cd0b598aa912d409b43b07caf8f3e75b2c0",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/CustomerDnPod.tsx",
+      "sha": "224aa5afd4cfe28aadac02df4fdf02a1afc57260",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/CustomerDnSettings.tsx",
+      "sha": "d5eb89c4f6ac9d761a58be708f6c8f71cb7d5e6b",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/DashboardComercial.tsx",
+      "sha": "75a9335681276a0c858a1b7f26dacf04ea4875a5",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/DiretoriaDashboard.tsx",
+      "sha": "87967dda3dea183adfdbd5520dac154fae8cc34a",
+      "autor": "FernandoSch",
+      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-02 — as três contagens passaram a head/count exato (o teto de linhas truncava o número mostrado); o faturamento usava as 500 NF-e MAIS ANTIGAS, agora lê a janela de 6 meses do relógio do servidor sem teto; o truncamento do OEE deixou de ser silencioso.",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO (correção do cronograma de 2026-11-03; sem chave real no PC, a conferência visual autenticada não foi feita)"
+    },
+    {
+      "path": "src/pages/DocumentosQualidadeControle.tsx",
+      "sha": "120da60e72c0f385f00c2e4579999e80dc9f1e7c",
+      "autor": "FernandoSch",
+      "revisao": "REV-TELAS-CONSISTENTES-20261108-01 — ordem do proprietário em 2026-11-08 (\"vc ficou de arrumar a page controle de documentos\"): o cabeçalho branco duplicado saiu e a abertura passa a ser o card navy padrão do shell; contadores e Atualizar ficam na barra de seleção; as três tabelas entram na régua clara global. Consultas, RPCs e as 7 abas não mudaram.",
+      "aprovadaEm": "2026-11-02",
+      "statusAprovacao": "ESTRUTURA DE 7 ABAS AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-02"
+    },
+    {
+      "path": "src/pages/EngenhariaBOM.tsx",
+      "sha": "1b5e3270cb7e9513295eaa84afe226c7ca097cd3",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
+    },
+    {
+      "path": "src/pages/EngenhariaCentral.tsx",
+      "sha": "2a6dfb8bcdc2d92def21b05dc61caf36f1038c8e",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/EngenhariaRevisoesBOM.tsx",
+      "sha": "f1f08152d226716d038ffa9a086769f2383b30ac",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/EstoqueAjustes.tsx",
+      "sha": "67ecb3c3a2d143a3eebb4355e73f24ef96f5e114",
+      "autor": "FernandoSch",
+      "revisao": "REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: \"todos os edits do módulo estoque estão desalinhados e fora de tamanho\". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).",
+      "aprovadaEm": "2026-11-02",
+      "statusAprovacao": "CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela"
+    },
+    {
+      "path": "src/pages/EstoqueAlmoxarifadoCompact.tsx",
+      "sha": "0f1810afb2599d2b344d3854ad053f09f01ab4f5",
+      "autor": "FernandoSch",
+      "revisao": "REV-COLUNAS-BANCO-20261104-01 — ordem do proprietário \"telas travadas vc destrava\": a listagem de OPs ordenava por 'criado_em', coluna que não existe em erp_ordens_producao; a query falhava e derrubava o carregamento da tela. Leitura corrigida para 'created_at'.",
+      "aprovadaEm": "2026-11-02",
+      "statusAprovacao": "CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela"
+    },
+    {
+      "path": "src/pages/EstoqueCurvaABC.tsx",
+      "sha": "118aab132182a86a97bf274324785a89175e8e51",
+      "autor": "FernandoSch",
+      "revisao": "REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: \"todos os edits do módulo estoque estão desalinhados e fora de tamanho\". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).",
+      "aprovadaEm": "2026-11-02",
+      "statusAprovacao": "CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela"
+    },
+    {
+      "path": "src/pages/EstoqueEtiquetas.tsx",
+      "sha": "3df6cc9bb9cb9fe6d4aaea7871385b3bee4e663e",
+      "autor": "FernandoSch",
+      "revisao": "REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: \"todos os edits do módulo estoque estão desalinhados e fora de tamanho\". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).",
+      "aprovadaEm": "2026-11-02",
+      "statusAprovacao": "CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela"
+    },
+    {
+      "path": "src/pages/EstoqueRastreabilidadeLotes.tsx",
+      "sha": "94243fcfe775cb485b8c6c6b492da43861a381bc",
+      "autor": "FernandoSch",
+      "revisao": "REV-ESTOQUE-RASTREABILIDADE-20261102-01 — ordem do proprietário: módulo de rastreabilidade de lotes dentro do menu Estoque",
+      "aprovadaEm": "2026-11-02",
+      "statusAprovacao": "DADOS 100% REAIS (erp_estoque_lotes, _rastreabilidade, genealogia, separações, OP, pedido de venda, cliente); nenhuma ligação é inferida"
+    },
+    {
+      "path": "src/pages/EstoqueSeparacao.tsx",
+      "sha": "4cbe7cd77d321a3f51424477d26668addfc204e2",
+      "autor": "FernandoSch",
+      "revisao": "REV-ESTOQUE-CONSUMO-OP-20261108-01 — confirmação transacional do consumo, baixa de saldo e snapshot de custo médio por OP.",
+      "aprovadaEm": "2026-11-02",
+      "statusAprovacao": "INCREMENTO FUNCIONAL AUTORIZADO NA ORDEM DE EXECUÇÃO DE 2026-11-08; aprovação visual original de 2026-11-02 preservada"
+    },
+    {
+      "path": "src/pages/ExpedicaoPortaria.tsx",
+      "sha": "34b5ba2503e22258fb30a5e8df1063058ebf813c",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/ExpedicaoRoteirizacao.tsx",
+      "sha": "02b33d734a050ee8504eb05bf3671f08cf2ab067",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/FichaEngenharia.tsx",
+      "sha": "0a4f31c31a4b3365a9b60f21fd815d15aef4555c",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/FichasProcesso.tsx",
+      "sha": "ef3d3b2a33a56104a52e33cb3aeefe7fd7c266f7",
+      "autor": "FernandoSch",
+      "revisao": "REV-PCP-FICHA-ABAS-20261102-01 — ordem do proprietário: ficha em abas com aba própria de Matéria-prima",
+      "aprovadaEm": "2026-11-02",
+      "statusAprovacao": "COLUNAS CONFERIDAS NAS MIGRATIONS (erp_produtos.foto_url/unidade,"
+    },
+    {
+      "path": "src/pages/FileTreeGED.tsx",
+      "sha": "33e6952b510298b13a989dbb47637bf14b89cee8",
+      "autor": "FernandoSch",
+      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — a árvore do GED mostrava só as 1000 RPNC mais recentes e 5000 evidências: processo antigo simplesmente desaparecia da pasta sem aviso. As duas leituras passaram a cobrir todo o histórico da empresa por paginação.",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/FinancasContasPagar.tsx",
+      "sha": "1ab0f6d708667be241c6dcc4a55271f201d8c1b3",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/FinanceiroCustoOP.tsx",
+      "sha": "7d6bfa3917cd28e759c9193210e4d0ff0beb8715",
+      "autor": "FernandoSch",
+      "revisao": "REV-FINANCEIRO-CUSTO-OP-REAL-20261108-01 — consumo real por OP, mão de obra dos apontamentos, overhead e margem",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "INCREMENTO FUNCIONAL AUTORIZADO NA ORDEM ORDEM-EXECUCAO-SYSNQRA-20261108-01; depende da aplicação da migration no Supabase"
+    },
+    {
+      "path": "src/pages/FinanceiroCustoPadrao.tsx",
+      "sha": "ba678f37278f10c23c8bee25e8f38b85ff47acd9",
+      "autor": "FernandoSch",
+      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — o custo BOM buscava o custo de cada componente numa lista de produtos truncada em 3000: componente fora do trecho carregado entrava como R$ 0,00 no \"Custo fábrica total\" e no preço sugerido. Produtos e necessidades do MRP agora são lidos por paginação completa e a falha da carga é exibida em vez de passar como custo zero.",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/FinanceiroDashboardCaixa.tsx",
+      "sha": "16ccde58a2d645c263719d9121eabfe30769da3f",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 + REV-FINANCEIRO-CUSTO-OP-LINK-20261108-01 — acesso ao fechamento de custo real por OP; padrão visual preservado",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRÃO VISUAL ORIGINAL APROVADO EM 2026-10-30; incremento aditivo de navegação autorizado pela ORDEM-EXECUCAO-SYSNQRA-20261108-01"
+    },
+    {
+      "path": "src/pages/FinanceiroFluxoCaixa.tsx",
+      "sha": "b379ea788f449c326fcbff270ce8006bc2827f0a",
+      "autor": "FernandoSch",
+      "revisao": "REV-FLUXO-CAIXA-PAGINACAO-20261108-01 — leitura paginada integral, tenant da sessão autenticada, extrato e gravação real com controles compactos",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "REVISAO AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA INTEGRAR A VERSAO COM PAGINACAO COMPLETA E ISOLAMENTO POR EMPRESA, PRESERVANDO O SHELL HORIZONTAL GLOBAL"
+    },
+    {
+      "path": "src/pages/FinanceiroGraficoDesvios.tsx",
+      "sha": "f02deb14c9d9f84baec06466fc533839bfe5ba84",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/FinanceiroTitulos.tsx",
+      "sha": "f709a9114f6ecf7439d7b78cac35c7983137221b",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/Fiscal.tsx",
+      "sha": "dddcd68aa4e38d6b2d0a41f3c35614a86266fd53",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/FiscalCarteiraNFe.tsx",
+      "sha": "f3c5ab610bcb004824d16c1cb103c0028415b4eb",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/FiscalCompras.tsx",
+      "sha": "2020b515986d6e0f13d139cb7e5b94fd2fb67348",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/FiscalImpostos.tsx",
+      "sha": "af4bacb8839e1dc5cc97913ea794aa9be03bd16f",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/FiscalPendencias.tsx",
+      "sha": "eec21c553dc43a1ba1945577d401c1b195c036d5",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/FiscalPrevisaoCaixa.tsx",
+      "sha": "c731f0ba184beb24c03b2c984a7623471fe4fad4",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/FornecedoresIndustrial.tsx",
+      "sha": "6fa27a540c417cf6128c5adba54f5de655a4fff8",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/HelpPCPFichas.tsx",
+      "sha": "3b4df3dfaab31d14b9d5e1a787d20ea304d38db0",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/IndustrialDataWorkspace.tsx",
+      "sha": "533e12102ebf4c4f70c77874e637ff091b4aecf9",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/MRPIndustrial.tsx",
+      "sha": "ea2a1e961fb1740ed28150fcae09c1691422ee3d",
+      "autor": "FernandoSch",
+      "revisao": "REV-MRP-SEM-TRUNCAMENTO-20261104-01 — a lista de produtos do seletor parava em 3000 por causa do .limit(): em cadastro maior, itens deixavam de aparecer para o cálculo e o nome caía no código bruto. Passa a usar fetchAllPages, a mesma origem paginada das outras telas de PCP.",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/ManualUsuario.tsx",
+      "sha": "26ff679d0a14ccf2da2fed9c9661da03af155408",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/ManutencaoCentral.tsx",
+      "sha": "faaac365c0d88edc7d3f259703f50809c12ad14b",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/ManutencaoCronograma.tsx",
+      "sha": "58cbdd42e6bd853c887270a9acdd4b9f9d94f468",
+      "autor": "FernandoSch",
+      "revisao": "REV-CRONOGRAMA-CORES-20261108-01 — grade anual colorida por situação, status calculado só a partir das O.S. reais de erp_manutencao_ordens, cadastro de máquinas na própria tela e painel de calibração dos instrumentos",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "ORDEM EXPLICITA DO PROPRIETARIO EM 2026-11-08 — \"fazer tela de manutencao preventiva cronograma com corres e puxar as maquinas do cadastro ... fazer a tela colorida para melhor visualizacao colocar legenda nas cores\""
+    },
+    {
+      "path": "src/pages/ManutencaoOrdens.tsx",
+      "sha": "db82413f23021590de231323c1712bb851148320",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/Master.tsx",
+      "sha": "79d78f9944ea10b1c650dd32af236c2de85be035",
+      "autor": "FernandoSch",
+      "revisao": "REV-COLUNAS-BANCO-20261104-02 — a trilha de auditoria leu company_id/user_id/entity, colunas que não existem em erp_audit_logs (contrato oficial: empresa_id/actor_user_id/entity_type); o throw derrubava a tela MASTER inteira. Seleção corrigida com alias PostgREST, sem alterar a interface da tela.",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/ModuleOverviewIndustrial.tsx",
+      "sha": "b114a7cc4c833b7001fb17f025955c309c70c301",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/MoldesFerramentaria.tsx",
+      "sha": "1727ac0db0323893d5d0371a9fbeb14f0c138572",
+      "autor": "FernandoSch",
+      "revisao": "REV-CONTRATO-BANCO-20261103-01 — histórico e registro de manutenção declaram a migration quando o objeto ainda não existe no banco",
+      "aprovadaEm": "2026-11-03",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/NFeEmissao.tsx",
+      "sha": "a79afb624238abcf777ab41fd93ef1a63b9c6ac1",
+      "autor": "FernandoSch",
+      "revisao": "REV-FISCAL-NFE-EMISSOR-20261102-01 — tela reorganizada no formato do Emissor Gratuito da SEFAZ (abas, barra de ações, painel de advertências e grade Gerenciar/Transmitir notas); numeração reservada pelo banco, modalidade de frete real, cobrança pela RPC do banco, travamento automático quando o documento sai de Rascunho",
+      "aprovadaEm": "2026-11-02",
+      "statusAprovacao": "REGRAS CONFERIDAS NAS MIGRATIONS E NA EDGE FUNCTION emitir-nfe · VALIDAÇÃO ESTÁTICA (TYPECHECK, LINT, GUARDS, BUILD) · HOMOLOGAÇÃO NA SEFAZ PENDENTE DE CERTIFICADO DIGITAL E CREDENCIAIS DO CLIENTE"
+    },
+    {
+      "path": "src/pages/NovoPedido.tsx",
+      "sha": "ae54c4c2c4660fe9660db74efd0c2c4ae85302d3",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/OperacaoIndustrial.tsx",
+      "sha": "a3188843a67bc980872b42deae11afd2251c50f9",
+      "autor": "FernandoSch",
+      "revisao": "REV-COLUNAS-BANCO-20261104-01 — ordem do proprietário \"telas travadas vc destrava\": a lista de OPs do apontamento ordenava por 'criado_em', coluna que não existe em erp_ordens_producao; a query falhava e travava a tela. Leitura corrigida para 'created_at'.",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/OutlookCaixaEntrada.tsx",
+      "sha": "a42bac7f77a317043e4aa34b8522cd866b1c914a",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/OutlookConfiguracao.tsx",
+      "sha": "d2f29f1f66eef94d4fa17056b74ce66d8ebdac93",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/PCPAgendaMaquinas.tsx",
+      "sha": "bc98634cc347f7c06a633c2598b7437b7f664d1a",
+      "autor": "FernandoSch",
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o relatório A4 da agenda semanal de máquinas montado pelo motor de relatório com dados do banco",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
+    },
+    {
+      "path": "src/pages/PCPAreaFuncionario.tsx",
+      "sha": "76061498ed6e2131b95ba4a001ab23707157c8c1",
+      "autor": "FernandoSch",
+      "revisao": "REV-OPERADOR-MAQUINAS-CPP-20261108-01 — painel responsivo de máquinas por programação real, cada OP preservada como cartão próprio e seleção abre o CPP correspondente; receita específica da máquina priorizada",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "REVISAO AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA INTEGRAR O PAINEL VISUAL DE MAQUINAS AOS DADOS REAIS DO PCP, PRESERVANDO AUTENTICACAO, CPP E APONTAMENTOS DO SERVIDOR"
+    },
+    {
+      "path": "src/pages/PCPCapacidade.tsx",
+      "sha": "5b1d8c9a2a780b05f76ea22b3d12e30dfed906c7",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/PCPDashboardOEE.tsx",
+      "sha": "14c14ecfb515ca8e15c2fd8b6594d9a913062823",
+      "autor": "FernandoSch",
+      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-01 — as três consultas do OEE tinham teto de 10.000 linhas e o excedente sumia em silêncio, inflando ou murchando os índices sem aviso. Agora cada consulta pede count:'exact' e a tela assume o truncamento numa faixa âmbar, em vez de apresentar número parcial como se fosse o período inteiro.",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO (correção do cronograma de 2026-11-03; sem chave real no PC, a conferência visual autenticada não foi feita)"
+    },
+    {
+      "path": "src/pages/PCPExecucaoIndustrial.tsx",
+      "sha": "1f0dd5fb6cfacec03e3d744faa63466c5cafcd41",
+      "autor": "FernandoSch",
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o relatório A4 de execução da produção (carteira de OPs e apontamentos) montado pelo motor de relatório com dados do banco",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
+    },
+    {
+      "path": "src/pages/PCPFichasProcesso.tsx",
+      "sha": "a81980579381c38f444f153ddad5c64ad047b2bd",
+      "autor": "FernandoSch",
+      "revisao": "REV-PCP-FICHA-ABAS-CATEGORIA-20261108-01 — ordem do proprietário: \"fichas de processo",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "CORREÇÃO FUNCIONAL AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-06; alteração restrita ao nome da coluna de atualização, sem mudança visual."
+    },
+    {
+      "path": "src/pages/PCPIndustrial.tsx",
+      "sha": "e4b15dbf6e6141b5ea094c813287312345717311",
+      "autor": "FernandoSch",
+      "revisao": "REV-PCP-CHIPE-DE-BANCO-REAL-20261105-01 — o selo fixo 'DADOS SUPABASE' passou a refletir sessao, empresa e retorno da consulta",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "REVISAO TECNICA DO PROPRIETARIO EM 2026-11-05, ITEM 4 — \"NAO EXIBIR SUPABASE CONNECTED COMO TEXTO FIXO SEM COMPROVAR A CONEXAO\""
+    },
+    {
+      "path": "src/pages/PCPOrdens.tsx",
+      "sha": "3d48fbdde05fc6a65a3cbb2c361fdc9314278bf3",
+      "autor": "FernandoSch",
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir a ficha operacional A4 montada do documento com dados do banco",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
+    },
+    {
+      "path": "src/pages/PCPParadasMaquina.tsx",
+      "sha": "fe659adac66a4f370e3dcd51f3698d5968f3abe0",
+      "autor": "FernandoSch",
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir A4 deixa de capturar a tela e passa a emitir o diário de paradas de máquina em A4 pelo motor de relatório, com as ocorrências lidas de erp_producao_paradas",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
+    },
+    {
+      "path": "src/pages/PCPPedidosPendentes.tsx",
+      "sha": "069163168cef137d54a7a6b151574f91f528d291",
+      "autor": "FernandoSch",
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir Ficha (A4) deixa de capturar a tela e passa a emitir a carteira de pedidos pendentes em A4 pelo motor de relatório, com itens, OPs, saldo e NF-e lidos do banco",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
+    },
+    {
+      "path": "src/pages/PCPPlanejamentoIndustrial.tsx",
+      "sha": "1c2227bffc85cc9af32835ff387f52a172b28266",
+      "autor": "FernandoSch",
+      "revisao": "REV-MRP-SEM-TRUNCAMENTO-20261104-01 — a geração de ordens planejadas lia as necessidades do MRP com .limit(3000) e somava no navegador: run maior que isso gravava ordem com quantidade menor que a real. Agregação e gravação movidas para a RPC erp_pcp_gerar_ordens_planejadas_do_mrp (migration 20261104172000), sobre todas as linhas do último run da empresa.",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/PCPProgramacaoGantt.tsx",
+      "sha": "9f98fe2f83c55ff7ac4c941ce3d3b212cbc9766f",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/PCPSequenciamento.tsx",
+      "sha": "1465470147e8448737e3c0bede4082353f156e7b",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/PCPTabletOperador.tsx",
+      "sha": "038bf91034b8317d2ce0e23f92a74d5933a2726a",
+      "autor": "FernandoSch",
+      "revisao": "REV-CONTRATO-BANCO-20261103-01 — o vencimento da calibração passou a ser conferido contra o relógio do servidor",
+      "aprovadaEm": "2026-11-03",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/PCPValidaFluxo.tsx",
+      "sha": "eded1b8a4955f797fe85958a3781b9aa7a78c983",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
+    },
+    {
+      "path": "src/pages/PCPWorkspace.tsx",
+      "sha": "c88effc1827b665641938640255b4eb64507104a",
+      "autor": "FernandoSch",
+      "revisao": "REV-PCP-WORKSPACE-FICHA-20261106-01 — aba de Ficha de Processo usa a tela técnica completa com isolamento por empresa; estrutura visual do workspace preservada",
+      "aprovadaEm": "2026-11-06",
+      "statusAprovacao": "CORREÇÃO FUNCIONAL AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-06; sem alteração do layout aprovado"
+    },
+    {
+      "path": "src/pages/PagePrincipal.tsx",
+      "sha": "eec8f494c7d5de277b2a1ceaeb5cc3fc727b1216",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/PlanosIndustrial.tsx",
+      "sha": "76e09e54e07c903020d12665361782bfb344a476",
+      "autor": "FernandoSch",
+      "revisao": "REV-PLANOS-SISTEMA-20261106-01 — grade comercial do proprietário, visual do próprio ERP e módulos conferidos tela a tela",
+      "aprovadaEm": "2026-11-06",
+      "statusAprovacao": "REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-06 — \"TELA DE PLANOS ESTA FEIA DE"
+    },
+    {
+      "path": "src/pages/ProcessoIndustrialPage.tsx",
+      "sha": "5232823a71efb3dc884a45846a984ec606ec22b3",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/ProdutosVendasIndustrial.tsx",
+      "sha": "e1675b1679a560e455ca63efa925c4f1d5c4c9fd",
+      "autor": "FernandoSch",
+      "revisao": "REV-COLUNAS-BANCO-20261104-02 — a trilha de auditoria do produto consultava company_id/entity e uma coluna 'module' inexistente em erp_audit_logs; contrato oficial é empresa_id/entity_type. Leitura corrigida e campo não usado removido da seleção.",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "CORRECAO DE DEFEITO DE LEITURA PARCIAL APLICADA POR ORDEM DO PROPRIETARIO EM 2026-11-04 (\"verificar todas as pendencias e arrumar\")"
+    },
+    {
+      "path": "src/pages/QualidadeAuditoria5S.tsx",
+      "sha": "35e0be3923cf457111c625ffbe71b4f3f626d84b",
+      "autor": "FernandoSch",
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o relatório A4 das auditorias 5S com notas, médias e observações gravadas no banco",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
+    },
+    {
+      "path": "src/pages/QualidadeAuditoriasPlanta.tsx",
+      "sha": "2a4d7b4ebf13dc4fa7f494b0f3d46324856ead59",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/QualidadeCentralTablet.tsx",
+      "sha": "e5583265a0ae66612042057e3093ffc91c304400",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — console do tablet convertido do tema escuro para o padrão industrial claro (fundo #F4FBFD, painéis brancos, texto #123B50) e marca alinhada para SYSNQRA; nenhuma alteração de lógica ou de consulta",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
+    },
+    {
+      "path": "src/pages/QualidadeDashboardRNC.tsx",
+      "sha": "a6e477c2450111a592fd4b5b3c66d4f87a59017c",
+      "autor": "FernandoSch",
+      "revisao": "REV-TELAS-CONSISTENTES-20261108-01 — ordem do proprietário em 2026-11-08 (\"tem telas com botões laranja e outras não, tem cards azuis e fontes desalinhadas\"): a tela deixou de renderizar um segundo ERPHorizontalShell e o cabeçalho próprio; a abertura é o card navy padrão do shell e resta só a barra de Atualizar. Consultas e indicadores inalterados.",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/QualidadeDashboardSGQ.tsx",
+      "sha": "4c9d7afe68ab3fed2e07a0c664d3d23c1204035e",
+      "autor": "FernandoSch",
+      "revisao": "REV-SGQ-INDICADORES-20261108-01 — RNC, refugo, auditorias e calibração com dados reais",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "INCREMENTO FUNCIONAL ADITIVO; preservado o padrão visual aprovado em 2026-10-30"
+    },
+    {
+      "path": "src/pages/QualidadeEspecificacoesTecnicas.tsx",
+      "sha": "9c99a2e309e4e740213a986b21f90e7e7558ec98",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/QualidadeGraficosRefugo.tsx",
+      "sha": "5d358710de9610165230a073f50dacaab706c7c9",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
+    },
+    {
+      "path": "src/pages/QualidadeIndustrial.tsx",
+      "sha": "8a9ec89c5d147dbaadeb2c2cd856ab5fc05fee3c",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/QualidadeInspecoesIndustrial.tsx",
+      "sha": "b040e5a250f767656f9a5860224fd2a2ed6c1544",
+      "autor": "FernandoSch",
+      "revisao": "REV-INSPECOES-IMPORT-PLUS-20261108-01 — corrigido import do ícone Plus ausente; nenhuma alteração visual, de consulta ou de fluxo",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "CORREÇÃO TÉCNICA NÃO VISUAL; APROVAÇÃO E CONTRATO VISUAL ANTERIORES PRESERVADOS"
+    },
+    {
+      "path": "src/pages/QualidadeInstrumentosCadastro.tsx",
+      "sha": "a33e774b4f5690c7c4d8b72140073e57c1334235",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/QualidadeListaMestre.tsx",
+      "sha": "dd412f9cc33c389bf229b35ed49ed0079a270f5e",
+      "autor": "FernandoSch",
+      "revisao": "REV-IMPRESSAO-A4-20261108-01 — os botoes Imprimir Lista Mestre e Imprimir Indice de Pasta passam a emitir relatorio A4 proprio (abrirRelatorio) com os documentos filtrados vindos do banco, em vez de capturar a tela",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "ORDEM GERAL DE IMPRESSAO DE 2026-11-05, ITEM 5 — \"Quero uma estrutura propria de relatorio, e nao uma captura da tela\". AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO."
+    },
+    {
+      "path": "src/pages/QualidadeMetodologia8D.tsx",
+      "sha": "d718e1e79e69554d729078f844eec3534f78837b",
+      "autor": "FernandoSch",
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o protocolo 8D em A4 com as etapas D1–D8, o status e a RNC de origem carregados do banco",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
+    },
+    {
+      "path": "src/pages/QualidadePaquimetroDigital.tsx",
+      "sha": "37bcb59417c5400841e555e3533a8788ba762e13",
+      "autor": "FernandoSch",
+      "revisao": "REV-METRO-INSTRUMENTOS-20261102-01 — controle de equipamentos de medição ISO 9001 na página do paquímetro",
+      "aprovadaEm": "2026-11-02",
+      "statusAprovacao": "CADASTRO REAL POR EMPRESA; MEDIÇÃO DEMONSTRATIVA REMOVIDA DESTA TELA"
+    },
+    {
+      "path": "src/pages/QualidadeRNC.tsx",
+      "sha": "9a71905126a75c3c4a41d2fe716d2db99e731e8f",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/QualidadeRPNC.tsx",
+      "sha": "915170b1b9964e6f388297bd4e6ed19d7f72cb9a",
+      "autor": "FernandoSch",
+      "revisao": "REV-RPNC-A4-20261108-01 — relatório RPNC emitido pela folha A4 compartilhada",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "INCREMENTO DE IMPRESSÃO AUTORIZADO NA ORDEM DE EXECUÇÃO DE 2026-11-08; fluxo RPNC preservado"
+    },
+    {
+      "path": "src/pages/QualidadeRPNCMultiorigem.tsx",
+      "sha": "8e3f0b1809ebd8e237513eea9c9f2e0b024dfac9",
+      "autor": "FernandoSch",
+      "revisao": "REV-RPNC-MULTIORIGEM-A4-20261108-01 — relatório de não conformidade emitido pelo SynqraRelatorioA4 compartilhado; fluxo e dados preservados",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "INCREMENTO DE IMPRESSAO A4 AUTORIZADO PELA ORDEM DO PROPRIETARIO DE 2026-11-08; PADRAO DE ABERTURA E FLUXO PRESERVADOS"
+    },
+    {
+      "path": "src/pages/QualidadeRPNCTratamento.tsx",
+      "sha": "89fb6702375b340d15c44b0f943f3605c4b82f23",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/QualidadeRefugos.tsx",
+      "sha": "0a125eba3e09dde3e7348786a21ac3365614ee66",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
+    },
+    {
+      "path": "src/pages/QualidadeRelatoriosDocumentos.tsx",
+      "sha": "827b232eaef2d58101b78be7e8fc94320d143e99",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/QualityAuditsList.tsx",
+      "sha": "587211eca76c3af93e7d93c2b9baa3ab54fb68a5",
+      "autor": "FernandoSch",
+      "revisao": "REV-SGQ-AUDITORIAS-20261031-01 — grade de monitoramento de auditorias e vínculo transacional de RPNCs como constatações",
+      "aprovadaEm": "2026-10-31",
+      "statusAprovacao": "AGUARDA APLICAÇÃO DA MIGRATION 20261031100000_...SQL PELO PROPRIETÁRIO"
+    },
+    {
+      "path": "src/pages/QualityRpncForm.tsx",
+      "sha": "e3c4aa6034e623b482ad671ebc2806515d7441f8",
+      "autor": "FernandoSch",
+      "revisao": "REV-SGQ-RPNC-A4-COMPARTILHADO-20261108-02 — relatório RPNC convertido para SynqraRelatorioA4 compartilhado; investigação, ações, evidências e eficácia preservadas",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "REVISAO AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA INTEGRAR A RPNC COMPLETA; IMPRESSAO A4 COMPARTILHADA AUTORIZADA; MIGRATIONS E STORAGE AINDA EXIGEM APLICACAO E VALIDACAO NO SUPABASE"
+    },
+    {
+      "path": "src/pages/QualityRpncUnified.tsx",
+      "sha": "99d6572db81b7f547bb01520a7739e7af90c8325",
+      "autor": "FernandoSch",
+      "revisao": "REV-SGQ-RPNC-UNIFICADA-20261102-01 — ordem do proprietário: três telas RPNC reunidas em uma página com abas",
+      "aprovadaEm": "2026-11-02",
+      "statusAprovacao": "FLUXOS REAIS PRESERVADOS; DISTRIBUIÇÃO REDUZIDA A UMA ÚNICA ORIGEM DE NAVEGAÇÃO"
+    },
+    {
+      "path": "src/pages/RHIndustrial.tsx",
+      "sha": "bf153e9e7f502fd53659b7ac80c7976200d68a41",
+      "autor": "FernandoSch",
+      "revisao": "REV-RH-SEM-CARD-REPETIDO-20261104-01 — a fileira superior de indicadores saiu da tela (repetia a Visão geral e mostrava traço no que não era da aba aberta); as abas passaram ao topo e viram trilho de rolagem no celular",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-04 (\"a primeira fileira de cards superiores exibe exatamente as mesmas métricas da fileira que está abaixo do menu de abas. O ideal é remover a primeira fileira de cima\" + \"exibir o número 0, exatamente como foi feito nos cards da fileira de baixo\")"
+    },
+    {
+      "path": "src/pages/RecebimentoMateriais.tsx",
+      "sha": "0b978e45c0910126172f108046f9192254053a85",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/RecuperarSenha.tsx",
+      "sha": "835dfa3f7725fff1e35d930a33e4141085e53df4",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/SetupADMInicial.tsx",
+      "sha": "476238d5c29e16c79fc56242116bb7b982774b55",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/SolicitacaoCompra.tsx",
+      "sha": "1af179c7dfa2f321838c3e3a54894a4a0875efb2",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/StaffOperatorLogin.tsx",
+      "sha": "8c101be66f4ab310106275199e7908cec37a9c8c",
+      "autor": "FernandoSch",
+      "revisao": "REV-OPERADOR-CARTAO-CPF3-20261108-01 — texto ajustado à ordem do proprietário em 2026-11-08: a identificação por cartão + 3 últimos dígitos do CPF acontece no terminal do chão de fábrica (RPC erp_operador_identificar_cartao); esta tela continua sendo a entrada do sistema com a conta individual do operador no Supabase Auth. Nenhuma regra de login mudou.",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/TabelaPrecos.tsx",
+      "sha": "1d0f46bcf72c58531a6ea49ee7f73a072b69ffa2",
+      "autor": "FernandoSch",
+      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — a tabela parava em 5000 SKUs e o reajuste em lote alcançava só o trecho carregado. Agora percorre todos os SKUs ativos da empresa por paginação.",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/TabletDashboard.tsx",
+      "sha": "15d1a3d24e6e63227c6be5f36a412a8596695dd6",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/TesteERP.tsx",
+      "sha": "95e871751dda50a52730a5a1d01cc21534cf39c4",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/UsuariosAdmin.tsx",
+      "sha": "c982af842f15d04ed222d011a26bbb673862cd7d",
+      "autor": "FernandoSch",
+      "revisao": "REV-USUARIOS-SEM-MATRICULA-20261105-01 — erp_usuarios nao tem coluna matricula; consulta e formulario usam somente colunas existentes",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "CORRECAO DO HTTP 400 DO POSTGREST, AUTORIZADA PELO PROPRIETARIO EM 2026-11-05 (introspecao real do PostgreSQL)"
+    },
+    {
+      "path": "src/pages/VendasAnaliseCustos.tsx",
+      "sha": "2455600788bd5260ae391f95902696a813fd6f98",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/VendasCatalogoDigital.tsx",
+      "sha": "fe54067d1e50ad21e1190910cc194c2569d2ed6d",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/VendasCatalogoDigitalGestao.tsx",
+      "sha": "34a0e4251cc87d75cd6a68dc0164fd31f0a98bbd",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/VendasCentral.tsx",
+      "sha": "2f257ff8cc8e9f2d73b27d5613739c1625fe1d13",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/VendasClientes.tsx",
+      "sha": "127a545bb3e56ad929d572154bc4b268e4829060",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/VendasDashboardGraficos.tsx",
+      "sha": "363156faf762bf21de26ee84c702f3b4b996a865",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/VendasLayout.tsx",
+      "sha": "7777f163d117c84a5d231fe155b42268554cc63d",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/VendasMetas.tsx",
+      "sha": "dc9ccb586e8b39611efdb2a3a72b79f55fe5252b",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/VendasPDV.tsx",
+      "sha": "73e3b3a32972bf9b96608d09346b734abf9e9329",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/VendasPedidoStatus.tsx",
+      "sha": "ae6e8decdbb552e17c136feeb444fc6a5dab2dc5",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/VendasRelatorios.tsx",
+      "sha": "ce342411d419dbb1a7949eb14679cc41b532bb35",
+      "autor": "FernandoSch",
+      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — o faturamento do relatório somava apenas os últimos 2000 pedidos; empresa acima disso via o total menor que o real, sem aviso. A leitura passou a cobrir todos os pedidos da empresa por paginação.",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/VendasTablet.tsx",
+      "sha": "a5fdd6cd1b86da7d446f88f228d6986e09450ea7",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/cadastro-produtos/FormFichaTecnica.tsx",
+      "sha": "1e9647f8c85e27143455d300326322871587f3ee",
+      "autor": "FernandoSch",
+      "revisao": "REV-CONTRATO-BANCO-20261103-01 — o SKU passa a ser gerado pela rotina erp_gerar_codigo (a existente no banco) e a prévia respeita digitos_produto",
+      "aprovadaEm": "2026-11-03",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/cadastro-produtos/HelpFichaTecnica.tsx",
+      "sha": "ab50946e37d1af4148d0ed0923a9d228202dae15",
+      "autor": "FernandoSch",
+      "revisao": "REV-CONTRATO-BANCO-20261103-01 — nomes citados na tela passaram a ser a rotina real erp_gerar_codigo",
+      "aprovadaEm": "2026-11-03",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/cadastro-produtos/HelpListagemProdutos.tsx",
+      "sha": "8c71d8dd8e7543d54e3b40bb354d053a3287bd4c",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/cadastro-produtos/HelpParametrosCodigo.tsx",
+      "sha": "6c33563ab324816861c6bd4776b517f1a4f3183b",
+      "autor": "FernandoSch",
+      "revisao": "REV-CONTRATO-BANCO-20261103-01 — nomes citados na tela passaram a ser a rotina real erp_gerar_codigo",
+      "aprovadaEm": "2026-11-03",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/cadastro-produtos/ImpressaoEtiquetas.tsx",
+      "sha": "f0f99a22332a4ca17b800dd3f8b1b122827461ac",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/cadastro-produtos/ListagemProdutos.tsx",
+      "sha": "34b5a49ea60b62b926b9ff04ccb7ac2b5805459a",
+      "autor": "FernandoSch",
+      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — o catálogo mestre parava em 2000 SKUs: produto acima disso sumia da listagem, da impressão e das opções de categoria/unidade/cliente. Leitura agora percorre todos os SKUs da empresa por paginação.",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/cadastro-produtos/ModuloCadastroProdutos.tsx",
+      "sha": "71dd92112cbbdf9356aebd9dbfe2b965d111d5eb",
+      "autor": "FernandoSch",
+      "revisao": "REV-PRODUTOS-TELA-UNICA-20261104-01 — vira a tela principal de /cadastros/produtos; abre a aba pela URL (?aba=) para absorver as rotas antigas de ficha técnica e de parâmetros",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-04: \"MANDEI TELA NOVA E NAO FOI APLICADO\" e \"NAO DEIXAR VARIAS TELAS COM MESMA FUNCÇAO OU PARECIDADAS\""
+    },
+    {
+      "path": "src/pages/cadastro-produtos/ParametrosCodigo.tsx",
+      "sha": "95b4f5bd6bf605b14d0f98e7ce29fc64aa24a22b",
+      "autor": "FernandoSch",
+      "revisao": "REV-CONTRATO-BANCO-20261103-01 — nomes citados na tela passaram a ser a rotina real erp_gerar_codigo",
+      "aprovadaEm": "2026-11-03",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/configuracoes/ConfiguracaoBackups.tsx",
+      "sha": "f050e6c468b620d095f88487f6f55bc1b903a5bc",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/configuracoes/ConfiguracaoCodificacaoAreas.tsx",
+      "sha": "a314275415ce79b0965f61a720c4a3728e24716a",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/configuracoes/ConfiguracaoIntegracoes.tsx",
+      "sha": "c6d3afccc2051dbf1deb569dd8d2c20f5e7ded32",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/configuracoes/ConfiguracaoLogs.tsx",
+      "sha": "5f050168d0b97740582a3a3faecff7fa7a362ff6",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/configuracoes/ConfiguracaoPerfis.tsx",
+      "sha": "7d9f4216ea09f67ef61b5730e924c12468f85b88",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/configuracoes/ConfiguracaoPermissoes.tsx",
+      "sha": "c798ec1179aa61590c7633c693180a365b79f0ef",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/configuracoes/ConfiguracaoSeguranca.tsx",
+      "sha": "de8f2f541ffb8fc814a6c38863409fd8f190d814",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/configuracoes/ConfiguracaoSistema.tsx",
+      "sha": "29bd9c3c3e80fe38bdf28a9100dda169a7cc84a8",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/configuracoes/ConfiguracoesADM.tsx",
+      "sha": "465c820e046a6bccc743efd93502161292f94b31",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/configuracoes/HelpBackups.tsx",
+      "sha": "f8c1a367cbd0a30f9dd9e0610ed839a7c85e0956",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/estoque/EstoqueRecebimentoLotes.tsx",
+      "sha": "ac1c47ce1f9942da8a1f13163e1b0c48381f5cd9",
+      "autor": "FernandoSch",
+      "revisao": "REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: \"todos os edits do módulo estoque estão desalinhados e fora de tamanho\". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).",
+      "aprovadaEm": "2026-11-02",
+      "statusAprovacao": "CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela"
+    },
+    {
+      "path": "src/pages/estoque/HelpEstoqueRecebimento.tsx",
+      "sha": "c280bf0face024c73cfc65f2460133195dce4eb5",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/estoque/InventarioValidade.tsx",
+      "sha": "faf11809d37bff4c647c3d60b1823df8261e95a8",
+      "autor": "FernandoSch",
+      "revisao": "REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: \"todos os edits do módulo estoque estão desalinhados e fora de tamanho\". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).",
+      "aprovadaEm": "2026-11-02",
+      "statusAprovacao": "CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela"
+    },
+    {
+      "path": "src/pages/layout/ModuloMestreIndustrial.tsx",
+      "sha": "21370060754ae65b0280bbc584bc8f2586e12d37",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/logistica/ExpedicaoNFe.tsx",
+      "sha": "90488518d593135837429e67adb95ac504d86561",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/logistica/ImpressaoEtiquetas.tsx",
+      "sha": "906f70b70d10d664739676e4e129b8e12452e95c",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/logistica/RomaneioCarga.tsx",
+      "sha": "df1cc588603cf00ca924b2a4c3d5cea63928b5b5",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/manutencao/ManutencaoIndicadores.tsx",
+      "sha": "e54af6fbea1f62bf068d61142721080595761a4a",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/pcp/ControleProcessoInjetora.tsx",
+      "sha": "450b34ce8909422a19a2453258848e4f2f8de173",
+      "autor": "FernandoSch",
+      "revisao": "REV-TELAS-CONSISTENTES-20261108-01 — ordem do proprietário em 2026-11-08: a tela deixou de renderizar um segundo ERPHorizontalShell e o cabeçalho próprio; a abertura é o card navy padrão do shell e resta a barra de ações (Imprimir A4, Atualizar). Formulário, consultas e relatório A4 inalterados.",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
+    },
+    {
+      "path": "src/pages/pcp/PCPAuditoria.tsx",
+      "sha": "04ee3c957e9bd3b880e868bf1316435985b04198",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/qualidade/CEP.tsx",
+      "sha": "a4521f2871ccf2b286f1ccf85d1d06e406866abd",
+      "autor": "FernandoSch",
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o laudo A4 de CEP com as medições reais gravadas no banco",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
+    },
+    {
+      "path": "src/pages/qualidade/FmeaPlanoControle.tsx",
+      "sha": "5033eee99311a5b03b19aeb6ff5d6dcf77d810f5",
+      "autor": "FernandoSch",
+      "revisao": "REV-FMEA-CPP-MAPA-20261108-01 — página única do trio APQP: FMEA (cabeçalho + matriz AIAG), Plano de Controle (CPP) e Mapa de Processo, com geração de um documento a partir do outro e impressão A4 com QR Code",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "ORDEM EXPLICITA DO PROPRIETARIO EM 2026-11-08 — \"veja o FMEA para vc fazer FMEA E Plano de Controle juntos ok e Mapa de Processo ... ai vc junta e elemina os outros\""
+    },
+    {
+      "path": "src/pages/qualidade/GEDDocumentos.tsx",
+      "sha": "20fef237db6dcd2264f7498c025109d02cc364b6",
+      "autor": "FernandoSch",
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o documento controlado A4 com a revisão, o conteúdo e a trilha de versões gravados no banco",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
+    },
+    {
+      "path": "src/pages/qualidade/MetrologiaIndustrial.tsx",
+      "sha": "bc00ae77d9fe66493e537d9ba2c67032ae3a2a3a",
+      "autor": "FernandoSch",
+      "revisao": "REV-METROLOGIA-ALERTA-VENCIMENTO-20261108-01 — composição da central existente com alerta de calibração vencida e a vencer em 30 dias",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "INCREMENTO FUNCIONAL AUTORIZADO NA ORDEM ORDEM-EXECUCAO-SYSNQRA-20261108-01; fluxo CRUD existente preservado"
+    },
+    {
+      "path": "src/pages/qualidade/QualidadeAssinaturaIT.tsx",
+      "sha": "321a95ebb48e52362e0b63fdef2c9685f0b8955c",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/qualidade/QualidadeControleDesenhos.tsx",
+      "sha": "ce94a9238c1416d698364fdabce87b6d270c2562",
+      "autor": "FernandoSch",
+      "revisao": "REV-SGQ-CONTROLE-DESENHOS-20261108-01 — rota operacional para revisões e homologação de desenhos técnicos",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "INTEGRADO AO TABLET CENTRAL DA QUALIDADE — revisão registrada em 2026-11-08"
+    },
+    {
+      "path": "src/pages/qualidade/QualidadeEditorIT.tsx",
+      "sha": "12d5720c2fe2b11e6ec9e7fa459f98da95c5dff0",
+      "autor": "FernandoSch",
+      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir a instrução de trabalho em A4 com código, revisão, homologação e conteúdo carregados do banco",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
+    },
+    {
+      "path": "src/pages/qualidade/QualidadeGenealogiaLote.tsx",
+      "sha": "36bb1ea918f864b48a05fa9779982e2dd9823739",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
+    },
+    {
+      "path": "src/pages/qualidade/QualidadeInspecaoProcessoVersionada.tsx",
+      "sha": "cafe572884a6fbf0d418774ac8b5510c3209e15a",
+      "autor": "FernandoSch",
+      "revisao": "REV-SGQ-INSPECAO-TEMPLATE-VIGENTE-20261108-01 — inspeção em processo exige template publicado, revisão e snapshot imutável; removida inclusão ad-hoc de medições",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "INCREMENTO FUNCIONAL AUTORIZADO NA ORDEM ORDEM-EXECUCAO-SYSNQRA-20261108-01; preservado o fluxo visual industrial"
+    },
+    {
+      "path": "src/pages/qualidade/QualidadeLiberacaoLotes.tsx",
+      "sha": "438a6c3db3f227e0106e5e157a506e2ea5125b6c",
+      "autor": "FernandoSch",
+      "revisao": "REV-SGQ-REL001-20261108-01 — decisão operacional de lote por RPC, FK e trilha SGQ transacional",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "INCREMENTO FUNCIONAL AUTORIZADO NA ORDEM DE EXECUÇÃO DE 2026-11-08; folha A4 e padrão visual preservados"
+    },
+    {
+      "path": "src/pages/qualidade/QualidadeProcedimentos.tsx",
+      "sha": "6ae1572f5c76ad303eedde6b29794a1ac30b8666",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+    },
+    {
+      "path": "src/pages/qualidade/QualidadeQuarentena.tsx",
+      "sha": "5faa679732b564b2a233d582e20944928831c564",
+      "autor": "FernandoSch",
+      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
+    },
+    {
+      "path": "src/pages/qualidade/QualidadeTemplatesInspecao.tsx",
+      "sha": "b7698daa8be8fd03162f8831287a487ea003f593",
+      "autor": "FernandoSch",
+      "revisao": "REV-SGQ-TEMPLATE-INSPECAO-20261108-01 — cadastro, revisão, itens e publicação de templates versionados",
+      "aprovadaEm": "2026-11-08",
+      "statusAprovacao": "NOVA TELA AUTORIZADA NA ORDEM DE EXECUÇÃO DE 2026-11-08; gravação por empresa e admin no banco"
+    },
+    {
+      "path": "src/pages/qualidade/sala-rnc.tsx",
+      "sha": "317142432ccb310ef3047fcf7f3a46559e2de877",
+      "autor": "FernandoSch",
+      "revisao": "REV-TELAS-CONSISTENTES-20261108-01 — ordem do proprietário em 2026-11-08: a tela deixou de renderizar um segundo ERPHorizontalShell e o cabeçalho próprio; a abertura é o card navy padrão do shell e resta a barra de ações (Imprimir A4, Atualizar, Registrar RPNC). O formulário, as consultas e o relatório A4 não mudaram.",
+      "aprovadaEm": "2026-11-05",
+      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
+    },
+    {
+      "path": "src/styles/industrial-login.css",
+      "sha": "2c03b7bd62fac429e15cc33fb4c67d674532f818",
+      "autor": "FernandoSch",
+      "revisao": "REV-LOGIN-FOTO-INDUSTRIAL-20261101-01 — tela de acesso sobre foto da planta com cartão flutuante à direita",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "LAYOUT APROVADO PELO PROPRIETÁRIO EM 2026-11-01; AJUSTES DE 2026-11-02 ORDENADOS PELO PROPRIETÁRIO"
+    },
+    {
+      "path": "src/styles/module-tablet-panel.css",
+      "sha": "ea7cd5ef04a872e2848e5675ec919e915e00f5ec",
+      "autor": "FernandoSch",
+      "revisao": "REV-TABLET-COMPACTO-20261104-01 — ordem do proprietário: \"o tablet qualidade muito grande, diminuir ... arrumar os cards\".",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "AGUARDANDO APROVACAO VISUAL DO PROPRIETARIO no preview do Vercel"
+    },
+    {
+      "path": "src/styles/planos-industrial-20261106.css",
+      "sha": "8a423e0192a414234bc95a580db80191c9ed2e82",
+      "autor": "FernandoSch",
+      "revisao": "REV-PLANOS-SISTEMA-20261106-01 — tela /planos redesenhada com o vocabulário visual do próprio ERP",
+      "aprovadaEm": "2026-11-06",
+      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-06 — \"TELA DE PLANOS ESTA FEIA DE MAIS ARRUMAR ELA"
+    },
+    {
+      "path": "src/styles/public-home-premium-20261101.css",
+      "sha": "27e48f60406e5a9fa396a1a65d3584c3c00c01df",
+      "autor": "FernandoSch",
+      "revisao": "REV-VITRINE-PUBLICA-20261101-01 — home pública em fundo branco com vitrine de telas",
+      "aprovadaEm": "2026-11-04",
+      "statusAprovacao": "REESCRITA AUTORIZADA PELO PROPRIETARIO EM 2026-11-01 (\"TIRAR O FUNDO AZUL E DEIXAR FUNDO BRANCO\", \"ARRUMAR TAMANHO PADRAO 13PX\" NO MENU DO TOPO)"
+    },
+    {
+      "path": "src/styles/quality-rpnc-unified.css",
+      "sha": "ff3e66481fd5c91c5b87059f3f804fe6bf24c82d",
+      "autor": "FernandoSch",
+      "revisao": "REV-RPNC-CSS-CARIMBO-20261103-01 — carimbo de autoria/aprovacao exigido pelo manifesto de telas; nenhuma regra visual foi tocada",
+      "aprovadaEm": "2026-11-03",
+      "statusAprovacao": "APROVADO PELO PROPRIETARIO (ordem de 2026-11-03: \"todas as telas novas vao ter revisao, aprovacao e travamento para o vercel nao pegar mais telas antigas\")"
+    }
+  ]
+}

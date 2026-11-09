@@ -23,7 +23,7 @@ function requiredPlan(path: string): Plan {
 
   const goldRoutes = [
     '/qualidade/sala-rnc', '/qualidade/controle-injetora',
-    '/qualidade/especificacoes', '/qualidade/fmea', '/qualidade/pfmea', '/qualidade/rnc-capa',
+    '/qualidade/especificacoes', '/qualidade/fmea', '/qualidade/pfmea', '/qualidade/plano-controle', '/qualidade/mapa-processo', '/qualidade/rnc-capa',
     '/engenharia/bom', '/pcp/engenharia-bom', '/pcp/ordens', '/pcp/ordens-industriais',
     '/pcp/apontamentos', '/pcp/painel-ordens',
   ]
@@ -65,7 +65,7 @@ export default function QualityPlanGate({ children }: { children: ReactNode }) {
         // A exceção é restrita à identidade autenticada e ao perfil Master completo.
         const masterResult = await supabase
           .from('erp_usuarios')
-          .select('auth_user_id,empresa_id,perfil,nivel_admin,is_master,ativo,deleted_at')
+          .select('auth_user_id,empresa_id,perfil,nivel_admin,is_master,ativo,deleted_at,setor_id')
           .eq('auth_user_id', authSession.user.id)
           .eq('ativo', true)
           .is('deleted_at', null)
@@ -76,6 +76,7 @@ export default function QualityPlanGate({ children }: { children: ReactNode }) {
           master &&
           master.auth_user_id === authSession.user.id &&
           master.empresa_id === null &&
+          master.setor_id === null &&
           master.is_master === true &&
           Number(master.nivel_admin) === 100 &&
           String(master.perfil ?? '').trim().toUpperCase() === 'MASTER'
@@ -102,7 +103,7 @@ export default function QualityPlanGate({ children }: { children: ReactNode }) {
     return () => { active = false }
   }, [location.pathname])
 
-  if (state.loading) return <div className="grid min-h-[45vh] place-items-center bg-[#F4FBFD]"><div className="border border-slate-200 bg-white px-5 py-4 text-[10px] text-slate-600"><span className="mr-2 inline-block h-3 w-3 animate-spin rounded-full border-2 border-sky-700 border-t-transparent align-middle" />VALIDANDO PLANO SAAS E PERMISSÕES…</div></div>
+  if (state.loading) return <div className="grid min-h-[45vh] place-items-center bg-[#F4FBFD]"><div className="border border-slate-200 bg-white px-5 py-4 text-[10px] text-slate-600"><span className="mr-2 inline-block h-3 w-3 animate-spin rounded-full border-2 border-sky-700 border-t-transparent align-middle" />VALIDANDO PLANO SAAS…</div></div>
 
   if (state.error || !state.plan) return <div className="grid min-h-[45vh] place-items-center bg-[#F4FBFD] p-4"><section role="alert" className="w-full max-w-xl border border-amber-300 bg-white p-5"><div className="mb-2 flex items-center gap-2 text-amber-800"><ShieldCheck size={16}/><strong className="text-[11px] uppercase">Validação de plano indisponível</strong></div><p className="text-[11px] text-slate-600">{state.error ?? 'Não foi possível validar a assinatura.'}</p><button className="mt-3 h-[30px] border border-slate-300 px-3 text-[10px] font-bold" onClick={() => window.location.reload()}>TENTAR NOVAMENTE</button></section></div>
 

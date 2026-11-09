@@ -107,6 +107,10 @@ for (const page of pagePaths) {
   const taskMarkerPattern = /(?<![A-Za-zÀ-ÿ0-9_])(?:TODO|FIXME)(?![A-Za-zÀ-ÿ0-9_])/g
   const fakeMarkers = [...t.matchAll(markerPattern), ...t.matchAll(taskMarkerPattern)].filter(match => {
     const context = t.slice(Math.max(0, (match.index ?? 0) - 35), Math.min(t.length, (match.index ?? 0) + match[0].length + 35))
+    const lineStart = t.lastIndexOf('\n', match.index ?? 0) + 1
+    const lineEnd = t.indexOf('\n', match.index ?? 0)
+    const line = t.slice(lineStart, lineEnd < 0 ? t.length : lineEnd)
+    if (/^tempor/i.test(match[0]) && /regime_trabalho/.test(line) && line.toLocaleLowerCase('pt-BR').includes('temporário')) return false
     const before = t.slice(Math.max(0, (match.index ?? 0) - 160), match.index ?? 0)
     const legitimateEmploymentOption = match[0].toLocaleLowerCase('pt-BR') === 'temporário' && /options:\s*\[[\s\S]*$/i.test(before)
     return !legitimateEmploymentOption && !/nenhum dado fict[ií]cio (?:foi )?(?:inclu[ií]do|criado)|n[aã]o cria dados fict[ií]cios/i.test(context)

@@ -39,6 +39,19 @@ jobs:
       - name: CI policy
         run: npm run verify:ci-policy
 
+      - name: Release lineage
+        run: npm run verify:release-lineage
+
+      - name: Reset and tenant contract
+        run: npm run verify:reset-contract
+
+      - name: Official screens immutable lock
+        run: npm run verify:official-screens-lock
+
+      - name: Migration SQL contract
+        run: npm run verify:migrations-sql
+
+
       - name: Auth Master contract
         run: npm run verify:auth-master-contract
 

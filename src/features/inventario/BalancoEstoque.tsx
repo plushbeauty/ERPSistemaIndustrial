@@ -1,13 +1,16 @@
 /**
- * @AUTOR: FernandoSchu
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @REVISAO: REV-ACAO-PRIMARIA-NAVY-20261108-01 — ordem do proprietário em 2026-11-08: o botão Exportar XLSX deixou de ser âmbar (laranja) e usa a ação primária navy, igual às demais telas; consulta e exportação inalteradas.
+ * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — a valoração parava em 5000 SKUs e o rodapé "Custo Total Ativo" somava só o trecho carregado. Agora percorre todos os SKUs ativos da empresa por paginação.
+ * @AUTOR: FernandoSch
+ * @DATA_REVISAO_APROVACAO: 2026-11-02
+ * @REVISAO: REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: "todos os edits do módulo estoque estão desalinhados e fora de tamanho". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).
+ * @STATUS_APROVACAO: CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela
  */
 import { Download, ArrowLeft } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
+import { fetchAllPages } from '../../lib/supabasePagination'
 import { makeXlsx } from '../../utils/makeXlsx'
 
 type Product={id:string;codigo:string;nome:string;unidade:string|null;estoque_atual:number|null;custo_medio:number|null}
@@ -23,19 +26,19 @@ function exportXlsx(rows:Row[],date:string){const data=[['SKU','Descrição','Sa
 
 export default function BalancoEstoque(){
  const navigate=useNavigate();const [cut,setCut]=useState(new Date().toISOString().slice(0,10));const [warehouse,setWarehouse]=useState('');const [method,setMethod]=useState('Custo Médio Ponderado');const [warehouses,setWarehouses]=useState<Warehouse[]>([]);const [products,setProducts]=useState<Product[]>([]);const [search,setSearch]=useState('');const [loading,setLoading]=useState(true);const [error,setError]=useState('')
- useEffect(()=>{void (async()=>{try{const empresa=await supabase.rpc('erp_current_empresa_id');if(empresa.error||!empresa.data)throw empresa.error??new Error('Empresa da sessão não identificada.');const empresaId=String(empresa.data);const [w,p]=await Promise.all([supabase.from('erp_almoxarifados').select('id,codigo,nome').eq('empresa_id',empresaId).eq('ativo',true).order('codigo'),supabase.from('erp_produtos').select('id,codigo,nome,unidade,estoque_atual,custo_medio').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(5000)]);if(w.error)throw w.error;if(p.error)throw p.error;setWarehouses((w.data??[]) as Warehouse[]);setProducts((p.data??[]) as Product[])}catch(e){setError(e instanceof Error?e.message:'Falha ao carregar balanço.')}finally{setLoading(false)}})()},[])
+ useEffect(()=>{void (async()=>{try{const empresa=await supabase.rpc('erp_current_empresa_id');if(empresa.error||!empresa.data)throw empresa.error??new Error('Empresa da sessão não identificada.');const empresaId=String(empresa.data);const [w,p]=await Promise.all([supabase.from('erp_almoxarifados').select('id,codigo,nome').eq('empresa_id',empresaId).eq('ativo',true).order('codigo'),fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,unidade,estoque_atual,custo_medio',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').order('id').range(from,to))]);if(w.error)throw w.error;setWarehouses((w.data??[]) as Warehouse[]);setProducts(p)}catch(e){setError(e instanceof Error?e.message:'Falha ao carregar balanço.')}finally{setLoading(false)}})()},[])
  const rows=useMemo<Row[]>(()=>products.filter(p=>fuzzy(p.codigo+' '+p.nome,search)).map(p=>{const saldo=Number(p.estoque_atual??0);const custo=Number(p.custo_medio??0);return {...p,saldo,custo,total:saldo*custo,status:saldo<0?'DIVERGENTE':'ATIVO'}}),[products,search])
  const total=rows.reduce((s,r)=>s+r.total,0)
- return <main className="min-h-screen bg-slate-50 p-3 text-gray-800">
+ return <main data-synqra-density="30px" className="min-h-screen bg-slate-50 p-3 text-gray-800">
   <div className="mx-auto max-w-[1600px] space-y-2">
-   <div className="flex items-center gap-2"><button type="button" onClick={()=>navigate('/estoque')} className={button+' border border-gray-200 bg-white text-gray-600'}><ArrowLeft size={12}/>Voltar</button><h1 className="text-[13px] font-bold text-gray-700">VALORAÇÃO CONTÁBIL DE ESTOQUE</h1></div>
+   <div className="flex items-center gap-2"><button type="button" onClick={()=>navigate('/pageprincipal/estoque/saldos')} className={button+' border border-gray-200 bg-white text-gray-600'}><ArrowLeft size={12}/>Voltar</button><p className="text-[9px] font-black uppercase tracking-wider text-slate-500">Valoração contábil de estoque</p></div>
    {error&&<div className="border border-red-200 bg-red-50 px-2 py-1 text-[10px] text-red-700">{error}</div>}
    <section className="rounded-md border border-gray-200 bg-white p-2 shadow-sm"><div className="flex items-end gap-2">
     <div className="w-[110px] shrink-0"><label className={label}>Data Inventário</label><input className={input+' w-[110px]'} type="date" value={cut} onChange={e=>setCut(e.target.value)}/></div>
     <div className="w-[160px] shrink-0"><label className={label}>Almoxarifado / Filial</label><select className={input+' w-[160px]'} value={warehouse} onChange={e=>setWarehouse(e.target.value)}><option value="">Todos</option>{warehouses.map(w=><option key={w.id} value={w.id}>{w.codigo} - {w.nome}</option>)}</select></div>
     <div className="w-[140px] shrink-0"><label className={label}>Método de Custo</label><select className={input+' w-[140px]'} value={method} onChange={e=>setMethod(e.target.value)}><option>Custo Médio Ponderado</option><option>PEPS (Primeiro que Entra, Primeiro que Sai)</option><option>Último Preço de Compra</option></select></div>
     <div className="min-w-0 flex-1"><label className={label}>Buscar SKU / Descrição</label><input className={input+' w-full'} value={search} onChange={e=>setSearch(e.target.value)} placeholder="SKU ou descrição"/></div>
-    <button id="btnExportarXLSX" type="button" onClick={()=>exportXlsx(rows,cut)} className={button+' w-[150px] shrink-0 bg-amber-500 text-black hover:bg-amber-600'}><Download size={12}/>Exportar XLSX</button>
+    <button id="btnExportarXLSX" type="button" onClick={()=>exportXlsx(rows,cut)} className={button+' w-[150px] shrink-0 bg-[#123B50] text-white hover:bg-[#216f96]'}><Download size={12}/>Exportar XLSX</button>
    </div></section>
    <section id="gridValoration" className="h-[250px] overflow-auto rounded-md border border-gray-200 bg-white shadow-sm">
     <table className="w-full min-w-[900px] border-collapse text-[10px]"><thead className="sticky top-0 z-10 bg-slate-700 text-white"><tr className="h-7"><th className="w-[110px] px-2 text-left font-normal">SKU</th><th className="px-2 text-left font-normal">Descrição</th><th className="w-[100px] px-2 text-right font-normal">Saldo Físico</th><th className="w-[70px] px-2 text-left font-normal">Unidade</th><th className="w-[110px] px-2 text-right font-normal">Custo Unitário</th><th className="w-[130px] px-2 text-right font-normal">Custo Total R$</th><th className="w-[110px] px-2 text-center font-normal">Status do Lote</th></tr></thead><tbody>{loading?<tr><td colSpan={7} className="h-20 text-center text-gray-400">Carregando estoque real…</td></tr>:rows.map(r=><tr key={r.id} className="h-[26px] border-b border-gray-100 even:bg-slate-50"><td className="px-2 font-semibold">{r.codigo}</td><td className="px-2">{r.nome}</td><td className="px-2 text-right">{r.saldo.toLocaleString('pt-BR')}</td><td className="px-2">{r.unidade??'UN'}</td><td className="px-2 text-right">{r.custo.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</td><td className="px-2 text-right font-semibold">{r.total.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</td><td className="px-2 text-center">{r.status}</td></tr>)}{!loading&&!rows.length&&<tr><td colSpan={7} className="h-16 text-center text-gray-400">Nenhum item real encontrado.</td></tr>}</tbody></table>

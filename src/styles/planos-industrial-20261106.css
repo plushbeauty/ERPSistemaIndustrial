@@ -1,0 +1,158 @@
+/**
+ * @AUTOR: FernandoSch
+ * @DATA_REVISAO_APROVACAO: 2026-11-06
+ * @REVISAO: REV-PLANOS-SISTEMA-20261106-01 — tela /planos redesenhada com o vocabulário visual do próprio ERP
+ * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-06 — "TELA DE PLANOS ESTA FEIA DE MAIS ARRUMAR ELA
+ *                   ACHAR EM OUTROS SISTEMA PARA MELHORAR O VISUAL DELA BASEADO NO NOSSO SISTEMA"
+ *
+ * Paleta e régua são as do sistema (navy #123B50, azul #2D8DB8, ciano #48B7C7, verde #3A9D78,
+ * âmbar #E6A34A, fundo #F4FBFD, linha #DCE9EF, Inter, cards de 14px com sombra discreta), então a
+ * página comercial e o ERP parecem o mesmo produto. Os tokens vêm do escopo .sgq-public-home,
+ * declarado em public-home-premium-20261101.css — esta folha só acrescenta o que a vitrine não tem.
+ */
+
+/* ============================ HERO ============================ */
+.pi-hero {
+  position: relative;
+  padding: clamp(28px, 4vw, 52px) 0 clamp(30px, 4vw, 56px);
+  background: linear-gradient(135deg, #0B2837 0%, var(--ph-navy) 46%, #17506B 100%);
+  color: #EAF6FA;
+  overflow: hidden;
+}
+.pi-hero::after {
+  content: "";
+  position: absolute; right: -120px; top: -120px; width: 420px; height: 420px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(72, 183, 199, .28) 0%, rgba(72, 183, 199, 0) 68%);
+  pointer-events: none;
+}
+.pi-hero-grid { position: relative; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: clamp(22px, 4vw, 48px); align-items: center; }
+.pi-hero .ph-kicker { border-color: rgba(143, 225, 237, .38); background: rgba(255, 255, 255, .07); color: #8FE1ED; }
+.pi-hero h1 { margin: 15px 0 13px; font-size: clamp(28px, 3.6vw, 46px); line-height: 1.08; color: #fff; }
+.pi-hero h1 em { font-style: normal; color: #7FDCEF; }
+.pi-hero p.pi-lead { max-width: 58ch; color: rgba(234, 246, 250, .82); font-size: 15px; line-height: 1.75; }
+.pi-hero .ph-cta-row { margin-top: 22px; }
+.pi-hero .ph-ghost { border-color: rgba(255, 255, 255, .3); background: rgba(255, 255, 255, .07); color: #fff; }
+.pi-hero .ph-ghost:hover { border-color: #7FDCEF; background: rgba(255, 255, 255, .14); color: #fff; }
+.pi-hero-note { margin-top: 14px; font-size: 12px; color: rgba(234, 246, 250, .6); }
+
+/* Escada de preços: o resumo dos quatro níveis dentro do próprio hero, para o visitante ver o
+   intervalo (R$199 a R$1.290) antes de rolar. */
+.pi-ladder { display: grid; gap: 8px; padding: 16px; border: 1px solid rgba(255, 255, 255, .16); border-radius: 16px; background: rgba(255, 255, 255, .06); backdrop-filter: blur(6px); }
+.pi-ladder > b { display: block; padding: 0 4px 6px; font-size: 11px; font-weight: 900; letter-spacing: 1.4px; text-transform: uppercase; color: rgba(234, 246, 250, .68); }
+.pi-ladder-row { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; align-items: center; gap: 11px; padding: 9px 11px; border-radius: 11px; background: rgba(4, 16, 28, .34); }
+.pi-ladder-row i { width: 10px; height: 10px; border-radius: 3px; }
+.pi-ladder-row span { font-size: 13px; font-weight: 800; color: #EAF6FA; }
+.pi-ladder-row small { display: block; font-size: 11px; font-weight: 700; color: rgba(234, 246, 250, .58); }
+.pi-ladder-row b { font-size: 15px; font-weight: 900; color: #fff; letter-spacing: -.3px; white-space: nowrap; }
+/* Enquanto o catálogo não responde, a escada não mostra preço nenhum: o valor de referência local
+   apareceria como se fosse o preço publicado nesta base. */
+.pi-ladder-wait { display: flex; align-items: center; gap: 9px; padding: 14px 12px; border-radius: 11px; background: rgba(4, 16, 28, .34); color: rgba(234, 246, 250, .78); font-size: 12.5px; font-weight: 800; }
+
+/* ============================ CARTÕES DE PLANO ============================ */
+.pi-plans { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; align-items: stretch; }
+.pi-card {
+  position: relative; display: flex; flex-direction: column; min-width: 0;
+  padding: 22px 20px 20px; border: 1px solid var(--ph-line); border-radius: 14px; background: #fff;
+  box-shadow: 0 10px 26px rgba(18, 59, 80, .06);
+  transition: box-shadow .18s, transform .18s, border-color .18s;
+}
+.pi-card:hover { transform: translateY(-3px); box-shadow: 0 20px 40px rgba(18, 59, 80, .12); }
+.pi-card::before { content: ""; position: absolute; inset: 0 0 auto; height: 4px; border-radius: 14px 14px 0 0; background: var(--pi-accent, var(--ph-blue)); }
+.pi-card--dark { background: linear-gradient(180deg, #0F3244 0%, #123B50 100%); border-color: #123B50; color: #EAF6FA; }
+.pi-card--dark .pi-card-name, .pi-card--dark .pi-card-price { color: #fff; }
+.pi-card--dark .pi-card-for, .pi-card--dark .pi-card-list li { color: rgba(234, 246, 250, .78); }
+.pi-card--dark .pi-card-list { border-top-color: rgba(255, 255, 255, .16); }
+.pi-card--dark .pi-card-count { color: rgba(234, 246, 250, .6); }
+
+.pi-card-tag { display: inline-flex; align-self: flex-start; padding: 5px 9px; border-radius: 999px; background: color-mix(in srgb, var(--pi-accent, var(--ph-blue)) 14%, #fff); color: var(--pi-accent, var(--ph-blue)); font-size: 10px; font-weight: 900; letter-spacing: 1.1px; text-transform: uppercase; }
+.pi-card--dark .pi-card-tag { background: rgba(255, 255, 255, .12); color: #8FE1ED; }
+.pi-card--gold .pi-card-tag { background: color-mix(in srgb, var(--ph-amber) 22%, #fff); color: #8A5A12; }
+.pi-card-name { margin: 12px 0 2px; font-size: 19px; line-height: 1.2; color: var(--ph-navy); }
+.pi-card-price { display: flex; align-items: baseline; gap: 5px; color: var(--ph-navy); font-size: 31px; font-weight: 900; line-height: 1.1; letter-spacing: -1.2px; }
+.pi-card-price small { font-size: 12px; font-weight: 800; letter-spacing: 0; color: var(--ph-muted); }
+.pi-card--dark .pi-card-price small { color: rgba(234, 246, 250, .66); }
+.pi-card-per { margin-top: 3px; font-size: 11px; font-weight: 800; color: var(--ph-muted); letter-spacing: .2px; }
+.pi-card--dark .pi-card-per { color: rgba(234, 246, 250, .6); }
+.pi-card-for { margin: 13px 0 0; color: #33525F; font-size: 12.5px; line-height: 1.62; }
+.pi-card-list { flex: 1; margin: 15px 0 0; padding: 14px 0 0; border-top: 1px solid var(--ph-line); list-style: none; display: grid; gap: 7px; }
+.pi-card-list li { display: grid; grid-template-columns: 15px minmax(0, 1fr); gap: 7px; align-items: start; color: #2C4C5A; font-size: 12.5px; font-weight: 700; line-height: 1.4; }
+.pi-card-list li svg { margin-top: 1px; color: var(--ph-green); }
+.pi-card-list li.pi-card-more { color: var(--ph-muted); font-weight: 800; }
+.pi-card-count { margin-top: 9px; font-size: 11px; font-weight: 800; color: var(--ph-muted); }
+.pi-card-out { color: #8A5A12; font-weight: 700; letter-spacing: 0; }
+/* Plano publicado no catálogo sem módulo vinculado: a pendência aparece no cartão, não some. */
+.pi-card-alert { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 8px; align-items: start; margin: 15px 0 0; padding: 12px; border: 1px solid #F0D9B5; border-radius: 11px; background: #FFF9EF; color: #7A4E0B; font-size: 12px; line-height: 1.55; font-weight: 700; }
+.pi-card-alert code { font-family: ui-monospace, Consolas, monospace; font-size: 11px; }
+.pi-card--dark .pi-card-alert { background: rgba(230, 163, 74, .12); border-color: rgba(230, 163, 74, .42); color: #F5D9A8; }
+.pi-card-cta { display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; min-height: 42px; margin-top: 14px; border-radius: 10px; background: var(--pi-accent, var(--ph-navy)); color: #fff !important; font-size: 13px; font-weight: 900; }
+.pi-card-cta:hover { filter: brightness(1.08); }
+.pi-card-cta--ghost { background: transparent; border: 1px solid var(--ph-line); color: var(--ph-navy) !important; min-height: 38px; }
+.pi-card-cta--ghost:hover { border-color: var(--pi-accent, var(--ph-blue)); background: var(--ph-tint); }
+.pi-card--dark .pi-card-cta--ghost { border-color: rgba(255, 255, 255, .28); color: #fff !important; }
+.pi-card--dark .pi-card-cta { background: var(--ph-amber); color: #23150A !important; }
+.pi-card-pick { width: 100%; min-height: 34px; margin-top: 8px; border: 1px dashed var(--ph-line); border-radius: 9px; background: #fff; color: var(--ph-navy); font: inherit; font-size: 12px; font-weight: 900; cursor: pointer; }
+.pi-card-pick[aria-pressed="true"] { border-style: solid; border-color: var(--pi-accent, var(--ph-blue)); background: var(--ph-tint); }
+
+/* ============================ GRADE COMPARATIVA ============================ */
+.pi-matrix-wrap { overflow: auto; max-height: 78vh; border: 1px solid var(--ph-line); border-radius: 14px; background: #fff; box-shadow: var(--ph-shadow); }
+.pi-matrix { width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+.pi-matrix thead th { position: sticky; top: 0; z-index: 3; padding: 13px 14px; background: var(--ph-navy); color: #fff; font-size: 12px; font-weight: 900; letter-spacing: .3px; text-align: center; white-space: nowrap; }
+.pi-matrix thead th small { display: block; margin-top: 3px; font-size: 11px; font-weight: 800; color: rgba(234, 246, 250, .72); }
+.pi-matrix thead th:first-child { left: 0; z-index: 4; text-align: left; min-width: 296px; }
+.pi-matrix .pi-col-own { box-shadow: inset 0 3px 0 var(--pi-accent, var(--ph-blue)); }
+.pi-group th { position: sticky; left: 0; z-index: 1; padding: 10px 14px; background: var(--ph-tint); border-top: 1px solid var(--ph-line); border-bottom: 1px solid var(--ph-line); text-align: left; color: var(--ph-navy); font-size: 11px; font-weight: 900; letter-spacing: 1.3px; text-transform: uppercase; }
+.pi-group td { padding: 10px 14px; background: var(--ph-tint); border-top: 1px solid var(--ph-line); border-bottom: 1px solid var(--ph-line); }
+.pi-row th { position: sticky; left: 0; z-index: 1; padding: 10px 14px; background: #fff; border-bottom: 1px solid #EDF4F8; text-align: left; font-weight: 800; color: #1D4A5C; }
+.pi-row th span { display: block; margin-top: 2px; font-size: 11.5px; font-weight: 600; color: var(--ph-muted); line-height: 1.45; }
+.pi-row td { padding: 10px 14px; border-bottom: 1px solid #EDF4F8; text-align: center; }
+.pi-row:hover th, .pi-row:hover td { background: #F1FAFD; }
+.pi-row.is-current th { background: #E6F6FB; box-shadow: inset 3px 0 0 var(--ph-blue); }
+.pi-row.is-current td { background: #E6F6FB; }
+.pi-yes { color: var(--ph-green); font-weight: 900; }
+.pi-no { color: #B4C7D0; font-weight: 900; }
+/* Linha que nenhum plano libera (Recebimento, Comissões na grade do proprietário): o aviso fica na
+   própria linha até a decisão comercial, em vez de uma fileira inteira de tracinhos sem explicação. */
+.pi-row-flag { display: inline-block; margin-left: 8px; padding: 2px 7px; border-radius: 999px; background: #FFF3E0; color: #8A5A12; font-size: 10px; font-weight: 900; letter-spacing: .4px; text-transform: uppercase; font-style: normal; vertical-align: 1px; }
+.pi-matrix-foot { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 14px; font-size: 12px; color: var(--ph-muted); }
+.pi-matrix-foot b { color: var(--ph-navy); }
+.pi-matrix-foot .pi-foot-flag { padding: 2px 7px; border-radius: 7px; background: #FFF3E0; color: #8A5A12; font-style: normal; text-transform: none; letter-spacing: 0; }
+
+/* ============================ ESTADOS DO CATÁLOGO ============================ */
+.pi-state { display: grid; gap: 8px; padding: 18px 20px; border: 1px solid var(--ph-line); border-radius: 14px; background: #fff; box-shadow: var(--ph-shadow); }
+.pi-state strong { display: flex; align-items: center; gap: 9px; color: var(--ph-navy); font-size: 14px; }
+.pi-state p { color: #33525F; font-size: 13px; line-height: 1.65; }
+.pi-state--warn { border-color: #F0D9B5; background: #FFF9EF; }
+.pi-state--warn strong { color: #7A4E0B; }
+.pi-state-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+
+/* ============================ ETAPAS DE ATIVAÇÃO ============================ */
+.pi-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.pi-step { position: relative; padding: 20px 20px 20px 22px; border: 1px solid var(--ph-line); border-radius: 14px; background: #fff; }
+.pi-step b { position: absolute; top: -13px; left: 20px; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; background: var(--ph-navy); color: #fff; font-size: 12px; font-weight: 900; }
+.pi-step h3 { margin: 8px 0 6px; font-size: 15px; }
+.pi-step p { color: var(--ph-muted); font-size: 12.5px; line-height: 1.65; }
+.pi-step a { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; color: var(--ph-blue); font-size: 12px; font-weight: 900; }
+
+/* ============================ SELO "O QUE TODO PLANO INCLUI" ============================ */
+.pi-includes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 22px; }
+.pi-include { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 11px; align-items: start; padding: 15px; border: 1px solid var(--ph-line); border-radius: 12px; background: #fff; }
+.pi-include > span { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--ph-tint); color: var(--ph-navy); }
+.pi-include strong { display: block; font-size: 13px; color: var(--ph-navy); }
+.pi-include p { margin-top: 3px; color: var(--ph-muted); font-size: 12px; line-height: 1.55; }
+
+/* ============================ RESPONSIVO ============================ */
+@media (max-width: 1180px) {
+  .pi-plans { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pi-includes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 900px) {
+  .pi-hero-grid { grid-template-columns: minmax(0, 1fr); }
+  .pi-steps { grid-template-columns: minmax(0, 1fr); }
+  .pi-matrix-wrap { max-height: none; }
+}
+
+@media (max-width: 620px) {
+  .pi-plans { grid-template-columns: minmax(0, 1fr); }
+  .pi-includes { grid-template-columns: minmax(0, 1fr); }
+}

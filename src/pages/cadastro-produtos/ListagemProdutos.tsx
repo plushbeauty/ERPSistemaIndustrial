@@ -1,5 +1,6 @@
 /**
- * @AUTOR: FernandoSchu
+ * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — o catálogo mestre parava em 2000 SKUs: produto acima disso sumia da listagem, da impressão e das opções de categoria/unidade/cliente. Leitura agora percorre todos os SKUs da empresa por paginação.
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
@@ -14,6 +15,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Box, Building2, Filter, HelpCircle, Layers, Printer, RefreshCw, Search, Tag } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
+import { fetchAllPages } from '../../lib/supabasePagination'
 
 type P = { id: string; codigo: string; nome: string; categoria: string | null; unidade: string; cliente: string | null; ativo: boolean }
 const input = 'h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] font-semibold text-slate-800 outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-100 disabled:bg-slate-50'
@@ -38,10 +40,10 @@ export default function ListagemProdutos({ onOpenFicha }: { onOpenFicha: (id?: s
       if (!auth.data.user) throw new Error('Sessão corporativa não autenticada.')
       const profile = await supabase.from('erp_usuarios').select('empresa_id').eq('auth_user_id', auth.data.user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
       if (profile.error) throw profile.error
-      if (!profile.data?.empresa_id) throw new Error('Empresa da sessão não identificada.')
-      const result = await supabase.from('erp_produtos').select('id,codigo,nome,categoria,unidade,cliente,ativo').eq('empresa_id', profile.data.empresa_id).order('codigo', { ascending: true }).limit(2000)
-      if (result.error) throw result.error
-      setRows((result.data ?? []) as P[])
+      const empresaId = profile.data?.empresa_id
+      if (!empresaId) throw new Error('Empresa da sessão não identificada.')
+      const todas = await fetchAllPages<P>((from, to) => supabase.from('erp_produtos').select('id,codigo,nome,categoria,unidade,cliente,ativo', { count: 'exact' }).eq('empresa_id', empresaId).order('codigo', { ascending: true }).order('id').range(from, to))
+      setRows(todas)
     } catch (e) {
       setRows([])
       setError(e instanceof Error ? e.message : 'Falha ao carregar catálogo mestre.')

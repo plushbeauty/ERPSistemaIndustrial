@@ -7,6 +7,13 @@
  *            e adicionada a folha de auditoria e rastreamento imutável no topo do arquivo.
  */
 
+/**
+ * @DATA_REVISAO_APROVACAO: 2026-11-05
+ * @REVISAO: REV-SHELL-SEM-DUPLICACAO-20261105-01 — modo hospedado deixou de redesenhar eyebrow/h1 (o PageIntroCard do ERPHorizontalShell ja traz titulo, modulo e ajuda) e o selo 'SUPABASE CONNECTED' fixo virou estado real de sessao + consulta
+ * @AUTOR: FernandoSch
+ * @STATUS_APROVACAO: REVISAO TECNICA DO PROPRIETARIO EM 2026-11-05 (itens 1 e 4); modo independente preservado para tela servida fora do shell global
+ */
+
 import { useEffect, useState, type ReactNode } from 'react'
 import { ChevronRight, LogOut, User, Tablet } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -17,6 +24,23 @@ export type IndustrialReferenceNavItem = {
   id: string
   label: string
   icon: LucideIcon
+}
+
+/** Estado de banco provado por consulta — nunca rotulo fixo (revisao tecnica 2026-11-05, item 4). */
+type ConnState = 'verificando' | 'ativo' | 'sem_sessao' | 'falha'
+
+const connLabel: Record<ConnState, string> = {
+  verificando: 'VERIFICANDO SESSÃO E BANCO',
+  ativo: 'SESSÃO ATIVA · BANCO RESPONDEU',
+  sem_sessao: 'SEM SESSÃO ATIVA',
+  falha: 'FALHA NA CONSULTA AO BANCO',
+}
+
+const connDot: Record<ConnState, string> = {
+  verificando: 'bg-slate-400',
+  ativo: 'bg-emerald-500 shadow-[0_0_8px_#10b981]',
+  sem_sessao: 'bg-amber-500',
+  falha: 'bg-rose-500',
 }
 
 type Props = {
@@ -41,23 +65,29 @@ export default function IndustrialReferenceShell({
   actions,
 }: Props) {
   const hostedBySynqra = useSynqraLayout()
-  const [operator, setOperator] = useState('Administrador')
+  const [operator, setOperator] = useState('')
+  const [conn, setConn] = useState<ConnState>('verificando')
   const [clock, setClock] = useState(new Date())
 
   useEffect(() => {
     if (hostedBySynqra) return
     let alive = true
     void (async () => {
-      const { data: auth } = await supabase.auth.getUser()
-      if (!alive || !auth.user) return
-      const { data } = await supabase
+      const { data: auth, error: authError } = await supabase.auth.getUser()
+      if (!alive) return
+      if (authError) { setConn('falha'); return }
+      if (!auth.user) { setConn('sem_sessao'); return }
+      const profile = await supabase
         .from('erp_usuarios')
         .select('nome')
         .eq('auth_user_id', auth.user.id)
         .eq('ativo', true)
         .is('deleted_at', null)
         .maybeSingle()
-      if (alive && data?.nome) setOperator(data.nome)
+      if (!alive) return
+      if (profile.error) { setConn('falha'); return }
+      setConn('ativo')
+      if (profile.data?.nome) setOperator(profile.data.nome)
     })()
 
     const timer = window.setInterval(() => setClock(new Date()), 1000)
@@ -67,15 +97,16 @@ export default function IndustrialReferenceShell({
     }
   }, [hostedBySynqra])
 
+  // Modo hospedado: titulo, modulo e ajuda da tela ja pertencem ao PageIntroCard do
+  // ERPHorizontalShell, entao esta folha nao redesenha cabecalho nem breadcrumb (item 1).
+  // As acoes continuam aqui porque o shell global nao tem espaco proprio para elas.
   const pageContent = (
     <div className="synqra-reference-page p-4 bg-[#F4F7FE]">
-      <header className="synqra-reference-heading border-b border-slate-200 pb-4 mb-4 flex items-center justify-between">
-        <div className="synqra-reference-title">
-          <p className="text-[10px] font-black uppercase tracking-[.16em] text-blue-600">ERP INDUSTRIAL • {moduleLabel}</p>
-          <h1 className="text-xl font-extrabold tracking-tight text-slate-900 mt-1">{title}</h1>
+      {actions && (
+        <div className="synqra-reference-actions mb-3 flex flex-wrap items-center justify-end gap-2">
+          {actions}
         </div>
-        {actions && <div className="synqra-reference-actions flex items-center gap-2">{actions}</div>}
-      </header>
+      )}
       <div className="synqra-reference-body">
         <div className="synqra-reference-content">{children}</div>
       </div>
@@ -87,11 +118,11 @@ export default function IndustrialReferenceShell({
   return (
     <div className="flex min-h-screen bg-[#F4F7FE] font-sans antialiased text-slate-800">
       {/* MENU LATERAL ESQUERDO (ASIDE) — Alinhamento Premium LaraERP */}
-      <aside className="fixed z-30 flex h-full w-64 flex-col border-r border-slate-800 bg-[#0f172a] text-slate-300 shadow-2xl">
+      <aside className="fixed z-30 flex h-full w-64 flex-col border-r border-[#2D8DB8]/30 bg-[#123B50] text-white shadow-2xl">
         <button
           type="button"
           onClick={onHome}
-          className="flex items-center justify-center border-b border-slate-800 p-5 text-left transition-all hover:bg-slate-800/40"
+          className="flex items-center justify-center border-b border-[#2D8DB8]/30 p-5 text-left transition-all hover:bg-[#176487]"
           aria-label="Voltar à Mesa de Ícones"
         >
           <img
@@ -101,7 +132,7 @@ export default function IndustrialReferenceShell({
           />
         </button>
 
-        <div className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500 border-b border-slate-800/40 bg-slate-950/20">
+        <div className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-white/70 border-b border-[#2D8DB8]/30 bg-[#2D8DB8]/10">
           {moduleLabel}
         </div>
 
@@ -117,11 +148,11 @@ export default function IndustrialReferenceShell({
                   'group flex w-full items-center justify-between rounded-[4px] px-4 py-2.5 text-xs font-bold transition-all duration-150',
                   active
                     ? 'bg-[#2D8DB8] font-extrabold text-white shadow-md shadow-blue-950/20'
-                    : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-100',
+                    : 'text-white/80 hover:bg-[#176487] hover:text-white',
                 ].join(' ')}
               >
                 <span className="flex items-center space-x-3">
-                  <span className={`grid h-7 w-7 place-items-center rounded-[2px] transition-all ${active ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-400 group-hover:text-slate-200'}`}>
+                  <span className={`grid h-7 w-7 place-items-center rounded-[2px] transition-all ${active ? 'bg-white/20 text-white' : 'bg-[#2D8DB8]/20 text-white/70 group-hover:text-white'}`}>
                     <Icon size={14} className="text-current" />
                   </span>
                   <span className="tracking-wide">{label}</span>
@@ -132,20 +163,20 @@ export default function IndustrialReferenceShell({
           })}
         </nav>
 
-        <div className="p-3 border-t border-slate-800/60 bg-slate-950/40">
+        <div className="p-3 border-t border-[#2D8DB8]/30 bg-[#2D8DB8]/10">
           <button
             type="button"
             onClick={onHome}
-            className="flex h-9 w-full items-center justify-center gap-2 rounded-[2px] border border-slate-700 bg-slate-800 text-xs font-bold text-slate-200 shadow-sm transition-all hover:bg-slate-700 hover:text-white active:scale-[0.98]"
+            className="flex h-9 w-full items-center justify-center gap-2 rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] text-xs font-bold text-white shadow-sm transition-all hover:bg-[#236F91] hover:text-white active:scale-[0.98]"
           >
-            <ChevronRight className="h-3.5 w-3.5 rotate-180 text-slate-400" />
+            <ChevronRight className="h-3.5 w-3.5 rotate-180 text-white" />
             Mesa de Ícones
           </button>
         </div>
 
-        <div className="flex items-center justify-between border-t border-slate-800 px-6 py-3 font-mono text-[9px] font-bold text-slate-500 bg-slate-950/60">
-          <span>SUPABASE CONNECTED</span>
-          <span className="h-1.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]" />
+        <div className="flex items-center justify-between border-t border-[#2D8DB8]/30 px-6 py-3 font-mono text-[9px] font-bold text-white/70 bg-[#2D8DB8]/10">
+          <span>{connLabel[conn]}</span>
+          <span className={`h-1.5 w-2.5 rounded-full ${connDot[conn]}`} />
         </div>
       </aside>
 
@@ -157,7 +188,7 @@ export default function IndustrialReferenceShell({
             <button type="button" onClick={onHome} className="transition-colors hover:text-[#2D8DB8]">
               Mesa de Ícones
             </button>
-            <ChevronRight className="h-3 w-3 text-slate-300" />
+            <ChevronRight className="h-3 w-3 text-slate-500" />
             <span className="truncate text-slate-700 font-semibold">{title}</span>
           </div>
           
@@ -181,7 +212,7 @@ export default function IndustrialReferenceShell({
 
             <div className="flex h-8 items-center space-x-2 rounded-[2px] border border-slate-200 bg-slate-50 px-3 text-xs font-bold text-slate-600">
               <User className="h-3.5 w-3.5 text-slate-400" />
-              <span>Op: <strong className="text-slate-800 font-black">{operator}</strong></span>
+              <span>Op: <strong className="text-slate-800 font-black">{operator || (conn === 'sem_sessao' ? 'SEM SESSÃO' : 'CONSULTANDO…')}</strong></span>
             </div>
 
             <button

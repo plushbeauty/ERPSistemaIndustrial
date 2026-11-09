@@ -306,7 +306,7 @@
   font-weight: 800;
   letter-spacing: .045em;
 }
-.erp-horizontal-workspace button:not(.w11-btn):not(.w11-app):not(.w11-ico):not([aria-label]) {
+.erp-horizontal-workspace button:not([aria-label]) {
   border-radius: 2px;
 }
 .erp-horizontal-workspace table {

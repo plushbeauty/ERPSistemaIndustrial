@@ -1,5 +1,5 @@
 /**
- * @AUTOR: FernandoSchu
+ * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-30
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
@@ -9,6 +9,7 @@ import { AlertCircle, CheckCircle2, ClipboardList, Printer, RefreshCw, ShoppingC
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import EntityCodeLookup, { type LookupRecord } from '../components/industrial/EntityCodeLookup'
+import KioskConsultaRapida from '../components/KioskConsultaRapida'
 import VendasLayout from './VendasLayout'
 
 interface Requisition {
@@ -16,6 +17,8 @@ interface Requisition {
   codigo: string
   ordem_producao_id: string | null
   status: string
+  centro_custo: string | null
+  nivel_urgencia: 'BAIXA' | 'MEDIA' | 'ALTA' | 'CRITICA'
   created_at: string
 }
 
@@ -73,6 +76,7 @@ export default function ComprasRequisicoes() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [productionOrders, setProductionOrders] = useState<LookupRecord[]>([])
   const [selectedOrder, setSelectedOrder] = useState('')
+  const [selectedUrgency, setSelectedUrgency] = useState('TODAS')
   const [selectedRequisitions, setSelectedRequisitions] = useState<Set<string>>(new Set())
   const [page, setPage] = useState(1)
   const [busy, setBusy] = useState(false)
@@ -91,7 +95,7 @@ export default function ComprasRequisicoes() {
       const [requestRows, itemRows, productRows, supplierRows, orderRows] = await Promise.all([
         fetchAllPages<Requisition>((from, to) => supabase
           .from('erp_requisicoes_compra')
-          .select('id,codigo,ordem_producao_id,status,created_at', { count: 'exact' })
+          .select('id,codigo,ordem_producao_id,status,centro_custo,nivel_urgencia,created_at', { count: 'exact' })
           .eq('empresa_id', id)
           .order('created_at', { ascending: false })
           .range(from, to)),
@@ -164,8 +168,10 @@ export default function ComprasRequisicoes() {
   )
   const visibleItems = useMemo(() => items.filter((item) => {
     const request = requestById.get(item.requisicao_id)
-    return !selectedOrder || request?.ordem_producao_id === selectedOrder
-  }), [items, requestById, selectedOrder])
+    const orderMatches = !selectedOrder || request?.ordem_producao_id === selectedOrder
+    const urgencyMatches = selectedUrgency === 'TODAS' || request?.nivel_urgencia === selectedUrgency
+    return orderMatches && urgencyMatches
+  }), [items, requestById, selectedOrder, selectedUrgency])
   const pageCount = Math.max(1, Math.ceil(visibleItems.length / PAGE_SIZE))
   const pageItems = visibleItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
   const selectedEligibleCount = [...selectedRequisitions].filter((id) =>
@@ -247,6 +253,10 @@ export default function ComprasRequisicoes() {
             </div>
           </header>
 
+          <div className="mt-3">
+            <KioskConsultaRapida />
+          </div>
+
           {(error || message) && (
             <div role={error ? 'alert' : 'status'} className={`mt-3 flex items-start gap-2 rounded-[3px] border px-3 py-2 text-xs font-semibold ${error ? 'border-[#E9B8B8] bg-[#FFF3F2] text-[#9D3030]' : 'border-[#B8DCCB] bg-[#EFF9F3] text-[#226847]'}`}>
               {error ? <AlertCircle size={15} className="mt-0.5 shrink-0" /> : <CheckCircle2 size={15} className="mt-0.5 shrink-0" />}
@@ -265,6 +275,12 @@ export default function ComprasRequisicoes() {
                   onChange={(value) => { setSelectedOrder(value); setPage(1) }}
                   onSelect={(record) => { setSelectedOrder(record.id); setPage(1) }}
                 />
+              </div>
+              <div className="w-full max-w-[190px]">
+                <label className={fieldLabelClass} htmlFor="compras-urgencia-filter">Nível de urgência</label>
+                <select id="compras-urgencia-filter" value={selectedUrgency} onChange={(event) => { setSelectedUrgency(event.target.value); setPage(1) }} className="h-8 w-full rounded-[3px] border border-[#D8E4EA] bg-white px-2 text-[11px] text-[#183746] focus:border-[#2D8DB8] focus:outline-none focus:ring-1 focus:ring-[#2D8DB8]">
+                  <option value="TODAS">Todas as urgências</option><option value="BAIXA">Baixa</option><option value="MEDIA">Média</option><option value="ALTA">Alta</option><option value="CRITICA">Crítica</option>
+                </select>
               </div>
               <div className="flex h-8 items-center rounded-[3px] border border-[#D8E4EA] bg-[#F7FAFB] px-3 text-[10px] text-[#496574]">
                 <span className="font-bold">{visibleItems.length}</span><span className="ml-1">item(ns) encontrado(s)</span>
@@ -286,7 +302,7 @@ export default function ComprasRequisicoes() {
                 <thead className="bg-[#EAF1F5] text-[9px] uppercase tracking-[0.07em] text-[#365766]">
                   <tr className="h-8 border-b border-[#D8E4EA]">
                     <th className="w-9 px-3"><span className="sr-only">Selecionar</span></th>
-                    <th className="px-3">Requisição</th><th className="px-3">Data</th><th className="px-3">Ordem de produção</th><th className="px-3">Produto / insumo</th><th className="px-3 text-right">Quantidade</th><th className="px-3">Fornecedor indicado</th><th className="px-3">Status do item</th>
+                    <th className="px-3">Requisição</th><th className="px-3">Data</th><th className="px-3">Centro de custo</th><th className="px-3">Urgência</th><th className="px-3">Ordem de produção</th><th className="px-3">Produto / insumo</th><th className="px-3 text-right">Quantidade</th><th className="px-3">Fornecedor indicado</th><th className="px-3">Status</th>
                   </tr>
                 </thead>
                 <tbody className="text-[11px]">
@@ -302,6 +318,8 @@ export default function ComprasRequisicoes() {
                         </td>
                         <td className="px-3 font-bold text-[#123B50]">{request?.codigo || request?.id || 'Requisição indisponível'}</td>
                         <td className="px-3 tabular-nums text-[#496574]">{request ? formatDate(request.created_at) : '—'}</td>
+                        <td className="px-3">{request?.centro_custo || 'Não informado'}</td>
+                        <td className="px-3"><span className={`inline-flex min-h-5 items-center rounded-[2px] border px-1.5 text-[9px] font-bold ${request?.nivel_urgencia === 'CRITICA' ? 'border-[#E9B8B8] bg-[#FFF3F2] text-[#9D3030]' : request?.nivel_urgencia === 'ALTA' ? 'border-[#F2D0B0] bg-[#FFF5EC] text-[#9A4C12]' : request?.nivel_urgencia === 'BAIXA' ? 'border-[#D8E4EA] bg-[#F4F7F9] text-[#496574]' : 'border-[#E8D5A9] bg-[#FFF8E8] text-[#8A5B13]'}`}>{request?.nivel_urgencia || 'MEDIA'}</span></td>
                         <td className="px-3">{request?.ordem_producao_id ? opById.get(request.ordem_producao_id)?.codigo || 'OP não localizada nesta empresa' : 'Sem vínculo'}</td>
                         <td className="px-3"><span className="font-semibold text-[#183746]">{product ? `${product.codigo} — ${product.nome}` : `Produto ${item.produto_id.slice(0, 8)}`}</span>{product?.descricao && <span className="ml-1 text-[10px] text-[#617986]">{product.descricao}</span>}</td>
                         <td className="px-3 text-right font-semibold tabular-nums">{formatQuantity(Number(item.quantidade))}</td>
@@ -310,8 +328,8 @@ export default function ComprasRequisicoes() {
                       </tr>
                     )
                   })}
-                  {!busy && !pageItems.length && <tr><td colSpan={8} className="p-8 text-center text-xs text-[#617986]">Nenhum item encontrado para o filtro selecionado.</td></tr>}
-                  {busy && <tr><td colSpan={8} className="p-6 text-center text-xs text-[#617986]">Carregando dados da empresa autenticada…</td></tr>}
+                  {!busy && !pageItems.length && <tr><td colSpan={10} className="p-8 text-center text-xs text-[#617986]">Nenhum item encontrado para o filtro selecionado.</td></tr>}
+                  {busy && <tr><td colSpan={10} className="p-6 text-center text-xs text-[#617986]">Carregando dados da empresa autenticada…</td></tr>}
                 </tbody>
               </table>
             </div>
@@ -327,7 +345,7 @@ export default function ComprasRequisicoes() {
             )}
           </section>
           <footer className="mt-2 flex flex-wrap items-center justify-between gap-2 px-1 text-[9px] text-[#6B818D]">
-            <span>SYSNQRA ERP &amp; SGQ INDUSTRIAL • Compras</span>
+            <span>SYSNQRA ERP &amp; SGQ INDUSTRIAL • Compras • Revisão 20/10/2026</span>
             <span>Dados filtrados pela empresa da sessão e protegidos pelas políticas RLS/RBAC do banco.</span>
           </footer>
         </div>

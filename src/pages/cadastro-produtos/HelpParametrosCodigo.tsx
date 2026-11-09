@@ -1,7 +1,7 @@
 /**
- * @AUTOR: FernandoSchu
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @AUTOR: FernandoSch
+ * @DATA_REVISAO_APROVACAO: 2026-11-03
+ * @REVISAO: REV-CONTRATO-BANCO-20261103-01 — nomes citados na tela passaram a ser a rotina real erp_gerar_codigo
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 /**
@@ -28,11 +28,12 @@ export default function HelpParametrosCodigo() {
         <section className="space-y-1.5">
           <h2 className="flex items-center gap-1.5 text-[10px] font-black uppercase text-slate-800"><Hash size={13} className="text-teal-700" /> 1. Campos da regra</h2>
           <ul className="list-disc space-y-1 pl-5 text-slate-600">
-            <li><strong>Prefixo:</strong> sigla curta que identifica a família ou padrão do código. Use até quatro caracteres e evite duplicidades semânticas.</li>
-            <li><strong>Separador:</strong> caractere opcional usado na apresentação do código, conforme as regras efetivamente implementadas no banco.</li>
-            <li><strong>Modo:</strong> PS, PGR ou NUM, de acordo com os valores aceitos pela aplicação e pelas rotinas de geração existentes.</li>
+            <li><strong>Prefixo:</strong> sigla de 1 a 8 caracteres entre A-Z e 0-9 que identifica a família do código. A tela grava em maiúsculas.</li>
+            <li><strong>Separador:</strong> até dois caracteres colocados entre o prefixo e o resto do SKU. Deixe vazio para código contínuo.</li>
+            <li><strong>Modo:</strong> <strong>PS</strong> monta prefixo + separador + sigla do tipo (PA, MP, SA, IN) + sequência; <strong>NUM</strong> monta prefixo + separador + sequência, sem sigla; <strong>PGR</strong> está bloqueado porque não existe cadastro de grupo de produto vinculado à regra.</li>
             <li><strong>Dígitos:</strong> largura numérica de 3 a 6 posições. O valor exibido não altera retroativamente SKUs já emitidos.</li>
-            <li><strong>Sequência atual:</strong> contador informativo do banco; esta tela não permite editá-lo diretamente.</li>
+            <li><strong>Sequência atual:</strong> contador do banco, incrementado pela rotina <code>erp_gerar_codigo</code> a cada SKU emitido; esta tela não permite editá-lo diretamente.</li>
+            <li><strong>Prévia do próximo SKU:</strong> exatamente a composição que a rotina aplica ao prefixo, separador, modo, sigla PA e sequência + 1.</li>
           </ul>
         </section>
 
@@ -52,7 +53,7 @@ export default function HelpParametrosCodigo() {
 
         <footer className="flex items-center justify-between gap-3 border-t border-slate-200 pt-3">
           <span className="text-[9px] font-mono uppercase tracking-wider text-slate-400">ERP Industrial • Engenharia de dados mestres</span>
-          <Link to="/pageprincipal/cadastros/produtos/parametros-codigo" className="inline-flex h-8 items-center gap-1 rounded bg-[#123B50] px-3 text-[10px] font-bold text-white hover:bg-[#1c536d]"><ArrowLeft size={12} /> Voltar aos parâmetros</Link>
+          <Link to="/cadastro-produtos/parametros-codigo" className="inline-flex h-8 items-center gap-1 rounded bg-[#123B50] px-3 text-[10px] font-bold text-white hover:bg-[#1c536d]"><ArrowLeft size={12} /> Voltar aos parâmetros</Link>
         </footer>
       </article>
     </main>

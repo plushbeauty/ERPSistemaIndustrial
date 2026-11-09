@@ -4,7 +4,7 @@
   @SCOPE: src/main.tsx
   @CHECKLIST: No-Duplicate-Actions | Valid-Canonical-Links | Active-Noop-Callbacks
 */
-import { StrictMode, Suspense, lazy, type ComponentType } from 'react'
+import { Component, StrictMode, Suspense, lazy, type ComponentType, type ErrorInfo, type ReactNode } from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import { createRoot } from 'react-dom/client'
 import { MotionConfig } from 'motion/react'
@@ -31,6 +31,7 @@ import './styles/erp-reference-ux-2026.css'
 import './styles/industrial-command-center-2026.css'
 import './styles/design-system-2026.css'
 import './styles/form-system-2026.css'
+import './styles/erp-mobile-first-20261104.css'
 
 const AppBootstrap = lazyPage(() => import('./AppBootstrap'), 'AppBootstrap')
 
@@ -59,6 +60,23 @@ function BootstrapLoader() {
   )
 }
 
+class BootstrapBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  state = { error: null as Error | null }
+
+  static getDerivedStateFromError(error: Error) {
+    return { error }
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('[ERP] falha ao iniciar o aplicativo:', error, info.componentStack)
+  }
+
+  render() {
+    if (this.state.error) return <FatalBootstrap error={this.state.error} retry={() => window.location.reload()} />
+    return this.props.children
+  }
+}
+
 const rootElement = document.getElementById('root')
 if (!rootElement) throw new Error('Elemento raiz #root não encontrado.')
 
@@ -70,7 +88,9 @@ createRoot(rootElement).render(
         <BrowserRouter>
           <SidebarProvider>
             <PontoProvider>
-              <BootstrapLoader />
+              <BootstrapBoundary>
+                <BootstrapLoader />
+              </BootstrapBoundary>
             </PontoProvider>
           </SidebarProvider>
         </BrowserRouter>
