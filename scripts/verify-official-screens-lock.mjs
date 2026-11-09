@@ -20,6 +20,11 @@ import path from 'node:path'
  * cronograma colorido substitui src/pages/ManutencaoPlanoMestre.tsx e /manutencao/plano-mestre passa a
  * redirecionar para /manutencao/cronograma. O manifesto foi regerado com `npm run telas:manifest` depois
  * da ordem, e o unico hash de componente re-carimbado foi o catalogo do tablet do SGQ.
+ * Revisao 2026-11-08 (RPNC A4 compartilhado): as commits c2ccce6f, 854cec57 e c8cd7d50 converteram a
+ * RPNC para o relatorio SynqraRelatorioA4 com emissao assincrona. A revisao esta autorizada no proprio
+ * cabecalho da tela (REV-SGQ-RPNC-A4-COMPARTILHADO-20261108-02, "REVISAO AUTORIZADA PELO PROPRIETARIO
+ * EM 2026-11-08"), mas o hash nao foi recarimbado na epoca; este contrato passa a refletir o arquivo
+ * aprovado sem alterar investigacao, acoes, evidencias nem eficacia.
  * Revisao 2026-11-08: por ordem do proprietario em 2026-11-08, a autoria e registrada apenas como
  * "FernandoSch" em todas as telas (sem nome completo); nenhum layout, rota, consulta ou permissao mudou.
  * Os 26 hashes foram recarimbados somente por causa dessa linha de cabecalho.
@@ -118,7 +123,7 @@ const oficiais = [
   { path: 'src/components/layout/ModuleTabletMenuModal.tsx', sha: '9866f2f8e4d240ab5dc0a37977e285d39c72c6e5', label: 'Tablet / painel flutuante de módulos (entrada única do Sistema SGQ)' },
   { path: 'src/components/quality/qualityTabletModules.ts', sha: '371842d00d8183e00e9858ecd97f8fab4b93d41e', label: 'Tablet / catálogo SGQ — incrementos aditivos autorizados em 2026-11-08: REV-TABLET-TEMPLATE-INSPECAO-20261108-01 (templates versionados) e REV-APQP-TRIO-20261108-01 (FMEA, Plano de Controle e Mapa de Processo em abas de uma página única, com o card do Mapa adicionado e as três rotas mantidas para não quebrar QR Codes impressos)' },
   { path: 'src/styles/module-tablet-panel.css', sha: 'ea7cd5ef04a872e2848e5675ec919e915e00f5ec', label: 'Tablet / estilos do painel flutuante (REV-TABLET-COMPACTO-20261104-01: ordem do proprietário — painel muito grande; card saiu da régua de 30px, mediu 117px de altura sem transbordo no harness de cascata)' },
-  { path: 'src/pages/QualityRpncForm.tsx', sha: 'cd430c8c0a79c90db28bd4ede8984b4d7edc2d14', label: 'Qualidade / RPNC com Ishikawa, 5 Porques, CAPA, análise de causa, eficácia e workflow (REV-SGQ-RPNC-EFICACIA-20261108-01)' },
+  { path: 'src/pages/QualityRpncForm.tsx', sha: 'e3c4aa6034e623b482ad671ebc2806515d7441f8', label: 'Qualidade / RPNC com Ishikawa, 5 Porques, CAPA, análise de causa, eficácia e workflow (REV-SGQ-RPNC-EFICACIA-20261108-01 preservada; REV-SGQ-RPNC-A4-COMPARTILHADO-20261108-02: relatório convertido para SynqraRelatorioA4 compartilhado com emissão assíncrona — revisão autorizada pelo proprietário em 2026-11-08, registrada no cabeçalho da própria tela; investigação, ações, evidências e eficácia inalteradas)' },
   { path: 'src/pages/QualityRpncUnified.tsx', sha: '99d6572db81b7f547bb01520a7739e7af90c8325', label: 'Qualidade / RPNC unificada em abas (REV-RPNC-ABAS-CARD-20261102-01: card das abas maior, descricao visivel)' },
   { path: 'src/styles/quality-rpnc-unified.css', sha: 'ff3e66481fd5c91c5b87059f3f804fe6bf24c82d', label: 'Qualidade / estilos das abas do RPNC unificado (isengao da regula de 30px)' },
   { path: 'src/pages/QualityAuditsList.tsx', sha: '587211eca76c3af93e7d93c2b9baa3ab54fb68a5', label: 'Qualidade / Painel de auditorias' },
