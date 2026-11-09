@@ -372,6 +372,33 @@
 }
 
 /* ---------------------------------------------------------------------------
+   4B. CARDS AZUIS. Texto claro em superficies azuis saturadas em todos os
+   modulos, inclusive titulos, metricas, descricoes e links. Superficies
+   azul-pastel (blue-50/100) mantem texto escuro para preservar contraste.
+   ------------------------------------------------------------------------- */
+.erp-global-surface .erp-horizontal-workspace :is(div, section, article, aside)[class*='bg-blue-5'],
+.erp-global-surface .erp-horizontal-workspace :is(div, section, article, aside)[class*='bg-blue-6'],
+.erp-global-surface .erp-horizontal-workspace :is(div, section, article, aside)[class*='bg-blue-7'],
+.erp-global-surface .erp-horizontal-workspace :is(div, section, article, aside)[class*='bg-blue-8'],
+.erp-global-surface .erp-horizontal-workspace :is(div, section, article, aside)[class*='bg-blue-9'],
+.erp-global-surface .erp-horizontal-workspace :is(div, section, article, aside)[class*='bg-[#2d8db8]'],
+.erp-global-surface .erp-horizontal-workspace :is(div, section, article, aside)[class*='bg-[#2563eb]'] {
+  color: #fff !important;
+}
+
+.erp-global-surface .erp-horizontal-workspace :is(div, section, article, aside)[class*='bg-blue-5'],
+.erp-global-surface .erp-horizontal-workspace :is(div, section, article, aside)[class*='bg-blue-6'],
+.erp-global-surface .erp-horizontal-workspace :is(div, section, article, aside)[class*='bg-blue-7'],
+.erp-global-surface .erp-horizontal-workspace :is(div, section, article, aside)[class*='bg-blue-8'],
+.erp-global-surface .erp-horizontal-workspace :is(div, section, article, aside)[class*='bg-blue-9'],
+.erp-global-surface .erp-horizontal-workspace :is(div, section, article, aside)[class*='bg-[#2d8db8]'],
+.erp-global-surface .erp-horizontal-workspace :is(div, section, article, aside)[class*='bg-[#2563eb]'] {
+  :is(h1, h2, h3, h4, p, span, strong, b, small, label, a, li, dt, dd, [class*='text-slate-'], [class*='text-gray-'], [class*='text-blue-'], [class*='text-indigo-']) {
+    color: #fff !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
    5. TABELAS. Cabecalho claro unico, zebra quase invisivel e hover legivel.
    Linhas que trazem cor propria (status) continuam com a cor da tela.
    ------------------------------------------------------------------------- */
