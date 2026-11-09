@@ -40,7 +40,11 @@ export async function relogioDoServidor(): Promise<RelogioServidor> {
   const valorData = extrairDataServidor(resultado.data)
   const agora = valorData instanceof Date
     ? new Date(valorData.getTime())
-    : new Date(typeof valorData === 'string' || typeof valorData === 'number' ? valorData : '')
+    : typeof valorData === 'number'
+      ? new Date(valorData)
+      : typeof valorData === 'string'
+        ? new Date(valorData)
+        : new Date(Number.NaN)
   if (!Number.isFinite(agora.getTime())) {
     cache = null
     return { agora: null, aviso: 'A rotina erp_data_servidor não devolveu uma data válida do banco.' }
