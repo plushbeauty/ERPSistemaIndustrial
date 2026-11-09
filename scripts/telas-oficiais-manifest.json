@@ -1341,11 +1341,11 @@
     },
     {
       "path": "src/pages/VendasDashboardGraficos.tsx",
-      "sha": "3e2e7213b232e381402849dbac37d72d7f03e643",
+      "sha": "159152a50bd79f6e9d34f4c7ac65b1cda07962ef",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-DASHBOARD-VENDAS-DADOS-REAIS-20261109-01 — ordem explícita do proprietário em 2026-11-09: indicadores e quatro gráficos de pedidos reais; filtros por empresa e período; exclusão explícita de homologação/teste; sem dados fictícios.",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-DASHBOARD-VENDAS-DADOS-REAIS-20261109-01 — ordem explícita do proprietário em 2026-11-09: indicadores e quatro gráficos de pedidos reais; filtros por empresa e período; exclusão explícita de homologação/teste; sem dados fictícios. REV-VENDAS-CLIENTES-NOME-20261109-02 — cliente agora é resolvido por erp_clientes da mesma empresa; cartões de status não filtrados foram removidos desta tela.",
       "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-09 — commit individual registrado; build e validação em produção pendentes."
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-09 — commit individual registrado; build pendente; sem pedidos comerciais reais no período consultado."
     },
     {
       "path": "src/pages/VendasLayout.tsx",
