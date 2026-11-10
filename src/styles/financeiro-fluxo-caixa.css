@@ -55,7 +55,7 @@
 .ips-field { display:flex; min-width:0; flex-direction:column; gap:4px; color:#456170; font-size:9px; font-weight:800; }
 .ips-field > span { display:block; }
 .ips-field b { color:#d65b61; }
-.ips-field input,.ips-field select { width:100%; min-width:0; height:30px; padding:0 9px; border:1px solid #cbdbe2; border-radius:4px; outline:none; background:#fff; color:#173b4a; font:500 11px/1.2 inherit; }
+.ips-field input,.ips-field select { width:100%; min-width:0; height:30px; padding:0 9px; border:1px solid #cbdbe2; border-radius:4px; outline:none; background:#fff; color:#173b4a; font-family:inherit; font-size:11px; font-weight:500; line-height:1.2; }
 .ips-field input::placeholder { color:#91a5af; }
 .ips-field input:focus,.ips-field select:focus { border-color:#2d8db8; box-shadow:0 0 0 2px rgba(45,141,184,.13); }
 .ips-form-footer { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:10px; padding-top:9px; border-top:1px solid #e5eef2; color:#718895; font-size:9px; }
