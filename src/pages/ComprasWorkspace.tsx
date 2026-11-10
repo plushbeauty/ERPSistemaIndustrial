@@ -1,25 +1,27 @@
 /**
  * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @REVISAO: REV-COMPRAS-CENTRAL-ABAS-20261110-01 — central única com abas internas, alertas MRP e fornecedores reais; ações principais em laranja
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { ClipboardList, FileText, PackageCheck, Plus, RefreshCw, Search, ShoppingCart, Truck } from 'lucide-react'
+import { AlertTriangle, ClipboardList, FileText, PackageCheck, Plus, RefreshCw, Search, ShoppingCart, Truck, Users } from 'lucide-react'
 import ComprasPedidoForm from './ComprasPedidoForm'
 import { supabase } from '../lib/supabaseClient'
 
-type TabKey = 'visao-geral' | 'requisicoes' | 'cotacoes' | 'pedidos' | 'recebimentos'
+type TabKey = 'visao-geral' | 'requisicoes' | 'alertas' | 'cotacoes' | 'pedidos' | 'recebimentos' | 'fornecedores'
 type DbRow = Record<string, unknown>
 type TableData = { rows: DbRow[]; loading: boolean; error: string | null }
 type RfqForm = { dataNecessidade: string; prazoResposta: string; condicaoPagamento: string; comprador: string; observacoes: string }
 
 const tabs: Array<{ key: TabKey; label: string; icon: typeof ClipboardList }> = [
-  { key: 'visao-geral', label: 'Visão geral', icon: ShoppingCart },
+  { key: 'visao-geral', label: 'Painel', icon: ShoppingCart },
   { key: 'requisicoes', label: 'Requisições', icon: ClipboardList },
+  { key: 'alertas', label: 'Alertas MRP', icon: AlertTriangle },
   { key: 'cotacoes', label: 'Cotações', icon: FileText },
-  { key: 'pedidos', label: 'Pedidos de compra', icon: Truck },
+  { key: 'pedidos', label: 'Pedidos', icon: Truck },
   { key: 'recebimentos', label: 'Recebimentos', icon: PackageCheck },
+  { key: 'fornecedores', label: 'Fornecedores', icon: Users },
 ]
 
 const emptyTable: TableData = { rows: [], loading: true, error: null }
@@ -52,7 +54,7 @@ function statusClass(value: string): string {
   return 'compras-status'
 }
 
-function DataTable({ rows, kind }: { rows: DbRow[]; kind: 'requisicoes' | 'cotacoes' | 'pedidos' | 'recebimentos' }) {
+function DataTable({ rows, kind }: { rows: DbRow[]; kind: 'requisicoes' | 'alertas' | 'cotacoes' | 'pedidos' | 'recebimentos' | 'fornecedores' }) {
   if (!rows.length) return <div className="compras-empty"><PackageCheck size={22} /><strong>Nenhum registro encontrado</strong><span>Os registros aparecerão aqui quando existirem dados para a empresa autenticada.</span></div>
   const columns: Record<typeof kind, Array<{ label: string; keys: string[]; format?: 'date' | 'money' | 'status' }>> = {
     requisicoes: [
@@ -85,6 +87,21 @@ function DataTable({ rows, kind }: { rows: DbRow[]; kind: 'requisicoes' | 'cotac
       { label: 'Data do pedido', keys: ['data_pedido', 'created_at'], format: 'date' },
       { label: 'Status', keys: ['status'], format: 'status' },
     ],
+    fornecedores: [
+      { label: 'Razão social', keys: ['razao_social', 'nome'] },
+      { label: 'Nome fantasia', keys: ['nome_fantasia'] },
+      { label: 'CNPJ / documento', keys: ['documento', 'cnpj'] },
+      { label: 'Homologação', keys: ['status_homologacao', 'situacao'] },
+      { label: 'Ativo', keys: ['ativo'] },
+    ],
+    alertas: [
+      { label: 'Código', keys: ['codigo', 'referencia'] },
+      { label: 'Material', keys: ['nome', 'descricao'] },
+      { label: 'Saldo projetado', keys: ['saldo_projetado'] },
+      { label: 'Estoque de segurança', keys: ['estoque_seguranca', 'estoque_minimo'] },
+      { label: 'Ponto de pedido', keys: ['ponto_pedido'] },
+      { label: 'Unidade', keys: ['unidade'] },
+    ],
   }
   return <div className="compras-table-scroll"><table className="compras-table"><thead><tr>{columns[kind].map(column => <th key={column.label}>{column.label}</th>)}</tr></thead><tbody>{rows.map((row, index) => <tr key={textValue(row, 'id') === '—' ? index : textValue(row, 'id')}>{columns[kind].map(column => {
     const value = column.keys.map(key => row[key]).find(item => item !== undefined && item !== null && item !== '')
@@ -105,22 +122,32 @@ export default function ComprasWorkspace() {
   const [requisitions, setRequisitions] = useState<TableData>(emptyTable)
   const [orders, setOrders] = useState<TableData>(emptyTable)
   const [receipts, setReceipts] = useState<TableData>(emptyTable)
+  const [suppliers, setSuppliers] = useState<TableData>(emptyTable)
+  const [materials, setMaterials] = useState<TableData>(emptyTable)
   const [refreshKey, setRefreshKey] = useState(0)
 
   const load = useCallback(async () => {
+    const { data: empresaId, error: empresaError } = await supabase.rpc('erp_current_empresa_id')
+    if (empresaError || typeof empresaId !== 'string' || !empresaId) {
+      const message = empresaError?.message ?? 'Empresa da sessão não identificada.'
+      ;[setRfqs, setRequisitions, setOrders, setReceipts, setSuppliers, setMaterials].forEach(setter => setter({ rows: [], loading: false, error: message }))
+      return
+    }
     const loadTable = async (table: string, setter: (data: TableData) => void, orderColumn: string) => {
       setter({ rows: [], loading: true, error: null })
-      const { data, error } = await supabase.from(table).select('*').order(orderColumn, { ascending: false }).limit(100)
+      const { data, error } = await supabase.from(table).select('*').eq('empresa_id', empresaId).order(orderColumn, { ascending: false }).limit(100)
       if (error) setter({ rows: [], loading: false, error: error.message })
       else setter({ rows: (data ?? []) as DbRow[], loading: false, error: null })
     }
     await Promise.all([
       loadTable('erp_rfq', setRfqs, 'created_at'),
       loadTable('erp_requisicoes_compra', setRequisitions, 'created_at'),
+      loadTable('erp_fornecedores', setSuppliers, 'razao_social'),
+      loadTable('erp_produtos', setMaterials, 'codigo'),
       loadTable('erp_pedidos_compra', setOrders, 'created_at'),
       (async () => {
         setReceipts({ rows: [], loading: true, error: null })
-        const { data, error } = await supabase.from('erp_pedidos_compra').select('*').in('status', ['RECEBIMENTO_PARCIAL', 'RECEBIDO']).order('created_at', { ascending: false }).limit(100)
+        const { data, error } = await supabase.from('erp_pedidos_compra').select('*').eq('empresa_id', empresaId).in('status', ['RECEBIMENTO_PARCIAL', 'RECEBIDO']).order('created_at', { ascending: false }).limit(100)
         if (error) setReceipts({ rows: [], loading: false, error: error.message })
         else setReceipts({ rows: (data ?? []) as DbRow[], loading: false, error: null })
       })(),
@@ -131,8 +158,19 @@ export default function ComprasWorkspace() {
 
   const filtered = useMemo(() => {
     const filterRows = (rows: DbRow[]) => rows.filter(row => Object.values(row).some(value => String(value ?? '').toLocaleLowerCase('pt-BR').includes(search.trim().toLocaleLowerCase('pt-BR'))))
-    return { rfqs: filterRows(rfqs.rows), requisitions: filterRows(requisitions.rows), orders: filterRows(orders.rows), receipts: filterRows(receipts.rows) }
-  }, [rfqs.rows, requisitions.rows, orders.rows, receipts.rows, search])
+    const alertRows = materials.rows.flatMap(row => {
+      const stock = Number(row.estoque_atual ?? 0)
+      const incoming = Number(row.em_pedido ?? row.quantidade_em_pedido ?? 0)
+      const demand = Number(row.demanda_pcp ?? row.quantidade_reservada ?? 0)
+      const safety = Number(row.estoque_seguranca ?? row.estoque_minimo ?? 0)
+      const reorder = Number(row.ponto_pedido ?? safety)
+      const saldo = stock + incoming - demand
+      const hasThreshold = row.estoque_seguranca != null || row.estoque_minimo != null || row.ponto_pedido != null
+      if (!Number.isFinite(saldo) || !hasThreshold || saldo > reorder) return []
+      return [{ ...row, saldo_projetado: saldo }]
+    })
+    return { rfqs: filterRows(rfqs.rows), requisitions: filterRows(requisitions.rows), orders: filterRows(orders.rows), receipts: filterRows(receipts.rows), suppliers: filterRows(suppliers.rows), alerts: filterRows(alertRows) }
+  }, [rfqs.rows, requisitions.rows, orders.rows, receipts.rows, suppliers.rows, materials.rows, search])
 
   async function createRfq(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -170,9 +208,9 @@ export default function ComprasWorkspace() {
     }
   }
 
-  const activeData = activeTab === 'requisicoes' ? requisitions : activeTab === 'cotacoes' ? rfqs : activeTab === 'pedidos' ? orders : receipts
-  const activeRows = activeTab === 'requisicoes' ? filtered.requisitions : activeTab === 'cotacoes' ? filtered.rfqs : activeTab === 'pedidos' ? filtered.orders : filtered.receipts
-  const tableKind = activeTab === 'requisicoes' ? 'requisicoes' : activeTab === 'pedidos' ? 'pedidos' : activeTab === 'recebimentos' ? 'recebimentos' : 'cotacoes'
+  const activeData = activeTab === 'requisicoes' ? requisitions : activeTab === 'cotacoes' ? rfqs : activeTab === 'pedidos' ? orders : activeTab === 'recebimentos' ? receipts : activeTab === 'fornecedores' ? suppliers : materials
+  const activeRows = activeTab === 'requisicoes' ? filtered.requisitions : activeTab === 'cotacoes' ? filtered.rfqs : activeTab === 'pedidos' ? filtered.orders : activeTab === 'recebimentos' ? filtered.receipts : activeTab === 'fornecedores' ? filtered.suppliers : filtered.alerts
+  const tableKind = activeTab === 'requisicoes' ? 'requisicoes' : activeTab === 'pedidos' ? 'pedidos' : activeTab === 'recebimentos' ? 'recebimentos' : activeTab === 'fornecedores' ? 'fornecedores' : activeTab === 'alertas' ? 'alertas' : 'cotacoes'
 
   return <main className="compras-page" aria-label="Módulo de Compras SYSNQRA">
     <header className="compras-header">
