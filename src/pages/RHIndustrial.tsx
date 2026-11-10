@@ -39,6 +39,7 @@
  * Nada de leitura ou gravacao no Supabase foi alterado.
  */
 /**
+ * @REVISAO: REV-RH-WIREFRAME-20261110-01 — medidas de campos, foto, busca e ações alinhadas ao wireframe, preservando Supabase/RLS e gravação.
  * SYSNQRA ERP INDUSTRIAL — RH operacional
  * @DATA_REVISAO_APROVACAO 03/11/2026
  * @STATUS_APROVACAO Em validação
@@ -46,6 +47,7 @@
  * Dados persistidos no Supabase; isolamento por empresa/RLS; sem dados fictícios.
  */
 import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { relogioDoServidor } from '../lib/serverClock'
 import { CalendarDays, Camera, CheckCircle2, Clock3, FileText, GraduationCap, RefreshCw, Save, Search, UserRound, Users, X } from 'lucide-react'
@@ -87,23 +89,23 @@ const employeeGroups: { title: string; keys: string[] }[] = [
   { title: 'Vínculo, jornada e custo', keys: ['matricula', 'data_admissao', 'cargo', 'departamento', 'regime_trabalho', 'turno_trabalho', 'numero_cracha_rfid', 'salario_nominal', 'custo_hora_homem', 'status'] },
 ]
 const employeeFieldWidth: Record<string, string> = {
-  nome_completo: 'erp-field-name',
-  data_nascimento: 'erp-field-date',
-  cpf: 'erp-field-cpf',
-  rg: 'erp-field-number',
-  celular: 'erp-field-phone',
-  telefone: 'erp-field-phone',
-  email: 'erp-field-email',
-  matricula: 'erp-field-code',
-  data_admissao: 'erp-field-date',
-  cargo: 'erp-field-text',
-  departamento: 'erp-field-text',
-  regime_trabalho: 'erp-field-text',
-  turno_trabalho: 'erp-field-text',
-  numero_cracha_rfid: 'erp-field-number',
-  salario_nominal: 'erp-field-money',
-  custo_hora_homem: 'erp-field-money',
-  status: 'erp-field-text',
+  nome_completo: 'w-[340px] max-w-full',
+  data_nascimento: 'w-[150px] max-w-full',
+  cpf: 'w-[160px] max-w-full',
+  rg: 'w-[150px] max-w-full',
+  celular: 'w-[180px] max-w-full',
+  telefone: 'w-[180px] max-w-full',
+  email: 'w-[340px] max-w-full',
+  matricula: 'w-[140px] max-w-full',
+  data_admissao: 'w-[150px] max-w-full',
+  cargo: 'w-[240px] max-w-full',
+  departamento: 'w-[240px] max-w-full',
+  regime_trabalho: 'w-[220px] max-w-full',
+  turno_trabalho: 'w-[220px] max-w-full',
+  numero_cracha_rfid: 'w-[200px] max-w-full',
+  salario_nominal: 'w-[180px] max-w-full',
+  custo_hora_homem: 'w-[180px] max-w-full',
+  status: 'w-[200px] max-w-full',
 }
 const tabs: { label: Tab; icon: typeof Users }[] = [
   { label: 'Visão geral', icon: Users },
@@ -187,9 +189,11 @@ const display = (value: unknown) => value === null || value === undefined || val
 const errorText = (error: unknown) => error instanceof Error ? error.message : 'Não foi possível concluir a operação.'
 
 export default function RHIndustrial() {
+  const location = useLocation()
   const [empresaId, setEmpresaId] = useState('')
-  const [tab, setTab] = useState<Tab>('Visão geral')
+  const [tab, setTab] = useState<Tab>(() => { const path = location.pathname; if (path.endsWith('/funcionarios')) return 'Funcionários'; if (path.endsWith('/ponto-presenca')) return 'Ponto / Presença'; if (path.endsWith('/treinamentos')) return 'Treinamentos'; if (path.endsWith('/avaliacoes')) return 'Avaliações'; if (path.endsWith('/ausencias')) return 'Ausências'; if (path.endsWith('/acidentes')) return 'Acidentes'; if (path.endsWith('/documentos')) return 'Documentos'; return 'Visão geral' })
   const [staff, setStaff] = useState<Staff[]>([])
+  const [turnoOptions, setTurnoOptions] = useState<string[]>([])
   const [rows, setRows] = useState<Row[]>([])
   const [form, setForm] = useState<Record<string, string>>({})
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -214,18 +218,21 @@ export default function RHIndustrial() {
     { key: 'cargo', label: 'Cargo', required: true },
     { key: 'departamento', label: 'Departamento', required: true },
     { key: 'regime_trabalho', label: 'Regime de trabalho', type: 'select', options: ['CLT', 'Estágio', 'Aprendiz', 'Temporário', 'Terceirizado'], required: true },
-    { key: 'turno_trabalho', label: 'Turno', type: 'select', options: ['Administrativo', '1º turno', '2º turno', '3º turno', 'Comercial', 'Escala'], required: true },
+    { key: 'turno_trabalho', label: 'Turno', type: 'select', options: turnoOptions, required: true },
     { key: 'numero_cracha_rfid', label: 'Número do crachá RFID' },
     { key: 'salario_nominal', label: 'Salário nominal (R$)', type: 'number' },
     { key: 'custo_hora_homem', label: 'Custo hora-homem (R$)', type: 'number' },
     { key: 'status', label: 'Situação', type: 'select', options: ['Ativo', 'Afastado', 'Férias', 'Desligado'], required: true },
-  ], [])
+  ], [turnoOptions])
 
   const loadStaff = useCallback(async (tenant: string) => {
     const { data, error } = await supabase.from('erp_funcionarios').select('*').eq('empresa_id', tenant).order('nome', { ascending: true }).limit(1000)
     if (error) throw error
     const people = (data ?? []) as Staff[]
     setStaff(people)
+    const { data: turns, error: turnsError } = await supabase.from('rh_turnos').select('codigo,nome').eq('empresa_id', tenant).eq('ativo', true).order('nome').limit(200)
+    if (turnsError) throw turnsError
+    setTurnoOptions((turns ?? []).map(turn => `${turn.codigo} — ${turn.nome}`))
     return people
   }, [])
 
@@ -267,6 +274,12 @@ export default function RHIndustrial() {
       setMessage(errorText(error))
     } finally { setBusy(false) }
   }, [loadRows, loadStaff])
+
+  useEffect(() => {
+    const path = location.pathname
+    const routeTabs: Record<string, Tab> = { '/pageprincipal/rh/funcionarios': 'Funcionários', '/pageprincipal/rh/ponto-presenca': 'Ponto / Presença', '/pageprincipal/rh/treinamentos': 'Treinamentos', '/pageprincipal/rh/avaliacoes': 'Avaliações', '/pageprincipal/rh/ausencias': 'Ausências', '/pageprincipal/rh/acidentes': 'Acidentes', '/pageprincipal/rh/documentos': 'Documentos' }
+    setTab(routeTabs[path] ?? 'Visão geral')
+  }, [location.pathname])
 
   useEffect(() => {
     let alive = true
@@ -375,7 +388,7 @@ export default function RHIndustrial() {
   const staffName = (id: unknown) => staff.find(person => person.id === id)?.nome_completo ?? staff.find(person => person.id === id)?.nome ?? 'Funcionário não localizado'
 
   const fieldControl = (field: Field) => {
-    const common = { id: field.key, name: field.key, required: field.required, value: form[field.key] ?? '', onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => setForm(previous => ({ ...previous, [field.key]: event.target.value })), className: 'w-full min-w-0 h-[30px] rounded-[2px] border border-slate-300 bg-white px-2 text-xs font-semibold text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20' }
+    const common = { id: field.key, name: field.key, required: field.required, value: form[field.key] ?? '', onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => setForm(previous => ({ ...previous, [field.key]: event.target.value })), className: 'w-full min-w-0 !h-10 min-h-10 rounded-[2px] border border-slate-300 bg-white px-2 text-xs font-semibold text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20' }
     if (field.type === 'select') return <select {...common}><option value="">Selecione…</option>{(field.options ?? []).map(option => <option key={option} value={option}>{option}</option>)}</select>
     if (field.type === 'staff') return <select {...common}><option value="">Selecione o colaborador…</option>{staff.map(person => <option key={person.id} value={person.id}>{person.matricula ? person.matricula + ' — ' : ''}{person.nome_completo ?? person.nome ?? person.id}</option>)}</select>
     if (field.key === 'observacoes' || field.key === 'justificativa') return <textarea {...common} rows={2} className="w-full rounded-[2px] border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-800 outline-none focus:border-[#2D8DB8]" />
@@ -400,7 +413,7 @@ export default function RHIndustrial() {
       <form onSubmit={saveEmployee} className="p-4 md:p-5">
         <div className="mb-4 flex items-start gap-4">
           <div>
-            <label htmlFor="rh-foto" className="flex aspect-[3/4] max-h-36 w-28 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-slate-50 text-center text-xs text-slate-500 hover:border-sky-500">
+            <label htmlFor="rh-foto" className="flex h-[210px] w-[170px] max-w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-slate-50 text-center text-xs text-slate-500 hover:border-sky-500">
               {photo ? <img src={URL.createObjectURL(photo)} alt="Prévia da foto do colaborador" className="h-full w-full object-cover"/> : photoUrl ? <img src={photoUrl} alt="Foto atual do colaborador" className="h-full w-full object-cover"/> : <><Camera size={25} className="mb-2"/><span className="font-semibold">Foto 3×4</span><span className="mt-1 px-2">JPG, PNG ou WebP</span></>}
             </label>
             <input id="rh-foto" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={event => { const file = event.target.files?.[0] ?? null; if (file && file.size > 5 * 1024 * 1024) { setMessage('A foto deve ter no máximo 5 MB.'); return } setPhoto(file); if (file) setPhotoUrl('') }}/>
@@ -420,13 +433,13 @@ export default function RHIndustrial() {
           })}
         </div>
         <div className="mt-5 flex flex-wrap justify-end gap-2 border-t border-slate-200 pt-4">
-          <button type="button" onClick={startNew} className="inline-flex h-[30px] items-center gap-2 rounded-[2px] border border-slate-300 px-4 text-sm font-semibold text-slate-700"><X size={15}/> Cancelar</button>
-          <button disabled={busy} type="submit" className="inline-flex h-[30px] items-center gap-2 rounded-[2px] bg-sky-700 px-4 text-sm font-bold text-white disabled:opacity-60"><Save size={15}/>{busy ? 'Gravando…' : 'Gravar'}</button>
+          <button type="button" onClick={startNew} className="inline-flex h-10 items-center gap-2 rounded-[2px] border border-slate-300 px-4 text-sm font-semibold text-slate-700"><X size={15}/> Cancelar</button>
+          <button disabled={busy} type="submit" className="inline-flex h-10 items-center gap-2 rounded-[2px] bg-sky-700 px-4 text-sm font-bold text-white disabled:opacity-60"><Save size={15}/>{busy ? 'Gravando…' : 'Gravar'}</button>
         </div>
       </form>
       <div className="border-t border-slate-200 p-4">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><h3 className="font-bold">Funcionários cadastrados</h3><label className="relative"><Search size={14} className="absolute left-3 top-2.5 text-slate-400"/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Buscar nome, CPF, matrícula…" className="h-9 w-64 max-w-full rounded-lg border border-slate-300 pl-8 pr-3 text-sm"/></label></div>
-        <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-xs"><thead className="bg-slate-100 text-[10px] uppercase tracking-wide text-slate-600"><tr><th className="p-3">Matrícula</th><th className="p-3">Colaborador</th><th className="p-3">Cargo / departamento</th><th className="p-3">Situação</th><th className="p-3">Ação</th></tr></thead><tbody>{filteredStaff.map(person => <tr key={person.id} className="border-b border-slate-100"><td className="p-3">{display(person.matricula)}</td><td className="p-3 font-semibold">{display(person.nome_completo ?? person.nome)}<div className="mt-1 font-normal text-slate-500">{display(person.cpf)}</div></td><td className="p-3">{display(person.cargo)}<div className="mt-1 text-slate-500">{display(person.departamento)}</div></td><td className="p-3">{display(person.status)}</td><td className="p-3"><button type="button" onClick={() => void editStaff(person)} className="erp-edit-button border border-slate-300 font-semibold text-slate-700 hover:bg-slate-50">Editar</button></td></tr>)}{filteredStaff.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-slate-500">{busy ? 'Carregando registros…' : 'Nenhum funcionário encontrado.'}</td></tr>}</tbody></table></div>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><h3 className="font-bold">Funcionários cadastrados</h3><label className="relative"><Search size={14} className="absolute left-3 top-2.5 text-slate-400"/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Buscar nome, CPF, matrícula…" className="h-10 w-[360px] max-w-full rounded-[2px] border border-slate-300 pl-8 pr-3 text-sm"/></label></div>
+        <div className="overflow-x-auto"><table className="rh-staff-grid w-full min-w-[900px] text-left text-xs"><thead className="bg-slate-100 text-[10px] uppercase tracking-wide text-slate-600"><tr><th className="p-3">Matrícula</th><th className="p-3">Colaborador</th><th className="p-3">Cargo / departamento</th><th className="p-3">Situação</th><th className="p-3">Ação</th></tr></thead><tbody>{filteredStaff.map(person => <tr key={person.id} className="border-b border-slate-100"><td className="p-3">{display(person.matricula)}</td><td className="p-3 font-semibold">{display(person.nome_completo ?? person.nome)}<div className="mt-1 font-normal text-slate-500">{display(person.cpf)}</div></td><td className="p-3">{display(person.cargo)}<div className="mt-1 text-slate-500">{display(person.departamento)}</div></td><td className="p-3">{display(person.status)}</td><td className="p-3"><button type="button" onClick={() => void editStaff(person)} className="erp-edit-button border border-slate-300 font-semibold text-slate-700 hover:bg-slate-50">Editar</button></td></tr>)}{filteredStaff.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-slate-500">{busy ? 'Carregando registros…' : 'Nenhum funcionário encontrado.'}</td></tr>}</tbody></table></div>
       </div>
     </section> : <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-200 bg-slate-100 px-4 py-3"><h2 className="font-bold text-slate-900">{tab}</h2><p className="mt-1 text-xs text-slate-500">Registros persistidos no Supabase com isolamento por empresa.</p></div>
