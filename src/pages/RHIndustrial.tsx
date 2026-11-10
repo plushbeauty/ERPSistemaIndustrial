@@ -46,6 +46,7 @@
  * Dados persistidos no Supabase; isolamento por empresa/RLS; sem dados fictícios.
  */
 import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { relogioDoServidor } from '../lib/serverClock'
 import { CalendarDays, Camera, CheckCircle2, Clock3, FileText, GraduationCap, RefreshCw, Save, Search, UserRound, Users, X } from 'lucide-react'
@@ -187,8 +188,9 @@ const display = (value: unknown) => value === null || value === undefined || val
 const errorText = (error: unknown) => error instanceof Error ? error.message : 'Não foi possível concluir a operação.'
 
 export default function RHIndustrial() {
+  const location = useLocation()
   const [empresaId, setEmpresaId] = useState('')
-  const [tab, setTab] = useState<Tab>('Visão geral')
+  const [tab, setTab] = useState<Tab>(() => location.pathname.endsWith('/funcionarios') ? 'Funcionários' : 'Visão geral')
   const [staff, setStaff] = useState<Staff[]>([])
   const [rows, setRows] = useState<Row[]>([])
   const [form, setForm] = useState<Record<string, string>>({})
