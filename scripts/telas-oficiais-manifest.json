@@ -1781,7 +1781,7 @@
     },
     {
       "path": "src/pages/FichaMontagem.tsx",
-      "sha": "0264f3fa8205ab72d457acc577d893cf17453ac4",
+      "sha": "041e929a043d81bce3576cff4ebe03e1e921cec8",
       "autor": "FernandoSch",
       "revisao": "REV-PCP-FICHA-MONTAGEM-PREVIEW-20261110-01 — ficha enviada pelo proprietário integrada ao PCP com abas Montagem, Acabamento, Inspeção e Liberação; prévia visual com dados locais de exemplo, sem persistência.",
       "aprovadaEm": "2026-11-10",
