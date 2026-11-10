@@ -11,7 +11,7 @@ import { fetchAllPages } from '../../lib/supabasePagination'
 
 type Kind = 'PAGAR' | 'RECEBER'
 type Installment = { id: string; numero: number; vencimento: string; valor: number; saldo: number; status: string; juros?: number; multa?: number; desconto?: number }
-type Title = { id: string; empresa_id: string; tipo: Kind; parceiro_tipo: string; parceiro_id: string; descricao: string; documento: string | null; categoria: string | null; centro_custo: string | null; data_emissao: string; valor_total: number; status: string; conta_bancaria_id: string | null; erp_financeiro_parcelas: Installment[] | null }
+type Title = { id: string; empresa_id: string; tipo: Kind; parceiro_tipo: string; parceiro_id: string; descricao: string; documento: string | null; categoria: string | null; centro_custo: string | null; data_emissao: string; origem_tipo: string; origem_id: string | null; valor_total: number; status: string; conta_bancaria_id: string | null; erp_financeiro_parcelas: Installment[] | null }
 type Partner = { id: string; name: string }
 type Account = { id: string; codigo: string; nome: string; banco: string; agencia: string | null; conta: string | null }
 type Audit = { id: string; tipo_retificacao: string; dados_antes: Record<string, unknown>; dados_depois: Record<string, unknown>; justificativa: string; anexo_path: string | null; usuario_id: string; criado_em: string }
@@ -31,7 +31,8 @@ export default function RetificacaoFinanceira() {
   const [company, setCompany] = useState('')
   const [titles, setTitles] = useState<Title[]>([])
   const [partners, setPartners] = useState<Partner[]>([])
-  const [accounts, setAccounts] = useState<Account[]>([])\n  const [originLabels, setOriginLabels] = useState<Record<string,string>>({})
+  const [accounts, setAccounts] = useState<Account[]>([])
+  const [originLabels, setOriginLabels] = useState<Record<string,string>>({})
   const [rows, setRows] = useState<Row[]>([])
   const [selected, setSelected] = useState<Row | null>(null)
   const [audit, setAudit] = useState<Audit[]>([])
@@ -40,7 +41,9 @@ export default function RetificacaoFinanceira() {
   const [kind, setKind] = useState('TODOS')
   const [status, setStatus] = useState('TODOS')
   const [from, setFrom] = useState('')
-  const [to, setTo] = useState('')\n  const [dateBasis, setDateBasis] = useState('VENCIMENTO')\n  const [costCenterFilter, setCostCenterFilter] = useState('')
+  const [to, setTo] = useState('')
+  const [dateBasis, setDateBasis] = useState('VENCIMENTO')
+  const [costCenterFilter, setCostCenterFilter] = useState('')
   const [reasonType, setReasonType] = useState('CORRECAO_VALOR')
   const [newValue, setNewValue] = useState('')
   const [newDue, setNewDue] = useState('')
@@ -83,6 +86,16 @@ export default function RetificacaoFinanceira() {
         fetchAllPages<Account>((a,b) => supabase.from('erp_contas_bancarias').select('id,codigo,nome,banco,agencia,conta',{count:'exact'}).eq('empresa_id',tenant).eq('ativo',true).order('nome').range(a,b)),
       ])
       setTitles(titleRows)
+      const salesIds = titleRows.filter(t=>t.origem_tipo==='PEDIDO_VENDA' && t.origem_id).map(t=>t.origem_id as string)
+      const purchaseIds = titleRows.filter(t=>t.origem_tipo==='PEDIDO_COMPRA' && t.origem_id).map(t=>t.origem_id as string)
+      const [salesOrders,purchaseOrders] = await Promise.all([
+        salesIds.length ? supabase.from('erp_pedidos_venda').select('id,numero').eq('empresa_id',tenant).in('id',salesIds) : Promise.resolve({data:[],error:null}),
+        purchaseIds.length ? supabase.from('erp_pedidos_compra').select('id,numero').eq('empresa_id',tenant).in('id',purchaseIds) : Promise.resolve({data:[],error:null}),
+      ])
+      const origins: Record<string,string> = {}
+      for (const order of (salesOrders.data || []) as Array<{id:string;numero:string|number}>) origins[order.id] = 'Pedido de venda #'+order.numero
+      for (const order of (purchaseOrders.data || []) as Array<{id:string;numero:string|number}>) origins[order.id] = 'Pedido de compra #'+order.numero
+      setOriginLabels(origins)
       setPartners([
         ...suppliers.map(p => ({id:p.id,name:p.nome_fantasia || p.razao_social || p.codigo || 'Fornecedor'})),
         ...customers.map(p => ({id:p.id,name:p.nome || p.razao_social || p.codigo || 'Cliente'})),
@@ -116,7 +129,7 @@ export default function RetificacaoFinanceira() {
 
   const allRows = useMemo<Row[]>(() => titles.flatMap(title =>
     (title.erp_financeiro_parcelas || []).filter(p => p.status !== 'CANCELADO').map(installment => ({
-      title, installment, partner: partnerName(title.parceiro_id), originLabel: title.origem_id ? (originLabels[title.origem_id] || '') : '',
+      title, installment, partner: partnerName(title.parceiro_id), originLabel: title.origem_id ? (originLabels[title.origem_id] || '') : '', originLabel: title.origem_id ? (originLabels[title.origem_id] || '') : '',
     }))
   ), [titles, partnerName, originLabels])
 
@@ -128,9 +141,11 @@ export default function RetificacaoFinanceira() {
       const matchTerm = !term || [t.id, t.documento || '', t.descricao, row.partner, row.originLabel, String(p.numero)].join(' ').toLocaleLowerCase('pt-BR').includes(term)
       const matchKind = kind === 'TODOS' || t.tipo === kind
       const matchStatus = status === 'TODOS' || p.status === status
-      const matchFrom = !from || p.vencimento >= from
-      const matchTo = !to || p.vencimento <= to
-      return matchTerm && matchKind && matchStatus && matchFrom && matchTo && matchCostCenter
+      const filterDate = dateBasis === 'EMISSAO' ? t.data_emissao : p.vencimento
+      const matchFrom = !from || filterDate >= from
+      const matchTo = !to || filterDate <= to
+      const matchCostCenter = !costCenterFilter.trim() || String(t.centro_custo || '').toLocaleLowerCase('pt-BR').includes(costCenterFilter.trim().toLocaleLowerCase('pt-BR'))
+      return matchTerm && matchKind && matchStatus && matchFrom && matchTo && matchCostCenter && matchCostCenter
     })
   }, [allRows, query, kind, status, from, to, dateBasis, costCenterFilter])
 
