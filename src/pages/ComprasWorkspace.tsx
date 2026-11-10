@@ -12,7 +12,7 @@ import { supabase } from '../lib/supabaseClient'
 type TabKey = 'visao-geral' | 'requisicoes' | 'cotacoes' | 'pedidos' | 'recebimentos'
 type DbRow = Record<string, unknown>
 type TableData = { rows: DbRow[]; loading: boolean; error: string | null }
-type RfqForm = { dataNecessidade: string; prazoResposta: string; condicaoPagamento: string; comprador: string; observacoes: string }
+type RfqForm = { dataNecessidade: string; prazoResposta: string; condicaoPagamento: string; observacoes: string }
 
 const tabs: Array<{ key: TabKey; label: string; icon: typeof ClipboardList }> = [
   { key: 'visao-geral', label: 'Visão geral', icon: ShoppingCart },
@@ -67,9 +67,9 @@ function DataTable({ rows, kind, onEdit }: { rows: DbRow[]; kind: 'requisicoes' 
       { label: 'Nº cotação', keys: ['numero', 'id'] },
       { label: 'Emissão', keys: ['data_emissao', 'created_at'], format: 'date' },
       { label: 'Necessidade', keys: ['data_necessidade', 'previsao_entrega'], format: 'date' },
-      { label: 'Comprador', keys: ['comprador_responsavel', 'created_by'] },
-      { label: 'Menor custo', keys: ['menor_preco_ofertado', 'menor_custo_liquido_atendido'], format: 'money' },
-      { label: 'Status', keys: ['status_aprovacao', 'status'], format: 'status' },
+      { label: 'Prazo para resposta', keys: ['prazo_resposta'], format: 'date' },
+      { label: 'Condição de pagamento', keys: ['condicao_pagamento'] },
+      { label: 'Status', keys: ['status'], format: 'status' },
     ],
     pedidos: [
       { label: 'Pedido', keys: ['numero', 'id'] },
@@ -101,7 +101,7 @@ export default function ComprasWorkspace() {
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [notice, setNotice] = useState<{ kind: 'success' | 'error'; message: string } | null>(null)
-  const [form, setForm] = useState<RfqForm>({ dataNecessidade: '', prazoResposta: '', condicaoPagamento: '', comprador: '', observacoes: '' })
+  const [form, setForm] = useState<RfqForm>({ dataNecessidade: '', prazoResposta: '', condicaoPagamento: '', observacoes: '' })
   const [rfqs, setRfqs] = useState<TableData>(emptyTable)
   const [requisitions, setRequisitions] = useState<TableData>(emptyTable)
   const [orders, setOrders] = useState<TableData>(emptyTable)
@@ -151,7 +151,6 @@ export default function ComprasWorkspace() {
         data_necessidade: form.dataNecessidade || null,
         prazo_resposta: form.prazoResposta || null,
         condicao_pagamento: form.condicaoPagamento.trim() || null,
-        comprador_responsavel: form.comprador.trim() || authData.user?.email || null,
         observacoes: form.observacoes.trim() || null,
         status: 'RASCUNHO',
         status_aprovacao: 'EM_ANALISE',
@@ -159,7 +158,7 @@ export default function ComprasWorkspace() {
       }).select('id,numero').single()
       if (error) throw error
       setNotice({ kind: 'success', message: 'Solicitação de cotação criada. Agora adicione itens e fornecedores na etapa de cotação.' })
-      setForm({ dataNecessidade: '', prazoResposta: '', condicaoPagamento: '', comprador: '', observacoes: '' })
+      setForm({ dataNecessidade: '', prazoResposta: '', condicaoPagamento: '', observacoes: '' })
       setShowRfqForm(false)
       setActiveTab('cotacoes')
       setRefreshKey(value => value + 1)
@@ -186,7 +185,6 @@ export default function ComprasWorkspace() {
       <label className="compras-field"><span>Data de necessidade</span><input type="date" value={form.dataNecessidade} onChange={event => setForm(value => ({ ...value, dataNecessidade: event.target.value }))} min={today} /></label>
       <label className="compras-field"><span>Prazo para resposta</span><input type="date" value={form.prazoResposta} onChange={event => setForm(value => ({ ...value, prazoResposta: event.target.value }))} min={today} /></label>
       <label className="compras-field"><span>Condição de pagamento</span><input value={form.condicaoPagamento} onChange={event => setForm(value => ({ ...value, condicaoPagamento: event.target.value }))} maxLength={120} placeholder="Ex.: 28/56 dias" /></label>
-      <label className="compras-field compras-field--wide"><span>Comprador responsável</span><input value={form.comprador} onChange={event => setForm(value => ({ ...value, comprador: event.target.value }))} maxLength={100} placeholder="Responsável pela cotação" /></label>
       <label className="compras-field compras-field--full"><span>Observações</span><textarea value={form.observacoes} onChange={event => setForm(value => ({ ...value, observacoes: event.target.value }))} rows={3} maxLength={2000} placeholder="Especificações, condições de fornecimento e orientações para os fornecedores" /></label>
       <div className="compras-form-footer"><span>O registro será salvo na empresa vinculada à sessão autenticada.</span><button className="compras-button compras-button--primary" type="submit" disabled={saving}>{saving ? 'Salvando…' : 'Salvar solicitação'}</button></div>
     </form></section>}
