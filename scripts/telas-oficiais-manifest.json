@@ -77,11 +77,11 @@
     },
     {
       "path": "src/features/comissoes/CalculoComissao.tsx",
-      "sha": "0e07e22e1d98b6b02591e890122469233adec83c",
+      "sha": "6fbca754c62b26754ff0f03e5d182c86908ce0a1",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-COMISSOES-CALCULO-WIREFRAME-20261110-01 — filtros 190/340/180px, cálculo real por vendedor e competência, grade analítica, resumo e XLSX",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "WIRE­FRAME E INTEGRAÇÃO AUTORIZADOS PELO PROPRIETÁRIO EM 2026-11-10; mantém apuração por tenant e dados reais."
     },
     {
       "path": "src/features/comissoes/PerfilVendedor.tsx",
