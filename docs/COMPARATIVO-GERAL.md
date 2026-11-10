@@ -537,4 +537,12 @@ Os módulos abaixo serão inventariados e comparados em sequência. Cada tópico
 - Introspecção remota confirmou RLS ativo em todas as tabelas de negócio consultadas (Fornecedores, Solicitações, Requisições, Itens de Requisição, RFQ, RFQ Itens, RFQ Fornecedores, Respostas RFQ, Pedidos, Itens de Pedido, Produtos, Usuários e OPs). FORCE RLS está ativo em Pedidos, Itens de Pedido, Produtos, Usuários, Empresas e OPs; policies das tabelas consultadas incluem filtro de empresa/RBAC.
 - Constraints remotas confirmadas para `erp_rfq_respostas`: status `RASCUNHO/ENVIADA/ACEITA/RECUSADA`, `prazo_dias >= 0`, `valor_total >= 0` e unicidade `(rfq_id, fornecedor_id)`. O formulário não tenta usar campos não persistidos nem status fora desse conjunto.
 - O teste de interação executado no CI é auditoria estrutural automatizada, não clique em navegador autenticado. Permanecem pendentes somente os testes ponta a ponta de gravação/edição com uma sessão de usuário da empresa e inspeção visual do PDF em navegador; não houve uso de credenciais, impersonação de usuário nem escrita de dados de teste na produção.
-- Não houve deploy Vercel. O PR #310 permanece draft para revisão/aceite do proprietário.
+- Não houve deploy Vercel: o status do provedor indicou `build-rate-limit`. O PR #310 foi mesclado em 10/11/2026 no branch `fix/global-vercel-repair-20261110` (merge `43379427a457f734118666cc7699625a8a0d8876`).
+
+
+### 1.12 Resultado final do CI e integração do PR #310 — 10/11/2026
+- Execução final `42894761146` (commit `604d3c6a39d107e39cd5282306ef69cf2c95d758`) concluiu **SUCCESS**. TypeScript, ESLint, auditoria global, auditoria estrutural brutal, auditoria de interação, lazy imports, build de produção, build output, rotas, regressões de tablet/shell/logo/telas aprovadas e segurança no-bypass: todos os passos PASS.
+- Auditoria estrutural final: 13 arquivos obrigatórios, 15 rotas verificadas, 0 falhas e 8 avisos globais remanescentes; nenhum aviso de padrão de edição nas telas de Compras após a correção dos botões.
+- PR #310 foi mesclado no branch base `fix/global-vercel-repair-20261110` pelo merge `43379427a457f734118666cc7699625a8a0d8876`. Isso não equivale a deploy no domínio oficial.
+- O check Vercel continua em falha por `build-rate-limit`; nenhum deploy foi iniciado manualmente.
+- Aceite funcional final permanece condicionado a teste com sessão autenticada real da empresa (criação, edição, leitura e impressão em navegador). A infraestrutura de ferramentas desta sessão não disponibilizou sessão de usuário de teste nem navegador autenticado; não foram criados dados de produção nem simulada identidade. O CI comprova type-check/lint/build e auditorias automatizadas, não substitui esse teste E2E.
