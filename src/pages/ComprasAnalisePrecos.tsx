@@ -223,7 +223,7 @@ export default function ComprasAnalisePrecos() {
           <div className="overflow-x-auto">
             <table className="compras-analise-table w-full min-w-[900px] border-collapse text-left">
               <thead><tr>
-                <th className="w-10 px-3 text-center">Escolher</th><th className="px-3">Fornecedor participante</th><th className="px-3 text-right">Valor total</th><th className="px-3 text-right">Frete</th><th className="px-3 text-right">Desconto</th><th className="px-3 text-right">Custo líquido</th><th className="px-3 text-center">Prazo (dias)</th><th className="px-3">Condição de pagamento</th><th className="px-3">Validade</th><th className="px-3 text-center">Menor custo</th>
+                <th className="w-10 px-3 text-center">Escolher</th><th className="px-3">Fornecedor participante</th><th className="px-3 text-right">Valor total informado</th><th className="px-3 text-center">Prazo (dias)</th><th className="px-3">Condição de pagamento</th><th className="px-3">Validade</th><th className="px-3 text-center">Menor valor total</th>
               </tr></thead>
               <tbody>
                 {rows.map(row => {
@@ -232,8 +232,7 @@ export default function ComprasAnalisePrecos() {
                   return <tr key={row.id} className={isSelected ? 'bg-sky-50/80' : 'bg-white'}>
                     <td className="px-3 text-center"><input aria-label={`Selecionar ${supplierMap.get(row.fornecedor_id) || 'fornecedor'}`} type="radio" name="fornecedor-escolhido" checked={isSelected} onChange={() => setSelectedSupplier(row.fornecedor_id)} className="h-4 w-4 accent-sky-700 focus:ring-sky-600" /></td>
                     <td className="px-3 font-semibold text-slate-800">{supplierMap.get(row.fornecedor_id) || 'Fornecedor não localizado'}{isSelected && <span className="ml-2 rounded bg-sky-100 px-1.5 py-0.5 text-[9px] font-bold text-sky-800">SELECIONADO</span>}</td>
-                    <td className="px-3 text-right tabular-nums">{money(Number(row.valor_total || 0))}</td><td className="px-3 text-right tabular-nums text-slate-400">—</td><td className="px-3 text-right tabular-nums text-slate-400">—</td>
-                    <td className="px-3 text-right font-bold tabular-nums text-slate-900">{money(row.custo)}</td><td className="px-3 text-center">{row.prazo_dias ?? '—'}</td><td className="px-3">{row.condicao_pagamento || '—'}</td><td className="px-3">{dateLabel(row.validade)}</td>
+                    <td className="px-3 text-right tabular-nums font-semibold">{money(Number(row.valor_total || 0))}</td><td className="px-3 text-center">{row.prazo_dias ?? '—'}</td><td className="px-3">{row.condicao_pagamento || '—'}</td><td className="px-3">{dateLabel(row.validade)}</td>
                     <td className="px-3 text-center">{isWinner ? <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-1 text-[9px] font-bold text-emerald-700"><Check size={12} /> MENOR</span> : <span className="text-slate-300">—</span>}</td>
                   </tr>
                 })}
