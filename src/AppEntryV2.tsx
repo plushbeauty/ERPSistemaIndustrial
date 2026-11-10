@@ -323,6 +323,7 @@ export default function AppEntryV2() {
               <Route path="controladoria/cadastro-decimais" element={<CadastroDecimais />} />
               <Route path="controladoria/lucratividade" element={<PainelLucratividade />} />
               <Route path="controladoria/razao-geral" element={<PainelRazaoGeralControladoria />} />
+              <Route path="controladoria/retificacao-pedido" element={<RetificacaoPedido />} />
               <Route path="controladoria/retificacao-pedido/:pedidoId" element={<RetificacaoPedido />} />
               <Route path="financeiro/conciliacao-bancaria" element={<QualityPlanGate><BankReconciliation /></QualityPlanGate>} />
               <Route path="financeiro/importar-extratos" element={<QualityPlanGate><BankStatementImporter /></QualityPlanGate>} />
