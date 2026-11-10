@@ -1789,9 +1789,9 @@
     },
     {
       "path": "src/pages/CustomerDnFinanceList.tsx",
-      "sha": "e30a81b1d89a06e9130e9f326a1e1fbd2ec79b38",
+      "sha": "b34890138471b966ef4687267a954900e122a3c3",
       "autor": "FernandoSch",
-      "revisao": "REV-NOTAS-DEBITO-FINANCEIRAS-20261110-02 — formulário completo, anexo privado, validação por empresa e geração transacional de título a pagar/receber",
+      "revisao": "REV-NOTAS-DEBITO-FINANCEIRAS-20261110-03 — cadastro a receber/a pagar, parceiros por tipo, anexos privados, conta/centro de custo e geração atômica de título",
       "aprovadaEm": "2026-11-10",
       "statusAprovacao": "ALTERAÇÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10"
     }
