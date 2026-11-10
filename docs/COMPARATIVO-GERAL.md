@@ -538,3 +538,9 @@ Os módulos abaixo serão inventariados e comparados em sequência. Cada tópico
 - Constraints remotas confirmadas para `erp_rfq_respostas`: status `RASCUNHO/ENVIADA/ACEITA/RECUSADA`, `prazo_dias >= 0`, `valor_total >= 0` e unicidade `(rfq_id, fornecedor_id)`. O formulário não tenta usar campos não persistidos nem status fora desse conjunto.
 - O teste de interação executado no CI é auditoria estrutural automatizada, não clique em navegador autenticado. Permanecem pendentes somente os testes ponta a ponta de gravação/edição com uma sessão de usuário da empresa e inspeção visual do PDF em navegador; não houve uso de credenciais, impersonação de usuário nem escrita de dados de teste na produção.
 - Não houve deploy Vercel. O PR #310 permanece draft para revisão/aceite do proprietário.
+
+
+### 1.11 Fechamento dos avisos de edição — 10/11/2026
+- Os botões Editar de `ComprasWorkspace.tsx` e `ComprasIndustrial.tsx` receberam as classes semânticas `erp-edit-button erp-row-action` exigidas pela auditoria estrutural.
+- A ação “Criar primeiro pedido” na Central de Compras agora limpa explicitamente o ID de edição anterior antes de abrir um novo formulário, evitando reutilizar estado de edição.
+- Manifesto oficial atualizado com o hash final da tela. Execução CI posterior a estes últimos commits ainda precisa concluir para registrar o PASS final.
