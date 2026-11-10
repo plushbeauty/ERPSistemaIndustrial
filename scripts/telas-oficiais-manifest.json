@@ -109,7 +109,7 @@
     },
     {
       "path": "src/features/controladoria/CadastroDecimais.tsx",
-      "sha": "56b6e0422e6c5086a0599a5bd8dca052fc3d9379",
+      "sha": "5b18f4852eee09cbe1654d8f8f6d9144c2e456ce",
       "autor": "FernandoSch",
       "revisao": "REV-CADASTRO-DECIMAIS-PLASTIBOR-20261110-01 — formulário 40px, seis padrões industriais opcionais, CRUD tenant-scoped, exemplos e ajuda contextual",
       "aprovadaEm": "2026-11-10",
