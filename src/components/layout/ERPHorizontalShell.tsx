@@ -34,7 +34,7 @@ const menus: MenuItem[] = [
     { label: 'Fluxo de Caixa', route: '/pageprincipal/financeiro/fluxo-caixa', icon: Wallet },
     { label: 'Conciliação Bancária', route: '/pageprincipal/financeiro/conciliacao-bancaria', icon: ClipboardList },
     { label: 'Importar Extratos', route: '/pageprincipal/financeiro/importar-extratos', icon: FileText },
-    { label: 'Retificação de Pedido', route: '/pageprincipal/financeiro/retificacao', icon: RotateCcw },
+    { label: 'Retificação Financeira', route: '/pageprincipal/financeiro/retificacao', icon: RotateCcw },
     { label: 'Notas de Débito', route: '/pageprincipal/financeiro/notas-debito', icon: FileWarning },
     { label: 'Configurações de Notas de Débito', route: '/pageprincipal/financeiro/notas-debito/configuracoes', icon: Settings },
     { label: 'Custo padrão', route: '/pageprincipal/financeiro/custo-padrao' },
