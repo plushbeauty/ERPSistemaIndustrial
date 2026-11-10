@@ -506,11 +506,12 @@ const introCatalog: Record<string, PageIntro> = {
     },
   },
   'financeiro/notas-debito/configuracoes': {
-    module: 'Financeiro', title: 'Configurações de Notas de Débito',
-    description: 'Séries, impostos e regras de emissão das notas de débito da empresa.',
+    module: 'Financeiro', title: 'Notas de Débito e Rotinas Financeiras',
+    description: 'Cadastro, edição e acompanhamento de notas de débito, comprovantes e importação de extratos, com dados reais isolados por empresa.',
     help: {
-      fill: ['Configure série, modelo, alíquotas e regra de numeração conforme o que a empresa está autorizada a emitir.'],
-      use: ['A emissão usa exatamente estas regras; alterar no meio do mês gera quebra de numeração.', 'Dúvida de amparo legal é do contador, não desta tela.'],
+      fill: ['Selecione cliente, conta bancária e centro de custo cadastrados; informe emissão, vencimento, valores e motivo do débito.', 'Anexe o comprovante e marque as rotinas integradas desejadas antes de salvar.'],
+      use: ['Use os filtros para localizar nota, documento ou entidade; edite pelo botão da linha.', 'Extratos enviados ficam registrados para conferência e devem seguir para a rotina de conciliação bancária.'],
+      watch: 'A gravação de títulos automáticos exige a rotina financeira de integração habilitada; marcar a opção não declara um título gerado.'
     },
   },
   'cadastros/produtos': {
