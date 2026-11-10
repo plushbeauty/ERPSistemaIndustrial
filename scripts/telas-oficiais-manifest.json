@@ -461,11 +461,11 @@
     },
     {
       "path": "src/pages/ComprasWorkspace.tsx",
-      "sha": "de550ad0a6dbe9842b8570ab4da00a4dd6cb2da6",
+      "sha": "d7ec97fa84f7a1a3b0ce4f5386695a2c26ca76ff",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-COMPRAS-CENTRAL-ABAS-20261110-01 — painel único com abas internas de Painel, Requisições, Alertas MRP, Cotações, Pedidos, Recebimentos e Fornecedores; consultas isoladas por empresa e ações novas em laranja",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "ALTERAÇÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; visual dos componentes enviados preservado como referência; fluxo mantido em uma única tela"
     },
     {
       "path": "src/pages/ConfiguracaoLote.tsx",
