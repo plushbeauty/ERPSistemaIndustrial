@@ -522,3 +522,9 @@ Os módulos abaixo serão inventariados e comparados em sequência. Cada tópico
 - O primeiro `tsc --noEmit` da execução CI após sincronizar o manifesto apontou `TS17001` em `ComprasAnalisePrecos.tsx` (atributo JSX `className` duplicado no botão de registrar escolha).
 - O botão foi corrigido para um único `className`; a comparação foi renomeada para `valorComparavel` e os textos agora dizem “valor total informado”, sem sugerir custo líquido calculado.
 - A hash lock da tela foi atualizada após a correção. A nova execução do type-check ainda precisa concluir; não declarar TypeScript aprovado até o resultado dessa execução.
+
+
+### 1.9 Reconciliação adicional do cabeçalho RFQ na Central de Compras — 10/11/2026
+- A introspecção remota de `erp_rfq` confirmou `id`, `empresa_id`, `numero`, `status`, `data_emissao`, `data_necessidade`, `condicao_pagamento`, `prazo_resposta`, `observacoes`, `created_by`, `created_at`, `updated_at`, `fornecedor_escolhido_id` e `justificativa_escolha`. Não existem `comprador_responsavel` nem `status_aprovacao`.
+- O formulário rápido de RFQ em `ComprasWorkspace.tsx` não tenta mais inserir essas duas colunas ausentes e não exibe um campo de comprador que não tinha persistência. A tabela de cotações agora mostra data de emissão, necessidade, prazo de resposta, condição e status reais.
+- A resposta de fornecedor foi conferida: `erp_rfq_respostas` possui `respondido_por`, `valor_total`, `prazo_dias`, `condicao_pagamento`, `validade`, `observacoes`, `status` e timestamps. Os campos atuais de proposta estão alinhados; preço/desconto/frete/imposto/câmbio/anexo por item continuam indisponíveis.
