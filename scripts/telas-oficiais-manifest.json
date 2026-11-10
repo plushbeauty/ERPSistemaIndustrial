@@ -125,11 +125,11 @@
     },
     {
       "path": "src/features/controladoria/PainelRazaoGeral.tsx",
-      "sha": "ec35cd8dbe31fe73f75e9b7c3c47f79622d51ef4",
+      "sha": "92d7ffa476ac58722a125b0d170585a14b553d13",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-CADASTRO-BANCOS-RAZAO-20261110-01 — cadastro compartilhado de contas no razão geral",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "ALTERAÇÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10"
     },
     {
       "path": "src/features/controladoria/RetificacaoPedido.tsx",
@@ -173,11 +173,11 @@
     },
     {
       "path": "src/features/fiscal/PainelRazaoGeral.tsx",
-      "sha": "27f7be58f0f54fb4b5fdcdb18dc88004e3cd8672",
+      "sha": "fe4f876d6424cb0eceaa08232388637df6e62f29",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-CADASTRO-BANCOS-RAZAO-20261110-01 — filtro explícito de empresa e cadastro compartilhado de contas",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "ALTERAÇÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10"
     },
     {
       "path": "src/features/inventario/AuditoriaSaldos.tsx",
@@ -1783,7 +1783,7 @@
       "path": "src/features/banking/BankAccountManager.tsx",
       "sha": "50d075d050b99c882e7d94d730884fa96bba0c57",
       "autor": "FernandoSch",
-      "revisao": "REV-CADASTRO-BANCOS-CONTAS-20261110-01 — cadastro compartilhado de instituições COMPE e contas bancárias por tenant, reutilizado na conciliação e importação",
+      "revisao": "REV-CADASTRO-BANCOS-CONTAS-20261110-01 — cadastro compartilhado de instituições COMPE e contas bancárias por tenant",
       "aprovadaEm": "2026-11-10",
       "statusAprovacao": "ALTERAÇÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10"
     }
