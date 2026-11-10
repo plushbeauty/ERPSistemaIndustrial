@@ -426,3 +426,12 @@ Os módulos abaixo serão inventariados e comparados em sequência. Cada tópico
 **Cotação por item:** remoto confirma que `erp_rfq_itens` contém os itens solicitados, mas `erp_rfq_respostas` contém somente total por fornecedor, prazo, condição, validade, observações e status. Não há persistência por item, preço unitário, desconto, frete, tributos, moeda/câmbio ou comprovante nesse contrato. Não exibir campos sem persistência. A implementação depende de contrato aditivo revisado e migration não destrutiva.
 
 **Estado desta rodada:** passo 1 auditado e bloqueado por decisão de modelo/RPC; passo 2 auditado e bloqueado por ausência de contrato de resposta por item; passo 3 não implementado porque o formulário de pedido não salva com segurança e o cabeçalho não contém todos os dados solicitados para impressão; passo 4 não executado integralmente. Nenhum migration foi aplicada, nenhuma tela foi declarada concluída e não houve deploy. Type-check/lint local não foram executados nesta sessão.
+
+
+#### Complemento — identidade e numeração dos pedidos (10/11/2026)
+
+- `erp_fornecedores` não possui coluna `parceiro_id` nem FK para `erp_parceiros`; `erp_pedidos.parceiro_id` é nullable e aponta para `erp_parceiros.id`. Não há vínculo estrutural comprovado entre fornecedor e parceiro.
+- `erp_pedidos.numero_pedido` é `varchar NOT NULL`, sem default. `erp_pedidos_compra.numero` é `bigint nullable`, também sem default. Nenhum trigger foi encontrado nas três tabelas que gere número ou sincronize cabeçalhos.
+- Policies observadas: as três tabelas têm policy ALL de tenant; pedidos e cabeçalho usam `empresa_id = erp_current_company_id() OR erp_is_master()`, itens usam `empresa_id = erp_current_empresa_id()`. RLS e FORCE RLS ativos.
+- A hipótese de usar o mesmo UUID em `erp_pedidos` e `erp_pedidos_compra` pode satisfazer a FK atual dos itens sem alterar dados antigos, mas não está implementada: antes exige validar as funções de tenant/permissão e adotar numeração concorrente segura para os dois números obrigatórios/visíveis. Não gerar número via `max()+1` sem lock transacional/sequence.
+- Resultado: não executar INSERT parcial no navegador nem RPC adivinhada. O fluxo continua bloqueado até especificar e testar atomicamente o contrato de numeração, permissão e identidade compartilhada.
