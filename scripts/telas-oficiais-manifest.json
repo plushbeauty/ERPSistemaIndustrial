@@ -1,7 +1,7 @@
 {
   "contrato": "SYNQRA-R-20261103-01",
   "geradoPor": "npm run telas:manifest",
-  "totalTelas": 222,
+  "totalTelas": 223,
   "telas": [
     {
       "path": "src/IndustrialLoginDirect.tsx",
@@ -1776,6 +1776,14 @@
       "sha": "d50e2763bc6206462706c78434f2901775dc71c2",
       "autor": "FernandoSch",
       "revisao": "REV-RETIFICACAO-FINANCEIRA-AUDITADA-20261110-01 — busca de títulos/parcelas, retificação transacional, justificativa, anexos, histórico e bloqueio de período",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "ALTERAÇÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10"
+    },
+    {
+      "path": "src/features/banking/BankAccountManager.tsx",
+      "sha": "50d075d050b99c882e7d94d730884fa96bba0c57",
+      "autor": "FernandoSch",
+      "revisao": "REV-CADASTRO-BANCOS-CONTAS-20261110-01 — cadastro compartilhado de instituições COMPE e contas bancárias por tenant, reutilizado na conciliação e importação",
       "aprovadaEm": "2026-11-10",
       "statusAprovacao": "ALTERAÇÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10"
     }
