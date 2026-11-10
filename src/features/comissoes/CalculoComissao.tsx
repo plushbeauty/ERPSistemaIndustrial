@@ -174,6 +174,22 @@ export default function CalculoComissao() {
 
   useEffect(() => { void loadSellers() }, [loadSellers])
 
+  const loadGoal = useCallback(async () => {
+    if (!empresaId || !competencia) return
+    const result = await supabase.from('erp_vendas_metas')
+      .select('meta_faturamento')
+      .eq('empresa_id', empresaId)
+      .eq('competencia', competencia + '-01')
+      .maybeSingle()
+    if (result.error) {
+      setError(result.error.message)
+      return
+    }
+    setMeta(Number(result.data?.meta_faturamento ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
+  }, [empresaId, competencia])
+
+  useEffect(() => { void loadGoal() }, [loadGoal])
+
   const resetResult = () => {
     setLines([])
     setClients([])
