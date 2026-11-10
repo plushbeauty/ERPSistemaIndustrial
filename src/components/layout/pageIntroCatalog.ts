@@ -436,7 +436,7 @@ const introCatalog: Record<string, PageIntro> = {
     module: 'Comissões', title: 'Cálculo de Comissão',
     description: 'Apuração analítica dos pedidos faturados na competência, por vendedor e regra de SKU, com total de vendas, meta e comissão líquida.',
     help: {
-      fill: ['Selecione a Competência (mês/ano) que deseja apurar.', 'Pesquise e selecione o Vendedor / Agente cadastrado e vinculado a um Perfil de Comissão ativo.', 'Informe a Meta Faturamento mensal em reais; o cálculo compara essa meta com o total retornado pelo banco.'],
+      fill: ['Selecione a Competência (mês/ano) que deseja apurar.', 'Pesquise e selecione o Vendedor / Agente cadastrado e vinculado a um Perfil de Comissão ativo.', 'A Meta Faturamento é carregada da meta comercial cadastrada para a competência; ajuste o valor se a apuração exigir uma meta específica.'],
       use: ['Clique em Calcular para executar a apuração real da empresa selecionada. A grade mostra os itens de pedidos com status Faturado, vinculados ao vendedor e às regras de SKU ativas.', 'Confira Pedido, Cliente, SKU, quantidade faturada, valor do item, percentual aplicado e comissão líquida.', 'Compare Total Vendas com a Meta Batida e confira o Total Comissão antes de exportar a planilha XLSX.'],
       watch: 'A grade começa vazia e os totalizadores começam em R$ 0,00. O sistema não cria valores de demonstração. Sem vínculo ativo ou regra de SKU ativa, o item não entra na apuração. A competência utiliza a data de entrada do pedido registrada no banco.',
     },
