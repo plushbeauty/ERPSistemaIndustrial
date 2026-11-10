@@ -446,12 +446,6 @@ export default function AppEntryV2() {
               <Route path="fiscal/parametros" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
               <Route path="fiscal/nfe-entradas" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
               <Route path="fiscal/custos-industriais" element={<QualityPlanGate><CentralCustosIndustrial /></QualityPlanGate>} />
-              <Route path="rh/funcionarios" element={<RHIndustrial />} />
-              <Route path="rh/turnos" element={<TurnosEscalas />} />
-              <Route path="rh/turnos-escalas" element={<TurnosEscalas />} />
-              <Route path="rh/epis" element={<EpisScreen />} />
-              <Route path="rh/entrega-epis" element={<EpisScreen />} />
-              <Route path="rh/epis/entregas" element={<EpisScreen />} />
               <Route path="pcp/ordens" element={<QualityPlanGate><PCPOrdens /></QualityPlanGate>} />
               <Route path="pcp/pedidos-pendentes" element={<QualityPlanGate><PCPPedidosPendentes /></QualityPlanGate>} />
               <Route path="pcp/valida-fluxo" element={<QualityPlanGate><PCPValidaFluxo /></QualityPlanGate>} />
