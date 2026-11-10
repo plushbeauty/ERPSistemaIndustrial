@@ -255,7 +255,7 @@ export default function ComprasAnalisePrecos() {
           <textarea id="justificativa-escolha" value={justificativa} onChange={e => setJustificativa(e.target.value)} rows={3} maxLength={4000} className="w-full resize-y rounded-lg border border-slate-300 bg-white p-3 text-xs text-slate-800 outline-none transition focus:border-sky-600 focus:ring-2 focus:ring-sky-100" placeholder="Registre critérios técnicos, qualidade, prazo de entrega, condição comercial ou outro motivo para a escolha..." />
           {needsJustification && <p className="mt-1.5 text-[10px] font-medium text-amber-700">O fornecedor selecionado tem custo maior que a menor proposta. Registre a justificativa antes de enviar.</p>}
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
-            <p className="text-[10px] text-slate-500">A decisão será gravada na RFQ da empresa autenticada e encaminhada para aprovação.</p>
+            <p className="text-[10px] text-slate-500">A escolha do fornecedor e a justificativa serão gravadas no cabeçalho da RFQ.</p>
             <button type="button" onClick={() => void submitForApproval()} disabled={saving || busy || !rows.length || !selectedSupplier} className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 text-xs font-bold text-white shadow-[0_4px_10px_rgba(29,78,216,.18)] transition hover:bg-blue-800 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50">
               {saving ? <RefreshCw size={14} className="animate-spin" /> : <Send size={14} />} {saving ? 'Registrando...' : 'Finalizar análise e enviar para aprovação'}
             </button>
