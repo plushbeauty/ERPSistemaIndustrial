@@ -70,14 +70,20 @@ export default function EstoqueAlmoxarifadoCompact(){
   const f=Number(found),b=Number(bad)
   if(!Number.isFinite(f)||!Number.isFinite(b)||f<0||b<0||b>f){setError('Quantidade encontrada/defeituosa inválida.');return}
   const lines=defectText.split('\n').map(x=>x.trim()).filter(Boolean)
-  const defs=lines.map((line,index)=>{
-   const parts=line.split(':')
-   const defeito=parts[0]?.trim()||''
-   const quantidade=Number(parts[1])
-   const observacao=parts.slice(2).join(':').trim()||null
-   if(!defeito||!Number.isFinite(quantidade)||quantidade<=0)throw new Error('Defeito inválido na linha '+(index+1)+'. Use: Defeito:quantidade:observação.')
-   return {defeito,quantidade,observacao}
-  })
+  let defs:{defeito:string;quantidade:number;observacao:string|null}[]
+  try{
+   defs=lines.map((line,index)=>{
+    const parts=line.split(':')
+    const defeito=parts[0]?.trim()||''
+    const quantidade=Number(parts[1])
+    const observacao=parts.slice(2).join(':').trim()||null
+    if(!defeito||!Number.isFinite(quantidade)||quantidade<=0)throw new Error('Defeito inválido na linha '+(index+1)+'. Use: Defeito:quantidade:observação.')
+    return {defeito,quantidade,observacao}
+   })
+  }catch(parseError){
+   setError(parseError instanceof Error?parseError.message:'Revise a lista de defeitos.')
+   return
+  }
   const totalDefeitos=defs.reduce((sum,item)=>sum+item.quantidade,0)
   if(b>0&&defs.length===0){setError('Detalhe os defeitos para encaminhamento à Qualidade.');return}
   if(Math.abs(totalDefeitos-b)>0.000001){setError('A soma dos defeitos ('+totalDefeitos.toLocaleString('pt-BR')+') precisa ser igual à quantidade defeituosa ('+b.toLocaleString('pt-BR')+').');return}
