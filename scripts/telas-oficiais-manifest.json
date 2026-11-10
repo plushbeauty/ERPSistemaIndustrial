@@ -109,11 +109,11 @@
     },
     {
       "path": "src/features/controladoria/CadastroDecimais.tsx",
-      "sha": "2e216e660f84371af1ea5d9b5d416586b87e6b84",
+      "sha": "56b6e0422e6c5086a0599a5bd8dca052fc3d9379",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-CADASTRO-DECIMAIS-PLASTIBOR-20261110-01 — formulário 40px, seis padrões industriais opcionais, CRUD tenant-scoped, exemplos e ajuda contextual",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "WIREFRAME FUNCIONAL IMPLEMENTADO EM BRANCH; VALIDACAO DE BUILD E PREVIEW PENDENTE"
     },
     {
       "path": "src/features/controladoria/PainelLucratividade.tsx",
