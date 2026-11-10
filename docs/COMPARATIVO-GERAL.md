@@ -310,6 +310,29 @@ Observações verificadas:
 - Não marcar o módulo como concluído até testes reais com usuário autenticado, empresa/tenant, RLS, permissões e dados de teste controlados.
 
 
+### 1.1 Verificação do contrato real e correções iniciadas — 10/11/2026
+
+**Consulta direta ao Supabase de SYSNQRA (zsklkydlawgvwgnvxwwx), sem alterar o banco:**
+
+- erp_rfq contém: id, empresa_id, numero, status, data_emissao, data_necessidade, condicao_pagamento, prazo_resposta, observacoes, created_by, created_at, updated_at, fornecedor_escolhido_id e justificativa_escolha.
+- erp_rfq_fornecedores contém apenas vínculo RFQ/fornecedor, status e data de resposta; não contém valor, frete, desconto, prazo ou condição comercial.
+- erp_rfq_respostas contém valor_total, prazo_dias, condicao_pagamento, validade, observacoes e status; é o contrato correto para persistir a proposta global por fornecedor.
+- Existe a RPC erp_compras_criar_rfq_atomica(uuid[],jsonb,date,text,text,date), que valida sessão, empresa, permissões, fornecedores e produtos, e grava cabeçalho, fornecedores e itens na mesma transação.
+- As policies RLS das tabelas restringem operações à empresa atual e às permissões do módulo Compras.
+
+**Falha concreta encontrada:** as telas antigas tentavam gravar/ler colunas inexistentes em erp_rfq e erp_rfq_fornecedores (por exemplo status_aprovacao, menor_preco_ofertado, valor_frete, valor_desconto e prazo_entrega_dias). Isso faria a criação ou a análise falhar contra o schema real.
+
+**Correções de código feitas nesta branch:**
+1. ComprasRFQ.tsx passou a chamar a RPC atômica existente para criar cabeçalho, fornecedores e itens.
+2. As propostas totais e seus prazos/condições passaram a ser gravados em erp_rfq_respostas, em vez de tentar gravar colunas inexistentes na tabela de participantes.
+3. A escolha e justificativa são gravadas nos campos existentes fornecedor_escolhido_id e justificativa_escolha de erp_rfq. O status usa a coluna existente status.
+4. ComprasAnalisePrecos.tsx passou a ler erp_rfq_respostas e deixou de consultar campos inexistentes. Frete/desconto aparecem sem valor (—), pois o schema atual não os discrimina na resposta; não são inventados.
+5. A ação foi renomeada para não prometer encaminhamento a uma etapa de aprovação que ainda não existe como contrato persistido.
+
+**Limite funcional ainda aberto:** a resposta continua sendo um valor total por fornecedor. Não existe tabela de preço por item/fornecedor; cotação item a item, moeda/câmbio, frete, desconto, tributos, validade e anexos ainda exigem desenho e implementação de contrato próprio. A persistência do vencedor usa UPDATE protegido por permissão compras.editar; deve ser validada com usuário de teste autorizado. Nenhuma migration foi aplicada.
+
+**Validação:** alterações commitadas nesta branch; ainda pendentes typecheck, lint, testes, build/preview e fluxo com usuário autenticado. Não considerar Compras concluído nem produção corrigida antes dessas verificações.
+
 ## 2. Próximos módulos
 
 Os módulos abaixo serão inventariados e comparados em sequência. Cada tópico só será marcado como auditado após inspeção do código e dos contratos reais; “a iniciar” não significa que a tela esteja completa.
