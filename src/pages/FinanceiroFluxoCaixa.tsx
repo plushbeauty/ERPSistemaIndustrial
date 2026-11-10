@@ -1,7 +1,7 @@
 /**
  * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-08
- * @REVISAO: REV-FLUXO-CAIXA-PAGINACAO-20261108-01 — leitura paginada integral, tenant da sessão autenticada, extrato e gravação real com controles compactos
+ * @REVISAO: REV-FLUXO-CAIXA-WIREFRAME-COMPLETO-20261110-02 — layout completo com indicadores, formulário 40px, extrato 48px e persistência real por empresa; paginação e RLS preservados
  * @STATUS_APROVACAO: REVISAO AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA INTEGRAR A VERSAO COM PAGINACAO COMPLETA E ISOLAMENTO POR EMPRESA, PRESERVANDO O SHELL HORIZONTAL GLOBAL
  * @ESCOPO: Layout compacto dedicado, sem chrome legado duplicado, com dados reais por tenant.
  */
