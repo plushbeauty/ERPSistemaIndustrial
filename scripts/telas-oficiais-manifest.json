@@ -669,11 +669,11 @@
     },
     {
       "path": "src/pages/FinanceiroCustoPadrao.tsx",
-      "sha": "ba678f37278f10c23c8bee25e8f38b85ff47acd9",
+      "sha": "c447a69ca08fbdc73cd2a73ccd4373951b8a9319",
       "autor": "FernandoSch",
-      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — o custo BOM buscava o custo de cada componente numa lista de produtos truncada em 3000: componente fora do trecho carregado entrava como R$ 0,00 no \"Custo fábrica total\" e no preço sugerido. Produtos e necessidades do MRP agora são lidos por paginação completa e a falha da carga é exibida em vez de passar como custo zero.",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — paginação completa de produtos e necessidades MRP; REV-FIN-CUSTO-PADRAO-ENGENHARIA-20261110-01 — layout 40px, custo absorvido por BOM real, custo/hora por ciclo, preço sugerido, exportação CSV e histórico persistido com RLS.",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "IMPLEMENTAÇÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; hash sincronizado com Git; gates oficiais preservados."
     },
     {
       "path": "src/pages/FinanceiroDashboardCaixa.tsx",
