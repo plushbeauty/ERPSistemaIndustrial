@@ -507,11 +507,11 @@ const introCatalog: Record<string, PageIntro> = {
     },
   },
   'financeiro/notas-debito': {
-    module: 'Financeiro', title: 'Notas de Débito',
-    description: 'Emissão e acompanhamento de notas de débito por cliente, inclusive comprovantes de entrega (POD).',
+    module: 'Financeiro', title: 'Notas de Débito e Rotinas Financeiras',
+    description: 'Emissão e acompanhamento de débitos a receber ou pagar, com vínculo a parceiros, conta bancária, centro de custo, comprovante e geração transacional de títulos.',
     help: {
-      fill: ['Selecione o cliente e o documento de origem do débito (fatura, frete, avaria).', 'Descreva o motivo do débito com valor e data.'],
-      use: ['A nota de débito formaliza a cobrança extra vinculada ao documento original.', 'POD anexado é a evidência usada em cobrança e em contestação.'],
+      fill: ['Selecione cliente para A Receber ou fornecedor para A Pagar, informe datas, valores, conta bancária, centro de custo e discriminação.', 'Anexe o comprovante e marque a geração automática do título quando a nota precisar integrar Contas a Receber/Pagar.'],
+      use: ['A gravação valida empresa, parceiro, conta, centro de custo e permissão no servidor.', 'Quando solicitado, a nota e o título financeiro são criados na mesma transação; conciliação e extratos abrem seus módulos próprios.'],
     },
   },
   'financeiro/notas-debito/configuracoes': {
