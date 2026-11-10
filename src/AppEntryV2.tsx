@@ -104,6 +104,7 @@ const CadastroDecimais = lazy(() => import('./features/controladoria/CadastroDec
 const PainelLucratividade = lazy(() => import('./features/controladoria/PainelLucratividade'))
 const AssistenteRetificacao = lazy(() => import('./features/controladoria/AssistenteRetificacao'))
 const RetificacaoPedido = lazy(() => import('./features/controladoria/RetificacaoPedido'))
+const RetificacaoFinanceira = lazy(() => import('./features/financeiro/RetificacaoFinanceira'))
 const AnoFiscal = lazy(() => import('./features/fiscal/AnoFiscal'))
 const AuditoriaDocumental = lazy(() => import('./features/fiscal/AuditoriaDocumental'))
 const ClassificacaoFiscal = lazy(() => import('./features/fiscal/ClassificacaoFiscal'))
@@ -352,7 +353,7 @@ export default function AppEntryV2() {
               <Route path="financeiro/auditoria-comissoes" element={<Navigate to="/pageprincipal/controladoria/auditoria-comissoes" replace />} />
               <Route path="financeiro/decimais" element={<Navigate to="/pageprincipal/controladoria/cadastro-decimais" replace />} />
               <Route path="financeiro/lucratividade" element={<Navigate to="/pageprincipal/controladoria/lucratividade" replace />} />
-              <Route path="financeiro/retificacao" element={<QualityPlanGate><RetificacaoPedido /></QualityPlanGate>} />
+              <Route path="financeiro/retificacao" element={<QualityPlanGate><RetificacaoFinanceira /></QualityPlanGate>} />
               <Route path="financeiro/retificacao-assistente" element={<Navigate to="/pageprincipal/controladoria/retificacao-assistente" replace />} />
               <Route path="financeiro/notas-debito" element={<QualityPlanGate><CustomerDnList /></QualityPlanGate>} />
               <Route path="financeiro/notas-debito/configuracoes" element={<QualityPlanGate><CustomerDnSettings /></QualityPlanGate>} />
