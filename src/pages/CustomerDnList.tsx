@@ -103,7 +103,7 @@ export default function CustomerDnList(){
    <form onSubmit={create} className="space-y-4">
     <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
      <label><span className={label}>Nº Nota de Débito *</span><input className={field} required maxLength={40} value={number} onChange={e=>setNumber(e.target.value)}/></label>
-     <label><span className={label}>Documento / Pedido origem</span><input className={field} value={description} onChange={e=>setDescription(e.target.value)} placeholder="Referência ou descrição"/></label>
+     <label><span className={label}>Documento / Pedido origem</span><input className={field+' bg-slate-50'} value="Campo ainda não disponível na tabela atual" disabled/></label>
      <label><span className={label}>Data de emissão *</span><input type="date" className={field} required value={issueDate} onChange={e=>setIssueDate(e.target.value)}/></label>
      <label><span className={label}>Data de vencimento</span><input className={field+' bg-slate-50'} value="Não disponível no cadastro atual" disabled/></label>
     </div>
