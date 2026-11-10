@@ -481,12 +481,12 @@ const introCatalog: Record<string, PageIntro> = {
     },
   },
   'financeiro/retificacao': {
-    module: 'Financeiro', title: 'Retificação de Pedido',
-    description: 'Corrige referência do cliente, vendedor, condição de pagamento e descrição dos itens em pedido já faturado, com histórico auditável; quantidades, preços e impostos permanecem bloqueados.',
+    module: 'Financeiro', title: 'Retificação Financeira',
+    description: 'Localiza títulos e parcelas a pagar/receber, corrige valor, vencimento, conta e classificação com validação de período, justificativa obrigatória, comprovante e histórico imutável.',
     help: {
-      fill: ['Localize o pedido pelo número, cliente ou data antes de editar.', 'Corrija apenas os campos liberados: referência, vendedor, condição de pagamento e descrição do item.'],
-      use: ['Quantidade, preço e imposto não mudam aqui: para isso existe faturamento ou nota de ajuste.', 'Cada retificação fica no histórico com usuário e data, como prova de auditoria.'],
-      watch: 'Pedido já emitido em NF-e pode exigir documento fiscal próprio para o mesmo efeito.',
+      fill: ['Filtre por NF/documento, título, pedido ou parceiro; escolha o tipo, status e intervalo de vencimento.', 'Selecione uma parcela e confira os dados originais antes de preencher a retificação.', 'Informe o motivo, os novos dados e uma justificativa com pelo menos 20 caracteres; anexe PDF, PNG ou JPG quando houver comprovante.'],
+      use: ['A gravação é transacional e registra dados anteriores, novos, usuário, data/hora e justificativa.', 'Parcela em aberto ou parcialmente paga pode ser ajustada somente se o novo total preservar o valor já pago.', 'Parcela liquidada não é sobrescrita. Use o fluxo de estorno bancário ou lançamento complementar.'],
+      watch: 'Períodos fechados bloqueiam a retificação. Estorno total só é permitido quando nenhuma parcela do título tiver pagamento registrado; a rotina não apaga baixas nem movimenta o caixa automaticamente.',
     },
   },
   'controladoria/retificacao-assistente': {
