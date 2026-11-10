@@ -1581,11 +1581,11 @@
     },
     {
       "path": "src/pages/RHSubmodules.tsx",
-      "sha": "465fa9784e8a38e44c0faa3ae6eecb612ca02a86",
+      "sha": "c76c4dc5298bdc720b0453f18776abadc85db6a7",
       "autor": "FernandoSch",
-      "revisao": "REV-RH-TURNOS-EPIS-WIREFRAME-20261110-02 — turnos e EPIs reais, tenant-scoped, ficha individual por colaborador; histórico usa erp_funcionario_id com compatibilidade de funcionario_id e impressão exige colaborador selecionado.",
+      "revisao": "REV-RH-TURNOS-EPIS-WIREFRAME-20261110-03 — tela de Turnos e Escalas e Controle/Entrega de EPIs, histórico compatível com erp_funcionario_id/funcionario_id, IDs opcionais normalizados e impressão individual protegida.",
       "aprovadaEm": "2026-11-10",
-      "statusAprovacao": "INCREMENTO DE TELA AUTORIZADO PELO PROPRIETÁRIO EM 2026-11-10; schema e RLS remotos verificados; E2E autenticado pendente."
+      "statusAprovacao": "REVISÃO EXPLICITAMENTE SOLICITADA PELO PROPRIETÁRIO EM 2026-11-10; schema e RLS remotos verificados; E2E autenticado pendente."
     },
     {
       "path": "src/pages/SetupADMInicial.tsx",
