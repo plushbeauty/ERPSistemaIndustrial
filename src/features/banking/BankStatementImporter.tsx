@@ -103,6 +103,7 @@ export default function BankStatementImporter() {
     <div className="mb-2 flex h-7 items-center gap-1 text-[10px] text-gray-500"><DownloadCloud size={14} /><span>Finanças</span><span>›</span><strong className="text-gray-700">Importador de Extratos</strong></div>
     <div className="grid min-h-[calc(100vh-52px)] grid-cols-[52%_48%] bg-white">
       <section className="border border-gray-200 p-3">
+        <form onSubmit={(event) => { event.preventDefault(); void upload() }}>
         <div className="mb-2 text-[13px] font-semibold">Importar extrato</div>
         <label className="mb-0.5 block text-[10px] text-gray-500">Banco</label>
         <LinkFieldCombobox value={accountId} options={options} onChange={setAccountId} placeholder="Banco/Conta" />
@@ -113,7 +114,8 @@ export default function BankStatementImporter() {
         <div className="mt-2 flex items-center gap-1"><Key size={12} className="text-gray-500" /><input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Senha PDF" className="h-7 w-[140px] rounded-md border border-gray-200 px-2 text-[11px]" /></div>
         {error && <div className="mt-2 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-[11px] text-red-700">{error}</div>}
         {message && <div className="mt-2 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-[11px] text-emerald-700">{message}</div>}
-        <div className="mt-2 flex justify-end"><button type="button" disabled={busy} onClick={() => void upload()} className="flex h-7 items-center gap-1 rounded-md bg-emerald-600 px-4 text-[11px] font-semibold text-white"><Upload size={12} />Upload</button></div>
+        <div className="mt-2 flex justify-end"><button type="submit" disabled={busy} className="flex h-7 items-center gap-1 rounded-md bg-emerald-600 px-4 text-[11px] font-semibold text-white"><Upload size={12} />Upload</button></div>
+        </form>
       </section>
       <section className="border-s border-gray-200 p-3">
         <div className="mb-2 text-[13px] font-semibold">Últimas 20 importações</div>
