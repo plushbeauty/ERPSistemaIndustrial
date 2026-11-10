@@ -573,9 +573,9 @@
     },
     {
       "path": "src/pages/EstoqueAlmoxarifadoCompact.tsx",
-      "sha": "955e8bbef89f9675b79b84dcdbfea2517cd6e523",
+      "sha": "4025b6ca2d7736ce3f6f892bc583e4d6a82c9caf",
       "autor": "FernandoSch",
-      "revisao": "REV-ESTOQUE-CONFERENCIA-QUALIDADE-20261110-01 — validação de defeitos detalhados no cliente e integridade transacional na RPC; ajuste de inventário restrito a inventário aberto.",
+      "revisao": "REV-ESTOQUE-CONFERENCIA-QUALIDADE-20261110-02 — validação de defeitos detalhados, soma conferida, erros de parsing tratados e integridade transacional no banco; ajuste de inventário restrito a inventário aberto.",
       "aprovadaEm": "2026-11-10",
       "statusAprovacao": "CONSULTAS TENANT-SCOPED E RPCs REAIS PRESERVADAS; validação de conferência e ajuste reforçada no banco."
     },
