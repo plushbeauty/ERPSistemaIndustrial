@@ -5,14 +5,14 @@
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Plus, Save, Search, Trash2 } from 'lucide-react'
+import { ArrowLeft, Plus, Printer, Save, Search, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
 
 type Supplier = { id: string; razao_social: string; email: string | null }
-type SupplierQuote = { custo: string; prazo: string; condicao: string }
+type SupplierQuote = { custo: string; prazo: string; condicao: string; validade: string }
 type Product = { id: string; codigo: string; nome: string; unidade: string }
 type Item = {
   produto_id: string
@@ -149,13 +149,14 @@ export default function ComprasRFQ() {
       return
     }
     if (selectedQuotes.length !== selectedSuppliers.length || selectedQuotes.some(({ quote }) => quote.custo.trim() === '' || !Number.isFinite(Number(quote.custo)) || Number(quote.custo) < 0 || quote.prazo.trim() === '' || !Number.isFinite(Number(quote.prazo)) || Number(quote.prazo) < 0)) {
-      setError('Informe custo líquido e prazo válidos para todos os fornecedores selecionados.')
+      setError('Informe custo total e prazo válidos para todos os fornecedores selecionados.')
       return
     }
     if (justificationRequired && !justification.trim()) {
-      setError('A justificativa é obrigatória quando o fornecedor escolhido não oferece o menor custo líquido.')
+      setError('A justificativa é obrigatória quando o fornecedor escolhido não oferece o menor valor total informado.')
       return
     }
+
     setBusy(true)
     setError('')
     setMessage('')
@@ -164,89 +165,67 @@ export default function ComprasRFQ() {
 
     try {
       const company = await supabase.rpc('erp_current_empresa_id')
-      if (company.error || !company.data) {
-        throw company.error ?? new Error('Empresa não identificada.')
-      }
+      if (company.error || !company.data) throw company.error ?? new Error('Empresa não identificada.')
       empresaId = String(company.data)
 
       const auth = await supabase.auth.getUser()
-      if (auth.error || !auth.data.user) {
-        throw auth.error ?? new Error('Sessão não localizada para registrar a cotação.')
-      }
-      const profile = await supabase
-        .from('erp_usuarios')
-        .select('id')
-        .eq('auth_user_id', auth.data.user.id)
-        .eq('empresa_id', empresaId)
-        .eq('ativo', true)
-        .is('deleted_at', null)
-        .maybeSingle()
-      if (profile.error || !profile.data) {
-        throw profile.error ?? new Error('Perfil ERP ativo não localizado para registrar a cotação.')
-      }
+      if (auth.error || !auth.data.user) throw auth.error ?? new Error('Sessão não localizada para registrar a cotação.')
 
-      const header = await supabase
-        .from('erp_rfq')
-        .insert({
-          empresa_id: empresaId,
-          status: 'ABERTA',
-          comprador_responsavel: buyer.trim() || null,
-          status_aprovacao: approvalStatus,
-          data_limite: deadline || null,
-          previsao_entrega: deliveryForecast || null,
-          data_conclusao: ['APROVADO', 'REJEITADO'].includes(approvalStatus) ? new Date().toISOString().slice(0, 10) : null,
-          justificativa_escolha: justification.trim() || null,
-          menor_custo_liquido_atendido: !justificationRequired,
-          data_necessidade: items.map(item => item.data_necessidade).filter(Boolean).sort()[0] || null,
-          prazo_resposta: responseDate || null,
-          condicao_pagamento: paymentCondition.trim() || null,
-          observacoes: notes.trim() || null,
-          created_by: profile.data.id,
-        })
-        .select('id,numero')
-        .single()
-      if (header.error || !header.data) {
-        throw header.error ?? new Error('A cotação não foi retornada pelo banco.')
-      }
-      rfqId = header.data.id
+      const dataNecessidade = items.map(item => item.data_necessidade).filter(Boolean).sort()[0] || null
+      const observacoes = [
+        buyer.trim() ? 'Comprador: ' + buyer.trim() : '',
+        deliveryForecast ? 'Previsão de entrega: ' + deliveryForecast : '',
+        notes.trim(),
+      ].filter(Boolean).join('\n')
 
-      const supplierInsert = await supabase
-        .from('erp_rfq_fornecedores')
-        .insert(selectedSuppliers.map(fornecedorId => {
-          const quote = quotes[fornecedorId]
-          const cost = Number(quote.custo)
-          return {
-            empresa_id: empresaId,
-            rfq_id: rfqId,
-            fornecedor_id: fornecedorId,
-            valor_total: cost,
-            valor_frete: 0,
-            valor_desconto: 0,
-            prazo_entrega_dias: Number(quote.prazo),
-            condicao_pagamento: quote.condicao.trim() || paymentCondition.trim() || null,
-            custo_liquido_total: cost,
-            selecionado_para_pedido: fornecedorId === winnerId,
-            status: fornecedorId === winnerId ? 'SELECIONADO' : 'COTADO',
-          }
-        }))
-      if (supplierInsert.error) throw supplierInsert.error
-
-      const itemInsert = await supabase
-        .from('erp_rfq_itens')
-        .insert(items.map(item => ({
-          empresa_id: empresaId,
-          rfq_id: rfqId,
+      // A RPC existente grava cabeçalho, fornecedores e itens em uma única transação.
+      const created = await supabase.rpc('erp_compras_criar_rfq_atomica', {
+        p_fornecedor_ids: selectedSuppliers,
+        p_itens: items.map(item => ({
           produto_id: item.produto_id,
-          descricao: item.descricao,
-          codigo: item.codigo,
           quantidade: Number(item.quantidade),
-          unidade: item.unidade || 'UN',
           data_necessidade: item.data_necessidade || null,
           observacoes: item.observacoes || null,
-        })))
-      if (itemInsert.error) throw itemInsert.error
+        })),
+        p_prazo_resposta: responseDate || deadline || null,
+        p_condicao_pagamento: paymentCondition.trim() || null,
+        p_observacoes: observacoes || null,
+        p_data_necessidade: dataNecessidade,
+      })
+      if (created.error) throw created.error
+      const record = Array.isArray(created.data) ? created.data[0] : created.data
+      if (!record || typeof record.id !== 'string') throw new Error('O banco não retornou a RFQ criada.')
+      rfqId = record.id
 
-      setMessage(`RFQ #${header.data.numero} criada com ${selectedSuppliers.length} fornecedor(es) e ${totalQuantity} unidades.`)
+      // Os valores das propostas pertencem à tabela de respostas, não à tabela de fornecedores participantes.
+      const responses = await supabase.from('erp_rfq_respostas').insert(selectedSuppliers.map(fornecedorId => {
+        const quote = quotes[fornecedorId]
+        return {
+          empresa_id: empresaId,
+          rfq_id: rfqId,
+          fornecedor_id: fornecedorId,
+          valor_total: Number(quote.custo),
+          prazo_dias: Number(quote.prazo),
+          condicao_pagamento: quote.condicao.trim() || paymentCondition.trim() || null,
+          validade: quote.validade || null,
+          respondido_por: auth.data.user.id,
+          status: 'RASCUNHO',
+          observacoes: 'Proposta registrada pelo comprador.',
+        }
+      }))
+      if (responses.error) throw responses.error
+
+      // O schema atual mantém a escolha e sua justificativa no cabeçalho da RFQ.
+      const choice = await supabase.from('erp_rfq').update({
+        fornecedor_escolhido_id: winnerId,
+        justificativa_escolha: justification.trim() || null,
+        status: approvalStatus || 'EM_ANALISE',
+        updated_at: new Date().toISOString(),
+      }).eq('id', rfqId).eq('empresa_id', empresaId).select('id').maybeSingle()
+      if (choice.error) throw choice.error
+      if (!choice.data) throw new Error('A RFQ foi criada, mas a escolha não foi registrada. Verifique a permissão de edição de Compras.')
+
+      setMessage(`RFQ #${record.numero} criada com ${selectedSuppliers.length} fornecedor(es), ${items.length} item(ns) e propostas registradas.`)
       setItems([])
       setSelectedSuppliers([])
       setQuotes({})
@@ -254,14 +233,10 @@ export default function ComprasRFQ() {
       setJustification('')
     } catch (cause) {
       if (rfqId && empresaId) {
-        const rollback = await supabase
-          .from('erp_rfq')
-          .delete()
-          .eq('id', rfqId)
-          .eq('empresa_id', empresaId)
+        const rollback = await supabase.from('erp_rfq').delete().eq('id', rfqId).eq('empresa_id', empresaId)
         if (rollback.error) {
           const original = cause instanceof Error ? cause.message : String(cause)
-          setError(`${original} A exclusão da cotação incompleta também falhou: ${rollback.error.message}`)
+          setError(`${original} A exclusão da RFQ incompleta também falhou: ${rollback.error.message}`)
           return
         }
       }
@@ -281,6 +256,7 @@ export default function ComprasRFQ() {
             <h1 className="text-xl font-medium text-[#123B50]">Pedido de Cotação — RFQ</h1>
           </div>
           <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => window.print()} className="flex min-h-10 items-center gap-2 rounded-md border px-3 py-2 text-xs"><Printer size={15}/> Imprimir / PDF</button>
             <button
               type="button"
               onClick={() => navigate('/compras/solicitacao-manual')}
@@ -374,11 +350,11 @@ export default function ComprasRFQ() {
             </div>
 
             <section className="mt-4 overflow-x-auto rounded-lg border border-slate-200 p-3">
-              <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-[#123B50]">Mapa de custo líquido e seleção do fornecedor</h3>
-              {!selectedSuppliers.length ? <p className="text-xs text-slate-500">Selecione fornecedores no painel à esquerda para registrar as propostas.</p> : <table className="w-full min-w-[680px] text-xs"><thead><tr className="border-b bg-slate-50 text-left"><th className="p-2">Fornecedor</th><th className="p-2">Custo líquido (R$)</th><th className="p-2">Prazo (dias)</th><th className="p-2">Condição de pagamento</th><th className="p-2">Vencedor</th></tr></thead><tbody>{selectedSuppliers.map(id => { const supplier = suppliers.find(entry => entry.id === id); const quote = quotes[id] ?? { custo: '', prazo: '', condicao: '' }; return <tr key={id} className="border-b"><td className="p-2 font-semibold">{supplier?.razao_social ?? 'Fornecedor'}</td><td className="p-2"><input aria-label={`Custo líquido de ${supplier?.razao_social ?? 'fornecedor'}`} type="number" min="0" step="0.01" value={quote.custo} onChange={event => setQuotes(current => ({ ...current, [id]: { ...quote, custo: event.target.value } }))} className="h-9 w-32 rounded border px-2" /></td><td className="p-2"><input aria-label={`Prazo de ${supplier?.razao_social ?? 'fornecedor'}`} type="number" min="0" step="1" value={quote.prazo} onChange={event => setQuotes(current => ({ ...current, [id]: { ...quote, prazo: event.target.value } }))} className="h-9 w-24 rounded border px-2" /></td><td className="p-2"><input aria-label={`Condição de pagamento de ${supplier?.razao_social ?? 'fornecedor'}`} value={quote.condicao} onChange={event => setQuotes(current => ({ ...current, [id]: { ...quote, condicao: event.target.value } }))} className="h-9 w-40 rounded border px-2" /></td><td className="p-2 text-center"><input type="radio" name="rfq-winner" checked={winnerId === id} onChange={() => setWinnerId(id)} aria-label={`Selecionar ${supplier?.razao_social ?? 'fornecedor'} como vencedor`} /></td></tr> })}</tbody></table>}
+              <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-[#123B50]">Mapa de valor total informado e seleção do fornecedor</h3>
+              {!selectedSuppliers.length ? <p className="text-xs text-slate-500">Selecione fornecedores no painel à esquerda para registrar as propostas.</p> : <table className="w-full min-w-[680px] text-xs"><thead><tr className="border-b bg-slate-50 text-left"><th className="p-2">Fornecedor</th><th className="p-2">valor total informado (R$)</th><th className="p-2">Prazo (dias)</th><th className="p-2">Condição de pagamento</th><th className="p-2">Validade da proposta</th><th className="p-2">Vencedor</th></tr></thead><tbody>{selectedSuppliers.map(id => { const supplier = suppliers.find(entry => entry.id === id); const quote = quotes[id] ?? { custo: '', prazo: '', condicao: '', validade: '' }; return <tr key={id} className="border-b"><td className="p-2 font-semibold">{supplier?.razao_social ?? 'Fornecedor'}</td><td className="p-2"><input aria-label={`valor total informado de ${supplier?.razao_social ?? 'fornecedor'}`} type="number" min="0" step="0.01" value={quote.custo} onChange={event => setQuotes(current => ({ ...current, [id]: { ...quote, custo: event.target.value } }))} className="h-9 w-32 rounded border px-2" /></td><td className="p-2"><input aria-label={`Prazo de ${supplier?.razao_social ?? 'fornecedor'}`} type="number" min="0" step="1" value={quote.prazo} onChange={event => setQuotes(current => ({ ...current, [id]: { ...quote, prazo: event.target.value } }))} className="h-9 w-24 rounded border px-2" /></td><td className="p-2"><input aria-label={`Condição de pagamento de ${supplier?.razao_social ?? 'fornecedor'}`} value={quote.condicao} onChange={event => setQuotes(current => ({ ...current, [id]: { ...quote, condicao: event.target.value } }))} className="h-9 w-40 rounded border px-2" /></td><td className="p-2"><input aria-label={`Validade da proposta de ${supplier?.razao_social ?? 'fornecedor'}`} type="date" value={quote.validade} onChange={event => setQuotes(current => ({ ...current, [id]: { ...quote, validade: event.target.value } }))} className="h-9 w-36 rounded border px-2" /></td><td className="p-2 text-center"><input type="radio" name="rfq-winner" checked={winnerId === id} onChange={() => setWinnerId(id)} aria-label={`Selecionar ${supplier?.razao_social ?? 'fornecedor'} como vencedor`} /></td></tr> })}</tbody></table>}
               {justificationRequired && <p className="mt-2 text-xs font-semibold text-amber-700">O fornecedor escolhido tem custo acima do menor valor (R$ {lowestNetCost?.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}). Justificativa obrigatória.</p>}
               <label className="mt-3 block text-xs font-semibold text-slate-700">Justificativa de escolha {justificationRequired ? '(obrigatória)' : '(opcional)'}
-                <textarea value={justification} onChange={event => setJustification(event.target.value)} disabled={!justificationRequired} className="mt-1 min-h-20 w-full rounded border p-3 text-sm disabled:bg-slate-50 disabled:text-slate-400" placeholder={justificationRequired ? 'Explique o motivo comercial/técnico para escolher uma proposta mais cara.' : 'Não exigida quando o menor custo líquido é selecionado.'} />
+                <textarea value={justification} onChange={event => setJustification(event.target.value)} disabled={!justificationRequired} className="mt-1 min-h-20 w-full rounded border p-3 text-sm disabled:bg-slate-50 disabled:text-slate-400" placeholder={justificationRequired ? 'Explique o motivo comercial/técnico para escolher uma proposta mais cara.' : 'Não exigida quando o menor valor total informado é selecionado.'} />
               </label>
             </section>
 

@@ -1,73 +1,85 @@
 /**
- * @AUTOR: FernandoSch
- * @DATA_REVISAO_APROVACAO: 2026-11-08
- * @REVISAO: REV-COMPRAS-VALIDACAO-PEDIDO-20261108-01 — valida todas as linhas sem descarte silencioso, tenant e referências carregadas, NCM de 8 dígitos, valores não negativos e tributos apresentados sem somar ICMS em duplicidade
- * @STATUS_APROVACAO: REVISAO TECNICA AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA REFORCAR A VALIDACAO DO PEDIDO, MANTENDO A RPC TRANSACIONAL E O PADRAO VISUAL
+ * @AUTOR: SYSNQRA
+ * @REVISAO: COMPRAS-PEDIDO-RPC-SCHEMA-REAL-20261110
+ * Pedido de compra gravado por RPC transacional e campos limitados ao contrato PostgreSQL real.
  */
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { Plus, Trash2, X } from 'lucide-react'
+import { Plus, Printer, Trash2, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import { erroBancoNaoInstalado, MIGRACAO_PEDIDO_COMPRA_COMPLETO } from '../lib/supabaseRpcStatus'
 
 type Row = Record<string, unknown>
-type Item = { key: string; produtoId: string; quantidade: string; unidade: string; preco: string; ncm: string; entrega: string; ordemProducaoId: string; centroCusto: string; ipi: string; icms: string }
-type Header = { fornecedorId: string; requisicaoId: string; comprador: string; condicao: string; entrega: string; centroCusto: string; localEntrega: string; cotacao: string; freteTipo: string; transportadora: string; frete: string; desconto: string; contrato: string; observacoes: string; recebimento: string; status: 'RASCUNHO' | 'PENDENTE_APROVACAO' }
+type Item = { key: string; produtoId: string; quantidade: string; unidade: string; valorUnitario: string; dataNecessidade: string; observacoes: string }
+type Header = { fornecedorId: string; requisicaoId: string; condicao: string; entrega: string; centroCusto: string; localEntrega: string; referenciaCotacao: string; especificacaoTecnica: string; observacoes: string; status: 'RASCUNHO' | 'PENDENTE_APROVACAO' }
+type Company = { razao_social: string; nome_fantasia: string | null; cnpj: string | null; telefone: string | null; email: string | null; endereco: string | null; cidade: string | null; uf: string | null; cep: string | null }
+const initialItem = (): Item => ({ key: crypto.randomUUID(), produtoId: '', quantidade: '1', unidade: 'UN', valorUnitario: '0', dataNecessidade: '', observacoes: '' })
+const initialHeader = (): Header => ({ fornecedorId: '', requisicaoId: '', condicao: '', entrega: '', centroCusto: '', localEntrega: '', referenciaCotacao: '', especificacaoTecnica: '', observacoes: '', status: 'RASCUNHO' })
+const value = (row: Row, key: string) => { const v = row[key]; return typeof v === 'string' || typeof v === 'number' ? String(v) : '' }
+const brl = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
-const initialItem = (): Item => ({ key: crypto.randomUUID(), produtoId: '', quantidade: '1', unidade: 'UN', preco: '0', ncm: '', entrega: '', ordemProducaoId: '', centroCusto: '', ipi: '0', icms: '0' })
-const initialHeader = (): Header => ({ fornecedorId: '', requisicaoId: '', comprador: '', condicao: '', entrega: '', centroCusto: '', localEntrega: '', cotacao: '', freteTipo: 'CIF', transportadora: '', frete: '0', desconto: '0', contrato: '', observacoes: '', recebimento: '', status: 'RASCUNHO' })
-const asText = (row: Row, key: string) => { const value = row[key]; return typeof value === 'string' || typeof value === 'number' ? String(value) : '' }
-const brl = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-
-export default function ComprasPedidoForm({ onCancel, onSaved }: { onCancel: () => void; onSaved: (message: string) => void }) {
+export default function ComprasPedidoForm({ onCancel, onSaved, pedidoId }: { onCancel: () => void; onSaved: (message: string) => void; pedidoId?: string }) {
   const [header, setHeader] = useState<Header>(initialHeader)
   const [items, setItems] = useState<Item[]>([initialItem()])
   const [suppliers, setSuppliers] = useState<Row[]>([])
   const [products, setProducts] = useState<Row[]>([])
   const [requisitions, setRequisitions] = useState<Row[]>([])
-  const [productionOrders, setProductionOrders] = useState<Row[]>([])
-  const [loadingRefs, setLoadingRefs] = useState(true)
+  const [company, setCompany] = useState<Company | null>(null)
+  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [referenceError, setReferenceError] = useState<string | null>(null)
+  const [savedPedidoId, setSavedPedidoId] = useState(pedidoId ?? '')
+  const [savedOrderNumber, setSavedOrderNumber] = useState('')
+  const [emissionDate, setEmissionDate] = useState('')
+  const selectedSupplier = suppliers.find(row => value(row, 'id') === header.fornecedorId)
+  const subtotal = useMemo(() => items.reduce((sum, item) => sum + Math.max(0, Number(item.quantidade) || 0) * Math.max(0, Number(item.valorUnitario) || 0), 0), [items])
+  const updateItem = (key: string, field: keyof Item, next: string) => setItems(current => current.map(item => item.key === key ? { ...item, [field]: next } : item))
 
   useEffect(() => {
     let active = true
     const load = async () => {
-      setLoadingRefs(true)
+      setLoading(true)
       setReferenceError(null)
       try {
         const { data: empresaId, error: tenantError } = await supabase.rpc('erp_current_empresa_id')
-        if (tenantError || typeof empresaId !== 'string' || !empresaId) throw tenantError ?? new Error('Empresa da sessão autenticada não identificada.')
-        const [supplierResult, productResult, requisitionResult, productionOrderResult] = await Promise.all([
-        supabase.from('erp_fornecedores').select('id,razao_social,ativo').eq('empresa_id', empresaId).eq('ativo', true).order('razao_social'),
-        supabase.from('erp_produtos').select('id,codigo,nome,ativo').eq('empresa_id', empresaId).eq('ativo', true).order('codigo'),
-        supabase.from('erp_requisicoes_compra').select('id,codigo,status').eq('empresa_id', empresaId).order('created_at', { ascending: false }).limit(200),
-        supabase.from('erp_ordens_producao').select('id,numero_op,status').eq('empresa_id', empresaId).order('numero_op', { ascending: false }).limit(300),
-      ])
+        if (tenantError || typeof empresaId !== 'string' || !empresaId) throw tenantError ?? new Error('Empresa da sessão não identificada.')
+        const [supplierResult, productResult, requisitionResult, companyResult] = await Promise.all([
+          supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia,documento,email,telefone,endereco,cidade,estado,contato,ativo').eq('empresa_id', empresaId).eq('ativo', true).order('razao_social'),
+          supabase.from('erp_produtos').select('id,codigo,nome,unidade,ativo').eq('empresa_id', empresaId).eq('ativo', true).order('codigo'),
+          supabase.from('erp_requisicoes_compra').select('id,codigo,status').eq('empresa_id', empresaId).order('created_at', { ascending: false }).limit(200),
+          supabase.from('erp_empresas').select('razao_social,nome_fantasia,cnpj,telefone,email,endereco,cidade,uf,cep').eq('id', empresaId).maybeSingle(),
+        ])
         if (!active) return
-        const refErrors = [supplierResult.error, productResult.error, requisitionResult.error, productionOrderResult.error].filter(Boolean)
-        if (refErrors.length) throw new Error('Falha ao carregar referências do pedido: ' + refErrors.map(item => item?.message).join(' | '))
+        const failures = [supplierResult.error, productResult.error, requisitionResult.error, companyResult.error].filter(Boolean)
+        if (failures.length) throw new Error(failures.map(e => e?.message).join(' | '))
         setSuppliers((supplierResult.data ?? []) as Row[])
         setProducts((productResult.data ?? []) as Row[])
         setRequisitions((requisitionResult.data ?? []) as Row[])
-        setProductionOrders((productionOrderResult.data ?? []) as Row[])
+        setCompany(companyResult.data as Company | null)
+        if (pedidoId) {
+          const [orderResult, itemResult] = await Promise.all([
+            supabase.from('erp_pedidos_compra').select('id,numero,fornecedor_id,requisicao_id,condicao_pagamento,data_prevista,centro_custo,local_entrega,referencia_cotacao,especificacao_tecnica,observacoes,status,created_at').eq('id', pedidoId).eq('empresa_id', empresaId).maybeSingle(),
+            supabase.from('erp_pedidos_compra_itens').select('id,produto_id,descricao,quantidade,valor_unitario,codigo_mp,unidade,data_necessidade,observacoes').eq('pedido_id', pedidoId).eq('empresa_id', empresaId).order('created_at'),
+          ])
+          if (orderResult.error) throw orderResult.error
+          if (itemResult.error) throw itemResult.error
+          if (!orderResult.data) throw new Error('Pedido não encontrado nesta empresa.')
+          if (!['RASCUNHO', 'PENDENTE_APROVACAO'].includes(String(orderResult.data.status))) throw new Error('Somente pedidos em rascunho ou pendentes de aprovação podem ser editados.')
+          const order = orderResult.data as Row
+          setHeader({ fornecedorId: value(order, 'fornecedor_id'), requisicaoId: value(order, 'requisicao_id'), condicao: value(order, 'condicao_pagamento'), entrega: value(order, 'data_prevista'), centroCusto: value(order, 'centro_custo'), localEntrega: value(order, 'local_entrega'), referenciaCotacao: value(order, 'referencia_cotacao'), especificacaoTecnica: value(order, 'especificacao_tecnica'), observacoes: value(order, 'observacoes'), status: String(order.status) === 'PENDENTE_APROVACAO' ? 'PENDENTE_APROVACAO' : 'RASCUNHO' })
+          setItems(((itemResult.data ?? []) as Row[]).map(row => ({ key: value(row, 'id') || crypto.randomUUID(), produtoId: value(row, 'produto_id'), quantidade: value(row, 'quantidade') || '1', unidade: value(row, 'unidade') || 'UN', valorUnitario: value(row, 'valor_unitario') || '0', dataNecessidade: value(row, 'data_necessidade'), observacoes: value(row, 'observacoes') })))
+          setSavedPedidoId(pedidoId)
+          setSavedOrderNumber(value(order, 'numero'))
+          setEmissionDate(value(order, 'created_at'))
+        }
       } catch (cause) {
-        if (active) setReferenceError(cause instanceof Error ? cause.message : 'Falha ao carregar as referências do pedido.')
-      } finally {
-        if (active) setLoadingRefs(false)
-      }
+        if (active) setReferenceError(cause instanceof Error ? cause.message : 'Falha ao carregar referências.')
+      } finally { if (active) setLoading(false) }
     }
     void load()
     return () => { active = false }
-  }, [])
+  }, [pedidoId])
 
-  const subtotal = useMemo(() => items.reduce((sum, item) => sum + Math.max(0, Number(item.quantidade) || 0) * Math.max(0, Number(item.preco) || 0), 0), [items])
-  const ipiTotal = useMemo(() => items.reduce((sum, item) => sum + (Math.max(0, Number(item.quantidade) || 0) * Math.max(0, Number(item.preco) || 0) * Math.min(100, Math.max(0, Number(item.ipi) || 0)) / 100), 0), [items])
-  const icmsTotal = useMemo(() => items.reduce((sum, item) => sum + (Math.max(0, Number(item.quantidade) || 0) * Math.max(0, Number(item.preco) || 0) * Math.min(100, Math.max(0, Number(item.icms) || 0)) / 100), 0), [items])
-  const total = Math.max(0, subtotal + (Number(header.frete) || 0) - (Number(header.desconto) || 0))
-
-  const updateItem = (key: string, field: keyof Item, value: string) => setItems(current => current.map(item => item.key === key ? { ...item, [field]: value } : item))
-  const field = (label: string, name: keyof Header, options?: { type?: string; required?: boolean; placeholder?: string }) => <label className="compras-field" key={name}><span>{label}{options?.required ? ' *' : ''}</span><input type={options?.type || 'text'} required={options?.required} value={header[name]} placeholder={options?.placeholder} onChange={event => setHeader(current => ({ ...current, [name]: event.target.value }))} /></label>
+  const printOrder = () => window.print()
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -75,104 +87,98 @@ export default function ComprasPedidoForm({ onCancel, onSaved }: { onCancel: () 
     setSaving(true)
     setError(null)
     try {
-      if (referenceError) throw new Error('As referências do pedido não foram carregadas: ' + referenceError)
-      if (!suppliers.some(row => asText(row, 'id') === header.fornecedorId)) throw new Error('Selecione um fornecedor ativo válido para esta empresa.')
-      if (header.requisicaoId && !requisitions.some(row => asText(row, 'id') === header.requisicaoId)) throw new Error('A requisição selecionada não pertence às referências carregadas desta empresa.')
+      if (referenceError) throw new Error('Referências indisponíveis: ' + referenceError)
+      if (!selectedSupplier) throw new Error('Selecione um fornecedor ativo desta empresa.')
+      if (header.requisicaoId && !requisitions.some(row => value(row, 'id') === header.requisicaoId)) throw new Error('A requisição não pertence à empresa autenticada.')
       if (!header.condicao.trim()) throw new Error('Informe a condição de pagamento.')
-      const validItems = items
-      if (!validItems.length) throw new Error('Inclua ao menos um item no pedido.')
-      for (const [index, item] of validItems.entries()) {
+      if (!items.length) throw new Error('Inclua ao menos um item.')
+      const payloadItems = items.map((item, index) => {
         const quantity = Number(item.quantidade)
-        const price = Number(item.preco)
-        const ipi = Number(item.ipi)
-        const icms = Number(item.icms)
-        const line = index + 1
-        if (!item.produtoId || !products.some(row => asText(row, 'id') === item.produtoId)) throw new Error('Selecione um produto válido no item ' + line + '.')
-        if (!Number.isFinite(quantity) || quantity <= 0) throw new Error('Informe uma quantidade maior que zero no item ' + line + '.')
-        if (!Number.isFinite(price) || price < 0) throw new Error('Informe um preço unitário válido no item ' + line + '.')
-        if (!Number.isFinite(ipi) || ipi < 0 || ipi > 100 || !Number.isFinite(icms) || icms < 0 || icms > 100) throw new Error('As alíquotas de IPI e ICMS devem ficar entre 0 e 100 no item ' + line + '.')
-        const ncmDigits = item.ncm.replace(/\D/g, '')
-        if (ncmDigits.length !== 8) throw new Error('Informe o NCM com 8 dígitos no item ' + line + '.')
-        if (!item.entrega) throw new Error('Informe a data de entrega prometida no item ' + line + '.')
-        if (item.ordemProducaoId && (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(item.ordemProducaoId) || !productionOrders.some(row => asText(row, 'id') === item.ordemProducaoId))) throw new Error('A OP selecionada no item ' + line + ' não é válida para esta empresa.')
-      }
-      const freight = Number(header.frete)
-      const discount = Number(header.desconto)
-      if (!Number.isFinite(freight) || freight < 0 || !Number.isFinite(discount) || discount < 0) throw new Error('Frete e desconto devem ser valores válidos e não negativos.')
-      if (discount > subtotal + freight) throw new Error('O desconto não pode superar o subtotal e o frete.')
-      const { data: empresaId, error: tenantError } = await supabase.rpc('erp_current_empresa_id')
-      if (tenantError) throw tenantError
-      if (typeof empresaId !== 'string' || !empresaId) throw new Error('Empresa da sessão autenticada não identificada.')
-      const { data: auth, error: authError } = await supabase.auth.getUser()
-      if (authError) throw authError
-      if (!auth.user) throw new Error('Sua sessão expirou. Entre novamente.')
-      const payload = validItems.map(item => ({ produto_id: item.produtoId, quantidade: Number(item.quantidade), unidade: item.unidade.trim() || 'UN', preco_unitario: Number(item.preco), aliquota_ipi: Number(item.ipi) || 0, aliquota_icms: Number(item.icms) || 0, centro_custo: item.centroCusto.trim() || header.centroCusto.trim() || null, ncm: item.ncm.replace(/\D/g, '') || null, data_entrega_prometida: item.entrega || null, ordem_producao_id: item.ordemProducaoId.trim() || null }))
-      const { data, error: saveError } = await supabase.rpc('erp_compras_salvar_pedido_completo', {
-        p_pedido_id: null,
-        p_fornecedor_id: header.fornecedorId,
-        p_comprador_nome: header.comprador.trim() || auth.user.email || '',
-        p_condicao_pagamento: header.condicao.trim(),
-        p_prazo_entrega: header.entrega || null,
-        p_observacoes: header.observacoes.trim(),
-        p_status: header.status,
-        p_itens: payload,
-        p_dados_comerciais: {
+        const price = Number(item.valorUnitario)
+        const product = products.find(row => value(row, 'id') === item.produtoId)
+        if (!product) throw new Error('Selecione um produto válido no item ' + (index + 1) + '.')
+        if (!Number.isFinite(quantity) || quantity <= 0 || !Number.isFinite(price) || price < 0) throw new Error('Quantidade e valor unitário inválidos no item ' + (index + 1) + '.')
+        return { produto_id: item.produtoId, codigo_mp: value(product, 'codigo'), descricao: value(product, 'nome'), quantidade: quantity, unidade: item.unidade.trim() || value(product, 'unidade') || 'UN', valor_unitario: price, data_necessidade: item.dataNecessidade || null, observacoes: item.observacoes.trim() || null }
+      })
+      const { data, error: saveError } = await supabase.rpc('erp_compras_salvar_pedido', {
+        p_payload: {
+          ...(savedPedidoId ? { pedido_id: savedPedidoId } : {}),
+          fornecedor_id: header.fornecedorId,
           requisicao_id: header.requisicaoId || null,
+          condicao_pagamento: header.condicao.trim(),
+          data_prevista: header.entrega || null,
           centro_custo: header.centroCusto.trim() || null,
           local_entrega: header.localEntrega.trim() || null,
-          referencia_cotacao: header.cotacao.trim() || null,
-          modalidade_frete: header.freteTipo,
-          transportadora: header.transportadora.trim() || null,
-          valor_frete: freight,
-          valor_desconto: discount,
-          numero_contrato: header.contrato.trim() || null,
-          observacoes_recebimento: header.recebimento.trim() || null,
+          referencia_cotacao: header.referenciaCotacao.trim() || null,
+          especificacao_tecnica: header.especificacaoTecnica.trim() || null,
+          observacoes: header.observacoes.trim() || null,
+          status: header.status,
+          itens: payloadItems,
         },
       })
-      if (saveError) {
-        throw new Error(erroBancoNaoInstalado(saveError, 'erp_compras_salvar_pedido_completo', MIGRACAO_PEDIDO_COMPRA_COMPLETO)
-          ?? `Não foi possível gravar o pedido de compra: ${saveError.message}`)
-      }
-      const record = Array.isArray(data) ? data[0] as Row | undefined : data as Row | null
-      if (!record || typeof record.id !== 'string') throw new Error('O banco não retornou o pedido criado.')
-      const pedidoLabel = record.numero != null ? 'Pedido PC-' + String(record.numero).padStart(4, '0') : 'Pedido de compra'
-      onSaved(pedidoLabel + ' salvo com ' + validItems.length + ' item(ns). Status: ' + (header.status === 'RASCUNHO' ? 'Rascunho' : 'Aguardando aprovação') + '.')
+      if (saveError) throw new Error('Não foi possível gravar o pedido: ' + saveError.message)
+      const record = data as { pedido_id?: string; pedido_compra_id?: string; numero_pedido?: number | string } | null
+      if (!record?.pedido_compra_id || record.numero_pedido === undefined || record.numero_pedido === null) throw new Error('A RPC não retornou os identificadores do pedido.')
+      setSavedPedidoId(record.pedido_compra_id)
+      setSavedOrderNumber(String(record.numero_pedido))
+      const { data: savedHeader } = await supabase.from('erp_pedidos_compra').select('created_at').eq('id', record.pedido_compra_id).maybeSingle()
+      setEmissionDate(typeof savedHeader?.created_at === 'string' ? savedHeader.created_at : new Date().toISOString())
+      onSaved('Pedido PC-' + String(record.numero_pedido).padStart(4, '0') + ' salvo com ' + payloadItems.length + ' item(ns).')
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Não foi possível salvar o pedido de compra.')
-    } finally {
-      setSaving(false)
-    }
+      setError(cause instanceof Error ? cause.message : 'Não foi possível salvar o pedido.')
+    } finally { setSaving(false) }
   }
 
   return <section className="compras-panel compras-form-panel compras-order-editor">
-    <div className="compras-panel-heading"><div><h2>Novo pedido de compra</h2><p>Cabeçalho, itens industriais e condições comerciais no mesmo formulário.</p></div><button type="button" className="compras-button compras-button--light" onClick={onCancel}><X size={14}/> Cancelar</button></div>
+    <style>{`
+      .compras-order-print{display:none}
+      @media print{
+        @page{size:A4 portrait;margin:12mm}
+        body *{visibility:hidden!important}
+        .compras-order-print,.compras-order-print *{visibility:visible!important}
+        .compras-order-print{display:block!important;position:absolute;inset:0;width:100%;font:11px Arial,sans-serif;color:#172b3a;background:#fff}
+        .compras-order-print h1{font-size:20px;margin:4px 0}.compras-order-print h2{font-size:13px;margin:16px 0 6px}
+        .compras-order-print .print-head{display:flex;justify-content:space-between;border-bottom:2px solid #123b50;padding-bottom:10px}
+        .compras-order-print .print-brand{font-size:22px;font-weight:800;color:#123b50}
+        .compras-order-print .print-meta{ text-align:right}
+        .compras-order-print table{width:100%;border-collapse:collapse;margin-top:8px}
+        .compras-order-print th,.compras-order-print td{border:1px solid #cbd5e1;padding:7px;text-align:left}
+        .compras-order-print th{background:#eef4f7}
+        .compras-order-print .print-total{text-align:right;margin-top:12px;font-size:14px;font-weight:700}
+        .compras-order-print .print-sign{display:flex;justify-content:space-around;margin-top:60px;text-align:center}
+        .compras-order-print .print-sign span{border-top:1px solid #334155;width:40%;padding-top:6px}
+      }
+    `}</style>
+    <div className="compras-panel-heading no-print"><div><h2>{savedPedidoId ? 'Editar pedido de compra' : 'Novo pedido de compra'}</h2><p>Cabeçalho, itens e condições comerciais — somente campos persistidos no banco.</p></div><div className="flex gap-2"><button type="button" className="compras-button compras-button--light" onClick={printOrder} disabled={!savedOrderNumber}><Printer size={14}/> Imprimir / PDF</button><button type="button" className="compras-button compras-button--light" onClick={onCancel}><X size={14}/> Cancelar</button></div></div>
     {referenceError && <div className="compras-error" role="alert"><strong>Referências indisponíveis.</strong><span>{referenceError}</span></div>}
     {error && <div className="compras-error" role="alert"><strong>Não foi possível concluir.</strong><span>{error}</span></div>}
-    {loadingRefs && <div className="compras-loading">Carregando fornecedores, produtos e requisições da empresa autenticada…</div>}
-    <form className="compras-form-grid" onSubmit={submit}>
-      <label className="compras-field compras-field--wide"><span>Fornecedor ativo *</span><select required value={header.fornecedorId} onChange={event => setHeader(current => ({...current,fornecedorId:event.target.value}))}><option value="">Selecione o fornecedor</option>{suppliers.map(row => <option key={asText(row,'id')} value={asText(row,'id')}>{asText(row,'razao_social')}</option>)}</select></label>
-      <label className="compras-field"><span>Solicitação de compra / MRP</span><select value={header.requisicaoId} onChange={event => setHeader(current => ({...current,requisicaoId:event.target.value}))}><option value="">Pedido manual</option>{requisitions.map(row => <option key={asText(row,'id')} value={asText(row,'id')}>{asText(row,'codigo')} · {asText(row,'status')}</option>)}</select></label>
-      {field('Comprador responsável', 'comprador', { placeholder: 'Preenchido com o usuário se ficar vazio' })}
-      <label className="compras-field"><span>Data de emissão</span><input value={new Date().toLocaleDateString('pt-BR')} readOnly/></label>
-      {field('Entrega prevista', 'entrega', {type:'date'})}
-      {field('Condição de pagamento', 'condicao', {required:true, placeholder:'Ex.: 30/60 dias, boleto, PIX'})}
-      <label className="compras-field"><span>Status inicial</span><select value={header.status} onChange={event => setHeader(current => ({...current,status:event.target.value as Header['status']}))}><option value="RASCUNHO">Rascunho</option><option value="PENDENTE_APROVACAO">Enviar para aprovação</option></select></label>
-      {field('Centro de custo', 'centroCusto', {placeholder:'Setor / linha de produção'})}
-      {field('Local de entrega', 'localEntrega', {placeholder:'Unidade / doca'})}
-      {field('Referência da cotação', 'cotacao', {placeholder:'Número da cotação'})}
-      <label className="compras-field"><span>Frete</span><select value={header.freteTipo} onChange={event => setHeader(current => ({...current,freteTipo:event.target.value}))}><option value="CIF">CIF — fornecedor</option><option value="FOB">FOB — comprador</option></select></label>
-      {field('Transportadora', 'transportadora')}
-      {field('Valor frete (R$)', 'frete', {type:'number'})}
-      {field('Desconto (R$)', 'desconto', {type:'number'})}
-      {field('Nº contrato', 'contrato')}
+    {loading && <div className="compras-loading">Carregando referências da empresa autenticada…</div>}
+    <form className="compras-form-grid no-print" onSubmit={submit}>
+      <label className="compras-field compras-field--wide"><span>Fornecedor ativo *</span><select required value={header.fornecedorId} onChange={e => setHeader(v => ({...v,fornecedorId:e.target.value}))}><option value="">Selecione o fornecedor</option>{suppliers.map(row => <option key={value(row,'id')} value={value(row,'id')}>{value(row,'razao_social')}</option>)}</select></label>
+      <label className="compras-field"><span>Requisição vinculada</span><select value={header.requisicaoId} onChange={e => setHeader(v => ({...v,requisicaoId:e.target.value}))}><option value="">Pedido manual</option>{requisitions.map(row => <option key={value(row,'id')} value={value(row,'id')}>{value(row,'codigo')} · {value(row,'status')}</option>)}</select></label>
+      <label className="compras-field"><span>Condição de pagamento *</span><input required value={header.condicao} onChange={e => setHeader(v => ({...v,condicao:e.target.value}))} placeholder="Ex.: 30/60 dias, boleto"/></label>
+      <label className="compras-field"><span>Prazo / entrega prevista</span><input type="date" value={header.entrega} onChange={e => setHeader(v => ({...v,entrega:e.target.value}))}/></label>
+      <label className="compras-field"><span>Status inicial</span><select value={header.status} onChange={e => setHeader(v => ({...v,status:e.target.value as Header['status']}))}><option value="RASCUNHO">Rascunho</option><option value="PENDENTE_APROVACAO">Enviar para aprovação</option></select></label>
+      <label className="compras-field"><span>Centro de custo</span><input value={header.centroCusto} onChange={e => setHeader(v => ({...v,centroCusto:e.target.value}))}/></label>
+      <label className="compras-field"><span>Local de entrega</span><input value={header.localEntrega} onChange={e => setHeader(v => ({...v,localEntrega:e.target.value}))}/></label>
+      <label className="compras-field"><span>Referência da cotação</span><input value={header.referenciaCotacao} onChange={e => setHeader(v => ({...v,referenciaCotacao:e.target.value}))}/></label>
+      <label className="compras-field compras-field--wide"><span>Especificação técnica</span><textarea rows={2} value={header.especificacaoTecnica} onChange={e => setHeader(v => ({...v,especificacaoTecnica:e.target.value}))}/></label>
       <div className="compras-items-editor">
-        <div className="compras-panel-heading"><div><h2>Itens do pedido</h2><p>Produto cadastrado, NCM, unidade, quantidade, preço, entrega e alocação industrial.</p></div><button type="button" className="compras-button compras-button--light" onClick={() => setItems(current => [...current,initialItem()])}><Plus size={14}/> Adicionar item</button></div>
-        <div className="compras-table-scroll"><table className="compras-table"><thead><tr><th>Produto / código</th><th>NCM</th><th>Qtd.</th><th>UM</th><th>Preço unit. (R$)</th><th>Entrega prometida</th><th>Ordem de produção</th><th>Centro de custo</th><th>IPI %</th><th>ICMS %</th><th>Total item</th><th></th></tr></thead><tbody>{items.map(item => <tr key={item.key}><td><select required className="compras-grid-input compras-product-select" value={item.produtoId} onChange={event => updateItem(item.key,'produtoId',event.target.value)}><option value="">Produto</option>{products.map(row => <option key={asText(row,'id')} value={asText(row,'id')}>{asText(row,'codigo')} · {asText(row,'nome')}</option>)}</select></td><td><input required className="compras-grid-input compras-grid-text" value={item.ncm} maxLength={16} placeholder="NCM" onChange={event => updateItem(item.key,'ncm',event.target.value)}/></td><td><input required className="compras-grid-input compras-grid-number" type="number" min="0.001" step="0.001" value={item.quantidade} onChange={event => updateItem(item.key,'quantidade',event.target.value)}/></td><td><input className="compras-grid-input compras-grid-unit" value={item.unidade} maxLength={8} onChange={event => updateItem(item.key,'unidade',event.target.value)}/></td><td><input required className="compras-grid-input compras-grid-number" type="number" min="0" step="0.0001" value={item.preco} onChange={event => updateItem(item.key,'preco',event.target.value)}/></td><td><input required className="compras-grid-input compras-grid-date" type="date" value={item.entrega} onChange={event => updateItem(item.key,'entrega',event.target.value)}/></td><td><select className="compras-grid-input compras-grid-text" value={item.ordemProducaoId} onChange={event => updateItem(item.key,'ordemProducaoId',event.target.value)}><option value="">Sem OP</option>{productionOrders.map(row => <option key={asText(row,'id')} value={asText(row,'id')}>OP-{asText(row,'numero_op')} · {asText(row,'status')}</option>)}</select></td><td><input className="compras-grid-input compras-grid-text" value={item.centroCusto} placeholder="Centro" onChange={event => updateItem(item.key,'centroCusto',event.target.value)}/></td><td><input className="compras-grid-input compras-grid-number" type="number" min="0" max="100" step="0.01" value={item.ipi} onChange={event => updateItem(item.key,'ipi',event.target.value)}/></td><td><input className="compras-grid-input compras-grid-number" type="number" min="0" max="100" step="0.01" value={item.icms} onChange={event => updateItem(item.key,'icms',event.target.value)}/></td><td>{brl((Number(item.quantidade)||0)*(Number(item.preco)||0))}</td><td><button type="button" className="compras-remove-item" aria-label="Remover item" disabled={items.length===1} onClick={() => setItems(current => current.filter(candidate => candidate.key!==item.key))}><Trash2 size={13}/></button></td></tr>)}</tbody></table></div>
+        <div className="compras-panel-heading"><div><h2>Itens do pedido</h2><p>Produto, código, descrição, unidade, quantidade e valor unitário.</p></div><button type="button" className="compras-button compras-button--light" onClick={() => setItems(rows => [...rows,initialItem()])}><Plus size={14}/> Adicionar item</button></div>
+        <div className="compras-table-scroll"><table className="compras-table"><thead><tr><th>Produto / SKU</th><th>Descrição</th><th>Unidade</th><th>Quantidade</th><th>Valor unitário</th><th>Necessidade</th><th>Subtotal</th><th/></tr></thead><tbody>{items.map(item => {const product=products.find(row=>value(row,'id')===item.produtoId);return <tr key={item.key}><td><select required className="compras-grid-input compras-product-select" value={item.produtoId} onChange={e=>updateItem(item.key,'produtoId',e.target.value)}><option value="">Produto</option>{products.map(row=><option key={value(row,'id')} value={value(row,'id')}>{value(row,'codigo')} · {value(row,'nome')}</option>)}</select></td><td>{product?value(product,'nome'):'—'}</td><td><input className="compras-grid-input compras-grid-unit" value={item.unidade} onChange={e=>updateItem(item.key,'unidade',e.target.value)}/></td><td><input required className="compras-grid-input compras-grid-number" type="number" min="0.001" step="0.001" value={item.quantidade} onChange={e=>updateItem(item.key,'quantidade',e.target.value)}/></td><td><input required className="compras-grid-input compras-grid-number" type="number" min="0" step="0.0001" value={item.valorUnitario} onChange={e=>updateItem(item.key,'valorUnitario',e.target.value)}/></td><td><input className="compras-grid-input compras-grid-date" type="date" value={item.dataNecessidade} onChange={e=>updateItem(item.key,'dataNecessidade',e.target.value)}/></td><td>{brl((Number(item.quantidade)||0)*(Number(item.valorUnitario)||0))}</td><td><button type="button" className="compras-remove-item" aria-label="Remover item" disabled={items.length===1} onClick={()=>setItems(rows=>rows.filter(row=>row.key!==item.key))}><Trash2 size={13}/></button></td></tr>})}</tbody></table></div>
       </div>
-      <div className="compras-order-totals"><span>Subtotal <strong>{brl(subtotal)}</strong></span><span>IPI informativo <strong>{brl(ipiTotal)}</strong></span><span>ICMS informativo <strong>{brl(icmsTotal)}</strong></span><span>Total base estimado (tributos não apurados) <strong>{brl(total)}</strong></span></div>
-      <label className="compras-field compras-field--full"><span>Observações gerais</span><textarea rows={2} maxLength={3000} value={header.observacoes} onChange={event => setHeader(current => ({...current,observacoes:event.target.value}))} placeholder="Especificações, laudos de qualidade e instruções de entrega"/></label>
-      <label className="compras-field compras-field--full"><span>Orientações para recebimento</span><textarea rows={2} maxLength={2000} value={header.recebimento} onChange={event => setHeader(current => ({...current,recebimento:event.target.value}))} placeholder="Conferência de lote, quantidade, nota fiscal e inspeção"/></label>
-      <div className="compras-form-footer"><span>O pedido e os itens são gravados em uma única RPC autenticada. O servidor valida tenant, fornecedor, produtos, requisição, OP e permissão. IPI e ICMS são informativos nesta etapa; o total base não substitui a apuração fiscal por NCM, CFOP, UF e regime tributário.</span><button className="compras-button compras-button--primary" type="submit" disabled={saving||loadingRefs||Boolean(referenceError)||!suppliers.length||!products.length}>{saving?'Salvando…':'Salvar pedido de compra'}</button></div>
+      <div className="compras-order-totals"><span>Total do pedido <strong>{brl(subtotal)}</strong></span></div>
+      <label className="compras-field compras-field--wide"><span>Observações</span><textarea rows={2} value={header.observacoes} onChange={e=>setHeader(v=>({...v,observacoes:e.target.value}))}/></label>
+      <div className="compras-form-footer"><span>{savedOrderNumber ? 'Pedido PC-' + savedOrderNumber.padStart(4, '0') + ' gravado. A impressão usa o número definitivo.' : 'Gravação atômica com validação de empresa e permissão no servidor.'}</span><button className="compras-button compras-button--primary" type="submit" disabled={saving||loading||Boolean(referenceError)||!suppliers.length||!products.length}>{saving?'Salvando…':savedPedidoId?'Salvar alterações':'Salvar pedido de compra'}</button></div>
     </form>
+    <section className="compras-order-print" aria-hidden="true">
+      <div className="print-head"><div><div className="print-brand">PLASTIBOR</div><strong>{company?.razao_social || company?.nome_fantasia || 'Dados cadastrais da empresa'}</strong><div>CNPJ: {company?.cnpj || 'Não informado no cadastro'}</div><div>{company?.endereco || 'Endereço não informado'} {company?.cidade || ''} {company?.uf || ''} CEP {company?.cep || ''}</div><div>{company?.telefone || ''} {company?.email || ''}</div></div><div className="print-meta"><h1>PEDIDO DE COMPRA</h1><div>Nº: {savedOrderNumber ? 'PC-' + savedOrderNumber.padStart(4, '0') : 'Aguardando gravação'}</div><div>Emissão: {new Date(emissionDate || Date.now()).toLocaleDateString('pt-BR')}</div><div>Status: {header.status}</div></div></div>
+      <h2>Fornecedor</h2><div><strong>{selectedSupplier?value(selectedSupplier,'razao_social'):'Não selecionado'}</strong></div><div>CNPJ/CPF: {selectedSupplier?value(selectedSupplier,'documento'):'—'} | Contato: {selectedSupplier?value(selectedSupplier,'contato'):'—'}</div><div>{selectedSupplier?value(selectedSupplier,'endereco'):''} {selectedSupplier?value(selectedSupplier,'cidade'):''} {selectedSupplier?value(selectedSupplier,'estado'):''}</div><div>{selectedSupplier?value(selectedSupplier,'telefone'):''} {selectedSupplier?value(selectedSupplier,'email'):''}</div>
+      <h2>Condições comerciais</h2><div>Pagamento: {header.condicao || '—'} | Prazo: {header.entrega || '—'} | Local de entrega: {header.localEntrega || '—'}</div><div>Centro de custo: {header.centroCusto || '—'} | Cotação: {header.referenciaCotacao || '—'}</div>
+      <h2>Itens</h2><table><thead><tr><th>Código/SKU</th><th>Descrição</th><th>Un.</th><th>Quantidade</th><th>Valor unitário</th><th>Subtotal</th></tr></thead><tbody>{items.map(item=>{const product=products.find(row=>value(row,'id')===item.produtoId);return <tr key={item.key}><td>{product?value(product,'codigo'):'—'}</td><td>{product?value(product,'nome'):'—'}</td><td>{item.unidade}</td><td>{item.quantidade}</td><td>{brl(Number(item.valorUnitario)||0)}</td><td>{brl((Number(item.quantidade)||0)*(Number(item.valorUnitario)||0))}</td></tr>})}</tbody></table>
+      <div className="print-total">TOTAL: {brl(subtotal)}</div><div>Especificação técnica: {header.especificacaoTecnica || '—'}</div><div>Observações: {header.observacoes || '—'}</div>
+      <div className="print-sign"><span>Solicitante / Compras</span><span>Aprovação / Diretoria</span></div>
+      <div style={{marginTop:24,borderTop:'1px solid #cbd5e1',paddingTop:6}}>PLASTIBOR · Documento gerado pelo SYSNQRA ERP INDUSTRIAL</div>
+    </section>
   </section>
 }
