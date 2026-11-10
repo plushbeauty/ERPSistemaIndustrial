@@ -77,11 +77,11 @@
     },
     {
       "path": "src/features/controladoria/AssistenteRetificacao.tsx",
-      "sha": "5639a7dff5d8c3ded3c1971e74a2d3b6bc2a5836",
+      "sha": "b3e9b82824d9bc1098c14cf983bc6e112a21f394",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-ESTORNO-DOCUMENTAL-COMPLIANCE-20261110-01 — localização multiorigem, conferência somente leitura, checklist de compliance e grade de auditoria real; limitações da RPC registradas na interface.",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "IMPLEMENTAÇÃO AUTORIZADA PELO PROPRIETÁRIO; registro auditável integrado; operações contábeis/fiscais inversas e anexos não habilitados até integração transacional própria."
     },
     {
       "path": "src/features/controladoria/AuditoriaComissoes.tsx",
