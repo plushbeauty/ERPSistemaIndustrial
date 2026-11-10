@@ -37,11 +37,11 @@
     },
     {
       "path": "src/features/banking/BankStatementImporter.tsx",
-      "sha": "66dcd7bd07c834f6cb41865c67059f70c43ab1ab",
+      "sha": "5fe6552cc5ae826e7b1e6eb7c0ec473fffdc85f7",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-HASH-SINCRONIZADO-20261110-01 — hash do manifesto alinhado ao conteúdo já existente na branch main; nenhum código bancário foi alterado nesta revisão de Compras.",
       "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "statusAprovacao": "HASH DO MANIFESTO SINCRONIZADO COM O CONTEÚDO JÁ PRESENTE EM MAIN; nenhuma alteração funcional de Banking nesta revisão."
     },
     {
       "path": "src/features/banking/ListaPrecosCliente.tsx",
@@ -461,35 +461,35 @@
     },
     {
       "path": "src/pages/ComprasAnalisePrecos.tsx",
-      "sha": "1418f30d76e0b9207dff47ad5065a8a48b9f6529",
+      "sha": "8a011536aac00aff055e4bbcc9159b1b3b0c96fb",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-COTACAO-SCHEMA-20261110-01 — comparação limitada aos campos persistidos em erp_rfq_respostas: valor_total, prazo_dias, condicao_pagamento e validade; removidas colunas de frete, desconto e custo líquido sem persistência.",
       "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "statusAprovacao": "ALTERAÇÃO TÉCNICA AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; implementação registrada e ainda sujeita a type-check, teste funcional e validação visual antes de aprovação final."
     },
     {
       "path": "src/pages/ComprasIndustrial.tsx",
-      "sha": "69d84ce94ce7adb1a9dd22205686cb7009b6f103",
+      "sha": "58629b03a64c29c8600842f167b65d8cc148a077",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-PEDIDO-RPC-20261110-01 — salvamento por erp_compras_salvar_pedido(p_payload), alinhado às colunas remotas e retorno pedido_compra_id/numero_pedido.",
       "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "statusAprovacao": "ALTERAÇÃO TÉCNICA AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; implementação registrada e ainda sujeita a type-check, teste funcional e validação visual antes de aprovação final."
     },
     {
       "path": "src/pages/ComprasPedidoForm.tsx",
-      "sha": "87ce7c8dddc3d295ff85753c69988b0e01a9152b",
+      "sha": "ba82eb3a5d87c56211514b99e7e21494502f0bda",
       "autor": "FernandoSch",
-      "revisao": "REV-COMPRAS-VALIDACAO-PEDIDO-20261108-01 — valida todas as linhas sem descarte silencioso, tenant e referências carregadas, NCM de 8 dígitos, valores não negativos e tributos apresentados sem somar ICMS em duplicidade",
+      "revisao": "REV-COMPRAS-VALIDACAO-PEDIDO-20261108-01 — valida todas as linhas sem descarte silencioso, tenant e referências carregadas, NCM de 8 dígitos, valores não negativos e tributos apresentados sem somar ICMS em duplicidade REV-COMPRAS-PEDIDO-EDIT-PRINT-20261110-01 — edição por pedidoId com carregamento tenant-scoped, RPC atômica e impressão A4 Plastibor com número definitivo após gravação; validação funcional pendente.",
       "aprovadaEm": "2026-11-08",
-      "statusAprovacao": "REVISAO TECNICA AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA REFORCAR A VALIDACAO DO PEDIDO, MANTENDO A RPC TRANSACIONAL E O PADRAO VISUAL"
+      "statusAprovacao": "ALTERAÇÃO TÉCNICA AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; implementação registrada e ainda sujeita a type-check, teste funcional e validação visual antes de aprovação final."
     },
     {
       "path": "src/pages/ComprasRelatorios.tsx",
-      "sha": "2750ce868560724b41c419a9ae68a2bd05aff075",
+      "sha": "c4d42087706efbb5efe2f881cdd637d0a6bb71de",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-RELATORIOS-SCHEMA-REAL-20261110-01 — consultas e indicadores alinhados às colunas reais de Compras, sem indicador fiscal simulado.",
       "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "statusAprovacao": "ALTERAÇÃO TÉCNICA AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; implementação registrada e ainda sujeita a type-check, teste funcional e validação visual antes de aprovação final."
     },
     {
       "path": "src/pages/ComprasRequisicoes.tsx",
@@ -501,11 +501,11 @@
     },
     {
       "path": "src/pages/ComprasRFQ.tsx",
-      "sha": "a883deceb7da42fd177cef021181dfb5d9514fee",
+      "sha": "224eba4011d82b55c3a7e305dfb0f2732f38d823",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-RFQ-CAMPOS-PERSISTIDOS-20261110-01 — proposta do fornecedor restrita a valor_total, prazo_dias, condicao_pagamento, validade e observacoes, sem campos de persistência inexistente.",
       "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "statusAprovacao": "ALTERAÇÃO TÉCNICA AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; implementação registrada e ainda sujeita a type-check, teste funcional e validação visual antes de aprovação final."
     },
     {
       "path": "src/pages/ComprasSolicitacaoManual.tsx",
@@ -517,11 +517,11 @@
     },
     {
       "path": "src/pages/ComprasWorkspace.tsx",
-      "sha": "de550ad0a6dbe9842b8570ab4da00a4dd6cb2da6",
+      "sha": "e0f987cef194cb22a32c54f90c02c0ff146b1294",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-PEDIDO-EDICAO-20261110-01 — ação Editar na listagem, carregamento por empresa e prazo de entrega alinhado à coluna data_prevista.",
       "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "statusAprovacao": "ALTERAÇÃO TÉCNICA AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; implementação registrada e ainda sujeita a type-check, teste funcional e validação visual antes de aprovação final."
     },
     {
       "path": "src/pages/ConfiguracaoLote.tsx",
