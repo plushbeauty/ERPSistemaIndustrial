@@ -34,7 +34,7 @@ const menus: MenuItem[] = [
     { label: 'Fluxo de Caixa', route: '/pageprincipal/financeiro/fluxo-caixa', icon: Wallet },
     { label: 'Conciliação Bancária', route: '/pageprincipal/financeiro/conciliacao-bancaria', icon: ClipboardList },
     { label: 'Importar Extratos', route: '/pageprincipal/financeiro/importar-extratos', icon: FileText },
-    { label: 'Retificação de Pedido', route: '/pageprincipal/financeiro/retificacao', icon: RotateCcw },
+    { label: 'Retificação Financeira', route: '/pageprincipal/financeiro/retificacao', icon: RotateCcw },
     { label: 'Notas de Débito', route: '/pageprincipal/financeiro/notas-debito', icon: FileWarning },
     { label: 'Configurações de Notas de Débito', route: '/pageprincipal/financeiro/notas-debito/configuracoes', icon: Settings },
     { label: 'Custo padrão', route: '/pageprincipal/financeiro/custo-padrao' },
@@ -50,6 +50,7 @@ const menus: MenuItem[] = [
     { label: 'Razão Geral', route: '/pageprincipal/controladoria/razao-geral', icon: Landmark },
     { label: 'Cadastro de Decimais', route: '/pageprincipal/controladoria/cadastro-decimais', icon: Settings },
     { label: 'Estorno Documental', route: '/pageprincipal/controladoria/retificacao-assistente', icon: FileText },
+    { label: 'Retificação de Pedido', route: '/pageprincipal/controladoria/retificacao-pedido', icon: RotateCcw },
     { label: 'Auditoria de Comissões', route: '/pageprincipal/controladoria/auditoria-comissoes', icon: Calculator },
   ] },  { label: 'Principal', route: '/pageprincipal', icon: Home },  { label: 'Cadastros Mestres', route: '/pageprincipal/cadastros/produtos', icon: Boxes, children: [
     // Um link por tela (ordem do proprietario em 2026-11-04): ficha técnica, etiquetas e regras de código são
