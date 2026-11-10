@@ -85,11 +85,11 @@
     },
     {
       "path": "src/features/controladoria/AuditoriaComissoes.tsx",
-      "sha": "f0035bf4590cb62a71ae4c2276db9b0fac864135",
+      "sha": "201b17a8b87ca43790331236fd3c90258a64f4fa",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-AUDITORIA-COMISSOES-METAS-20261110-01 — filtros com dimensões do wireframe, totais e status da meta, exportação, ajuda contextual e integração com RPC/linhas existentes; limitações da rotina de faturamento e SKUs sem regra explicitadas sem dados fictícios.",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "INCREMENTO ADITIVO AUTORIZADO PELO PROPRIETÁRIO; memória de cálculo e auditoria conectadas ao banco; não efetua pagamento. Build e validação de produção pendentes."
     },
     {
       "path": "src/features/controladoria/CadastroDecimais.tsx",
