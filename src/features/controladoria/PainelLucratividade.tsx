@@ -80,6 +80,7 @@ export default function PainelLucratividade() {
         custo: 0,
         custoCompleto: false,
       })
+      const itemsSeen = new Set<string>()
       for (const item of items.data ?? []) {
         const order = orderMap.get(item.pedido_id)
         if (!order) continue
@@ -98,7 +99,8 @@ export default function PainelLucratividade() {
         }
         current.faturamento += itemRevenue
         current.custo += Number(item.preco_custo_industrial ?? 0) * quantity
-        current.custoCompleto = current.custoCompleto && hasCost
+        current.custoCompleto = itemsSeen.has(order.id) ? current.custoCompleto && hasCost : hasCost
+        itemsSeen.add(order.id)
         const description = String(item.descricao ?? '').trim()
         if (description && !current.produtos.split(' · ').includes(description)) current.produtos = current.produtos ? current.produtos + ' · ' + description : description
         grouped.set(order.id, current)
