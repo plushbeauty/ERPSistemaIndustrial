@@ -477,7 +477,7 @@
     },
     {
       "path": "src/pages/ComprasPedidoForm.tsx",
-      "sha": "ba82eb3a5d87c56211514b99e7e21494502f0bda",
+      "sha": "fa14a358bfded83207d35a26cc2537064a1b4c53",
       "autor": "FernandoSch",
       "revisao": "REV-COMPRAS-VALIDACAO-PEDIDO-20261108-01 — valida todas as linhas sem descarte silencioso, tenant e referências carregadas, NCM de 8 dígitos, valores não negativos e tributos apresentados sem somar ICMS em duplicidade REV-COMPRAS-PEDIDO-EDIT-PRINT-20261110-01 — edição por pedidoId com carregamento tenant-scoped, RPC atômica e impressão A4 Plastibor com número definitivo após gravação; validação funcional pendente.",
       "aprovadaEm": "2026-11-08",
