@@ -461,7 +461,7 @@
     },
     {
       "path": "src/pages/ComprasAnalisePrecos.tsx",
-      "sha": "8a011536aac00aff055e4bbcc9159b1b3b0c96fb",
+      "sha": "3d4d1b08313589556bada6e70efad60d541ce23b",
       "autor": "FernandoSch",
       "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-COTACAO-SCHEMA-20261110-01 — comparação limitada aos campos persistidos em erp_rfq_respostas: valor_total, prazo_dias, condicao_pagamento e validade; removidas colunas de frete, desconto e custo líquido sem persistência.",
       "aprovadaEm": "2026-10-30",
