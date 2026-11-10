@@ -30,7 +30,7 @@ type Quote = {
   condicao_pagamento: string | null
   validade: string | null
 }
-type QuoteRow = Quote & { custo: number }
+type QuoteRow = Quote & { valorComparavel: number }
 type Supplier = { id: string; razao_social: string; nome_fantasia: string | null }
 type RfqItem = { rfq_id: string; codigo: string; descricao: string; quantidade: number; unidade: string }
 
@@ -84,8 +84,8 @@ export default function ComprasAnalisePrecos() {
   const rfqItems = useMemo(() => items.filter(item => item.rfq_id === selected), [items, selected])
   const rows = useMemo<QuoteRow[]>(() => quotes
     .filter(q => q.rfq_id === selected)
-    .map(q => ({ ...q, custo: Math.max(0, Number(q.valor_total || 0)) }))
-    .sort((a, b) => a.custo - b.custo), [quotes, selected])
+    .map(q => ({ ...q, valorComparavel: Math.max(0, Number(q.valor_total || 0)) }))
+    .sort((a, b) => a.valorComparavel - b.valorComparavel), [quotes, selected])
   const winner = rows[0]
   const filteredRfqs = useMemo(() => {
     const term = filter.trim().toLocaleLowerCase('pt-BR')
@@ -96,7 +96,7 @@ export default function ComprasAnalisePrecos() {
     })
   }, [filter, rfqs, items])
   const chosenRow = rows.find(row => row.fornecedor_id === selectedSupplier)
-  const needsJustification = Boolean(chosenRow && winner && chosenRow.fornecedor_id !== winner.fornecedor_id && chosenRow.custo > winner.custo)
+  const needsJustification = Boolean(chosenRow && winner && chosenRow.fornecedor_id !== winner.fornecedor_id && chosenRow.valorComparavel > winner.valorComparavel)
 
   useEffect(() => {
     if (!selectedRfq) {
@@ -241,8 +241,8 @@ export default function ComprasAnalisePrecos() {
             </table>
           </div>
           {winner && <div className="grid grid-cols-1 gap-2 border-t border-slate-100 bg-sky-50/50 p-3 sm:grid-cols-3 sm:px-4">
-            <div className="flex items-center gap-2"><CircleDollarSign size={17} className="text-sky-700" /><div><div className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Menor valor total informado</div><div className="text-sm font-bold text-slate-900">{money(winner.custo)}</div></div></div>
-            <div><div className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Fornecedor menor custo</div><div className="mt-1 text-xs font-semibold text-slate-800">{supplierMap.get(winner.fornecedor_id) || 'Fornecedor não localizado'}</div></div>
+            <div className="flex items-center gap-2"><CircleDollarSign size={17} className="text-sky-700" /><div><div className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Menor valor total informado</div><div className="text-sm font-bold text-slate-900">{money(winner.valorComparavel)}</div></div></div>
+            <div><div className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Fornecedor menor valor total</div><div className="mt-1 text-xs font-semibold text-slate-800">{supplierMap.get(winner.fornecedor_id) || 'Fornecedor não localizado'}</div></div>
             <div><div className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Propostas comparadas</div><div className="mt-1 text-xs font-semibold text-slate-800">{rows.length} fornecedor(es)</div></div>
           </div>}
         </section>
@@ -254,10 +254,10 @@ export default function ComprasAnalisePrecos() {
           </div>
           <label htmlFor="justificativa-escolha" className="compras-analise-label">Justificativa da escolha {needsJustification ? <span className="text-red-600">· Obrigatória</span> : '(quando aplicável)'}</label>
           <textarea id="justificativa-escolha" value={justificativa} onChange={e => setJustificativa(e.target.value)} rows={3} maxLength={4000} className="w-full resize-y rounded-lg border border-slate-300 bg-white p-3 text-xs text-slate-800 outline-none transition focus:border-sky-600 focus:ring-2 focus:ring-sky-100" placeholder="Registre critérios técnicos, qualidade, prazo de entrega, condição comercial ou outro motivo para a escolha..." />
-          {needsJustification && <p className="mt-1.5 text-[10px] font-medium text-amber-700">O fornecedor selecionado tem custo maior que a menor proposta. Registre a justificativa antes de enviar.</p>}
+          {needsJustification && <p className="mt-1.5 text-[10px] font-medium text-amber-700">O fornecedor selecionado tem valor total informado maior que a menor proposta. Registre a justificativa antes de enviar.</p>}
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
             <p className="text-[10px] text-slate-500">A escolha do fornecedor e a justificativa serão gravadas no cabeçalho da RFQ.</p>
-            <button type="button" className="compras-analise-no-print" onClick={() => void saveSupplierChoice()} disabled={saving || busy || !rows.length || !selectedSupplier} className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 text-xs font-bold text-white shadow-[0_4px_10px_rgba(29,78,216,.18)] transition hover:bg-blue-800 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50">
+            <button type="button" className="compras-analise-no-print inline-flex" onClick={() => void saveSupplierChoice()} disabled={saving || busy || !rows.length || !selectedSupplier} className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 text-xs font-bold text-white shadow-[0_4px_10px_rgba(29,78,216,.18)] transition hover:bg-blue-800 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50">
               {saving ? <RefreshCw size={14} className="animate-spin" /> : <Send size={14} />} {saving ? 'Registrando...' : 'Registrar escolha do fornecedor'}
             </button>
           </div>
