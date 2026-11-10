@@ -1,10 +1,10 @@
 # COMANDO CONTÍNUO — AUDITORIA E CONCLUSÃO DO ERP SYSNQRA
 
 **Repositório:** `plushbeauty/ERPSistemaIndustrial`  
-**Branch de trabalho padrão:** `main` (confirmar branch atual antes de escrever)  
+**Branch de trabalho:** confirmar HEAD e usar a branch de integração autorizada; nunca escrever diretamente em `main`. A branch inicial desta ordem é `feat/central-evolucao-autonoma-20261110`.  
 **Objetivo:** continuar a auditoria de todo o ERP a partir do estado real do repositório, consolidando diretrizes históricas, sem reiniciar auditorias já feitas e sem declarar conclusão sem evidências.
 
-## Comando para repetir em cada rodada
+## Ordem mestra ampliada\n\nA ordem detalhada por módulos, a checklist obrigatória por tela e o comando de retomada estão em [`ORDEM-MESTRA-EXECUCAO-CONTINUA-SYSNQRA.md`](./ORDEM-MESTRA-EXECUCAO-CONTINUA-SYSNQRA.md). Esse documento é a fonte de prioridade; esta auditoria contínua permanece como protocolo técnico complementar. Compras é a primeira fase a ser fechada integralmente.\n\n## Comando para repetir em cada rodada
 
 > Continue a execução da **Auditoria Contínua do ERP SYSNQRA** usando este documento e todas as diretrizes e auditorias anteriores do projeto. Primeiro consulte o estado atual do GitHub, os commits recentes, os relatórios existentes, o backlog, o contrato de telas aprovadas/congeladas e as verificações de CI. Não presuma que tarefas anteriores estejam concluídas sem verificar o código atual.
 >
