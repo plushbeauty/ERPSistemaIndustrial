@@ -85,7 +85,7 @@ export default function FinanceiroCustoPadrao(){
  }
  const exportSheet=()=>{
   const lines=[['Componente / Insumo','Qtd. MRP','Custo Unitário','Total'],...needs.map(n=>{const p=products.find(x=>x.id===n.componente_id);return [p?p.codigo+' - '+p.nome:n.componente_id,String(n.quantidade_bruta),String(p?.custo_ultimo??0),String(Number(n.quantidade_bruta||0)*Number(p?.custo_ultimo||0))]}),[],['Produto',product?.codigo??''],['Máquina',machine?machine.codigo+' - '+machine.nome:''],['Quantidade projetada',String(projectionQty)],['Custo matéria-prima unitário',String(materialUnit)],['Custo fabricação cadastrado',String(fabricationUnit)],['Custo máquina unitário',String(machineUnit)],['Custo fábrica total unitário',String(factoryUnit)],['Margem (%)',String(marginValue)],['Preço sugerido',String(suggested)]]
-  const csv='﻿'+lines.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('
+  const csv='\ufeff'+lines.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\r\n')
 ')
   const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));const a=document.createElement('a');a.href=url;a.download='engenharia-custo-padrao.csv';a.click();URL.revokeObjectURL(url)
  }
