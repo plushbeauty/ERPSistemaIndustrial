@@ -517,11 +517,11 @@
     },
     {
       "path": "src/pages/ComprasWorkspace.tsx",
-      "sha": "43bb700276ffd2e5686070868f5c39286de47e88",
+      "sha": "98d1ce222aadd7958af2a4aa4944ccc868836d07",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-PEDIDO-EDICAO-20261110-01 — ação Editar na listagem, carregamento por empresa e prazo de entrega alinhado à coluna data_prevista. REV-COMPRAS-RFQ-HEADER-SCHEMA-20261110-02 — remove comprador_responsavel e status_aprovacao, ausentes em erp_rfq; mostra somente colunas reais do cabeçalho.",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "ALTERAÇÃO TÉCNICA AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; cabeçalho RFQ alinhado ao catálogo remoto; validação funcional pendente."
+      "revisao": "REV-COMPRAS-CENTRAL-ABAS-20261110-02 — abas Painel, Requisições, Alertas MRP, Cotações, Pedidos, Recebimentos e Fornecedores; filtros explícitos por empresa, MRP baseado somente em estoque_atual e ponto_reposicao existentes; preserva edição de pedidos e contrato real de RFQ.",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "INTEGRAÇÃO ADITIVA NA BRANCH GLOBAL; validação CI pendente; não reintroduz comprador_responsavel/status_aprovacao ausentes no schema remoto."
     },
     {
       "path": "src/pages/ConfiguracaoLote.tsx",

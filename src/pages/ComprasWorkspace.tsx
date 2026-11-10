@@ -5,11 +5,11 @@
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { ClipboardList, FileText, PackageCheck, Plus, RefreshCw, Search, ShoppingCart, Truck } from 'lucide-react'
+import { AlertTriangle, ClipboardList, FileText, PackageCheck, Plus, RefreshCw, Search, ShoppingCart, Truck, Users } from 'lucide-react'
 import ComprasPedidoForm from './ComprasPedidoForm'
 import { supabase } from '../lib/supabaseClient'
 
-type TabKey = 'visao-geral' | 'requisicoes' | 'cotacoes' | 'pedidos' | 'recebimentos'
+type TabKey = 'visao-geral' | 'requisicoes' | 'alertas' | 'cotacoes' | 'pedidos' | 'recebimentos' | 'fornecedores'
 type DbRow = Record<string, unknown>
 type TableData = { rows: DbRow[]; loading: boolean; error: string | null }
 type RfqForm = { dataNecessidade: string; prazoResposta: string; condicaoPagamento: string; observacoes: string }
@@ -17,9 +17,11 @@ type RfqForm = { dataNecessidade: string; prazoResposta: string; condicaoPagamen
 const tabs: Array<{ key: TabKey; label: string; icon: typeof ClipboardList }> = [
   { key: 'visao-geral', label: 'Visão geral', icon: ShoppingCart },
   { key: 'requisicoes', label: 'Requisições', icon: ClipboardList },
+  { key: 'alertas', label: 'Alertas MRP', icon: AlertTriangle },
   { key: 'cotacoes', label: 'Cotações', icon: FileText },
   { key: 'pedidos', label: 'Pedidos de compra', icon: Truck },
   { key: 'recebimentos', label: 'Recebimentos', icon: PackageCheck },
+  { key: 'fornecedores', label: 'Fornecedores', icon: Users },
 ]
 
 const emptyTable: TableData = { rows: [], loading: true, error: null }
@@ -52,8 +54,8 @@ function statusClass(value: string): string {
   return 'compras-status'
 }
 
-function DataTable({ rows, kind, onEdit }: { rows: DbRow[]; kind: 'requisicoes' | 'cotacoes' | 'pedidos' | 'recebimentos'; onEdit?: (id: string) => void }) {
-  if (!rows.length) return <div className="compras-empty"><PackageCheck size={22} /><strong>Nenhum registro encontrado</strong><span>Os registros aparecerão aqui quando existirem dados para a empresa autenticada.</span></div>
+function DataTable({ rows, kind, onEdit }: { rows: DbRow[]; kind: 'requisicoes' | 'alertas' | 'cotacoes' | 'pedidos' | 'recebimentos' | 'fornecedores'; onEdit?: (id: string) => void }) {
+  if (!rows.length) return <div className="compras-empty"><PackageCheck size={22} /><strong>{kind === 'alertas' ? 'Nenhum material no ponto de reposição' : kind === 'fornecedores' ? 'Nenhum fornecedor cadastrado' : 'Nenhum registro encontrado'}</strong><span>{kind === 'alertas' ? 'Os alertas aparecem quando o estoque real atinge ou fica abaixo do ponto de reposição cadastrado no produto.' : 'Os registros aparecerão aqui quando existirem dados para a empresa autenticada.'}</span></div>
   const columns: Record<typeof kind, Array<{ label: string; keys: string[]; format?: 'date' | 'money' | 'status' }>> = {
     requisicoes: [
       { label: 'Código', keys: ['codigo', 'numero', 'id'] },
@@ -85,10 +87,25 @@ function DataTable({ rows, kind, onEdit }: { rows: DbRow[]; kind: 'requisicoes' 
       { label: 'Data do pedido', keys: ['data_pedido', 'created_at'], format: 'date' },
       { label: 'Status', keys: ['status'], format: 'status' },
     ],
+    fornecedores: [
+      { label: 'Código', keys: ['codigo'] },
+      { label: 'Razão social', keys: ['razao_social'] },
+      { label: 'Nome fantasia', keys: ['nome_fantasia'] },
+      { label: 'Documento', keys: ['documento'] },
+      { label: 'Ativo', keys: ['ativo'] },
+    ],
+    alertas: [
+      { label: 'Código', keys: ['codigo'] },
+      { label: 'Produto', keys: ['nome', 'descricao'] },
+      { label: 'Estoque atual', keys: ['estoque_atual'] },
+      { label: 'Ponto de reposição', keys: ['ponto_reposicao'] },
+      { label: 'Diferença', keys: ['saldo_reposicao'] },
+      { label: 'Unidade', keys: ['unidade'] },
+    ],
   }
   return <div className="compras-table-scroll"><table className="compras-table"><thead><tr>{columns[kind].map(column => <th key={column.label}>{column.label}</th>)}{kind === 'pedidos' && <th>Ação</th>}</tr></thead><tbody>{rows.map((row, index) => <tr key={textValue(row, 'id') === '—' ? index : textValue(row, 'id')}>{columns[kind].map(column => {
     const value = column.keys.map(key => row[key]).find(item => item !== undefined && item !== null && item !== '')
-    const formatted = column.format === 'date' ? dateValue(value) : column.format === 'money' ? moneyValue(value) : typeof value === 'string' || typeof value === 'number' ? String(value) : '—'
+    const formatted = column.format === 'date' ? dateValue(value) : column.format === 'money' ? moneyValue(value) : typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : '—'
     return <td key={column.label}>{column.format === 'status' ? <span className={statusClass(formatted)}>{formatted.replaceAll('_', ' ')}</span> : formatted}</td>
   })}{kind === 'pedidos' && <td><button className="compras-button compras-button--light erp-edit-button erp-row-action" type="button" onClick={() => onEdit?.(textValue(row, 'id'))} disabled={textValue(row, 'id') === '—'}>Editar</button></td>}</tr>)}</tbody></table></div>
 }
@@ -106,12 +123,20 @@ export default function ComprasWorkspace() {
   const [requisitions, setRequisitions] = useState<TableData>(emptyTable)
   const [orders, setOrders] = useState<TableData>(emptyTable)
   const [receipts, setReceipts] = useState<TableData>(emptyTable)
+  const [suppliers, setSuppliers] = useState<TableData>(emptyTable)
+  const [materials, setMaterials] = useState<TableData>(emptyTable)
   const [refreshKey, setRefreshKey] = useState(0)
 
   const load = useCallback(async () => {
+    const { data: empresaId, error: empresaError } = await supabase.rpc('erp_current_empresa_id')
+    if (empresaError || typeof empresaId !== 'string' || !empresaId) {
+      const message = empresaError?.message ?? 'Empresa da sessão não identificada.'
+      ;[setRfqs, setRequisitions, setOrders, setReceipts, setSuppliers, setMaterials].forEach(setter => setter({ rows: [], loading: false, error: message }))
+      return
+    }
     const loadTable = async (table: string, setter: (data: TableData) => void, orderColumn: string) => {
       setter({ rows: [], loading: true, error: null })
-      const { data, error } = await supabase.from(table).select('*').order(orderColumn, { ascending: false }).limit(100)
+      const { data, error } = await supabase.from(table).select('*').eq('empresa_id', empresaId).order(orderColumn, { ascending: false }).limit(100)
       if (error) setter({ rows: [], loading: false, error: error.message })
       else setter({ rows: (data ?? []) as DbRow[], loading: false, error: null })
     }
@@ -119,9 +144,11 @@ export default function ComprasWorkspace() {
       loadTable('erp_rfq', setRfqs, 'created_at'),
       loadTable('erp_requisicoes_compra', setRequisitions, 'created_at'),
       loadTable('erp_pedidos_compra', setOrders, 'created_at'),
+      loadTable('erp_fornecedores', setSuppliers, 'razao_social'),
+      loadTable('erp_produtos', setMaterials, 'codigo'),
       (async () => {
         setReceipts({ rows: [], loading: true, error: null })
-        const { data, error } = await supabase.from('erp_pedidos_compra').select('*').in('status', ['RECEBIMENTO_PARCIAL', 'RECEBIDO']).order('created_at', { ascending: false }).limit(100)
+        const { data, error } = await supabase.from('erp_pedidos_compra').select('*').eq('empresa_id', empresaId).in('status', ['RECEBIMENTO_PARCIAL', 'RECEBIDO']).order('created_at', { ascending: false }).limit(100)
         if (error) setReceipts({ rows: [], loading: false, error: error.message })
         else setReceipts({ rows: (data ?? []) as DbRow[], loading: false, error: null })
       })(),
@@ -130,10 +157,20 @@ export default function ComprasWorkspace() {
 
   useEffect(() => { void load() }, [load, refreshKey])
 
+  const alertRows = useMemo(() => materials.rows.flatMap(row => {
+    const stockRaw = row.estoque_atual
+    const reorderRaw = row.ponto_reposicao
+    if (stockRaw === null || stockRaw === undefined || reorderRaw === null || reorderRaw === undefined) return []
+    const stock = Number(stockRaw)
+    const reorder = Number(reorderRaw)
+    if (!Number.isFinite(stock) || !Number.isFinite(reorder) || stock > reorder) return []
+    return [{ ...row, saldo_reposicao: stock - reorder }]
+  }), [materials.rows])
+
   const filtered = useMemo(() => {
     const filterRows = (rows: DbRow[]) => rows.filter(row => Object.values(row).some(value => String(value ?? '').toLocaleLowerCase('pt-BR').includes(search.trim().toLocaleLowerCase('pt-BR'))))
-    return { rfqs: filterRows(rfqs.rows), requisitions: filterRows(requisitions.rows), orders: filterRows(orders.rows), receipts: filterRows(receipts.rows) }
-  }, [rfqs.rows, requisitions.rows, orders.rows, receipts.rows, search])
+    return { rfqs: filterRows(rfqs.rows), requisitions: filterRows(requisitions.rows), orders: filterRows(orders.rows), receipts: filterRows(receipts.rows), suppliers: filterRows(suppliers.rows), alerts: filterRows(alertRows) }
+  }, [rfqs.rows, requisitions.rows, orders.rows, receipts.rows, suppliers.rows, alertRows, search])
 
   async function createRfq(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -169,16 +206,17 @@ export default function ComprasWorkspace() {
     }
   }
 
-  const activeData = activeTab === 'requisicoes' ? requisitions : activeTab === 'cotacoes' ? rfqs : activeTab === 'pedidos' ? orders : receipts
-  const activeRows = activeTab === 'requisicoes' ? filtered.requisitions : activeTab === 'cotacoes' ? filtered.rfqs : activeTab === 'pedidos' ? filtered.orders : filtered.receipts
-  const tableKind = activeTab === 'requisicoes' ? 'requisicoes' : activeTab === 'pedidos' ? 'pedidos' : activeTab === 'recebimentos' ? 'recebimentos' : 'cotacoes'
+  const alertData: TableData = { ...materials, rows: alertRows }
+  const activeData = activeTab === 'requisicoes' ? requisitions : activeTab === 'cotacoes' ? rfqs : activeTab === 'pedidos' ? orders : activeTab === 'recebimentos' ? receipts : activeTab === 'fornecedores' ? suppliers : alertData
+  const activeRows = activeTab === 'requisicoes' ? filtered.requisitions : activeTab === 'cotacoes' ? filtered.rfqs : activeTab === 'pedidos' ? filtered.orders : activeTab === 'recebimentos' ? filtered.receipts : activeTab === 'fornecedores' ? filtered.suppliers : filtered.alerts
+  const tableKind = activeTab === 'requisicoes' ? 'requisicoes' : activeTab === 'pedidos' ? 'pedidos' : activeTab === 'recebimentos' ? 'recebimentos' : activeTab === 'fornecedores' ? 'fornecedores' : activeTab === 'alertas' ? 'alertas' : 'cotacoes'
 
   return <main className="compras-page" aria-label="Módulo de Compras SYSNQRA">
     <header className="compras-header">
-      <div><h1>Central de Compras</h1><p>Requisições, cotações, pedidos e recebimentos em um único fluxo.</p></div>
+      <div><h1>Central de Compras</h1><p>Requisições, MRP, cotações, pedidos, recebimentos e fornecedores em um único fluxo.</p></div>
     </header>
     {notice && <div className={notice.kind === 'success' ? 'compras-notice compras-notice--success' : 'compras-notice compras-notice--error'} role="status">{notice.message}</div>}
-    <nav className="compras-tabs" aria-label="Etapas do módulo">{tabs.map(tab => { const Icon = tab.icon; return <button type="button" key={tab.key} className={activeTab === tab.key ? 'compras-tab is-active' : 'compras-tab'} onClick={() => setActiveTab(tab.key)}><Icon size={15} />{tab.label}{tab.key === 'requisicoes' && !requisitions.loading ? <span>{requisitions.rows.length}</span> : tab.key === 'cotacoes' && !rfqs.loading ? <span>{rfqs.rows.length}</span> : null}</button> })}</nav>
+    <nav className="compras-tabs" aria-label="Etapas do módulo">{tabs.map(tab => { const Icon = tab.icon; const count = tab.key === 'requisicoes' ? requisitions : tab.key === 'cotacoes' ? rfqs : tab.key === 'fornecedores' ? suppliers : tab.key === 'alertas' ? materials : null; const total = tab.key === 'alertas' ? alertRows.length : count?.rows.length; return <button type="button" key={tab.key} className={activeTab === tab.key ? 'compras-tab is-active' : 'compras-tab'} onClick={() => setActiveTab(tab.key)}><Icon size={15} />{tab.label}{count && !count.loading ? <span>{total}</span> : null}</button> })}</nav>
     {showRfqForm && activeTab === 'cotacoes' && <section className="compras-panel compras-form-panel"><div className="compras-panel-heading"><div><h2>Nova solicitação de cotação</h2><p>Cadastre o cabeçalho. Itens e fornecedores serão vinculados na etapa de detalhamento.</p></div><button className="compras-button compras-button--light" type="button" onClick={() => setShowRfqForm(false)}>Fechar</button></div><form onSubmit={createRfq} className="compras-form-grid">
       <label className="compras-field"><span>Data de emissão</span><input value={dateValue(today)} readOnly aria-label="Data de emissão" /></label>
       <label className="compras-field"><span>Data de necessidade</span><input type="date" value={form.dataNecessidade} onChange={event => setForm(value => ({ ...value, dataNecessidade: event.target.value }))} min={today} /></label>
