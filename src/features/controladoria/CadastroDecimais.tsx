@@ -6,7 +6,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Check, HelpCircle, Pencil, Plus, RotateCcw, Save, Trash2, X } from 'lucide-react'
+import { ArrowLeft, HelpCircle, Pencil, Plus, RotateCcw, Save, Trash2, X } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 
 type Rule = { id: string; codigo: string; descricao: string; casas: number; ativo: boolean }
