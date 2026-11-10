@@ -524,14 +524,18 @@ body{background:var(--sq-bg);color:var(--sq-text)}
  * O fundo escurecido é apenas o scrim atrás da janela, nunca a janela em si.
  */
 [data-radix-dialog-content],
-[data-radix-alert-dialog-content] {
+[data-radix-alert-dialog-content],
+[role="dialog"],
+[role="alertdialog"] {
   background-color: #fff !important;
   color: #123B50 !important;
   border-color: #D3E3EA !important;
   color-scheme: light !important;
 }
 [data-radix-dialog-content] [class~="text-white"],
-[data-radix-alert-dialog-content] [class~="text-white"] {
+[data-radix-alert-dialog-content] [class~="text-white"],
+[role="dialog"] [class~="text-white"],
+[role="alertdialog"] [class~="text-white"] {
   color: #123B50 !important;
 }
 [data-radix-dialog-content] [class*="bg-slate-9"],
@@ -541,12 +545,22 @@ body{background:var(--sq-bg);color:var(--sq-text)}
 [data-radix-alert-dialog-content] [class*="bg-slate-9"],
 [data-radix-alert-dialog-content] [class*="bg-gray-9"],
 [data-radix-alert-dialog-content] [class*="bg-zinc-9"],
-[data-radix-alert-dialog-content] [class*="bg-neutral-9"] {
+[data-radix-alert-dialog-content] [class*="bg-neutral-9"],
+[role="dialog"] [class*="bg-slate-9"],
+[role="dialog"] [class*="bg-gray-9"],
+[role="dialog"] [class*="bg-zinc-9"],
+[role="dialog"] [class*="bg-neutral-9"],
+[role="alertdialog"] [class*="bg-slate-9"],
+[role="alertdialog"] [class*="bg-gray-9"],
+[role="alertdialog"] [class*="bg-zinc-9"],
+[role="alertdialog"] [class*="bg-neutral-9"] {
   background-color: #F4FBFD !important;
   color: #123B50 !important;
 }
 [data-radix-dialog-content] :is(input,select,textarea),
-[data-radix-alert-dialog-content] :is(input,select,textarea) {
+[data-radix-alert-dialog-content] :is(input,select,textarea),
+[role="dialog"] :is(input,select,textarea),
+[role="alertdialog"] :is(input,select,textarea) {
   background-color: #fff !important;
   color: #173B4A !important;
   border-color: #CBDCE3 !important;
