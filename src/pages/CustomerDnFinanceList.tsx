@@ -1,7 +1,8 @@
 /**
  * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-10
- * @REVISAO: REV-NOTAS-DEBITO-FINANCEIRAS-20261110-02 — cadastro financeiro completo, anexo privado e título transacional.
+ * @REVISAO: REV-NOTAS-DEBITO-FINANCEIRAS-20261110-03 — cadastro financeiro completo, seleção tipada de parceiro, rota integrada, anexo privado e título transacional.
+ * @STATUS_APROVACAO: TELA AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; fluxo financeiro integrado e preservação das rotas legadas como compatibilidade.
  */
 import {useCallback,useEffect,useMemo,useState,type FormEvent} from 'react'
 import {useNavigate} from 'react-router-dom'
