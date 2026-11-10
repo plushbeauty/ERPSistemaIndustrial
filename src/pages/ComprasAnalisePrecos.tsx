@@ -19,8 +19,6 @@ type Rfq = {
   prazo_resposta: string | null
   fornecedor_escolhido_id: string | null
   justificativa_escolha: string | null
-  status_aprovacao: string
-  menor_preco_ofertado: number | null
 }
 type Quote = {
   id: string
@@ -28,9 +26,7 @@ type Quote = {
   fornecedor_id: string
   status: string
   valor_total: number | null
-  valor_frete: number
-  valor_desconto: number
-  prazo_entrega_dias: number | null
+  prazo_dias: number | null
   condicao_pagamento: string | null
 }
 type QuoteRow = Quote & { custo: number }
@@ -63,8 +59,8 @@ export default function ComprasAnalisePrecos() {
       if (company.error || !company.data) throw company.error ?? new Error('Empresa da sessão não identificada.')
       const empresaId = String(company.data)
       const [r, q, s, i] = await Promise.all([
-        fetchAllPages<Rfq>((from, to) => supabase.from('erp_rfq').select('id,numero,status,data_emissao,prazo_resposta,fornecedor_escolhido_id,justificativa_escolha,status_aprovacao,menor_preco_ofertado', { count: 'exact' }).eq('empresa_id', empresaId).order('created_at', { ascending: false }).range(from, to)),
-        fetchAllPages<Quote>((from, to) => supabase.from('erp_rfq_fornecedores').select('id,rfq_id,fornecedor_id,status,valor_total,valor_frete,valor_desconto,prazo_entrega_dias,condicao_pagamento', { count: 'exact' }).eq('empresa_id', empresaId).range(from, to)),
+        fetchAllPages<Rfq>((from, to) => supabase.from('erp_rfq').select('id,numero,status,data_emissao,prazo_resposta,fornecedor_escolhido_id,justificativa_escolha', { count: 'exact' }).eq('empresa_id', empresaId).order('created_at', { ascending: false }).range(from, to)),
+        fetchAllPages<Quote>((from, to) => supabase.from('erp_rfq_respostas').select('id,rfq_id,fornecedor_id,status,valor_total,prazo_dias,condicao_pagamento', { count: 'exact' }).eq('empresa_id', empresaId).range(from, to)),
         fetchAllPages<Supplier>((from, to) => supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia', { count: 'exact' }).eq('empresa_id', empresaId).eq('ativo', true).order('razao_social').range(from, to)),
         fetchAllPages<RfqItem>((from, to) => supabase.from('erp_rfq_itens').select('rfq_id,codigo,descricao,quantidade,unidade', { count: 'exact' }).eq('empresa_id', empresaId).range(from, to)),
       ])
@@ -87,7 +83,7 @@ export default function ComprasAnalisePrecos() {
   const rfqItems = useMemo(() => items.filter(item => item.rfq_id === selected), [items, selected])
   const rows = useMemo<QuoteRow[]>(() => quotes
     .filter(q => q.rfq_id === selected)
-    .map(q => ({ ...q, custo: Math.max(0, Number(q.valor_total || 0) + Number(q.valor_frete || 0) - Number(q.valor_desconto || 0)) }))
+    .map(q => ({ ...q, custo: Math.max(0, Number(q.valor_total || 0)) }))
     .sort((a, b) => a.custo - b.custo), [quotes, selected])
   const winner = rows[0]
   const filteredRfqs = useMemo(() => {
@@ -128,9 +124,7 @@ export default function ComprasAnalisePrecos() {
       if (company.error || !company.data) throw company.error ?? new Error('Empresa da sessão não identificada.')
       const result = await supabase.from('erp_rfq').update({
         fornecedor_escolhido_id: selectedSupplier,
-        menor_preco_ofertado: winner.custo,
         justificativa_escolha: justificativa.trim() || null,
-        status_aprovacao: 'PENDENTE_APROVACAO',
         updated_at: new Date().toISOString(),
       }).eq('id', selectedRfq.id).eq('empresa_id', String(company.data)).select('id').maybeSingle()
       if (result.error) throw result.error
@@ -138,11 +132,9 @@ export default function ComprasAnalisePrecos() {
       setRfqs(current => current.map(r => r.id === selectedRfq.id ? {
         ...r,
         fornecedor_escolhido_id: selectedSupplier,
-        menor_preco_ofertado: winner.custo,
         justificativa_escolha: justificativa.trim() || null,
-        status_aprovacao: 'PENDENTE_APROVACAO',
       } : r))
-      setSuccess('Análise registrada no banco e enviada para aprovação.')
+      setSuccess('Fornecedor escolhido e justificativa registrados na RFQ.')
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível registrar a análise.')
     } finally {
@@ -220,7 +212,7 @@ export default function ComprasAnalisePrecos() {
               <h2 className="text-xs font-bold text-slate-900">Mapa comparativo de valores</h2>
               <p className="mt-1 text-[10px] text-slate-500">RFQ-{String(selectedRfq.numero).padStart(4, '0')} · Emitida em {dateLabel(selectedRfq.data_emissao)}</p>
             </div>
-            <span className="rounded-md border border-sky-100 bg-sky-50 px-2.5 py-1.5 text-[10px] font-bold text-sky-800">{selectedRfq.status_aprovacao?.replaceAll('_', ' ') || 'EM ANÁLISE'}</span>
+            <span className="rounded-md border border-sky-100 bg-sky-50 px-2.5 py-1.5 text-[10px] font-bold text-sky-800">{selectedRfq.status?.replaceAll('_', ' ') || 'EM ANÁLISE'}</span>
           </div>
           <div className="border-b border-slate-100 bg-slate-50/80 px-3 py-2 text-[10px] text-slate-600 sm:px-4">
             <span className="mr-2 font-bold uppercase tracking-wide text-slate-500">Itens:</span>
@@ -238,8 +230,8 @@ export default function ComprasAnalisePrecos() {
                   return <tr key={row.id} className={isSelected ? 'bg-sky-50/80' : 'bg-white'}>
                     <td className="px-3 text-center"><input aria-label={`Selecionar ${supplierMap.get(row.fornecedor_id) || 'fornecedor'}`} type="radio" name="fornecedor-escolhido" checked={isSelected} onChange={() => setSelectedSupplier(row.fornecedor_id)} className="h-4 w-4 accent-sky-700 focus:ring-sky-600" /></td>
                     <td className="px-3 font-semibold text-slate-800">{supplierMap.get(row.fornecedor_id) || 'Fornecedor não localizado'}{isSelected && <span className="ml-2 rounded bg-sky-100 px-1.5 py-0.5 text-[9px] font-bold text-sky-800">SELECIONADO</span>}</td>
-                    <td className="px-3 text-right tabular-nums">{money(Number(row.valor_total || 0))}</td><td className="px-3 text-right tabular-nums">{money(Number(row.valor_frete || 0))}</td><td className="px-3 text-right tabular-nums">{money(Number(row.valor_desconto || 0))}</td>
-                    <td className="px-3 text-right font-bold tabular-nums text-slate-900">{money(row.custo)}</td><td className="px-3 text-center">{row.prazo_entrega_dias ?? '—'}</td><td className="px-3">{row.condicao_pagamento || '—'}</td>
+                    <td className="px-3 text-right tabular-nums">{money(Number(row.valor_total || 0))}</td><td className="px-3 text-right tabular-nums text-slate-400">—</td><td className="px-3 text-right tabular-nums text-slate-400">—</td>
+                    <td className="px-3 text-right font-bold tabular-nums text-slate-900">{money(row.custo)}</td><td className="px-3 text-center">{row.prazo_dias ?? '—'}</td><td className="px-3">{row.condicao_pagamento || '—'}</td>
                     <td className="px-3 text-center">{isWinner ? <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-1 text-[9px] font-bold text-emerald-700"><Check size={12} /> MENOR</span> : <span className="text-slate-300">—</span>}</td>
                   </tr>
                 })}
