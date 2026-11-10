@@ -516,3 +516,39 @@ body{background:var(--sq-bg);color:var(--sq-text)}
   min-height:30px!important;height:30px!important;border-radius:3px!important;
 }
 @media(prefers-reduced-motion:reduce){.erp-horizontal-workspace *{transition:none!important;animation:none!important}}
+
+
+/* REV-COR-DIALOGOS-CLAROS-20261110-01
+ * Ordem do proprietário: todas as caixas de diálogo devem manter superfície branca
+ * e texto escuro, mesmo quando uma página fornece classes utilitárias de tema escuro.
+ * O fundo escurecido é apenas o scrim atrás da janela, nunca a janela em si.
+ */
+[data-radix-dialog-content],
+[data-radix-alert-dialog-content] {
+  background-color: #fff !important;
+  color: #123B50 !important;
+  border-color: #D3E3EA !important;
+  color-scheme: light !important;
+}
+[data-radix-dialog-content] [class~="text-white"],
+[data-radix-alert-dialog-content] [class~="text-white"] {
+  color: #123B50 !important;
+}
+[data-radix-dialog-content] [class*="bg-slate-9"],
+[data-radix-dialog-content] [class*="bg-gray-9"],
+[data-radix-dialog-content] [class*="bg-zinc-9"],
+[data-radix-dialog-content] [class*="bg-neutral-9"],
+[data-radix-alert-dialog-content] [class*="bg-slate-9"],
+[data-radix-alert-dialog-content] [class*="bg-gray-9"],
+[data-radix-alert-dialog-content] [class*="bg-zinc-9"],
+[data-radix-alert-dialog-content] [class*="bg-neutral-9"] {
+  background-color: #F4FBFD !important;
+  color: #123B50 !important;
+}
+[data-radix-dialog-content] :is(input,select,textarea),
+[data-radix-alert-dialog-content] :is(input,select,textarea) {
+  background-color: #fff !important;
+  color: #173B4A !important;
+  border-color: #CBDCE3 !important;
+  color-scheme: light !important;
+}
