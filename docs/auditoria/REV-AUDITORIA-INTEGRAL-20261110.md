@@ -135,3 +135,15 @@ Não fazer merge automático dessas branches. Comparar novamente cada diff contr
 8. Só marcar concluído após PR integrado e deployment READY; produção não é alterada por esta auditoria.
 
 **Estado desta revisão:** auditoria estática do repositório e leitura do schema/Advisors concluídas parcialmente; bloqueios documentados. Nenhuma migration remota foi aplicada, nenhuma tela foi declarada funcional sem teste e nenhuma tela aprovada foi alterada.
+
+
+## 9. Publicação e bloqueios Vercel verificados
+
+- Projeto Vercel: `erp-sistema-industrial`; domínio oficial `erp-sistema-industrial.vercel.app` verificado.
+- Último deployment READY com alvo production encontrado nesta consulta: commit `754384368db3d862cd2ebd414961d6b49fa8e4a3`.
+- O `main` atual (`e509cf634f155cb41c0c8a6d05364fe8f71f7d33`) está 25 commits à frente desse deployment READY.
+- O deployment production do commit `97d1a779e465d775ddfea8796f256a1faa0597b9` falhou no gate `verify:official-screens-lock`: a rota alcançava `src/pages/CustomerDnFinanceList.tsx`, que ainda não estava no manifesto naquele commit.
+- A comparação Git confirma que o `main` atual avançou dois commits após `97d1a77`; o arquivo atual já está no manifesto com o hash correspondente (`a92cefeea2d72a65e6ad72fcfdfc2efa8b824de0`). Portanto, o bloqueio daquele deployment foi corrigido no código atual, mas ainda falta um build bem-sucedido do `main` atual para provar a correção em Vercel.
+- A execução do audit `audit:ui-standardization` no build registrou: 243 arquivos fonte examinados, 325 declarações de rota, somente 3 arquivos usando tokens compartilhados de formulário, 92 arquivos com indícios de estilo local e 207 arquivos com controles sem altura estática detectada. São sinais para revisão por tela; não autorizam alterar dimensões automaticamente.
+
+**Regra de publicação:** não promover deployment antigo nem disparar publicação de produção enquanto o `main` atual não passar por todos os gates e o Preview não for validado.
