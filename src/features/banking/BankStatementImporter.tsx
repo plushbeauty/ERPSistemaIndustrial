@@ -20,6 +20,7 @@ import { useEffect, useRef, useState } from 'react'
 import { DownloadCloud, Key, Upload } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import LinkFieldCombobox, { type LinkOption } from '../../components/ui/LinkFieldCombobox'
+import BankAccountManager from './BankAccountManager'
 
 type Account = { id: string; codigo: string; nome: string; banco: string }
 type Log = { id: string; nome_arquivo: string; url_arquivo: string; status_processamento: string; numero_transacoes: number; saldo_fechamento: number; criado_em: string }
@@ -38,13 +39,15 @@ export default function BankStatementImporter() {
   const fileRef = useRef<HTMLInputElement>(null)
 
   const load = async () => {
-    const accountsResult = await supabase.from('erp_contas_bancarias').select('id,codigo,nome,banco').eq('ativo', true).order('nome')
+    const company = await supabase.rpc('erp_current_empresa_id')
+    if (company.error || !company.data) { setError(company.error?.message || 'Empresa da sessão não identificada.'); return }
+    const accountsResult = await supabase.from('erp_contas_bancarias').select('id,codigo,nome,banco').eq('empresa_id', company.data).eq('ativo', true).order('nome')
     if (!accountsResult.error) {
       const data = (accountsResult.data || []) as Account[]
       setAccounts(data)
       if (!accountId && data[0]) setAccountId(data[0].id)
     }
-    const logsResult = await supabase.from('erp_importacoes_log').select('id,nome_arquivo,url_arquivo,status_processamento,numero_transacoes,saldo_fechamento,criado_em').order('criado_em', { ascending: false }).limit(20)
+    const logsResult = await supabase.from('erp_importacoes_log').select('id,nome_arquivo,url_arquivo,status_processamento,numero_transacoes,saldo_fechamento,criado_em').eq('empresa_id', company.data).order('criado_em', { ascending: false }).limit(20)
     if (logsResult.error) setError(logsResult.error.message)
     else setLogs((logsResult.data || []) as Log[])
   }
@@ -105,7 +108,7 @@ export default function BankStatementImporter() {
       <section className="border border-gray-200 p-3">
         <div className="mb-2 text-[13px] font-semibold">Importar extrato</div>
         <label className="mb-0.5 block text-[10px] text-gray-500">Banco</label>
-        <LinkFieldCombobox value={accountId} options={options} onChange={setAccountId} placeholder="Banco/Conta" />
+        <LinkFieldCombobox value={accountId} options={options} onChange={setAccountId} placeholder="Banco/Conta" />\n        <div className="mt-2"><BankAccountManager onCreated={() => void load()} /></div>
         <div className="my-2 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] text-slate-600">CSV, XLSX ou PDF. O banco selecionado identifica a conta de destino.</div>
         <input ref={fileRef} className="hidden" type="file" accept=".csv,.xlsx,.pdf" onChange={(event) => choose(event.target.files?.[0] || null)} />
         <div onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); choose(event.dataTransfer.files?.[0] || null) }} onClick={() => fileRef.current?.click()} className="flex min-h-[180px] cursor-pointer items-center justify-center rounded-md border border-dashed border-slate-300 bg-white text-[11px] text-slate-500">Arraste o arquivo aqui ou clique para selecionar</div>
