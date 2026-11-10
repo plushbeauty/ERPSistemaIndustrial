@@ -109,3 +109,12 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - O manifesto e o hash manual do RPNC foram atualizados deliberadamente; os gates de telas oficiais continuam ativos.
 - A migration transacional de Compras agora valida a requisição no tenant no servidor, exige NCM de 8 dígitos e calcula total-base sem somar ICMS novamente. IPI/ICMS ficam informativos até a implantação das regras fiscais por NCM, CFOP, UF e regime.
 - As migrations estão versionadas no repositório, mas ainda não foram aplicadas ao Supabase remoto; a validação autenticada do banco permanece pendente.
+
+
+## Registro da revisão REV-VENDAS-TABELA-PRECO-CLIENTE-20261110-01 e REV-COR-DIALOGOS-CLAROS-20261110-01 — 2026-11-10
+
+- Lista de Preços por Cliente movida do menu Financeiro para Vendas; a rota antiga redireciona para a nova rota de Vendas para preservar links existentes.
+- A tela foi refeita para explicar sua finalidade, importar/atualizar preços por cliente e produto, listar preços vigentes/vencidos e validar o tenant da sessão. A importação atualiza a combinação empresa/cliente/produto em vez de tentar inserir duplicatas.
+- O Novo Pedido já chama erp_calcular_preco_sugerido_venda ao selecionar cliente e produto; a função consulta erp_preco_especial_cliente e usa o preço especial vigente, mantendo o cálculo padrão quando não há preço especial válido.
+- CSS global dos diálogos Radix reforça superfície branca, texto escuro e campos claros em todas as páginas, sem remover o scrim atrás da janela.
+- Nenhuma migration remota ou cadastro de banco foi alterado nesta revisão.
