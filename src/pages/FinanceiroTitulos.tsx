@@ -1,7 +1,7 @@
 /**
  * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @REVISAO: REV-FINANCEIRO-REMOVER-CABECALHO-DUPLICADO-20261110-01 — removido o card de título duplicado do layout interno; cabeçalho da página preservado
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 /**
@@ -449,7 +449,7 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
   }
 
   const title = payable ? 'Contas a pagar' : 'Contas a receber'
-  return <VendasLayout title={title} subtitle="Títulos • parcelas • baixas • integração com vendas e compras" onRefresh={()=>void load()} navSections={financeNav}><main className="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-6">
+  return <VendasLayout title="" subtitle="" onRefresh={()=>void load()} navSections={financeNav}><main className="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-6">
     <div className="mx-auto max-w-[1500px] space-y-4">
       <header className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 pb-3">
         <div>
