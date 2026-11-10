@@ -95,7 +95,7 @@ export default function ComprasRelatorios(){
       </div>
       <div style={{overflowX:'auto'}}><table className="buy-report-table"><thead><tr><th>RFQ</th><th>Status</th><th>Prazo de resposta</th><th>Fornecedor escolhido</th><th>Justificativa</th></tr></thead><tbody>
         {visibleRfqs.slice(0,100).map(r=><tr key={r.id}><td style={{fontFamily:'monospace',color:'#2563eb'}}>{r.id.slice(0,8)}</td><td>{r.status||'EM_ANALISE'}</td><td>{r.prazo_resposta?new Date(r.prazo_resposta+'T00:00:00').toLocaleDateString('pt-BR'):'—'}</td><td>{supplierMap.get(r.fornecedor_escolhido_id||'')||'—'}</td><td title={r.justificativa_escolha||''} style={{maxWidth:260,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.justificativa_escolha||'—'}</td></tr>)}
-        {!visibleRfqs.length&&<tr><td colSpan={7} className="buy-report-empty">Nenhuma cotação encontrada para os filtros selecionados.</td></tr>}
+        {!visibleRfqs.length&&<tr><td colSpan={5} className="buy-report-empty">Nenhuma cotação encontrada para os filtros selecionados.</td></tr>}
       </tbody></table></div>
     </section>
    </div>
