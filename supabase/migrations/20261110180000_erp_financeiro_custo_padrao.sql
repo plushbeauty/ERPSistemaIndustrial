@@ -32,4 +32,13 @@ with check (
  and (maquina_id is null or exists(select 1 from public.erp_maquinas m where m.id=maquina_id and ((m.empresa_id=public.erp_current_empresa_id()) or public.erp_is_master())))
 );
 grant select,insert on public.erp_financeiro_custo_padrao to authenticated;
+
+-- O preço do produto só pode ser atualizado por administrador master ou usuário com permissão específica.
+drop policy if exists erp_produtos_update_custo_padrao on public.erp_produtos;
+create policy erp_produtos_update_custo_padrao on public.erp_produtos
+for update to authenticated
+using (public.erp_is_master() or (empresa_id = public.erp_current_empresa_id() and public.erp_has_permission('financeiro.custo_padrao.editar')))
+with check (public.erp_is_master() or (empresa_id = public.erp_current_empresa_id() and public.erp_has_permission('financeiro.custo_padrao.editar')));
+grant update on public.erp_produtos to authenticated;
+
 commit;
