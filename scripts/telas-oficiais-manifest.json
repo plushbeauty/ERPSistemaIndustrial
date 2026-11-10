@@ -517,7 +517,7 @@
     },
     {
       "path": "src/pages/ComprasWorkspace.tsx",
-      "sha": "25c8c2602439ba3095a7237cb365c09ed8210e91",
+      "sha": "60fe8eacda1c03dfdc17479e3a1e52ac8be7c58d",
       "autor": "FernandoSch",
       "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-PEDIDO-EDICAO-20261110-01 — ação Editar na listagem, carregamento por empresa e prazo de entrega alinhado à coluna data_prevista. REV-COMPRAS-RFQ-HEADER-SCHEMA-20261110-02 — remove comprador_responsavel e status_aprovacao, ausentes em erp_rfq; mostra somente colunas reais do cabeçalho.",
       "aprovadaEm": "2026-10-30",
