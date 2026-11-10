@@ -27,6 +27,9 @@ export default function ComprasPedidoForm({ onCancel, onSaved, pedidoId }: { onC
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [referenceError, setReferenceError] = useState<string | null>(null)
+  const [savedPedidoId, setSavedPedidoId] = useState(pedidoId ?? '')
+  const [savedOrderNumber, setSavedOrderNumber] = useState('')
+  const [emissionDate, setEmissionDate] = useState('')
   const selectedSupplier = suppliers.find(row => value(row, 'id') === header.fornecedorId)
   const subtotal = useMemo(() => items.reduce((sum, item) => sum + Math.max(0, Number(item.quantidade) || 0) * Math.max(0, Number(item.valorUnitario) || 0), 0), [items])
   const updateItem = (key: string, field: keyof Item, next: string) => setItems(current => current.map(item => item.key === key ? { ...item, [field]: next } : item))
@@ -54,7 +57,7 @@ export default function ComprasPedidoForm({ onCancel, onSaved, pedidoId }: { onC
         setCompany(companyResult.data as Company | null)
         if (pedidoId) {
           const [orderResult, itemResult] = await Promise.all([
-            supabase.from('erp_pedidos_compra').select('id,numero,fornecedor_id,requisicao_id,condicao_pagamento,data_prevista,centro_custo,local_entrega,referencia_cotacao,especificacao_tecnica,observacoes,status').eq('id', pedidoId).eq('empresa_id', empresaId).maybeSingle(),
+            supabase.from('erp_pedidos_compra').select('id,numero,fornecedor_id,requisicao_id,condicao_pagamento,data_prevista,centro_custo,local_entrega,referencia_cotacao,especificacao_tecnica,observacoes,status,created_at').eq('id', pedidoId).eq('empresa_id', empresaId).maybeSingle(),
             supabase.from('erp_pedidos_compra_itens').select('id,produto_id,descricao,quantidade,valor_unitario,codigo_mp,unidade,data_necessidade,observacoes').eq('pedido_id', pedidoId).eq('empresa_id', empresaId).order('created_at'),
           ])
           if (orderResult.error) throw orderResult.error
@@ -66,6 +69,7 @@ export default function ComprasPedidoForm({ onCancel, onSaved, pedidoId }: { onC
           setItems(((itemResult.data ?? []) as Row[]).map(row => ({ key: value(row, 'id') || crypto.randomUUID(), produtoId: value(row, 'produto_id'), quantidade: value(row, 'quantidade') || '1', unidade: value(row, 'unidade') || 'UN', valorUnitario: value(row, 'valor_unitario') || '0', dataNecessidade: value(row, 'data_necessidade'), observacoes: value(row, 'observacoes') })))
           setSavedPedidoId(pedidoId)
           setSavedOrderNumber(value(order, 'numero'))
+          setEmissionDate(value(order, 'created_at'))
         }
       } catch (cause) {
         if (active) setReferenceError(cause instanceof Error ? cause.message : 'Falha ao carregar referências.')
@@ -117,6 +121,9 @@ export default function ComprasPedidoForm({ onCancel, onSaved, pedidoId }: { onC
       if (!record?.pedido_compra_id || record.numero_pedido === undefined || record.numero_pedido === null) throw new Error('A RPC não retornou os identificadores do pedido.')
       setSavedPedidoId(record.pedido_compra_id)
       setSavedOrderNumber(String(record.numero_pedido))
+      const { data: savedHeader, error: headerReadError } = await supabase.from('erp_pedidos_compra').select('created_at').eq('id', record.pedido_compra_id).maybeSingle()
+      if (headerReadError) throw headerReadError
+      setEmissionDate(typeof savedHeader?.created_at === 'string' ? savedHeader.created_at : new Date().toISOString())
       onSaved('Pedido PC-' + String(record.numero_pedido).padStart(4, '0') + ' salvo com ' + payloadItems.length + ' item(ns).')
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível salvar o pedido.')
@@ -166,7 +173,7 @@ export default function ComprasPedidoForm({ onCancel, onSaved, pedidoId }: { onC
       <div className="compras-form-footer"><span>{savedOrderNumber ? 'Pedido PC-' + savedOrderNumber.padStart(4, '0') + ' gravado. A impressão usa o número definitivo.' : 'Gravação atômica com validação de empresa e permissão no servidor.'}</span><button className="compras-button compras-button--primary" type="submit" disabled={saving||loading||Boolean(referenceError)||!suppliers.length||!products.length}>{saving?'Salvando…':savedPedidoId?'Salvar alterações':'Salvar pedido de compra'}</button></div>
     </form>
     <section className="compras-order-print" aria-hidden="true">
-      <div className="print-head"><div><div className="print-brand">PLASTIBOR</div><strong>{company?.razao_social || company?.nome_fantasia || 'Dados cadastrais da empresa'}</strong><div>CNPJ: {company?.cnpj || 'Não informado no cadastro'}</div><div>{company?.endereco || 'Endereço não informado'} {company?.cidade || ''} {company?.uf || ''} CEP {company?.cep || ''}</div><div>{company?.telefone || ''} {company?.email || ''}</div></div><div className="print-meta"><h1>PEDIDO DE COMPRA</h1><div>Nº: {savedOrderNumber ? 'PC-' + savedOrderNumber.padStart(4, '0') : 'Aguardando gravação'}</div><div>Emissão: {new Date().toLocaleDateString('pt-BR')}</div><div>Status: {header.status}</div></div></div>
+      <div className="print-head"><div><div className="print-brand">PLASTIBOR</div><strong>{company?.razao_social || company?.nome_fantasia || 'Dados cadastrais da empresa'}</strong><div>CNPJ: {company?.cnpj || 'Não informado no cadastro'}</div><div>{company?.endereco || 'Endereço não informado'} {company?.cidade || ''} {company?.uf || ''} CEP {company?.cep || ''}</div><div>{company?.telefone || ''} {company?.email || ''}</div></div><div className="print-meta"><h1>PEDIDO DE COMPRA</h1><div>Nº: {savedOrderNumber ? 'PC-' + savedOrderNumber.padStart(4, '0') : 'Aguardando gravação'}</div><div>Emissão: {new Date(emissionDate || Date.now()).toLocaleDateString('pt-BR')}</div><div>Status: {header.status}</div></div></div>
       <h2>Fornecedor</h2><div><strong>{selectedSupplier?value(selectedSupplier,'razao_social'):'Não selecionado'}</strong></div><div>CNPJ/CPF: {selectedSupplier?value(selectedSupplier,'documento'):'—'} | Contato: {selectedSupplier?value(selectedSupplier,'contato'):'—'}</div><div>{selectedSupplier?value(selectedSupplier,'endereco'):''} {selectedSupplier?value(selectedSupplier,'cidade'):''} {selectedSupplier?value(selectedSupplier,'estado'):''}</div><div>{selectedSupplier?value(selectedSupplier,'telefone'):''} {selectedSupplier?value(selectedSupplier,'email'):''}</div>
       <h2>Condições comerciais</h2><div>Pagamento: {header.condicao || '—'} | Prazo: {header.entrega || '—'} | Local de entrega: {header.localEntrega || '—'}</div><div>Centro de custo: {header.centroCusto || '—'} | Cotação: {header.referenciaCotacao || '—'}</div>
       <h2>Itens</h2><table><thead><tr><th>Código/SKU</th><th>Descrição</th><th>Un.</th><th>Quantidade</th><th>Valor unitário</th><th>Subtotal</th></tr></thead><tbody>{items.map(item=>{const product=products.find(row=>value(row,'id')===item.produtoId);return <tr key={item.key}><td>{product?value(product,'codigo'):'—'}</td><td>{product?value(product,'nome'):'—'}</td><td>{item.unidade}</td><td>{item.quantidade}</td><td>{brl(Number(item.valorUnitario)||0)}</td><td>{brl((Number(item.quantidade)||0)*(Number(item.valorUnitario)||0))}</td></tr>})}</tbody></table>
