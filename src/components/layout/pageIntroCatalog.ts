@@ -489,6 +489,15 @@ const introCatalog: Record<string, PageIntro> = {
       watch: 'Períodos fechados bloqueiam a retificação. Estorno total só é permitido quando nenhuma parcela do título tiver pagamento registrado; a rotina não apaga baixas nem movimenta o caixa automaticamente.',
     },
   },
+  'controladoria/retificacao-pedido': {
+    module: 'Controladoria', title: 'Retificação de Pedido',
+    description: 'Corrige somente dados comerciais e descritivos permitidos de pedidos já faturados; não altera preço, quantidade, impostos ou títulos financeiros.',
+    help: {
+      fill: ['Localize o pedido faturado por número, referência do cliente, documento ou vendedor.', 'Altere somente os campos liberados e descreva o motivo da mudança.'],
+      use: ['Grave pela rotina transacional de Controladoria; os dados anteriores e novos ficam no log de auditoria.', 'Ajustes financeiros de valor, vencimento, conta e parcelas devem ser feitos em Financeiro > Retificação Financeira.'],
+      watch: 'Pedidos ainda em rascunho/aberto não são elegíveis; dados fiscais e valores de documentos emitidos exigem procedimento fiscal próprio.',
+    },
+  },
   'controladoria/retificacao-assistente': {
     module: 'Controladoria', title: 'Assistente de Retificação',
     description: 'Passo a passo orientado da retificação de pedido e dos ajustes contábeis associados.',
