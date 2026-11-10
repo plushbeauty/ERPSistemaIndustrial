@@ -1005,11 +1005,11 @@
     },
     {
       "path": "src/pages/PCPWorkspace.tsx",
-      "sha": "c88effc1827b665641938640255b4eb64507104a",
+      "sha": "517320153f4dc6c053501c765cc538322366b579",
       "autor": "FernandoSch",
-      "revisao": "REV-PCP-WORKSPACE-FICHA-20261106-01 — aba de Ficha de Processo usa a tela técnica completa com isolamento por empresa; estrutura visual do workspace preservada",
+      "revisao": "REV-PCP-WORKSPACE-FICHA-MONTAGEM-20261110-01 — adicionada aba Ficha de montagem e acabamento; ordens, ficha de processo, estrutura/BOM e apontamento de turno preservados.",
       "aprovadaEm": "2026-11-06",
-      "statusAprovacao": "CORREÇÃO FUNCIONAL AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-06; sem alteração do layout aprovado"
+      "statusAprovacao": "INTEGRAÇÃO ADITIVA DE PRÉVIA AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; demais rotinas preservadas."
     },
     {
       "path": "src/pages/PagePrincipal.tsx",
@@ -1778,6 +1778,14 @@
       "revisao": "REV-FLUXO-CAIXA-WIREFRAME-COMPLETO-20261110-02 — padding 20px, cards 115px, indicadores 22px, campos 40px, botão de ação 190x42px, atualizar 135x40px e linhas do extrato 48px.",
       "aprovadaEm": "2026-11-10",
       "statusAprovacao": "AJUSTE COMPLETO AUTORIZADO PELO PROPRIETÁRIO EM 2026-11-10; escopo isolado da tela e sem alteração do shell global."
+    },
+    {
+      "path": "src/pages/FichaMontagem.tsx",
+      "sha": "0264f3fa8205ab72d457acc577d893cf17453ac4",
+      "autor": "FernandoSch",
+      "revisao": "REV-PCP-FICHA-MONTAGEM-PREVIEW-20261110-01 — ficha enviada pelo proprietário integrada ao PCP com abas Montagem, Acabamento, Inspeção e Liberação; prévia visual com dados locais de exemplo, sem persistência.",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "PRÉVIA VISUAL SOLICITADA PELO PROPRIETÁRIO; não representa apontamento real de produção."
     }
   ]
 }
