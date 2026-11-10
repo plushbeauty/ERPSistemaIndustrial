@@ -65,6 +65,7 @@ export default function FinanceiroCustoPadrao(){
  useEffect(()=>{if(productId)void calculate(productId,qty);else{setNeeds([]);setRunId('')}},[productId,qty,calculate])
  const save=async()=>{
   if(!product){setError('Selecione o produto alvo.');return}
+  if(!machine){setError('Selecione a máquina ou centro de custo cadastrado.');return}
   if(!Number.isFinite(suggested)||suggested<=0){setError('O preço sugerido não é válido. Confira os custos reais e a margem.');return}
   if(needs.length===0){setError('Não é possível salvar sem uma BOM/MRP real carregada.');return}
   if(needs.some(n=>!products.some(p=>p.id===n.componente_id))){setError('Há componente da BOM sem cadastro/custo carregado. O preço não será salvo com custo incompleto.');return}
