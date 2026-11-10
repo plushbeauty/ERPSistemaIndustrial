@@ -117,7 +117,7 @@
     },
     {
       "path": "src/features/controladoria/PainelLucratividade.tsx",
-      "sha": "b31677df7020984a7c947b99cf682be4f1b39d65",
+      "sha": "e1105ff1450b13e74ce8e0685bf480664dfd783a",
       "autor": "FernandoSch",
       "revisao": "REV-CONTROLADORIA-LUCRATIVIDADE-WIREFRAME-20261110-01 — filtros de competência e margem alvo, pedidos reais por tenant, custo industrial e status da margem",
       "aprovadaEm": "2026-11-10",
