@@ -77,7 +77,7 @@
     },
     {
       "path": "src/features/comissoes/CalculoComissao.tsx",
-      "sha": "6fbca754c62b26754ff0f03e5d182c86908ce0a1",
+      "sha": "a5a98f53e673be0ebb4b550aa102230abbc24a98",
       "autor": "FernandoSch",
       "revisao": "REV-COMISSOES-CALCULO-WIREFRAME-20261110-01 — filtros 190/340/180px, cálculo real por vendedor e competência, grade analítica, resumo e XLSX",
       "aprovadaEm": "2026-11-10",
