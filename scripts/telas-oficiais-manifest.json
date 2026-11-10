@@ -81,7 +81,7 @@
       "autor": "FernandoSch",
       "revisao": "REV-COMISSOES-CALCULO-WIREFRAME-20261110-01 — filtros 190/340/180px, cálculo real por vendedor e competência, grade analítica, resumo e XLSX",
       "aprovadaEm": "2026-11-10",
-      "statusAprovacao": "WIRE­FRAME E INTEGRAÇÃO AUTORIZADOS PELO PROPRIETÁRIO EM 2026-11-10; mantém apuração por tenant e dados reais."
+      "statusAprovacao": "WIREFRAME E INTEGRAÇÃO AUTORIZADOS PELO PROPRIETÁRIO EM 2026-11-10; mantém apuração por tenant e dados reais."
     },
     {
       "path": "src/features/comissoes/PerfilVendedor.tsx",
