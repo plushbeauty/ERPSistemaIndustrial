@@ -845,11 +845,11 @@
     },
     {
       "path": "src/pages/FinanceiroDashboardCaixa.tsx",
-      "sha": "16ccde58a2d645c263719d9121eabfe30769da3f",
+      "sha": "e5fa48f4f771efdeb64eb9e1a9d6862b4a22c5e0",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 + REV-FINANCEIRO-CUSTO-OP-LINK-20261108-01 — acesso ao fechamento de custo real por OP; padrão visual preservado",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRÃO VISUAL ORIGINAL APROVADO EM 2026-10-30; incremento aditivo de navegação autorizado pela ORDEM-EXECUCAO-SYSNQRA-20261108-01"
+      "revisao": "REV-FINANCEIRO-CAIXA-FLUXO-20261110-01 — tesouraria em grade 4x2, projeção DIA/SEMANA/MÊS/ANO, referência por data e consulta paginada de parcelas/baixas por empresa; filtro bancário sinalizado como indisponível enquanto o vínculo não existir",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "ALTERAÇÃO VISUAL E FUNCIONAL AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; mantém autenticação, tenant, RLS e leitura real; build e validação em produção pendentes."
     },
     {
       "path": "src/pages/FinanceiroFluxoCaixa.tsx",
