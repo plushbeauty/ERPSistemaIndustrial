@@ -469,7 +469,7 @@
     },
     {
       "path": "src/pages/ComprasIndustrial.tsx",
-      "sha": "38cd35d96d566508b4e8431e8d2de0b85365d4f9",
+      "sha": "b618a2507f85ebe3bd23c515a56e0a0a751b4509",
       "autor": "FernandoSch",
       "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-PEDIDO-RPC-20261110-01 — salvamento por erp_compras_salvar_pedido(p_payload), alinhado às colunas remotas e retorno pedido_compra_id/numero_pedido. REV-COMPRAS-PEDIDO-FORM-COMPARTILHADO-20261110-02 — rota industrial reutiliza o formulário comum para criação, edição e impressão, removendo o modal simplificado duplicado.",
       "aprovadaEm": "2026-10-30",
@@ -517,7 +517,7 @@
     },
     {
       "path": "src/pages/ComprasWorkspace.tsx",
-      "sha": "60fe8eacda1c03dfdc17479e3a1e52ac8be7c58d",
+      "sha": "30e77dc56ed9ac3023bc669428226af1b1808e18",
       "autor": "FernandoSch",
       "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-PEDIDO-EDICAO-20261110-01 — ação Editar na listagem, carregamento por empresa e prazo de entrega alinhado à coluna data_prevista. REV-COMPRAS-RFQ-HEADER-SCHEMA-20261110-02 — remove comprador_responsavel e status_aprovacao, ausentes em erp_rfq; mostra somente colunas reais do cabeçalho.",
       "aprovadaEm": "2026-10-30",
