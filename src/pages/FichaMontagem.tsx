@@ -4,7 +4,7 @@
  * @REVISAO: REV-PCP-FICHA-MONTAGEM-PREVIEW-20261110-01 — prévia integrada com quatro abas operacionais, checklist, tempos, parâmetros, inspeção e liberação.
  * @STATUS_APROVACAO: PREVIEW VISUAL AUTORIZADO; dados de exemplo locais, sem persistência no banco.
  */
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { CheckCircle2, ClipboardCheck, Clock, Hammer, Paintbrush, Printer, ShieldCheck, Trash2, Wrench, XCircle } from 'lucide-react'
 type Tab='montagem'|'acabamento'|'inspecao'|'liberacao'
 type Op={id:number;seq:string;descricao:string;componente:string;ferramenta:string;padrao:string;standard:number;real:number;feito:boolean;operador:string}
@@ -26,7 +26,7 @@ const initialParams:Param[]=[
 const initialDefects:Defect[]=[{id:1,tipo:'Risco / marca',qtd:0},{id:2,tipo:'Rebarba',qtd:0},{id:3,tipo:'Bolha / escorrido na pintura',qtd:0},{id:4,tipo:'Cor fora do padrão',qtd:0},{id:5,tipo:'Peça faltando / mal encaixada',qtd:0}]
 const cn=(...v:Array<string|false|undefined>)=>v.filter(Boolean).join(' ')
 const input='h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs text-[#123B50] outline-none focus:border-[#2D8DB8] focus:ring-2 focus:ring-sky-100'
-function Panel({title,action,children}:{title:string;action?:React.ReactNode;children:React.ReactNode}){return <section className="overflow-hidden rounded-xl border border-[#D3E3EA] bg-white shadow-sm"><header className="flex min-h-12 items-center justify-between gap-3 border-b border-slate-100 px-4 py-3"><h2 className="text-sm font-bold text-[#123B50]">{title}</h2>{action}</header><div className="p-4">{children}</div></section>}
+function Panel({title,action,children}:{title:string;action?:ReactNode;children:React.ReactNode}){return <section className="overflow-hidden rounded-xl border border-[#D3E3EA] bg-white shadow-sm"><header className="flex min-h-12 items-center justify-between gap-3 border-b border-slate-100 px-4 py-3"><h2 className="text-sm font-bold text-[#123B50]">{title}</h2>{action}</header><div className="p-4">{children}</div></section>}
 function Tag({children,tone='gray'}:{children:React.ReactNode;tone?:'gray'|'blue'|'green'|'red'|'amber'}){const colors={gray:'bg-slate-100 text-slate-600',blue:'bg-sky-50 text-sky-700',green:'bg-emerald-50 text-emerald-700',red:'bg-rose-50 text-rose-700',amber:'bg-amber-50 text-amber-800'};return <span className={cn('inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold',colors[tone])}>{children}</span>}
 function Th({children,right=false}:{children?:React.ReactNode;right?:boolean}){return <th className={cn('px-2 py-2 text-left text-[10px] font-bold uppercase tracking-wide text-slate-500',right&&'text-right')}>{children}</th>}
 function Td({children,right=false,className=''}:{children?:React.ReactNode;right?:boolean;className?:string}){return <td className={cn('px-2 py-2.5 text-xs text-slate-700',right&&'text-right',className)}>{children}</td>}
