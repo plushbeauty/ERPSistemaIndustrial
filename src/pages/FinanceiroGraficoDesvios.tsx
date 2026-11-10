@@ -1,43 +1,42 @@
 /**
  * @AUTOR: FernandoSch
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-10
+ * @REVISAO: REV-FIN-GRAFICO-DESVIOS-REAL-20261110-01 — consulta auditável de apurações persistidas, filtros, indicadores e composição por elemento.
+ * @STATUS_APROVACAO: IMPLEMENTAÇÃO AUTORIZADA PELO PROPRIETÁRIO; sem estimativas ou dados demonstrativos.
  */
-import { useEffect, useMemo, useState } from 'react'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { BarChart3, Printer, RefreshCw, AlertTriangle } from 'lucide-react'
-import { supabase } from '../lib/supabaseClient'
-
-type CostRow={codigo_produto:string;custo_padrao_total:number;custo_real_total:number;data_apuracao:string}
-type ChartRow={produto:string;padrao:number;real:number;desvio:number}
-
+import {useCallback,useEffect,useMemo,useState} from 'react'
+import {BarChart3,Printer,RefreshCw,AlertTriangle,ChevronDown} from 'lucide-react'
+import {supabase} from '../lib/supabaseClient'
+type Row={id:string;competencia:string;data_apuracao:string;produto_id:string|null;codigo_produto:string;descricao_produto:string;op_numero:string|null;quantidade_produzida:number;custo_padrao_total:number;custo_real_total:number;custo_padrao_unitario:number;custo_real_unitario:number;mp_padrao:number;mp_real:number;mod_padrao:number;mod_real:number;ggf_padrao:number;ggf_real:number;causa_mp:string|null;causa_mod:string|null;causa_ggf:string|null}
+const money=(v:number)=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})
+const num=(v:number)=>Number(v||0).toLocaleString('pt-BR',{maximumFractionDigits:3})
+const input='h-10 w-full rounded-md border border-[#CBD9E0] bg-white px-3 text-sm text-[#183B4D] outline-none focus:border-[#2D8DB8] focus:ring-2 focus:ring-[#2D8DB8]/15'
+const label='mb-1.5 block text-[10px] font-bold uppercase tracking-wide text-[#526C79]'
 export default function FinanceiroGraficoDesvios(){
- const [rows,setRows]=useState<CostRow[]>([])
- const [busy,setBusy]=useState(false)
- const [error,setError]=useState('')
- async function load(){ 
+ const [rows,setRows]=useState<Row[]>([]),[period,setPeriod]=useState(new Date().toISOString().slice(0,7)),[search,setSearch]=useState(''),[op,setOp]=useState(''),[status,setStatus]=useState('TODOS'),[selected,setSelected]=useState<Row|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState('')
+ const load=useCallback(async()=>{
   setBusy(true);setError('')
   try{
-   const result=await supabase.from('erp_financeiro_apuracao_custos').select('codigo_produto,custo_padrao_total,custo_real_total,data_apuracao').order('data_apuracao',{ascending:false}).limit(500)
+   const tenant=await supabase.rpc('erp_current_empresa_id');if(tenant.error||!tenant.data)throw tenant.error??new Error('Empresa da sessão não identificada.')
+   const result=await supabase.from('erp_financeiro_apuracao_custos').select('id,competencia,data_apuracao,produto_id,codigo_produto,descricao_produto,op_numero,quantidade_produzida,custo_padrao_total,custo_real_total,custo_padrao_unitario,custo_real_unitario,mp_padrao,mp_real,mod_padrao,mod_real,ggf_padrao,ggf_real,causa_mp,causa_mod,causa_ggf').eq('empresa_id',String(tenant.data)).order('data_apuracao',{ascending:false}).limit(2000)
    if(result.error)throw result.error
-   setRows((result.data??[]) as CostRow[])
-  }catch(e){setRows([]);setError(e instanceof Error?e.message:'Não foi possível carregar a apuração real de custos.')}
+   setRows((result.data??[]) as Row[])
+  }catch(e){setRows([]);setError('Não foi possível carregar a apuração real de custos. '+(e instanceof Error?e.message:''))}
   finally{setBusy(false)}
- }
- useEffect(()=>{void load()},[])
- const data=useMemo<ChartRow[]>(()=>rows.map(r=>{const padrao=Number(r.custo_padrao_total)||0;const real=Number(r.custo_real_total)||0;return{produto:r.codigo_produto,padrao,real,desvio:real-padrao}}),[rows])
- const critical=data.some(x=>x.padrao>0&&x.real>x.padrao*1.2)
- return <main className="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-6">
-  <header className="flex flex-wrap items-center gap-3 border-b border-slate-200 pb-4 print:hidden">
-   <div><p className="text-sm font-black text-slate-600">FINANCEIRO &gt; CUSTOS INDUSTRIAIS</p><h1 className="text-2xl font-black">Custo Padrão × Custo Real Absorvido</h1><p className="mt-1 text-sm text-slate-600">Somente apurações persistidas no banco. Ausência de apuração não é preenchida por estimativa.</p></div>
-   <div className="ml-auto flex gap-2"><button type="button" onClick={()=>void load()} disabled={busy} className="inline-flex min-h-[54px] items-center gap-2 rounded-md border border-slate-300 bg-white px-4 font-bold"><RefreshCw size={16} className={busy?'animate-spin':''}/> ATUALIZAR</button><button type="button" onClick={()=>window.print()} className="inline-flex min-h-[54px] items-center gap-2 rounded-md bg-slate-900 px-4 font-bold text-white"><Printer size={16}/> IMPRIMIR</button></div>
-  </header>
-  {critical&&<div className="mt-4 flex items-center gap-2 rounded-md border border-rose-200 bg-rose-50 p-4 font-black text-rose-900"><AlertTriangle size={19}/> Desvio superior a 20% identificado em apuração real.</div>}
-  {error&&<div className="mt-4 rounded-md border border-rose-200 bg-rose-50 p-4 font-bold text-rose-900" role="alert">{error}</div>}
-  <section className="mt-5 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-   <div className="mb-4 flex items-center gap-2"><BarChart3 size={20} className="text-sky-700"/><h2 className="text-lg font-black">Apuração por produto</h2></div>
-   {rows.length===0&&!busy?<p className="rounded-md bg-slate-50 p-6 font-semibold text-slate-600">Nenhuma apuração de custo real disponível para a empresa atual.</p>:<div className="h-[430px]"><ResponsiveContainer width="100%" height="100%"><BarChart data={data}><XAxis dataKey="produto" stroke="#0f172a"/><YAxis stroke="#0f172a"/><Tooltip formatter={(value)=>Number(value).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}/><Legend/><Bar dataKey="padrao" fill="#2563eb" name="Custo padrão orçado"/><Bar dataKey="real" fill="#dc2626" name="Custo real absorvido"/></BarChart></ResponsiveContainer></div>}
-  </section>
+ },[])
+ useEffect(()=>{void load()},[load])
+ const filtered=useMemo(()=>rows.filter(r=>(!period||r.competencia===period)&&(!search||(r.codigo_produto+' '+r.descricao_produto).toLowerCase().includes(search.toLowerCase()))&&(!op||String(r.op_numero||'').toLowerCase().includes(op.toLowerCase()))&&(status==='TODOS'||(status==='FAVORAVEL'?Number(r.custo_real_total)<=Number(r.custo_padrao_total):Number(r.custo_real_total)>Number(r.custo_padrao_total)))),[rows,period,search,op,status])
+ const totals=useMemo(()=>filtered.reduce((a,r)=>({standard:a.standard+Number(r.custo_padrao_total||0),real:a.real+Number(r.custo_real_total||0)}),{standard:0,real:0}),[filtered])
+ const variation=totals.standard?((totals.real-totals.standard)/totals.standard)*100:0
+ const print=()=>window.print()
+ const cards=[['Custo padrão total',money(totals.standard)],['Custo real absorvido',money(totals.real)],['Desvio absoluto',money(totals.real-totals.standard)],['Variação percentual',variation.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%']]
+ return <main className="min-h-full space-y-4 bg-[#F4FBFD] p-4 text-[#183B4D] sm:p-5">
+  <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[#D3E3EA] pb-3 print:hidden"><div><p className="mb-1 text-[10px] font-bold uppercase tracking-[.13em] text-[#2D8DB8]">FINANCEIRO › CUSTOS INDUSTRIAIS</p><h1 className="text-xl font-bold">Desvios de Custo — Custo Padrão × Custo Real Absorvido</h1><p className="mt-1 text-xs text-[#607987]">Comparativo auditável entre custos padrão persistidos e custos reais apurados na produção.</p></div><div className="flex gap-2"><button onClick={()=>void load()} disabled={busy} className="inline-flex h-10 items-center gap-2 rounded-md border border-[#CBD9E0] bg-white px-4 text-xs font-semibold"><RefreshCw size={14} className={busy?'animate-spin':''}/>Atualizar</button><button onClick={print} className="inline-flex h-10 items-center gap-2 rounded-md bg-[#176B91] px-4 text-xs font-semibold text-white"><Printer size={14}/>Imprimir</button></div></header>
+  <section className="rounded-lg border border-[#D3E3EA] bg-white p-4 sm:p-5"><div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-[170px_minmax(220px,1fr)_160px_180px]"><label><span className={label}>Competência / período *</span><input className={input} type="month" value={period} onChange={e=>setPeriod(e.target.value)}/></label><label><span className={label}>Produto (código ou descrição)</span><input className={input} value={search} onChange={e=>setSearch(e.target.value)} placeholder="Pesquisar..."/></label><label><span className={label}>Ordem de produção (OP)</span><input className={input} value={op} onChange={e=>setOp(e.target.value)} placeholder="Número da OP"/></label><label><span className={label}>Status do desvio</span><select className={input} value={status} onChange={e=>setStatus(e.target.value)}><option value="TODOS">Todos</option><option value="FAVORAVEL">Favorável</option><option value="DESFAVORAVEL">Desfavorável</option></select></label></div></section>
+  {error&&<div role="alert" className="flex flex-wrap items-center gap-2 rounded-md border border-[#D65B61]/40 bg-[#FFF4F3] p-3 text-xs text-[#A53D45]"><AlertTriangle size={15}/>{error}<button className="font-bold underline" onClick={()=>void load()}>Tentar novamente</button></div>}
+  <p className="rounded-md border border-[#D3E3EA] bg-[#F0F7FA] px-3 py-2 text-[11px] text-[#526C79]">ⓘ Somente apurações persistidas no banco. Ausência de apuração não é preenchida por estimativa.</p>
+  <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">{cards.map(([name,value])=><article key={name} className="rounded-lg border border-[#D3E3EA] bg-white p-4"><p className="text-[10px] font-bold uppercase tracking-wide text-[#607987]">{name}</p><strong className="mt-2 block text-xl tabular-nums">{value}</strong></article>)}</section>
+  <section className="rounded-lg border border-[#D3E3EA] bg-white p-4 sm:p-5"><div className="mb-3 flex flex-wrap items-center justify-between gap-2"><h2 className="text-sm font-bold">Apuração por produto</h2><span className="rounded-full bg-[#EAF3F6] px-2.5 py-1 text-[10px] font-semibold text-[#416D80]">Somente dados persistidos</span></div><div className="overflow-x-auto"><table className="w-full min-w-[1050px] text-xs"><thead><tr className="h-10 border-b border-[#D3E3EA] bg-[#F4F8FA] text-left text-[10px] uppercase text-[#526C79]">{['Cód. produto','Descrição do produto','Qtd. produzida','Custo padrão un.','Custo real un.','Desvio un.','Desvio total','Var. %','Detalhes'].map(x=><th key={x} className="px-2">{x}</th>)}</tr></thead><tbody>{filtered.map(r=>{const diff=Number(r.custo_real_unitario)-Number(r.custo_padrao_unitario);const total=Number(r.custo_real_total)-Number(r.custo_padrao_total);const pct=Number(r.custo_padrao_total)?total/Number(r.custo_padrao_total)*100:0;return <tr key={r.id} className="h-12 border-b border-[#E8EFF2]"><td className="px-2 font-semibold">{r.codigo_produto}</td><td className="px-2">{r.descricao_produto}</td><td className="px-2 text-right">{num(r.quantidade_produzida)}</td><td className="px-2 text-right">{money(r.custo_padrao_unitario)}</td><td className="px-2 text-right">{money(r.custo_real_unitario)}</td><td className="px-2 text-right">{money(diff)}</td><td className="px-2 text-right font-semibold">{money(total)}</td><td className="px-2 text-right">{pct.toLocaleString('pt-BR',{maximumFractionDigits:2})}%</td><td className="px-2"><button className="font-semibold text-[#176B91] underline" onClick={()=>setSelected(r)}>Abrir</button></td></tr>})}{!filtered.length&&<tr><td colSpan={9} className="h-24 text-center text-[#718792]">{busy?'Carregando apurações persistidas...':'Nenhuma apuração de custo real disponível para a empresa atual.'}</td></tr>}</tbody></table></div></section>
+  {selected&&<section className="rounded-lg border border-[#BBD8E3] bg-white p-4 sm:p-5"><div className="mb-3 flex flex-wrap items-center justify-between gap-2"><div><h2 className="text-sm font-bold">Composição do desvio do item selecionado</h2><p className="mt-1 text-xs text-[#607987]">{selected.codigo_produto} — {selected.descricao_produto} · Competência: {selected.competencia} · OP: {selected.op_numero||'Não informada'}</p></div><button onClick={()=>setSelected(null)} className="text-xs font-semibold text-[#176B91]">Fechar</button></div><div className="overflow-x-auto"><table className="w-full min-w-[680px] text-xs"><thead><tr className="h-9 border-b text-left text-[10px] uppercase text-[#607987]"><th>Elemento de custo</th><th className="text-right">Padrão persistido</th><th className="text-right">Real absorvido</th><th className="text-right">Desvio</th><th className="pl-3">Causa raiz registrada</th></tr></thead><tbody>{[['Matéria-prima / embalagem (BOM)',selected.mp_padrao,selected.mp_real,selected.causa_mp],['Mão de obra / hora-máquina',selected.mod_padrao,selected.mod_real,selected.causa_mod],['Custos indiretos absorvidos (GGF)',selected.ggf_padrao,selected.ggf_real,selected.causa_ggf]].map(([name,std,real,cause])=><tr key={String(name)} className="h-11 border-b border-[#E8EFF2]"><td>{name}</td><td className="text-right">{money(Number(std))}</td><td className="text-right">{money(Number(real))}</td><td className="text-right font-semibold">{money(Number(real)-Number(std))}</td><td className="pl-3">{String(cause||'Não registrada na apuração')}</td></tr>)}</tbody></table></div></section>}
  </main>
 }
