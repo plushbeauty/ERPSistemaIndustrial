@@ -333,6 +333,49 @@ Observações verificadas:
 
 **Validação:** alterações commitadas nesta branch; typecheck, lint, testes e fluxo com usuário autenticado ainda pendentes. O check Vercel retornou falha por limite de taxa de builds (build-rate-limit); não foi gerado preview deste commit. Não repetir deploy enquanto o limite estiver ativo. Não considerar Compras concluído nem produção corrigida antes dessas verificações.
 
+### 1.2 Auditoria aprofundada de telas, ações, impressão e persistência — 10/11/2026
+
+#### Inventário funcional das páginas (não confundir ocorrências estáticas com controles visíveis simultaneamente)
+
+| Página/rota | Campos e controles identificados | Ações / abas / impressão |
+|---|---|---|
+| Central de Compras — /pageprincipal/compras | filtros de pesquisa; formulários de RFQ e pedido; dados de requisições, pedidos e recebimentos | 5 abas: Visão geral, Requisições, Cotações, Pedidos, Recebimentos; atualizar, abrir formulário RFQ/pedido, navegar do número do pedido. Sem impressão dedicada identificada no arquivo |
+| RFQ — /pageprincipal/compras/rfq | comprador, data limite, previsão de entrega, prazo de resposta, condição de pagamento, necessidade; busca e seleção de produto, quantidade, unidade, observação por item; fornecedor, valor total, prazo em dias, condição, validade da proposta, vencedor e justificativa | adicionar/remover item, selecionar fornecedores, escolher vencedor, salvar, voltar a solicitações, abrir pedido, **imprimir/PDF** |
+| Análise de preços — /pageprincipal/compras/analise-precos | busca por RFQ/produto, seleção de RFQ, prazo de resposta, fornecedor, valor total, frete/desconto exibidos como não informados, prazo, condição, validade, menor valor, justificativa | atualizar, escolher fornecedor, registrar escolha, voltar à RFQ, **imprimir/PDF** |
+| Requisições — /pageprincipal/compras/requisicoes | OP, urgência, status, itens, produto, quantidade, fornecedor sugerido; filtros por OP/urgência e seleção em lote | encaminhar selecionadas para cotação, atualizar, paginação, consulta rápida, **imprimir** |
+| Compras Industrial — /pageprincipal/compras/industrial | dashboard e formulários simplificados de pedido; fornecedor, produto, quantidade, valor unitário, previsão, centro de custo, local de entrega, condição, referência de cotação, especificação técnica e observações | 5 abas: dashboard, solicitações, pedidos, fornecedores, recebimentos; criar/salvar/fechar, paginação e navegação para RFQ, pedido, recebimentos, relatórios, ajuda e fiscal. Sem impressão dedicada identificada no arquivo |
+| Pedido de compra — componente ComprasPedidoForm | fornecedor, requisição, comprador, condição, prazo, centro de custo; linhas com produto, quantidade, unidade, preço, NCM, entrega, OP, centro de custo, IPI e ICMS; dados comerciais como frete, desconto, modalidade e transportadora | adicionar/remover linhas, cancelar, salvar por RPC transacional. Impressão dedicada não identificada no componente |
+| Fornecedores — /pageprincipal/cadastros/fornecedores | cadastro, documento, contatos, endereço, ISO/certificado, observações e filtros | novo, editar, excluir, filtrar, atualizar, upload de certificado e **imprimir** |
+| Relatórios — /pageprincipal/compras/relatorios | pesquisa, filtro de status/data da RFQ, indicadores, gráficos, fornecedores e tabelas | atualizar e **imprimir/PDF** |
+
+#### Falhas adicionais confirmadas e corrigidas nesta branch
+
+1. **Relatórios:** SELECTs pediam colunas que não existem em erp_pedidos_compra/erp_rfq (data_pedido, fiscal_status, comprador_responsavel, status_aprovacao, data_limite, data_conclusao, menor_custo_liquido_atendido). Consultas e tabelas foram alinhadas a created_at, data_prevista, status, prazo_resposta, fornecedor_escolhido_id e justificativa_escolha. Indicador fiscal fictício foi substituído por indicador baseado em vínculo real de fornecedor.
+2. **Compras Industrial:** consulta usava prazo_entrega, codigo_produto e descricao_produto; alterada para data_prevista, codigo_mp e descricao, conforme colunas encontradas no banco.
+3. **RFQ:** a tabela erp_rfq_respostas restringe status a RASCUNHO, ENVIADA, ACEITA ou RECUSADA. A tela enviava RECEBIDA, que violava o CHECK e faria o INSERT falhar. Corrigido para RASCUNHO e preenchido respondido_por com o usuário autenticado.
+4. **Validade:** a coluna validade já existe em erp_rfq_respostas, mas não estava disponível na entrada de propostas; campo de validade por fornecedor adicionado à RFQ e persistido. A análise passou a exibir a validade.
+5. **Impressão:** botões Imprimir/PDF adicionados à RFQ e ao mapa comparativo de preços. Requisições, relatórios e fornecedores já tinham impressão. A auditoria ainda precisa validar visualmente o resultado impresso e decidir os layouts dedicados de pedido, recebimento e central.
+
+#### Divergência estrutural que impede fechar a modelagem de Compras
+
+- A migration versionada 20260927183000_pedidos_compra.sql define erp_pedidos_compra_itens.pedido_id com FK para erp_pedidos_compra(id), e as colunas codigo_produto/descricao_produto.
+- A consulta ao banco conectado mostrou FK atual de erp_pedidos_compra_itens.pedido_id para erp_pedidos(id), e colunas codigo_mp/descricao. Isso é divergência entre migration versionada e banco remoto, não autorização para criar uma segunda tabela.
+- Antes de corrigir o vínculo, é obrigatório identificar qual RPC/tabela grava os pedidos atuais, verificar dados existentes e contagens de IDs, histórico de migrations e referências em todo o código. Não remover nem trocar FK enquanto isso não estiver comprovado.
+- A tabela erp_rfq_respostas tem UNIQUE(rfq_id, fornecedor_id), valor_total, prazo_dias, condição, validade e observações; não há tabela de linhas de proposta nem colunas próprias de frete, desconto, impostos, moeda/câmbio, número/data da proposta ou anexo no contrato RFQ inspecionado.
+- A tela atual tem valor total por fornecedor e itens solicitados na RFQ, mas não uma grade de preço ofertado para cada item. Frete e desconto são mostrados como “—”, não como zero. A comparação por item e o custo posto precisam de contrato e fluxo próprios, depois de conferir migrations e dados; não criar duplicatas.
+
+#### Referência comparativa e critério de aceite
+
+- ERPNext: RFQ, Supplier Quotation, Purchase Order, Purchase Receipt e Purchase Invoice são documentos relacionados, com linhas de itens e ciclo de compras. A contagem de metadados de campos/tabs/sections da seção 1 deve ser lida como metadados condicionais, não como inputs visíveis simultâneos.
+- Dolibarr: pedido de compra tem ciclo de rascunho, validação/aprovação, envio ao fornecedor e recebimento parcial/total; a fatura de fornecedor fecha o ciclo financeiro.
+- Aceite SYSNQRA: RFQ por fornecedor e item; proposta com validade, moeda/câmbio, tributos, frete/desconto e anexos; mapa comparativo por linha e custo total comparável; escolha justificada; conversão para pedido sem redigitação; aprovação conforme alçada; recebimento parcial por linha com lote/qualidade; vínculo fiscal/fatura e conciliação pedido × recebimento × fatura; histórico e permissões por empresa. Impressões de RFQ, mapa comparativo, pedido, recebimento e relatórios devem ter cabeçalho, identificação, linhas, totais, assinaturas/observações quando aplicável, paginação e CSS de impressão sem botões/menus.
+
+#### Estado de Compras
+
+**Corrigido em código nesta branch:** consultas incompatíveis em Relatórios e Compras Industrial; status inválido de resposta RFQ; autoria da resposta; campo de validade; exibição de validade; impressão/PDF em RFQ e análise de preços.
+
+**Ainda não concluído:** contrato de proposta por item e custos acessórios; divergência de FK/migration dos itens de pedido; fluxo de aprovação real; impressão dedicada de pedido e recebimento; teste de todas as ações com usuário/tenant; validação de build. Vercel segue bloqueado por build-rate-limit, portanto não há preview validado. Não promover para produção.
+
 ## 2. Próximos módulos
 
 Os módulos abaixo serão inventariados e comparados em sequência. Cada tópico só será marcado como auditado após inspeção do código e dos contratos reais; “a iniciar” não significa que a tela esteja completa.
