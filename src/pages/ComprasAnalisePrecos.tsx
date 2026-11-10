@@ -165,7 +165,8 @@ export default function ComprasAnalisePrecos() {
           <h1 className="text-xl font-bold tracking-tight text-slate-900">Análise de preços e propostas</h1>
           <p className="mt-1 text-[11px] text-slate-500">Comparação por valor total informado, prazo comercial e condição de pagamento.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="compras-analise-no-print flex items-center gap-2">
+          <button type="button" title="Imprimir mapa comparativo" aria-label="Imprimir mapa comparativo" className="flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50" onClick={() => window.print()}><Printer size={14}/> Imprimir / PDF</button>
           <button type="button" title="Atualizar dados" aria-label="Atualizar dados" className="flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50" onClick={() => void load()} disabled={busy}>
             <RefreshCw size={14} className={busy ? 'animate-spin' : ''} /> Atualizar
           </button>
