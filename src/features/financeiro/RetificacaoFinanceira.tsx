@@ -129,7 +129,7 @@ export default function RetificacaoFinanceira() {
 
   const allRows = useMemo<Row[]>(() => titles.flatMap(title =>
     (title.erp_financeiro_parcelas || []).filter(p => p.status !== 'CANCELADO').map(installment => ({
-      title, installment, partner: partnerName(title.parceiro_id), originLabel: title.origem_id ? (originLabels[title.origem_id] || '') : '', originLabel: title.origem_id ? (originLabels[title.origem_id] || '') : '',
+      title, installment, partner: partnerName(title.parceiro_id), originLabel: title.origem_id ? (originLabels[title.origem_id] || '') : '',
     }))
   ), [titles, partnerName, originLabels])
 
@@ -145,7 +145,7 @@ export default function RetificacaoFinanceira() {
       const matchFrom = !from || filterDate >= from
       const matchTo = !to || filterDate <= to
       const matchCostCenter = !costCenterFilter.trim() || String(t.centro_custo || '').toLocaleLowerCase('pt-BR').includes(costCenterFilter.trim().toLocaleLowerCase('pt-BR'))
-      return matchTerm && matchKind && matchStatus && matchFrom && matchTo && matchCostCenter && matchCostCenter
+      return matchTerm && matchKind && matchStatus && matchFrom && matchTo && matchCostCenter
     })
   }, [allRows, query, kind, status, from, to, dateBasis, costCenterFilter])
 
