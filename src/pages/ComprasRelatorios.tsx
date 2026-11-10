@@ -40,8 +40,8 @@ export default function ComprasRelatorios(){
  useEffect(()=>{void load()},[])
  const supplierMap=useMemo(()=>new Map(suppliers.map(s=>[s.id,s.nome_fantasia||s.razao_social])),[suppliers])
  const visibleRfqs=useMemo(()=>rfqs.filter(r=>{
-  const status=String(r.status_aprovacao||r.status||'EM_ANALISE')
-  const date=String(r.data_conclusao||r.created_at||'').slice(0,10)
+  const status=String(r.status||'EM_ANALISE')
+  const date=String(r.created_at||r.created_at||'').slice(0,10)
   return (rfqStatusFilter==='TODOS'||status===rfqStatusFilter)
    &&(!rfqStartDate||date>=rfqStartDate)&&(!rfqEndDate||date<=rfqEndDate)
  }),[rfqs,rfqStatusFilter,rfqStartDate,rfqEndDate])
@@ -51,7 +51,7 @@ export default function ComprasRelatorios(){
  const pending=visible.filter(p=>p.status==='PENDENTE_APROVACAO').length
  const withoutSupplier=visible.filter(p=>!p.fornecedor_id).length
  const byMonth=useMemo(()=>{
-  const map=new Map<string,number>();for(const p of visible){const k=monthKey(p.data_pedido);map.set(k,(map.get(k)||0)+Number(p.total||0))}
+  const map=new Map<string,number>();for(const p of visible){const k=monthKey(p.created_at);map.set(k,(map.get(k)||0)+Number(p.total||0))}
   return [...map.entries()].reverse().slice(-12).map(([mes,total])=>({mes,total}))
  },[visible])
  const byStatus=useMemo(()=>{
