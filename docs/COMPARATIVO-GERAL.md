@@ -364,6 +364,9 @@ Observações verificadas:
 - Antes de corrigir o vínculo, é obrigatório identificar qual RPC/tabela grava os pedidos atuais, verificar dados existentes e contagens de IDs, histórico de migrations e referências em todo o código. Não remover nem trocar FK enquanto isso não estiver comprovado.
 - A tabela erp_rfq_respostas tem UNIQUE(rfq_id, fornecedor_id), valor_total, prazo_dias, condição, validade e observações; não há tabela de linhas de proposta nem colunas próprias de frete, desconto, impostos, moeda/câmbio, número/data da proposta ou anexo no contrato RFQ inspecionado.
 - A tela atual tem valor total por fornecedor e itens solicitados na RFQ, mas não uma grade de preço ofertado para cada item. Frete e desconto são mostrados como “—”, não como zero. A comparação por item e o custo posto precisam de contrato e fluxo próprios, depois de conferir migrations e dados; não criar duplicatas.
+- O Supabase consultado não lista as RPCs erp_compras_salvar_pedido nem erp_compras_salvar_pedido_completo; lista erp_compras_criar_rfq_atomica e erp_compras_criar_solicitacao. A tela ComprasIndustrial chama erp_compras_salvar_pedido, portanto seu botão de salvar está apontando para uma RPC ausente no banco conectado.
+- Existe no repositório a migration 20261103190000_erp_compras_pedido_completo_atomic.sql com erp_compras_salvar_pedido_completo, mas a definição depende de colunas codigo_produto/descricao_produto, enquanto o banco conectado expõe codigo_mp/descricao; além disso, a FK remota de pedido_id aponta para erp_pedidos, divergindo da migration original que aponta para erp_pedidos_compra. **Não aplicar essa migration cegamente**: primeiro reconciliar o schema remoto e os dados, sem perder pedidos existentes.
+
 
 #### Referência comparativa e critério de aceite
 
@@ -375,7 +378,7 @@ Observações verificadas:
 
 **Corrigido em código nesta branch:** consultas incompatíveis em Relatórios e Compras Industrial; status inválido de resposta RFQ; autoria da resposta; campo de validade; exibição de validade; impressão/PDF em RFQ e análise de preços.
 
-**Ainda não concluído:** contrato de proposta por item e custos acessórios; divergência de FK/migration dos itens de pedido; fluxo de aprovação real; impressão dedicada de pedido; teste de todas as ações com usuário/tenant; validação de build. Vercel segue bloqueado por build-rate-limit, portanto não há preview validado. Não promover para produção.
+**Ainda não concluído:** contrato de proposta por item e custos acessórios; divergência de FK/migration dos itens de pedido; RPC de salvar pedido ausente no banco; fluxo de aprovação real; impressão dedicada de pedido; teste de todas as ações com usuário/tenant; validação de build. Vercel segue bloqueado por build-rate-limit, portanto não há preview validado. Não promover para produção.
 
 ## 2. Próximos módulos
 
