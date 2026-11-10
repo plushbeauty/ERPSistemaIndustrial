@@ -16,6 +16,7 @@ type Partner = { id: string; name: string }
 type Account = { id: string; codigo: string; nome: string; banco: string; agencia: string | null; conta: string | null }
 type Audit = { id: string; tipo_retificacao: string; dados_antes: Record<string, unknown>; dados_depois: Record<string, unknown>; justificativa: string; anexo_path: string | null; usuario_id: string; criado_em: string }
 type AuditUser = { id: string; nome: string }
+type ClosedPeriod = { id:string; data_inicio:string; data_fim:string; motivo:string; fechado_em:string; fechado_por:string }
 type Row = { title: Title; installment: Installment; partner: string }
 
 const money = (value: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value || 0))
@@ -56,6 +57,12 @@ export default function RetificacaoFinanceira() {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [showHistory, setShowHistory] = useState(false)
+  const [generalAudit, setGeneralAudit] = useState<Audit[]>([])
+  const [generalPeriods, setGeneralPeriods] = useState<ClosedPeriod[]>([])
+  const [periodStart, setPeriodStart] = useState(localDate().slice(0,7)+'-01')
+  const [periodEnd, setPeriodEnd] = useState(localDate())
+  const [periodReason, setPeriodReason] = useState('')
+  const [closingPeriod, setClosingPeriod] = useState(false)
 
   const partnerName = useCallback((id: string) => partners.find(p => p.id === id)?.name || 'Parceiro não identificado', [partners])
 
@@ -87,6 +94,25 @@ export default function RetificacaoFinanceira() {
   }, [])
 
   useEffect(() => { void load() }, [load])
+
+  useEffect(() => {
+    if (!showHistory || !company) return
+    void (async () => {
+      const [events, periods] = await Promise.all([
+        supabase.from('erp_financeiro_retificacoes').select('id,tipo_retificacao,dados_antes,dados_depois,justificativa,anexo_path,usuario_id,criado_em').eq('empresa_id',company).order('criado_em',{ascending:false}).limit(100),
+        supabase.from('erp_financeiro_periodos_fechados').select('id,data_inicio,data_fim,motivo,fechado_em,fechado_por').eq('empresa_id',company).order('data_inicio',{ascending:false}).limit(50),
+      ])
+      if (events.error) { setError(events.error.message); return }
+      if (periods.error) { setError(periods.error.message); return }
+      setGeneralAudit((events.data || []) as Audit[])
+      setGeneralPeriods((periods.data || []) as ClosedPeriod[])
+      const ids = [...new Set((events.data || []).map(e => e.usuario_id))]
+      if (ids.length) {
+        const users = await supabase.from('erp_usuarios').select('id,nome').in('id',ids)
+        if (!users.error) setAuditUsers((users.data || []) as AuditUser[])
+      }
+    })()
+  }, [showHistory,company])
 
   const allRows = useMemo<Row[]>(() => titles.flatMap(title =>
     (title.erp_financeiro_parcelas || []).filter(p => p.status !== 'CANCELADO').map(installment => ({
@@ -173,10 +199,8 @@ export default function RetificacaoFinanceira() {
       })
       if (result.error) throw result.error
       setMessage('Retificação registrada com histórico de auditoria.')
+      setSelected(null)
       await load()
-      const refreshed = allRows.find(r => r.title.id === selected.title.id && r.installment.id === selected.installment.id)
-      if (refreshed && reasonType !== 'ESTORNO') await selectRow(refreshed)
-      else setSelected(null)
     } catch (e) {
       if (attachmentPath) await supabase.storage.from('financeiro-retificacoes').remove([attachmentPath])
       setError(e instanceof Error ? e.message : 'Falha ao registrar a retificação.')
