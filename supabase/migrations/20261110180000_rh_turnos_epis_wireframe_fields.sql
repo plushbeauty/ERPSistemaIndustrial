@@ -41,3 +41,27 @@ create index if not exists rh_turnos_empresa_codigo_idx
 
 -- RLS já está habilitada e usa tenant_isolation por empresa_id nas três tabelas.
 -- Esta migration não remove nem relaxa políticas existentes.
+
+-- Integração com o cadastro atual de colaboradores (erp_funcionarios).
+-- Mantém funcionario_id/FK legado para histórico e permite novos registros no cadastro atual.
+alter table public.rh_entregas_epis
+  add column if not exists erp_funcionario_id uuid;
+
+alter table public.rh_entregas_epis
+  alter column funcionario_id drop not null;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'rh_entregas_epis_erp_funcionario_id_fkey'
+      and conrelid = 'public.rh_entregas_epis'::regclass
+  ) then
+    alter table public.rh_entregas_epis
+      add constraint rh_entregas_epis_erp_funcionario_id_fkey
+      foreign key (erp_funcionario_id) references public.erp_funcionarios(id);
+  end if;
+end $$;
+
+create index if not exists rh_entregas_epis_empresa_erp_funcionario_idx
+  on public.rh_entregas_epis (empresa_id, erp_funcionario_id);
