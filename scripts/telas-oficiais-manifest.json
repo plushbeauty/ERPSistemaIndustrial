@@ -509,11 +509,11 @@
     },
     {
       "path": "src/pages/CustomerDnSettings.tsx",
-      "sha": "d5eb89c4f6ac9d761a58be708f6c8f71cb7d5e6b",
+      "sha": "c72ff0f3b847bc67959f357a69f33d014c3d317d",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — PageIntroCard padrão; REV-FIN-NOTAS-DEBITO-WORKSPACE-20261110-01 — central financeira com filtros, CRUD, anexos privados e registro de extratos; contrato multiempresa/RLS.",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "IMPLEMENTAÇÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; hash sincronizado com Git; gates oficiais permanecem ativos."
     },
     {
       "path": "src/pages/DashboardComercial.tsx",
