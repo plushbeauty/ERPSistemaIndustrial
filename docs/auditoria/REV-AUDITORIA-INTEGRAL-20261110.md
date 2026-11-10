@@ -147,3 +147,23 @@ Não fazer merge automático dessas branches. Comparar novamente cada diff contr
 - A execução do audit `audit:ui-standardization` no build registrou: 243 arquivos fonte examinados, 325 declarações de rota, somente 3 arquivos usando tokens compartilhados de formulário, 92 arquivos com indícios de estilo local e 207 arquivos com controles sem altura estática detectada. São sinais para revisão por tela; não autorizam alterar dimensões automaticamente.
 
 **Regra de publicação:** não promover deployment antigo nem disparar publicação de produção enquanto o `main` atual não passar por todos os gates e o Preview não for validado.
+
+
+## 10. Reconciliação da linhagem de migrations
+
+A comparação por nome entre os 279 arquivos de `supabase/migrations` e os 244 registros remotos encontrou 72 nomes coincidentes e 207 nomes sem correspondência literal. Isso **não** prova que 207 migrations estejam pendentes: há migrations antigas registradas com versões geradas e nomes diferentes dos prefixos atuais.
+
+Foram localizados arquivos de migration cujos objetos-alvo continuam ausentes no schema consultado e cujos nomes não aparecem literalmente no histórico remoto:
+
+- `20260925133000_fmea_process_v1.sql`
+- `20261019150000_erp_qualidade_liberacao_lotes.sql`
+- `20261019190000_erp_qualidade_genealogia_lotes.sql`
+- `20261021100000_logistica_expedicao_nfe_etiquetas.sql`
+- `20261021180000_engenharia_bom_mestre.sql`
+- `20261021190000_qualidade_refugos_transacional.sql`
+- `20261022120000_erp_qualidade_auditorias_planta.sql`
+- `20261029220000_sgq_rpnc_evidencias_create_permission.sql`
+- `20261106120000_erp_fmea_plano_controle_aiag_v1.sql`
+- `20261108200000_qualidade_templates_inspecao_versionados.sql`
+
+Esses arquivos são candidatos prioritários para revisão, não uma ordem para aplicação em lote. Antes de executar, conferir SQL completo, dependências, tabelas preexistentes, policies, grants, triggers, funções `SECURITY DEFINER` e efeitos sobre dados existentes. Aplicar um por vez, registrar resultado e verificar objetos/RLS após cada migration.
