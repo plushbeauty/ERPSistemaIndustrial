@@ -110,6 +110,7 @@ const ClassificacaoFiscal = lazy(() => import('./features/fiscal/ClassificacaoFi
 const EstornoLancamentos = lazy(() => import('./features/fiscal/EstornoLancamentos'))
 const PainelRazaoGeral = lazy(() => import('./features/fiscal/PainelRazaoGeral'))
 const CustomerDnList = lazy(() => import('./pages/CustomerDnList'))
+const CustomerDnFinanceList = lazy(() => import('./pages/CustomerDnFinanceList'))
 const CustomerDnSettings = lazy(() => import('./pages/CustomerDnSettings'))
 const CustomerDnPod = lazy(() => import('./pages/CustomerDnPod'))
 const Master = lazy(() => import('./pages/Master'))
@@ -354,7 +355,8 @@ export default function AppEntryV2() {
               <Route path="financeiro/lucratividade" element={<Navigate to="/pageprincipal/controladoria/lucratividade" replace />} />
               <Route path="financeiro/retificacao" element={<QualityPlanGate><RetificacaoPedido /></QualityPlanGate>} />
               <Route path="financeiro/retificacao-assistente" element={<Navigate to="/pageprincipal/controladoria/retificacao-assistente" replace />} />
-              <Route path="financeiro/notas-debito" element={<QualityPlanGate><CustomerDnList /></QualityPlanGate>} />
+              <Route path="financeiro/notas-debito" element={<QualityPlanGate><CustomerDnFinanceList /></QualityPlanGate>} />
+              <Route path="financeiro/notas-debito-clientes" element={<QualityPlanGate><CustomerDnList /></QualityPlanGate>} />
               <Route path="financeiro/notas-debito/configuracoes" element={<QualityPlanGate><CustomerDnSettings /></QualityPlanGate>} />
               <Route path="financeiro/notas-debito/:id/pod" element={<QualityPlanGate><CustomerDnPod /></QualityPlanGate>} />
               <Route path="fiscal/ano" element={<QualityPlanGate><AnoFiscal /></QualityPlanGate>} />
