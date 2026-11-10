@@ -61,9 +61,9 @@
     },
     {
       "path": "src/features/banking/ListaPrecosCliente.tsx",
-      "sha": "c297eef156673f80c6b16fc6025ad7aa266262bb",
+      "sha": "6d954fb5f4538837f217c0435f5e0241d6b6bb96",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-VENDAS-TABELA-PRECO-CLIENTE-20261110-01 — módulo Vendas, integração de preço especial no Novo Pedido, importação idempotente e consulta isolada por empresa",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
