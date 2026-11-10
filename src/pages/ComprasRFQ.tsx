@@ -5,7 +5,7 @@
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Plus, Save, Search, Trash2 } from 'lucide-react'
+import { ArrowLeft, Plus, Printer, Save, Search, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
@@ -256,6 +256,7 @@ export default function ComprasRFQ() {
             <h1 className="text-xl font-medium text-[#123B50]">Pedido de Cotação — RFQ</h1>
           </div>
           <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => window.print()} className="flex min-h-10 items-center gap-2 rounded-md border px-3 py-2 text-xs"><Printer size={15}/> Imprimir / PDF</button>
             <button
               type="button"
               onClick={() => navigate('/compras/solicitacao-manual')}
