@@ -347,6 +347,7 @@ Observações verificadas:
 | Pedido de compra — componente ComprasPedidoForm | fornecedor, requisição, comprador, condição, prazo, centro de custo; linhas com produto, quantidade, unidade, preço, NCM, entrega, OP, centro de custo, IPI e ICMS; dados comerciais como frete, desconto, modalidade e transportadora | adicionar/remover linhas, cancelar, salvar por RPC transacional. Impressão dedicada não identificada no componente |
 | Fornecedores — /pageprincipal/cadastros/fornecedores | cadastro, documento, contatos, endereço, ISO/certificado, observações e filtros | novo, editar, excluir, filtrar, atualizar, upload de certificado e **imprimir** |
 | Relatórios — /pageprincipal/compras/relatorios | pesquisa, filtro de status/data da RFQ, indicadores, gráficos, fornecedores e tabelas | atualizar e **imprimir/PDF** |
+| Recebimento de materiais — /pageprincipal/recebimento-materiais | NF-e manual/XML, série, chave, data, CNPJ, total, itens, unidade, quantidade, valor unitário, lotes do fabricante/internos, validade e quantidades por lote | importar XML, adicionar/remover item, adicionar lote, novo, confirmar recebimento por RPC e **imprimir** |
 
 #### Falhas adicionais confirmadas e corrigidas nesta branch
 
@@ -354,7 +355,7 @@ Observações verificadas:
 2. **Compras Industrial:** consulta usava prazo_entrega, codigo_produto e descricao_produto; alterada para data_prevista, codigo_mp e descricao, conforme colunas encontradas no banco.
 3. **RFQ:** a tabela erp_rfq_respostas restringe status a RASCUNHO, ENVIADA, ACEITA ou RECUSADA. A tela enviava RECEBIDA, que violava o CHECK e faria o INSERT falhar. Corrigido para RASCUNHO e preenchido respondido_por com o usuário autenticado.
 4. **Validade:** a coluna validade já existe em erp_rfq_respostas, mas não estava disponível na entrada de propostas; campo de validade por fornecedor adicionado à RFQ e persistido. A análise passou a exibir a validade.
-5. **Impressão:** botões Imprimir/PDF adicionados à RFQ e ao mapa comparativo de preços. Requisições, relatórios e fornecedores já tinham impressão. A auditoria ainda precisa validar visualmente o resultado impresso e decidir os layouts dedicados de pedido, recebimento e central.
+5. **Impressão:** botões Imprimir/PDF adicionados à RFQ e ao mapa comparativo de preços. Requisições, relatórios e fornecedores já tinham impressão. A auditoria ainda precisa validar visualmente o resultado impresso e decidir os layouts dedicados de pedido e central. O recebimento de materiais já tem impressão e importação XML.
 
 #### Divergência estrutural que impede fechar a modelagem de Compras
 
@@ -374,7 +375,7 @@ Observações verificadas:
 
 **Corrigido em código nesta branch:** consultas incompatíveis em Relatórios e Compras Industrial; status inválido de resposta RFQ; autoria da resposta; campo de validade; exibição de validade; impressão/PDF em RFQ e análise de preços.
 
-**Ainda não concluído:** contrato de proposta por item e custos acessórios; divergência de FK/migration dos itens de pedido; fluxo de aprovação real; impressão dedicada de pedido e recebimento; teste de todas as ações com usuário/tenant; validação de build. Vercel segue bloqueado por build-rate-limit, portanto não há preview validado. Não promover para produção.
+**Ainda não concluído:** contrato de proposta por item e custos acessórios; divergência de FK/migration dos itens de pedido; fluxo de aprovação real; impressão dedicada de pedido; teste de todas as ações com usuário/tenant; validação de build. Vercel segue bloqueado por build-rate-limit, portanto não há preview validado. Não promover para produção.
 
 ## 2. Próximos módulos
 
