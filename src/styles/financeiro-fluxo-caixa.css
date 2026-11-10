@@ -4,7 +4,7 @@
  * Escopo isolado desta tela; não altera shell global nem lógica financeira.
  */
 .ips-page {
-  box-sizing: border-box; width: 100%; min-width: 0; padding: 10px 12px 14px;
+  box-sizing: border-box; width: 100%; min-width: 0; padding: 16px 20px 18px;
   color: #173b4a; background: #f4fbfd; font-size: 11px; line-height: 1.4;
 }
 .ips-page *, .ips-page *::before, .ips-page *::after { box-sizing: border-box; }
@@ -18,14 +18,15 @@
 .ips-eyebrow span { padding:0 4px; color:#a0b5bf; }
 .ips-bar-title strong { color:#123b50; font-size:22px; line-height:1.2; font-weight:800; }
 .ips-subtitle { color:#657f8c; font-size:10px; }
-.ips-toolbar { display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:wrap; }\n.ips-toolbar .ips-action { width:135px; min-height:40px; }
+.ips-toolbar { display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:wrap; }
+.ips-toolbar .ips-action { width:135px; min-height:40px; }
 .ips-connection { display:inline-flex; align-items:center; gap:6px; color:#8a641f; font-size:9px; font-weight:800; }
 .ips-connection-dot { width:7px; height:7px; border-radius:50%; background:#e6a34a; }
 .ips-connection.is-ready { color:#28734f; }
 .ips-connection.is-ready .ips-connection-dot { background:#3a9d78; }
 .ips-connection.is-error { color:#b33d42; }
 .ips-connection.is-error .ips-connection-dot { background:#d65b61; }
-.ips-workspace { display:flex; min-width:0; flex-direction:column; gap:10px; }
+.ips-workspace { display:flex; min-width:0; flex-direction:column; gap:12px; }
 .ips-section {
   min-width:0; padding:20px; border:1px solid #d3e3ea; border-radius:5px; background:#fff;
   box-shadow:0 1px 4px rgba(18,59,80,.045);
@@ -86,7 +87,8 @@
 .ips-empty { padding:24px 10px!important; text-align:center; color:#708895!important; font-size:10px; }
 .ips-empty-error { color:#b74349!important; }
 .ips-pager { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:10px; color:#607987; font-size:9px; }
-.ips-pager > div { display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:wrap; }\n.ips-pager .ips-action { min-width:110px; min-height:36px; }
+.ips-pager > div { display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:wrap; }
+.ips-pager .ips-action { min-width:110px; min-height:36px; }
 .ips-pager strong { color:#456170; font-size:9px; white-space:nowrap; }
 .ips-footer { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; padding:4px 2px; color:#718895; font-size:9px; }
 .ips-footer span { display:inline-flex; align-items:center; gap:6px; }
