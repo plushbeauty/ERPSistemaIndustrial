@@ -467,3 +467,35 @@ Os módulos abaixo serão inventariados e comparados em sequência. Cada tópico
 | 4. Type-check e fluxo ponta a ponta | **Pendente** | Não há workspace/terminal local nesta sessão para executar tsc --noEmit; não foi feito teste autenticado de criação/edição/listagem/impressão |
 
 **Não concluído:** não marcar esta página como concluída até executar tsc --noEmit e validar com usuário autenticado de empresa de teste criação, leitura, edição do pedido recém-criado e impressão. A edição de pedidos legados permanece intencionalmente bloqueada por ausência de vínculo mestre comprovado. Não foi acionado deploy Vercel.
+
+
+### 1.5 Correção da sequência, edição e impressão — 10/11/2026
+
+#### Reconciliação remota confirmada
+- Reconsulta direta ao catálogo remoto confirmou os tipos/colunas: `erp_pedidos.numero_pedido varchar NOT NULL`, `erp_pedidos.empresa_id uuid`; `erp_pedidos_compra.numero bigint`, `empresa_id uuid NOT NULL`, `fornecedor_id uuid`, `data_prevista date`, `condicao_pagamento text`; itens com `pedido_id uuid NOT NULL`, `empresa_id uuid NOT NULL`, `codigo_mp text NOT NULL`, `descricao text NOT NULL`, `quantidade numeric`, `valor_unitario numeric`, `total numeric`, `unidade text NOT NULL`.
+- FK crítica preservada: `erp_pedidos_compra_itens.pedido_id → erp_pedidos.id`. Nenhuma FK foi alterada.
+- As quatro colunas aditivas estão presentes e anuláveis. Fornecedor, produto, empresa e usuário ERP têm as colunas efetivamente usadas pelo formulário/RPC.
+- `erp_rfq_respostas` tem apenas `valor_total numeric`, `prazo_dias integer`, `condicao_pagamento text`, `validade date`, `observacoes text`, `status text` e metadados. `erp_rfq_itens` representa apenas os itens solicitados, sem preço/resposta do fornecedor por item. CHECK de status da resposta permanece `RASCUNHO | ENVIADA | ACEITA | RECUSADA`.
+
+#### Correção da numeração
+- A revisão da função detectou que a primeira versão usava também `MAX(erp_pedidos.numero_pedido)`, misturando a sequência mestre geral/PDV com Compras.
+- Corrigido no banco com migration `20261110183000_compras_pedido_numero_sequencia_isolada.sql`: agora o próximo número é exclusivamente `COALESCE(MAX(erp_pedidos_compra.numero), 0) + 1` por `empresa_id`, protegido por `pg_advisory_xact_lock(hashtext('pc_' || v_empresa_id::text))`.
+- A função segue `SECURITY INVOKER`, com `search_path` fixo e EXECUTE para `authenticated`. Metadados pós-correção confirmam `prosecdef=false`, grant ativo, trava por empresa e ausência de leitura da numeração mestre do PDV.
+
+#### Edição e impressão
+- `ComprasPedidoForm.tsx` agora aceita `pedidoId`, carrega cabeçalho e linhas por `id + empresa_id`, permite edição apenas em `RASCUNHO` ou `PENDENTE_APROVACAO`, e envia `pedido_id` à mesma RPC atômica.
+- `ComprasWorkspace.tsx` agora expõe ação Editar na listagem de Pedidos e mantém o formulário aberto após salvar para permitir impressão com número definitivo. O prazo da listagem foi alinhado à coluna real `data_prevista`.
+- O layout A4 apresenta `PC-0000` com o número retornado pela RPC depois de gravar; o botão de impressão só é habilitado após salvar. Cabeçalho institucional PLASTIBOR e dados cadastrais são renderizados com valores existentes em `erp_empresas`; dados de fornecedor usam campos reais de `erp_fornecedores`.
+
+#### Cotação / análise de preços
+- A comparação foi simplificada para mostrar apenas valor total informado, prazo em dias, condição de pagamento e validade, além da seleção do fornecedor. Foram removidas as colunas visuais de frete, desconto e custo líquido, pois não têm persistência no schema remoto.
+- Não foi criada tabela fictícia nem gravado preço por item. Cotação detalhada por item permanece bloqueada até decisão/aprovação de um contrato de dados aditivo.
+
+#### Segurança e validação
+- Consulta a `pg_class/pg_policy` confirmou RLS e FORCE RLS ativos nas três tabelas. Policies permanecem: `erp_pedidos` e `erp_pedidos_compra` por `erp_current_company_id()` (ou master); itens por `erp_current_empresa_id()`.
+- Advisor de segurança não apontou a nova RPC como SECURITY DEFINER. Os avisos retornados pelo advisor são preexistentes/fora do escopo desta página (incluem outras funções SECURITY DEFINER e tabela RH).
+- **Ainda pendente:** `tsc --noEmit`, lint e teste autenticado real de criar, consultar, editar e imprimir. O conector GitHub/Supabase não disponibiliza workspace de execução local nem sessão autenticada de usuário de teste nesta rodada; não foi simulada identidade nem gravado dado de teste em produção.
+- **Ainda pendente:** checklist de botões, filtros, permissões, modais e impressão das outras páginas de Compras (Requisições, RFQ, Análise, Recebimento, Fornecedores e Relatórios). Não declarar o módulo Compras concluído até esse checklist ser executado.
+- Vercel não foi acionada por causa do build-rate-limit.
+
+**Status atualizado da página Pedidos:** contrato remoto e correção de numeração aplicados/verificados no catálogo; edição e impressão com número salvo implementadas no código; cotação por item explicitamente limitada pelo schema. A página continua **em validação**, não concluída, até type-check/lint e teste autenticado ponta a ponta.
