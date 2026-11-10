@@ -9,6 +9,8 @@ import {Landmark,Upload,RefreshCw,Plus,Search,Settings,ArrowUpRight,Paperclip,Ey
 import {supabase} from '../lib/supabaseClient'
 type Note={id:string;numero_nota:string|null;documento_ref:string|null;entidade_nome:string;data_emissao:string;data_vencimento:string;tipo_lancamento:string;valor_total:number;status:string;comprovante_path:string|null;descricao:string}
 type Option={id:string;name:string;documento?:string|null}
+type CustomerPartnerRow={id:string;razao_social:string|null;nome_fantasia:string|null;nome:string|null;documento:string|null}
+type SupplierPartnerRow={id:string;razao_social:string|null;nome_fantasia:string|null;documento:string|null}
 type Account={id:string;codigo:string;nome:string;banco:string}
 type Center={id:string;codigo:string;nome:string}
 const money=(v:number)=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}),date=(v:string)=>v?new Date(v+'T12:00:00').toLocaleDateString('pt-BR'):'—'
@@ -20,7 +22,7 @@ export default function CustomerDnFinanceList(){
  const total=useMemo(()=>Math.max(0,Number(principal||0)+Number(fees||0)-Number(discount||0)),[principal,fees,discount])
  const load=useCallback(async()=>{setLoading(true);setError('');try{const t=await supabase.rpc('erp_current_empresa_id');if(t.error)throw t.error;if(typeof t.data!=='string'||!t.data)throw new Error('Empresa ativa não identificada.');setCompany(t.data)
  const [n,c,s,a,cc]=await Promise.all([supabase.from('erp_notas_debito_financeiras').select('id,numero_nota,documento_ref,entidade_nome,data_emissao,data_vencimento,tipo_lancamento,valor_total,status,comprovante_path,descricao').eq('empresa_id',t.data).order('created_at',{ascending:false}).limit(500),supabase.from('erp_clientes').select('id,nome,razao_social,nome_fantasia,documento').eq('empresa_id',t.data).eq('ativo',true).order('nome'),supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia,documento').eq('empresa_id',t.data).eq('ativo',true).order('razao_social'),supabase.from('erp_contas_bancarias').select('id,codigo,nome,banco').eq('empresa_id',t.data).eq('ativo',true).order('nome'),supabase.from('erp_centros_custos').select('id,codigo,nome').eq('empresa_id',t.data).eq('ativo',true).order('nome')]);for(const x of [n,c,s,a,cc])if(x.error)throw x.error
- setRows((n.data||[]) as Note[]);setPartners([...(c.data||[]).map((x:any)=>({id:'C:'+x.id,name:x.razao_social||x.nome_fantasia||x.nome,documento:x.documento})),...(s.data||[]).map((x:any)=>({id:'F:'+x.id,name:x.nome_fantasia||x.razao_social,documento:x.documento}))]);setAccounts((a.data||[]) as Account[]);setCenters((cc.data||[]) as Center[])
+ setRows((n.data||[]) as Note[]);const customers=(c.data||[]) as CustomerPartnerRow[];const suppliers=(s.data||[]) as SupplierPartnerRow[];setPartners([...customers.map(x=>({id:'C:'+x.id,name:x.razao_social||x.nome_fantasia||x.nome||'Cliente sem nome',documento:x.documento})),...suppliers.map(x=>({id:'F:'+x.id,name:x.nome_fantasia||x.razao_social||'Fornecedor sem nome',documento:x.documento}))]);setAccounts((a.data||[]) as Account[]);setCenters((cc.data||[]) as Center[])
  }catch(e){setError(e instanceof Error?e.message:'Erro ao consultar notas.')}finally{setLoading(false)}},[])
  useEffect(()=>{void load()},[load])
  const filtered=rows.filter(r=>(!query.trim()||[r.numero_nota||'',r.documento_ref||'',r.entidade_nome,r.descricao].join(' ').toLowerCase().includes(query.trim().toLowerCase()))&&(status==='TODOS'||r.status===status)&&r.tipo_lancamento===kind)
