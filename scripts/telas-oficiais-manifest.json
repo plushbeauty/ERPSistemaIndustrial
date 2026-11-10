@@ -685,11 +685,11 @@
     },
     {
       "path": "src/pages/FinanceiroFluxoCaixa.tsx",
-      "sha": "b379ea788f449c326fcbff270ce8006bc2827f0a",
+      "sha": "1f0c3a64dc58eacdd669625f7de8a2ecbf5fed25",
       "autor": "FernandoSch",
-      "revisao": "REV-FLUXO-CAIXA-PAGINACAO-20261108-01 — leitura paginada integral, tenant da sessão autenticada, extrato e gravação real com controles compactos",
-      "aprovadaEm": "2026-11-08",
-      "statusAprovacao": "REVISAO AUTORIZADA PELO PROPRIETARIO EM 2026-11-08 PARA INTEGRAR A VERSAO COM PAGINACAO COMPLETA E ISOLAMENTO POR EMPRESA, PRESERVANDO O SHELL HORIZONTAL GLOBAL"
+      "revisao": "REV-FLUXO-CAIXA-WIREFRAME-COMPLETO-20261110-02 — layout completo com indicadores, formulário 40px, extrato 48px e persistência real por empresa; paginação e RLS preservados.",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "AJUSTE COMPLETO AUTORIZADO PELO PROPRIETÁRIO EM 2026-11-10; dados reais PostgreSQL/Supabase, tenant e RLS preservados."
     },
     {
       "path": "src/pages/FinanceiroGraficoDesvios.tsx",
@@ -1770,6 +1770,14 @@
       "revisao": "REV-RPNC-CSS-CARIMBO-20261103-01 — carimbo de autoria/aprovacao exigido pelo manifesto de telas; nenhuma regra visual foi tocada",
       "aprovadaEm": "2026-11-03",
       "statusAprovacao": "APROVADO PELO PROPRIETARIO (ordem de 2026-11-03: \"todas as telas novas vao ter revisao, aprovacao e travamento para o vercel nao pegar mais telas antigas\")"
+    },
+    {
+      "path": "src/styles/financeiro-fluxo-caixa.css",
+      "sha": "daa7ba8c745f9844dd81e0333ebcf93fc8b887f7",
+      "autor": "FernandoSch",
+      "revisao": "REV-FLUXO-CAIXA-WIREFRAME-COMPLETO-20261110-02 — padding 20px, cards 115px, indicadores 22px, campos 40px, botão de ação 190x42px, atualizar 135x40px e linhas do extrato 48px.",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "AJUSTE COMPLETO AUTORIZADO PELO PROPRIETÁRIO EM 2026-11-10; escopo isolado da tela e sem alteração do shell global."
     }
   ]
 }
