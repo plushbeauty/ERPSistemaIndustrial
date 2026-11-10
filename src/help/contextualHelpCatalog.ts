@@ -204,6 +204,15 @@ const help: Record<string, ContextualHelp> = {
     buttons: ['Salvar: grava parâmetros.', 'Restaurar: somente se a tela oferecer essa ação e houver autorização.'],
     tips: ['Alterar a regra pode afetar novos cadastros; avalie impactos antes de salvar.'],
     verified: true,
+  },,
+  '/pageprincipal/controladoria/razao-geral': {
+    title: 'Monitor do Razão Geral — GL',
+    purpose: 'Auditar e acompanhar débitos e créditos registrados em uma conta bancária ou diário financeiro da empresa, com extrato detalhado e saldo consolidado consultado diretamente no banco.',
+    steps: ['Confira a empresa autenticada, preenchida automaticamente.', 'Selecione em Banco / Diário a conta que deseja consultar.', 'Clique em Filtrar para carregar as movimentações.', 'Analise Data, Documento, Descrição, Débito e Crédito.', 'Confira no rodapé os totais da grade e o saldo total do razão calculado sobre todo o histórico da conta.'],
+    fields: ['Empresa: contexto da empresa autenticada na sessão; não é editável.', 'Banco / Diário: conta bancária ativa da empresa selecionada.', 'Data: data registrada para o lançamento.', 'Documento: identificador documental do lançamento, quando informado.', 'Descrição: histórico do lançamento.', 'Débito / Crédito: valores exibidos na grade para os lançamentos consultados.'],
+    buttons: ['Voltar: retorna à tela visitada anteriormente.', 'Filtrar: consulta os lançamentos da conta selecionada.'],
+    tips: ['A grade exibe no máximo os 1.000 lançamentos mais recentes.', 'O saldo total é obtido pela RPC erp_fiscal_saldo_razao no banco e considera o histórico integral da conta, não apenas as linhas exibidas.', 'Os totais de Débitos e Créditos no rodapé representam somente os lançamentos presentes na grade.', 'Se não houver conta selecionada, a grade permanece vazia; nenhum lançamento fictício é exibido.'],
+    verified: true,
   },
 }
 
