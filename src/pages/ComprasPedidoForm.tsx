@@ -121,8 +121,7 @@ export default function ComprasPedidoForm({ onCancel, onSaved, pedidoId }: { onC
       if (!record?.pedido_compra_id || record.numero_pedido === undefined || record.numero_pedido === null) throw new Error('A RPC não retornou os identificadores do pedido.')
       setSavedPedidoId(record.pedido_compra_id)
       setSavedOrderNumber(String(record.numero_pedido))
-      const { data: savedHeader, error: headerReadError } = await supabase.from('erp_pedidos_compra').select('created_at').eq('id', record.pedido_compra_id).maybeSingle()
-      if (headerReadError) throw headerReadError
+      const { data: savedHeader } = await supabase.from('erp_pedidos_compra').select('created_at').eq('id', record.pedido_compra_id).maybeSingle()
       setEmissionDate(typeof savedHeader?.created_at === 'string' ? savedHeader.created_at : new Date().toISOString())
       onSaved('Pedido PC-' + String(record.numero_pedido).padStart(4, '0') + ' salvo com ' + payloadItems.length + ' item(ns).')
     } catch (cause) {
