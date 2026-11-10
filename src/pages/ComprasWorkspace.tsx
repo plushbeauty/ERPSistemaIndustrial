@@ -153,7 +153,6 @@ export default function ComprasWorkspace() {
         condicao_pagamento: form.condicaoPagamento.trim() || null,
         observacoes: form.observacoes.trim() || null,
         status: 'RASCUNHO',
-        status_aprovacao: 'EM_ANALISE',
         created_by: authData.user?.id ?? null,
       }).select('id,numero').single()
       if (error) throw error
