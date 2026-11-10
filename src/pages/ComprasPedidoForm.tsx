@@ -73,7 +73,7 @@ export default function ComprasPedidoForm({ onCancel, onSaved, pedidoId }: { onC
     }
     void load()
     return () => { active = false }
-  }, [])
+  }, [pedidoId])
 
   const printOrder = () => window.print()
 
