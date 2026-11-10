@@ -62,9 +62,15 @@ begin
   from public.erp_pedidos_venda p
   join public.erp_pedidos_venda_itens i
     on i.pedido_id=p.id and i.empresa_id=p.empresa_id
+  -- O schema remoto não possui vendedor_id em erp_pedidos_venda; o vínculo disponível é vendedor_nome.
+  -- Só associa quando o nome identifica exatamente um usuário ativo da mesma empresa, evitando comissão duplicada/ambígua.
   join public.erp_usuarios u
-    on u.id=p.vendedor_id and u.empresa_id=p.empresa_id
+    on u.empresa_id=p.empresa_id
    and u.ativo=true and u.deleted_at is null
+   and upper(btrim(coalesce(u.nome,'')))=upper(btrim(coalesce(p.vendedor_nome,'')))
+   and (select count(*) from public.erp_usuarios ux
+        where ux.empresa_id=p.empresa_id and ux.ativo=true and ux.deleted_at is null
+          and upper(btrim(coalesce(ux.nome,'')))=upper(btrim(coalesce(p.vendedor_nome,''))))=1
   join public.erp_comissao_vinculos v
     on v.empresa_id=p.empresa_id and v.usuario_id=u.id and v.status='Ativo'
   join public.erp_comissao_regras r
