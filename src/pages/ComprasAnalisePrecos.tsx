@@ -257,7 +257,7 @@ export default function ComprasAnalisePrecos() {
           {needsJustification && <p className="mt-1.5 text-[10px] font-medium text-amber-700">O fornecedor selecionado tem valor total informado maior que a menor proposta. Registre a justificativa antes de enviar.</p>}
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
             <p className="text-[10px] text-slate-500">A escolha do fornecedor e a justificativa serão gravadas no cabeçalho da RFQ.</p>
-            <button type="button" className="compras-analise-no-print inline-flex" onClick={() => void saveSupplierChoice()} disabled={saving || busy || !rows.length || !selectedSupplier} className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 text-xs font-bold text-white shadow-[0_4px_10px_rgba(29,78,216,.18)] transition hover:bg-blue-800 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50">
+            <button type="button" className="compras-analise-no-print inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 text-xs font-bold text-white shadow-[0_4px_10px_rgba(29,78,216,.18)] transition hover:bg-blue-800 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50" onClick={() => void saveSupplierChoice()} disabled={saving || busy || !rows.length || !selectedSupplier}>
               {saving ? <RefreshCw size={14} className="animate-spin" /> : <Send size={14} />} {saving ? 'Registrando...' : 'Registrar escolha do fornecedor'}
             </button>
           </div>
