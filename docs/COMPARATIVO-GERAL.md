@@ -508,3 +508,11 @@ Os módulos abaixo serão inventariados e comparados em sequência. Cada tópico
 - Foi sincronizado também o hash de `src/features/banking/BankStatementImporter.tsx` com o conteúdo que já existe em `main`; o arquivo bancário não foi alterado nesta revisão. A divergência anterior era somente hash obsoleto no manifesto.
 - Conferência GitHub pós-atualização: os sete hashes consultados correspondem às entradas do manifesto. Isso é uma verificação estática do lock; o job CI não foi reexecutado depois da sincronização, portanto não declarar o gate como PASS.
 - O primeiro job CI observado falhou no passo de telas oficiais antes de executar TypeScript/ESLint. Após a sincronização do manifesto, ainda falta uma execução de CI ou ambiente local para comprovar `tsc --noEmit` e lint.
+
+
+### 1.7 Unificação do formulário nas duas rotas de Pedidos — 10/11/2026
+- A rota `/pageprincipal/compras/industrial` (`ComprasIndustrial.tsx`) deixou de manter um segundo modal simplificado com salvamento de item único. Ela reutiliza `ComprasPedidoForm`, o mesmo formulário multi-itens com contrato remoto, edição e impressão.
+- A listagem de Pedidos dessa rota agora apresenta ação Editar por registro; ao salvar, atualiza a listagem sem fechar o formulário, permitindo imprimir o pedido com número definitivo.
+- A rota central `/pageprincipal/compras` (`ComprasWorkspace.tsx`) mantém a mesma ação de edição e o mesmo formulário compartilhado.
+- O campo de emissão impresso usa `created_at` persistido quando disponível; falha isolada na consulta desse metadado não desfaz nem mascara a gravação concluída.
+- Ambas as rotas continuam aguardando type-check/lint e teste autenticado real de criação, edição, listagem e impressão. Não avançar para a próxima tela enquanto esse aceite não estiver comprovado.
