@@ -100,3 +100,10 @@
 .compras-page .compras-button--primary:hover{background:#cf6d0b!important;border-color:#b85f08!important}
 .compras-page .compras-tab.is-active{border-color:#e88a24!important;color:#a95508!important;box-shadow:inset 0 -2px #e88a24}
 .compras-page .compras-tab:focus-visible,.compras-page .compras-button:focus-visible{outline:2px solid #e88a24;outline-offset:2px}
+
+
+/* REV-COMPRAS-CENTRAL-ABAS-20261110-01 — destaque laranja exclusivo das ações da tela nova. */
+.compras-page .compras-button--primary{background:#e88a24!important;border-color:#d97706!important;color:#fff!important;box-shadow:0 2px 5px rgba(217,119,6,.18)}
+.compras-page .compras-button--primary:hover{background:#cf6d0b!important;border-color:#b85f08!important}
+.compras-page .compras-tab.is-active{border-color:#e88a24!important;color:#a95508!important;box-shadow:inset 0 -2px #e88a24}
+.compras-page .compras-tab:focus-visible,.compras-page .compras-button:focus-visible{outline:2px solid #e88a24;outline-offset:2px}
