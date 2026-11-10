@@ -435,3 +435,35 @@ Os módulos abaixo serão inventariados e comparados em sequência. Cada tópico
 - Policies observadas: as três tabelas têm policy ALL de tenant; pedidos e cabeçalho usam `empresa_id = erp_current_company_id() OR erp_is_master()`, itens usam `empresa_id = erp_current_empresa_id()`. RLS e FORCE RLS ativos.
 - A hipótese de usar o mesmo UUID em `erp_pedidos` e `erp_pedidos_compra` pode satisfazer a FK atual dos itens sem alterar dados antigos, mas não está implementada: antes exige validar as funções de tenant/permissão e adotar numeração concorrente segura para os dois números obrigatórios/visíveis. Não gerar número via `max()+1` sem lock transacional/sequence.
 - Resultado: não executar INSERT parcial no navegador nem RPC adivinhada. O fluxo continua bloqueado até especificar e testar atomicamente o contrato de numeração, permissão e identidade compartilhada.
+
+
+### 1.4 Destravamento aditivo do Pedido de Compra — 10/11/2026
+
+**Implementação realizada nesta branch e migration aplicada ao Supabase conectado.**
+
+#### Schema/RPC
+- Migration 20261110170000_compras_pedido_rpc_schema_aditivo.sql adiciona somente centro_custo text, local_entrega text, referencia_cotacao text e especificacao_tecnica text em erp_pedidos_compra, todos com ADD COLUMN IF NOT EXISTS.
+- Criada public.erp_compras_salvar_pedido(p_payload jsonb), SECURITY INVOKER, com search_path fixo e execução concedida a authenticated.
+- Numeração usa pg_advisory_xact_lock(hashtext('pc_' || v_empresa_id::text)) e MAX(numero)+1 por empresa, sem tocar na sequência do PDV.
+- A RPC grava erp_pedidos primeiro e usa o mesmo UUID no cabeçalho erp_pedidos_compra; os itens apontam para esse UUID em erp_pedidos_compra_itens.pedido_id, respeitando a FK remota existente para erp_pedidos(id).
+- O fornecedor não é convertido em parceiro: parceiro_id permanece NULL porque não existe mapeamento remoto comprovado.
+- A RPC valida usuário autenticado, tenant coerente, fornecedor/produtos/requisição da mesma empresa, permissão erp_has_permission('compras', criar|editar), status inicial RASCUNHO | PENDENTE_APROVACAO e urgência suportada. Não modifica FK nem constraint antiga.
+- Edição é permitida somente para pedidos criados no novo contrato com UUID compartilhado; pedidos legados sem vínculo mestre correspondente são preservados e a edição retorna erro explícito em vez de adivinhar relacionamento.
+- RLS e FORCE RLS continuam ativos nas três tabelas. Consulta pós-migration confirmou SECURITY INVOKER, EXECUTE para authenticated, e policies originais intactas.
+
+#### Front-end
+- ComprasIndustrial.tsx agora envia p_payload com nomes reais e lê pedido_compra_id/numero_pedido; removido UPDATE posterior com campos que antes não existiam.
+- ComprasPedidoForm.tsx foi alinhado ao schema real: itens usam codigo_mp, descricao, quantidade, valor_unitario, total, unidade, data_necessidade e observacoes; cabeçalho usa os campos reais mais os quatro campos aditivos.
+- Campos sem persistência remota (NCM, OP, IPI/ICMS por linha, câmbio, frete/desconto, transportadora, número de contrato e anexos) foram retirados do formulário para não simular gravação.
+- Implementado layout de impressão A4 com identidade Plastibor, dados cadastrais lidos de erp_empresas, dados disponíveis do fornecedor, condição/prazo/local, grade de itens, total e assinaturas. Dados cadastrais ausentes são identificados como não informados; não são inventados.
+- RFQ/Análise continuam limitadas aos campos realmente persistidos em erp_rfq_respostas: valor total, prazo, condição, validade e observações. Não há resposta por item no schema atual.
+
+#### Acompanhamento solicitado — página Compras Industrial / Pedidos
+| Item | Estado | Evidência |
+|---|---|---|
+| 1. RPC atômica e contrato aditivo | **Aplicado; validação funcional pendente** | Migration aplicada; metadados confirmam quatro colunas, RPC JSONB SECURITY INVOKER e RLS/FORCE RLS intactos |
+| 2. Cotação por item | **Bloqueado pelo modelo RFQ atual** | erp_rfq_respostas ainda só tem total por fornecedor; formulário não exibe campos sem persistência |
+| 3. Impressão do pedido | **Implementada no componente; teste visual pendente** | A4 com cabeçalho Plastibor, fornecedor, condições, linhas, total e assinaturas |
+| 4. Type-check e fluxo ponta a ponta | **Pendente** | Não há workspace/terminal local nesta sessão para executar tsc --noEmit; não foi feito teste autenticado de criação/edição/listagem/impressão |
+
+**Não concluído:** não marcar esta página como concluída até executar tsc --noEmit e validar com usuário autenticado de empresa de teste criação, leitura, edição do pedido recém-criado e impressão. A edição de pedidos legados permanece intencionalmente bloqueada por ausência de vínculo mestre comprovado. Não foi acionado deploy Vercel.
