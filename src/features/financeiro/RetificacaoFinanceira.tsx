@@ -17,7 +17,7 @@ type Account = { id: string; codigo: string; nome: string; banco: string; agenci
 type Audit = { id: string; tipo_retificacao: string; dados_antes: Record<string, unknown>; dados_depois: Record<string, unknown>; justificativa: string; anexo_path: string | null; usuario_id: string; criado_em: string }
 type AuditUser = { id: string; nome: string }
 type ClosedPeriod = { id:string; data_inicio:string; data_fim:string; motivo:string; fechado_em:string; fechado_por:string }
-type Row = { title: Title; installment: Installment; partner: string }
+type Row = { title: Title; installment: Installment; partner: string; originLabel: string }
 
 const money = (value: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value || 0))
 const dateBR = (value: string) => value ? new Date(value + 'T12:00:00').toLocaleDateString('pt-BR') : '—'
@@ -31,7 +31,7 @@ export default function RetificacaoFinanceira() {
   const [company, setCompany] = useState('')
   const [titles, setTitles] = useState<Title[]>([])
   const [partners, setPartners] = useState<Partner[]>([])
-  const [accounts, setAccounts] = useState<Account[]>([])
+  const [accounts, setAccounts] = useState<Account[]>([])\n  const [originLabels, setOriginLabels] = useState<Record<string,string>>({})
   const [rows, setRows] = useState<Row[]>([])
   const [selected, setSelected] = useState<Row | null>(null)
   const [audit, setAudit] = useState<Audit[]>([])
@@ -40,7 +40,7 @@ export default function RetificacaoFinanceira() {
   const [kind, setKind] = useState('TODOS')
   const [status, setStatus] = useState('TODOS')
   const [from, setFrom] = useState('')
-  const [to, setTo] = useState('')
+  const [to, setTo] = useState('')\n  const [dateBasis, setDateBasis] = useState('VENCIMENTO')\n  const [costCenterFilter, setCostCenterFilter] = useState('')
   const [reasonType, setReasonType] = useState('CORRECAO_VALOR')
   const [newValue, setNewValue] = useState('')
   const [newDue, setNewDue] = useState('')
@@ -76,7 +76,7 @@ export default function RetificacaoFinanceira() {
       setCompany(tenant)
       const [titleRows, suppliers, customers, accountRows] = await Promise.all([
         fetchAllPages<Title>((a,b) => supabase.from('erp_financeiro_titulos')
-          .select('id,empresa_id,tipo,parceiro_tipo,parceiro_id,descricao,documento,categoria,centro_custo,data_emissao,valor_total,status,conta_bancaria_id,erp_financeiro_parcelas(id,numero,vencimento,valor,saldo,status,juros,multa,desconto)', { count: 'exact' })
+          .select('id,empresa_id,tipo,parceiro_tipo,parceiro_id,descricao,documento,categoria,centro_custo,data_emissao,origem_tipo,origem_id,valor_total,status,conta_bancaria_id,erp_financeiro_parcelas(id,numero,vencimento,valor,saldo,status,juros,multa,desconto)', { count: 'exact' })
           .eq('empresa_id', tenant).neq('status','CANCELADO').order('criado_em',{ascending:false}).range(a,b)),
         fetchAllPages<{id:string;razao_social:string;nome_fantasia:string|null;codigo:string|null}>((a,b) => supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia,codigo',{count:'exact'}).eq('empresa_id',tenant).range(a,b)),
         fetchAllPages<{id:string;nome:string;razao_social?:string;codigo?:string}>((a,b) => supabase.from('erp_clientes').select('id,nome,razao_social,codigo',{count:'exact'}).eq('empresa_id',tenant).range(a,b)),
@@ -116,23 +116,23 @@ export default function RetificacaoFinanceira() {
 
   const allRows = useMemo<Row[]>(() => titles.flatMap(title =>
     (title.erp_financeiro_parcelas || []).filter(p => p.status !== 'CANCELADO').map(installment => ({
-      title, installment, partner: partnerName(title.parceiro_id),
+      title, installment, partner: partnerName(title.parceiro_id), originLabel: title.origem_id ? (originLabels[title.origem_id] || '') : '',
     }))
-  ), [titles, partnerName])
+  ), [titles, partnerName, originLabels])
 
   const filtered = useMemo(() => {
     const term = query.trim().toLocaleLowerCase('pt-BR')
     return allRows.filter(row => {
       const p = row.installment
       const t = row.title
-      const matchTerm = !term || [t.id, t.documento || '', t.descricao, row.partner, String(p.numero)].join(' ').toLocaleLowerCase('pt-BR').includes(term)
+      const matchTerm = !term || [t.id, t.documento || '', t.descricao, row.partner, row.originLabel, String(p.numero)].join(' ').toLocaleLowerCase('pt-BR').includes(term)
       const matchKind = kind === 'TODOS' || t.tipo === kind
       const matchStatus = status === 'TODOS' || p.status === status
       const matchFrom = !from || p.vencimento >= from
       const matchTo = !to || p.vencimento <= to
-      return matchTerm && matchKind && matchStatus && matchFrom && matchTo
+      return matchTerm && matchKind && matchStatus && matchFrom && matchTo && matchCostCenter
     })
-  }, [allRows, query, kind, status, from, to])
+  }, [allRows, query, kind, status, from, to, dateBasis, costCenterFilter])
 
   const selectRow = async (row: Row) => {
     setSelected(row)
@@ -230,7 +230,7 @@ export default function RetificacaoFinanceira() {
           <div><label className={label}>Busca rápida · NF-e, título, pedido ou cliente/fornecedor</label><div className="relative"><Search size={14} className="absolute left-3 top-3 text-slate-400"/><input className={input+' pl-9'} value={query} onChange={e=>setQuery(e.target.value)} placeholder="NF 4589, título ou nome do parceiro"/></div></div>
           <div><label className={label}>Tipo</label><select className={input} value={kind} onChange={e=>setKind(e.target.value)}><option value="TODOS">Todos</option><option value="PAGAR">Contas a pagar</option><option value="RECEBER">Contas a receber</option></select></div>
           <div><label className={label}>Status</label><select className={input} value={status} onChange={e=>setStatus(e.target.value)}><option value="TODOS">Todos</option><option value="ABERTO">Em aberto</option><option value="PARCIAL">Parcialmente pago</option><option value="LIQUIDADO">Liquidado</option></select></div>
-          <div><label className={label}>Vencimento de / até</label><div className="flex gap-1"><input type="date" className={input} value={from} onChange={e=>setFrom(e.target.value)}/><input type="date" className={input} value={to} onChange={e=>setTo(e.target.value)}/></div></div>
+          <div><label className={label}>Período por</label><select className={input} value={dateBasis} onChange={e=>setDateBasis(e.target.value)}><option value="VENCIMENTO">Vencimento</option><option value="EMISSAO">Emissão</option></select></div><div><label className={label}>Data inicial / final</label><div className="flex gap-1"><input type="date" className={input} value={from} onChange={e=>setFrom(e.target.value)}/><input type="date" className={input} value={to} onChange={e=>setTo(e.target.value)}/></div></div><div><label className={label}>Centro de custo</label><input className={input} value={costCenterFilter} onChange={e=>setCostCenterFilter(e.target.value)} placeholder="Filtrar centro"/></div>
           <button type="button" onClick={()=>void load()} className={btn+' bg-[#2D8DB8] text-white'}><RefreshCw size={14}/> Buscar</button>
         </div>
       </section>
@@ -243,7 +243,7 @@ export default function RetificacaoFinanceira() {
         <div className="overflow-x-auto"><table className="w-full min-w-[980px] border-collapse text-xs">
           <thead className="bg-[#EAF3F7] text-[10px] uppercase text-[#547080]"><tr className="h-10"><th className="px-3 text-left">ID / Parcela</th><th className="px-3 text-left">Documento / NF</th><th className="px-3 text-left">Cliente / Fornecedor</th><th className="px-3 text-left">Vencimento</th><th className="px-3 text-right">Valor original</th><th className="px-3 text-right">Saldo</th><th className="px-3 text-left">Status</th><th className="px-3 text-right">Ação</th></tr></thead>
           <tbody>{loading ? <tr><td colSpan={8} className="h-16 text-center text-slate-500">Carregando títulos financeiros…</td></tr> : filtered.map(row=><tr key={row.installment.id} className={'h-12 border-t border-[#E8F0F4] '+(selected?.installment.id===row.installment.id?'bg-sky-50':'hover:bg-slate-50')}>
-            <td className="px-3 font-semibold">#{row.title.id.slice(0,8).toUpperCase()} · {String(row.installment.numero).padStart(2,'0')}</td><td className="px-3">{row.title.documento || row.title.descricao}</td><td className="px-3">{row.partner}</td><td className="px-3">{dateBR(row.installment.vencimento)}</td><td className="px-3 text-right tabular-nums">{money(row.installment.valor)}</td><td className="px-3 text-right tabular-nums">{money(row.installment.saldo)}</td><td className="px-3">{badge(row.installment.status)}</td><td className="px-3 text-right"><button type="button" onClick={()=>void selectRow(row)} className="h-8 rounded-md border border-[#2D8DB8] px-3 text-[11px] font-bold text-[#17658B] hover:bg-sky-50">Retificar</button></td>
+            <td className="px-3 font-semibold">#{row.title.id.slice(0,8).toUpperCase()} · {String(row.installment.numero).padStart(2,'0')}</td><td className="px-3">{row.title.documento || row.originLabel || row.title.descricao}</td><td className="px-3">{row.partner}</td><td className="px-3">{dateBR(row.installment.vencimento)}</td><td className="px-3 text-right tabular-nums">{money(row.installment.valor)}</td><td className="px-3 text-right tabular-nums">{money(row.installment.saldo)}</td><td className="px-3">{badge(row.installment.status)}</td><td className="px-3 text-right"><button type="button" onClick={()=>void selectRow(row)} className="h-8 rounded-md border border-[#2D8DB8] px-3 text-[11px] font-bold text-[#17658B] hover:bg-sky-50">Retificar</button></td>
           </tr>)}{!loading && !filtered.length && <tr><td colSpan={8} className="h-16 text-center text-slate-400">Nenhum título corresponde aos filtros. Confira o período e o cadastro financeiro.</td></tr>}</tbody>
         </table></div>
       </section>
