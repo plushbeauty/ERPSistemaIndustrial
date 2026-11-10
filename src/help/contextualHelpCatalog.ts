@@ -204,7 +204,7 @@ const help: Record<string, ContextualHelp> = {
     buttons: ['Salvar: grava parâmetros.', 'Restaurar: somente se a tela oferecer essa ação e houver autorização.'],
     tips: ['Alterar a regra pode afetar novos cadastros; avalie impactos antes de salvar.'],
     verified: true,
-  },,
+  },
   '/pageprincipal/controladoria/razao-geral': {
     title: 'Monitor do Razão Geral — GL',
     purpose: 'Auditar e acompanhar débitos e créditos registrados em uma conta bancária ou diário financeiro da empresa, com extrato detalhado e saldo consolidado consultado diretamente no banco.',
