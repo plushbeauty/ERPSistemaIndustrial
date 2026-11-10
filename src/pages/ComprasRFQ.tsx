@@ -207,6 +207,7 @@ export default function ComprasRFQ() {
           valor_total: Number(quote.custo),
           prazo_dias: Number(quote.prazo),
           condicao_pagamento: quote.condicao.trim() || paymentCondition.trim() || null,
+          validade: quote.validade || null,
           respondido_por: auth.data.user.id,
           status: 'RASCUNHO',
           observacoes: 'Proposta registrada pelo comprador.',
