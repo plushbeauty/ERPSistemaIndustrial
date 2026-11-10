@@ -54,7 +54,16 @@ export default function PainelLucratividade() {
       const ids = orderRows.map(order => order.id)
       const clientIds = [...new Set(orderRows.map(order => order.cliente_id).filter((id): id is string => Boolean(id)))]
       const [items, clients] = await Promise.all([
-        ids.length ? supabase.from('erp_pedidos_venda_itens').select('id,pedido_id,descricao,quantidade,valor_unitario,total,preco_custo_industrial').eq('empresa_id', tenant).in('pedido_id', ids) : Promise.resolve({ data: [], error: null }),
+        (async () => {
+          const all: Array<{ id: string; pedido_id: string; descricao: string | null; quantidade: number; valor_unitario: number; total: number | null; preco_custo_industrial: number | null }> = []
+          for (let offset = 0; ; offset += 1000) {
+            const page = await supabase.from('erp_pedidos_venda_itens').select('id,pedido_id,descricao,quantidade,valor_unitario,total,preco_custo_industrial').eq('empresa_id', tenant).in('pedido_id', ids).range(offset, offset + 999)
+            if (page.error) return { data: null, error: page.error }
+            all.push(...(page.data ?? []))
+            if (!page.data || page.data.length < 1000) break
+          }
+          return { data: all, error: null }
+        })(),
         clientIds.length ? supabase.from('erp_clientes').select('id,nome').eq('empresa_id', tenant).in('id', clientIds) : Promise.resolve({ data: [], error: null }),
       ])
       if (items.error) throw items.error
@@ -62,6 +71,15 @@ export default function PainelLucratividade() {
       const clientMap = new Map((clients.data ?? []).map(client => [client.id, client.nome]))
       const orderMap = new Map(orderRows.map(order => [order.id, order]))
       const grouped = new Map<string, Row>()
+      for (const order of orderRows) grouped.set(order.id, {
+        id: order.id,
+        numero: String(order.numero ?? order.id.slice(0, 8)),
+        cliente: clientMap.get(order.cliente_id) ?? '—',
+        produtos: '',
+        faturamento: 0,
+        custo: 0,
+        custoCompleto: false,
+      })
       for (const item of items.data ?? []) {
         const order = orderMap.get(item.pedido_id)
         if (!order) continue
