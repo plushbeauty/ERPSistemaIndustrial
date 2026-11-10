@@ -516,3 +516,9 @@ Os módulos abaixo serão inventariados e comparados em sequência. Cada tópico
 - A rota central `/pageprincipal/compras` (`ComprasWorkspace.tsx`) mantém a mesma ação de edição e o mesmo formulário compartilhado.
 - O campo de emissão impresso usa `created_at` persistido quando disponível; falha isolada na consulta desse metadado não desfaz nem mascara a gravação concluída.
 - Ambas as rotas continuam aguardando type-check/lint e teste autenticado real de criação, edição, listagem e impressão. Não avançar para a próxima tela enquanto esse aceite não estiver comprovado.
+
+
+### 1.8 Correção identificada pelo type-check — 10/11/2026
+- O primeiro `tsc --noEmit` da execução CI após sincronizar o manifesto apontou `TS17001` em `ComprasAnalisePrecos.tsx` (atributo JSX `className` duplicado no botão de registrar escolha).
+- O botão foi corrigido para um único `className`; a comparação foi renomeada para `valorComparavel` e os textos agora dizem “valor total informado”, sem sugerir custo líquido calculado.
+- A hash lock da tela foi atualizada após a correção. A nova execução do type-check ainda precisa concluir; não declarar TypeScript aprovado até o resultado dessa execução.
