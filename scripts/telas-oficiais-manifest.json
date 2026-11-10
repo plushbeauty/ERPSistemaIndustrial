@@ -61,19 +61,19 @@
     },
     {
       "path": "src/features/comissoes/CalculoComissao.tsx",
-      "sha": "0e07e22e1d98b6b02591e890122469233adec83c",
+      "sha": "a5a98f53e673be0ebb4b550aa102230abbc24a98",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-COMISSOES-CALCULO-WIREFRAME-20261110-01 — filtros 190/340/180px, cálculo real por vendedor e competência, grade analítica, resumo e XLSX",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "WIREFRAME E INTEGRAÇÃO AUTORIZADOS PELO PROPRIETÁRIO EM 2026-11-10; mantém apuração por tenant e dados reais."
     },
     {
       "path": "src/features/comissoes/PerfilVendedor.tsx",
-      "sha": "08ef08fb02a0e790f99d95deb030b28061a55833",
+      "sha": "12864643e0ab73a1f5734e3e34822a65f9050202",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-COMISSOES-PERFIL-VENDEDOR-WIREFRAME-20261110-01 — formulário 320/320/160/165px, vínculos reais, edição e exclusão por empresa, grade 48px",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "WIREFRAME E INTEGRAÇÃO AUTORIZADOS PELO PROPRIETÁRIO EM 2026-11-10; CRUD limitado ao tenant autenticado."
     },
     {
       "path": "src/features/controladoria/AssistenteRetificacao.tsx",
@@ -101,11 +101,11 @@
     },
     {
       "path": "src/features/controladoria/PainelLucratividade.tsx",
-      "sha": "cd36a330a6737b0fb3f3c204e60d235903957526",
+      "sha": "e1105ff1450b13e74ce8e0685bf480664dfd783a",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-CONTROLADORIA-LUCRATIVIDADE-WIREFRAME-20261110-01 — filtros de competência e margem alvo, pedidos reais por tenant, custo industrial e status da margem",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "WIREFRAME E INTEGRAÇÃO AUTORIZADOS PELO PROPRIETÁRIO EM 2026-11-10; sem dados fictícios e com limite de 1.000 pedidos."
     },
     {
       "path": "src/features/controladoria/PainelRazaoGeral.tsx",
