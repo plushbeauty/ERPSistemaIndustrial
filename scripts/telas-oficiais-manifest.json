@@ -573,11 +573,11 @@
     },
     {
       "path": "src/pages/EstoqueAlmoxarifadoCompact.tsx",
-      "sha": "0f1810afb2599d2b344d3854ad053f09f01ab4f5",
+      "sha": "955e8bbef89f9675b79b84dcdbfea2517cd6e523",
       "autor": "FernandoSch",
-      "revisao": "REV-COLUNAS-BANCO-20261104-01 — ordem do proprietário \"telas travadas vc destrava\": a listagem de OPs ordenava por 'criado_em', coluna que não existe em erp_ordens_producao; a query falhava e derrubava o carregamento da tela. Leitura corrigida para 'created_at'.",
-      "aprovadaEm": "2026-11-02",
-      "statusAprovacao": "CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela"
+      "revisao": "REV-ESTOQUE-CONFERENCIA-QUALIDADE-20261110-01 — validação de defeitos detalhados no cliente e integridade transacional na RPC; ajuste de inventário restrito a inventário aberto.",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "CONSULTAS TENANT-SCOPED E RPCs REAIS PRESERVADAS; validação de conferência e ajuste reforçada no banco."
     },
     {
       "path": "src/pages/EstoqueCurvaABC.tsx",
