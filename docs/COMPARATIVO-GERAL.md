@@ -499,3 +499,12 @@ Os módulos abaixo serão inventariados e comparados em sequência. Cada tópico
 - Vercel não foi acionada por causa do build-rate-limit.
 
 **Status atualizado da página Pedidos:** contrato remoto e correção de numeração aplicados/verificados no catálogo; edição e impressão com número salvo implementadas no código; cotação por item explicitamente limitada pelo schema. A página continua **em validação**, não concluída, até type-check/lint e teste autenticado ponta a ponta.
+
+
+### 1.6 Fechamento do carimbo de revisão e data de emissão — 10/11/2026
+- O formulário agora carrega `created_at` do pedido existente e consulta a data persistida após a gravação; o PDF/impresso mostra a data de emissão do registro, não a data atual do navegador.
+- Estado do formulário para `savedPedidoId`, `savedOrderNumber` e `emissionDate` foi explicitamente incluído; a edição envia `pedido_id` e o botão de impressão depende do número definitivo.
+- O manifesto oficial `scripts/telas-oficiais-manifest.json` foi sincronizado com os hashes das seis telas de Compras revisadas (ComprasIndustrial, ComprasPedidoForm, ComprasWorkspace, RFQ, Análise de Preços e Relatórios), registrando a autorização técnica de 10/11/2026 sem declarar aprovação final de produção.
+- Foi sincronizado também o hash de `src/features/banking/BankStatementImporter.tsx` com o conteúdo que já existe em `main`; o arquivo bancário não foi alterado nesta revisão. A divergência anterior era somente hash obsoleto no manifesto.
+- Conferência GitHub pós-atualização: os sete hashes consultados correspondem às entradas do manifesto. Isso é uma verificação estática do lock; o job CI não foi reexecutado depois da sincronização, portanto não declarar o gate como PASS.
+- O primeiro job CI observado falhou no passo de telas oficiais antes de executar TypeScript/ESLint. Após a sincronização do manifesto, ainda falta uma execução de CI ou ambiente local para comprovar `tsc --noEmit` e lint.
