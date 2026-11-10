@@ -693,11 +693,11 @@
     },
     {
       "path": "src/pages/FinanceiroGraficoDesvios.tsx",
-      "sha": "f02deb14c9d9f84baec06466fc533839bfe5ba84",
+      "sha": "b56ed6e3ef0fa0da64d3192b8d8fe6dae3b9f0d9",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-FIN-GRAFICO-DESVIOS-REAL-20261110-01 — filtros por competência, produto, OP e status; KPIs, composição MP/MOD/GGF e consulta exclusivamente persistida.",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "IMPLEMENTAÇÃO AUTORIZADA PELO PROPRIETÁRIO; hash sincronizado; sem dados fictícios."
     },
     {
       "path": "src/pages/FinanceiroTitulos.tsx",
