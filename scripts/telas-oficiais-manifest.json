@@ -1,7 +1,7 @@
 {
   "contrato": "SYNQRA-R-20261103-01",
   "geradoPor": "npm run telas:manifest",
-  "totalTelas": 222,
+  "totalTelas": 223,
   "telas": [
     {
       "path": "src/components/layout/ModuleTabletMenuModal.tsx",
@@ -1578,6 +1578,14 @@
       "revisao": "REV-RH-SEM-CARD-REPETIDO-20261104-01 — a fileira superior de indicadores saiu da tela (repetia a Visão geral e mostrava traço no que não era da aba aberta); as abas passaram ao topo e viram trilho de rolagem no celular",
       "aprovadaEm": "2026-11-04",
       "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-04 (\"a primeira fileira de cards superiores exibe exatamente as mesmas métricas da fileira que está abaixo do menu de abas. O ideal é remover a primeira fileira de cima\" + \"exibir o número 0, exatamente como foi feito nos cards da fileira de baixo\")"
+    },
+    {
+      "path": "src/pages/RHSubmodules.tsx",
+      "sha": "68d34470a380db303496e8c6105cd9132ab31f78",
+      "autor": "FernandoSch",
+      "revisao": "REV-RH-TURNOS-EPIS-WIREFRAME-20261110-01 — telas de Turnos e Escalas e Controle/Entrega de EPIs, campos de 40px, grade real por empresa, CA e ficha individual; usa somente contratos remotos existentes.",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "INCREMENTO DE TELA AUTORIZADO PELO PROPRIETÁRIO EM 2026-11-10; implementação de Turnos e EPIs vinculada ao banco real e RLS por empresa. Validação CI e E2E pendentes."
     },
     {
       "path": "src/pages/SetupADMInicial.tsx",
