@@ -63,7 +63,8 @@ begin
   join public.erp_pedidos_venda_itens i
     on i.pedido_id=p.id and i.empresa_id=p.empresa_id
   join public.erp_usuarios u
-    on u.empresa_id=p.empresa_id and u.ativo=true and u.deleted_at is null
+    on u.id=p.vendedor_id and u.empresa_id=p.empresa_id
+   and u.ativo=true and u.deleted_at is null
   join public.erp_comissao_vinculos v
     on v.empresa_id=p.empresa_id and v.usuario_id=u.id and v.status='Ativo'
   join public.erp_comissao_regras r
