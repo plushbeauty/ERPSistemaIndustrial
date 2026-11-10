@@ -3,7 +3,7 @@ import { ArrowLeft, Printer, RefreshCw, Save, Search } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 
-type DbRow = Record<string, any> & { id: string }
+type DbRow = { id: string; codigo?: string; nome?: string; escala?: string; inicio?: string; termino?: string; intervalo_inicio?: string | null; intervalo_fim?: string | null; carga_horaria_mensal?: number; ativo?: boolean; dias_semana?: string[]; tolerancia_minutos?: number; adicional_noturno?: boolean; ca_valido_ate?: string; numero_ca?: string; periodicidade_troca_dias?: number; funcionario_id?: string; epi_id?: string; quantidade?: number; entregue_em?: string; motivo_entrega?: string; termo_recebimento?: string; proxima_troca_em?: string | null; devolvido_em?: string | null; [key: string]: unknown }
 const today = () => new Date().toISOString().slice(0, 10)
 const emptyTurn = { codigo: '', nome: '', escala: '', inicio: '', intervalo_inicio: '', intervalo_fim: '', termino: '', tolerancia_minutos: '10', dias_semana: [] as string[], adicional_noturno: false }
 const emptyEpi = { funcionario_id: '', epi_id: '', numero_ca: '', ca_valido_ate: '', quantidade: '1', entregue_em: today(), motivo_entrega: '', proxima_troca_em: '', termo_recebimento: '', observacoes: '' }
@@ -63,7 +63,7 @@ export function EpisScreen() {
  const staffName=(id:string)=>staff.find(x=>x.id===id)?.nome_completo??'Colaborador não localizado'
  const epiName=(id:string)=>catalog.find(x=>x.id===id)?.nome??'EPI não localizado'
  const filtered=rows.filter(r=>[staffName(r.funcionario_id),epiName(r.epi_id),r.numero_ca,r.motivo_entrega].some(v=>String(v??'').toLowerCase().includes(query.toLowerCase())))
- const caSoon=catalog.filter(x=>x.ca_valido_ate>=today()&&x.ca_valido_ate<=new Date(Date.now()+30*86400000).toISOString().slice(0,10)).length
+ const caSoon=catalog.filter(x=>String(x.ca_valido_ate??'')>=today()&&String(x.ca_valido_ate??'')<=new Date(Date.now()+30*86400000).toISOString().slice(0,10)).length
  const active=rows.filter(x=>!x.devolvido_em).length
  const served=new Set(rows.map(x=>x.funcionario_id)).size
  const submit=async(e:FormEvent)=>{e.preventDefault();if(!empresaId)return;if(!form.funcionario_id||!form.epi_id||!form.numero_ca||!form.ca_valido_ate||!form.motivo_entrega||!form.termo_recebimento){setMessage('Preencha colaborador, EPI, CA, validade, motivo e termo.');return}if(!selectedEpi){setMessage('Selecione um EPI ativo do catálogo.');return}setBusy(true);const payload={empresa_id:empresaId,funcionario_id:form.funcionario_id,epi_id:form.epi_id,quantidade:Number(form.quantidade),entregue_em:form.entregue_em,periodicidade_troca_dias:Number(selectedEpi.periodicidade_troca_dias),proxima_troca_em:form.proxima_troca_em||null,confirmado_em:form.termo_recebimento==='PENDENTE'?null:new Date().toISOString(),numero_ca:form.numero_ca,ca_valido_ate:form.ca_valido_ate,motivo_entrega:form.motivo_entrega,termo_recebimento:form.termo_recebimento,observacoes:form.observacoes||null};const {error}=await supabase.from('rh_entregas_epis').insert(payload);if(error)setMessage(error.message);else{setMessage('Entrega de EPI registrada.');setForm({...emptyEpi,entregue_em:today()});await load()}setBusy(false)}
