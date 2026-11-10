@@ -127,9 +127,9 @@
       "path": "src/features/controladoria/PainelRazaoGeral.tsx",
       "sha": "26246707ec4b9c63837698c33dbfebd998028d7e",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria. REV-CONTROLADORIA-RAZAO-GERAL-GL-20261110-01 — filtros, grade de 48px, consolidação e botão Voltar redesenhados; consultas tenant-scoped e RPC de saldo integral preservadas.",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "ALTERAÇÃO VISUAL E FUNCIONAL AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; grade limitada a 1.000 lançamentos e saldo integral calculado no banco."
     },
     {
       "path": "src/features/controladoria/RetificacaoPedido.tsx",
