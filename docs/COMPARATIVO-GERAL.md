@@ -331,7 +331,7 @@ Observações verificadas:
 
 **Limite funcional ainda aberto:** a resposta continua sendo um valor total por fornecedor. Não existe tabela de preço por item/fornecedor; cotação item a item, moeda/câmbio, frete, desconto, tributos, validade e anexos ainda exigem desenho e implementação de contrato próprio. A persistência do vencedor usa UPDATE protegido por permissão compras.editar; deve ser validada com usuário de teste autorizado. Nenhuma migration foi aplicada.
 
-**Validação:** alterações commitadas nesta branch; ainda pendentes typecheck, lint, testes, build/preview e fluxo com usuário autenticado. Não considerar Compras concluído nem produção corrigida antes dessas verificações.
+**Validação:** alterações commitadas nesta branch; typecheck, lint, testes e fluxo com usuário autenticado ainda pendentes. O check Vercel retornou falha por limite de taxa de builds (build-rate-limit); não foi gerado preview deste commit. Não repetir deploy enquanto o limite estiver ativo. Não considerar Compras concluído nem produção corrigida antes dessas verificações.
 
 ## 2. Próximos módulos
 
