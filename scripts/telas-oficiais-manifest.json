@@ -517,11 +517,11 @@
     },
     {
       "path": "src/pages/ComprasWorkspace.tsx",
-      "sha": "e0f987cef194cb22a32c54f90c02c0ff146b1294",
+      "sha": "25c8c2602439ba3095a7237cb365c09ed8210e91",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-PEDIDO-EDICAO-20261110-01 — ação Editar na listagem, carregamento por empresa e prazo de entrega alinhado à coluna data_prevista.",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-PEDIDO-EDICAO-20261110-01 — ação Editar na listagem, carregamento por empresa e prazo de entrega alinhado à coluna data_prevista. REV-COMPRAS-RFQ-HEADER-SCHEMA-20261110-02 — remove comprador_responsavel e status_aprovacao, ausentes em erp_rfq; mostra somente colunas reais do cabeçalho.",
       "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "ALTERAÇÃO TÉCNICA AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; implementação registrada e ainda sujeita a type-check, teste funcional e validação visual antes de aprovação final."
+      "statusAprovacao": "ALTERAÇÃO TÉCNICA AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; cabeçalho RFQ alinhado ao catálogo remoto; validação funcional pendente."
     },
     {
       "path": "src/pages/ConfiguracaoLote.tsx",
