@@ -54,6 +54,7 @@ import './styles/erp-action-contract-20261101.css'
 import './styles/erp-premium-global-20261108.css'
 // Sistema visual v2: chrome navy, superfície neutra e uma cor de ação (REV-INDUSTRIAL-DS-20261108-01).
 import './styles/erp-industrial-ds-20261108.css'
+import './styles/rh-employee-wireframe.css'
 
 const PagePrincipal = lazy(() => import('./pages/PagePrincipal'))
 const AppIndustrial = lazy(() => import('./AppIndustrialV7'))
@@ -66,6 +67,8 @@ const ComprasWorkspace = lazy(() => import('./pages/ComprasWorkspace'))
 const SolicitacaoCompra = lazy(() => import('./pages/SolicitacaoCompra'))
 const ComprasRequisicoes = lazy(() => import('./pages/ComprasRequisicoes'))
 const RHIndustrial = lazy(() => import('./pages/RHIndustrial'))
+const TurnosEscalas = lazyPage(() => import('./pages/RHSubmodules'), 'TurnosEscalasScreen')
+const EpisScreen = lazyPage(() => import('./pages/RHSubmodules'), 'EpisScreen')
 // Telas do preview que nao tinham rota — registro feito no transplant de 2026-11-02
 const AcompanhamentoNaoConformidade = lazyPage(() => import('./pages/AcompanhamentoNaoConformidade'), 'AcompanhamentoNaoConformidade')
 const ComercialSuprimentos = lazyPage(() => import('./pages/ComercialSuprimentos'), 'ComercialSuprimentos')
@@ -305,6 +308,19 @@ export default function AppEntryV2() {
               <Route path="compras/solicitacao" element={<SolicitacaoCompra />} />
               <Route path="compras/requisicoes" element={<ComprasRequisicoes />} />
               <Route path="rh" element={<RHIndustrial />} />
+              <Route path="rh/gestao-pessoas" element={<RHIndustrial />} />
+              <Route path="rh/funcionarios" element={<RHIndustrial />} />
+              <Route path="rh/ponto-presenca" element={<RHIndustrial />} />
+              <Route path="rh/treinamentos" element={<RHIndustrial />} />
+              <Route path="rh/avaliacoes" element={<RHIndustrial />} />
+              <Route path="rh/ausencias" element={<RHIndustrial />} />
+              <Route path="rh/acidentes" element={<RHIndustrial />} />
+              <Route path="rh/documentos" element={<RHIndustrial />} />
+              <Route path="rh/turnos" element={<TurnosEscalas />} />
+              <Route path="rh/turnos-escalas" element={<TurnosEscalas />} />
+              <Route path="rh/epis" element={<EpisScreen />} />
+              <Route path="rh/entrega-epis" element={<EpisScreen />} />
+              <Route path="rh/epis/entregas" element={<EpisScreen />} />
               <Route path="pcp/fichas-processo" element={<QualityPlanGate><PCPFichasProcesso /></QualityPlanGate>} />
               <Route path="pcp/roteiro-producao" element={<Navigate to="/pageprincipal/pcp/fichas-processo" replace />} />
               <Route path="qualidade/rpnc" element={<QualityPlanGate><QualidadeRPNC /></QualityPlanGate>} />
@@ -430,10 +446,12 @@ export default function AppEntryV2() {
               <Route path="fiscal/parametros" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
               <Route path="fiscal/nfe-entradas" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
               <Route path="fiscal/custos-industriais" element={<QualityPlanGate><CentralCustosIndustrial /></QualityPlanGate>} />
-              <Route path="rh/funcionarios" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
-              <Route path="rh/turnos" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
-              <Route path="rh/epis" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
-              <Route path="rh/epis/entregas" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
+              <Route path="rh/funcionarios" element={<RHIndustrial />} />
+              <Route path="rh/turnos" element={<TurnosEscalas />} />
+              <Route path="rh/turnos-escalas" element={<TurnosEscalas />} />
+              <Route path="rh/epis" element={<EpisScreen />} />
+              <Route path="rh/entrega-epis" element={<EpisScreen />} />
+              <Route path="rh/epis/entregas" element={<EpisScreen />} />
               <Route path="pcp/ordens" element={<QualityPlanGate><PCPOrdens /></QualityPlanGate>} />
               <Route path="pcp/pedidos-pendentes" element={<QualityPlanGate><PCPPedidosPendentes /></QualityPlanGate>} />
               <Route path="pcp/valida-fluxo" element={<QualityPlanGate><PCPValidaFluxo /></QualityPlanGate>} />
