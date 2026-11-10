@@ -109,3 +109,10 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - O manifesto e o hash manual do RPNC foram atualizados deliberadamente; os gates de telas oficiais continuam ativos.
 - A migration transacional de Compras agora valida a requisição no tenant no servidor, exige NCM de 8 dígitos e calcula total-base sem somar ICMS novamente. IPI/ICMS ficam informativos até a implantação das regras fiscais por NCM, CFOP, UF e regime.
 - As migrations estão versionadas no repositório, mas ainda não foram aplicadas ao Supabase remoto; a validação autenticada do banco permanece pendente.
+
+
+## Registro da revisão REV-FLUXO-CAIXA-PADRAO-INDUSTRIAL-20261110-01 — 2026-11-10
+
+- Ordem explícita do proprietário para corrigir a tela Fluxo de Caixa: alinhamento geral, paleta dos cards, hierarquia visual, formulários, botões, tabela e paginação responsiva.
+- `src/styles/financeiro-fluxo-caixa.css`: estilos isolados alinhados à paleta SYSNQRA (`#F4FBFD`, `#123B50`, `#2D8DB8`, `#3A9D78`, `#D65B61`), controles de 30px, cards alinhados, tabela legível e layout responsivo.
+- Escopo visual somente; consultas Supabase, isolamento por empresa, RLS e gravação financeira não foram alterados. Não desativa os gates de telas aprovadas.

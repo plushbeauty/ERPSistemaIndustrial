@@ -317,3 +317,67 @@ body{background:var(--ds-bg)}
 .icd-clean .icd-alert{margin:0!important;background:#FFF8E8!important;border-color:#E8C77A!important;color:#7B5B18!important}.icd-clean .icd-alert span{color:#8A6B2D!important}
 @media(max-width:900px){.v7-topbar{height:auto!important;min-height:78px!important;padding:10px 16px!important}.v7-top-brand img{width:50px!important;height:50px!important}.v7-top-brand strong{font-size:16px!important}.v7-top-actions{gap:10px!important}.v7-top-date{padding-right:10px!important}.v7-top-date strong{font-size:12px!important}.v7-header.v7-page-header{padding:16px 14px 8px!important}.v7-content{padding:8px 14px 24px!important}.icd-clean .icd-overview-grid{grid-template-columns:1fr!important}}
 @media(max-width:620px){.v7-topbar{padding:9px 12px!important}.v7-top-brand img{width:44px!important;height:44px!important}.v7-top-brand small{display:none!important}.v7-top-actions{gap:7px!important}.v7-top-date small{display:none!important}.v7-top-date strong{font-size:11px!important}.v7-top-user-simple{font-size:12px!important}.v7-top-exit{font-size:0!important;width:38px!important;padding:0!important}.v7-page-heading-line{align-items:flex-start!important;flex-direction:column!important;gap:7px!important}.v7-header.v7-page-header h1{font-size:24px!important}.icd-clean .icd-kpis{grid-template-columns:1fr 1fr!important}}
+
+
+/* SYSNQRA — Lumen-inspired interaction and accessibility layer (2026-11-09)
+   Uses the existing token system and installed React/CSS stack; no unverified package API. */
+:root {
+  --ds-bg: #f4fbfd;
+  --ds-ink: #123b50;
+  --ds-brand: #2d8db8;
+  --ds-brand-2: #48b7c7;
+  --ds-success: #3a9d78;
+  --ds-warning: #e6a34a;
+  --ds-danger: #d65b61;
+  --ds-line: #d3e3ea;
+  --ds-line-strong: #b8d0dc;
+  --ds-radius: 14px;
+}
+:where(button, a, input, select, textarea, [role="button"], [tabindex]):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ds-brand-2) 72%, white);
+  outline-offset: 2px;
+}
+:where(button, [role="button"]) { touch-action: manipulation; }
+:where(input, select, textarea) { accent-color: var(--ds-brand); }
+:where(input, select, textarea):disabled,
+:where(button, [role="button"]):disabled {
+  cursor: not-allowed;
+  opacity: .62;
+}
+:where(table) { font-variant-numeric: tabular-nums; }
+:where(th) { text-wrap: nowrap; }
+:where(td) { overflow-wrap: anywhere; }
+:where(.v7-table-wrap, .master-table, .pcp-table-wrap) {
+  scrollbar-width: thin;
+  scrollbar-color: #a9c8d5 transparent;
+}
+:where(.v7-table-wrap, .master-table, .pcp-table-wrap)::-webkit-scrollbar { height: 8px; width: 8px; }
+:where(.v7-table-wrap, .master-table, .pcp-table-wrap)::-webkit-scrollbar-thumb {
+  background: #a9c8d5;
+  border-radius: 99px;
+}
+:where(.v7-form, .pcp-page, .master-page) :where(label) {
+  color: var(--ds-muted);
+  font-weight: 750;
+}
+:where(.v7-form, .pcp-page, .master-page) :where(input, select, textarea) {
+  min-height: 36px;
+  border-color: var(--ds-line-strong);
+  border-radius: 9px;
+}
+:where(.v7-shell, .pcp-page, .master-page) :where(.erp-card, .v7-crud, .master-panel) {
+  box-shadow: 0 8px 28px rgba(18, 59, 80, .055);
+}
+@media (max-width: 720px) {
+  :where(.v7-content, .pcp-page, .master-page) { min-width: 0; }
+  :where(.v7-table-wrap, .master-table, .pcp-table-wrap) { max-width: 100%; }
+  :where(.v7-header, .pcp-toolbar) { gap: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :where(*, *::before, *::after) {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}
