@@ -1,7 +1,7 @@
 {
   "contrato": "SYNQRA-R-20261103-01",
   "geradoPor": "npm run telas:manifest",
-  "totalTelas": 223,
+  "totalTelas": 224,
   "telas": [
     {
       "path": "src/IndustrialLoginDirect.tsx",
@@ -1784,6 +1784,14 @@
       "sha": "50d075d050b99c882e7d94d730884fa96bba0c57",
       "autor": "FernandoSch",
       "revisao": "REV-CADASTRO-BANCOS-CONTAS-20261110-01 — cadastro compartilhado de instituições COMPE e contas bancárias por tenant",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "ALTERAÇÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10"
+    },
+    {
+      "path": "src/pages/CustomerDnFinanceList.tsx",
+      "sha": "e30a81b1d89a06e9130e9f326a1e1fbd2ec79b38",
+      "autor": "FernandoSch",
+      "revisao": "REV-NOTAS-DEBITO-FINANCEIRAS-20261110-02 — formulário completo, anexo privado, validação por empresa e geração transacional de título a pagar/receber",
       "aprovadaEm": "2026-11-10",
       "statusAprovacao": "ALTERAÇÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10"
     }
