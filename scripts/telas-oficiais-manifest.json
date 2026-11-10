@@ -1573,11 +1573,11 @@
     },
     {
       "path": "src/pages/RHIndustrial.tsx",
-      "sha": "bf153e9e7f502fd53659b7ac80c7976200d68a41",
+      "sha": "4e8bcbea25e53102911025fc3f150c8104554462",
       "autor": "FernandoSch",
-      "revisao": "REV-RH-SEM-CARD-REPETIDO-20261104-01 — a fileira superior de indicadores saiu da tela (repetia a Visão geral e mostrava traço no que não era da aba aberta); as abas passaram ao topo e viram trilho de rolagem no celular",
-      "aprovadaEm": "2026-11-04",
-      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-04 (\"a primeira fileira de cards superiores exibe exatamente as mesmas métricas da fileira que está abaixo do menu de abas. O ideal é remover a primeira fileira de cima\" + \"exibir o número 0, exatamente como foi feito nos cards da fileira de baixo\")"
+      "revisao": "REV-RH-ROTAS-FUNCIONARIOS-20261110-02 — abertura da aba Funcionários pela rota dedicada, campos e grid alinhados ao wireframe de 40px/48px; rotas de RH operacional preservadas.",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "REVISÃO EXPLICITAMENTE SOLICITADA PELO PROPRIETÁRIO EM 2026-11-10; não restaurar interface legada. Validação CI/E2E pendente."
     },
     {
       "path": "src/pages/RHSubmodules.tsx",
