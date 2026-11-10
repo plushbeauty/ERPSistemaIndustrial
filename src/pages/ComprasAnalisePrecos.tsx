@@ -107,13 +107,13 @@ export default function ComprasAnalisePrecos() {
     setJustificativa(selectedRfq.justificativa_escolha || '')
   }, [selectedRfq?.id, selectedRfq?.fornecedor_escolhido_id, selectedRfq?.justificativa_escolha, rows.length])
 
-  const submitForApproval = async () => {
+  const saveSupplierChoice = async () => {
     if (!selectedRfq || !selectedSupplier || !chosenRow || !winner) {
       setError('Selecione uma RFQ com proposta válida e escolha o fornecedor.')
       return
     }
     if (needsJustification && !justificativa.trim()) {
-      setError('Justifique a escolha quando o fornecedor selecionado não tiver o menor custo líquido.')
+      setError('Justifique a escolha quando o fornecedor selecionado não tiver o menor valor total informado.')
       return
     }
     setSaving(true)
@@ -162,7 +162,7 @@ export default function ComprasAnalisePrecos() {
             <span className="rounded-md border border-blue-100 bg-blue-50 px-2 py-1 text-[9px] font-semibold text-blue-700">MAPA COMPARATIVO</span>
           </div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900">Análise de preços e propostas</h1>
-          <p className="mt-1 text-[11px] text-slate-500">Comparação por custo líquido, prazo comercial e condição de pagamento.</p>
+          <p className="mt-1 text-[11px] text-slate-500">Comparação por valor total informado, prazo comercial e condição de pagamento.</p>
         </div>
         <div className="flex items-center gap-2">
           <button type="button" title="Atualizar dados" aria-label="Atualizar dados" className="flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50" onClick={() => void load()} disabled={busy}>
@@ -240,7 +240,7 @@ export default function ComprasAnalisePrecos() {
             </table>
           </div>
           {winner && <div className="grid grid-cols-1 gap-2 border-t border-slate-100 bg-sky-50/50 p-3 sm:grid-cols-3 sm:px-4">
-            <div className="flex items-center gap-2"><CircleDollarSign size={17} className="text-sky-700" /><div><div className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Menor custo líquido</div><div className="text-sm font-bold text-slate-900">{money(winner.custo)}</div></div></div>
+            <div className="flex items-center gap-2"><CircleDollarSign size={17} className="text-sky-700" /><div><div className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Menor valor total informado</div><div className="text-sm font-bold text-slate-900">{money(winner.custo)}</div></div></div>
             <div><div className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Fornecedor menor custo</div><div className="mt-1 text-xs font-semibold text-slate-800">{supplierMap.get(winner.fornecedor_id) || 'Fornecedor não localizado'}</div></div>
             <div><div className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Propostas comparadas</div><div className="mt-1 text-xs font-semibold text-slate-800">{rows.length} fornecedor(es)</div></div>
           </div>}
@@ -249,15 +249,15 @@ export default function ComprasAnalisePrecos() {
         <section className="compras-analise-card p-3 sm:p-4">
           <div className="mb-3 flex items-center gap-2">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-700"><ClipboardCheck size={16} /></span>
-            <div><h2 className="text-xs font-bold text-slate-900">Justificativa técnica / comercial</h2><p className="text-[10px] text-slate-500">A justificativa é obrigatória quando a escolha não for a proposta de menor custo líquido.</p></div>
+            <div><h2 className="text-xs font-bold text-slate-900">Justificativa técnica / comercial</h2><p className="text-[10px] text-slate-500">A justificativa é obrigatória quando a escolha não for a proposta de menor valor total informado.</p></div>
           </div>
           <label htmlFor="justificativa-escolha" className="compras-analise-label">Justificativa da escolha {needsJustification ? <span className="text-red-600">· Obrigatória</span> : '(quando aplicável)'}</label>
           <textarea id="justificativa-escolha" value={justificativa} onChange={e => setJustificativa(e.target.value)} rows={3} maxLength={4000} className="w-full resize-y rounded-lg border border-slate-300 bg-white p-3 text-xs text-slate-800 outline-none transition focus:border-sky-600 focus:ring-2 focus:ring-sky-100" placeholder="Registre critérios técnicos, qualidade, prazo de entrega, condição comercial ou outro motivo para a escolha..." />
           {needsJustification && <p className="mt-1.5 text-[10px] font-medium text-amber-700">O fornecedor selecionado tem custo maior que a menor proposta. Registre a justificativa antes de enviar.</p>}
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
             <p className="text-[10px] text-slate-500">A escolha do fornecedor e a justificativa serão gravadas no cabeçalho da RFQ.</p>
-            <button type="button" onClick={() => void submitForApproval()} disabled={saving || busy || !rows.length || !selectedSupplier} className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 text-xs font-bold text-white shadow-[0_4px_10px_rgba(29,78,216,.18)] transition hover:bg-blue-800 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50">
-              {saving ? <RefreshCw size={14} className="animate-spin" /> : <Send size={14} />} {saving ? 'Registrando...' : 'Finalizar análise e enviar para aprovação'}
+            <button type="button" onClick={() => void saveSupplierChoice()} disabled={saving || busy || !rows.length || !selectedSupplier} className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 text-xs font-bold text-white shadow-[0_4px_10px_rgba(29,78,216,.18)] transition hover:bg-blue-800 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50">
+              {saving ? <RefreshCw size={14} className="animate-spin" /> : <Send size={14} />} {saving ? 'Registrando...' : 'Registrar escolha do fornecedor'}
             </button>
           </div>
         </section>
