@@ -325,7 +325,8 @@ export default function AppEntryV2() {
               <Route path="controladoria/retificacao-pedido/:pedidoId" element={<RetificacaoPedido />} />
               <Route path="financeiro/conciliacao-bancaria" element={<QualityPlanGate><BankReconciliation /></QualityPlanGate>} />
               <Route path="financeiro/importar-extratos" element={<QualityPlanGate><BankStatementImporter /></QualityPlanGate>} />
-              <Route path="financeiro/lista-precos-cliente" element={<QualityPlanGate><ListaPrecosCliente /></QualityPlanGate>} />
+              <Route path="vendas/lista-precos-cliente" element={<QualityPlanGate><ListaPrecosCliente /></QualityPlanGate>} />
+              <Route path="financeiro/lista-precos-cliente" element={<Navigate to="/pageprincipal/vendas/lista-precos-cliente" replace />} />
               <Route path="administracao-configuracoes" element={<AdministracaoConfiguracoesGlobais />} />
               <Route path="configuracoes-usuario" element={<AccessControlSettings />} />
               <Route path="fiscal" element={<QualityPlanGate><Fiscal /></QualityPlanGate>} />
