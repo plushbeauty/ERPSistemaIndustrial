@@ -90,7 +90,7 @@ function DataTable({ rows, kind, onEdit }: { rows: DbRow[]; kind: 'requisicoes' 
     const value = column.keys.map(key => row[key]).find(item => item !== undefined && item !== null && item !== '')
     const formatted = column.format === 'date' ? dateValue(value) : column.format === 'money' ? moneyValue(value) : typeof value === 'string' || typeof value === 'number' ? String(value) : '—'
     return <td key={column.label}>{column.format === 'status' ? <span className={statusClass(formatted)}>{formatted.replaceAll('_', ' ')}</span> : formatted}</td>
-  })}{kind === 'pedidos' && <td><button className="compras-button compras-button--light" type="button" onClick={() => onEdit?.(textValue(row, 'id'))} disabled={textValue(row, 'id') === '—'}>Editar</button></td>}</tr>)}</tbody></table></div>
+  })}{kind === 'pedidos' && <td><button className="compras-button compras-button--light erp-edit-button erp-row-action" type="button" onClick={() => onEdit?.(textValue(row, 'id'))} disabled={textValue(row, 'id') === '—'}>Editar</button></td>}</tr>)}</tbody></table></div>
 }
 
 export default function ComprasWorkspace() {
