@@ -5,7 +5,7 @@
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Check, CircleDollarSign, ClipboardCheck, RefreshCw, Search, Send } from 'lucide-react'
+import { ArrowLeft, Check, CircleDollarSign, ClipboardCheck, Printer, RefreshCw, Search, Send } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
@@ -28,6 +28,7 @@ type Quote = {
   valor_total: number | null
   prazo_dias: number | null
   condicao_pagamento: string | null
+  validade: string | null
 }
 type QuoteRow = Quote & { custo: number }
 type Supplier = { id: string; razao_social: string; nome_fantasia: string | null }
@@ -60,7 +61,7 @@ export default function ComprasAnalisePrecos() {
       const empresaId = String(company.data)
       const [r, q, s, i] = await Promise.all([
         fetchAllPages<Rfq>((from, to) => supabase.from('erp_rfq').select('id,numero,status,data_emissao,prazo_resposta,fornecedor_escolhido_id,justificativa_escolha', { count: 'exact' }).eq('empresa_id', empresaId).order('created_at', { ascending: false }).range(from, to)),
-        fetchAllPages<Quote>((from, to) => supabase.from('erp_rfq_respostas').select('id,rfq_id,fornecedor_id,status,valor_total,prazo_dias,condicao_pagamento', { count: 'exact' }).eq('empresa_id', empresaId).range(from, to)),
+        fetchAllPages<Quote>((from, to) => supabase.from('erp_rfq_respostas').select('id,rfq_id,fornecedor_id,status,valor_total,prazo_dias,condicao_pagamento,validade', { count: 'exact' }).eq('empresa_id', empresaId).range(from, to)),
         fetchAllPages<Supplier>((from, to) => supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia', { count: 'exact' }).eq('empresa_id', empresaId).eq('ativo', true).order('razao_social').range(from, to)),
         fetchAllPages<RfqItem>((from, to) => supabase.from('erp_rfq_itens').select('rfq_id,codigo,descricao,quantidade,unidade', { count: 'exact' }).eq('empresa_id', empresaId).range(from, to)),
       ])
@@ -151,7 +152,7 @@ export default function ComprasAnalisePrecos() {
         .compras-analise-label { display: block; margin-bottom: 5px; color: #526579; font-size: 9px; font-weight: 700; letter-spacing: .075em; text-transform: uppercase; }
         .compras-analise-table th { height: 34px; background: #173f5d; color: #f8fbff; font-size: 9px; font-weight: 700; letter-spacing: .055em; text-transform: uppercase; white-space: nowrap; }
         .compras-analise-table td { height: 38px; border-bottom: 1px solid #e8eef4; font-size: 11px; }
-        .compras-analise-table tbody tr:hover { background: #f0f8fd; }
+        .compras-analise-table tbody tr:hover { background: #f0f8fd; }\n        @media print { .compras-analise-no-print { display:none!important; } .compras-analise-card { box-shadow:none; break-inside:avoid; } main { background:#fff!important; padding:0!important; } }
         @media (prefers-reduced-motion: reduce) { .compras-analise-edit { transition: none; } }
       `}</style>
 
@@ -221,7 +222,7 @@ export default function ComprasAnalisePrecos() {
           <div className="overflow-x-auto">
             <table className="compras-analise-table w-full min-w-[900px] border-collapse text-left">
               <thead><tr>
-                <th className="w-10 px-3 text-center">Escolher</th><th className="px-3">Fornecedor participante</th><th className="px-3 text-right">Valor total</th><th className="px-3 text-right">Frete</th><th className="px-3 text-right">Desconto</th><th className="px-3 text-right">Custo líquido</th><th className="px-3 text-center">Prazo (dias)</th><th className="px-3">Condição de pagamento</th><th className="px-3 text-center">Menor custo</th>
+                <th className="w-10 px-3 text-center">Escolher</th><th className="px-3">Fornecedor participante</th><th className="px-3 text-right">Valor total</th><th className="px-3 text-right">Frete</th><th className="px-3 text-right">Desconto</th><th className="px-3 text-right">Custo líquido</th><th className="px-3 text-center">Prazo (dias)</th><th className="px-3">Condição de pagamento</th><th className="px-3">Validade</th><th className="px-3 text-center">Menor custo</th>
               </tr></thead>
               <tbody>
                 {rows.map(row => {
@@ -231,11 +232,11 @@ export default function ComprasAnalisePrecos() {
                     <td className="px-3 text-center"><input aria-label={`Selecionar ${supplierMap.get(row.fornecedor_id) || 'fornecedor'}`} type="radio" name="fornecedor-escolhido" checked={isSelected} onChange={() => setSelectedSupplier(row.fornecedor_id)} className="h-4 w-4 accent-sky-700 focus:ring-sky-600" /></td>
                     <td className="px-3 font-semibold text-slate-800">{supplierMap.get(row.fornecedor_id) || 'Fornecedor não localizado'}{isSelected && <span className="ml-2 rounded bg-sky-100 px-1.5 py-0.5 text-[9px] font-bold text-sky-800">SELECIONADO</span>}</td>
                     <td className="px-3 text-right tabular-nums">{money(Number(row.valor_total || 0))}</td><td className="px-3 text-right tabular-nums text-slate-400">—</td><td className="px-3 text-right tabular-nums text-slate-400">—</td>
-                    <td className="px-3 text-right font-bold tabular-nums text-slate-900">{money(row.custo)}</td><td className="px-3 text-center">{row.prazo_dias ?? '—'}</td><td className="px-3">{row.condicao_pagamento || '—'}</td>
+                    <td className="px-3 text-right font-bold tabular-nums text-slate-900">{money(row.custo)}</td><td className="px-3 text-center">{row.prazo_dias ?? '—'}</td><td className="px-3">{row.condicao_pagamento || '—'}</td><td className="px-3">{dateLabel(row.validade)}</td>
                     <td className="px-3 text-center">{isWinner ? <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-1 text-[9px] font-bold text-emerald-700"><Check size={12} /> MENOR</span> : <span className="text-slate-300">—</span>}</td>
                   </tr>
                 })}
-                {!rows.length && <tr><td colSpan={9} className="p-8 text-center text-xs text-slate-500">Nenhuma proposta cadastrada para esta RFQ. A tela não cria fornecedores ou preços fictícios.</td></tr>}
+                {!rows.length && <tr><td colSpan={10} className="p-8 text-center text-xs text-slate-500">Nenhuma proposta cadastrada para esta RFQ. A tela não cria fornecedores ou preços fictícios.</td></tr>}
               </tbody>
             </table>
           </div>
@@ -256,7 +257,7 @@ export default function ComprasAnalisePrecos() {
           {needsJustification && <p className="mt-1.5 text-[10px] font-medium text-amber-700">O fornecedor selecionado tem custo maior que a menor proposta. Registre a justificativa antes de enviar.</p>}
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
             <p className="text-[10px] text-slate-500">A escolha do fornecedor e a justificativa serão gravadas no cabeçalho da RFQ.</p>
-            <button type="button" onClick={() => void saveSupplierChoice()} disabled={saving || busy || !rows.length || !selectedSupplier} className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 text-xs font-bold text-white shadow-[0_4px_10px_rgba(29,78,216,.18)] transition hover:bg-blue-800 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50">
+            <button type="button" className="compras-analise-no-print" onClick={() => void saveSupplierChoice()} disabled={saving || busy || !rows.length || !selectedSupplier} className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 text-xs font-bold text-white shadow-[0_4px_10px_rgba(29,78,216,.18)] transition hover:bg-blue-800 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50">
               {saving ? <RefreshCw size={14} className="animate-spin" /> : <Send size={14} />} {saving ? 'Registrando...' : 'Registrar escolha do fornecedor'}
             </button>
           </div>
