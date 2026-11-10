@@ -191,8 +191,9 @@ const errorText = (error: unknown) => error instanceof Error ? error.message : '
 export default function RHIndustrial() {
   const location = useLocation()
   const [empresaId, setEmpresaId] = useState('')
-  const [tab, setTab] = useState<Tab>(() => location.pathname.endsWith('/funcionarios') ? 'Funcionários' : 'Visão geral')
+  const [tab, setTab] = useState<Tab>(() => { const path = location.pathname; if (path.endsWith('/funcionarios')) return 'Funcionários'; if (path.endsWith('/ponto-presenca')) return 'Ponto / Presença'; if (path.endsWith('/treinamentos')) return 'Treinamentos'; if (path.endsWith('/avaliacoes')) return 'Avaliações'; if (path.endsWith('/ausencias')) return 'Ausências'; if (path.endsWith('/acidentes')) return 'Acidentes'; if (path.endsWith('/documentos')) return 'Documentos'; return 'Visão geral' })
   const [staff, setStaff] = useState<Staff[]>([])
+  const [turnoOptions, setTurnoOptions] = useState<string[]>([])
   const [rows, setRows] = useState<Row[]>([])
   const [form, setForm] = useState<Record<string, string>>({})
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -217,18 +218,21 @@ export default function RHIndustrial() {
     { key: 'cargo', label: 'Cargo', required: true },
     { key: 'departamento', label: 'Departamento', required: true },
     { key: 'regime_trabalho', label: 'Regime de trabalho', type: 'select', options: ['CLT', 'Estágio', 'Aprendiz', 'Temporário', 'Terceirizado'], required: true },
-    { key: 'turno_trabalho', label: 'Turno', type: 'select', options: ['Administrativo', '1º turno', '2º turno', '3º turno', 'Comercial', 'Escala'], required: true },
+    { key: 'turno_trabalho', label: 'Turno', type: 'select', options: turnoOptions, required: true },
     { key: 'numero_cracha_rfid', label: 'Número do crachá RFID' },
     { key: 'salario_nominal', label: 'Salário nominal (R$)', type: 'number' },
     { key: 'custo_hora_homem', label: 'Custo hora-homem (R$)', type: 'number' },
     { key: 'status', label: 'Situação', type: 'select', options: ['Ativo', 'Afastado', 'Férias', 'Desligado'], required: true },
-  ], [])
+  ], [turnoOptions])
 
   const loadStaff = useCallback(async (tenant: string) => {
     const { data, error } = await supabase.from('erp_funcionarios').select('*').eq('empresa_id', tenant).order('nome', { ascending: true }).limit(1000)
     if (error) throw error
     const people = (data ?? []) as Staff[]
     setStaff(people)
+    const { data: turns, error: turnsError } = await supabase.from('rh_turnos').select('codigo,nome').eq('empresa_id', tenant).eq('ativo', true).order('nome').limit(200)
+    if (turnsError) throw turnsError
+    setTurnoOptions((turns ?? []).map(turn => `${turn.codigo} — ${turn.nome}`))
     return people
   }, [])
 
@@ -270,6 +274,12 @@ export default function RHIndustrial() {
       setMessage(errorText(error))
     } finally { setBusy(false) }
   }, [loadRows, loadStaff])
+
+  useEffect(() => {
+    const path = location.pathname
+    const routeTabs: Record<string, Tab> = { '/pageprincipal/rh/funcionarios': 'Funcionários', '/pageprincipal/rh/ponto-presenca': 'Ponto / Presença', '/pageprincipal/rh/treinamentos': 'Treinamentos', '/pageprincipal/rh/avaliacoes': 'Avaliações', '/pageprincipal/rh/ausencias': 'Ausências', '/pageprincipal/rh/acidentes': 'Acidentes', '/pageprincipal/rh/documentos': 'Documentos' }
+    setTab(routeTabs[path] ?? 'Visão geral')
+  }, [location.pathname])
 
   useEffect(() => {
     let alive = true
