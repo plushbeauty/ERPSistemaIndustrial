@@ -273,4 +273,48 @@ create policy financeiro_retificacoes_storage_insert on storage.objects
     and (storage.foldername(name))[1]=public.erp_current_empresa_id()::text
   );
 
+
+create or replace function public.erp_financeiro_fechar_periodo(
+  p_empresa_id uuid,
+  p_data_inicio date,
+  p_data_fim date,
+  p_motivo text
+) returns uuid
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $function$
+declare
+  v_auth uuid := auth.uid();
+  v_user public.erp_usuarios%rowtype;
+  v_id uuid;
+begin
+  if v_auth is null then raise exception 'Sessão autenticada obrigatória.' using errcode='42501'; end if;
+  select * into v_user from public.erp_usuarios
+    where auth_user_id=v_auth and ativo=true and deleted_at is null limit 1;
+  if v_user.id is null or v_user.empresa_id is distinct from p_empresa_id
+     or p_empresa_id is distinct from public.erp_current_empresa_id() then
+    raise exception 'Empresa da sessão inválida.' using errcode='42501';
+  end if;
+  if upper(coalesce(v_user.perfil,'')) not in ('ADMINISTRADOR','CONTROLADORIA') then
+    raise exception 'Somente Administração ou Controladoria pode fechar período.' using errcode='42501';
+  end if;
+  if p_data_inicio is null or p_data_fim is null or p_data_fim<p_data_inicio
+     or length(btrim(coalesce(p_motivo,'')))<10 then
+    raise exception 'Informe período válido e motivo com pelo menos 10 caracteres.' using errcode='22023';
+  end if;
+  if exists(select 1 from public.erp_financeiro_periodos_fechados f
+    where f.empresa_id=p_empresa_id
+      and daterange(f.data_inicio,f.data_fim,'[]') && daterange(p_data_inicio,p_data_fim,'[]')) then
+    raise exception 'Já existe um período fechado que se sobrepõe às datas informadas.' using errcode='23505';
+  end if;
+  insert into public.erp_financeiro_periodos_fechados(empresa_id,data_inicio,data_fim,motivo,fechado_por)
+  values(p_empresa_id,p_data_inicio,p_data_fim,btrim(p_motivo),v_user.id)
+  returning id into v_id;
+  return v_id;
+end;
+$function$;
+revoke all on function public.erp_financeiro_fechar_periodo(uuid,date,date,text) from public,anon,authenticated,service_role;
+grant execute on function public.erp_financeiro_fechar_periodo(uuid,date,date,text) to authenticated;
+
 commit;
