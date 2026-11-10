@@ -17,8 +17,8 @@ type Supplier={id:string;razao_social:string;nome_fantasia:string|null;documento
 type Product={id:string;codigo:string;nome:string;unidade:string|null;estoque_atual:number}
 type Purchase={id:string;numero:number;fornecedor_id:string|null;produto_id:string|null;produto_nome:string;total:number;status:string;data_prevista:string|null;created_at:string}
 type Request={id:string;numero:number;descricao:string;prioridade:string;status:string;fornecedor_id:string|null;created_at:string}
-type PurchaseHeader={id:string;numero:number;fornecedor_id:string|null;total:number;status:string;prazo_entrega:string|null;created_at:string}
-type PurchaseItem={pedido_id:string;produto_id:string;codigo_produto:string;descricao_produto:string}
+type PurchaseHeader={id:string;numero:number;fornecedor_id:string|null;total:number;status:string;data_prevista:string|null;created_at:string}
+type PurchaseItem={pedido_id:string;produto_id:string|null;codigo_mp:string;descricao:string}
 
 const money=(n:number)=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})
 const date=(v:string|null)=>v?new Date(v).toLocaleDateString('pt-BR'):'—'
@@ -33,12 +33,12 @@ export default function ComprasIndustrial({initialTab='dashboard'}:{initialTab?:
   const [s,p,o,i,r]=await Promise.all([
    fetchAllPages<Supplier>((from,to)=>supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia,documento,iso_9001_certificado,ativo',{count:'exact'}).eq('empresa_id',empresa_id).eq('ativo',true).order('razao_social').range(from,to)),
    fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,unidade,estoque_atual',{count:'exact'}).eq('empresa_id',empresa_id).eq('ativo',true).order('codigo').range(from,to)),
-   fetchAllPages<PurchaseHeader>((from,to)=>supabase.from('erp_pedidos_compra').select('id,numero,fornecedor_id,total,status,prazo_entrega,created_at',{count:'exact'}).eq('empresa_id',empresa_id).order('created_at',{ascending:false}).range(from,to)),
-   fetchAllPages<PurchaseItem>((from,to)=>supabase.from('erp_pedidos_compra_itens').select('pedido_id,produto_id,codigo_produto,descricao_produto',{count:'exact'}).eq('empresa_id',empresa_id).range(from,to)),
+   fetchAllPages<PurchaseHeader>((from,to)=>supabase.from('erp_pedidos_compra').select('id,numero,fornecedor_id,total,status,data_prevista,created_at',{count:'exact'}).eq('empresa_id',empresa_id).order('created_at',{ascending:false}).range(from,to)),
+   fetchAllPages<PurchaseItem>((from,to)=>supabase.from('erp_pedidos_compra_itens').select('pedido_id,produto_id,codigo_mp,descricao',{count:'exact'}).eq('empresa_id',empresa_id).range(from,to)),
    fetchAllPages<Request>((from,to)=>supabase.from('erp_solicitacoes_compra').select('id,numero,descricao,prioridade,status,fornecedor_id,created_at',{count:'exact'}).eq('empresa_id',empresa_id).order('created_at',{ascending:false}).range(from,to))
   ])
   const itemsByPurchase=new Map<string,PurchaseItem[]>();for(const item of i){const rows=itemsByPurchase.get(item.pedido_id)||[];rows.push(item);itemsByPurchase.set(item.pedido_id,rows)}
-  setSuppliers(s);setProducts(p);setPurchases(o.map(header=>{const lines=itemsByPurchase.get(header.id)||[];return {...header,produto_id:lines[0]?.produto_id??null,produto_nome:lines.map(line=>`${line.codigo_produto} — ${line.descricao_produto}`).join(', ')||'—',data_prevista:header.prazo_entrega}}));setRequests(r)
+  setSuppliers(s);setProducts(p);setPurchases(o.map(header=>{const lines=itemsByPurchase.get(header.id)||[];return {...header,produto_id:lines[0]?.produto_id??null,produto_nome:lines.map(line=>`${line.codigo_mp} — ${line.descricao}`).join(', ')||'—',data_prevista:header.data_prevista}}));setRequests(r)
  }catch(e){setMessage(e instanceof Error?e.message:'Erro ao carregar Compras.')}finally{setBusy(false)}}
  useEffect(()=>{void load()},[])
  const supplierMap=useMemo(()=>new Map(suppliers.map(x=>[x.id,x.razao_social])),[suppliers])
