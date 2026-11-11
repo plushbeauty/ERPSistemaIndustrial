@@ -60,8 +60,8 @@ function parseTransactions(text:string):ParsedTransaction[] {
  const dateIndex=find(['data','datamovimento','datatransacao','dataoperacao','dtmovimento','lancamento'])
  const descriptionIndex=find(['descricao','historico','memo','detalhe','lancamento'])
  const amountIndex=find(['valor','valortransacao','montante','amount'])
- const debitIndex=find(['debito','valor debito','saida','debit'])
- const creditIndex=find(['credito','valor credito','entrada','credit'])
+ const debitIndex=find(['debito','valordebito','saida','debit'])
+ const creditIndex=find(['credito','valorcredito','entrada','credit'])
  const typeIndex=find(['tipo','natureza','dc','operacao'])
  const referenceIndex=find(['referencia','documento','numerodocumento','doc','idtransacao'])
  const balanceIndex=find(['saldo','saldoapos','saldoatual','balance'])
@@ -175,7 +175,7 @@ export default function BankStatementImporter(){
     {file&&<div className="mt-2 rounded-md border border-[#D3E3EA] bg-[#F8FBFC] px-3 py-2 text-[11px]">{file.name} · {(file.size/1024).toFixed(1)} KB</div>}
     {error&&<div role="alert" className="mt-3 rounded-md border border-[#D65B61]/30 bg-[#FFF4F4] px-3 py-2 text-[11px] text-[#A63C3C]">{error}</div>}
     {message&&<div role="status" className="mt-3 rounded-md border border-[#3A9D78]/30 bg-[#F0FAF5] px-3 py-2 text-[11px] text-[#246B50]">{message}</div>}
-    <div className="mt-3 flex justify-end"><button type="button" disabled={busy||loading||!file||!accountId} onClick={()=>void upload()} className="flex h-10 items-center gap-2 rounded-full bg-[#176487] px-5 text-xs font-bold text-white disabled:opacity-50">{busy?<RefreshCw size={14} className="animate-spin"/>:<Upload size={14}/ >}{busy?'Processando…':'Importar transações'}</button></div>
+    <div className="mt-3 flex justify-end"><button type="button" disabled={busy||loading||!file||!accountId} onClick={()=>void upload()} className="flex h-10 items-center gap-2 rounded-full bg-[#176487] px-5 text-xs font-bold text-white disabled:opacity-50">{busy?<RefreshCw size={14} className="animate-spin"/>:<Upload size={14}/>}{busy?'Processando…':'Importar transações'}</button></div>
    </section>
    <section className="rounded-xl border border-[#D3E3EA] bg-white p-4 shadow-sm">
     <div className="mb-3 flex items-center justify-between gap-2"><h2 className="text-sm font-bold">Últimas 20 importações</h2><button type="button" onClick={()=>void load()} disabled={loading} className="inline-flex h-8 items-center gap-1 rounded-full border border-[#D3E3EA] px-3 text-[10px] font-bold text-[#315466]"><RefreshCw size={12} className={loading?'animate-spin':''}/>Atualizar</button></div>
