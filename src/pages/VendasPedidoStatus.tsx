@@ -96,16 +96,16 @@ export default function VendasPedidoStatus() {
         .from('erp_ordens_producao')
         .select('numero_op,status,quantidade,quantidade_planejada,quantidade_produzida,data_prevista')
         .eq('empresa_id', companyId)
-        .eq('empresa_id', companyId)
-        .eq('empresa_id', companyId)
         .eq('pedido_venda_id', id),
       supabase
         .from('erp_expedicoes')
         .select('numero,status,transportadora,rastreio,data_expedicao')
+        .eq('empresa_id', companyId)
         .eq('pedido_venda_id', id),
       supabase
         .from('erp_liberacoes_fiscais')
         .select('tipo,status,quantidade_solicitada,quantidade_liberada,quantidade_pendente')
+        .eq('empresa_id', companyId)
         .eq('pedido_venda_id', id),
     ])
 
