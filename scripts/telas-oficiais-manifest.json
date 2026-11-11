@@ -501,11 +501,11 @@
     },
     {
       "path": "src/pages/ComprasRFQ.tsx",
-      "sha": "a883deceb7da42fd177cef021181dfb5d9514fee",
+      "sha": "241fc1372520d2616d944c838a76698d232c0f7e",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-COMPRAS-RFQ-RPC-ATOMIC-20261110-01 — criação migrada para erp_compras_criar_rfq_atomica com campos reais; respostas comerciais e escolha do fornecedor removidas desta etapa e encaminhadas ao fluxo Análise de Preços.",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "REVISAO TECNICA AUTORIZADA PELO PROPRIETARIO EM 2026-11-10 PARA CORRECAO DO CONTRATO RFQ, PRESERVANDO O FLUXO VISUAL"
     },
     {
       "path": "src/pages/ComprasSolicitacaoManual.tsx",
