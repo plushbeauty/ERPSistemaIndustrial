@@ -1573,7 +1573,7 @@
     },
     {
       "path": "src/pages/RHIndustrial.tsx",
-      "sha": "4e8bcbea25e53102911025fc3f150c8104554462",
+      "sha": "6637db1ac69afee504317d3ef8e8f22b6218d0de",
       "autor": "FernandoSch",
       "revisao": "REV-RH-ROTAS-FUNCIONARIOS-20261110-02 — abertura da aba Funcionários pela rota dedicada, campos e grid alinhados ao wireframe de 40px/48px; rotas de RH operacional preservadas.",
       "aprovadaEm": "2026-11-10",
@@ -1581,7 +1581,7 @@
     },
     {
       "path": "src/pages/RHSubmodules.tsx",
-      "sha": "c76c4dc5298bdc720b0453f18776abadc85db6a7",
+      "sha": "a27195423bcaaf4feae8eb5be3c479d460c0bf99",
       "autor": "FernandoSch",
       "revisao": "REV-RH-TURNOS-EPIS-WIREFRAME-20261110-03 — tela de Turnos e Escalas e Controle/Entrega de EPIs, histórico compatível com erp_funcionario_id/funcionario_id, IDs opcionais normalizados e impressão individual protegida.",
       "aprovadaEm": "2026-11-10",
