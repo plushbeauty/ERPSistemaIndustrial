@@ -469,11 +469,11 @@
     },
     {
       "path": "src/pages/ComprasIndustrial.tsx",
-      "sha": "69d84ce94ce7adb1a9dd22205686cb7009b6f103",
+      "sha": "6312982d2f31ed911a237d539886dd1599000a5b",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-COMPRAS-INDUSTRIAL-RPC-SCHEMA-20261110-01 — consultas alinhadas às colunas reais (data_prevista, codigo_mp, descricao) e gravação convertida para o contrato p_payload JSONB da RPC transacional existente; removida segunda gravação não atômica.",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "REVISAO TECNICA AUTORIZADA PELO PROPRIETARIO EM 2026-11-10 PARA CORRECAO DE CONTRATO BANCO/RPC, PRESERVANDO O FLUXO VISUAL APROVADO"
     },
     {
       "path": "src/pages/ComprasPedidoForm.tsx",
