@@ -6,6 +6,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Plus, Printer, Trash2, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import PageIntroCard from '../components/layout/PageIntroCard'
 
 type Row = Record<string, unknown>
 type Item = { key: string; produtoId: string; quantidade: string; unidade: string; valorUnitario: string; dataNecessidade: string; observacoes: string }
@@ -131,6 +132,13 @@ export default function ComprasPedidoForm({ onCancel, onSaved, pedidoId }: { onC
 
   return <section className="compras-panel compras-form-panel compras-order-editor">
     <style>{`
+      .compras-order-editor input:not([type="checkbox"]),.compras-order-editor select{box-sizing:border-box;height:40px;min-height:40px;border-radius:8px;background:#fff}
+      .compras-order-editor input:disabled,.compras-order-editor input[readonly],.compras-order-editor select:disabled{background:#F3F4F6!important;color:#64748b!important}
+      .compras-order-editor .compras-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+      .compras-order-editor .compras-table tbody tr,.compras-order-editor .compras-table tbody td{height:48px;vertical-align:middle}
+      .compras-order-editor .compras-button{height:40px;min-height:40px;border-radius:999px}
+      @media(max-width:760px){.compras-order-editor .compras-form-grid{grid-template-columns:1fr}}
+
       .compras-order-print{display:none}
       @media print{
         @page{size:A4 portrait;margin:12mm}
@@ -149,7 +157,7 @@ export default function ComprasPedidoForm({ onCancel, onSaved, pedidoId }: { onC
         .compras-order-print .print-sign span{border-top:1px solid #334155;width:40%;padding-top:6px}
       }
     `}</style>
-    <div className="compras-panel-heading no-print"><div><h2>{savedPedidoId ? 'Editar pedido de compra' : 'Novo pedido de compra'}</h2><p>Cabeçalho, itens e condições comerciais — somente campos persistidos no banco.</p></div><div className="flex gap-2"><button type="button" className="compras-button compras-button--light" onClick={printOrder} disabled={!savedOrderNumber}><Printer size={14}/> Imprimir / PDF</button><button type="button" className="compras-button compras-button--light" onClick={onCancel}><X size={14}/> Cancelar</button></div></div>
+    <div className="no-print"><button type="button" onClick={onCancel} className="mb-3 inline-flex h-[38px] w-[115px] items-center justify-center gap-2 rounded-full border border-[#E2E8F0] bg-white text-xs font-semibold text-[#123B50] transition hover:bg-slate-50">← Voltar</button><PageIntroCard module="SUPRIMENTOS / COMPRAS" title={savedPedidoId ? "Editar pedido de compra" : "Novo pedido de compra"} description="Formalize a compra de materiais com fornecedor, condições comerciais, itens, prazos e rastreabilidade." help={{fill:["Selecione fornecedor ativo e, quando aplicável, vincule uma requisição.","Informe condição de pagamento, prazo, centro de custo e local de entrega.","Adicione produtos cadastrados, quantidade, unidade, valor unitário e necessidade."],use:["Confira o subtotal e as condições antes de salvar.","Salve como rascunho ou encaminhe para aprovação conforme o fluxo autorizado.","Imprima o pedido após a gravação para obter numeração definitiva."],watch:"Somente pedidos em rascunho ou pendentes de aprovação podem ser editados. A gravação é feita pela RPC transacional com isolamento por empresa."}} /></div><div className="compras-panel-heading no-print"><div><h2>{savedPedidoId ? 'Editar pedido de compra' : 'Novo pedido de compra'}</h2><p>Cabeçalho, itens e condições comerciais — somente campos persistidos no banco.</p></div><div className="flex gap-2"><button type="button" className="compras-button compras-button--light" onClick={printOrder} disabled={!savedOrderNumber}><Printer size={14}/> Imprimir / PDF</button><button type="button" className="compras-button compras-button--light" onClick={onCancel}><X size={14}/> Cancelar</button></div></div>
     {referenceError && <div className="compras-error" role="alert"><strong>Referências indisponíveis.</strong><span>{referenceError}</span></div>}
     {error && <div className="compras-error" role="alert"><strong>Não foi possível concluir.</strong><span>{error}</span></div>}
     {loading && <div className="compras-loading">Carregando referências da empresa autenticada…</div>}

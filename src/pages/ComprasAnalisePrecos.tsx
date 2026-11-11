@@ -1,7 +1,7 @@
 /**
  * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
+ * @REVISAO: REV-COMPRAS-ANALISE-VALOR-20261111-01 — comparação ignora preços ausentes/inválidos e limpa dados anteriores ao recarregar
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 import { useEffect, useMemo, useState } from 'react'
@@ -30,7 +30,7 @@ type Quote = {
   condicao_pagamento: string | null
   validade: string | null
 }
-type QuoteRow = Quote & { valorComparavel: number }
+type QuoteRow = Quote & { valorComparavel: number | null }
 type Supplier = { id: string; razao_social: string; nome_fantasia: string | null }
 type RfqItem = { rfq_id: string; codigo: string; descricao: string; quantidade: number; unidade: string }
 
@@ -55,6 +55,11 @@ export default function ComprasAnalisePrecos() {
     setBusy(true)
     setError('')
     setSuccess('')
+    setRfqs([])
+    setQuotes([])
+    setSuppliers([])
+    setItems([])
+    setSelected(null)
     try {
       const company = await supabase.rpc('erp_current_empresa_id')
       if (company.error || !company.data) throw company.error ?? new Error('Empresa da sessão não identificada.')
@@ -84,9 +89,12 @@ export default function ComprasAnalisePrecos() {
   const rfqItems = useMemo(() => items.filter(item => item.rfq_id === selected), [items, selected])
   const rows = useMemo<QuoteRow[]>(() => quotes
     .filter(q => q.rfq_id === selected)
-    .map(q => ({ ...q, valorComparavel: Math.max(0, Number(q.valor_total || 0)) }))
-    .sort((a, b) => a.valorComparavel - b.valorComparavel), [quotes, selected])
-  const winner = rows[0]
+    .map(q => {
+      const value = q.valor_total === null ? null : Number(q.valor_total)
+      return { ...q, valorComparavel: value !== null && Number.isFinite(value) && value >= 0 ? value : null }
+    })
+    .sort((a, b) => (a.valorComparavel ?? Number.POSITIVE_INFINITY) - (b.valorComparavel ?? Number.POSITIVE_INFINITY)), [quotes, selected])
+  const winner = rows.find(row => row.valorComparavel !== null)
   const filteredRfqs = useMemo(() => {
     const term = filter.trim().toLocaleLowerCase('pt-BR')
     if (!term) return rfqs
@@ -96,7 +104,7 @@ export default function ComprasAnalisePrecos() {
     })
   }, [filter, rfqs, items])
   const chosenRow = rows.find(row => row.fornecedor_id === selectedSupplier)
-  const needsJustification = Boolean(chosenRow && winner && chosenRow.fornecedor_id !== winner.fornecedor_id && chosenRow.valorComparavel > winner.valorComparavel)
+  const needsJustification = Boolean(chosenRow && winner && chosenRow.valorComparavel !== null && winner.valorComparavel !== null && chosenRow.fornecedor_id !== winner.fornecedor_id && chosenRow.valorComparavel > winner.valorComparavel)
 
   useEffect(() => {
     if (!selectedRfq) {
@@ -109,8 +117,8 @@ export default function ComprasAnalisePrecos() {
   }, [selectedRfq?.id, selectedRfq?.fornecedor_escolhido_id, selectedRfq?.justificativa_escolha, rows.length])
 
   const saveSupplierChoice = async () => {
-    if (!selectedRfq || !selectedSupplier || !chosenRow || !winner) {
-      setError('Selecione uma RFQ com proposta válida e escolha o fornecedor.')
+    if (!selectedRfq || !selectedSupplier || !chosenRow || !winner || chosenRow.valorComparavel === null) {
+      setError('Selecione uma RFQ e um fornecedor com valor total válido informado.')
       return
     }
     if (needsJustification && !justificativa.trim()) {
@@ -232,8 +240,8 @@ export default function ComprasAnalisePrecos() {
                   return <tr key={row.id} className={isSelected ? 'bg-sky-50/80' : 'bg-white'}>
                     <td className="px-3 text-center"><input aria-label={`Selecionar ${supplierMap.get(row.fornecedor_id) || 'fornecedor'}`} type="radio" name="fornecedor-escolhido" checked={isSelected} onChange={() => setSelectedSupplier(row.fornecedor_id)} className="h-4 w-4 accent-sky-700 focus:ring-sky-600" /></td>
                     <td className="px-3 font-semibold text-slate-800">{supplierMap.get(row.fornecedor_id) || 'Fornecedor não localizado'}{isSelected && <span className="ml-2 rounded bg-sky-100 px-1.5 py-0.5 text-[9px] font-bold text-sky-800">SELECIONADO</span>}</td>
-                    <td className="px-3 text-right tabular-nums font-semibold">{money(Number(row.valor_total || 0))}</td><td className="px-3 text-center">{row.prazo_dias ?? '—'}</td><td className="px-3">{row.condicao_pagamento || '—'}</td><td className="px-3">{dateLabel(row.validade)}</td>
-                    <td className="px-3 text-center">{isWinner ? <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-1 text-[9px] font-bold text-emerald-700"><Check size={12} /> MENOR</span> : <span className="text-slate-300">—</span>}</td>
+                    <td className="px-3 text-right tabular-nums font-semibold">{row.valorComparavel === null ? <span className="font-medium text-amber-700">Não informado</span> : money(row.valorComparavel)}</td><td className="px-3 text-center">{row.prazo_dias ?? '—'}</td><td className="px-3">{row.condicao_pagamento || '—'}</td><td className="px-3">{dateLabel(row.validade)}</td>
+                    <td className="px-3 text-center">{isWinner ? <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-1 text-[9px] font-bold text-emerald-700"><Check size={12} /> MENOR</span> : row.valorComparavel === null ? <span className="text-amber-700">SEM VALOR</span> : <span className="text-slate-300">—</span>}</td>
                   </tr>
                 })}
                 {!rows.length && <tr><td colSpan={10} className="p-8 text-center text-xs text-slate-500">Nenhuma proposta cadastrada para esta RFQ. A tela não cria fornecedores ou preços fictícios.</td></tr>}
@@ -241,7 +249,7 @@ export default function ComprasAnalisePrecos() {
             </table>
           </div>
           {winner && <div className="grid grid-cols-1 gap-2 border-t border-slate-100 bg-sky-50/50 p-3 sm:grid-cols-3 sm:px-4">
-            <div className="flex items-center gap-2"><CircleDollarSign size={17} className="text-sky-700" /><div><div className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Menor valor total informado</div><div className="text-sm font-bold text-slate-900">{money(winner.valorComparavel)}</div></div></div>
+            <div className="flex items-center gap-2"><CircleDollarSign size={17} className="text-sky-700" /><div><div className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Menor valor total informado</div><div className="text-sm font-bold text-slate-900">{money(winner.valorComparavel ?? 0)}</div></div></div>
             <div><div className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Fornecedor menor valor total</div><div className="mt-1 text-xs font-semibold text-slate-800">{supplierMap.get(winner.fornecedor_id) || 'Fornecedor não localizado'}</div></div>
             <div><div className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Propostas comparadas</div><div className="mt-1 text-xs font-semibold text-slate-800">{rows.length} fornecedor(es)</div></div>
           </div>}
@@ -257,7 +265,7 @@ export default function ComprasAnalisePrecos() {
           {needsJustification && <p className="mt-1.5 text-[10px] font-medium text-amber-700">O fornecedor selecionado tem valor total informado maior que a menor proposta. Registre a justificativa antes de enviar.</p>}
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
             <p className="text-[10px] text-slate-500">A escolha do fornecedor e a justificativa serão gravadas no cabeçalho da RFQ.</p>
-            <button type="button" className="compras-analise-no-print inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 text-xs font-bold text-white shadow-[0_4px_10px_rgba(29,78,216,.18)] transition hover:bg-blue-800 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50" onClick={() => void saveSupplierChoice()} disabled={saving || busy || !rows.length || !selectedSupplier}>
+            <button type="button" className="compras-analise-no-print inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 text-xs font-bold text-white shadow-[0_4px_10px_rgba(29,78,216,.18)] transition hover:bg-blue-800 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50" onClick={() => void saveSupplierChoice()} disabled={saving || busy || !winner || !chosenRow || chosenRow.valorComparavel === null || !selectedSupplier}>
               {saving ? <RefreshCw size={14} className="animate-spin" /> : <Send size={14} />} {saving ? 'Registrando...' : 'Registrar escolha do fornecedor'}
             </button>
           </div>
