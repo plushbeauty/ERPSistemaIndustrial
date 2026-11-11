@@ -5,12 +5,13 @@
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 import { useEffect, useMemo, useState } from 'react'
-import { AlertCircle, CheckCircle2, ClipboardList, Printer, RefreshCw, ShoppingCart } from 'lucide-react'
+import { AlertCircle, ArrowLeft, CheckCircle2, ClipboardList, FileSpreadsheet, Printer, RefreshCw, ShoppingCart } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import EntityCodeLookup, { type LookupRecord } from '../components/industrial/EntityCodeLookup'
 import KioskConsultaRapida from '../components/KioskConsultaRapida'
 import VendasLayout from './VendasLayout'
+import { Link } from 'react-router-dom'
 
 interface Requisition {
   id: string
@@ -56,7 +57,7 @@ interface ProductionOrder {
 
 const PAGE_SIZE = 25
 const panelClass = 'rounded-[3px] border border-[#D8E4EA] bg-white shadow-[0_2px_8px_rgba(18,59,80,0.04)]'
-const buttonClass = 'inline-flex h-8 items-center justify-center gap-1.5 rounded-[3px] border px-3 text-[11px] font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50'
+const buttonClass = 'inline-flex h-10 items-center justify-center gap-1.5 rounded-[3px] border px-3 text-[11px] font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50'
 const fieldLabelClass = 'mb-1 block text-[9px] font-bold uppercase tracking-[0.08em] text-[#496574]'
 
 function formatDate(value: string): string {
@@ -174,6 +175,17 @@ export default function ComprasRequisicoes() {
   }), [items, requestById, selectedOrder, selectedUrgency])
   const pageCount = Math.max(1, Math.ceil(visibleItems.length / PAGE_SIZE))
   const pageItems = visibleItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  const totalVisibleQuantity = visibleItems.reduce((sum, item) => sum + Number(item.quantidade || 0), 0)
+  const pendingVisibleCount = visibleItems.filter(item => item.status === 'AGUARDANDO_COTACAO').length
+  const uniqueVisibleRequests = new Set(visibleItems.map(item => item.requisicao_id)).size
+  const exportCsv = () => {
+    const lines = [['Requisição','Data','Centro de custo','Urgência','Ordem de produção','Código produto','Produto','Quantidade','Fornecedor indicado','Status'], ...visibleItems.map(item => {
+      const request=requestById.get(item.requisicao_id); const product=productById.get(item.produto_id); const supplier=item.fornecedor_id?supplierById.get(item.fornecedor_id):undefined; const op=request?.ordem_producao_id?opById.get(request.ordem_producao_id):undefined
+      return [request?.codigo||request?.id||item.requisicao_id,request?.created_at||'',request?.centro_custo||'',request?.nivel_urgencia||'',op?.codigo||'',product?.codigo||item.produto_id,product?.nome||'',item.quantidade,supplier?.nome_fantasia||supplier?.razao_social||'',item.status]
+    })]
+    const csv='\\ufeff'+lines.map(row=>row.map(value=>'"'+String(value??'').replace(/"/g,'""')+'"').join(';')).join('\\r\\n')
+    const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));const a=window.document.createElement('a');a.href=url;a.download='requisicoes-compra.csv';a.click();URL.revokeObjectURL(url)
+  }
   const selectedEligibleCount = [...selectedRequisitions].filter((id) =>
     requisitions.some((request) => request.id === id && request.status === 'AGUARDANDO_COTACAO'),
   ).length
