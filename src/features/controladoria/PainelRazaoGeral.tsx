@@ -33,6 +33,12 @@ const money = (value: number) =>
 const fieldClass =
   'h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-[13px] text-slate-700 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100 disabled:bg-slate-50 disabled:text-slate-500'
 const actionClass = 'inline-flex h-[38px] items-center justify-center gap-2 rounded-full px-4 text-[12px] font-semibold transition'
+const exportCsv = (rows: LedgerRow[]) => {
+  const quote = (value: unknown) => '"' + String(value ?? '').replace(/"/g, '""') + '"'
+  const csv = ['Data;Documento;Descrição;Débito;Crédito', ...rows.map(row => [new Date(row.criado_em).toLocaleDateString('pt-BR'),row.documento ?? '',row.descricao,Number(row.debito ?? 0).toFixed(2).replace('.', ','),Number(row.credito ?? 0).toFixed(2).replace('.', ',')].map(quote).join(';'))].join('\r\n')
+  const url = URL.createObjectURL(new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8' }))
+  const link = document.createElement('a'); link.href = url; link.download = 'plastibor-razao-geral.csv'; link.click(); URL.revokeObjectURL(url)
+}
 
 export default function PainelRazaoGeral() {
   const navigate = useNavigate()
@@ -45,6 +51,8 @@ export default function PainelRazaoGeral() {
   const [loadingAccounts, setLoadingAccounts] = useState(true)
   const [loading, setLoading] = useState(false)
   const [filtered, setFiltered] = useState(false)
+  const [page, setPage] = useState(1)
+  const pageSize = 25
 
   useEffect(() => {
     let active = true
@@ -103,23 +111,26 @@ export default function PainelRazaoGeral() {
     setLoading(true)
     setFiltered(false)
 
-    const result = await supabase
-      .from('erp_fiscal_razao_lancamentos')
-      .select('id,documento,descricao,debito,credito,criado_em')
-      .eq('empresa_id', empresaId)
-      .eq('conta_bancaria_id', accountId)
-      .order('criado_em', { ascending: false })
-      .limit(1000)
-
-    if (result.error) {
-      setRows([])
-      setBalance(0)
-      setError(result.error.message)
-      setLoading(false)
-      return
+    const ledgerRows: LedgerRow[] = []
+    for (let offset = 0; ; offset += 1000) {
+      const result = await supabase
+        .from('erp_fiscal_razao_lancamentos')
+        .select('id,documento,descricao,debito,credito,criado_em')
+        .eq('empresa_id', empresaId)
+        .eq('conta_bancaria_id', accountId)
+        .order('criado_em', { ascending: false })
+        .order('id', { ascending: false })
+        .range(offset, offset + 999)
+      if (result.error) {
+        setRows([])
+        setBalance(0)
+        setError(result.error.message)
+        setLoading(false)
+        return
+      }
+      ledgerRows.push(...((result.data ?? []) as LedgerRow[]))
+      if (!result.data || result.data.length < 1000) break
     }
-
-    const ledgerRows = (result.data ?? []) as LedgerRow[]
     const totalBalance = await supabase.rpc('erp_fiscal_saldo_razao', {
       p_conta_id: accountId,
     })
@@ -133,6 +144,7 @@ export default function PainelRazaoGeral() {
     }
 
     setRows(ledgerRows)
+    setPage(1)
     setBalance(Number(totalBalance.data ?? 0))
     setFiltered(true)
     setLoading(false)
@@ -147,6 +159,8 @@ export default function PainelRazaoGeral() {
     [rows],
   )
   const selectedAccount = accounts.find((account) => account.id === accountId)
+  const pageCount = Math.max(1, Math.ceil(rows.length / pageSize))
+  const pageRows = rows.slice((page - 1) * pageSize, page * pageSize)
 
   return (
     <main className="min-h-full bg-[#F4FBFD] p-4 text-slate-800 print:bg-white print:p-0">
@@ -261,7 +275,7 @@ export default function PainelRazaoGeral() {
 
           <p className="mt-4 flex items-start gap-2 text-[12px] leading-5 text-slate-500">
             <Info size={15} className="mt-0.5 shrink-0 text-sky-600" />
-            Grade: últimos 1.000 lançamentos. O saldo é calculado no banco sobre todo o razão da conta.
+            Grade: todos os lançamentos da conta, paginados na tela. O saldo é calculado no banco sobre todo o razão da conta.
           </p>
 
           {error && (
@@ -285,9 +299,7 @@ export default function PainelRazaoGeral() {
                 </p>
               )}
             </div>
-            <span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-600">
-              {rows.length.toLocaleString('pt-BR')} lançamento(s)
-            </span>
+            <div className="flex items-center gap-2 print:hidden"><span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-600">{rows.length.toLocaleString('pt-BR')} lançamento(s)</span><button type="button" disabled={!filtered} onClick={() => exportCsv(rows)} className={actionClass+' border border-slate-200 bg-white text-slate-700 disabled:opacity-50'}>Exportar CSV</button></div>
           </div>
 
           <div className="overflow-x-auto">
@@ -302,7 +314,7 @@ export default function PainelRazaoGeral() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
+                {pageRows.map((row) => (
                   <tr key={row.id} className="h-12 border-b border-slate-100 text-slate-700 last:border-0 hover:bg-slate-50/70 print:h-8">
                     <td className="whitespace-nowrap px-4">
                       {new Date(row.criado_em).toLocaleDateString('pt-BR')}
@@ -338,6 +350,7 @@ export default function PainelRazaoGeral() {
               <span className="px-2 text-slate-300">·</span>
               Créditos <strong className="text-slate-800">{money(totalCredit)}</strong>
             </p>
+            <div className="flex flex-wrap items-center gap-3 print:hidden"><button type="button" disabled={!filtered || page<=1} onClick={()=>setPage(p=>p-1)} className={actionClass+' border border-slate-200 bg-white text-slate-700 disabled:opacity-40'}>Anterior</button><span className="text-[11px] font-semibold">Página {page} de {pageCount}</span><button type="button" disabled={!filtered || page>=pageCount} onClick={()=>setPage(p=>p+1)} className={actionClass+' border border-slate-200 bg-white text-slate-700 disabled:opacity-40'}>Próxima</button></div>
             <div className="rounded-lg border border-slate-300 bg-[#F8FAFC] px-[18px] py-2.5">
               <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">
                 Saldo total do razão (RPC)
