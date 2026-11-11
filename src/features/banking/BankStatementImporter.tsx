@@ -37,7 +37,7 @@ function parseCsv(text:string):string[][] {
 function parseDate(value:string):string|null {
  const clean=value.trim()
  if(/^\d{4}-\d{2}-\d{2}$/.test(clean))return clean
- const match=clean.match(/^(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{4})$/)
+ const match=clean.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/)
  if(match){const day=match[1].padStart(2,'0'),month=match[2].padStart(2,'0');return `${match[3]}-${month}-${day}`}
  const parsed=new Date(clean)
  return Number.isNaN(parsed.getTime())?null:parsed.toISOString().slice(0,10)
