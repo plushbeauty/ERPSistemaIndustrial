@@ -17,21 +17,39 @@ import { supabase } from '../../../lib/supabaseClient'
 import { fetchAllPages } from '../../../lib/supabasePagination'
 
 type Kind = 'PAGAR' | 'RECEBER'
-type Title = { id:string; tipo:Kind; parceiro_tipo:string; parceiro_id:string; descricao:string; documento:string|null; categoria:string|null; centro_custo:string|null; data_emissao:string; valor_total:number; status:string; criado_em:string }
+type Title = { id:string; tipo:Kind; parceiro_tipo:string; parceiro_id:string; descricao:string; documento:string|null; categoria:string|null; centro_custo:string|null; data_emissao:string; valor_total:number; status:string; origem_tipo:string; criado_em:string }
 type Installment = { id:string; titulo_id:string; numero:number; vencimento:string; valor:number; saldo:number; status:string }
+type Baixa = { id:string; titulo_id:string; parcela_id:string; valor:number; ocorrido_em:string; forma_pagamento:string; referencia:string|null }
 type Partner = { id:string; tipo_parceiro:Kind; razao_social?:string; nome_fantasia?:string; codigo?:string }
 type PartnerRow = { id:string; razao_social:string; nome_fantasia:string|null; codigo:string|null }
-const input='h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-800 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100'
+const input='h-10 min-h-10 w-full rounded-full border border-slate-200 bg-white px-3 text-xs text-slate-800 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100'
 const label='mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-500'
-const button='inline-flex h-9 items-center justify-center gap-2 rounded-md px-3 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-50'
+const button='inline-flex h-10 min-h-10 items-center justify-center gap-2 rounded-full px-3 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-50'
 const money=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v)
 const localDate=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)}
+const buildMonthlyInstallments=(total:number,count:number,firstDate:string)=>{
+ const cents=Math.round(total*100)
+ if(!Number.isInteger(count)||count<1||count>120||cents<count)throw new Error('Informe de 1 a 120 parcelas, com valor mínimo de R$ 0,01 por parcela.')
+ const [year,month,day]=firstDate.split('-').map(Number)
+ if(!year||!month||!day)throw new Error('Informe um primeiro vencimento válido.')
+ const base=Math.floor(cents/count),remainder=cents-base*count
+ return Array.from({length:count},(_,index)=>{
+  const monthIndex=month-1+index,targetYear=year+Math.floor(monthIndex/12),targetMonth=monthIndex%12
+  const lastDay=new Date(Date.UTC(targetYear,targetMonth+1,0)).getUTCDate(),targetDay=Math.min(day,lastDay)
+  return {numero:index+1,vencimento:`${targetYear}-${String(targetMonth+1).padStart(2,'0')}-${String(targetDay).padStart(2,'0')}`,valor:Number(((base+(index<remainder?1:0))/100).toFixed(2))}
+ })
+}
 const errText=(e:unknown)=>e instanceof Error?e.message:'Não foi possível concluir a operação.'
 export default function FinanceiroWorkspace(){
  const [tab,setTab]=useState<'RESUMO'|Kind|'BAIXAS'>('RESUMO')
  const [company,setCompany]=useState('')
  const [titles,setTitles]=useState<Title[]>([])
  const [installments,setInstallments]=useState<Installment[]>([])
+ const [baixas,setBaixas]=useState<Baixa[]>([])
+ const [selectedTitleId,setSelectedTitleId]=useState('')
+ const [titlePage,setTitlePage]=useState(1)
+ const [partPage,setPartPage]=useState(1)
+ const [baixaPage,setBaixaPage]=useState(1)
  const [partners,setPartners]=useState<Partner[]>([])
  const [loading,setLoading]=useState(true)
  const [busy,setBusy]=useState(false)
@@ -48,6 +66,8 @@ export default function FinanceiroWorkspace(){
  const [issueDate,setIssueDate]=useState(localDate())
  const [dueDate,setDueDate]=useState(localDate())
  const [amount,setAmount]=useState('')
+ const [installmentCount,setInstallmentCount]=useState('1')
+ const [editingTitleId,setEditingTitleId]=useState<string|null>(null)
  const [payPart,setPayPart]=useState<Installment|null>(null)
  const [payValue,setPayValue]=useState('')
  const [payDate,setPayDate]=useState(localDate())
@@ -61,17 +81,17 @@ export default function FinanceiroWorkspace(){
    if(typeof companyResult.data!=='string'||!companyResult.data)throw new Error('Empresa ativa não identificada. Confira a sessão e o vínculo do usuário.')
    const empresa=companyResult.data;setCompany(empresa)
    const [t,p,r]=await Promise.all([
-    fetchAllPages<Title>((from,to)=>supabase.from('erp_financeiro_titulos').select('id,tipo,parceiro_tipo,parceiro_id,descricao,documento,categoria,centro_custo,data_emissao,valor_total,status,criado_em',{count:'exact'}).eq('empresa_id',empresa).order('criado_em',{ascending:false}).order('id',{ascending:false}).range(from,to)),
+    fetchAllPages<Title>((from,to)=>supabase.from('erp_financeiro_titulos').select('id,tipo,parceiro_tipo,parceiro_id,descricao,documento,categoria,centro_custo,data_emissao,valor_total,status,origem_tipo,criado_em',{count:'exact'}).eq('empresa_id',empresa).order('criado_em',{ascending:false}).order('id',{ascending:false}).range(from,to)),
     fetchAllPages<PartnerRow>((from,to)=>supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia,codigo',{count:'exact'}).eq('empresa_id',empresa).eq('ativo',true).order('razao_social').order('id').range(from,to)),
     fetchAllPages<PartnerRow>((from,to)=>supabase.from('erp_clientes').select('id,razao_social,nome_fantasia,codigo',{count:'exact'}).eq('empresa_id',empresa).eq('ativo',true).order('razao_social').order('id').range(from,to))
    ])
    setTitles(t)
-   const [parts,baixas]=await Promise.all([
+   const [parts,baixasRows]=await Promise.all([
     fetchAllPages<Installment>((from,to)=>supabase.from('erp_financeiro_parcelas').select('id,titulo_id,numero,vencimento,valor,saldo,status',{count:'exact'}).eq('empresa_id',empresa).order('vencimento').order('id').range(from,to)),
-    supabase.from('erp_financeiro_baixas').select('id,titulo_id,parcela_id,valor,ocorrido_em,forma_pagamento,referencia').eq('empresa_id',empresa).order('ocorrido_em',{ascending:false}).limit(1000)
+    fetchAllPages<Baixa>((from,to)=>supabase.from('erp_financeiro_baixas').select('id,titulo_id,parcela_id,valor,ocorrido_em,forma_pagamento,referencia',{count:'exact'}).eq('empresa_id',empresa).order('ocorrido_em',{ascending:false}).order('id',{ascending:false}).range(from,to))
    ])
-   if(baixas.error)throw baixas.error
    setInstallments(parts)
+   setBaixas(baixasRows)
    const partnerRows: Partner[] = [
     ...p.map(row=>({ id:row.id, tipo_parceiro:'PAGAR' as const, razao_social:row.razao_social, nome_fantasia:row.nome_fantasia??undefined, codigo:row.codigo??undefined })),
     ...r.map(row=>({ id:row.id, tipo_parceiro:'RECEBER' as const, razao_social:row.razao_social, nome_fantasia:row.nome_fantasia??undefined, codigo:row.codigo??undefined }))
@@ -81,22 +101,30 @@ export default function FinanceiroWorkspace(){
  },[])
  useEffect(()=>{void load()},[load])
  const filtered=titles.filter(t=>(tab==='PAGAR'||tab==='RECEBER'?t.tipo===tab:true)&&[t.descricao,t.documento??'',t.categoria??'',t.status].join(' ').toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR')))
- const openParts=installments.filter(p=>p.saldo>0&&p.status!=='CANCELADO')
+ const visibleTitles=filtered.filter(t=>tab==='PAGAR'||tab==='RECEBER'?t.tipo===tab:true)
+ const openParts=installments.filter(p=>p.saldo>0&&p.status!=='CANCELADO'&&(!selectedTitleId||p.titulo_id===selectedTitleId))
+ const baixaRows=baixas.filter(b=>!selectedTitleId||b.titulo_id===selectedTitleId)
+ const titlePageCount=Math.max(1,Math.ceil(visibleTitles.length/20)),partPageCount=Math.max(1,Math.ceil(openParts.length/20)),baixaPageCount=Math.max(1,Math.ceil(baixaRows.length/20))
+ const pageTitles=visibleTitles.slice((titlePage-1)*20,titlePage*20),pageParts=openParts.slice((partPage-1)*20,partPage*20),pageBaixas=baixaRows.slice((baixaPage-1)*20,baixaPage*20)
+ useEffect(()=>{setTitlePage(p=>Math.min(p,titlePageCount));setPartPage(p=>Math.min(p,partPageCount));setBaixaPage(p=>Math.min(p,baixaPageCount))},[titlePageCount,partPageCount,baixaPageCount])
  const totalPay=installments.filter(p=>p.saldo>0&&titles.some(t=>t.id===p.titulo_id&&t.tipo==='PAGAR'&&t.status!=='CANCELADO')).reduce((s,p)=>s+Number(p.saldo),0)
  const totalReceive=installments.filter(p=>p.saldo>0&&titles.some(t=>t.id===p.titulo_id&&t.tipo==='RECEBER'&&t.status!=='CANCELADO')).reduce((s,p)=>s+Number(p.saldo),0)
  const totalOpen=openParts.reduce((s,p)=>s+Number(p.saldo),0)
  const partnerLabel=(id:string)=>{const p=partners.find(x=>x.id===id);return p?.nome_fantasia||p?.razao_social||p?.codigo||'Parceiro cadastrado'}
- const beginCreate=(k:Kind)=>{setKind(k);setPartner('');setDescription('');setDocument('');setCategory('');setCostCenter('');setIssueDate(localDate());setDueDate(localDate());setAmount('');setShowForm(true);setError('');setMessage('')}
+ const beginCreate=(k:Kind)=>{setEditingTitleId(null);setSelectedTitleId('');setKind(k);setPartner('');setDescription('');setDocument('');setCategory('');setCostCenter('');setIssueDate(localDate());setDueDate(localDate());setAmount('');setInstallmentCount('1');setShowForm(true);setError('');setMessage('')}
+ const beginEdit=(title:Title)=>{const parts=installments.filter(p=>p.titulo_id===title.id).sort((a,b)=>a.numero-b.numero);if(!parts.length)return;setEditingTitleId(title.id);setKind(title.tipo);setPartner(title.parceiro_id);setDescription(title.descricao);setDocument(title.documento??'');setCategory(title.categoria??'');setCostCenter(title.centro_custo??'');setIssueDate(title.data_emissao);setDueDate(parts[0].vencimento);setAmount(Number(title.valor_total).toFixed(2));setInstallmentCount(String(parts.length));setShowForm(true);setError('');setMessage('')}
  async function saveTitle(e:FormEvent){
   e.preventDefault();setError('');setMessage('')
   const value=Number(amount)
   if(!company||!partner||!description.trim()||!Number.isFinite(value)||value<=0||!dueDate){setError('Preencha parceiro, descrição, vencimento e valor maior que zero.');return}
+  let parcelas:{numero:number;vencimento:string;valor:number}[]
+  try{parcelas=buildMonthlyInstallments(value,Number(installmentCount),dueDate)}catch(e){setError(errText(e));return}
   setBusy(true)
   try{
-   const {data:uid,error:uidError}=await supabase.rpc('erp_financeiro_salvar_titulo',{p_titulo_id:null,p_empresa_id:company,p_tipo:kind,p_parceiro_id:partner,p_descricao:description.trim(),p_documento:document.trim()||null,p_categoria:category.trim()||null,p_centro_custo:costCenter.trim()||null,p_data_emissao:issueDate,p_origem_tipo:'MANUAL',p_origem_id:null,p_chave_idempotencia:crypto.randomUUID(),p_parcelas:[{numero:1,vencimento:dueDate,valor:Number(value.toFixed(2))}]})
+   const {data:uid,error:uidError}=await supabase.rpc('erp_financeiro_salvar_titulo',{p_titulo_id:editingTitleId,p_empresa_id:company,p_tipo:kind,p_parceiro_id:partner,p_descricao:description.trim(),p_documento:document.trim()||null,p_categoria:category.trim()||null,p_centro_custo:costCenter.trim()||null,p_data_emissao:issueDate,p_origem_tipo:'MANUAL',p_origem_id:null,p_chave_idempotencia:crypto.randomUUID(),p_parcelas:parcelas})
    if(uidError)throw uidError
    if(!uid)throw new Error('O banco não retornou o identificador do título.')
-   setShowForm(false);setMessage('Título gravado no Financeiro.');await load()
+   setShowForm(false);setEditingTitleId(null);await load();setMessage(editingTitleId?'Título atualizado no Financeiro.':'Título gravado no Financeiro.')
   }catch(e){setError(errText(e))}finally{setBusy(false)}
  }
  async function registerPayment(e:FormEvent){
@@ -107,7 +135,7 @@ export default function FinanceiroWorkspace(){
   try{
    const {error:e}=await supabase.rpc('erp_financeiro_registrar_baixa',{p_empresa_id:company,p_parcela_id:payPart.id,p_valor:Number(value.toFixed(2)),p_ocorrido_em:new Date(payDate+'T12:00:00').toISOString(),p_forma_pagamento:payMethod,p_referencia:reference.trim()||null,p_chave_idempotencia:crypto.randomUUID()})
    if(e)throw e
-   setPayPart(null);setMessage('Baixa financeira registrada.');await load()
+   setPayPart(null);setReference('');await load();setMessage('Baixa financeira registrada.')
   }catch(e){setError(errText(e))}finally{setBusy(false)}
  }
  const tabs=[['RESUMO','Visão geral'],['PAGAR','Contas a pagar'],['RECEBER','Contas a receber'],['BAIXAS','Parcelas / baixas']] as const
