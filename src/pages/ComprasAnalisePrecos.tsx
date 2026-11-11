@@ -30,6 +30,7 @@ type Quote = {
   condicao_pagamento: string | null
 }
 type QuoteRow = Quote & { custo: number }
+type InvitedSupplier = { id: string; rfq_id: string; fornecedor_id: string; status: string }
 type Supplier = { id: string; razao_social: string; nome_fantasia: string | null }
 type RfqItem = { rfq_id: string; codigo: string; descricao: string; quantidade: number; unidade: string }
 
@@ -39,6 +40,13 @@ const dateLabel = (value: string | null) => value ? new Date(`${value}T12:00:00`
 export default function ComprasAnalisePrecos() {
   const [rfqs, setRfqs] = useState<Rfq[]>([])
   const [quotes, setQuotes] = useState<Quote[]>([])
+  const [invited, setInvited] = useState<InvitedSupplier[]>([])
+  const [responseSupplierId, setResponseSupplierId] = useState('')
+  const [responseValue, setResponseValue] = useState('')
+  const [responseDays, setResponseDays] = useState('')
+  const [responseCondition, setResponseCondition] = useState('')
+  const [responseValidity, setResponseValidity] = useState('')
+  const [responseNotes, setResponseNotes] = useState('')
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [items, setItems] = useState<RfqItem[]>([])
   const [selected, setSelected] = useState<string | null>(null)
@@ -58,14 +66,16 @@ export default function ComprasAnalisePrecos() {
       const company = await supabase.rpc('erp_current_empresa_id')
       if (company.error || !company.data) throw company.error ?? new Error('Empresa da sessão não identificada.')
       const empresaId = String(company.data)
-      const [r, q, s, i] = await Promise.all([
+      const [r, q, v, s, i] = await Promise.all([
         fetchAllPages<Rfq>((from, to) => supabase.from('erp_rfq').select('id,numero,status,data_emissao,prazo_resposta,fornecedor_escolhido_id,justificativa_escolha', { count: 'exact' }).eq('empresa_id', empresaId).order('created_at', { ascending: false }).range(from, to)),
         fetchAllPages<Quote>((from, to) => supabase.from('erp_rfq_respostas').select('id,rfq_id,fornecedor_id,status,valor_total,prazo_dias,condicao_pagamento,validade,observacoes', { count: 'exact' }).eq('empresa_id', empresaId).range(from, to)),
+        fetchAllPages<InvitedSupplier>((from, to) => supabase.from('erp_rfq_fornecedores').select('id,rfq_id,fornecedor_id,status', { count: 'exact' }).eq('empresa_id', empresaId).range(from, to)),
         fetchAllPages<Supplier>((from, to) => supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia', { count: 'exact' }).eq('empresa_id', empresaId).eq('ativo', true).order('razao_social').range(from, to)),
         fetchAllPages<RfqItem>((from, to) => supabase.from('erp_rfq_itens').select('rfq_id,codigo,descricao,quantidade,unidade', { count: 'exact' }).eq('empresa_id', empresaId).range(from, to)),
       ])
       setRfqs(r)
       setQuotes(q)
+      setInvited(v)
       setSuppliers(s)
       setItems(i)
       setSelected(current => current && r.some(row => row.id === current) ? current : (r[0]?.id ?? null))
@@ -95,6 +105,8 @@ export default function ComprasAnalisePrecos() {
     })
   }, [filter, rfqs, items])
   const chosenRow = rows.find(row => row.fornecedor_id === selectedSupplier)
+  const invitedForSelected = invited.filter(row => row.rfq_id === selected)
+  const invitedSupplierIds = invitedForSelected.map(row => row.fornecedor_id)
   const needsJustification = Boolean(chosenRow && winner && chosenRow.fornecedor_id !== winner.fornecedor_id && chosenRow.custo > winner.custo)
 
   useEffect(() => {
@@ -106,6 +118,40 @@ export default function ComprasAnalisePrecos() {
     setSelectedSupplier(selectedRfq.fornecedor_escolhido_id || rows[0]?.fornecedor_id || '')
     setJustificativa(selectedRfq.justificativa_escolha || '')
   }, [selectedRfq?.id, selectedRfq?.fornecedor_escolhido_id, selectedRfq?.justificativa_escolha, rows.length])
+
+  useEffect(() => {
+    setResponseSupplierId(current => invitedSupplierIds.includes(current) ? current : (invitedSupplierIds[0] || ''))
+  }, [selected, invitedSupplierIds.join('|')])
+
+  const recordQuote = async () => {
+    if (!selectedRfq || !responseSupplierId) { setError('Selecione um fornecedor convidado nesta RFQ.'); return }
+    const amount = Number(responseValue)
+    const days = responseDays.trim() === '' ? null : Number(responseDays)
+    if (!Number.isFinite(amount) || amount < 0 || (days !== null && (!Number.isInteger(days) || days < 0))) {
+      setError('Informe valor total e prazo válidos.')
+      return
+    }
+    setSaving(true); setError(''); setSuccess('')
+    try {
+      const company = await supabase.rpc('erp_current_empresa_id')
+      if (company.error || !company.data) throw company.error ?? new Error('Empresa da sessão não identificada.')
+      const auth = await supabase.auth.getUser()
+      if (auth.error || !auth.data.user) throw auth.error ?? new Error('Sessão autenticada não localizada.')
+      const result = await supabase.from('erp_rfq_respostas').upsert({
+        empresa_id: String(company.data), rfq_id: selectedRfq.id, fornecedor_id: responseSupplierId,
+        respondido_por: auth.data.user.id, valor_total: amount, prazo_dias: days,
+        condicao_pagamento: responseCondition.trim() || null, validade: responseValidity || null,
+        observacoes: responseNotes.trim() || null, status: 'ENVIADA',
+      }, { onConflict: 'rfq_id,fornecedor_id' }).select('id').maybeSingle()
+      if (result.error) throw result.error
+      if (!result.data) throw new Error('O banco não confirmou a gravação da proposta.')
+      setResponseValue(''); setResponseDays(''); setResponseCondition(''); setResponseValidity(''); setResponseNotes('')
+      await load()
+      setSuccess('Proposta registrada na tabela real de respostas da RFQ.')
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível registrar a proposta.')
+    } finally { setSaving(false) }
+  }
 
   const submitForApproval = async () => {
     if (!selectedRfq || !selectedSupplier || !chosenRow || !winner) {
@@ -220,6 +266,23 @@ export default function ComprasAnalisePrecos() {
             <span className="mr-2 font-bold uppercase tracking-wide text-slate-500">Itens:</span>
             {rfqItems.map(i => `${i.codigo} — ${i.descricao} (${i.quantidade} ${i.unidade})`).join(' · ') || 'Nenhum item registrado nesta RFQ.'}
           </div>
+          <section className="border-b border-slate-100 bg-slate-50/70 p-3 sm:px-4">
+            <div className="mb-2"><h3 className="text-xs font-bold text-slate-800">Registrar proposta recebida</h3><p className="text-[10px] text-slate-500">Resposta comercial vinculada ao fornecedor convidado e à RFQ selecionada.</p></div>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-6">
+              <label className="text-[10px] font-bold text-slate-600 lg:col-span-2">Fornecedor
+                <select value={responseSupplierId} onChange={e=>setResponseSupplierId(e.target.value)} className="compras-analise-edit mt-1" disabled={!invitedForSelected.length}>
+                  <option value="">Selecione</option>{invitedForSelected.map(row=><option key={row.id} value={row.fornecedor_id}>{supplierMap.get(row.fornecedor_id)||'Fornecedor'}</option>)}
+                </select>
+              </label>
+              <label className="text-[10px] font-bold text-slate-600">Valor total (R$)<input type="number" min="0" step="0.01" value={responseValue} onChange={e=>setResponseValue(e.target.value)} className="compras-analise-edit mt-1"/></label>
+              <label className="text-[10px] font-bold text-slate-600">Prazo (dias)<input type="number" min="0" step="1" value={responseDays} onChange={e=>setResponseDays(e.target.value)} className="compras-analise-edit mt-1"/></label>
+              <label className="text-[10px] font-bold text-slate-600">Validade<input type="date" value={responseValidity} onChange={e=>setResponseValidity(e.target.value)} className="compras-analise-edit mt-1"/></label>
+              <label className="text-[10px] font-bold text-slate-600">Pagamento<input value={responseCondition} onChange={e=>setResponseCondition(e.target.value)} className="compras-analise-edit mt-1"/></label>
+              <label className="text-[10px] font-bold text-slate-600 sm:col-span-2 lg:col-span-4">Observações<input value={responseNotes} onChange={e=>setResponseNotes(e.target.value)} className="compras-analise-edit mt-1"/></label>
+              <div className="flex items-end lg:col-span-2"><button type="button" onClick={()=>void recordQuote()} disabled={saving||busy||!invitedForSelected.length} className="inline-flex h-9 w-full items-center justify-center rounded-lg bg-sky-700 px-4 text-xs font-bold text-white disabled:opacity-50">{saving?'Gravando...':'Gravar proposta'}</button></div>
+            </div>
+            {!invitedForSelected.length && <p className="mt-2 text-[10px] text-amber-700">Nenhum fornecedor convidado foi vinculado a esta RFQ.</p>}
+          </section>
           <div className="overflow-x-auto">
             <table className="compras-analise-table w-full min-w-[900px] border-collapse text-left">
               <thead><tr>
