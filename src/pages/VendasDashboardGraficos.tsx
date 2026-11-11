@@ -1,8 +1,8 @@
 /**
  * @AUTOR: FernandoSch
- * @DATA_REVISAO_APROVACAO: 2026-11-09
- * @REVISAO: REV-DASHBOARD-VENDAS-DADOS-REAIS-20261109-01 — ordem explícita do proprietário em 2026-11-09: preencher o dashboard com gráficos operacionais reais; excluir registros identificados como homologação/teste; não inventar faturamento.
- * @STATUS_APROVACAO: REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-09 — build e conferência de dados pendentes.
+ * @DATA_REVISAO_APROVACAO: 2026-11-11
+ * @REVISAO: REV-DASHBOARD-VENDAS-DADOS-REAIS-20261109-02 — corrigir parsing do período YYYY-MM e normalização Unicode dos marcadores de homologação/teste; preservar gráficos com pedidos reais, filtros empresa_id e exclusão de registros de teste.
+ * @STATUS_APROVACAO: REVISÃO AUTORIZADA PELO PROPRIETÁRIO NO COMANDO MESTRE DE 2026-11-11; pendente de CI e validação visual.
  */
 import { useEffect, useMemo, useState } from 'react'
 import { Activity, CircleDollarSign, ClipboardList, RefreshCw, TrendingUp, Users } from 'lucide-react'
@@ -32,7 +32,7 @@ const monthValue = () => {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
 }
 function bounds(value: string, period: 'mes' | 'ano') {
-  const match = /^(\\d{4})-(\\d{2})$/.exec(value)
+  const match = /^(\d{4})-(\d{2})$/.exec(value)
   if (!match) throw new Error('Selecione um período válido.')
   const year = Number(match[1])
   const month = Number(match[2])
@@ -45,7 +45,7 @@ function bounds(value: string, period: 'mes' | 'ano') {
   }
 }
 function isTestRecord(row: Pedido) {
-  const marker = `${row.observacoes ?? ''} ${row.pedido_cliente ?? ''}`.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toUpperCase()
+  const marker = `${row.observacoes ?? ''} ${row.pedido_cliente ?? ''}`.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase()
   return marker.includes('HOMOLOGACAO') || marker.includes('PLASTIBOR-')
 }
 const palette = ['#123B50', '#2D8DB8', '#48B7C7', '#3A9D78', '#E6A34A', '#D65B61']
