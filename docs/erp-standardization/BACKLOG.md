@@ -254,3 +254,12 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Validação:** os workflows disparados para o commit do ajuste do gate ainda estavam em execução na consulta. A análise de gap é estática e não substitui validação funcional.
 - **Backlog:** UI-001, UI-002, UI-003 a UI-005, UI-010 a UI-100, QA-010 a QA-040, SGQ-REL-001 e itens CMP ainda pendentes permanecem abertos. Nenhuma tela foi declarada concluída nesta execução.
 - **Limite ambiental:** não há checkout local interativo nesta sessão; os comandos são executados por GitHub Actions, e a inspeção visual/autenticada do browser e confirmação do schema/RLS remoto não estão disponíveis aqui.
+
+
+## Evidência parcial — UI-002 / cruzamento estático do roteador (2026-11-11)
+
+- Fonte: `src/AppEntryV2.tsx` no HEAD consultado e árvore Git do mesmo HEAD (`983` arquivos versionados; árvore não truncada).
+- Foram identificadas `335` declarações `<Route>` no arquivo; `334` rotas com `path` literal e elemento simples foram analisadas pelo parser de linha usado nesta verificação.
+- Foram encontrados `196` especificadores de imports locais (incluindo imports dinâmicos), `195` caminhos únicos; todos resolvem para arquivos existentes na árvore Git. As `57` declarações lazy identificadas também têm caminho resolvido e referência textual no arquivo.
+- Não foram encontrados caminhos literais repetidos na amostra de rotas de linha única. O relatório gerado também registra rotas aninhadas, aliases e wrappers que exigem análise de AST/normalização de caminhos antes de classificação definitiva.
+- **UI-002 permanece aberto:** este cruzamento estático não prova que todos os elementos `Route` renderizam o componente esperado, não classifica completamente aliases/rotas órfãs/catch-all e não verifica re-exports indiretos nem navegação em runtime. Nenhuma rota foi removida ou alterada.
