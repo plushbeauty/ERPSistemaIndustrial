@@ -144,8 +144,6 @@ export default function ComprasWorkspace() {
       const { data: empresaId, error: empresaError } = await supabase.rpc('erp_current_empresa_id')
       if (empresaError) throw empresaError
       if (typeof empresaId !== 'string' || !empresaId) throw new Error('Não foi possível identificar a empresa da sessão autenticada.')
-      const { data: authData, error: authError } = await supabase.auth.getUser()
-      if (authError) throw authError
       const { data, error } = await supabase.from('erp_rfq').insert({
         empresa_id: empresaId,
         data_emissao: today,
@@ -154,7 +152,6 @@ export default function ComprasWorkspace() {
         condicao_pagamento: form.condicaoPagamento.trim() || null,
         observacoes: form.observacoes.trim() || null,
         status: 'RASCUNHO',
-        created_by: authData.user?.id ?? null,
       }).select('id,numero').single()
       if (error) throw error
       setNotice({ kind: 'success', message: 'Solicitação de cotação criada. Agora adicione itens e fornecedores na etapa de cotação.' })
