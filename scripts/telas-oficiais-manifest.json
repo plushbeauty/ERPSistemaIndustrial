@@ -517,11 +517,11 @@
     },
     {
       "path": "src/pages/ComprasWorkspace.tsx",
-      "sha": "7e25bcd543f93d42da8318ae9df5661a44cacb35",
+      "sha": "9ca3a9b960ac99117596da0a0572a503c9573925",
       "autor": "FernandoSch",
-      "revisao": "REV-COMPRAS-SCHEMA-REAL-NFE-20261110-01 — corrigidos campos inexistentes na criação de RFQ, leitura de NF-e de entrada pela tabela fiscal real, colunas alinhadas ao schema e ajuda operacional; revisão funcional sem alterar o fluxo aprovado de pedido.",
+      "revisao": "REV-COMPRAS-WORKSPACE-DBGRID-20261110-02 — colunas RFQ alinhadas ao schema real, paginação de 20 linhas, total de registros, exportação CSV, impressão e campos/linhas padronizados.",
       "aprovadaEm": "2026-11-10",
-      "statusAprovacao": "REVISAO TECNICA AUTORIZADA PELO PROPRIETARIO EM 2026-11-10 PARA AUDITORIA E CORRECAO FUNCIONAL, PRESERVANDO IDENTIDADE E FLUXOS EXISTENTES"
+      "statusAprovacao": "REVISAO TECNICA AUTORIZADA PELO PROPRIETARIO EM 2026-11-10 PARA CONFORMIDADE FUNCIONAL"
     },
     {
       "path": "src/pages/ConfiguracaoLote.tsx",
