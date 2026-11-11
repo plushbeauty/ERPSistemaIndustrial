@@ -50,6 +50,7 @@ import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useState } fro
 import { useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { relogioDoServidor } from '../lib/serverClock'
+import { EpisScreen, TurnosEscalasScreen } from './RHSubmodules'
 import { CalendarDays, Camera, CheckCircle2, Clock3, FileText, GraduationCap, RefreshCw, Save, Search, UserRound, Users, X } from 'lucide-react'
 
 type Staff = {
@@ -76,7 +77,7 @@ type Staff = {
   foto_path?: string | null
 }
 type Row = Record<string, string | number | boolean | null | undefined> & { id: string }
-type Tab = 'Visão geral' | 'Funcionários' | 'Ponto / Presença' | 'Treinamentos' | 'Avaliações' | 'Ausências' | 'Acidentes' | 'Documentos'
+type Tab = 'Visão geral' | 'Funcionários' | 'Turnos e escalas' | 'Ponto / Presença' | 'Treinamentos' | 'EPIs' | 'Avaliações' | 'Ausências' | 'Acidentes' | 'Documentos'
 type Field = { key: string; label: string; type?: string; required?: boolean; options?: string[] }
 /**
  * Cadastro de colaborador em grupos, cada campo com a largura da régua aprovada
@@ -110,7 +111,9 @@ const employeeFieldWidth: Record<string, string> = {
 const tabs: { label: Tab; icon: typeof Users }[] = [
   { label: 'Visão geral', icon: Users },
   { label: 'Funcionários', icon: Users },
+  { label: 'Turnos e escalas', icon: Clock3 },
   { label: 'Ponto / Presença', icon: Clock3 },
+  { label: 'EPIs', icon: CheckCircle2 },
   { label: 'Treinamentos', icon: GraduationCap },
   { label: 'Avaliações', icon: CheckCircle2 },
   { label: 'Ausências', icon: CalendarDays },
@@ -124,7 +127,7 @@ const operationalFieldWidth = (field: Field) => {
   if (field.type === 'number') return 'erp-field-money'
   return 'erp-field-text'
 }
-const schemas: Record<Exclude<Tab, 'Funcionários' | 'Visão geral'>, { table: string; fields: Field[] }> = {
+const schemas: Record<Exclude<Tab, 'Funcionários' | 'Visão geral' | 'Turnos e escalas' | 'EPIs'>, { table: string; fields: Field[] }> = {
   'Ponto / Presença': { table: 'erp_rh_ponto_eventos', fields: [
     { key: 'funcionario_id', label: 'Funcionário', type: 'staff', required: true },
     { key: 'tipo', label: 'Evento', type: 'select', options: ['ENTRADA', 'SAIDA_INTERVALO', 'RETORNO_INTERVALO', 'SAIDA'], required: true },
@@ -237,8 +240,8 @@ export default function RHIndustrial() {
   }, [])
 
   const loadRows = useCallback(async (selectedTab: Tab, tenant: string) => {
-    if (selectedTab === 'Funcionários' || selectedTab === 'Visão geral') { setRows([]); return }
-    const schema = schemas[selectedTab as Exclude<Tab, 'Funcionários' | 'Visão geral'>]
+    if (selectedTab === 'Funcionários' || selectedTab === 'Visão geral' || selectedTab === 'Turnos e escalas' || selectedTab === 'EPIs') { setRows([]); return }
+    const schema = schemas[selectedTab as Exclude<Tab, 'Funcionários' | 'Visão geral' | 'Turnos e escalas' | 'EPIs'>]
     let request = supabase.from(schema.table).select('*').eq('empresa_id', tenant).limit(300)
     if (selectedTab === 'Ponto / Presença') request = request.gte('registrado_em', new Date(filterDate + 'T00:00:00').toISOString()).lt('registrado_em', new Date(new Date(filterDate + 'T00:00:00').getTime() + 86400000).toISOString()).order('registrado_em', { ascending: false })
     else if (selectedTab === 'Ausências') request = request.order('data_inicio', { ascending: false })
@@ -304,7 +307,7 @@ export default function RHIndustrial() {
   }, [empresaId, tab, filterDate, loadRows])
 
   const startNew = () => {
-    if (tab === 'Visão geral') return
+    if (tab === 'Visão geral' || tab === 'Turnos e escalas' || tab === 'EPIs') return
     setEditingId(null)
     setForm(tab === 'Funcionários' ? blank(employeeFields) : blank(schemas[tab as Exclude<Tab, 'Funcionários' | 'Visão geral'>].fields))
     setPhoto(null); setPhotoUrl(''); setMessage('')
@@ -353,7 +356,7 @@ export default function RHIndustrial() {
 
   const saveOperational = async (event: FormEvent) => {
     event.preventDefault()
-    if (!empresaId || tab === 'Funcionários' || tab === 'Visão geral') return
+    if (!empresaId || tab === 'Funcionários' || tab === 'Visão geral' || tab === 'Turnos e escalas' || tab === 'EPIs') return
     setBusy(true); setMessage('')
     try {
       const schema = schemas[tab as Exclude<Tab, 'Funcionários' | 'Visão geral'>]
@@ -408,7 +411,7 @@ export default function RHIndustrial() {
 
     {message && <div role="status" className={`mb-4 flex items-start gap-2 rounded-lg border px-3 py-2 text-sm ${/sucesso|salvo|gravado|enviado/i.test(message) ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-amber-200 bg-amber-50 text-amber-900'}`}>{message}</div>}
 
-    {tab === 'Visão geral' ? <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4"><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><Users className="mb-2 text-sky-700" size={19}/><p className="text-xs text-slate-500">Funcionários cadastrados</p><strong className="text-2xl">{staff.length}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CheckCircle2 className="mb-2 text-emerald-700" size={19}/><p className="text-xs text-slate-500">Colaboradores ativos</p><strong className="text-2xl">{activeCount}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><Clock3 className="mb-2 text-amber-700" size={19}/><p className="text-xs text-slate-500">Eventos de ponto</p><strong className="text-2xl">{overviewStats.pointToday}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><GraduationCap className="mb-2 text-violet-700" size={19}/><p className="text-xs text-slate-500">Treinamentos pendentes</p><strong className="text-2xl">{overviewStats.pendingTrainings}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CalendarDays className="mb-2 text-amber-700" size={19}/><p className="text-xs text-slate-500">Ausências pendentes</p><strong className="text-2xl">{overviewStats.absences}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CheckCircle2 className="mb-2 text-violet-700" size={19}/><p className="text-xs text-slate-500">Avaliações registradas</p><strong className="text-2xl">{overviewStats.evaluations}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CalendarDays className="mb-2 text-rose-700" size={19}/><p className="text-xs text-slate-500">Acidentes em aberto</p><strong className="text-2xl">{overviewStats.accidents}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><FileText className="mb-2 text-slate-700" size={19}/><p className="text-xs text-slate-500">Documentos cadastrados</p><strong className="text-2xl">{overviewStats.documents}</strong></article></section> : tab === 'Funcionários' ? <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    {tab === 'Turnos e escalas' ? <TurnosEscalasScreen/> : tab === 'EPIs' ? <EpisScreen/> : tab === 'Visão geral' ? <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4"><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><Users className="mb-2 text-sky-700" size={19}/><p className="text-xs text-slate-500">Funcionários cadastrados</p><strong className="text-2xl">{staff.length}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CheckCircle2 className="mb-2 text-emerald-700" size={19}/><p className="text-xs text-slate-500">Colaboradores ativos</p><strong className="text-2xl">{activeCount}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><Clock3 className="mb-2 text-amber-700" size={19}/><p className="text-xs text-slate-500">Eventos de ponto</p><strong className="text-2xl">{overviewStats.pointToday}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><GraduationCap className="mb-2 text-violet-700" size={19}/><p className="text-xs text-slate-500">Treinamentos pendentes</p><strong className="text-2xl">{overviewStats.pendingTrainings}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CalendarDays className="mb-2 text-amber-700" size={19}/><p className="text-xs text-slate-500">Ausências pendentes</p><strong className="text-2xl">{overviewStats.absences}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CheckCircle2 className="mb-2 text-violet-700" size={19}/><p className="text-xs text-slate-500">Avaliações registradas</p><strong className="text-2xl">{overviewStats.evaluations}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><CalendarDays className="mb-2 text-rose-700" size={19}/><p className="text-xs text-slate-500">Acidentes em aberto</p><strong className="text-2xl">{overviewStats.accidents}</strong></article><article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><FileText className="mb-2 text-slate-700" size={19}/><p className="text-xs text-slate-500">Documentos cadastrados</p><strong className="text-2xl">{overviewStats.documents}</strong></article></section> : tab === 'Funcionários' ? <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-200 bg-slate-100 px-4 py-3"><h2 className="font-bold text-slate-900">{editingId ? 'Editar colaborador' : 'Cadastro de colaborador'}</h2><p className="mt-1 text-xs text-slate-500">Campos compactos, medidas conforme especificação; foto 3×4 protegida por empresa.</p></div>
       <form onSubmit={saveEmployee} className="p-4 md:p-5">
         <div className="mb-4 flex items-start gap-4">
