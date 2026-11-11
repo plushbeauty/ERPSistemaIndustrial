@@ -461,11 +461,11 @@
     },
     {
       "path": "src/pages/ComprasAnalisePrecos.tsx",
-      "sha": "1418f30d76e0b9207dff47ad5065a8a48b9f6529",
+      "sha": "efe37bb4ae18d04c04e53c5e1191ade6c8ed6563",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-COMPRAS-ANALISE-RFQ-RESPOSTAS-20261110-01 — consulta corrigida para erp_rfq_respostas, grade usa apenas colunas reais e seleção grava fornecedor/justificativa/status no cabeçalho da RFQ.",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "REVISAO TECNICA AUTORIZADA PELO PROPRIETARIO EM 2026-11-10 PARA ALINHAMENTO DO SCHEMA RFQ"
     },
     {
       "path": "src/pages/ComprasIndustrial.tsx",
