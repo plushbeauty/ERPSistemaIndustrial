@@ -26,7 +26,7 @@ export default function PainelLucratividade() {
   const [error, setError] = useState('')
 
   const load = async () => {
-    if (!month || !/^\\d{4}-\\d{2}$/.test(month)) { setError('Informe a competência.'); return }
+    if (!month || !/^\d{4}-\d{2}$/.test(month)) { setError('Informe a competência.'); return }
     const targetValue = Number(target.replace(',', '.'))
     if (!Number.isFinite(targetValue) || targetValue < 0 || targetValue > 100) { setError('A Margem Alvo deve estar entre 0 e 100%.'); return }
     setLoading(true)
