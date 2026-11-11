@@ -64,7 +64,7 @@ export default function AssistenteRetificacao(){
    const userIds=[...new Set(rows.map(row=>row.usuario_id).filter((value):value is string=>Boolean(value)))]
    let names:UserName[]=[]
    if(userIds.length){
-    const users=await supabase.from('erp_usuarios').select('id,nome,email').eq('empresa_id',companyId).in('id',userIds)
+    const users=await supabase.from('erp_usuarios').select('id,nome,email').in('id',userIds)
     if(users.error)throw users.error
     names=(users.data??[]) as UserName[]
    }
@@ -125,7 +125,7 @@ export default function AssistenteRetificacao(){
      q=await supabase.from('erp_notas_debito_financeiras').select('id,numero_nota,documento_ref,entidade_nome,data_emissao,valor_total,status,conta_bancaria_id,centro_custo_id').eq('empresa_id',companyId).eq('documento_ref',docNumber.trim()).limit(1).maybeSingle()
      if(q.error)throw q.error
     }
-    if(q.data)row={id:q.data.id,type:'NOTA_DEBITO',typeLabel:'Nota de débito',number:q.data.numero_nota||q.data.documento_ref||q.data.id,entity:q.data.entidade_nome||'Não informado',amount:Number(q.data.valor_total||0),date:q.data.data_emissao||'',account:q.data.conta_bancaria_id||'Não vinculada',costCenter:q.data.centro_custo_id||'Não informado',status:q.data.status||'—',sourceTable:'erp_notas_debito_financeiras'}
+    if(q.data)row={id:q.data.id,type:'NOTA_DEBITO',typeLabel:'Nota de débito',number:q.data.documento_ref===docNumber.trim()?q.data.documento_ref:q.data.numero_nota||q.data.documento_ref||q.data.id,entity:q.data.entidade_nome||'Não informado',amount:Number(q.data.valor_total||0),date:q.data.data_emissao||'',account:q.data.conta_bancaria_id||'Não vinculada',costCenter:q.data.centro_custo_id||'Não informado',status:q.data.status||'—',sourceTable:'erp_notas_debito_financeiras'}
    }
    if(!row)throw new Error('Nenhum documento correspondente foi encontrado na empresa ativa.')
    if(competencia&&row.date&&row.date.slice(0,7)!==competencia)throw new Error('O documento foi localizado, mas não pertence à competência informada.')
