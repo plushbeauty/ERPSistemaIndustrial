@@ -4,8 +4,9 @@
  * Pedido de compra gravado por RPC transacional e campos limitados ao contrato PostgreSQL real.
  */
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { Plus, Printer, Trash2, X } from 'lucide-react'
+import { FileSpreadsheet, Plus, Printer, Trash2, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 
 type Row = Record<string, unknown>
 type Item = { key: string; produtoId: string; quantidade: string; unidade: string; valorUnitario: string; dataNecessidade: string; observacoes: string }
@@ -42,31 +43,29 @@ export default function ComprasPedidoForm({ onCancel, onSaved, pedidoId }: { onC
       try {
         const { data: empresaId, error: tenantError } = await supabase.rpc('erp_current_empresa_id')
         if (tenantError || typeof empresaId !== 'string' || !empresaId) throw tenantError ?? new Error('Empresa da sessão não identificada.')
-        const [supplierResult, productResult, requisitionResult, companyResult] = await Promise.all([
-          supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia,documento,email,telefone,endereco,cidade,estado,contato,ativo').eq('empresa_id', empresaId).eq('ativo', true).order('razao_social'),
-          supabase.from('erp_produtos').select('id,codigo,nome,unidade,ativo').eq('empresa_id', empresaId).eq('ativo', true).order('codigo'),
-          supabase.from('erp_requisicoes_compra').select('id,codigo,status').eq('empresa_id', empresaId).order('created_at', { ascending: false }).limit(200),
+        const [supplierRows, productRows, requisitionRows, companyResult] = await Promise.all([
+          fetchAllPages<Row>((from,to)=>supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia,documento,email,telefone,endereco,cidade,estado,contato,ativo',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('razao_social').range(from,to)),
+          fetchAllPages<Row>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,unidade,ativo',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').range(from,to)),
+          fetchAllPages<Row>((from,to)=>supabase.from('erp_requisicoes_compra').select('id,codigo,status',{count:'exact'}).eq('empresa_id',empresaId).order('created_at',{ascending:false}).range(from,to)),
           supabase.from('erp_empresas').select('razao_social,nome_fantasia,cnpj,telefone,email,endereco,cidade,uf,cep').eq('id', empresaId).maybeSingle(),
         ])
         if (!active) return
-        const failures = [supplierResult.error, productResult.error, requisitionResult.error, companyResult.error].filter(Boolean)
-        if (failures.length) throw new Error(failures.map(e => e?.message).join(' | '))
-        setSuppliers((supplierResult.data ?? []) as Row[])
-        setProducts((productResult.data ?? []) as Row[])
-        setRequisitions((requisitionResult.data ?? []) as Row[])
+        if (companyResult.error) throw companyResult.error
+        setSuppliers(supplierRows)
+        setProducts(productRows)
+        setRequisitions(requisitionRows)
         setCompany(companyResult.data as Company | null)
         if (pedidoId) {
-          const [orderResult, itemResult] = await Promise.all([
+          const [orderResult, itemRows] = await Promise.all([
             supabase.from('erp_pedidos_compra').select('id,numero,fornecedor_id,requisicao_id,condicao_pagamento,data_prevista,centro_custo,local_entrega,referencia_cotacao,especificacao_tecnica,observacoes,status,created_at').eq('id', pedidoId).eq('empresa_id', empresaId).maybeSingle(),
-            supabase.from('erp_pedidos_compra_itens').select('id,produto_id,descricao,quantidade,valor_unitario,codigo_mp,unidade,data_necessidade,observacoes').eq('pedido_id', pedidoId).eq('empresa_id', empresaId).order('created_at'),
+            fetchAllPages<Row>((from,to)=>supabase.from('erp_pedidos_compra_itens').select('id,produto_id,descricao,quantidade,valor_unitario,codigo_mp,unidade,data_necessidade,observacoes',{count:'exact'}).eq('pedido_id',pedidoId).eq('empresa_id',empresaId).order('created_at').range(from,to)),
           ])
           if (orderResult.error) throw orderResult.error
-          if (itemResult.error) throw itemResult.error
           if (!orderResult.data) throw new Error('Pedido não encontrado nesta empresa.')
           if (!['RASCUNHO', 'PENDENTE_APROVACAO'].includes(String(orderResult.data.status))) throw new Error('Somente pedidos em rascunho ou pendentes de aprovação podem ser editados.')
           const order = orderResult.data as Row
           setHeader({ fornecedorId: value(order, 'fornecedor_id'), requisicaoId: value(order, 'requisicao_id'), condicao: value(order, 'condicao_pagamento'), entrega: value(order, 'data_prevista'), centroCusto: value(order, 'centro_custo'), localEntrega: value(order, 'local_entrega'), referenciaCotacao: value(order, 'referencia_cotacao'), especificacaoTecnica: value(order, 'especificacao_tecnica'), observacoes: value(order, 'observacoes'), status: String(order.status) === 'PENDENTE_APROVACAO' ? 'PENDENTE_APROVACAO' : 'RASCUNHO' })
-          setItems(((itemResult.data ?? []) as Row[]).map(row => ({ key: value(row, 'id') || crypto.randomUUID(), produtoId: value(row, 'produto_id'), quantidade: value(row, 'quantidade') || '1', unidade: value(row, 'unidade') || 'UN', valorUnitario: value(row, 'valor_unitario') || '0', dataNecessidade: value(row, 'data_necessidade'), observacoes: value(row, 'observacoes') })))
+          setItems(itemRows.map(row => ({ key: value(row, 'id') || crypto.randomUUID(), produtoId: value(row, 'produto_id'), quantidade: value(row, 'quantidade') || '1', unidade: value(row, 'unidade') || 'UN', valorUnitario: value(row, 'valor_unitario') || '0', dataNecessidade: value(row, 'data_necessidade'), observacoes: value(row, 'observacoes') })))
           setSavedPedidoId(pedidoId)
           setSavedOrderNumber(value(order, 'numero'))
           setEmissionDate(value(order, 'created_at'))
@@ -80,6 +79,15 @@ export default function ComprasPedidoForm({ onCancel, onSaved, pedidoId }: { onC
   }, [pedidoId])
 
   const printOrder = () => window.print()
+  const exportItemsCsv = () => {
+    const lines = [['Produto', 'Descrição', 'Unidade', 'Quantidade', 'Valor unitário', 'Subtotal', 'Data necessidade'], ...items.map(item => {
+      const product = products.find(row => value(row, 'id') === item.produtoId)
+      return [product ? value(product, 'codigo') : '', product ? value(product, 'nome') : '', item.unidade, item.quantidade, item.valorUnitario, String((Number(item.quantidade) || 0) * (Number(item.valorUnitario) || 0)), item.dataNecessidade]
+    })]
+    const csv = '\\ufeff' + lines.map(row => row.map(value => '"' + String(value ?? '').replace(/"/g, '""') + '"').join(';')).join('\\r\\n')
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }))
+    const anchor = window.document.createElement('a'); anchor.href = url; anchor.download = 'itens-pedido-compra.csv'; anchor.click(); URL.revokeObjectURL(url)
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -122,7 +130,7 @@ export default function ComprasPedidoForm({ onCancel, onSaved, pedidoId }: { onC
       setSavedPedidoId(record.pedido_compra_id)
       setSavedOrderNumber(String(record.numero_pedido))
       const { data: savedHeader } = await supabase.from('erp_pedidos_compra').select('created_at').eq('id', record.pedido_compra_id).maybeSingle()
-      setEmissionDate(typeof savedHeader?.created_at === 'string' ? savedHeader.created_at : new Date().toISOString())
+      setEmissionDate(typeof savedHeader?.created_at === 'string' ? savedHeader.created_at : '')
       onSaved('Pedido PC-' + String(record.numero_pedido).padStart(4, '0') + ' salvo com ' + payloadItems.length + ' item(ns).')
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível salvar o pedido.')
@@ -149,7 +157,7 @@ export default function ComprasPedidoForm({ onCancel, onSaved, pedidoId }: { onC
         .compras-order-print .print-sign span{border-top:1px solid #334155;width:40%;padding-top:6px}
       }
     `}</style>
-    <div className="compras-panel-heading no-print"><div><h2>{savedPedidoId ? 'Editar pedido de compra' : 'Novo pedido de compra'}</h2><p>Cabeçalho, itens e condições comerciais — somente campos persistidos no banco.</p></div><div className="flex gap-2"><button type="button" className="compras-button compras-button--light" onClick={printOrder} disabled={!savedOrderNumber}><Printer size={14}/> Imprimir / PDF</button><button type="button" className="compras-button compras-button--light" onClick={onCancel}><X size={14}/> Cancelar</button></div></div>
+    <div className="compras-panel-heading no-print"><div><h2>{savedPedidoId ? 'Editar pedido de compra' : 'Novo pedido de compra'}</h2><p>Cabeçalho, itens e condições comerciais — somente campos persistidos no banco.</p></div><div className="flex flex-wrap gap-2"><button type="button" className="compras-button compras-button--light h-10" onClick={exportItemsCsv} disabled={!items.length}><FileSpreadsheet size={14}/> Exportar itens CSV</button><button type="button" className="compras-button compras-button--light h-[38px] w-[115px] rounded-full" onClick={onCancel}><X size={14}/> Voltar</button><button type="button" className="compras-button compras-button--light h-10" onClick={printOrder} disabled={!savedOrderNumber}><Printer size={14}/> Imprimir / PDF</button></div></div>
     {referenceError && <div className="compras-error" role="alert"><strong>Referências indisponíveis.</strong><span>{referenceError}</span></div>}
     {error && <div className="compras-error" role="alert"><strong>Não foi possível concluir.</strong><span>{error}</span></div>}
     {loading && <div className="compras-loading">Carregando referências da empresa autenticada…</div>}
@@ -172,7 +180,7 @@ export default function ComprasPedidoForm({ onCancel, onSaved, pedidoId }: { onC
       <div className="compras-form-footer"><span>{savedOrderNumber ? 'Pedido PC-' + savedOrderNumber.padStart(4, '0') + ' gravado. A impressão usa o número definitivo.' : 'Gravação atômica com validação de empresa e permissão no servidor.'}</span><button className="compras-button compras-button--primary" type="submit" disabled={saving||loading||Boolean(referenceError)||!suppliers.length||!products.length}>{saving?'Salvando…':savedPedidoId?'Salvar alterações':'Salvar pedido de compra'}</button></div>
     </form>
     <section className="compras-order-print" aria-hidden="true">
-      <div className="print-head"><div><div className="print-brand">PLASTIBOR</div><strong>{company?.razao_social || company?.nome_fantasia || 'Dados cadastrais da empresa'}</strong><div>CNPJ: {company?.cnpj || 'Não informado no cadastro'}</div><div>{company?.endereco || 'Endereço não informado'} {company?.cidade || ''} {company?.uf || ''} CEP {company?.cep || ''}</div><div>{company?.telefone || ''} {company?.email || ''}</div></div><div className="print-meta"><h1>PEDIDO DE COMPRA</h1><div>Nº: {savedOrderNumber ? 'PC-' + savedOrderNumber.padStart(4, '0') : 'Aguardando gravação'}</div><div>Emissão: {new Date(emissionDate || Date.now()).toLocaleDateString('pt-BR')}</div><div>Status: {header.status}</div></div></div>
+      <div className="print-head"><div><div className="print-brand">PLASTIBOR</div><strong>{company?.razao_social || company?.nome_fantasia || 'Dados cadastrais da empresa'}</strong><div>CNPJ: {company?.cnpj || 'Não informado no cadastro'}</div><div>{company?.endereco || 'Endereço não informado'} {company?.cidade || ''} {company?.uf || ''} CEP {company?.cep || ''}</div><div>{company?.telefone || ''} {company?.email || ''}</div></div><div className="print-meta"><h1>PEDIDO DE COMPRA</h1><div>Nº: {savedOrderNumber ? 'PC-' + savedOrderNumber.padStart(4, '0') : 'Aguardando gravação'}</div><div>Emissão: {emissionDate ? new Date(emissionDate).toLocaleDateString('pt-BR') : '—'}</div><div>Status: {header.status}</div></div></div>
       <h2>Fornecedor</h2><div><strong>{selectedSupplier?value(selectedSupplier,'razao_social'):'Não selecionado'}</strong></div><div>CNPJ/CPF: {selectedSupplier?value(selectedSupplier,'documento'):'—'} | Contato: {selectedSupplier?value(selectedSupplier,'contato'):'—'}</div><div>{selectedSupplier?value(selectedSupplier,'endereco'):''} {selectedSupplier?value(selectedSupplier,'cidade'):''} {selectedSupplier?value(selectedSupplier,'estado'):''}</div><div>{selectedSupplier?value(selectedSupplier,'telefone'):''} {selectedSupplier?value(selectedSupplier,'email'):''}</div>
       <h2>Condições comerciais</h2><div>Pagamento: {header.condicao || '—'} | Prazo: {header.entrega || '—'} | Local de entrega: {header.localEntrega || '—'}</div><div>Centro de custo: {header.centroCusto || '—'} | Cotação: {header.referenciaCotacao || '—'}</div>
       <h2>Itens</h2><table><thead><tr><th>Código/SKU</th><th>Descrição</th><th>Un.</th><th>Quantidade</th><th>Valor unitário</th><th>Subtotal</th></tr></thead><tbody>{items.map(item=>{const product=products.find(row=>value(row,'id')===item.produtoId);return <tr key={item.key}><td>{product?value(product,'codigo'):'—'}</td><td>{product?value(product,'nome'):'—'}</td><td>{item.unidade}</td><td>{item.quantidade}</td><td>{brl(Number(item.valorUnitario)||0)}</td><td>{brl((Number(item.quantidade)||0)*(Number(item.valorUnitario)||0))}</td></tr>})}</tbody></table>
