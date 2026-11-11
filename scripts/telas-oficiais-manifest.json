@@ -493,7 +493,7 @@
     },
     {
       "path": "src/pages/ComprasRequisicoes.tsx",
-      "sha": "ad169f3b730320fc93e48ed243766d65456af9e4",
+      "sha": "1c474287fc23bacb6115dc04e9189a4f707f9022",
       "autor": "FernandoSch",
       "revisao": "REV-COMPRAS-REQUISICOES-OPS-20261110-01 — indicadores reais, manual operacional, voltar, exportação CSV, paginação e totalizadores; RPC transacional erp_compras_encaminhar_requisicoes aplicada e registrada no Supabase.",
       "aprovadaEm": "2026-11-10",
