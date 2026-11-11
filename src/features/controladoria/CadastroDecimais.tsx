@@ -115,8 +115,9 @@ export default function CadastroDecimais() {
       return
     }
 
-    setMessage(editingId ? 'Regra atualizada pela RPC oficial.' : 'Regra gravada pela RPC oficial.')
+    const wasEditing = Boolean(editingId)
     resetForm()
+    setMessage(wasEditing ? 'Regra atualizada pela RPC oficial.' : 'Regra gravada pela RPC oficial.')
     await load()
     setSaving(false)
   }
