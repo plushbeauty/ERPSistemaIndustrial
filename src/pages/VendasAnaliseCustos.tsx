@@ -1,11 +1,11 @@
 /**
  * @AUTOR: FernandoSch
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-11
+ * @REVISAO: REV-VENDAS-ORCAMENTO-EXCLUSAO-CONFIRMADA-20261111-01 — exclusão de operação com confirmação, loading e feedback; RPCs e isolamento por empresa preservados
+ * @STATUS_APROVACAO: REVISÃO AUTORIZADA PELO PROPRIETÁRIO NO COMANDO MESTRE DE 2026-11-11; pendente de CI e validação funcional
  */
 import { useEffect, useMemo, useState } from 'react'
-import { Paperclip, Plus, Trash2 } from 'lucide-react'
+import { LoaderCircle, Paperclip, Plus, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import VendasLayout from './VendasLayout'
 
@@ -19,7 +19,7 @@ export default function VendasAnaliseCustos(){
  const [empresaId,setEmpresaId]=useState(''),[produtos,setProdutos]=useState<Produto[]>([]),[maquinas,setMaquinas]=useState<Maquina[]>([])
  const [itemBusca,setItemBusca]=useState(''),[produto,setProduto]=useState<Produto|null>(null),[custo,setCusto]=useState<Custo>({custo_tecnico:0,operacoes:0})
  const [impostos,setImpostos]=useState('0'),[comissao,setComissao]=useState('0'),[margem,setMargem]=useState('20')
- const [operacoes,setOperacoes]=useState<Operacao[]>([]),[posto,setPosto]=useState(''),[tempo,setTempo]=useState(''),[error,setError]=useState(''),[message,setMessage]=useState('')
+ const [operacoes,setOperacoes]=useState<Operacao[]>([]),[posto,setPosto]=useState(''),[tempo,setTempo]=useState(''),[error,setError]=useState(''),[message,setMessage]=useState(''),[operacaoPendente,setOperacaoPendente]=useState<Operacao|null>(null),[savingOperation,setSavingOperation]=useState(false),[removingOperationId,setRemovingOperationId]=useState('')
 
  const load=async()=>{
   const e=await supabase.rpc('erp_current_empresa_id');if(e.error||!e.data)throw e.error??new Error('Empresa não identificada.')
@@ -47,14 +47,23 @@ export default function VendasAnaliseCustos(){
  }
  const addOperation=async()=>{
   if(!produto||!posto||Number(tempo)<=0){setError('Informe o item, posto de trabalho e tempo.');return}
-  setError('')
-  const r=await supabase.rpc('erp_adicionar_operacao_orcamento',{p_produto_id:produto.id,p_posto_trabalho_id:posto,p_tempo_minutos:Number(tempo)})
-  if(r.error){setError(r.error.message);return}
-  setTempo('');await loadOps(produto.id);setMessage('Operação adicionada e custo recalculado.')
+  setError('');setMessage('');setSavingOperation(true)
+  try{
+   const r=await supabase.rpc('erp_adicionar_operacao_orcamento',{p_produto_id:produto.id,p_posto_trabalho_id:posto,p_tempo_minutos:Number(tempo)})
+   if(r.error)throw r.error
+   setTempo('');await loadOps(produto.id);setMessage('Operação adicionada e custo recalculado.')
+  }catch(cause){setError(cause instanceof Error?cause.message:'Falha ao adicionar operação.')}
+  finally{setSavingOperation(false)}
  }
  const removeOperation=async(id:string)=>{
-  const r=await supabase.rpc('erp_remover_operacao_orcamento',{p_operacao_id:id});if(r.error){setError(r.error.message);return}
-  if(produto)await loadOps(produto.id);setMessage('Operação removida e custo recalculado.')
+  setRemovingOperationId(id);setError('');setMessage('')
+  try{
+   const r=await supabase.rpc('erp_remover_operacao_orcamento',{p_operacao_id:id})
+   if(r.error)throw r.error
+   if(produto)await loadOps(produto.id)
+   setOperacaoPendente(null);setMessage('Operação removida e custo recalculado.')
+  }catch(cause){setError(cause instanceof Error?cause.message:'Falha ao remover operação.')}
+  finally{setRemovingOperationId('')}
  }
  const preco=useMemo(()=>{
   const base=Number(custo.custo_tecnico)||0
@@ -80,11 +89,21 @@ export default function VendasAnaliseCustos(){
     </div><div className="mt-2 grid grid-cols-3 gap-1 text-[10px]"><div>Custo {brl(custo.custo_tecnico)}</div><div>Operações {custo.operacoes}</div><div>Preço <b>{brl(preco)}</b></div></div></section>
     <section className="min-w-0 overflow-x-auto border border-gray-200 bg-white p-2"><div className="mb-2 flex flex-wrap items-center justify-between gap-2"><b className="text-xs">Ficha de processo / engenharia</b><label className="flex min-h-9 cursor-pointer items-center gap-1 border px-2 text-xs whitespace-nowrap"><Paperclip size={14}/>Anexar desenho<input type="file" className="hidden" accept=".pdf,.dwg,.dxf,.png,.jpg,.jpeg" onChange={e=>upload(e.currentTarget)}/></label></div>
      <table className="w-full min-w-[520px] border-collapse text-xs"><thead><tr className="bg-[#DEE2E6] text-left"><th className="p-2">Seq.</th><th className="p-2">Posto / Máquina</th><th className="p-2">Tempo min</th><th className="p-2">Custo</th><th className="p-2"></th></tr></thead><tbody>
-      {operacoes.map((o,i)=><tr key={o.id} className="border-t"><td className="p-1">{o.sequencial_operacao||((i+1)*10)}</td><td>{o.maquina?.codigo??''} • {o.maquina?.nome??o.descricao_operacao}</td><td>{Number(o.tempo_minutos).toFixed(2)}</td><td>{brl((Number(o.tempo_minutos)/60)*Number(o.maquina?.valor_hora_custo??0))}</td><td><button type="button" onClick={()=>void removeOperation(o.id)} className="text-red-700"><Trash2 size={11}/></button></td></tr>)}
-      <tr className="border-t bg-slate-50"><td className="p-1">+</td><td><select value={posto} onChange={e=>setPosto(e.target.value)} className="h-7 w-full rounded border border-gray-200 px-1"><option value="">Posto de trabalho</option>{maquinas.map(m=><option key={m.id} value={m.id}>{m.codigo} • {m.nome}</option>)}</select></td><td><input type="number" min="0.01" step="0.01" value={tempo} onChange={e=>setTempo(e.target.value)} className="h-7 w-full rounded border border-gray-200 px-1"/></td><td></td><td><button type="button" onClick={()=>void addOperation()} className="flex h-7 w-[24px] items-center justify-center border bg-[#2D8DB8] text-white"><Plus size={11}/></button></td></tr>
+      {operacoes.map((o,i)=><tr key={o.id} className="border-t"><td className="p-1">{o.sequencial_operacao||((i+1)*10)}</td><td>{o.maquina?.codigo??''} • {o.maquina?.nome??o.descricao_operacao}</td><td>{Number(o.tempo_minutos).toFixed(2)}</td><td>{brl((Number(o.tempo_minutos)/60)*Number(o.maquina?.valor_hora_custo??0))}</td><td><button type="button" onClick={()=>setOperacaoPendente(o)} aria-label={`Solicitar exclusão da operação ${o.sequencial_operacao}`} title="Excluir operação" className="text-red-700"><Trash2 size={11}/></button></td></tr>)}
+      <tr className="border-t bg-slate-50"><td className="p-1">+</td><td><select value={posto} onChange={e=>setPosto(e.target.value)} className="h-7 w-full rounded border border-gray-200 px-1"><option value="">Posto de trabalho</option>{maquinas.map(m=><option key={m.id} value={m.id}>{m.codigo} • {m.nome}</option>)}</select></td><td><input type="number" min="0.01" step="0.01" value={tempo} onChange={e=>setTempo(e.target.value)} className="h-7 w-full rounded border border-gray-200 px-1"/></td><td></td><td><button type="button" onClick={()=>void addOperation()} disabled={savingOperation} aria-label={savingOperation?'Salvando operação':'Adicionar operação'} title={savingOperation?'Salvando operação':'Adicionar operação'} className="flex h-7 w-[24px] items-center justify-center border bg-[#2D8DB8] text-white disabled:cursor-wait disabled:opacity-60">{savingOperation?<LoaderCircle size={11} className="animate-spin"/>:<Plus size={11}/>}</button></td></tr>
      </tbody></table>
     </section>
    </div>
+   {operacaoPendente&&<div className="fixed inset-0 z-[10060] grid place-items-center bg-slate-950/50 p-4">
+    <section role="dialog" aria-modal="true" aria-labelledby="confirmar-exclusao-operacao" className="w-full max-w-md border border-[#D3E3EA] bg-white p-4 text-[#123B50] shadow-xl">
+     <h2 id="confirmar-exclusao-operacao" className="text-sm font-bold">Confirmar exclusão da operação</h2>
+     <p className="mt-2 text-xs text-slate-600">Deseja remover a operação {operacaoPendente.sequencial_operacao} — {operacaoPendente.descricao_operacao}? O custo técnico será recalculado após a confirmação.</p>
+     <div className="mt-4 flex justify-end gap-2">
+      <button type="button" onClick={()=>setOperacaoPendente(null)} disabled={Boolean(removingOperationId)} className="h-8 border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 disabled:opacity-50">Cancelar</button>
+      <button type="button" onClick={()=>void removeOperation(operacaoPendente.id)} disabled={Boolean(removingOperationId)} className="flex h-8 items-center gap-2 border border-red-700 bg-red-700 px-3 text-xs font-semibold text-white disabled:cursor-wait disabled:opacity-60">{removingOperationId?<LoaderCircle size={12} className="animate-spin"/>:<Trash2 size={12}/>} {removingOperationId?'Excluindo...':'Excluir operação'}</button>
+     </div>
+    </section>
+   </div>}
   </div>
  </VendasLayout>
 }
