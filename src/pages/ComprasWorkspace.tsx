@@ -8,6 +8,8 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { AlertTriangle, ClipboardList, FileText, PackageCheck, Plus, RefreshCw, Search, ShoppingCart, Truck, Users } from 'lucide-react'
 import ComprasPedidoForm from './ComprasPedidoForm'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
+import { Link } from 'react-router-dom'
 
 type TabKey = 'visao-geral' | 'requisicoes' | 'alertas' | 'cotacoes' | 'pedidos' | 'recebimentos' | 'fornecedores'
 type DbRow = Record<string, unknown>
@@ -161,23 +163,29 @@ export default function ComprasWorkspace() {
       ;[setRfqs, setRequisitions, setOrders, setReceipts, setSuppliers, setMaterials].forEach(setter => setter({ rows: [], loading: false, error: message }))
       return
     }
-    const loadTable = async (table: string, setter: (data: TableData) => void, orderColumn: string) => {
+    const loadTable = async (table: string, setter: (data: TableData) => void, orderColumn: string, ascending = false) => {
       setter({ rows: [], loading: true, error: null })
-      const { data, error } = await supabase.from(table).select('*').eq('empresa_id', empresaId).order(orderColumn, { ascending: false }).limit(100)
-      if (error) setter({ rows: [], loading: false, error: error.message })
-      else setter({ rows: (data ?? []) as DbRow[], loading: false, error: null })
+      try {
+        const rows = await fetchAllPages<DbRow>((from, to) => supabase.from(table).select('*', { count: 'exact' }).eq('empresa_id', empresaId).order(orderColumn, { ascending }).order('id').range(from, to))
+        setter({ rows, loading: false, error: null })
+      } catch (cause) {
+        setter({ rows: [], loading: false, error: cause instanceof Error ? cause.message : 'Falha na consulta.' })
+      }
     }
     await Promise.all([
       loadTable('erp_rfq', setRfqs, 'created_at'),
       loadTable('erp_requisicoes_compra', setRequisitions, 'created_at'),
       loadTable('erp_pedidos_compra', setOrders, 'created_at'),
-      loadTable('erp_fornecedores', setSuppliers, 'razao_social'),
-      loadTable('erp_produtos', setMaterials, 'codigo'),
+      loadTable('erp_fornecedores', setSuppliers, 'razao_social', true),
+      loadTable('erp_produtos', setMaterials, 'codigo', true),
       (async () => {
         setReceipts({ rows: [], loading: true, error: null })
-        const { data, error } = await supabase.from('erp_pedidos_compra').select('*').eq('empresa_id', empresaId).in('status', ['RECEBIMENTO_PARCIAL', 'RECEBIDO']).order('created_at', { ascending: false }).limit(100)
-        if (error) setReceipts({ rows: [], loading: false, error: error.message })
-        else setReceipts({ rows: (data ?? []) as DbRow[], loading: false, error: null })
+        try {
+          const rows = await fetchAllPages<DbRow>((from, to) => supabase.from('erp_pedidos_compra').select('*', { count: 'exact' }).eq('empresa_id', empresaId).in('status', ['RECEBIMENTO_PARCIAL', 'RECEBIDO']).order('recebido_em', { ascending: false }).order('id').range(from, to))
+          setReceipts({ rows, loading: false, error: null })
+        } catch (cause) {
+          setReceipts({ rows: [], loading: false, error: cause instanceof Error ? cause.message : 'Falha ao consultar recebimentos.' })
+        }
       })(),
     ])
   }, [])
