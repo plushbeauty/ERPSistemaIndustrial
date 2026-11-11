@@ -278,6 +278,7 @@ export default function ComprasRequisicoes() {
             </div>
           )}
 
+          <section className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 print:hidden">{[{label:"Requisições filtradas",value:uniqueVisibleRequests},{label:"Itens requisitados",value:visibleItems.length},{label:"Quantidade total",value:formatQuantity(totalVisibleQuantity)},{label:"Aguardando cotação",value:pendingVisibleCount}].map(item=><article key={item.label} className="min-h-[96px] rounded-lg border border-[#D3E3EA] bg-white p-4 shadow-sm"><p className="text-[10px] font-bold uppercase tracking-wide text-[#607987]">{item.label}</p><strong className="mt-2 block text-xl font-bold tabular-nums text-[#123B50]">{busy?"Carregando…":error?"—":item.value}</strong></article>)}</section>
           <section className={`${panelClass} mt-3 p-3 sm:p-4`} aria-label="Filtros das requisições">
             <div className="flex flex-wrap items-end gap-3">
               <div className="w-full max-w-xs">
@@ -292,11 +293,11 @@ export default function ComprasRequisicoes() {
               </div>
               <div className="w-full max-w-[190px]">
                 <label className={fieldLabelClass} htmlFor="compras-urgencia-filter">Nível de urgência</label>
-                <select id="compras-urgencia-filter" value={selectedUrgency} onChange={(event) => { setSelectedUrgency(event.target.value); setPage(1) }} className="h-8 w-full rounded-[3px] border border-[#D8E4EA] bg-white px-2 text-[11px] text-[#183746] focus:border-[#2D8DB8] focus:outline-none focus:ring-1 focus:ring-[#2D8DB8]">
+                <select id="compras-urgencia-filter" value={selectedUrgency} onChange={(event) => { setSelectedUrgency(event.target.value); setPage(1) }} className="h-10 w-full rounded-[3px] border border-[#D8E4EA] bg-white px-2 text-[11px] text-[#183746] focus:border-[#2D8DB8] focus:outline-none focus:ring-1 focus:ring-[#2D8DB8]">
                   <option value="TODAS">Todas as urgências</option><option value="BAIXA">Baixa</option><option value="MEDIA">Média</option><option value="ALTA">Alta</option><option value="CRITICA">Crítica</option>
                 </select>
               </div>
-              <div className="flex h-8 items-center rounded-[3px] border border-[#D8E4EA] bg-[#F7FAFB] px-3 text-[10px] text-[#496574]">
+              <div className="flex h-10 items-center rounded-[3px] border border-[#D8E4EA] bg-[#F7FAFB] px-3 text-[10px] text-[#496574]">
                 <span className="font-bold">{visibleItems.length}</span><span className="ml-1">item(ns) encontrado(s)</span>
               </div>
               {selectedOrder && <button type="button" className={`${buttonClass} border-[#D8E4EA] bg-white text-[#365766] hover:bg-[#F4F7F9]`} onClick={() => { setSelectedOrder(''); setPage(1) }}>Limpar filtro</button>}
@@ -314,7 +315,7 @@ export default function ComprasRequisicoes() {
             <div className="overflow-x-auto">
               <table className="w-full min-w-[1000px] border-collapse text-left">
                 <thead className="bg-[#EAF1F5] text-[9px] uppercase tracking-[0.07em] text-[#365766]">
-                  <tr className="h-8 border-b border-[#D8E4EA]">
+                  <tr className="h-10 border-b border-[#D8E4EA]">
                     <th className="w-9 px-3"><span className="sr-only">Selecionar</span></th>
                     <th className="px-3">Requisição</th><th className="px-3">Data</th><th className="px-3">Centro de custo</th><th className="px-3">Urgência</th><th className="px-3">Ordem de produção</th><th className="px-3">Produto / insumo</th><th className="px-3 text-right">Quantidade</th><th className="px-3">Fornecedor indicado</th><th className="px-3">Status</th>
                   </tr>
@@ -326,7 +327,7 @@ export default function ComprasRequisicoes() {
                     const supplier = item.fornecedor_id ? supplierById.get(item.fornecedor_id) : undefined
                     const canForward = request?.status === 'AGUARDANDO_COTACAO'
                     return (
-                      <tr key={item.id} className="h-9 border-b border-[#E4EBEF] even:bg-[#F8FAFB] hover:bg-[#EFF7FA]">
+                      <tr key={item.id} className="h-12 border-b border-[#E4EBEF] even:bg-[#F8FAFB] hover:bg-[#EFF7FA]">
                         <td className="px-3">
                           <input aria-label={`Selecionar requisição ${request?.codigo || request?.id || item.requisicao_id}`} type="checkbox" checked={selectedRequisitions.has(item.requisicao_id)} disabled={!canForward || busy} onChange={(event) => toggleRequisition(item.requisicao_id, event.currentTarget.checked)} className="h-4 w-4 accent-[#2D8DB8]" />
                         </td>
