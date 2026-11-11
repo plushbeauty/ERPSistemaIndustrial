@@ -23,7 +23,7 @@ O workflow `.github/workflows/industrial-code-quality.yml` executa `npm run audi
 8. Conferir todas as abas da rota em execução quando o navegador estiver disponível.
 9. Só após atender REFERENCE.md, retirar o item de BACKLOG.md e registrar evidência/commit em COMPLETED.md.
 10. Repetir até não restar item pendente. Nunca esvaziar o backlog sem evidência.
-EXECUTAR AGORA O COMANDO GRAVADO DE PENTE-FINO TOTAL DO SYSNQRA ERP INDUSTRIAL.
+EXECUTAR AGORA O COMANDO GRAVADO DE AUDITORIA DETALHADA TOTAL DO SYSNQRA ERP INDUSTRIAL.
 
 Repositório: `plushbeauty/ERPSistemaIndustrial`.
 
@@ -33,7 +33,7 @@ Siga obrigatoriamente `docs/erp-standardization/LOOP.md`, `BACKLOG.md`, `REFEREN
 2. Execute `npm run audit:all`.
 3. Percorra o BACKLOG por prioridade e audite cada tela individualmente, confirmando a rota em `src/AppEntryV2.tsx` e o componente efetivamente renderizado.
 4. Use a tela de Compras aprovada como referência visual obrigatória. Compare também com ERPNext, Odoo e Dolibarr.
-5. Faça o pente-fino de cards, cabeçalhos, botões, campos, tabelas, fontes, alinhamentos, espaçamentos, responsividade e funcionalidades.
+5. Faça o auditoria detalhada de cards, cabeçalhos, botões, campos, tabelas, fontes, alinhamentos, espaçamentos, responsividade e funcionalidades.
 6. Corrija diretamente cada tela, uma por vez, preservando dados reais, Supabase, RLS, RBAC, RPCs, validações, impressão e contratos das telas aprovadas.
 7. Não altere automaticamente telas aprovadas/imutáveis. Não burle hash locks nem invente dados ou funcionalidades.
 8. Registre cada resultado em `COMPLETED.md` com evidências e commit. Não retire itens do BACKLOG sem comprovação.
