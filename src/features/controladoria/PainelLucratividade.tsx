@@ -14,6 +14,12 @@ const money = (value: number) => value.toLocaleString('pt-BR', { style: 'currenc
 const field = 'h-10 rounded-md border border-gray-200 bg-white px-3 text-[12px] text-gray-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20'
 const label = 'mb-1 block text-[10px] font-bold uppercase tracking-wide text-gray-500'
 const action = 'inline-flex h-10 items-center justify-center gap-2 rounded-full px-4 text-[12px] font-bold'
+const exportCsv = (rows: Row[]) => {
+  const quote = (value: unknown) => '"' + String(value ?? '').replace(/"/g, '""') + '"'
+  const csv = ['Pedido;Cliente;Produtos;Faturamento bruto;Custo apurado;Status do custo', ...rows.map(row => [row.numero,row.cliente,row.produtos,row.faturamento.toFixed(2).replace('.', ','),row.custoCompleto ? row.custo.toFixed(2).replace('.', ',') : '',row.custoCompleto ? 'APURADO' : 'PENDENTE'].map(quote).join(';'))].join('\r\n')
+  const url = URL.createObjectURL(new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8' }))
+  const link = document.createElement('a'); link.href = url; link.download = 'plastibor-lucratividade.csv'; link.click(); URL.revokeObjectURL(url)
+}
 
 export default function PainelLucratividade() {
   const navigate = useNavigate()
@@ -24,6 +30,8 @@ export default function PainelLucratividade() {
   const [loaded, setLoaded] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [page, setPage] = useState(1)
+  const pageSize = 25
 
   const load = async () => {
     if (!month || !/^\d{4}-\d{2}$/.test(month)) { setError('Informe a competência.'); return }
@@ -41,16 +49,21 @@ export default function PainelLucratividade() {
       const start = `${month}-01`
       const endDate = new Date(year, monthNumber, 1)
       const end = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-01`
-      const orders = await supabase.from('erp_pedidos_venda')
-        .select('id,numero,cliente_id')
-        .eq('empresa_id', tenant)
-        .gte('data_entrada', start)
-        .lt('data_entrada', end)
-        .not('status', 'in', '("CANCELADO","CANCELADA","RASCUNHO")')
-        .order('data_entrada', { ascending: false })
-        .limit(1000)
-      if (orders.error) throw orders.error
-      const orderRows = orders.data ?? []
+      const orderRows: Array<{ id: string; numero: string | null; cliente_id: string | null }> = []
+      for (let offset = 0; ; offset += 1000) {
+        const orderPage = await supabase.from('erp_pedidos_venda')
+          .select('id,numero,cliente_id')
+          .eq('empresa_id', tenant)
+          .gte('data_entrada', start)
+          .lt('data_entrada', end)
+          .not('status', 'in', '("CANCELADO","CANCELADA","RASCUNHO")')
+          .order('data_entrada', { ascending: false })
+          .order('id', { ascending: false })
+          .range(offset, offset + 999)
+        if (orderPage.error) throw orderPage.error
+        orderRows.push(...(orderPage.data ?? []))
+        if (!orderPage.data || orderPage.data.length < 1000) break
+      }
       const ids = orderRows.map(order => order.id)
       const clientIds = [...new Set(orderRows.map(order => order.cliente_id).filter((id): id is string => Boolean(id)))]
       const [items, clients] = await Promise.all([
@@ -107,6 +120,7 @@ export default function PainelLucratividade() {
         grouped.set(order.id, current)
       }
       setRows([...grouped.values()])
+      setPage(1)
       setLoaded(true)
     } catch (e) {
       setRows([])
@@ -123,6 +137,8 @@ export default function PainelLucratividade() {
     pendingCount: sum.pendingCount + (row.custoCompleto ? 0 : 1),
   }), { revenue: 0, cost: 0, costedRevenue: 0, pendingCount: 0 }), [rows])
   const consolidatedMargin = totals.costedRevenue - totals.cost
+  const pageCount = Math.max(1, Math.ceil(rows.length / pageSize))
+  const pageRows = rows.slice((page - 1) * pageSize, page * pageSize)
   const targetValue = Number(target.replace(',', '.'))
 
   return <main className="min-h-full bg-[#F4FBFD] p-3 text-[#123B50] print:bg-white print:p-0">
@@ -158,11 +174,11 @@ export default function PainelLucratividade() {
       {error && <div role="alert" className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-700 print:hidden">{error}</div>}
 
       <section className="overflow-hidden rounded-md border border-[#D3E3EA] bg-white shadow-sm print:shadow-none">
-        <div className="flex min-h-14 items-center justify-between border-b border-[#D3E3EA] px-4"><h2 className="text-[13px] font-bold">Apuração de Margem por Pedido</h2><span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-600">{loaded ? rows.length : 0} pedido(s)</span></div>
+        <div className="flex min-h-14 flex-wrap items-center justify-between gap-2 border-b border-[#D3E3EA] px-4 print:hidden"><h2 className="text-[13px] font-bold">Apuração de Margem por Pedido</h2><div className="flex items-center gap-2"><span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-600">{loaded ? rows.length : 0} pedido(s)</span><button type="button" disabled={!loaded || loading} onClick={() => exportCsv(rows)} className={action + ' border border-[#D3E3EA] bg-white text-[#123B50] disabled:opacity-50'}>Exportar CSV</button></div></div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1000px] border-collapse text-[11px] print:min-w-0 print:text-[9px]">
             <thead className="bg-[#123B50] text-white print:bg-slate-200 print:text-slate-900"><tr className="h-11 print:h-8"><th className="w-[110px] px-3 text-left font-semibold">Nº Pedido</th><th className="px-3 text-left font-semibold">Razão Social / Produtos</th><th className="w-[160px] px-3 text-right font-semibold">Faturamento Bruto</th><th className="w-[160px] px-3 text-right font-semibold">Custo Fabricação</th><th className="w-[150px] px-3 text-right font-semibold">Margem Bruta</th><th className="w-[190px] px-3 text-center font-semibold">Taxa de Margem</th></tr></thead>
-            <tbody>{rows.map(row => {
+            <tbody>{pageRows.map(row => {
               const margin = row.faturamento - row.custo
               const rate = row.faturamento > 0 ? margin / row.faturamento * 100 : 0
               const meetsTarget = row.custoCompleto && rate >= targetValue
@@ -178,7 +194,7 @@ export default function PainelLucratividade() {
           </table>
         </div>
       </section>
-      {loaded && <footer className="flex flex-wrap justify-end gap-5 rounded-md border border-[#D3E3EA] bg-white px-4 py-3 text-[12px] font-bold print:break-inside-avoid"><span>Faturamento bruto: {money(totals.revenue)}</span><span>Custo apurado: {money(totals.cost)}</span><span>Margem consolidada (custos completos): {money(consolidatedMargin)}</span></footer>}
+      {loaded && <footer className="flex flex-wrap items-center justify-between gap-4 rounded-md border border-[#D3E3EA] bg-white px-4 py-3 text-[12px] font-bold print:break-inside-avoid"><span>Faturamento bruto: {money(totals.revenue)}</span><span>Custo apurado: {money(totals.cost)}</span><span>Margem consolidada (custos completos): {money(consolidatedMargin)}</span><div className="flex items-center gap-3 print:hidden"><button type="button" disabled={page<=1} onClick={()=>setPage(p=>p-1)} className={action+' border border-[#D3E3EA] bg-white text-[#123B50] disabled:opacity-40'}>Anterior</button><span className="text-[11px] font-semibold">Página {page} de {pageCount}</span><button type="button" disabled={page>=pageCount} onClick={()=>setPage(p=>p+1)} className={action+' border border-[#D3E3EA] bg-white text-[#123B50] disabled:opacity-40'}>Próxima</button></div></footer>}
     </div>
   </main>
 }
