@@ -93,27 +93,27 @@
     },
     {
       "path": "src/features/controladoria/CadastroDecimais.tsx",
-      "sha": "2e216e660f84371af1ea5d9b5d416586b87e6b84",
+      "sha": "51cdc992e5e174b47d9b85e2c4bfe002f276d56a",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-CADASTRO-DECIMAIS-CRUD-TENANT-20261111-01 — edição via RPC oficial, ativação/desativação por id + empresa_id, grade ativa/inativa e carga explícita dos seis padrões.",
+      "aprovadaEm": "2026-11-11",
+      "statusAprovacao": "INCREMENTO ADITIVO AUTORIZADO PELO PROPRIETÁRIO EM 2026-11-11; tabela erp_regras_decimais e RPC erp_decimal_salvar_regra preservadas."
     },
     {
       "path": "src/features/controladoria/PainelLucratividade.tsx",
-      "sha": "e1105ff1450b13e74ce8e0685bf480664dfd783a",
+      "sha": "a0539ba0954a0ef98e9aaf8c02400ce7d5d446cc",
       "autor": "FernandoSch",
-      "revisao": "REV-CONTROLADORIA-LUCRATIVIDADE-WIREFRAME-20261110-01 — filtros de competência e margem alvo, pedidos reais por tenant, custo industrial e status da margem",
-      "aprovadaEm": "2026-11-10",
-      "statusAprovacao": "WIREFRAME E INTEGRAÇÃO AUTORIZADOS PELO PROPRIETÁRIO EM 2026-11-10; sem dados fictícios e com limite de 1.000 pedidos."
+      "revisao": "REV-CONTROLADORIA-LUCRATIVIDADE-KPI-PRINT-20261111-01 — 4 KPIs calculados dos pedidos carregados; margem consolidada considera somente pedidos com custo completo; impressão Plastibor e filtros de 40px.",
+      "aprovadaEm": "2026-11-11",
+      "statusAprovacao": "INCREMENTO ADITIVO AUTORIZADO PELO PROPRIETÁRIO EM 2026-11-11; consultas, filtros, cálculos e escopo tenant preservados."
     },
     {
       "path": "src/features/controladoria/PainelRazaoGeral.tsx",
-      "sha": "26246707ec4b9c63837698c33dbfebd998028d7e",
+      "sha": "46d0ba5564b3ccbebc3118879415732ae82879d3",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria. REV-CONTROLADORIA-RAZAO-GERAL-GL-20261110-01 — filtros, grade de 48px, consolidação e botão Voltar redesenhados; consultas tenant-scoped e RPC de saldo integral preservadas.",
-      "aprovadaEm": "2026-11-10",
-      "statusAprovacao": "ALTERAÇÃO VISUAL E FUNCIONAL AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; grade limitada a 1.000 lançamentos e saldo integral calculado no banco."
+      "revisao": "REV-CONTROLADORIA-RAZAO-GERAL-KPI-PRINT-20261111-01 — 4 KPIs, saldo integral pela RPC oficial e impressão Plastibor; filtros 40px e Voltar 115x38px.",
+      "aprovadaEm": "2026-11-11",
+      "statusAprovacao": "INCREMENTO ADITIVO AUTORIZADO PELO PROPRIETÁRIO EM 2026-11-11; leitura tenant-scoped e RPC de saldo preservadas."
     },
     {
       "path": "src/features/controladoria/RetificacaoPedido.tsx",
