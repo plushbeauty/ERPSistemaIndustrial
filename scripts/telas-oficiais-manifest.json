@@ -1661,11 +1661,11 @@
     },
     {
       "path": "src/pages/VendasCatalogoDigitalGestao.tsx",
-      "sha": "34a0e4251cc87d75cd6a68dc0164fd31f0a98bbd",
+      "sha": "942ec4ef26157b3dcdcad6992ff7952cd55ab0be",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-VENDAS-CATALOGO-GESTAO-PAGINACAO-20261111-01 — filtro de publicação, limpar filtros, paginação de 25 registros, estados de loading e alinhamento monetário; gravação por empresa preservada.",
+      "aprovadaEm": "2026-11-11",
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO NO COMANDO MESTRE DE 2026-11-11; pendente de CI e validação funcional"
     },
     {
       "path": "src/pages/VendasCentral.tsx",
