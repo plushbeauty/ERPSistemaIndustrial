@@ -203,10 +203,10 @@ export default function ComprasWorkspace({ initialTab = 'visao-geral' }: { initi
     return [{ ...row, saldo_reposicao: stock - reorder }]
   }), [materials.rows])
 
-  const supplierMap = useMemo(() => new Map(suppliers.rows.map(row => [String(row.id), textValue(row, 'nome_fantasia', 'razao_social')])), [suppliers.rows])
+  const supplierMap = useMemo(() => new Map(suppliers.rows.map(row => [String(row.id), String(row.nome_fantasia || row.razao_social || '—')])), [suppliers.rows])
   const ordersWithSupplier = useMemo(() => orders.rows.map(row => ({ ...row, fornecedor_nome: supplierMap.get(String(row.fornecedor_id ?? '')) || row.fornecedor_nome || '—' })), [orders.rows, supplierMap])
   const productMap = useMemo(() => new Map(materials.rows.map(row => [String(row.id), { code: textValue(row, 'codigo'), name: textValue(row, 'nome') }])), [materials.rows])
-  const receiptsWithSupplier = useMemo(() => receipts.rows.map(row => ({ ...row, fornecedor_nome: supplierMap.get(String(row.fornecedor_id ?? '')) || row.fornecedor_nome || '—', produto_codigo: productMap.get(String(row.produto_id ?? ''))?.code || '—', produto_nome: productMap.get(String(row.produto_id ?? ''))?.name || '—' })), [receipts.rows, supplierMap, productMap])
+  const receiptsWithSupplier = useMemo(() => receipts.rows.map(row => ({ ...row, fornecedor_nome: supplierMap.get(String(row.fornecedor_id ?? '')) || row.fornecedor_nome || '—', status: row.status_inspecao, produto_codigo: productMap.get(String(row.produto_id ?? ''))?.code || '—', produto_nome: productMap.get(String(row.produto_id ?? ''))?.name || '—' })), [receipts.rows, supplierMap, productMap])
   const filtered = useMemo(() => {
     const filterRows = (rows: DbRow[]) => rows.filter(row => Object.values(row).some(value => String(value ?? '').toLocaleLowerCase('pt-BR').includes(search.trim().toLocaleLowerCase('pt-BR'))))
     return { rfqs: filterRows(rfqs.rows), requisitions: filterRows(requisitions.rows), orders: filterRows(ordersWithSupplier), receipts: filterRows(receiptsWithSupplier), suppliers: filterRows(suppliers.rows), alerts: filterRows(alertRows) }
