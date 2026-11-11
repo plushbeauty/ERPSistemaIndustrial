@@ -1,12 +1,11 @@
 /**
- * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — a tabela parava em 5000 SKUs e o reajuste em lote alcançava só o trecho carregado. Agora percorre todos os SKUs ativos da empresa por paginação.
+ * @REVISAO: REV-VENDAS-TABELA-PRECOS-BUSCA-GEOMETRIA-20261111-01 — pesquisa por SKU/produto/grupo, paginação da lista filtrada, controles 32px, feedback de carregamento e alinhamento monetário; preserva paginação integral e RPCs da revisão REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03.
  * @AUTOR: FernandoSch
- * @DATA_REVISAO_APROVACAO: 2026-11-08
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-11
+ * @STATUS_APROVACAO: REVISÃO AUTORIZADA PELO PROPRIETÁRIO NO COMANDO MESTRE DE 2026-11-11; pendente de CI e validação funcional
  */
 import { useEffect, useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, ShieldCheck } from 'lucide-react'
+import { ChevronLeft, ChevronRight, LoaderCircle, Search, ShieldCheck } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
@@ -17,6 +16,9 @@ const PAGE_SIZE = 25
 
 export default function TabelaPrecos() {
   const [produtos, setProdutos] = useState<Produto[]>([])
+  const [busca, setBusca] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [grupo, setGrupo] = useState('')
   const [tipoCliente, setTipoCliente] = useState('')
   const [percentual, setPercentual] = useState('5')
@@ -26,6 +28,7 @@ export default function TabelaPrecos() {
   const [erro, setErro] = useState('')
 
   const carregar = async () => {
+    setLoading(true)
     setErro('')
     try {
       const empresa = await supabase.rpc('erp_current_empresa_id')
@@ -45,15 +48,22 @@ export default function TabelaPrecos() {
       setProdutos(produtos)
     } catch (cause) {
       setErro(cause instanceof Error ? cause.message : 'Falha ao carregar a tabela de preços.')
+    } finally {
+      setLoading(false)
     }
   }
 
   useEffect(() => { void carregar() }, [])
 
-  const paginas = Math.max(1, Math.ceil(produtos.length / PAGE_SIZE))
+  const produtosFiltrados = useMemo(() => {
+    const termo = busca.trim().toLocaleLowerCase('pt-BR')
+    if (!termo) return produtos
+    return produtos.filter(produto => [produto.codigo, produto.nome, produto.grupo].some(valor => String(valor ?? '').toLocaleLowerCase('pt-BR').includes(termo)))
+  }, [busca, produtos])
+  const paginas = Math.max(1, Math.ceil(produtosFiltrados.length / PAGE_SIZE))
   const produtosVisiveis = useMemo(
-    () => produtos.slice((pagina - 1) * PAGE_SIZE, pagina * PAGE_SIZE),
-    [pagina, produtos],
+    () => produtosFiltrados.slice((pagina - 1) * PAGE_SIZE, pagina * PAGE_SIZE),
+    [pagina, produtosFiltrados],
   )
   const simulacoes = useMemo(() => {
     const ajuste = Number(percentual)
@@ -80,22 +90,24 @@ export default function TabelaPrecos() {
       setErro('Percentual inválido.')
       return
     }
+    setSaving(true)
+    try {
+      const resultado = tipoReajuste === 'vendas'
+        ? await supabase.rpc('erp_reajuste_global_vendas', {
+          p_percentual: ajuste,
+          p_grupo: grupo || null,
+          p_tipo_cliente: tipoCliente || null,
+        })
+        : await supabase.rpc('erp_reajuste_global_postos_trabalho', { p_percentual: ajuste })
 
-    const resultado = tipoReajuste === 'vendas'
-      ? await supabase.rpc('erp_reajuste_global_vendas', {
-        p_percentual: ajuste,
-        p_grupo: grupo || null,
-        p_tipo_cliente: tipoCliente || null,
-      })
-      : await supabase.rpc('erp_reajuste_global_postos_trabalho', { p_percentual: ajuste })
-
-    if (resultado.error) {
-      setErro(resultado.error.message)
-      return
+      if (resultado.error) throw resultado.error
+      setMensagem(`Reajuste aplicado em ${Number(resultado.data ?? 0)} registro(s).`)
+      await carregar()
+    } catch (cause) {
+      setErro(cause instanceof Error ? cause.message : 'Falha ao aplicar o reajuste.')
+    } finally {
+      setSaving(false)
     }
-
-    setMensagem(`Reajuste aplicado em ${Number(resultado.data ?? 0)} registro(s).`)
-    await carregar()
   }
 
   return (
@@ -114,7 +126,7 @@ export default function TabelaPrecos() {
             <label className="grid min-w-0 gap-1 sm:col-span-1 xl:col-span-3">
               Tipo
               <select
-                className="h-10 w-full min-w-0 border border-slate-300 px-2"
+                className="h-8 w-full min-w-0 border border-slate-300 px-2 text-[10px]"
                 value={tipoReajuste}
                 onChange={event => setTipoReajuste(event.target.value as 'vendas' | 'postos')}
               >
@@ -125,7 +137,7 @@ export default function TabelaPrecos() {
             <label className="grid min-w-0 gap-1 sm:col-span-1 xl:col-span-2">
               Percentual %
               <input
-                className="h-10 w-full border border-slate-300 px-2"
+                className="h-8 w-full min-w-0 border border-slate-300 px-2 text-[10px]"
                 type="number"
                 step="0.01"
                 value={percentual}
@@ -135,7 +147,7 @@ export default function TabelaPrecos() {
             <label className="grid min-w-0 gap-1 sm:col-span-1 xl:col-span-3">
               Grupo produto
               <input
-                className="h-10 w-full border border-slate-300 px-2"
+                className="h-8 w-full min-w-0 border border-slate-300 px-2 text-[10px]"
                 value={grupo}
                 onChange={event => setGrupo(event.target.value)}
               />
@@ -143,7 +155,7 @@ export default function TabelaPrecos() {
             <label className="grid min-w-0 gap-1 sm:col-span-1 xl:col-span-2">
               Perfil cliente
               <input
-                className="h-10 w-full border border-slate-300 px-2"
+                className="h-8 w-full min-w-0 border border-slate-300 px-2 text-[10px]"
                 value={tipoCliente}
                 onChange={event => setTipoCliente(event.target.value)}
               />
@@ -151,9 +163,9 @@ export default function TabelaPrecos() {
             <button
               type="button"
               onClick={() => void aplicarReajuste()}
-              className="h-10 w-full self-end rounded border border-gray-200 bg-[#3A9D78] px-3 font-semibold text-white sm:col-span-2 xl:col-span-2"
+              className="h-8 w-full min-w-0 self-end rounded-[2px] border border-gray-200 bg-[#3A9D78] px-3 text-[10px] font-semibold text-white disabled:cursor-wait disabled:opacity-60 sm:col-span-2 xl:col-span-2" disabled={saving || loading}
             >
-              Aplicar
+              {saving ? <><LoaderCircle size={12} className="mr-1 animate-spin"/>Aplicando...</> : "Aplicar"}
             </button>
           </div>
           {erro && <div role="alert" className="mt-3 border border-red-200 bg-red-50 p-2 text-red-800">{erro}</div>}
@@ -161,6 +173,12 @@ export default function TabelaPrecos() {
         </section>
 
         <section className="overflow-hidden border border-slate-300 bg-white">
+          <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2">
+            <Search size={14} className="shrink-0 text-slate-500"/>
+            <input value={busca} maxLength={120} onChange={event => { setBusca(event.target.value); setPagina(1) }} placeholder="Buscar por SKU, produto ou grupo" aria-label="Buscar produtos na tabela de preços" className="h-8 min-w-[180px] flex-1 border border-slate-300 bg-white px-2 text-[10px] outline-none focus:border-[#2D8DB8]"/>
+            <button type="button" onClick={() => { setBusca(''); setPagina(1) }} disabled={!busca} className="h-8 border border-slate-300 bg-white px-3 text-[10px] font-semibold disabled:opacity-40">LIMPAR BUSCA</button>
+            <span className="text-[9px] text-slate-500">{produtosFiltrados.length} produto(s)</span>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] border-collapse text-left text-xs">
               <thead>
@@ -173,18 +191,19 @@ export default function TabelaPrecos() {
                 </tr>
               </thead>
               <tbody>
+                {loading && <tr><td colSpan={5} className="p-8 text-center text-slate-500">Carregando produtos...</td></tr>}
                 {produtosVisiveis.map(produto => (
                   <tr key={produto.id} className="border-t border-slate-100">
                     <td className="p-3">{produto.codigo}</td>
                     <td className="p-3">{produto.nome}</td>
                     <td className="p-3">{produto.grupo ?? '—'}</td>
-                    <td className="p-3">{brl(Number(produto.preco_venda ?? 0))}</td>
-                    <td className="p-3 font-semibold text-[#17445A]">
+                    <td className="p-3 text-right tabular-nums">{brl(Number(produto.preco_venda ?? 0))}</td>
+                    <td className="p-3 text-right font-semibold tabular-nums text-[#17445A]">
                       {simulacoes.get(produto.id) != null ? brl(simulacoes.get(produto.id) as number) : '—'}
                     </td>
                   </tr>
                 ))}
-                {!produtosVisiveis.length && (
+                {!loading && !produtosVisiveis.length && (
                   <tr><td colSpan={5} className="p-8 text-center text-slate-500">Nenhum produto ativo encontrado.</td></tr>
                 )}
               </tbody>
@@ -192,13 +211,13 @@ export default function TabelaPrecos() {
           </div>
           <nav className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 px-3 py-2" aria-label="Paginação da tabela de preços">
             <span className="text-xs text-slate-600">
-              Página {pagina} de {paginas} · {produtos.length} produtos
+              Página {pagina} de {paginas} · {produtosFiltrados.length} produtos
             </span>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 aria-label="Página anterior"
-                disabled={pagina <= 1}
+                disabled={loading || pagina <= 1}
                 onClick={() => setPagina(atual => Math.max(1, atual - 1))}
                 className="inline-flex h-9 items-center gap-1 border border-slate-300 px-3 text-xs disabled:cursor-not-allowed disabled:opacity-50"
               >
@@ -207,7 +226,7 @@ export default function TabelaPrecos() {
               <button
                 type="button"
                 aria-label="Próxima página"
-                disabled={pagina >= paginas}
+                disabled={loading || pagina >= paginas}
                 onClick={() => setPagina(atual => Math.min(paginas, atual + 1))}
                 className="inline-flex h-9 items-center gap-1 border border-slate-300 px-3 text-xs disabled:cursor-not-allowed disabled:opacity-50"
               >
