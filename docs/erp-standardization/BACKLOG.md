@@ -316,3 +316,12 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Commit de código:** `856eddd5a331d7f0eaac93a3c725d55653bd2e4e`.
 - **Validação disponível:** diff revisado no GitHub. Status Vercel: `failure`, destino `https://vercel.com/plushbeauty?upgradeToPro=build-rate-limit`. Não há evidência de type-check, lint, auditorias, rotas ou build para este commit.
 - **Estado:** correção de escopo multi-tenant aplicada, **aguardando validação**. UI-010 permanece aberto; não mover para COMPLETED.
+
+
+## UI-010 — geometria responsiva de Metas Comerciais (2026-11-11)
+
+- **Rota/componente:** `/pageprincipal/vendas/metas` → `src/pages/VendasMetas.tsx`.
+- **Correção aplicada:** campos de competência e metas alinhados a 32px com raio de 2px; grid de formulário adaptável à largura disponível (incluindo tablet); colunas monetárias e de atingimento alinhadas à direita, com números tabulares.
+- **Commit de código:** `7a90d08277d78c38ca4fb54a70b27bd50fc474d3`.
+- **Validação:** diff conferido no GitHub; validação automatizada completa ainda não executada. Os commits de código desta rodada estão sujeitos ao bloqueio Vercel `build-rate-limit` já registrado acima.
+- **Estado:** correção incremental aplicada, **aguardando type-check, lint, auditorias, rotas e build**. UI-010 permanece aberto.
