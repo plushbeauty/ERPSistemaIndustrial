@@ -50,14 +50,14 @@ function statusClass(value: string): string {
   const normalized = value.toLocaleUpperCase('pt-BR')
   if (['APROVADO', 'APROVADA', 'CONCLUIDO', 'CONCLUÍDO', 'RECEBIDO', 'FINALIZADO', 'FINALIZADA'].includes(normalized)) return 'compras-status compras-status--success'
   if (['CANCELADO', 'CANCELADA', 'REPROVADO', 'REPROVADA'].includes(normalized)) return 'compras-status compras-status--danger'
-  if (['EM_ANALISE', 'EM ANÁLISE', 'AGUARDANDO_COTACAO', 'AGUARDANDO COTAÇÃO', 'PENDENTE', 'RECEBIMENTO_PARCIAL', 'RASCUNHO', 'PENDENTE_APROVACAO'].includes(normalized)) return 'compras-status compras-status--warning'
+  if (['EM_ANALISE', 'EM ANÁLISE', 'AGUARDANDO_COTACAO', 'AGUARDANDO COTAÇÃO', 'PENDENTE', 'RECEBIMENTO_PARCIAL', 'RETIDO', 'RASCUNHO', 'PENDENTE_APROVACAO'].includes(normalized)) return 'compras-status compras-status--warning'
   return 'compras-status'
 }
 
 function DataTable({ rows, kind, onEdit }: { rows: DbRow[]; kind: 'requisicoes' | 'alertas' | 'cotacoes' | 'pedidos' | 'recebimentos' | 'fornecedores'; onEdit?: (id: string) => void }) {
   const [page, setPage] = useState(1)
   const pageSize = 20
-  const columns: Record<typeof kind, Array<{ label: string; keys: string[]; format?: 'date' | 'money' | 'status' }>> = {
+  const columns: Record<typeof kind, Array<{ label: string; keys: string[]; format?: 'date' | 'money' | 'status' | 'quantity' }>> = {
     requisicoes: [
       { label: 'Código', keys: ['codigo', 'numero', 'id'] },
       { label: 'Ordem de produção', keys: ['ordem_producao_id'] },
@@ -89,8 +89,8 @@ function DataTable({ rows, kind, onEdit }: { rows: DbRow[]; kind: 'requisicoes' 
       { label: 'Fornecedor', keys: ['fornecedor_nome', 'fornecedor_id'] },
       { label: 'Lote interno', keys: ['lote_interno'] },
       { label: 'Lote fornecedor', keys: ['lote_fornecedor'] },
-      { label: 'Qtd. recebida', keys: ['quantidade_recebida'] },
-      { label: 'Qtd. disponível', keys: ['quantidade_disponivel'] },
+      { label: 'Qtd. recebida', keys: ['quantidade_recebida'], format: 'quantity' },
+      { label: 'Qtd. disponível', keys: ['quantidade_disponivel'], format: 'quantity' },
       { label: 'Inspeção', keys: ['status_inspecao'], format: 'status' },
       { label: 'Data entrada', keys: ['data_entrada'], format: 'date' },
     ],
@@ -113,11 +113,13 @@ function DataTable({ rows, kind, onEdit }: { rows: DbRow[]; kind: 'requisicoes' 
   const pageCount = Math.max(1, Math.ceil(rows.length / pageSize))
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize)
   const totalPedidos = kind === 'pedidos' ? rows.reduce((sum, row) => sum + Number(row.total || 0), 0) : 0
+  const totalRecebido = kind === 'recebimentos' ? rows.reduce((sum, row) => sum + Number(row.quantidade_recebida || 0), 0) : 0
+  const totalDisponivel = kind === 'recebimentos' ? rows.reduce((sum, row) => sum + Number(row.quantidade_disponivel || 0), 0) : 0
   useEffect(() => setPage(1), [kind, rows])
   const exportCsv = () => {
     const lines = [columns[kind].map(column => column.label), ...rows.map(row => columns[kind].map(column => {
       const value = column.keys.map(key => row[key]).find(item => item !== undefined && item !== null && item !== '')
-      return column.format === 'date' ? dateValue(value) : column.format === 'money' ? moneyValue(value) : value === undefined ? '' : String(value)
+      return column.format === 'date' ? dateValue(value) : column.format === 'money' ? moneyValue(value) : column.format === 'quantity' ? Number(value ?? 0).toLocaleString('pt-BR', { maximumFractionDigits: 3 }) : value === undefined ? '' : String(value)
     }))]
     const csv = '\ufeff' + lines.map(line => line.map(value => '"' + String(value ?? '').replace(/"/g, '""') + '"').join(';')).join('\r\n')
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }))
@@ -133,9 +135,9 @@ function DataTable({ rows, kind, onEdit }: { rows: DbRow[]; kind: 'requisicoes' 
     {kind === 'recebimentos' && <p className="mb-2 rounded-md border border-[#E7D9B6] bg-[#FFF9EB] p-2 text-[10px] text-[#765A20]">Esta grade lê os lotes reais de entrada em erp_estoque_lotes, com NF, produto, fornecedor, lote, quantidades e inspeção; não infere recebimento a partir do status do pedido.</p>}
     <table className="compras-table"><thead><tr className="h-10">{columns[kind].map(column => <th key={column.label}>{column.label}</th>)}{kind === 'pedidos' && <th>Ação</th>}</tr></thead><tbody>{pageRows.map((row, index) => <tr className="h-12" key={textValue(row, 'id') === '—' ? index : textValue(row, 'id')}>{columns[kind].map(column => {
       const value = column.keys.map(key => row[key]).find(item => item !== undefined && item !== null && item !== '')
-      const formatted = column.format === 'date' ? dateValue(value) : column.format === 'money' ? moneyValue(value) : typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : '—'
+      const formatted = column.format === 'date' ? dateValue(value) : column.format === 'money' ? moneyValue(value) : column.format === 'quantity' ? Number(value ?? 0).toLocaleString('pt-BR', { maximumFractionDigits: 3 }) : typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : '—'
       return <td key={column.label}>{column.format === 'status' ? <span className={statusClass(formatted)}>{formatted.replaceAll('_', ' ')}</span> : formatted}</td>
-    })}{kind === 'pedidos' && <td><button className="compras-button compras-button--light erp-edit-button erp-row-action" type="button" title={['RASCUNHO','PENDENTE_APROVACAO'].includes(textValue(row,'status').toUpperCase())?'Editar pedido em aberto':'Pedido aprovado/recebido: edição bloqueada'} onClick={() => onEdit?.(textValue(row, 'id'))} disabled={textValue(row, 'id') === '—' || !['RASCUNHO','PENDENTE_APROVACAO'].includes(textValue(row,'status').toUpperCase())}>{['RASCUNHO','PENDENTE_APROVACAO'].includes(textValue(row,'status').toUpperCase())?'Editar':'Somente leitura'}</button></td>}</tr>)}</tbody><tfoot><tr className="h-12 border-t-2 border-[#D3E3EA] bg-[#F4F8FA] text-[10px] font-bold"><td colSpan={columns[kind].length + (kind === 'pedidos' ? 1 : 0)}>TOTALIZADORES: {rows.length} registro(s){kind === 'pedidos' ? ' · Valor total ' + moneyValue(totalPedidos) : ''}</td></tr></tfoot></table>
+    })}{kind === 'pedidos' && <td><button className="compras-button compras-button--light erp-edit-button erp-row-action" type="button" title={['RASCUNHO','PENDENTE_APROVACAO'].includes(textValue(row,'status').toUpperCase())?'Editar pedido em aberto':'Pedido aprovado/recebido: edição bloqueada'} onClick={() => onEdit?.(textValue(row, 'id'))} disabled={textValue(row, 'id') === '—' || !['RASCUNHO','PENDENTE_APROVACAO'].includes(textValue(row,'status').toUpperCase())}>{['RASCUNHO','PENDENTE_APROVACAO'].includes(textValue(row,'status').toUpperCase())?'Editar':'Somente leitura'}</button></td>}</tr>)}</tbody><tfoot><tr className="h-12 border-t-2 border-[#D3E3EA] bg-[#F4F8FA] text-[10px] font-bold"><td colSpan={columns[kind].length + (kind === 'pedidos' ? 1 : 0)}>TOTALIZADORES: {rows.length} registro(s){kind === 'pedidos' ? ' · Valor total ' + moneyValue(totalPedidos) : kind === 'recebimentos' ? ' · Quantidade recebida ' + totalRecebido.toLocaleString('pt-BR', { maximumFractionDigits: 3 }) + ' · Disponível ' + totalDisponivel.toLocaleString('pt-BR', { maximumFractionDigits: 3 }) : ''}</td></tr></tfoot></table>
     {pageCount > 1 && <nav aria-label="Paginação da grade de compras" className="mt-3 flex flex-wrap items-center justify-between gap-2 print:hidden"><span className="text-[10px] text-[#607987]">Exibindo {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, rows.length)} de {rows.length}</span><div className="flex gap-2"><button type="button" className="compras-button compras-button--light" disabled={page <= 1} onClick={() => setPage(value => Math.max(1, value - 1))}>Anterior</button><button type="button" className="compras-button compras-button--light" disabled={page >= pageCount} onClick={() => setPage(value => Math.min(pageCount, value + 1))}>Próxima</button></div></nav>}
   </div>
 }
