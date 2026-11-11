@@ -126,3 +126,10 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - O carrossel agora pré-carrega as cinco artes antes de iniciar a rotação automática; o intervalo permanece em 7 segundos. `onerror` também conclui a etapa de pré-carregamento, evitando que uma imagem indisponível congele a rotação.
 - O hash da tela pública foi atualizado deliberadamente no `scripts/telas-oficiais-manifest.json`, conforme autorização explícita do proprietário para esta nova revisão.
 - Varredura de texto do código-fonte não encontrou a marca “PLUSH BEAUTY” nas telas; referências em documentação histórica/repositório não foram tratadas como texto de interface.
+
+
+## Registro da revisão APROV-016 — 2026-11-11
+
+- Varredura do código-fonte das telas não encontrou mais a marca antiga `MOLDPLÁS`; as telas de Quarentena, Central Tablet da Qualidade, Inspeções, Controle de Processo da Injetora e Genealogia de Lote foram padronizadas para `SYSNQRA ERP INDUSTRIAL`.
+- A busca por `PLUSH BEAUTY` em `src/` não encontrou ocorrências em telas. Referências históricas/documentais e identificadores técnicos do repositório foram preservados.
+- Os hashes das telas presentes no manifesto foram atualizados deliberadamente nesta revisão autorizada.
