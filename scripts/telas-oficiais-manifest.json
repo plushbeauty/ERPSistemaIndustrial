@@ -1613,11 +1613,11 @@
     },
     {
       "path": "src/pages/TabelaPrecos.tsx",
-      "sha": "1d0f46bcf72c58531a6ea49ee7f73a072b69ffa2",
+      "sha": "401af796c6ba12441e408fa0726394eb9bc14724",
       "autor": "FernandoSch",
-      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — a tabela parava em 5000 SKUs e o reajuste em lote alcançava só o trecho carregado. Agora percorre todos os SKUs ativos da empresa por paginação.",
-      "aprovadaEm": "2026-11-08",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-VENDAS-TABELA-PRECOS-BUSCA-GEOMETRIA-20261111-01 — pesquisa por SKU/produto/grupo, paginação da lista filtrada, controles 32px, feedback de carregamento e alinhamento monetário; preserva paginação integral e RPCs da revisão REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03.",
+      "aprovadaEm": "2026-11-11",
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO NO COMANDO MESTRE DE 2026-11-11; pendente de CI e validação funcional"
     },
     {
       "path": "src/pages/TabletDashboard.tsx",
