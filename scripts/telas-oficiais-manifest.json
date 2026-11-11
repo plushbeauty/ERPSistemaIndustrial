@@ -237,11 +237,11 @@
     },
     {
       "path": "src/modules/financeiro/pages/FinanceiroWorkspace.tsx",
-      "sha": "9f1f50e8e5ea4327e7fd8d9ac93f75eb8958e0b8",
+      "sha": "fbe6a1ad31375199598d9badadf5599f4589bc23",
       "autor": "FernandoSch",
-      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — \"A pagar/A receber\" somavam apenas as parcelas cujo título estava dentro do teto de 1000 títulos e 5000 parcelas carregados: carteira maior que isso mostrava valor menor que o real, sem aviso. Títulos, parcelas, fornecedores e clientes passam a ser lidos por paginação completa.",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-FINANCEIRO-WORKSPACE-PARCELAS-20261110-01 — baixas paginadas e histórico real, parcelamento mensal até 120, edição apenas de título manual aberto sem baixa, ações por título, CSV, impressão Plastibor e controles 40px/linhas 48px.",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "REVISAO TECNICA AUTORIZADA PELO PROPRIETARIO EM 2026-11-10 PARA CONFORMIDADE FINANCEIRA"
     },
     {
       "path": "src/pages/AccessControlSettings.tsx",
