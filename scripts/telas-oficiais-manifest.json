@@ -1,7 +1,7 @@
 {
   "contrato": "SYNQRA-R-20261103-01",
   "geradoPor": "npm run telas:manifest",
-  "totalTelas": 223,
+  "totalTelas": 227,
   "telas": [
     {
       "path": "src/components/layout/ModuleTabletMenuModal.tsx",
@@ -29,19 +29,19 @@
     },
     {
       "path": "src/features/banking/BankReconciliation.tsx",
-      "sha": "bf3f938a1b592d674e6d454674d059552730a8ea",
+      "sha": "547a7d1ede40d8bbc66959d9f8085ebec2a50273",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria. REV-CONTROLADORIA-RAZAO-GERAL-GL-20261110-01 — filtros, grade de 48px, consolidação e botão Voltar redesenhados; consultas tenant-scoped e RPC de saldo integral preservadas.",
+      "revisao": "REV-CADASTRO-BANCOS-CONCILIACAO-20261110-01 — gerenciador de instituições e contas por empresa",
       "aprovadaEm": "2026-11-10",
-      "statusAprovacao": "ALTERAÇÃO VISUAL E FUNCIONAL AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; grade limitada a 1.000 lançamentos e saldo integral calculado no banco."
+      "statusAprovacao": "ALTERAÇÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10"
     },
     {
       "path": "src/features/banking/BankStatementImporter.tsx",
-      "sha": "5fe6552cc5ae826e7b1e6eb7c0ec473fffdc85f7",
+      "sha": "4503ee5417262ecdf787325a11a514a853250bfc",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-HASH-SINCRONIZADO-20261110-01 — hash do manifesto alinhado ao conteúdo já existente na branch main; nenhum código bancário foi alterado nesta revisão de Compras.",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "HASH DO MANIFESTO SINCRONIZADO COM O CONTEÚDO JÁ PRESENTE EM MAIN; nenhuma alteração funcional de Banking nesta revisão."
+      "revisao": "REV-CADASTRO-BANCOS-IMPORTADOR-20261110-01 — cadastro compartilhado de contas e filtros explícitos por empresa",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "ALTERAÇÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10"
     },
     {
       "path": "src/features/banking/ListaPrecosCliente.tsx",
@@ -109,19 +109,19 @@
     },
     {
       "path": "src/features/controladoria/PainelRazaoGeral.tsx",
-      "sha": "26246707ec4b9c63837698c33dbfebd998028d7e",
+      "sha": "f013a5169b3bed7b34a9b74a7e4435b8d08d1429",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria. REV-CONTROLADORIA-RAZAO-GERAL-GL-20261110-01 — filtros, grade de 48px, consolidação e botão Voltar redesenhados; consultas tenant-scoped e RPC de saldo integral preservadas.",
+      "revisao": "REV-RAZAO-GERAL-GL-REAL-20261111-01 — saldo integral calculado sobre todas as linhas; exibição limitada às últimas 1.000",
       "aprovadaEm": "2026-11-10",
-      "statusAprovacao": "ALTERAÇÃO VISUAL E FUNCIONAL AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; grade limitada a 1.000 lançamentos e saldo integral calculado no banco."
+      "statusAprovacao": "IMPLEMENTAÇÃO EM BRANCH DE INTEGRAÇÃO; pendente de CI e validação visual."
     },
     {
       "path": "src/features/controladoria/RetificacaoPedido.tsx",
-      "sha": "a8c7d6f4a485273386f9f112d27ebef3ef49ad8a",
+      "sha": "0ef6a487627976db0d17dd55357d3c9d3618e2bd",
       "autor": "FernandoSch",
-      "revisao": "REV-RETIFICACAO-PEDIDO-ENTRADA-E-AJUDA-20261102-01 — tela ganha lista de pedidos e ajuda de uso",
-      "aprovadaEm": "2026-11-02",
-      "statusAprovacao": "DETERMINADO PELO PROPRIETARIO EM 2026-11-02 (\"Retificacao de Pedido para que serve"
+      "revisao": "REV-RETIFICACAO-PEDIDO-ROTA-SEPARADA-20261110-01 — navegação preservada em Controladoria, sem conflitar com Retificação Financeira",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "ALTERAÇÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10"
     },
     {
       "path": "src/features/fiscal/AnoFiscal.tsx",
@@ -629,7 +629,7 @@
     },
     {
       "path": "src/pages/CustomerDnFinanceList.tsx",
-      "sha": "a92cefeea2d72a65e6ad72fcfdfc2efa8b824de0",
+      "sha": "137df423770635052830726fb1c993857aaede36",
       "autor": "FernandoSch",
       "revisao": "REV-NOTAS-DEBITO-FINANCEIRAS-20261110-03 — cadastro financeiro completo, seleção tipada de parceiro, rota integrada, anexo privado e título transacional.",
       "aprovadaEm": "2026-11-10",
@@ -637,11 +637,11 @@
     },
     {
       "path": "src/pages/CustomerDnList.tsx",
-      "sha": "9c2a2cd0b598aa912d409b43b07caf8f3e75b2c0",
+      "sha": "5fe0c6982ce9b177a6d522c7502fe5934a0524ef",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-NOTAS-DEBITO-ROTINAS-FINANCEIRAS-20261110-01 — central operacional, atalhos de conciliação/importação, busca e cadastro real isolado por empresa; campos não existentes no schema identificados sem simular persistência",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "ALTERAÇÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10"
     },
     {
       "path": "src/pages/CustomerDnPod.tsx",
@@ -1786,6 +1786,38 @@
       "revisao": "REV-RPNC-CSS-CARIMBO-20261103-01 — carimbo de autoria/aprovacao exigido pelo manifesto de telas; nenhuma regra visual foi tocada",
       "aprovadaEm": "2026-11-03",
       "statusAprovacao": "APROVADO PELO PROPRIETARIO (ordem de 2026-11-03: \"todas as telas novas vao ter revisao, aprovacao e travamento para o vercel nao pegar mais telas antigas\")"
+    },
+    {
+      "path": "src/features/financeiro/RetificacaoFinanceira.tsx",
+      "sha": "d50e2763bc6206462706c78434f2901775dc71c2",
+      "autor": "FernandoSch",
+      "revisao": "REV-RETIFICACAO-FINANCEIRA-AUDITADA-20261110-01 — busca de títulos/parcelas, retificação transacional, justificativa, anexos, histórico e bloqueio de período",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "ALTERAÇÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10"
+    },
+    {
+      "path": "src/features/banking/BankAccountManager.tsx",
+      "sha": "50d075d050b99c882e7d94d730884fa96bba0c57",
+      "autor": "FernandoSch",
+      "revisao": "REV-CADASTRO-BANCOS-CONTAS-20261110-01 — cadastro compartilhado de instituições COMPE e contas bancárias por tenant",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "ALTERAÇÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10"
+    },
+    {
+      "path": "src/pages/FichaMontagem.tsx",
+      "sha": "4d4628c03659ec802645785ae0a493d362bdda5a",
+      "autor": "SYSNQRA",
+      "revisao": "REV-FICHA-MONTAGEM-4-ETAPAS-REAL-20261111-01 — montagem, acabamento, inspeção versionada e liberação de lote com dados reais.",
+      "aprovadaEm": "2026-11-11",
+      "statusAprovacao": "IMPLEMENTAÇÃO EM BRANCH DE INTEGRAÇÃO; pendente de CI, validação visual e aprovação final."
+    },
+    {
+      "path": "src/features/controladoria/ControladoriaWorkspace.tsx",
+      "sha": "eb4ef23b2f2f3fd19d45ee466511437921c46b24",
+      "autor": "SYSNQRA",
+      "revisao": "REV-CONTROLADORIA-INTEGRADA-20261111-01 — lucratividade, razão geral e precisão decimal em abas.",
+      "aprovadaEm": "2026-11-11",
+      "statusAprovacao": "IMPLEMENTAÇÃO EM BRANCH DE INTEGRAÇÃO; pendente de CI, validação visual e aprovação final."
     }
   ]
 }
