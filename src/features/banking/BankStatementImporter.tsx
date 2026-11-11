@@ -57,7 +57,7 @@ function parseTransactions(text:string):ParsedTransaction[] {
  if(rows.length<2)throw new Error('O CSV não possui linhas de transação.')
  const headers=rows[0].map(normalize)
  const find=(names:string[])=>headers.findIndex(header=>names.includes(header))
- const dateIndex=find(['data','datamovimento','datatransacao','dataoperacao','dtmovimento','lancamento'])
+ const dateIndex=find(['data','datamovimento','datatransacao','dataoperacao','datalancamento','dtmovimento'])
  const descriptionIndex=find(['descricao','historico','memo','detalhe','lancamento'])
  const amountIndex=find(['valor','valortransacao','montante','amount'])
  const debitIndex=find(['debito','valordebito','saida','debit'])
@@ -77,7 +77,7 @@ function parseTransactions(text:string):ParsedTransaction[] {
   const amount=credit&&credit!==0?Math.abs(credit):debit&&debit!==0?Math.abs(debit):raw===null?null:Math.abs(raw)
   if(!date||!description||amount===null||amount===0)continue
   const typeText=typeIndex>=0?normalize(row[typeIndex]??''):''
-  const type: 'CREDITO'|'DEBITO'=typeText.includes('deb')||typeText.includes('saida')||typeText.includes('pag')||(debit!==null&&debit!==0)||(raw!==null&&raw<0)?'DEBITO':'CREDITO'
+  const type: 'CREDITO'|'DEBITO'=typeText==='d'||typeText.includes('deb')||typeText.includes('saida')||typeText.includes('pag')||(debit!==null&&debit!==0)||(raw!==null&&raw<0)?'DEBITO':'CREDITO'
   result.push({data_movimento:date,data_valor:valueDateIndex>=0?parseDate(row[valueDateIndex]??''):null,descricao:description,referencia:referenceIndex>=0?(row[referenceIndex]?.trim()||null):null,tipo:type,valor:amount,saldo:balanceIndex>=0?parseAmount(row[balanceIndex]??''):null})
  }
  if(!result.length)throw new Error('Nenhuma linha válida foi encontrada. Confira as colunas, datas e valores do CSV.')
@@ -120,7 +120,7 @@ export default function BankStatementImporter(){
  const choose=(next:File|null)=>{
   if(!next)return
   const extension=next.name.slice(next.name.lastIndexOf('.')).toLowerCase()
-  if(!allowed.includes(extension)){setError('Nesta versão, somente CSV é processado. XLSX e PDF permanecem bloqueados até integração de parser validado; o arquivo não será marcado como importado.');return}
+  if(!allowed.includes(extension)){setFile(null);setError('Nesta versão, somente CSV é processado. XLSX e PDF permanecem bloqueados até integração de parser validado; o arquivo não será marcado como importado.');return}
   setFile(next);setError('');setMessage('')
  }
 
@@ -150,7 +150,7 @@ export default function BankStatementImporter(){
     if(inserted.error)throw inserted.error
    }
    const closing=[...parsed].reverse().find(row=>row.saldo!==null)?.saldo??0
-   const update=await supabase.from('erp_importacoes_log').update({status_processamento:unique.length?'Concluído':'Concluído · sem novos lançamentos',numero_transacoes:unique.length,saldo_fechamento:closing}).eq('id',logId).eq('empresa_id',tenant)
+   const update=await supabase.from('erp_importacoes_log').update({status_processamento:'Concluído',numero_transacoes:unique.length,saldo_fechamento:closing}).eq('id',logId).eq('empresa_id',tenant)
    if(update.error)throw update.error
    setMessage(`${unique.length} transação(ões) importada(s); ${parsed.length-unique.length} duplicada(s) ignorada(s).`)
    setFile(null);if(fileRef.current)fileRef.current.value=''
