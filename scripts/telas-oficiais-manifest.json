@@ -479,7 +479,7 @@
       "path": "src/pages/ComprasPedidoForm.tsx",
       "sha": "60883abbf1d1a638488e5bd8d685561b49e9fabb",
       "autor": "FernandoSch",
-      "revisao": "REV-COMPRAS-VALIDACAO-PEDIDO-20261108-01 — valida todas as linhas sem descarte silencioso, tenant e referências carregadas, NCM de 8 dígitos, valores não negativos e tributos apresentados sem somar ICMS em duplicidade REV-COMPRAS-PEDIDO-EDIT-PRINT-20261110-01 — edição por pedidoId com carregamento tenant-scoped, RPC atômica e impressão A4 Plastibor com número definitivo após gravação; validação funcional pendente. REV-COMPRAS-PEDIDO-FORM-40-48-AJUDA-20261110-01.",
+      "revisao": "REV-COMPRAS-VALIDACAO-PEDIDO-20261108-01 — valida todas as linhas sem descarte silencioso, tenant e referências carregadas, NCM de 8 dígitos, valores não negativos e tributos apresentados sem somar ICMS em duplicidade REV-COMPRAS-PEDIDO-EDIT-PRINT-20261110-01 — edição por pedidoId com carregamento tenant-scoped, RPC atômica e impressão A4 Plastibor com número definitivo após gravação; validação funcional pendente. REV-COMPRAS-PEDIDO-FORM-40-48-AJUDA-20261110-01. REV-COMPRAS-PEDIDO-FORM-40-48-AJUDA-20261110-01.",
       "aprovadaEm": "2026-11-08",
       "statusAprovacao": "ALTERAÇÃO EM BRANCH DE AUDITORIA; NÃO LIBERADA PARA PRODUÇÃO."
     },
