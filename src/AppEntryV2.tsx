@@ -81,7 +81,7 @@ const ComprasRFQ = lazyPage(() => import('./pages/ComprasRFQ'), 'ComprasRFQ')
 const EngenhariaBOM = lazyPage(() => import('./pages/EngenhariaBOM'), 'EngenhariaBOM')
 const FiscalCompras = lazyPage(() => import('./pages/FiscalCompras'), 'FiscalCompras')
 const PCPFichasProcesso = lazyPage(() => import('./pages/PCPFichasProcesso'), 'PCPFichasProcesso')
-const FichaMontagem = lazy(() => import('./pages/FichaMontagem'))
+const FichaMontagemPage = lazy(() => import('./pages/FichaMontagem'))
 const PCPIndustrial = lazyPage(() => import('./pages/PCPIndustrial'), 'PCPIndustrial')
 // Formulário RPNC (Ishikawa / 5 Porquês / CAPA / recorrência) e grade de auditorias — prompts SGQ de 2026-10-31
 const QualidadeRPNC = lazy(() => import('./pages/QualityRpncUnified'))
@@ -327,7 +327,7 @@ export default function AppEntryV2() {
               <Route path="rh/entrega-epis" element={<EpisScreen />} />
               <Route path="rh/epis/entregas" element={<EpisScreen />} />
               <Route path="pcp/fichas-processo" element={<QualityPlanGate><PCPFichasProcesso /></QualityPlanGate>} />
-              <Route path="pcp/ficha-montagem" element={<FichaMontagem />} />
+              <Route path="pcp/ficha-montagem" element={<FichaMontagemPage />} />
               <Route path="pcp/roteiro-producao" element={<Navigate to="/pageprincipal/pcp/fichas-processo" replace />} />
               <Route path="qualidade/rpnc" element={<QualityPlanGate><QualidadeRPNC /></QualityPlanGate>} />
               <Route path="qualidade/rpnc-formulario" element={<Navigate to="/pageprincipal/qualidade/rpnc" replace />} />
