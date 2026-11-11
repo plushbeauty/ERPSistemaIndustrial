@@ -10,6 +10,7 @@ import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import EntityCodeLookup, { type LookupRecord } from '../components/industrial/EntityCodeLookup'
 import KioskConsultaRapida from '../components/KioskConsultaRapida'
+import { useNavigate } from 'react-router-dom'
 import VendasLayout from './VendasLayout'
 
 interface Requisition {
@@ -56,7 +57,7 @@ interface ProductionOrder {
 
 const PAGE_SIZE = 25
 const panelClass = 'rounded-[3px] border border-[#D8E4EA] bg-white shadow-[0_2px_8px_rgba(18,59,80,0.04)]'
-const buttonClass = 'inline-flex h-8 items-center justify-center gap-1.5 rounded-[3px] border px-3 text-[11px] font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50'
+const buttonClass = 'inline-flex h-10 items-center justify-center gap-1.5 rounded-full border px-3 text-[11px] font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50'
 const fieldLabelClass = 'mb-1 block text-[9px] font-bold uppercase tracking-[0.08em] text-[#496574]'
 
 function formatDate(value: string): string {
@@ -69,6 +70,7 @@ function formatQuantity(value: number): string {
 }
 
 export default function ComprasRequisicoes() {
+  const navigate = useNavigate()
   const [companyId, setCompanyId] = useState('')
   const [requisitions, setRequisitions] = useState<Requisition[]>([])
   const [items, setItems] = useState<RequisitionItem[]>([])
@@ -223,8 +225,33 @@ export default function ComprasRequisicoes() {
     }
   }
 
+  function exportCsv(): void {
+    const header = ['Requisição', 'Data', 'Centro de custo', 'Urgência', 'Ordem de produção', 'Produto', 'Quantidade', 'Fornecedor', 'Status']
+    const rows = visibleItems.map((item) => {
+      const request = requestById.get(item.requisicao_id)
+      const product = productById.get(item.produto_id)
+      const supplier = item.fornecedor_id ? supplierById.get(item.fornecedor_id) : undefined
+      return [request?.codigo ?? '', request?.created_at ?? '', request?.centro_custo ?? '', request?.nivel_urgencia ?? '', request?.ordem_producao_id ? opById.get(request.ordem_producao_id)?.codigo ?? '' : '', product ? `${product.codigo} — ${product.nome}` : item.produto_id, String(item.quantidade), supplier?.nome_fantasia || supplier?.razao_social || '', item.status]
+    })
+    const csv = [header, ...rows].map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(';')).join('\r\n')
+    const blob = new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `requisicoes-compra-${new Date().toISOString().slice(0, 10)}.csv`
+    anchor.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <VendasLayout title="Requisições de compra" subtitle="PCP • MRP • materiais • cotação" onRefresh={() => void load()}>
+      <style>{`
+        @media print {
+          @page { size: A4 landscape; margin: 12mm; }
+          .compras-requisicoes-actions,.compras-requisicoes-kiosk,.compras-requisicoes-kpis { display:none!important; }
+          body { background:#fff!important; }
+        }
+      `}</style>
       <main className="min-h-screen bg-[#F4F7F9] p-3 text-[#183746] sm:p-4">
         <div className="mx-auto max-w-[1800px]">
           <header className="overflow-hidden rounded-[3px] border border-[#0E1E2F] bg-gradient-to-r from-[#123B50] to-[#0E1E2F] text-[#F4FBFD] shadow-sm">
@@ -234,13 +261,19 @@ export default function ComprasRequisicoes() {
                   <ClipboardList size={19} aria-hidden="true" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#9FD9E5]">Compras / Suprimentos industriais</p>
+                  <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#9FD9E5]">Compras › Suprimentos › Requisições de compra</p>
                   <h1 className="text-base font-bold leading-tight sm:text-lg">Requisições de compra</h1>
                   <p className="mt-0.5 text-[10px] text-[#D9EAF0]">Consulta por ordem de produção, itens e encaminhamento para cotação</p>
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <button type="button" onClick={() => void forwardSelected()} disabled={busy || selectedEligibleCount === 0} className={`${buttonClass} border-[#48B7C7] bg-[#2D8DB8] text-white hover:bg-[#24799E]`}>
+              <div className="compras-requisicoes-actions flex flex-wrap items-center gap-2">
+                <button type="button" onClick={() => navigate(-1)} className={`${buttonClass} border-white/30 bg-white/10 text-white hover:bg-white/20`}>
+                  <ArrowLeft size={13} aria-hidden="true" />Voltar
+                </button>
+                <button type="button" onClick={exportCsv} disabled={!visibleItems.length} className={`${buttonClass} border-white/30 bg-white/10 text-white hover:bg-white/20`}>
+                  Exportar CSV
+                </button>
+                <button type="button" onClick={() => void forwardSelected()}  disabled={busy || selectedEligibleCount === 0} className={`${buttonClass} border-[#48B7C7] bg-[#2D8DB8] text-white hover:bg-[#24799E]`}>
                   <ShoppingCart size={14} aria-hidden="true" />Encaminhar ({selectedEligibleCount})
                 </button>
                 <button type="button" onClick={() => void load()} disabled={busy} className={`${buttonClass} border-white/30 bg-white/10 text-white hover:bg-white/20`}>
@@ -253,7 +286,18 @@ export default function ComprasRequisicoes() {
             </div>
           </header>
 
-          <div className="mt-3">
+          <div className="compras-requisicoes-print-brand hidden text-[10px] font-black tracking-[0.12em] text-[#123B50] print:block">PLASTIBOR · SYSNQRA ERP INDUSTRIAL</div>
+          <section className="compras-requisicoes-kpis mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Indicadores reais das requisições">
+            <article className="flex min-h-[100px] flex-col justify-center rounded-[3px] border border-[#D8E4EA] bg-white p-3"><span className="text-[9px] font-bold uppercase tracking-wide text-[#617986]">Requisições</span><strong className="mt-1 text-2xl text-[#123B50]">{requisitions.length}</strong><small className="text-[9px] text-[#617986]">Registros reais da empresa</small></article>
+            <article className="flex min-h-[100px] flex-col justify-center rounded-[3px] border border-[#D8E4EA] bg-white p-3"><span className="text-[9px] font-bold uppercase tracking-wide text-[#617986]">Itens requisitados</span><strong className="mt-1 text-2xl text-[#123B50]">{items.length}</strong><small className="text-[9px] text-[#617986]">Linhas vinculadas às requisições</small></article>
+            <article className="flex min-h-[100px] flex-col justify-center rounded-[3px] border border-[#D8E4EA] bg-white p-3"><span className="text-[9px] font-bold uppercase tracking-wide text-[#617986]">Produtos ativos</span><strong className="mt-1 text-2xl text-[#123B50]">{products.length}</strong><small className="text-[9px] text-[#617986]">Catálogo consultado</small></article>
+            <article className="flex min-h-[100px] flex-col justify-center rounded-[3px] border border-[#D8E4EA] bg-white p-3"><span className="text-[9px] font-bold uppercase tracking-wide text-[#617986]">Fornecedores ativos</span><strong className="mt-1 text-2xl text-[#123B50]">{suppliers.length}</strong><small className="text-[9px] text-[#617986]">Cadastro da empresa</small></article>
+          </section>
+          <details className="mt-3 rounded-[3px] border border-[#D8E4EA] bg-white px-3 py-2 text-[11px] text-[#496574]">
+            <summary className="cursor-pointer font-bold text-[#123B50]">Como usar esta tela</summary>
+            <div className="mt-2 leading-6"><strong>Para que serve:</strong> consultar materiais requisitados pelo PCP/MRP e encaminhar requisições elegíveis para cotação. <strong>Passo a passo:</strong> filtre por OP ou urgência, confira produto e quantidade, selecione as requisições aguardando cotação e acione Encaminhar. <strong>Regras:</strong> o banco valida empresa, permissão, status e itens dentro de uma RPC transacional; não encaminhe requisições sem itens.</div>
+          </details>
+          <div className="compras-requisicoes-kiosk mt-3">
             <KioskConsultaRapida />
           </div>
 
@@ -278,11 +322,11 @@ export default function ComprasRequisicoes() {
               </div>
               <div className="w-full max-w-[190px]">
                 <label className={fieldLabelClass} htmlFor="compras-urgencia-filter">Nível de urgência</label>
-                <select id="compras-urgencia-filter" value={selectedUrgency} onChange={(event) => { setSelectedUrgency(event.target.value); setPage(1) }} className="h-8 w-full rounded-[3px] border border-[#D8E4EA] bg-white px-2 text-[11px] text-[#183746] focus:border-[#2D8DB8] focus:outline-none focus:ring-1 focus:ring-[#2D8DB8]">
+                <select id="compras-urgencia-filter" value={selectedUrgency} onChange={(event) => { setSelectedUrgency(event.target.value); setPage(1) }} className="h-10 w-full rounded-[3px] border border-[#D8E4EA] bg-white px-2 text-[11px] text-[#183746] focus:border-[#2D8DB8] focus:outline-none focus:ring-1 focus:ring-[#2D8DB8]">
                   <option value="TODAS">Todas as urgências</option><option value="BAIXA">Baixa</option><option value="MEDIA">Média</option><option value="ALTA">Alta</option><option value="CRITICA">Crítica</option>
                 </select>
               </div>
-              <div className="flex h-8 items-center rounded-[3px] border border-[#D8E4EA] bg-[#F7FAFB] px-3 text-[10px] text-[#496574]">
+              <div className="flex h-10 items-center rounded-[3px] border border-[#D8E4EA] bg-[#F7FAFB] px-3 text-[10px] text-[#496574]">
                 <span className="font-bold">{visibleItems.length}</span><span className="ml-1">item(ns) encontrado(s)</span>
               </div>
               {selectedOrder && <button type="button" className={`${buttonClass} border-[#D8E4EA] bg-white text-[#365766] hover:bg-[#F4F7F9]`} onClick={() => { setSelectedOrder(''); setPage(1) }}>Limpar filtro</button>}
@@ -312,7 +356,7 @@ export default function ComprasRequisicoes() {
                     const supplier = item.fornecedor_id ? supplierById.get(item.fornecedor_id) : undefined
                     const canForward = request?.status === 'AGUARDANDO_COTACAO'
                     return (
-                      <tr key={item.id} className="h-9 border-b border-[#E4EBEF] even:bg-[#F8FAFB] hover:bg-[#EFF7FA]">
+                      <tr key={item.id} className="h-12 border-b border-[#E4EBEF] even:bg-[#F8FAFB] hover:bg-[#EFF7FA]">
                         <td className="px-3">
                           <input aria-label={`Selecionar requisição ${request?.codigo || request?.id || item.requisicao_id}`} type="checkbox" checked={selectedRequisitions.has(item.requisicao_id)} disabled={!canForward || busy} onChange={(event) => toggleRequisition(item.requisicao_id, event.currentTarget.checked)} className="h-4 w-4 accent-[#2D8DB8]" />
                         </td>
@@ -344,6 +388,10 @@ export default function ComprasRequisicoes() {
               </nav>
             )}
           </section>
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#D8E4EA] bg-white px-3 py-2 text-[10px] text-[#496574]">
+            <span>Total de itens listados: <strong>{visibleItems.length}</strong></span>
+            <span>Quantidade requisitada no filtro: <strong>{formatQuantity(visibleItems.reduce((sum, item) => sum + Number(item.quantidade || 0), 0))}</strong></span>
+          </div>
           <footer className="mt-2 flex flex-wrap items-center justify-between gap-2 px-1 text-[9px] text-[#6B818D]">
             <span>SYSNQRA ERP &amp; SGQ INDUSTRIAL • Compras • Revisão 20/10/2026</span>
             <span>Dados filtrados pela empresa da sessão e protegidos pelas políticas RLS/RBAC do banco.</span>
