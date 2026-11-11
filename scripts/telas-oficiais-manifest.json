@@ -837,7 +837,7 @@
     },
     {
       "path": "src/pages/FinanceiroCustoPadrao.tsx",
-      "sha": "438b1bff672539533763da6bb375f8d3831d8ac7",
+      "sha": "a7b185aa5dc60c151cd0518e1058e6f0971ea818",
       "autor": "FernandoSch",
       "revisao": "REV-FIN-CUSTO-PADRAO-CSV-20261110-02 — corrigido fechamento excedente que impedia o type-check; exportação CSV preservada. Incremento 2026-11-10: contrato master SUPER_ADMIN; navegação Voltar 115x38; impressão Plastibor; paginação na grade.",
       "aprovadaEm": "2026-11-10",
