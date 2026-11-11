@@ -469,9 +469,9 @@
     },
     {
       "path": "src/pages/ComprasIndustrial.tsx",
-      "sha": "a9e1c2480a9e7cd1a812ad7ca02d2a96045cf37e",
+      "sha": "63775535f3f66c92b1eef5529c991b11b350492a",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-PEDIDO-RPC-20261110-01 — salvamento por erp_compras_salvar_pedido(p_payload), alinhado às colunas remotas e retorno pedido_compra_id/numero_pedido. REV-COMPRAS-PEDIDO-FORM-COMPARTILHADO-20261110-02 — rota industrial reutiliza o formulário comum para criação, edição e impressão, removendo o modal simplificado duplicado. REV-COMPRAS-GRADE-40-48-PRINT-20261110-01 — campos/selects 40px, linhas 48px e impressão A4 institucional. | REV-COMPRAS-ALIAS-CENTRAL-20261110-01 — rota legada preservada como alias da Central de Compras; removido shell lateral duplicado e redirecionamento para rota não existente. | REV-COMPRAS-ALIAS-MARCA-20261110-02 — slot quadrado oficial /logo/logo-marca.png preservado",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-PEDIDO-RPC-20261110-01 — salvamento por erp_compras_salvar_pedido(p_payload), alinhado às colunas remotas e retorno pedido_compra_id/numero_pedido. REV-COMPRAS-PEDIDO-FORM-COMPARTILHADO-20261110-02 — rota industrial reutiliza o formulário comum para criação, edição e impressão, removendo o modal simplificado duplicado. REV-COMPRAS-GRADE-40-48-PRINT-20261110-01 — campos/selects 40px, linhas 48px e impressão A4 institucional. | REV-COMPRAS-ALIAS-CENTRAL-20261110-01 — rota legada preservada como alias da Central de Compras; removido shell lateral duplicado e redirecionamento para rota não existente. | REV-COMPRAS-ALIAS-MARCA-20261110-02 — slot quadrado oficial /logo/logo-marca.png preservado | REV-COMPRAS-LOGO-SLOT-EXATO-20261110-03",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "ALTERAÇÃO TÉCNICA AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; alias da Central gravado, sujeito a type-check, teste funcional e validação visual."
     },
