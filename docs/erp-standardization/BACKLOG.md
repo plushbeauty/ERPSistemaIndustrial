@@ -9,7 +9,7 @@
 - [x] UI-001 — Executar `audit:ui-standardization` no CI e revisar o artefato `erp-ui-standardization-audit` (run 43044102410, 11/11/2026). Evidência: 244 arquivos, 334 declarações de rota, 3 arquivos usando tokens compartilhados, 94 com estilos locais e 208 com controles sem altura estática detectada. Limitações de análise regex e inspeção visual registradas; isso não homologa telas.
 - [x] UI-002 — Cruzar src/AppEntryV2.tsx com arquivos reais, wrappers/re-exports e rotas duplicadas/orfãs.
 - [ ] UI-003 — Medir Vendas > Novo Pedido por seção: largura/altura dos campos, labels, botões, grids, lupas, abas, cores e impressão, sem alterar a tela aprovada.
-- [ ] UI-004 — Inventariar componentes de texto, código, descrição, numérico, data, select, lupa, botão, checkbox, grid, card, modal, mensagens e impressão.
+- [x] UI-004 — Inventariar componentes de texto, código, descrição, numérico, data, select, lupa, botão, checkbox, grid, card, modal, mensagens e impressão.
 - [ ] UI-005 — Registrar exceções legítimas à altura padrão de 32 px e às larguras por função.
 
 ### UI-003 — evidência estática parcial (2026-11-11)
@@ -20,6 +20,13 @@
 - Impressão usa `window.print()` e o baseline global A4 com margem de 12mm; não há CSS local de impressão na página/layout.
 - Relatório: [UI-003-NOVO-PEDIDO-MEDICAO-20261111.md](./UI-003-NOVO-PEDIDO-MEDICAO-20261111.md), commit `d3969aede84c9384d259ede91b35bf2b06d2eca7`.
 - UI-003 permanece aberto: falta medição visual renderizada e teste de impressão no navegador; não alterar Novo Pedido.
+
+### UI-004 — inventário de componentes concluído (2026-11-11)
+
+- Inventário estático de formulários, texto/código/descrição, número/moeda, data/hora, selects, checkbox, lookups, botões, cards, abas, modais, grids/tabelas, mensagens e impressão.
+- Foram documentadas variantes de altura e a cascata global que pode sobrescrever classes; wrappers não aplicam maxLength automaticamente; não há DataGrid/alert/toast universal único.
+- Relatório: [UI-004-COMPONENT-INVENTORY-20261111.md](./UI-004-COMPONENT-INVENTORY-20261111.md), commit `ebe0addaf52e6cfd8249a4e3c0c3e6c8ed55c7d3`.
+- UI-004 é inventário estático; não homologa o uso uniforme dos componentes nas telas.
 
 ## P1 — Corrigir telas em ordem de impacto
 
