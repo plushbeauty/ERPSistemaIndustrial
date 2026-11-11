@@ -5,7 +5,7 @@
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Check, CircleDollarSign, ClipboardCheck, Printer, RefreshCw, Search, Send } from 'lucide-react'
+import { ArrowLeft, Check, CircleDollarSign, ClipboardCheck, FileSpreadsheet, Printer, RefreshCw, Search, Send } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
@@ -50,6 +50,8 @@ export default function ComprasAnalisePrecos() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [page, setPage] = useState(1)
+  const pageSize = 20
 
   const load = async () => {
     setBusy(true)
@@ -97,6 +99,20 @@ export default function ComprasAnalisePrecos() {
   }, [filter, rfqs, items])
   const chosenRow = rows.find(row => row.fornecedor_id === selectedSupplier)
   const needsJustification = Boolean(chosenRow && winner && chosenRow.fornecedor_id !== winner.fornecedor_id && chosenRow.valorComparavel > winner.valorComparavel)
+  const pageCount = Math.max(1, Math.ceil(rows.length / pageSize))
+  const pageRows = rows.slice((page - 1) * pageSize, page * pageSize)
+  const totalQuoteValue = rows.reduce((sum, row) => sum + Number(row.valor_total || 0), 0)
+  useEffect(() => setPage(1), [selected])
+  const exportQuotesCsv = () => {
+    const lines = [['Fornecedor','Status','Valor total informado','Prazo dias','Condição','Validade','Menor proposta'], ...rows.map(row => [supplierMap.get(row.fornecedor_id) || row.fornecedor_id,row.status,row.valor_total,row.prazo_dias,row.condicao_pagamento,row.validade,row.id===winner?.id?'SIM':'NÃO'])]
+    const csv = '\\ufeff' + lines.map(line => line.map(value => '"' + String(value ?? '').replace(/"/g, '""') + '"').join(';')).join('\\r\\n')
+    const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));const anchor=window.document.createElement('a');anchor.href=url;anchor.download='analise-propostas-rfq.csv';anchor.click();URL.revokeObjectURL(url)
+  }
+  const exportItemsCsv = () => {
+    const lines = [['Código','Descrição','Quantidade','Unidade'], ...rfqItems.map(item => [item.codigo,item.descricao,item.quantidade,item.unidade])]
+    const csv = '\\ufeff' + lines.map(line => line.map(value => '"' + String(value ?? '').replace(/"/g, '""') + '"').join(';')).join('\\r\\n')
+    const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));const anchor=window.document.createElement('a');anchor.href=url;anchor.download='itens-rfq-comparativo.csv';anchor.click();URL.revokeObjectURL(url)
+  }
 
   useEffect(() => {
     if (!selectedRfq) {
