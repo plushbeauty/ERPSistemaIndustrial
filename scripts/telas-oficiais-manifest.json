@@ -1725,11 +1725,11 @@
     },
     {
       "path": "src/pages/VendasRelatorios.tsx",
-      "sha": "ce342411d419dbb1a7949eb14679cc41b532bb35",
+      "sha": "e3e8b9c38add7e95a9bceb363645db129791ba59",
       "autor": "FernandoSch",
-      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — o faturamento do relatório somava apenas os últimos 2000 pedidos; empresa acima disso via o total menor que o real, sem aviso. A leitura passou a cobrir todos os pedidos da empresa por paginação.",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-VENDAS-RELATORIOS-FILTROS-IMPRESSAO-20261111-01 — busca, status e impressão em 32px; botão Limpar Filtros; valores monetários tabulares à direita; preserva a paginação completa da revisão REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 e as consultas por empresa.",
+      "aprovadaEm": "2026-11-11",
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO NO COMMIT 1a57f81b04a896083d858c2eed3c112ce24e8ed9; pendente de CI e validação visual"
     },
     {
       "path": "src/pages/VendasTablet.tsx",
