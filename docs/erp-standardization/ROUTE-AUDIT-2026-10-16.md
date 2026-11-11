@@ -228,3 +228,14 @@ O título e as mensagens agora identificam a função como **registro de parecer
 - **Registro de hash:** manifesto atualizado na revisão `REV-COMPRAS-ANALISE-VALOR-20261111-01`.
 - **Commit de código:** `8ecfe5f966c44f7d2cdd4e710c46649f6149ea59`.
 - **Estado:** **CORRIGIDO AGUARDANDO VALIDAÇÃO**. Type-check, lint, testes com propostas reais (NULL/zero/valor válido), interação autenticada/RLS, inspeção visual e deployment deste SHA ainda não foram confirmados.
+
+## Compras — cadastro e homologação de fornecedores (2026-11-11)
+
+- **Rotas:** `/pageprincipal/cadastros/fornecedores` e `/pageprincipal/fornecedores` (ambas usam `FornecedoresIndustrial`).
+- **Arquivo:** `src/pages/FornecedoresIndustrial.tsx`.
+- **Achados:** edição e exclusão verificavam somente `error`, sem confirmar que uma linha do tenant foi afetada; o vínculo do certificado ISO também não confirmava a linha atualizada. Ao recarregar, dados anteriores permaneciam no estado até a nova consulta terminar/falhar. Edição podia marcar ISO 9001 sem anexo nem certificado previamente vinculado.
+- **Correções:** edição, exclusão e vínculo do certificado agora exigem linha retornada; recarga limpa empresa/listas/seleção antes de buscar dados; homologação ISO exige arquivo novo ou certificado já vinculado ao fornecedor selecionado. Mantidos RPC `erp_current_empresa_id`, filtros `empresa_id`, tabela `erp_fornecedores`, bucket `erp-fornecedor-certificados` e campos existentes.
+- **Schema:** nenhuma coluna, tabela, RPC ou migration adicionada.
+- **Manifesto:** hash atualizado na revisão `REV-FORNECEDOR-GRAVACAO-CONFIRMADA-20261111-01`.
+- **Commit de código:** `6901a8ae80dd1f6ae3849d808cf815c1a5e72672`.
+- **Estado:** **CORRIGIDO AGUARDANDO VALIDAÇÃO**. Type-check, lint, CRUD autenticado/RLS, upload/recuperação do certificado, inspeção visual e deployment deste SHA pendentes.
