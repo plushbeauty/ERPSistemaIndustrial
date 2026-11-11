@@ -243,7 +243,7 @@ export default function ComprasAnalisePrecos() {
                 <th className="w-10 px-3 text-center">Escolher</th><th className="px-3">Fornecedor participante</th><th className="px-3 text-right">Valor total informado</th><th className="px-3 text-center">Prazo (dias)</th><th className="px-3">Condição de pagamento</th><th className="px-3">Validade</th><th className="px-3 text-center">Menor valor total</th>
               </tr></thead>
               <tbody>
-                {rows.map(row => {
+                {pageRows.map(row => {
                   const isWinner = row.id === winner?.id
                   const isSelected = selectedSupplier === row.fornecedor_id
                   return <tr key={row.id} className={isSelected ? 'bg-sky-50/80' : 'bg-white'}>
@@ -255,8 +255,10 @@ export default function ComprasAnalisePrecos() {
                 })}
                 {!rows.length && <tr><td colSpan={10} className="p-8 text-center text-xs text-slate-500">Nenhuma proposta cadastrada para esta RFQ. A tela não cria fornecedores ou preços fictícios.</td></tr>}
               </tbody>
+              <tfoot><tr className="h-12 border-t-2 border-[#D3E3EA] bg-[#F4F8FA] text-[10px] font-bold"><td colSpan={2} className="px-3">TOTALIZADORES: {rows.length} proposta(s)</td><td className="px-3 text-right">{money(totalQuoteValue)}</td><td colSpan={4} className="px-3">Menor proposta: {winner ? money(winner.valorComparavel) : "—"}</td></tr></tfoot>
             </table>
           </div>
+          {pageCount > 1 && <nav aria-label="Paginação das propostas" className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 px-3 py-3 compras-analise-no-print"><span className="text-[10px] text-slate-500">Página {page} de {pageCount} · {rows.length} propostas</span><div className="flex gap-2"><button type="button" className="h-10 rounded-md border px-3 text-xs font-semibold" disabled={page<=1} onClick={()=>setPage(value=>Math.max(1,value-1))}>Anterior</button><button type="button" className="h-10 rounded-md border px-3 text-xs font-semibold" disabled={page>=pageCount} onClick={()=>setPage(value=>Math.min(pageCount,value+1))}>Próxima</button></div></nav>
           {winner && <div className="grid grid-cols-1 gap-2 border-t border-slate-100 bg-sky-50/50 p-3 sm:grid-cols-3 sm:px-4">
             <div className="flex items-center gap-2"><CircleDollarSign size={17} className="text-sky-700" /><div><div className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Menor valor total informado</div><div className="text-sm font-bold text-slate-900">{money(winner.valorComparavel)}</div></div></div>
             <div><div className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Fornecedor menor valor total</div><div className="mt-1 text-xs font-semibold text-slate-800">{supplierMap.get(winner.fornecedor_id) || 'Fornecedor não localizado'}</div></div>
@@ -280,6 +282,7 @@ export default function ComprasAnalisePrecos() {
           </div>
         </section>
       </> : <section className="compras-analise-card p-10 text-center"><ClipboardCheck size={24} className="mx-auto mb-2 text-slate-400" /><h2 className="text-sm font-semibold text-slate-800">Selecione uma RFQ</h2><p className="mt-1 text-xs text-slate-500">{busy ? 'Carregando mapas de cotação...' : 'Escolha um mapa para comparar propostas reais.'}</p></section>}
+      <section className="compras-analise-card mt-3 p-4 text-[11px] text-slate-600 print:hidden"><h2 className="font-bold uppercase tracking-wide">Como usar esta tela</h2><p className="mt-2"><strong>Para que serve:</strong> comparar propostas reais de fornecedores para uma RFQ, sem criar valores estimados.</p><p className="mt-1"><strong>Passo a passo:</strong> localize a RFQ, compare valor total, prazo, condição e validade; selecione o fornecedor e registre justificativa quando não escolher a menor proposta.</p><p className="mt-1"><strong>Regras importantes:</strong> a comparação financeira usa o valor total informado; a decisão e a justificativa são gravadas no cabeçalho da RFQ e respeitam RLS da empresa.</p></section>
     </main>
   </VendasLayout>
 }
