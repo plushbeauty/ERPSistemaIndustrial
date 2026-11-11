@@ -297,3 +297,13 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - Foram encontrados `196` especificadores de imports locais (incluindo imports dinâmicos), `195` caminhos únicos; todos resolvem para arquivos existentes na árvore Git. As `57` declarações lazy identificadas também têm caminho resolvido e referência textual no arquivo.
 - Não foram encontrados caminhos literais repetidos na amostra de rotas de linha única. O relatório gerado também registra rotas aninhadas, aliases e wrappers que exigem análise de AST/normalização de caminhos antes de classificação definitiva.
 - **UI-002 permanece aberto:** este cruzamento estático não prova que todos os elementos `Route` renderizam o componente esperado, não classifica completamente aliases/rotas órfãs/catch-all e não verifica re-exports indiretos nem navegação em runtime. Nenhuma rota foi removida ou alterada.
+
+
+## UI-010 — correção incremental do Dashboard Comercial (2026-11-11)
+
+- **Rota/componente:** `/pageprincipal/vendas` e `/pageprincipal/vendas/dashboard` → `src/pages/DashboardComercial.tsx` (lazy import `DashboardComercial`).
+- **Correção aplicada:** botão “IMPRIMIR” dos cartões de gráfico padronizado para 32px (`h-8`), alinhamento central, raio de 2px e largura sem encolhimento. Não houve alteração de consultas Supabase, RPC, filtro `empresa_id`, dados, gráficos ou fluxo de impressão.
+- **Commit de código:** `01c9e46dd761ff3699dd160ef9364720e7956d1f`.
+- **Validação disponível:** diff do commit conferido diretamente no GitHub; status Vercel retornou `failure`, destino `https://vercel.com/plushbeauty?upgradeToPro=build-rate-limit` (limitação de build). Não há evidência de type-check, lint, audit:all, verify:lazy-imports, verify-routes ou build para este commit.
+- **Estado:** correção incremental registrada, **aguardando validação**. UI-010 permanece aberto; não mover para COMPLETED.
+- **Limite ambiental:** integração GitHub permite leitura/escrita de arquivos e commits, mas não disponibiliza checkout/terminal para executar os comandos locais definidos em LOOP.md. O Vercel bloqueou o build por rate limit. Continuar nas demais telas sem declarar homologação.
