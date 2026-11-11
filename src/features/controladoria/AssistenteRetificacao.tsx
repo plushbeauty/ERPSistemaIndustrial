@@ -86,14 +86,13 @@ export default function AssistenteRetificacao() {
       const auth = await supabase.auth.getUser()
       if (auth.error) throw auth.error
       if (!auth.data.user) { navigate('/login', { replace: true }); return }
-      const profile = await supabase.from('erp_usuarios')
-        .select('perfil,is_master,nivel_admin,empresa_id,setor_id')
-        .eq('auth_user_id', auth.data.user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
-      if (profile.error) throw profile.error
-      const role = String(profile.data?.perfil ?? '').trim().toUpperCase()
-      const strictMaster = profile.data?.is_master === true && Number(profile.data?.nivel_admin) >= 100 &&
-        role === 'SUPER_ADMIN' && profile.data?.empresa_id === null && profile.data?.setor_id === null
-      if (active) setAccess(strictMaster || ['ADMINISTRADOR', 'CONTROLADORIA', 'FINANCEIRO'].includes(role))
+      const [permission, tenant] = await Promise.all([
+        supabase.rpc('erp_has_permission', { p_code: 'finance.create' }),
+        supabase.rpc('erp_current_empresa_id'),
+      ])
+      if (permission.error) throw permission.error
+      if (tenant.error) throw tenant.error
+      if (active) setAccess(permission.data === true && Boolean(tenant.data))
     }
     void checkAccess().catch(reason => {
       if (active) { setAccess(false); setError(reason instanceof Error ? reason.message : 'Falha ao validar acesso.') }
@@ -210,12 +209,12 @@ export default function AssistenteRetificacao() {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div><h1 className="text-lg font-bold text-[#123B50]">Assistente de Retificação e Compliance Financeiro</h1>
             <p className="mt-1 text-xs text-[#607987]">Registro auditável de solicitações de retificação; não executa estorno contábil, cancelamento fiscal ou alteração automática de títulos.</p></div>
-          <div className="flex flex-wrap items-center gap-2 print:hidden"><button type="button" onClick={() => window.print()} className="inline-flex h-10 items-center gap-2 rounded-md border border-[#CBD9E0] bg-white px-3 text-xs font-semibold"><FileText size={14}/>Imprimir / PDF</button><span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] font-bold text-amber-800"><LockKeyhole size={13}/>Acesso restrito à Administração, Controladoria ou Financeiro</span></div>
+          <div className="flex flex-wrap items-center gap-2 print:hidden"><button type="button" onClick={() => window.print()} className="inline-flex h-10 items-center gap-2 rounded-md border border-[#CBD9E0] bg-white px-3 text-xs font-semibold"><FileText size={14}/>Imprimir / PDF</button><span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] font-bold text-amber-800"><LockKeyhole size={13}/>Acesso restrito à permissão Financeiro: lançar e empresa ativa</span></div>
         </div>
       </header>
 
       {access === null && <div role="status" className={card}>Verificando permissões de acesso…</div>}
-      {access === false && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">Acesso restrito à Administração, Controladoria ou Financeiro. {error}</div>}
+      {access === false && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">Acesso restrito: exige empresa ativa e permissão Financeiro: lançar (finance.create). {error}</div>}
       {access === true && <>
         <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 print:hidden">{[{label:'Solicitações registradas',value:audit.length},{label:'Registradas hoje',value:auditToday},{label:'Com vínculo documental',value:auditLinked},{label:'Sem vínculo documental',value:audit.length-auditLinked}].map(item=><article key={item.label} className="min-h-[96px] rounded-lg border border-[#D3E3EA] bg-white p-4 shadow-sm"><p className="text-[10px] font-bold uppercase tracking-wide text-[#607987]">{item.label}</p><strong className="mt-2 block text-xl font-bold tabular-nums text-[#123B50]">{refreshing||error?'—':item.value}</strong></article>)}</section>
         <section className={card}>
