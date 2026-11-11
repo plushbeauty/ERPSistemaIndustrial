@@ -1,8 +1,8 @@
 /**
- * @REVISAO: REV-VENDAS-RELATORIOS-FILTROS-IMPRESSAO-20261111-01 — busca, status e impressão em 32px; botão Limpar Filtros; valores monetários tabulares à direita; preserva a paginação completa da revisão REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 e as consultas por empresa.
+ * @REVISAO: REV-VENDAS-RELATORIOS-PERIODO-PAGINACAO-20261111-02 — busca, status, período de entrada, paginação de 50 linhas e impressão de todos os resultados filtrados; preserva paginação completa da consulta e escopo empresa_id.
  * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-11
- * @STATUS_APROVACAO: REVISÃO AUTORIZADA PELO PROPRIETÁRIO NO COMMIT 1a57f81b04a896083d858c2eed3c112ce24e8ed9; pendente de CI e validação visual
+ * @STATUS_APROVACAO: REVISÃO AUTORIZADA PELO PROPRIETÁRIO NO COMANDO MESTRE DE 2026-11-11; pendente de CI e validação visual
  */
 import { useEffect, useMemo, useState } from 'react'
 import { Printer, RefreshCw, Search } from 'lucide-react'
@@ -22,6 +22,8 @@ type Order = {
   cliente_nome?: string
 }
 
+const PAGE_SIZE = 50
+
 const money = (value: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value) || 0)
 
@@ -29,6 +31,9 @@ export default function VendasRelatorios() {
   const [orders, setOrders] = useState<Order[]>([])
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState('TODOS')
+  const [dataInicial, setDataInicial] = useState('')
+  const [dataFinal, setDataFinal] = useState('')
+  const [pagina, setPagina] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -67,10 +72,16 @@ export default function VendasRelatorios() {
     const q = query.trim().toLowerCase()
     return orders.filter(order => {
       const matchesStatus = status === 'TODOS' || String(order.status).toUpperCase() === status
+      const entrada = String(order.data_entrada ?? '').slice(0, 10)
+      const matchesPeriodo = (!dataInicial || (entrada !== '' && entrada >= dataInicial)) && (!dataFinal || (entrada !== '' && entrada <= dataFinal))
       const searchable = [order.numero, order.pedido_cliente, order.cliente_nome].map(value => String(value ?? '').toLowerCase()).join(' ')
-      return matchesStatus && (!q || searchable.includes(q))
+      return matchesStatus && matchesPeriodo && (!q || searchable.includes(q))
     })
-  }, [orders, query, status])
+  }, [orders, query, status, dataInicial, dataFinal])
+  const totalPaginas = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const inicioPagina = (pagina - 1) * PAGE_SIZE
+  const fimPagina = pagina * PAGE_SIZE
+  useEffect(() => { setPagina(atual => Math.min(atual, totalPaginas)) }, [totalPaginas])
 
   const statuses = useMemo(
     () => ['TODOS', ...Array.from(new Set(orders.map(order => String(order.status).toUpperCase()).filter(Boolean))).sort()],
@@ -81,25 +92,33 @@ export default function VendasRelatorios() {
 
   return (
     <VendasLayout title="Relatórios de Vendas" subtitle="Pedidos, filtros e impressão" onRefresh={()=>void load()}>
-      <style>{`@media print { .print-hidden { display:none!important } body { background:white!important } }`}</style>
+      <style>{`@media print { .print-hidden { display:none!important } tr[data-page-hidden="true"] { display:table-row!important } body { background:white!important } }`}</style>
       <section className="mx-auto max-w-[1600px] space-y-4 px-4 py-5 lg:px-6">
         <div className="border border-slate-200 bg-white p-4 shadow-sm print-hidden">
-          <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
-            <label className="grid gap-1 text-[11px] font-medium">
+          <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_150px_150px_180px_auto]">
+            <label className="grid min-w-0 gap-1 text-[11px] font-medium">
               Buscar pedido, PO ou cliente
               <span className="relative">
                 <Search size={17} className="absolute left-3 top-3 text-slate-400" />
-                <input value={query} onChange={event => setQuery(event.target.value)} className="h-8 w-full min-w-0 border border-slate-300 pl-9 pr-3 text-[11px] font-semibold outline-none focus:border-[#2D8DB8]" placeholder="Ex.: 000123 ou PO-456" />
+                <input value={query} onChange={event => { setQuery(event.target.value); setPagina(1) }} className="h-8 w-full min-w-0 border border-slate-300 pl-9 pr-3 text-[11px] font-semibold outline-none focus:border-[#2D8DB8]" placeholder="Ex.: 000123 ou PO-456" />
               </span>
             </label>
-            <label className="grid gap-1 text-[11px] font-medium">
+            <label className="grid min-w-0 gap-1 text-[11px] font-medium">
+              Data inicial (entrada)
+              <input type="date" value={dataInicial} max={dataFinal || undefined} onChange={event => { setDataInicial(event.target.value); setPagina(1) }} className="h-8 min-w-0 border border-slate-300 bg-white px-2 text-[10px] font-semibold"/>
+            </label>
+            <label className="grid min-w-0 gap-1 text-[11px] font-medium">
+              Data final (entrada)
+              <input type="date" value={dataFinal} min={dataInicial || undefined} onChange={event => { setDataFinal(event.target.value); setPagina(1) }} className="h-8 min-w-0 border border-slate-300 bg-white px-2 text-[10px] font-semibold"/>
+            </label>
+            <label className="grid min-w-0 gap-1 text-[11px] font-medium">
               Status
-              <select value={status} onChange={event => setStatus(event.target.value)} className="h-8 min-w-0 border border-slate-300 bg-white px-3 text-[11px] font-semibold">
+              <select value={status} onChange={event => { setStatus(event.target.value); setPagina(1) }} className="h-8 min-w-0 border border-slate-300 bg-white px-2 text-[10px] font-semibold">
                 {statuses.map(value => <option key={value}>{value}</option>)}
               </select>
             </label>
             <div className="flex items-end">
-              <button type="button" onClick={() => { setQuery(''); setStatus('TODOS') }} className="inline-flex h-8 items-center justify-center border border-slate-300 bg-white px-3 text-[10px] font-semibold text-slate-700 hover:bg-slate-50">LIMPAR FILTROS</button>
+              <button type="button" onClick={() => { setQuery(''); setStatus('TODOS'); setDataInicial(''); setDataFinal(''); setPagina(1) }} className="inline-flex h-8 items-center justify-center border border-slate-300 bg-white px-3 text-[10px] font-semibold text-slate-700 hover:bg-slate-50">LIMPAR FILTROS</button>
             </div>
           </div>
         </div>
@@ -128,8 +147,8 @@ export default function VendasRelatorios() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(order => (
-                  <tr key={order.id} className="border-t border-slate-200">
+                {filtered.map((order, index) => (
+                  <tr key={order.id} data-page-hidden={index < inicioPagina || index >= fimPagina ? 'true' : undefined} className="border-t border-slate-200">
                     <td className="px-4 py-3 font-medium">{String(order.numero).padStart(6, '0')}</td>
                     <td className="px-4 py-3">{order.pedido_cliente || '—'}</td>
                     <td className="px-4 py-3 font-semibold">{order.cliente_nome || '—'}</td>
@@ -139,12 +158,20 @@ export default function VendasRelatorios() {
                     <td className="px-4 py-3 text-right font-medium tabular-nums">{money(order.total)}</td>
                   </tr>
                 ))}
+                {loading && <tr><td colSpan={7} className="px-4 py-12 text-center font-semibold text-slate-500">Carregando pedidos...</td></tr>}
                 {!loading && !filtered.length && (
                   <tr><td colSpan={7} className="px-4 py-12 text-center font-semibold text-slate-500">Nenhum pedido encontrado com os filtros atuais.</td></tr>
                 )}
               </tbody>
             </table>
           </div>
+          <nav className="print-hidden flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 px-4 py-3" aria-label="Paginação do relatório de pedidos">
+            <span className="text-[10px] text-slate-600">Página {pagina} de {totalPaginas} · {filtered.length} pedido(s) filtrado(s)</span>
+            <div className="flex items-center gap-2">
+              <button type="button" onClick={() => setPagina(atual => Math.max(1, atual - 1))} disabled={loading || pagina <= 1} className="h-8 border border-slate-300 bg-white px-3 text-[10px] disabled:opacity-40">ANTERIOR</button>
+              <button type="button" onClick={() => setPagina(atual => Math.min(totalPaginas, atual + 1))} disabled={loading || pagina >= totalPaginas} className="h-8 border border-slate-300 bg-white px-3 text-[10px] disabled:opacity-40">PRÓXIMA</button>
+            </div>
+          </nav>
         </section>
       </section>
     </VendasLayout>
