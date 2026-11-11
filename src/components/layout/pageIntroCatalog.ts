@@ -484,12 +484,21 @@ const introCatalog: Record<string, PageIntro> = {
     },
   },
   'financeiro/retificacao': {
-    module: 'Financeiro', title: 'Retificação de Pedido',
-    description: 'Corrige referência do cliente, vendedor, condição de pagamento e descrição dos itens em pedido já faturado, com histórico auditável; quantidades, preços e impostos permanecem bloqueados.',
+    module: 'Financeiro', title: 'Retificação Financeira',
+    description: 'Localiza títulos e parcelas a pagar/receber, corrige valor, vencimento, conta e classificação com validação de período, justificativa obrigatória, comprovante e histórico imutável.',
     help: {
-      fill: ['Localize o pedido pelo número, cliente ou data antes de editar.', 'Corrija apenas os campos liberados: referência, vendedor, condição de pagamento e descrição do item.'],
-      use: ['Quantidade, preço e imposto não mudam aqui: para isso existe faturamento ou nota de ajuste.', 'Cada retificação fica no histórico com usuário e data, como prova de auditoria.'],
-      watch: 'Pedido já emitido em NF-e pode exigir documento fiscal próprio para o mesmo efeito.',
+      fill: ['Filtre por NF/documento, título, pedido ou parceiro; escolha o tipo, status e intervalo de vencimento.', 'Selecione uma parcela e confira os dados originais antes de preencher a retificação.', 'Informe o motivo, os novos dados e uma justificativa com pelo menos 20 caracteres; anexe PDF, PNG ou JPG quando houver comprovante.'],
+      use: ['A gravação é transacional e registra dados anteriores, novos, usuário, data/hora e justificativa.', 'Parcela em aberto ou parcialmente paga pode ser ajustada somente se o novo total preservar o valor já pago.', 'Parcela liquidada não é sobrescrita. Use o fluxo de estorno bancário ou lançamento complementar.'],
+      watch: 'Períodos fechados bloqueiam a retificação. Estorno total só é permitido quando nenhuma parcela do título tiver pagamento registrado; a rotina não apaga baixas nem movimenta o caixa automaticamente.',
+    },
+  },
+  'controladoria/retificacao-pedido': {
+    module: 'Controladoria', title: 'Retificação de Pedido',
+    description: 'Corrige somente dados comerciais e descritivos permitidos de pedidos já faturados; não altera preço, quantidade, impostos ou títulos financeiros.',
+    help: {
+      fill: ['Localize o pedido faturado por número, referência do cliente, documento ou vendedor.', 'Altere somente os campos liberados e descreva o motivo da mudança.'],
+      use: ['Grave pela rotina transacional de Controladoria; os dados anteriores e novos ficam no log de auditoria.', 'Ajustes financeiros de valor, vencimento, conta e parcelas devem ser feitos em Financeiro > Retificação Financeira.'],
+      watch: 'Pedidos ainda em rascunho/aberto não são elegíveis; dados fiscais e valores de documentos emitidos exigem procedimento fiscal próprio.',
     },
   },
   'controladoria/retificacao-assistente': {
@@ -501,11 +510,11 @@ const introCatalog: Record<string, PageIntro> = {
     },
   },
   'financeiro/notas-debito': {
-    module: 'Financeiro', title: 'Notas de Débito',
-    description: 'Emissão e acompanhamento de notas de débito por cliente, inclusive comprovantes de entrega (POD).',
+    module: 'Financeiro', title: 'Notas de Débito e Rotinas Financeiras',
+    description: 'Emissão e acompanhamento de débitos a receber ou pagar, com vínculo a parceiros, conta bancária, centro de custo, comprovante e geração transacional de títulos.',
     help: {
-      fill: ['Selecione o cliente e o documento de origem do débito (fatura, frete, avaria).', 'Descreva o motivo do débito com valor e data.'],
-      use: ['A nota de débito formaliza a cobrança extra vinculada ao documento original.', 'POD anexado é a evidência usada em cobrança e em contestação.'],
+      fill: ['Selecione cliente para A Receber ou fornecedor para A Pagar, informe datas, valores, conta bancária, centro de custo e discriminação.', 'Anexe o comprovante e marque a geração automática do título quando a nota precisar integrar Contas a Receber/Pagar.'],
+      use: ['A gravação valida empresa, parceiro, conta, centro de custo e permissão no servidor.', 'Quando solicitado, a nota e o título financeiro são criados na mesma transação; conciliação e extratos abrem seus módulos próprios.'],
     },
   },
   'financeiro/notas-debito/configuracoes': {
