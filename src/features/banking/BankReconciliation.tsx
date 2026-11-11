@@ -155,9 +155,18 @@ export default function BankReconciliation() {
 
   useEffect(() => { void load() }, [accountId, date, status])
 
-  useEffect(() => { void (async () => { if (!accountId) { setSaldoContabil(0); return }; const company = await supabase.rpc('erp_current_empresa_id')
+  const loadLedgerBalance = async () => {
+    if (!accountId) { setSaldoContabil(0); return }
+    const company = await supabase.rpc('erp_current_empresa_id')
     if (company.error || !company.data) { setSaldoContabil(0); return }
-    const r = await supabase.from('erp_fiscal_razao_lancamentos').select('debito,credito').eq('empresa_id', String(company.data)).eq('conta_bancaria_id', accountId); if (!r.error) { const opening = Number(accounts.find((account) => account.id === accountId)?.saldo_inicial ?? 0); setSaldoContabil(opening + (r.data ?? []).reduce((sum, row) => sum + Number(row.credito ?? 0) - Number(row.debito ?? 0), 0)) } })() }, [accountId])
+    const ledger = await fetchAllPages<{ debito: number | string; credito: number | string }>((from, to) =>
+      supabase.from('erp_fiscal_razao_lancamentos').select('debito,credito', { count: 'exact' })
+        .eq('empresa_id', String(company.data)).eq('conta_bancaria_id', accountId).range(from, to))
+    const opening = Number(accounts.find((account) => account.id === accountId)?.saldo_inicial ?? 0)
+    setSaldoContabil(opening + ledger.reduce((sum, row) => sum + Number(row.debito ?? 0) - Number(row.credito ?? 0), 0))
+  }
+
+  useEffect(() => { void loadLedgerBalance() }, [accountId, accounts])
 
   const options: LinkOption[] = useMemo(() => accounts.map((account) => ({
     value: account.id,
@@ -181,6 +190,7 @@ export default function BankReconciliation() {
     setSelected(null)
     setReference('')
     await load()
+    await loadLedgerBalance()
   }
 
   const exportXlsx = () => {
