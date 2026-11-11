@@ -77,9 +77,9 @@
     },
     {
       "path": "src/features/controladoria/AssistenteRetificacao.tsx",
-      "sha": "ae52ee1e3a6c494ac84d9f9b9b911a64f867c705",
+      "sha": "f08a2394a8c7b26310423b61b4d6f53c96b6465a",
       "autor": "FernandoSch",
-      "revisao": "REV-ESTORNO-DOCUMENTAL-COMPLIANCE-20261110-01 — localização multiorigem, conferência somente leitura, checklist de compliance e grade de auditoria real; limitações da RPC registradas na interface. Incremento 2026-11-10: contrato master SUPER_ADMIN; navegação Voltar 115x38; impressão Plastibor; grade paginada, totalizadores, CSV e estados reais; textos ajustados para não prometer reversão que a RPC não executa.",
+      "revisao": "REV-ESTORNO-DOCUMENTAL-COMPLIANCE-20261110-01 — localização multiorigem, conferência somente leitura, checklist de compliance e grade de auditoria real; limitações da RPC registradas na interface. Incremento 2026-11-10: RBAC finance.create + tenant ativo alinhados à RPC; navegação Voltar 115x38; impressão Plastibor; grade paginada, totalizadores, CSV e estados reais; textos ajustados para não prometer reversão que a RPC não executa.",
       "aprovadaEm": "2026-11-10",
       "statusAprovacao": "IMPLEMENTAÇÃO AUTORIZADA PELO PROPRIETÁRIO; registro auditável integrado; operações contábeis/fiscais inversas e anexos não habilitados até integração transacional própria. Revisão aditiva gravada em feat/confronto-global-sysnqra; aguardando type-check, build e PR."
     },
