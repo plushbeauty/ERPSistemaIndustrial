@@ -235,3 +235,10 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Status:** CORRIGIDO AGUARDANDO VALIDAÇÃO. UI-040 e QA-040 permanecem abertos.
 
 - **Ajuste de implementação da normalização:** corrigida a expressão regular Unicode após revisão do conteúdo versionado; commit `1a5d04191e41206af501b51a72e8b9ca2e0f0d85`. A verificação continua pendente de CI/build e teste funcional.
+
+## Atualização da execução contínua — 2026-11-11
+
+- **UI-001:** permanece aberto. A execução do job `P0 — Full Release Gate` no commit `a88c27cd45a43cc1e57eb3cfd90384e1df524b30` passou (run `42928604423`), incluindo TypeScript, ESLint, auditorias global/brutal/interações e build; porém não executou `npm run audit:ui-standardization`. Não substituir a etapa específica por outras auditorias.
+- **UI-002:** resultado parcial refeito na branch `audit/loop-componente-20261110`: 335 declarações Route, 195 imports relativos únicos, nenhum import sem arquivo candidato na árvore recursiva do mesmo SHA. Wrappers/re-exports profundos, aliases, rotas órfãs e renderização permanecem sem validação; item continua aberto.
+- **Evidência detalhada:** `docs/erp-standardization/ROUTE-AUDIT-2026-10-16.md`, seção “Reexecução do inventário estático — 2026-11-11”.
+- **Bloqueio Vercel:** status do SHA consultado continua failure por limite diário; não declarar publicado.
