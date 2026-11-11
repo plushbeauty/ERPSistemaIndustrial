@@ -1,9 +1,8 @@
 /**
- * @REVISAO: REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — o faturamento do relatório somava apenas os últimos 2000 pedidos; empresa acima disso via o total menor que o real, sem aviso. A leitura passou a cobrir todos os pedidos da empresa por paginação.
+ * @REVISAO: REV-VENDAS-RELATORIOS-FILTROS-IMPRESSAO-20261111-01 — busca, status e impressão em 32px; botão Limpar Filtros; valores monetários tabulares à direita; preserva a paginação completa da revisão REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 e as consultas por empresa.
  * @AUTOR: FernandoSch
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-11
+ * @STATUS_APROVACAO: REVISÃO AUTORIZADA PELO PROPRIETÁRIO NO COMMIT 1a57f81b04a896083d858c2eed3c112ce24e8ed9; pendente de CI e validação visual
  */
 import { useEffect, useMemo, useState } from 'react'
 import { Printer, RefreshCw, Search } from 'lucide-react'
