@@ -150,6 +150,7 @@ const FinanceiroFluxoCaixa = lazyPage(() => import('./pages/FinanceiroFluxoCaixa
 const FinanceiroContasPagar = lazyPage(() => import('./pages/FinancasContasPagar'), 'FinanceiroContasPagar')
 const FinanceiroContasReceber = lazyPage(() => import('./pages/FinanceiroTitulos'), 'FinanceiroContasReceber')
 const FinanceiroDashboardCaixa = lazyPage(() => import('./pages/FinanceiroDashboardCaixa'), 'FinanceiroDashboardCaixa')
+const CatalogoWireframes = lazy(() => import('./pages/CatalogoWireframes'))
 const VendasCentral = lazyPage(() => import('./pages/VendasCentral'), 'VendasCentral')
 const VendasPedidoStatus = lazyPage(() => import('./pages/VendasPedidoStatus'), 'VendasPedidoStatus')
 const VendasCatalogoDigitalGestao = lazyPage(() => import('./pages/VendasCatalogoDigitalGestao'), 'VendasCatalogoDigitalGestao')
@@ -302,6 +303,7 @@ export default function AppEntryV2() {
             <Route path="/cadastro-master" element={<SetupADMInicial />} />
             <Route path="/pageprincipal" element={<PagePrincipal />}>
               <Route path="ajuda" element={<CentralAjuda />} />
+              <Route path="dev/catalogo-wireframes" element={<CatalogoWireframes />} />
               <Route path="financeiro" element={<FinanceiroWorkspace />} />
               <Route index element={<AppIndustrial />} />
               <Route path="compras" element={<ComprasWorkspace />} />
