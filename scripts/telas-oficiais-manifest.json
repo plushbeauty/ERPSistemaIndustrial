@@ -77,11 +77,11 @@
     },
     {
       "path": "src/features/controladoria/AssistenteRetificacao.tsx",
-      "sha": "b3e9b82824d9bc1098c14cf983bc6e112a21f394",
+      "sha": "797c1dd4ff3b6d8a86540b989bb77d17ed144d6d",
       "autor": "FernandoSch",
-      "revisao": "REV-ESTORNO-DOCUMENTAL-COMPLIANCE-20261110-01 — localização multiorigem, conferência somente leitura, checklist de compliance e grade de auditoria real; limitações da RPC registradas na interface.",
+      "revisao": "REV-ESTORNO-DOCUMENTAL-COMPLIANCE-20261110-01 — localização multiorigem, conferência somente leitura, checklist de compliance e grade de auditoria real; limitações da RPC registradas na interface. Incremento 2026-11-10: contrato master SUPER_ADMIN; navegação Voltar 115x38; impressão Plastibor; paginação na grade.",
       "aprovadaEm": "2026-11-10",
-      "statusAprovacao": "IMPLEMENTAÇÃO AUTORIZADA PELO PROPRIETÁRIO; registro auditável integrado; operações contábeis/fiscais inversas e anexos não habilitados até integração transacional própria."
+      "statusAprovacao": "IMPLEMENTAÇÃO AUTORIZADA PELO PROPRIETÁRIO; registro auditável integrado; operações contábeis/fiscais inversas e anexos não habilitados até integração transacional própria. Revisão aditiva gravada em feat/confronto-global-sysnqra; aguardando type-check, build e PR."
     },
     {
       "path": "src/features/controladoria/AuditoriaComissoes.tsx",
@@ -837,11 +837,11 @@
     },
     {
       "path": "src/pages/FinanceiroCustoPadrao.tsx",
-      "sha": "6b8114eee8b53a8cd96bce70eff55e3af10756ab",
+      "sha": "438b1bff672539533763da6bb375f8d3831d8ac7",
       "autor": "FernandoSch",
-      "revisao": "REV-FIN-CUSTO-PADRAO-CSV-20261110-02 — corrigido fechamento excedente que impedia o type-check; exportação CSV preservada.",
+      "revisao": "REV-FIN-CUSTO-PADRAO-CSV-20261110-02 — corrigido fechamento excedente que impedia o type-check; exportação CSV preservada. Incremento 2026-11-10: contrato master SUPER_ADMIN; navegação Voltar 115x38; impressão Plastibor; paginação na grade.",
       "aprovadaEm": "2026-11-10",
-      "statusAprovacao": "TELA OFICIAL PRESERVADA; exportação CSV corrigida e hash sincronizado."
+      "statusAprovacao": "TELA OFICIAL PRESERVADA; exportação CSV corrigida e hash sincronizado. Revisão aditiva gravada em feat/confronto-global-sysnqra; aguardando type-check, build e PR."
     },
     {
       "path": "src/pages/FinanceiroDashboardCaixa.tsx",
@@ -861,11 +861,11 @@
     },
     {
       "path": "src/pages/FinanceiroGraficoDesvios.tsx",
-      "sha": "b56ed6e3ef0fa0da64d3192b8d8fe6dae3b9f0d9",
+      "sha": "7601406bb44b1d22b3a1e94df03be9219afd39b6",
       "autor": "FernandoSch",
-      "revisao": "REV-FIN-GRAFICO-DESVIOS-REAL-20261110-01 — filtros por competência, produto, OP e status; KPIs, composição MP/MOD/GGF e consulta exclusivamente persistida.",
+      "revisao": "REV-FIN-GRAFICO-DESVIOS-REAL-20261110-01 — filtros por competência, produto, OP e status; KPIs, composição MP/MOD/GGF e consulta exclusivamente persistida. Incremento 2026-11-10: contrato master SUPER_ADMIN; navegação Voltar 115x38; impressão Plastibor; paginação na grade.",
       "aprovadaEm": "2026-11-10",
-      "statusAprovacao": "IMPLEMENTAÇÃO AUTORIZADA PELO PROPRIETÁRIO; hash sincronizado; sem dados fictícios."
+      "statusAprovacao": "IMPLEMENTAÇÃO AUTORIZADA PELO PROPRIETÁRIO; hash sincronizado; sem dados fictícios. Revisão aditiva gravada em feat/confronto-global-sysnqra; aguardando type-check, build e PR."
     },
     {
       "path": "src/pages/FinanceiroTitulos.tsx",
