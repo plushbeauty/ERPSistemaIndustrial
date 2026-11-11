@@ -21,7 +21,7 @@
  * ERPSis — CONTROLE DE REVISÃO VISUAL
  * @DATA_REVISAO_ANTERIOR: 2026-10-19
  * @DESENVOLVEDOR: FernandoSch
- * @NOME_SISTEMA: SYSNQRA ERP INDUSTRIAL ERP INDUSTRIAL
+ * @NOME_SISTEMA: SYSNQRA ERP INDUSTRIAL
  * @STATUS_ANTERIOR: INSPECOES-LOTES-STEEL-BLUE-OK
  * Split-screen, tabela densa, grid de 12 colunas, controles h-8 e cantos retos.
  * Contrato de dados preservado: tabelas existentes, tenant ativo, RLS e RPC transacional.
@@ -291,7 +291,7 @@ export default function QualidadeInspecoesIndustrial() {
         <div className="flex items-center gap-2">
           <ShieldCheck size={18} className="text-[#176487]" />
           <div>
-            <p className="text-[9px] font-black uppercase tracking-[.18em] text-slate-500">SYSNQRA ERP INDUSTRIAL ERP INDUSTRIAL / SGQ</p><h1 className="text-sm font-black text-[#123B50]">Controle de inspeção de lotes</h1>
+            <p className="text-[9px] font-black uppercase tracking-[.18em] text-slate-500">SYSNQRA ERP INDUSTRIAL / SGQ</p><h1 className="text-sm font-black text-[#123B50]">Controle de inspeção de lotes</h1>
             <p className="text-[10px] text-slate-500">Amostragem, critérios técnicos aprovados, laudos e rastreabilidade</p>
           </div>
         </div>
