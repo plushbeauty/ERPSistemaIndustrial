@@ -174,8 +174,9 @@ export default function CadastroDecimais() {
         p_casas: rule.casas,
       })
       if (result.error) {
-        setError(`Carga interrompida após ${saved} de 6 padrões. ${rule.codigo}: ${result.error.message}`)
+        const failureMessage = `Carga interrompida após ${saved} de 6 padrões. ${rule.codigo}: ${result.error.message}`
         await load()
+        setError(failureMessage)
         setSaving(false)
         return
       }
