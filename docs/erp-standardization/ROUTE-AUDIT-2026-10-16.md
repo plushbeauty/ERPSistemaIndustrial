@@ -217,3 +217,14 @@ O título e as mensagens agora identificam a função como **registro de parecer
 - **Gate CI no mesmo SHA:** workflow run `42928604423`, job `P0 — Full Release Gate`, conclusão `success`; steps confirmados como sucesso: instalação determinística, lockfile, Vercel config, CI policy, release lineage, reset/tenant, lock de telas oficiais, migration SQL, Auth Master, public naming, Supabase env/guard, deploy integrity, TypeScript, ESLint, auditorias global/brutal/interações, imports lazy, build de produção, verificação do build, rotas e contratos de regressão tablet/shell/logo/UI.
 - **Vercel:** status separado no commit `a88c27c` permanece `failure` por limite diário de implantações; CI verde não significa deployment publicado.
 - **Estado:** inventário parcial com evidência; sem declaração de conclusão global.
+
+## Compras — análise comparativa de propostas (2026-11-11)
+
+- **Rota:** `/pageprincipal/compras/analise-precos` (rota filha `compras/analise-precos` no roteador, protegida pelo wrapper `ComprasRoute`).
+- **Arquivo:** `src/pages/ComprasAnalisePrecos.tsx`.
+- **Achado reproduzível no código:** a normalização `Number(q.valor_total || 0)` convertia `NULL` em zero; a proposta sem valor informado podia aparecer como menor preço e ser escolhida como vencedora. Valores inválidos/negativos também não eram distinguidos corretamente.
+- **Correção:** somente valores finitos e não negativos participam do ranking; propostas sem valor são identificadas como “Não informado/SEM VALOR”; a escolha fica bloqueada se o fornecedor selecionado não tiver valor válido; recarga limpa os dados anteriores antes de consultar a empresa ativa, evitando manter resultados antigos durante falha/troca de sessão. Nenhuma coluna, RPC, migration ou tabela foi criada/alterada.
+- **Dados/segurança preservados:** consultas existentes continuam usando `erp_current_empresa_id` e filtro `empresa_id`; atualização continua exigindo retorno de linha com `.select('id').maybeSingle()`.
+- **Registro de hash:** manifesto atualizado na revisão `REV-COMPRAS-ANALISE-VALOR-20261111-01`.
+- **Commit de código:** `8ecfe5f966c44f7d2cdd4e710c46649f6149ea59`.
+- **Estado:** **CORRIGIDO AGUARDANDO VALIDAÇÃO**. Type-check, lint, testes com propostas reais (NULL/zero/valor válido), interação autenticada/RLS, inspeção visual e deployment deste SHA ainda não foram confirmados.
