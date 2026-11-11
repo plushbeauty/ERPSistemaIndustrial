@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, Search, RotateCcw, ShieldAlert, FileText, RefreshCw, Paperclip, LockKeyhole } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
+import { fetchAllPages } from '../../lib/supabasePagination'
 
 type DocType = 'TITULO' | 'BAIXA' | 'NOTA_DEBITO' | 'NFE'
 type FoundDocument = {
@@ -58,14 +59,20 @@ export default function AssistenteRetificacao() {
   const [saving, setSaving] = useState(false)
   const [audit, setAudit] = useState<AuditRow[]>([])
   const [refreshing, setRefreshing] = useState(false)
+  const [auditPage, setAuditPage] = useState(1)
+  const auditPageSize = 20
+  const auditPages = Math.max(1, Math.ceil(audit.length / auditPageSize))
+  const visibleAudit = audit.slice((auditPage - 1) * auditPageSize, auditPage * auditPageSize)
+  const auditToday = audit.filter(item => new Date(item.criado_em).toDateString() === new Date().toDateString()).length
+  const auditLinked = audit.filter(item => Boolean(item.documento_estornado_id)).length
 
   const loadAudit = useCallback(async () => {
     setRefreshing(true)
-    const result = await supabase.from('erp_fiscal_estornos')
-      .select('id,documento_alvo,data_estorno,justificativa,documento_estornado_id,criado_em')
-      .order('criado_em', { ascending: false }).limit(200)
-    if (result.error) setError('Não foi possível carregar o histórico de auditoria: ' + result.error.message)
-    else setAudit((result.data || []) as AuditRow[])
+    const result = await fetchAllPages<AuditRow>((from, to) => supabase.from('erp_fiscal_estornos')
+      .select('id,documento_alvo,data_estorno,justificativa,documento_estornado_id,criado_em', { count: 'exact' })
+      .order('criado_em', { ascending: false }).order('id').range(from, to))
+    setAudit(result)
+    setAuditPage(1)
     setRefreshing(false)
   }, [])
 
@@ -178,10 +185,17 @@ export default function AssistenteRetificacao() {
     } finally { setSaving(false) }
   }
 
-  const helpText = useMemo(() => 'Localize o documento pelo identificador exato. Confira os dados originais, informe o motivo padronizado e uma justificativa com pelo menos 25 caracteres. A confirmação registra a ocorrência no log de auditoria; não substitui a rotina contábil/fiscal de estorno.', [])
+  const exportAudit = () => {
+    const lines = [['Data/Hora', 'Documento', 'Data solicitada', 'Justificativa', 'Vínculo documental'], ...audit.map(item => [new Date(item.criado_em).toLocaleString('pt-BR'), item.documento_alvo, item.data_estorno, item.justificativa, item.documento_estornado_id || 'Sem vínculo'])]
+    const csv = '\\ufeff' + lines.map(row => row.map(value => '"' + String(value ?? '').replace(/"/g, '""') + '"').join(';')).join('\\r\\n')
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }))
+    const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'auditoria-solicitacoes-estorno.csv'; anchor.click(); URL.revokeObjectURL(url)
+  }
+  const helpText = useMemo(() => 'Localize o documento pelo identificador exato. Confira os dados originais, informe o motivo padronizado e uma justificativa com pelo menos 25 caracteres. A confirmação registra uma solicitação no log de auditoria; não executa reversão contábil, cancelamento fiscal, alteração de título ou armazenamento de anexo.', [])
 
-  return <main className="min-h-full bg-[#F4FBFD] p-3 text-[#183B4D] sm:p-4">
+  return <main className="min-h-full bg-[#F4FBFD] p-3 text-[#183B4D] sm:p-4 print:bg-white print:p-0">
     <div className="mx-auto max-w-[1500px] space-y-3">
+      <div className="hidden border-b-2 border-[#123B50] pb-3 print:block"><strong className="text-[19px] tracking-[.16em]">PLASTIBOR</strong><p className="text-[10px]">Controladoria · Solicitações de estorno documental</p><p className="text-[10px]">Emitido em {new Date().toLocaleString("pt-BR")}</p></div>
       <header className="space-y-2">
         <div className="flex items-center gap-3">
           <button type="button" onClick={() => navigate(-1)} className="inline-flex h-[38px] w-[115px] items-center justify-center gap-2 rounded-full border border-[#E2E8F0] bg-white text-[13px] font-semibold text-[#334155] shadow-sm transition hover:bg-slate-50"><ArrowLeft size={15}/>Voltar</button>
@@ -190,13 +204,14 @@ export default function AssistenteRetificacao() {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div><h1 className="text-lg font-bold text-[#123B50]">Assistente de Retificação e Compliance Financeiro</h1>
             <p className="mt-1 text-xs text-[#607987]">Cancelamento, estorno contábil e reversão documental com rastreabilidade de auditoria e trava de período fechado.</p></div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] font-bold text-amber-800"><LockKeyhole size={13}/>Acesso restrito à Administração, Controladoria ou Financeiro</span>
+          <div className="flex flex-wrap items-center gap-2 print:hidden"><button type="button" onClick={() => window.print()} className="inline-flex h-10 items-center gap-2 rounded-md border border-[#CBD9E0] bg-white px-3 text-xs font-semibold"><FileText size={14}/>Imprimir / PDF</button><span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] font-bold text-amber-800"><LockKeyhole size={13}/>Acesso restrito à Administração, Controladoria ou Financeiro</span></div>
         </div>
       </header>
 
       {access === null && <div role="status" className={card}>Verificando permissões de acesso…</div>}
       {access === false && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">Acesso restrito à Administração, Controladoria ou Financeiro. {error}</div>}
       {access === true && <>
+        <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 print:hidden">{[{label:'Solicitações registradas',value:audit.length},{label:'Registradas hoje',value:auditToday},{label:'Com vínculo documental',value:auditLinked},{label:'Sem vínculo documental',value:audit.length-auditLinked}].map(item=><article key={item.label} className="min-h-[96px] rounded-lg border border-[#D3E3EA] bg-white p-4 shadow-sm"><p className="text-[10px] font-bold uppercase tracking-wide text-[#607987]">{item.label}</p><strong className="mt-2 block text-xl font-bold tabular-nums text-[#123B50]">{refreshing?'—':item.value}</strong></article>)}</section>
         <section className={card}>
           <div className="mb-4 flex items-center gap-2"><Search size={16} className="text-[#2D8DB8]"/><h2 className="text-sm font-bold">1. Localizar documento para estorno</h2></div>
           <div className="grid grid-cols-1 items-end gap-3 lg:grid-cols-[240px_minmax(240px,1fr)_160px_175px]">
@@ -247,8 +262,8 @@ export default function AssistenteRetificacao() {
         </section>
 
         <section className={card}>
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><div className="flex items-center gap-2"><FileText size={16} className="text-[#2D8DB8]"/><h2 className="text-sm font-bold">4. Log de estornos e retificações executadas</h2></div><div className="flex items-center gap-2"><span className="rounded-full bg-[#EEF3F6] px-3 py-1 text-[10px] font-bold text-[#526C79]">{audit.length} registro(s)</span><button type="button" onClick={()=>void loadAudit()} disabled={refreshing} className="inline-flex h-8 items-center gap-1 rounded-md border border-[#CBD9E0] px-3 text-[10px] font-semibold"><RefreshCw size={12} className={refreshing?'animate-spin':''}/>Atualizar</button></div></div>
-          <div className="overflow-x-auto"><table className="w-full min-w-[1050px] border-collapse text-[11px]"><thead><tr className="h-10 bg-[#EAF2F6] text-left text-[10px] uppercase tracking-wide text-[#526C79]"><th className="px-3">Data / Hora</th><th className="px-3">Documento original</th><th className="px-3">Tipo operação</th><th className="px-3 text-right">Valor estornado</th><th className="px-3">Usuário responsável</th><th className="px-3">Motivo / justificativa</th><th className="px-3">Comprovante</th></tr></thead><tbody>{audit.map(item=><tr key={item.id} className="h-12 border-b border-[#E6EDF1]"><td className="whitespace-nowrap px-3">{new Date(item.criado_em).toLocaleString('pt-BR')}</td><td className="px-3 font-semibold">{item.documento_alvo}</td><td className="px-3">Registro de auditoria</td><td className="px-3 text-right">—</td><td className="px-3">Usuário autenticado</td><td className="max-w-[360px] px-3">{item.justificativa}</td><td className="px-3">{item.documento_estornado_id?'Vinculado':'—'}</td></tr>)}{!audit.length&&<tr><td colSpan={7} className="h-16 text-center text-[#718792]">Nenhum estorno documental registrado para a empresa atual.</td></tr>}</tbody></table></div>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><div className="flex items-center gap-2"><FileText size={16} className="text-[#2D8DB8]"/><h2 className="text-sm font-bold">4. Solicitações registradas — log de auditoria</h2></div><div className="flex items-center gap-2 print:hidden"><span className="rounded-full bg-[#EEF3F6] px-3 py-1 text-[10px] font-bold text-[#526C79]">{audit.length} registro(s)</span><button type="button" onClick={exportAudit} disabled={!audit.length} className="inline-flex h-8 items-center gap-1 rounded-md border border-[#CBD9E0] px-3 text-[10px] font-semibold">Exportar CSV</button><button type="button" onClick={()=>void loadAudit()} disabled={refreshing} className="inline-flex h-8 items-center gap-1 rounded-md border border-[#CBD9E0] px-3 text-[10px] font-semibold"><RefreshCw size={12} className={refreshing?'animate-spin':''}/>Atualizar</button></div></div>
+          <div className="overflow-x-auto"><table className="w-full min-w-[820px] border-collapse text-[11px]"><thead><tr className="h-10 bg-[#EAF2F6] text-left text-[10px] uppercase tracking-wide text-[#526C79]"><th className="px-3">Data / Hora</th><th className="px-3">Documento informado</th><th className="px-3">Tipo de registro</th><th className="px-3">Justificativa</th><th className="px-3">Vínculo documental</th></tr></thead><tbody>{refreshing?<tr><td colSpan={5} className="h-16 text-center text-[#718792]">Carregando auditoria…</td></tr>:visibleAudit.map(item=><tr key={item.id} className="h-12 border-b border-[#E6EDF1]"><td className="whitespace-nowrap px-3">{new Date(item.criado_em).toLocaleString('pt-BR')}</td><td className="px-3 font-semibold">{item.documento_alvo}</td><td className="px-3">Solicitação registrada</td><td className="max-w-[420px] px-3">{item.justificativa}</td><td className="px-3">{item.documento_estornado_id || 'Sem vínculo'}</td></tr>)}{!refreshing&&!audit.length&&<tr><td colSpan={5} className="h-16 text-center text-[#718792]">Nenhuma solicitação registrada para a empresa atual.</td></tr>}</tbody><tfoot><tr className="h-11 border-t-2 border-[#D3E3EA] bg-[#F4F8FA] text-[10px] font-bold"><td colSpan={4} className="px-3">TOTAL DE SOLICITAÇÕES REGISTRADAS</td><td className="px-3 text-right">{audit.length}</td></tr></tfoot></table></div><div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[10px] text-[#607987] print:hidden"><span>Página {auditPage} de {auditPages} · {audit.length} registros</span><div className="flex gap-2"><button type="button" disabled={auditPage<=1} onClick={()=>setAuditPage(p=>Math.max(1,p-1))} className="h-8 rounded-md border border-[#CBD9E0] px-3 disabled:opacity-40">Anterior</button><button type="button" disabled={auditPage>=auditPages} onClick={()=>setAuditPage(p=>Math.min(auditPages,p+1))} className="h-8 rounded-md border border-[#CBD9E0] px-3 disabled:opacity-40">Próxima</button></div></div>
         </section>
         <p className="text-[10px] text-[#718792]">{helpText}</p>
       </>}
