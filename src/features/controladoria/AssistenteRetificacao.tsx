@@ -81,7 +81,7 @@ export default function AssistenteRetificacao() {
       if (profile.error) throw profile.error
       const role = String(profile.data?.perfil ?? '').trim().toUpperCase()
       const strictMaster = profile.data?.is_master === true && Number(profile.data?.nivel_admin) >= 100 &&
-        role === 'MASTER' && profile.data?.empresa_id === null && profile.data?.setor_id === null
+        role === 'SUPER_ADMIN' && profile.data?.empresa_id === null && profile.data?.setor_id === null
       if (active) setAccess(strictMaster || ['ADMINISTRADOR', 'CONTROLADORIA', 'FINANCEIRO'].includes(role))
     }
     void checkAccess().catch(reason => {
