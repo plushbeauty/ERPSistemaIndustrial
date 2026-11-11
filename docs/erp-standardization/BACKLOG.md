@@ -10,7 +10,7 @@
 - [x] UI-002 — Cruzar src/AppEntryV2.tsx com arquivos reais, wrappers/re-exports e rotas duplicadas/orfãs.
 - [ ] UI-003 — Medir Vendas > Novo Pedido por seção: largura/altura dos campos, labels, botões, grids, lupas, abas, cores e impressão, sem alterar a tela aprovada.
 - [x] UI-004 — Inventariar componentes de texto, código, descrição, numérico, data, select, lupa, botão, checkbox, grid, card, modal, mensagens e impressão.
-- [ ] UI-005 — Registrar exceções legítimas à altura padrão de 32 px e às larguras por função.
+- [x] UI-005 — Registrar exceções legítimas à altura padrão de 32 px e às larguras por função.
 
 ### UI-003 — evidência estática parcial (2026-11-11)
 
@@ -27,6 +27,17 @@
 - Foram documentadas variantes de altura e a cascata global que pode sobrescrever classes; wrappers não aplicam maxLength automaticamente; não há DataGrid/alert/toast universal único.
 - Relatório: [UI-004-COMPONENT-INVENTORY-20261111.md](./UI-004-COMPONENT-INVENTORY-20261111.md), commit `ebe0addaf52e6cfd8249a4e3c0c3e6c8ed55c7d3`.
 - UI-004 é inventário estático; não homologa o uso uniforme dos componentes nas telas.
+
+### UI-003 — bloqueio visual registrado (2026-11-11)
+
+- Medição estática do arquivo aprovado concluída e registrada em [UI-003-NOVO-PEDIDO-MEDICAO-20261111.md](./UI-003-NOVO-PEDIDO-MEDICAO-20261111.md).
+- A conferência visual não pode ser feita nesta rodada: Vercel retornou `Deployment rate limited — retry in 24 hours` para o commit consultado. O arquivo NovoPedido permanece intacto e UI-003 continua aberto até Preview/browser.
+
+### UI-005 — registro de exceções concluído (2026-11-11)
+
+- Registradas exceções funcionais para checkbox/radio, textarea, botões touch, navegação e tabelas; separado o que é divergência pendente/legada (28/36/40/54px) do padrão geral.
+- Registradas larguras por função e preservação da geometria congelada de Novo Pedido.
+- Relatório: [UI-005-EXCEPTIONS-REGISTER-20261111.md](./UI-005-EXCEPTIONS-REGISTER-20261111.md), commit `b2b03955c4721d3cef5bb14edda0787f30cbc1c3`.
 
 ## P1 — Corrigir telas em ordem de impacto
 
