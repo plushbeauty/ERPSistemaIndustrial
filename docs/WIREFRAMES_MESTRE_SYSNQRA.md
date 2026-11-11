@@ -4,9 +4,9 @@
 
 **Regra de evolução:** receber novos blocos e acrescentar as telas sem apagar nem reescrever as anteriores, salvo correção solicitada. A implementação final deve respeitar autenticação, autorização, empresa ativa, RLS, contratos reais de banco e identidade visual SYSNQRA.
 
-**Blocos recebidos:** 1 e 2  
-**Telas registradas:** 7  
-**Áreas:** Financeiro e Controladoria Comercial
+**Blocos recebidos:** 1, 2 e 3 (final)  
+**Telas registradas:** 13  
+**Áreas:** Financeiro, Controladoria, RH, Produção e Qualidade
 
 ---
 
@@ -65,107 +65,123 @@ Observações Padrão: [ Textarea: 100% x 90px ] | [ Btn Pri: Salvar Configuraç
 ====================================================================================================
 ```
 
----
-
-## Próximo bloco
-
-Aguardando o **Bloco 3 final**. As próximas telas deverão ser acrescentadas ao final deste documento e ao catálogo visual, mantendo a numeração e os wireframes já recebidos.
 
 
 ---
 
-## Bloco 2 — Financeiro e Controladoria Comercial
+## Bloco 3 — Controladoria, RH e Produção/Qualidade
 
-**Bloco recebido:** 2  
-**Telas acrescentadas:** 4  
-**Total acumulado:** 7 telas
+**Bloco recebido:** 3 (final)  
+**Telas acrescentadas:** 6  
+**Total acumulado:** 13 telas
 
+## Identidade visual oficial — padrão FichaMontagem
 
-## TELA 04 — FINANCEIRO: FLUXO DE CAIXA E DISPONIBILIDADES
+- Cabeçalho `bg-brand` com camada decorativa `bg-glow`; contraste adequado em impressão.
+- Cards de indicadores sobrepostos com `-mt-12` e `animate-rise`.
+- Componentes `Panel`, `Btn`, `Pill`, `Th` e `Td` de `@/components/compras/ui`.
+- Inputs `rounded-lg border border-input bg-card`, altura padronizada de 40px salvo dimensão específica.
+- Layout responsivo e suporte a impressão com variantes `print:`.
+- Estados vazios sem dados fictícios. Consultas, cálculos e gravações devem respeitar dados reais, `empresa_id`, RLS e permissões.
 
-**Rota:** `/pageprincipal/financeiro/fluxo-caixa`
+## TELA 08 — CONTROLADORIA: ENGENHARIA DE CUSTO PADRÃO
+
+**Rota sugerida:** `/pageprincipal/controladoria/engenharia-custo-padrao`
 
 ```text
-====================================================================================================
-[BREADCRUMB] SYSNQRA ERP INDUSTRIAL / FINANCEIRO
-[HEADER] Fluxo de Caixa e Disponibilidades      [Badge: ● SUPABASE CONECTADO] [Btn Sec: ATUALIZAR (135x40px)]
-====================================================================================================
-[01 VISÃO FINANCEIRA - 4 CARDS]
-[ Entradas previstas: R$ 0,00 ] [ Saídas previstas: R$ 0,00 ] [ Saldo projetado: R$ 0,00 ] [ Saldo liquidado: R$ 0,00 ]
-----------------------------------------------------------------------------------------------------
-[02 NOVO LANÇAMENTO]
-Descrição *: [ Edit: 420x40px ]   Movimento *: [ Select: 160x40px ]   Valor (R$) *: [ Edit: 160x40px ]   Vencimento *: [ Edit Date: 160x40px ]
-O título será gravado como PENDENTE.                                      [ Btn Pri: REGISTRAR TÍTULO (190x42px) ]
-----------------------------------------------------------------------------------------------------
-[03 EXTRATO PROJETADO - DBGRID]
-
-| Movimento | Descrição | Vencimento | Baixa | Valor (R$) | Status |
-Exibindo 0–0 de 0                               [ Btn: ANTERIOR (110x36px) ] Página 1 de 1 [ Btn: PRÓXIMA (110x36px) ]
-====================================================================================================
+[HEADER bg-brand + bg-glow] FINANCEIRO › ENGENHARIA DE CUSTO PADRÃO [Btn: Emitir Planilha] [Btn: Salvar Preço]
+Título: Formação de Preço por Custo Absorvido
+[Panel Parâmetros] Produto alvo * [260x40] | Máquina/Centro custo * [260x40] | Qtd. projeção * [110x40] | Tempo ciclo/un (seg) [140x40] | Margem % * [120x40 | 50]
+[Grid 65% Panel Custo BOM Teórico (MRP)] | [Grid 35% Panel Engenharia do Preço de Venda]
+| Componente | Qtd. MRP | Custo Unit. | Total |
+Estado vazio: Selecione produto com BOM ativa
+(+) Matéria-prima BOM: R$ 0,00 | (+) Fabricação: R$ 0,00 | (+) Hora/Máquina: R$ 0,00
+(=) CUSTO FÁBRICA TOTAL: R$ 0,00 | (=) PREÇO SUGERIDO: R$ 0,00
 ```
 
+**Regras:** consultar produto/BOM e centro de custo reais; calcular apenas com valores persistidos; não assumir BOM ativa ou custo de máquina inexistente; planilha deve refletir os valores exibidos.
 
-## TELA 05 — FINANCEIRO / TESOURARIA: CONTAS A RECEBER
+## TELA 09 — CONTROLADORIA: DESVIOS DE CUSTO (PADRÃO × REAL)
 
-**Rota:** `/pageprincipal/financeiro/contas-receber`
+**Rota sugerida:** `/pageprincipal/controladoria/desvios-custo`
 
 ```text
-====================================================================================================
-[BREADCRUMB] Financeiro / Tesouraria › Contas a receber
-[HEADER] Contas a receber                          [Btn Sec: Atualizar (135x40px)] [Btn Pri: + Novo título (155x40px)]
-====================================================================================================
-[ Títulos: 0 ] [ Saldo em aberto: R$ 0,00 ] [ Parcelas vencidas: 0 ] [ Parceiros ativos: 1 ]
-Buscar título: [ Edit: 520x40px | Parceiro, documento, categoria ou status ]          [Badge: 0 título(s)]
-
-| Parceiro / descrição | Documento | Origem | Parcelas | Total / saldo | Status | Ações [Ver/Baixar/Editar] |
-Exibindo 0–0 de 0                               [ Btn: Anterior (110x36px) ] Página 1 de 1 [ Btn: Próxima (110x36px) ]
-====================================================================================================
+[HEADER bg-brand + bg-glow] FINANCEIRO › CUSTOS INDUSTRIAIS [Btn: Atualizar] [Btn: Imprimir]
+Título: Desvios de Custo (Custo Padrão × Custo Real Absorvido)
+[4 Cards -mt-12 animate-rise] Custo Padrão: R$ 0,00 | Custo Real: R$ 0,00 | Desvio Abs.: R$ 0,00 | Variação: 0,00 %
+[Panel Filtros] Competência * [Month: 170x40] | Produto [Edit: 280x40] | OP [Edit: 160x40] | Status [Select: 180x40]
+[Panel Apuração por Produto]
+| Cód. Produto | Descrição | Qtd. Produzida | Custo Padrão Un. | Custo Real Un. | Desvio R$ | Var. % |
 ```
 
+**Regra:** exibir somente apurações reais persistidas; não substituir ausência de apuração por estimativa; respeitar a empresa ativa.
 
-## TELA 06 — FINANCEIRO / TESOURARIA: CAIXA
+## TELA 10 — CONTROLADORIA: LUCRATIVIDADE, RAZÃO GERAL E DECIMAIS (PLASTIBOR)
 
-**Rota:** `/pageprincipal/financeiro/caixa`
+**Rota sugerida:** `/pageprincipal/controladoria/lucratividade-razao-decimais`
 
 ```text
-====================================================================================================
-[BREADCRUMB] Financeiro / Tesouraria › Caixa
-[HEADER] Fluxo de caixa                                                   [Btn Sec: Atualizar (135x40px)]
-====================================================================================================
-[ A receber hoje: R$ 0,00 ] [ A pagar hoje: R$ 0,00 ] [ A receber no mês: R$ 0,00 ] [ A pagar no mês: R$ 0,00 ]
-[ Recebido no mês: R$ 0,00] [ Pago no mês: R$ 0,00  ] [ A receber no ano: R$ 0,00 ] [ A pagar no ano: R$ 0,00 ]
-----------------------------------------------------------------------------------------------------
-[ DIA (90x40) ] [ SEMANA (100x40) ] [ MÊS (90x40) ] [ ANO (90x40) ]   Data Base: [ Edit Date: 160x40 ]   Conta: [ Select: 260x40 ]
-
-| Data / Período | Entradas (R$) | Saídas (R$) | Variação do Dia (R$) | Variação Acumulada (R$) |
-====================================================================================================
+[Btn Voltar: 115x38 rounded-full] [HEADER bg-brand] CONTROLADORIA
+1. LUCRATIVIDADE E MARGENS: Mês/Competência * [Month: 200x40] | Margem Alvo % * [150x40 | 25] | [Btn: Filtrar Custos]
+| Nº Pedido | Razão Social / Produtos | Faturamento Bruto | Custo Fabricação | Margem Bruta | Taxa de Margem (Pill: CUSTO PENDENTE) |
+2. MONITOR DO RAZÃO GERAL — GL: Empresa * [Disabled: 280x40] | Banco/Diário * [Select: 340x40] | [Btn: Filtrar]
+| Data | Documento | Descrição | Débito (R$) | Crédito (R$) |
+Rodapé: SALDO TOTAL DO RAZÃO: R$ 0,00
+3. CADASTRO DE PRECISÃO DECIMAL — CUBAGEM (PLASTIBOR): Código * [180x40 | VOLUME] | Descrição * [420x40] | Casas * [120x40 | 4] | [Btn: Gravar]
+| Código | Descrição | Casas | Exemplo | Ações |
+Padrões: VOLUME, PESO_LIQ, PESO_BRUTO, MEDIDA_TEC, QTD_BOM, VALOR_UNIT
 ```
 
+## TELA 11 — CONTROLADORIA: ESTORNO DOCUMENTAL E COMPLIANCE
 
-## TELA 07 — COMISSÕES: REGRAS, CÁLCULO E PERFIL DO VENDEDOR
-
-**Rota:** `/pageprincipal/comissoes/regras`  
-**Rotas relacionadas:** `/pageprincipal/comissoes/regras`, `/pageprincipal/comissoes/calculo` e `/pageprincipal/comissoes/perfil`
+**Rota sugerida:** `/pageprincipal/controladoria/estorno-documental-compliance`
 
 ```text
-Rotas relacionadas: /pageprincipal/comissoes/regras · /pageprincipal/comissoes/calculo · /pageprincipal/comissoes/perfil
-====================================================================================================
-[BREADCRUMB] FINANCEIRO › COMISSÕES › CONTROLADORIA COMERCIAL
-[ Aba: Regras (130x40) ]   [ Aba: Cálculo (130x40) ]   [ Aba: Perfil Vendedor (160x40) ]
-----------------------------------------------------------------------------------------------------
-1. REGRAS DE COMISSÃO:
-   Perfil *: [ Select: 300x40 ] | Novo Perfil: [ Edit: 240x40 ] [ + Novo (110x40) ]
-   SKU Produto *: [ Edit: 340x40 ] | % Comissão *: [ Edit: 140x40 ] | Meta Qtd *: [ Edit: 140x40 ] [ + Add (110x40) ]
+[Btn Voltar: 115x38 rounded-full] [HEADER bg-brand] Assistente de Retificação e Compliance Financeiro [Pill: Acesso Restrito]
+[Panel Localizar] Tipo Documento * [Select: 240x40] | Nº Documento * [300x40] | Data [Date: 160x40] | [Btn: Buscar]
+[Panel Originais Disabled] Nº Doc [200x40] | Entidade [420x40] | Valor [180x40] | Data [180x40] | Conta [310x40] | Centro Custo [310x40]
+[Panel Compliance] Motivo * [Select: 340x40] | Data Estorno * [Date: 160x40] | Ação Título * [Select: 290x40]
+Justificativa * [Textarea: 100%x85px] | Anexo [File: 480x40]
+[ ] Confirmo período contábil ABERTO [ ] Ciente do lançamento inverso de auditoria
+[Btn: Limpar Tela] [Btn Destructive: Executar Estorno Documental]
+[Panel Log] | Data/Hora | Documento Original | Tipo Operação | Valor Estornado | Usuário | Motivo | Comprovante |
+```
 
-   | Perfil | SKU | Produto | % Comissão | Meta Qtd | Ações | -> [ Btn Pri: Gravar (140x42px) ]
-2. CÁLCULO DE COMISSÃO:
-   Competência *: [ Edit Month: 190x40 ] | Vendedor *: [ Edit: 340x40 ] | Meta Faturamento: [ Edit: 180x40 ] [ Btn Pri: Calcular (140x40) ]
+**Segurança:** operação restrita, validação de período contábil aberto, autorização por perfil, justificativa obrigatória e trilha de auditoria. Estornar por lançamento inverso; nunca apagar ou sobrescrever o original.
 
-   | Pedido | Cliente | SKU | Qtd Faturada | Valor Total Nota | % Comissão Regra | Comissão Líquida R$ |
-   [ Total Vendas: R$ 0,00 ] [ Meta Batida: NÃO ] [ Total Comissão: R$ 0,00 ] [ Btn Sec: Exportar XLSX (160x42px) ]
-3. PERFIL DO VENDEDOR:
-   Vendedor/Agente *: [ Edit: 320x40 ] | Perfil de Regras *: [ Edit: 320x40 ] | Status *: [ Select: 160x40 ] [ Btn Pri: Gravar Vínculo (165x40) ]
+## TELA 12 — RH / DEPARTAMENTO PESSOAL: FUNCIONÁRIOS, TURNOS E EPIS (NR-6)
 
-   | Vendedor | Perfil | Status | Ações |
-====================================================================================================
+**Rota sugerida:** `/pageprincipal/rh/gestao-pessoas`
+
+```text
+[HEADER bg-brand] RH / DEPARTAMENTO PESSOAL — GESTÃO DE PESSOAS
+[Abas] Visão geral | Funcionários | Turnos e escalas | Ponto | Treinamentos | EPIs | Documentos
+1. FUNCIONÁRIOS: Foto 3x4 [170x210] | Nome * [340x40] | Nasc * [150x40] | CPF * [160x40] | RG [150x40]
+Celular [180x40] | Fixo [180x40] | E-mail [340x40] | Matrícula * [140x40] | Admissão * [150x40] | Cargo * [240x40] | Depto * [240x40]
+Regime * [220x40] | Turno * [220x40] | RFID [200x40] | Salário [180x40] | Custo H/H [180x40] | Situação * [200x40]
+DBGrid: Busca [360x40] | Matrícula | Colaborador | Cargo/Departamento | Situação | Ação
+2. TURNOS E ESCALAS: Código * [150x40] | Nome * [340x40] | Escala * [220x40] | Ent [130x40] | Int Saída [130x40] | Int Ret [130x40] | Saída * [130x40] | Tol [120x40]
+[ ] Seg [ ] Ter [ ] Qua [ ] Qui [ ] Sex [ ] Sáb [ ] Dom [ ] Adicional Noturno [Btn: Gravar Turno]
+3. ENTREGA DE EPIs (NR-6): Colaborador * [360x40] | EPI * [360x40] | Nº CA * [180x40] | Validade CA * [150x40] | Qtd * [110x40] | Data * [150x40]
+Motivo * [240x40] | Próx. Troca [150x40] | Termo * [280x40] | Obs/Tamanho [840x40] | [Btn: Registrar Entrega de EPI]
+DBGrid: Data Entrega | Colaborador | EPI | Nº CA | Validade CA | Qtd | Motivo | Status/Termo | Ações
+```
+
+**Regra:** reaproveitar tabelas e políticas RLS existentes de funcionários, turnos e entregas de EPI. Não criar estruturas duplicadas sem auditar o schema.
+
+## TELA 13 — PRODUÇÃO · QUALIDADE: FICHA DE MONTAGEM E ACABAMENTO
+
+**Rota:** componente/rota oficial existente de `FichaMontagem.tsx` (preservar o registro do roteador).
+
+```text
+[HEADER bg-brand + bg-glow] Logo Synqra [Btn: Imprimir ficha]
+Subtítulo: PRODUÇÃO · QUALIDADE | Título: Ficha de Montagem e Acabamento
+[4 Cards -mt-12 animate-rise] Etapas montagem 0/0 | Parâmetros acabamento 0/0 | Peças inspecionadas 0 | Situação lote Em aberto
+[Panel Identificação da ordem] Grid 5 colunas, sem dados fictícios: Ordem de produção | Produto (2 cols) | Código | Cliente | Quantidade | Lote | Data | Turno | Linha/posto
+[Abas] Montagem | Acabamento | Inspeção | Liberação
+1. MONTAGEM: Barra progresso + tabela (Check | Seq. | Operação | Padrão | Padrão min | Real min | Operador) + gráfico Tempo por etapa
+2. ACABAMENTO: tabela (Característica | Mínimo | Máximo | Medido | Resultado Pill OK/Fora/Pendente)
+3. INSPEÇÃO: Peças aprovadas + contadores (-/+) por defeito + resumo (Inspecionadas | Aprovadas | Refugo) + Pareto
+4. LIBERAÇÃO: Cards decisão LIBERADO | RETRABALHO | SEGREGADO + Observações + assinaturas Montagem, Acabamento e Qualidade
+Contrato visual: bg-brand + bg-glow; cards -mt-12 animate-rise; Panel, Btn, Pill, Th, Td de @/components/compras/ui; inputs rounded-lg border border-input bg-card; altura padronizada; suporte print:.
 ```
