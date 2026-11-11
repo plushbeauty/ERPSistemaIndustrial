@@ -141,6 +141,85 @@ Rotas relacionadas: /pageprincipal/comissoes/regras · /pageprincipal/comissoes/
    | Vendedor | Perfil | Status | Ações |
 ====================================================================================================`,
   },
+  {
+    id: '08',
+    title: 'Controladoria — Engenharia de Custo Padrão',
+    route: '/pageprincipal/controladoria/engenharia-custo-padrao',
+    content: String.raw`TELA 08 — CONTROLADORIA: ENGENHARIA DE CUSTO PADRÃO
+[HEADER bg-brand + bg-glow] FINANCEIRO › ENGENHARIA DE CUSTO PADRÃO [Btn: Emitir Planilha] [Btn: Salvar Preço]
+Formação de Preço por Custo Absorvido | Produto alvo * | Máquina/Centro custo * | Qtd. projeção * | Tempo ciclo/un | Margem % *
+[Grid 65% Custo BOM Teórico MRP] | [Grid 35% Engenharia do Preço]
+| Componente | Qtd. MRP | Custo Unit. | Total |
+Estado vazio: Selecione produto com BOM ativa
+(+) Matéria-prima BOM | (+) Fabricação | (+) Hora/Máquina
+(=) CUSTO FÁBRICA TOTAL | (=) PREÇO SUGERIDO`,
+  },
+  {
+    id: '09',
+    title: 'Controladoria — Desvios de Custo (Padrão × Real)',
+    route: '/pageprincipal/controladoria/desvios-custo',
+    content: String.raw`TELA 09 — CONTROLADORIA: DESVIOS DE CUSTO (PADRÃO × REAL)
+[HEADER bg-brand + bg-glow] FINANCEIRO › CUSTOS INDUSTRIAIS [Btn: Atualizar] [Btn: Imprimir]
+[4 Cards -mt-12 animate-rise] Custo Padrão | Custo Real | Desvio Abs. | Variação %
+[Panel Filtros] Competência * [Month: 170x40] | Produto [280x40] | OP [160x40] | Status [Select: 180x40]
+[Panel Apuração por Produto] | Cód. Produto | Descrição | Qtd. Produzida | Custo Padrão Un. | Custo Real Un. | Desvio R$ | Var. % |`,
+  },
+  {
+    id: '10',
+    title: 'Controladoria — Lucratividade, Razão Geral e Decimais (Plastibor)',
+    route: '/pageprincipal/controladoria/lucratividade-razao-decimais',
+    content: String.raw`TELA 10 — CONTROLADORIA: LUCRATIVIDADE, RAZÃO GERAL E DECIMAIS (PLASTIBOR)
+[Btn Voltar] [HEADER bg-brand] CONTROLADORIA
+1. LUCRATIVIDADE: Mês/Competência * [Month: 200x40] | Margem Alvo % * [150x40 | 25] | [Btn Filtrar Custos]
+| Nº Pedido | Razão Social/Produtos | Faturamento Bruto | Custo Fabricação | Margem Bruta | Taxa de Margem (Pill CUSTO PENDENTE) |
+2. RAZÃO GERAL GL: Empresa * [Disabled: 280x40] | Banco/Diário * [Select: 340x40] | [Btn Filtrar]
+| Data | Documento | Descrição | Débito | Crédito | SALDO TOTAL DO RAZÃO
+3. PRECISÃO DECIMAL/CUBAGEM: Código * [180x40 | VOLUME] | Descrição * [420x40] | Casas * [120x40 | 4] | [Btn Gravar]
+| Código | Descrição | Casas | Exemplo | Ações |
+Padrões: VOLUME, PESO_LIQ, PESO_BRUTO, MEDIDA_TEC, QTD_BOM, VALOR_UNIT`,
+  },
+  {
+    id: '11',
+    title: 'Controladoria — Estorno Documental e Compliance',
+    route: '/pageprincipal/controladoria/estorno-documental-compliance',
+    content: String.raw`TELA 11 — CONTROLADORIA: ESTORNO DOCUMENTAL E COMPLIANCE
+[Btn Voltar] [HEADER bg-brand] Assistente de Retificação e Compliance Financeiro [Pill Acesso Restrito]
+[Panel Localizar] Tipo Documento * [Select: 240x40] | Nº Documento * [300x40] | Data [Date: 160x40] | [Btn Buscar]
+[Panel Originais Disabled] Nº Doc | Entidade | Valor | Data | Conta | Centro Custo
+[Panel Compliance] Motivo * [Select: 340x40] | Data Estorno * [Date: 160x40] | Ação Título * [Select: 290x40]
+Justificativa * [Textarea 100%x85px] | Anexo [File: 480x40]
+[ ] Período contábil ABERTO [ ] Ciente do lançamento inverso de auditoria
+[Btn Limpar Tela] [Btn Destructive Executar Estorno Documental]
+[Panel Log] Data/Hora | Documento Original | Tipo Operação | Valor Estornado | Usuário | Motivo | Comprovante`,
+  },
+  {
+    id: '12',
+    title: 'RH — Funcionários, Turnos e EPIs (NR-6)',
+    route: '/pageprincipal/rh/gestao-pessoas',
+    content: String.raw`TELA 12 — RH / DEPARTAMENTO PESSOAL: FUNCIONÁRIOS, TURNOS E EPIS (NR-6)
+[HEADER bg-brand] RH / DEPARTAMENTO PESSOAL — GESTÃO DE PESSOAS
+[Abas] Visão geral | Funcionários | Turnos e escalas | Ponto | Treinamentos | EPIs | Documentos
+FUNCIONÁRIOS: Foto 3x4 | Nome * | Nasc * | CPF * | RG | Celular | Fixo | E-mail | Matrícula * | Admissão * | Cargo * | Depto * | Regime * | Turno * | RFID | Salário | Custo H/H | Situação *
+DBGrid: Busca | Matrícula | Colaborador | Cargo/Departamento | Situação | Ação
+TURNOS: Código * | Nome * | Escala * | Entrada * | Intervalos | Saída * | Tolerância | Dias Seg-Dom | Adicional Noturno | [Btn Gravar Turno]
+EPIs NR-6: Colaborador * | EPI * | Nº CA * | Validade CA * | Qtd * | Data * | Motivo * | Próx. Troca | Termo * | Obs/Tamanho | [Btn Registrar Entrega]
+DBGrid: Data Entrega | Colaborador | EPI | Nº CA | Validade CA | Qtd | Motivo | Status/Termo | Ações`,
+  },
+  {
+    id: '13',
+    title: 'Produção / Qualidade — Ficha de Montagem e Acabamento',
+    route: '/pageprincipal/producao/ficha-montagem',
+    content: String.raw`TELA 13 — PRODUÇÃO · QUALIDADE: FICHA DE MONTAGEM E ACABAMENTO
+[HEADER bg-brand + bg-glow] Logo Synqra [Btn Imprimir ficha]
+[4 Cards -mt-12 animate-rise] Etapas montagem 0/0 | Parâmetros acabamento 0/0 | Peças inspecionadas 0 | Situação lote Em aberto
+[Panel Identificação da ordem] Grid 5 colunas sem dados fictícios: OP | Produto (2 cols) | Código | Cliente | Quantidade | Lote | Data | Turno | Linha/posto
+[Abas] Montagem | Acabamento | Inspeção | Liberação
+MONTAGEM: progresso + Check | Seq. | Operação | Padrão | Padrão min | Real min | Operador + gráfico tempo/etapa
+ACABAMENTO: Característica | Mínimo | Máximo | Medido | Resultado Pill OK/Fora/Pendente
+INSPEÇÃO: Peças aprovadas + contadores por defeito + Inspecionadas | Aprovadas | Refugo + Pareto
+LIBERAÇÃO: decisões LIBERADO | RETRABALHO | SEGREGADO + Observações + assinaturas Montagem, Acabamento e Qualidade
+Padrão visual: bg-brand + bg-glow; cards -mt-12 animate-rise; Panel/Btn/Pill/Th/Td; inputs rounded-lg border border-input bg-card; print:.`,
+  }
 ]
 
 export default function CatalogoWireframes() {
@@ -195,19 +274,19 @@ export default function CatalogoWireframes() {
         <div>
           <div className="wf-kicker"><Layers3 size={14} /> SYSNQRA ERP INDUSTRIAL · DOCUMENTAÇÃO DE PRODUTO</div>
           <h1>Catálogo Mestre de Wireframes</h1>
-          <p>Referências estruturais para construção das telas. As medidas são contratos de dimensão, não conteúdo fictício.</p>
+          <p>Referências estruturais para construção das telas. Identidade visual oficial: FichaMontagem (bg-brand, bg-glow, cards -mt-12 animate-rise, Panel/Btn/Pill/Th/Td e suporte print:). Medidas são contratos; não são dados fictícios.</p>
         </div>
         <div className="wf-head-actions">
           <button type="button" className="wf-button" onClick={() => navigate('/pageprincipal')}>
             <ArrowLeft size={14} /> Voltar ao ERP
           </button>
           <span className="wf-button" aria-label="Quantidade de wireframes cadastrados">
-            <FileText size={14} /> 07 telas registradas
+            <FileText size={14} /> 13 telas registradas
           </span>
         </div>
       </header>
 
-      <p className="wf-summary"><span className="wf-count">03</span> Blocos 1 e 2 · Financeiro e Controladoria Comercial · 7 wireframes recebidos e registrados</p>
+      <p className="wf-summary"><span className="wf-count">03</span> Blocos 1, 2 e 3 · Financeiro, Controladoria, RH, Produção e Qualidade · 13 wireframes recebidos e registrados</p>
 
       <section className="wf-list" aria-label="Wireframes cadastrados">
         {wireframes.map(item => (
