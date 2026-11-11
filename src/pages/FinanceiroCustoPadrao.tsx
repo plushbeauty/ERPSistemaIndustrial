@@ -5,7 +5,8 @@
  * @STATUS_APROVACAO: IMPLEMENTAÇÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; manifesto e gates oficiais preservados.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Calculator, FileSpreadsheet, Save, RefreshCw, Factory, PackageCheck } from 'lucide-react'
+import { ArrowLeft, Calculator, FileSpreadsheet, Save, RefreshCw, Factory, PackageCheck, Printer } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 
@@ -20,6 +21,7 @@ const label='mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text
 const btn='inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#CBD9E0] bg-white px-4 text-xs font-semibold text-[#23495B] transition hover:bg-[#F1F7F9] disabled:cursor-not-allowed disabled:opacity-50'
 const primary='inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[#176B91] px-4 text-xs font-semibold text-white transition hover:bg-[#125A7B] disabled:cursor-not-allowed disabled:opacity-50'
 export default function FinanceiroCustoPadrao(){
+ const navigate=useNavigate()
  const [empresa,setEmpresa]=useState(''),[products,setProducts]=useState<Product[]>([]),[machines,setMachines]=useState<Machine[]>([])
  const [productId,setProductId]=useState(''),[machineId,setMachineId]=useState(''),[qty,setQty]=useState('1'),[cycle,setCycle]=useState(''),[margin,setMargin]=useState('50')
  const [needs,setNeeds]=useState<Need[]>([]),[runId,setRunId]=useState(''),[saved,setSaved]=useState<Saved[]>([])
@@ -88,10 +90,11 @@ export default function FinanceiroCustoPadrao(){
   const csv='\ufeff'+lines.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\r\n')
   const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));const a=document.createElement('a');a.href=url;a.download='engenharia-custo-padrao.csv';a.click();URL.revokeObjectURL(url)
  }
- return <main className="min-h-full space-y-4 bg-[#F4FBFD] p-4 text-[#183B4D] sm:p-5" data-synqra-density="40px">
-  <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[#D3E3EA] pb-3">
-   <div><p className="mb-1 text-[10px] font-bold uppercase tracking-[.13em] text-[#2D8DB8]">FINANCEIRO › ENGENHARIA DE CUSTO PADRÃO</p><h1 className="text-xl font-bold tracking-tight">Formação de Preço por Custo Absorvido</h1><p className="mt-1 text-xs text-[#607987]">Materiais calculados pela estrutura MRP real e custo/hora da máquina selecionada.</p></div>
-   <div className="flex gap-2"><button className={btn} type="button" onClick={exportSheet} disabled={!product}><FileSpreadsheet size={15}/>Emitir Planilha</button><button className={primary} type="button" onClick={()=>void save()} disabled={!product||!bomActive||saving}><Save size={15}/>{saving?'Salvando...':'Salvar Preço'}</button></div>
+ return <main className="min-h-full space-y-4 bg-[#F4FBFD] p-4 text-[#183B4D] sm:p-5 print:bg-white print:p-0" data-synqra-density="40px">
+  <div className="hidden border-b-2 border-[#123B50] pb-3 print:block"><strong className="text-[19px] tracking-[.16em]">PLASTIBOR</strong><p className="text-[10px]">Controladoria industrial · Engenharia de custo padrão</p><p className="text-[10px]">Emitido em {new Date().toLocaleString('pt-BR')}</p></div>
+  <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[#D3E3EA] pb-3 print:hidden">
+   <div className="flex min-w-0 items-center gap-3"><button type="button" onClick={()=>navigate(-1)} className="inline-flex h-[38px] w-[115px] shrink-0 items-center justify-center gap-2 rounded-full border border-[#E2E8F0] bg-white text-[12px] font-semibold text-[#334155] shadow-sm transition hover:bg-slate-50"><ArrowLeft size={14}/>Voltar</button><div><p className="mb-1 text-[10px] font-bold uppercase tracking-[.13em] text-[#2D8DB8]">FINANCEIRO › ENGENHARIA DE CUSTO PADRÃO</p><h1 className="text-xl font-bold tracking-tight">Formação de Preço por Custo Absorvido</h1><p className="mt-1 text-xs text-[#607987]">Materiais calculados pela estrutura MRP real e custo/hora da máquina selecionada.</p></div>
+   <div className="flex gap-2"><button className={btn} type="button" onClick={()=>window.print()} disabled={!product}><Printer size={15}/>Imprimir / PDF</button><button className={btn} type="button" onClick={exportSheet} disabled={!product}><FileSpreadsheet size={15}/>Emitir Planilha</button><button className={primary} type="button" onClick={()=>void save()} disabled={!product||!bomActive||saving}><Save size={15}/>{saving?'Salvando...':'Salvar Preço'}</button></div>
   </header>
   {error&&<div role="alert" className="rounded-md border border-[#D65B61]/40 bg-[#FFF4F3] px-3 py-2 text-xs text-[#A53D45]">{error}</div>}
   {notice&&<div role="status" className="rounded-md border border-[#3A9D78]/30 bg-[#EFF9F4] px-3 py-2 text-xs text-[#267653]">{notice}</div>}
@@ -130,5 +133,7 @@ export default function FinanceiroCustoPadrao(){
    <div className="flex flex-wrap items-center justify-between gap-2"><div><h2 className="text-xs font-bold uppercase tracking-wide">Últimos preços padrão gravados</h2><p className="mt-1 text-[10px] text-[#718792]">Histórico real de simulações e preços aprovados desta empresa.</p></div><button type="button" className={btn} onClick={()=>void load()} disabled={loading}><RefreshCw size={13}/>Atualizar</button></div>
    <div className="mt-3 overflow-x-auto"><table className="w-full min-w-[600px] text-xs"><thead><tr className="h-9 border-b border-[#D3E3EA] text-left text-[10px] uppercase text-[#607987]"><th className="px-2">Data</th><th className="px-2">Produto</th><th className="px-2 text-right">Qtd.</th><th className="px-2 text-right">Custo total/un</th><th className="px-2 text-right">Margem</th><th className="px-2 text-right">Preço gravado</th></tr></thead><tbody>{saved.map(row=><tr key={row.id} className="h-10 border-b border-[#E8EFF2]"><td className="px-2">{new Date(row.created_at).toLocaleString('pt-BR')}</td><td className="px-2">{row.produto_codigo} · {row.produto_nome}</td><td className="px-2 text-right">{qtyFmt(row.quantidade_base)}</td><td className="px-2 text-right">{brl(row.custo_total)}</td><td className="px-2 text-right">{Number(row.margem_percentual).toFixed(2).replace('.',',')}%</td><td className="px-2 text-right font-semibold">{brl(row.preco_venda)}</td></tr>)}{!saved.length&&<tr><td colSpan={6} className="h-14 text-center text-[#718792]">Nenhum preço padrão gravado.</td></tr>}</tbody></table></div>
   </section>
+  <div className="hidden print:block"><p className="border-t border-[#D3E3EA] pt-2 text-[9px] text-[#607987]">Plastibor · Documento gerado a partir dos cadastros e da explosão MRP reais da empresa autenticada.</p></div>
+  <style>{'@media print { @page { size: portrait; margin: 12mm; } body { background: #fff !important; } main { background: #fff !important; padding: 0 !important; } }'}</style>
  </main>
 }
