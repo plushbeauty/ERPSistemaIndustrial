@@ -137,8 +137,8 @@ function DataTable({ rows, kind, onEdit }: { rows: DbRow[]; kind: 'requisicoes' 
   </div>
 }
 
-export default function ComprasWorkspace() {
-  const [activeTab, setActiveTab] = useState<TabKey>('visao-geral')
+export default function ComprasWorkspace({ initialTab = 'visao-geral' }: { initialTab?: TabKey }) {
+  const [activeTab, setActiveTab] = useState<TabKey>(initialTab)
   const [search, setSearch] = useState('')
   const [showOrderForm, setShowOrderForm] = useState(false)
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null)
