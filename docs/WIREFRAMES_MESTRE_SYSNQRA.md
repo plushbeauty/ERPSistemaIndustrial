@@ -4,9 +4,9 @@
 
 **Regra de evolução:** receber novos blocos e acrescentar as telas sem apagar nem reescrever as anteriores, salvo correção solicitada. A implementação final deve respeitar autenticação, autorização, empresa ativa, RLS, contratos reais de banco e identidade visual SYSNQRA.
 
-**Bloco recebido:** 1  
-**Telas registradas:** 3  
-**Área:** Financeiro
+**Blocos recebidos:** 1 e 2  
+**Telas registradas:** 7  
+**Áreas:** Financeiro e Controladoria Comercial
 
 ---
 
@@ -69,4 +69,103 @@ Observações Padrão: [ Textarea: 100% x 90px ] | [ Btn Pri: Salvar Configuraç
 
 ## Próximo bloco
 
-Aguardando o **Bloco 2**. As próximas telas deverão ser acrescentadas ao final deste documento e ao catálogo visual, mantendo a numeração e os wireframes já recebidos.
+Aguardando o **Bloco 3 final**. As próximas telas deverão ser acrescentadas ao final deste documento e ao catálogo visual, mantendo a numeração e os wireframes já recebidos.
+
+
+---
+
+## Bloco 2 — Financeiro e Controladoria Comercial
+
+**Bloco recebido:** 2  
+**Telas acrescentadas:** 4  
+**Total acumulado:** 7 telas
+
+
+## TELA 04 — FINANCEIRO: FLUXO DE CAIXA E DISPONIBILIDADES
+
+**Rota:** `/pageprincipal/financeiro/fluxo-caixa`
+
+```text
+====================================================================================================
+[BREADCRUMB] SYSNQRA ERP INDUSTRIAL / FINANCEIRO
+[HEADER] Fluxo de Caixa e Disponibilidades      [Badge: ● SUPABASE CONECTADO] [Btn Sec: ATUALIZAR (135x40px)]
+====================================================================================================
+[01 VISÃO FINANCEIRA - 4 CARDS]
+[ Entradas previstas: R$ 0,00 ] [ Saídas previstas: R$ 0,00 ] [ Saldo projetado: R$ 0,00 ] [ Saldo liquidado: R$ 0,00 ]
+----------------------------------------------------------------------------------------------------
+[02 NOVO LANÇAMENTO]
+Descrição *: [ Edit: 420x40px ]   Movimento *: [ Select: 160x40px ]   Valor (R$) *: [ Edit: 160x40px ]   Vencimento *: [ Edit Date: 160x40px ]
+O título será gravado como PENDENTE.                                      [ Btn Pri: REGISTRAR TÍTULO (190x42px) ]
+----------------------------------------------------------------------------------------------------
+[03 EXTRATO PROJETADO - DBGRID]
+
+| Movimento | Descrição | Vencimento | Baixa | Valor (R$) | Status |
+Exibindo 0–0 de 0                               [ Btn: ANTERIOR (110x36px) ] Página 1 de 1 [ Btn: PRÓXIMA (110x36px) ]
+====================================================================================================
+```
+
+
+## TELA 05 — FINANCEIRO / TESOURARIA: CONTAS A RECEBER
+
+**Rota:** `/pageprincipal/financeiro/contas-receber`
+
+```text
+====================================================================================================
+[BREADCRUMB] Financeiro / Tesouraria › Contas a receber
+[HEADER] Contas a receber                          [Btn Sec: Atualizar (135x40px)] [Btn Pri: + Novo título (155x40px)]
+====================================================================================================
+[ Títulos: 0 ] [ Saldo em aberto: R$ 0,00 ] [ Parcelas vencidas: 0 ] [ Parceiros ativos: 1 ]
+Buscar título: [ Edit: 520x40px | Parceiro, documento, categoria ou status ]          [Badge: 0 título(s)]
+
+| Parceiro / descrição | Documento | Origem | Parcelas | Total / saldo | Status | Ações [Ver/Baixar/Editar] |
+Exibindo 0–0 de 0                               [ Btn: Anterior (110x36px) ] Página 1 de 1 [ Btn: Próxima (110x36px) ]
+====================================================================================================
+```
+
+
+## TELA 06 — FINANCEIRO / TESOURARIA: CAIXA
+
+**Rota:** `/pageprincipal/financeiro/caixa`
+
+```text
+====================================================================================================
+[BREADCRUMB] Financeiro / Tesouraria › Caixa
+[HEADER] Fluxo de caixa                                                   [Btn Sec: Atualizar (135x40px)]
+====================================================================================================
+[ A receber hoje: R$ 0,00 ] [ A pagar hoje: R$ 0,00 ] [ A receber no mês: R$ 0,00 ] [ A pagar no mês: R$ 0,00 ]
+[ Recebido no mês: R$ 0,00] [ Pago no mês: R$ 0,00  ] [ A receber no ano: R$ 0,00 ] [ A pagar no ano: R$ 0,00 ]
+----------------------------------------------------------------------------------------------------
+[ DIA (90x40) ] [ SEMANA (100x40) ] [ MÊS (90x40) ] [ ANO (90x40) ]   Data Base: [ Edit Date: 160x40 ]   Conta: [ Select: 260x40 ]
+
+| Data / Período | Entradas (R$) | Saídas (R$) | Variação do Dia (R$) | Variação Acumulada (R$) |
+====================================================================================================
+```
+
+
+## TELA 07 — COMISSÕES: REGRAS, CÁLCULO E PERFIL DO VENDEDOR
+
+**Rota:** `/pageprincipal/comissoes/regras`  
+**Rotas relacionadas:** `/pageprincipal/comissoes/regras`, `/pageprincipal/comissoes/calculo` e `/pageprincipal/comissoes/perfil`
+
+```text
+Rotas relacionadas: /pageprincipal/comissoes/regras · /pageprincipal/comissoes/calculo · /pageprincipal/comissoes/perfil
+====================================================================================================
+[BREADCRUMB] FINANCEIRO › COMISSÕES › CONTROLADORIA COMERCIAL
+[ Aba: Regras (130x40) ]   [ Aba: Cálculo (130x40) ]   [ Aba: Perfil Vendedor (160x40) ]
+----------------------------------------------------------------------------------------------------
+1. REGRAS DE COMISSÃO:
+   Perfil *: [ Select: 300x40 ] | Novo Perfil: [ Edit: 240x40 ] [ + Novo (110x40) ]
+   SKU Produto *: [ Edit: 340x40 ] | % Comissão *: [ Edit: 140x40 ] | Meta Qtd *: [ Edit: 140x40 ] [ + Add (110x40) ]
+
+   | Perfil | SKU | Produto | % Comissão | Meta Qtd | Ações | -> [ Btn Pri: Gravar (140x42px) ]
+2. CÁLCULO DE COMISSÃO:
+   Competência *: [ Edit Month: 190x40 ] | Vendedor *: [ Edit: 340x40 ] | Meta Faturamento: [ Edit: 180x40 ] [ Btn Pri: Calcular (140x40) ]
+
+   | Pedido | Cliente | SKU | Qtd Faturada | Valor Total Nota | % Comissão Regra | Comissão Líquida R$ |
+   [ Total Vendas: R$ 0,00 ] [ Meta Batida: NÃO ] [ Total Comissão: R$ 0,00 ] [ Btn Sec: Exportar XLSX (160x42px) ]
+3. PERFIL DO VENDEDOR:
+   Vendedor/Agente *: [ Edit: 320x40 ] | Perfil de Regras *: [ Edit: 320x40 ] | Status *: [ Select: 160x40 ] [ Btn Pri: Gravar Vínculo (165x40) ]
+
+   | Vendedor | Perfil | Status | Ações |
+====================================================================================================
+```
