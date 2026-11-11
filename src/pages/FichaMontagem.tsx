@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { CheckCircle2, Circle, Printer, RefreshCw, Search, ClipboardList, Paintbrush, ShieldCheck, PackageCheck } from 'lucide-react'
+import { CheckCircle2, Circle, Printer, RefreshCw, ClipboardList, Paintbrush, ShieldCheck, PackageCheck } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import QualityPlanGate from '../components/quality/QualityPlanGate'
