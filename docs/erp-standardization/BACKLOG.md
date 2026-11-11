@@ -12,6 +12,15 @@
 - [ ] UI-004 — Inventariar componentes de texto, código, descrição, numérico, data, select, lupa, botão, checkbox, grid, card, modal, mensagens e impressão.
 - [ ] UI-005 — Registrar exceções legítimas à altura padrão de 32 px e às larguras por função.
 
+### UI-003 — evidência estática parcial (2026-11-11)
+
+- Arquivo aprovado `src/pages/NovoPedido.tsx`: SHA `ae54c4c2c4660fe9660db74efd0c2c4ae85302d3`, idêntico ao manifesto oficial.
+- Medição registrada: 19 inputs, 6 selects, 17 botões, 1 tabela, 6 seções, 7 grids responsivos de quatro colunas e nenhuma aba interna detectada.
+- Controles principais declarados em 30px; botões de ação e lookups em 32px; labels em 9px. A exceção de 30px fica preservada por ser parte da tela congelada.
+- Impressão usa `window.print()` e o baseline global A4 com margem de 12mm; não há CSS local de impressão na página/layout.
+- Relatório: [UI-003-NOVO-PEDIDO-MEDICAO-20261111.md](./UI-003-NOVO-PEDIDO-MEDICAO-20261111.md), commit `d3969aede84c9384d259ede91b35bf2b06d2eca7`.
+- UI-003 permanece aberto: falta medição visual renderizada e teste de impressão no navegador; não alterar Novo Pedido.
+
 ## P1 — Corrigir telas em ordem de impacto
 
 - [ ] UI-010 — Vendas: auditar rotas e abas, preservar telas aprovadas e corrigir divergências nas demais.
