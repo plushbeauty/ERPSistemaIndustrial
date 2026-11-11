@@ -4,7 +4,7 @@
  * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, ClipboardList, FileText, PackageCheck, Plus, RefreshCw, Search, ShoppingCart, Truck, Users } from 'lucide-react'
 import ComprasPedidoForm from './ComprasPedidoForm'
 import { supabase } from '../lib/supabaseClient'
@@ -14,7 +14,6 @@ import { Link } from 'react-router-dom'
 type TabKey = 'visao-geral' | 'requisicoes' | 'alertas' | 'cotacoes' | 'pedidos' | 'recebimentos' | 'fornecedores'
 type DbRow = Record<string, unknown>
 type TableData = { rows: DbRow[]; loading: boolean; error: string | null }
-type RfqForm = { dataNecessidade: string; prazoResposta: string; condicaoPagamento: string; observacoes: string }
 
 const tabs: Array<{ key: TabKey; label: string; icon: typeof ClipboardList }> = [
   { key: 'visao-geral', label: 'Visão geral', icon: ShoppingCart },
@@ -27,7 +26,6 @@ const tabs: Array<{ key: TabKey; label: string; icon: typeof ClipboardList }> = 
 ]
 
 const emptyTable: TableData = { rows: [], loading: true, error: null }
-const today = new Date().toISOString().slice(0, 10)
 
 function textValue(row: DbRow, ...keys: string[]): string {
   for (const key of keys) {
@@ -142,12 +140,9 @@ function DataTable({ rows, kind, onEdit }: { rows: DbRow[]; kind: 'requisicoes' 
 export default function ComprasWorkspace() {
   const [activeTab, setActiveTab] = useState<TabKey>('visao-geral')
   const [search, setSearch] = useState('')
-  const [showRfqForm, setShowRfqForm] = useState(false)
   const [showOrderForm, setShowOrderForm] = useState(false)
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null)
-  const [saving, setSaving] = useState(false)
   const [notice, setNotice] = useState<{ kind: 'success' | 'error'; message: string } | null>(null)
-  const [form, setForm] = useState<RfqForm>({ dataNecessidade: '', prazoResposta: '', condicaoPagamento: '', observacoes: '' })
   const [rfqs, setRfqs] = useState<TableData>(emptyTable)
   const [requisitions, setRequisitions] = useState<TableData>(emptyTable)
   const [orders, setOrders] = useState<TableData>(emptyTable)
@@ -155,6 +150,7 @@ export default function ComprasWorkspace() {
   const [suppliers, setSuppliers] = useState<TableData>(emptyTable)
   const [materials, setMaterials] = useState<TableData>(emptyTable)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [statusFilter, setStatusFilter] = useState('TODOS')
 
   const load = useCallback(async () => {
     const { data: empresaId, error: empresaError } = await supabase.rpc('erp_current_empresa_id')
@@ -207,39 +203,7 @@ export default function ComprasWorkspace() {
     return { rfqs: filterRows(rfqs.rows), requisitions: filterRows(requisitions.rows), orders: filterRows(orders.rows), receipts: filterRows(receipts.rows), suppliers: filterRows(suppliers.rows), alerts: filterRows(alertRows) }
   }, [rfqs.rows, requisitions.rows, orders.rows, receipts.rows, suppliers.rows, alertRows, search])
 
-  async function createRfq(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setSaving(true)
-    setNotice(null)
-    try {
-      const { data: empresaId, error: empresaError } = await supabase.rpc('erp_current_empresa_id')
-      if (empresaError) throw empresaError
-      if (typeof empresaId !== 'string' || !empresaId) throw new Error('Não foi possível identificar a empresa da sessão autenticada.')
-      const { data: authData, error: authError } = await supabase.auth.getUser()
-      if (authError) throw authError
-      const { data, error } = await supabase.from('erp_rfq').insert({
-        empresa_id: empresaId,
-        data_emissao: today,
-        data_necessidade: form.dataNecessidade || null,
-        prazo_resposta: form.prazoResposta || null,
-        condicao_pagamento: form.condicaoPagamento.trim() || null,
-        observacoes: form.observacoes.trim() || null,
-        status: 'RASCUNHO',
-        created_by: authData.user?.id ?? null,
-      }).select('id,numero').single()
-      if (error) throw error
-      setNotice({ kind: 'success', message: 'Solicitação de cotação criada. Agora adicione itens e fornecedores na etapa de cotação.' })
-      setForm({ dataNecessidade: '', prazoResposta: '', condicaoPagamento: '', observacoes: '' })
-      setShowRfqForm(false)
-      setActiveTab('cotacoes')
-      setRefreshKey(value => value + 1)
-      void data
-    } catch (error) {
-      setNotice({ kind: 'error', message: error instanceof Error ? error.message : 'Falha ao criar solicitação de cotação.' })
-    } finally {
-      setSaving(false)
-    }
-  }
+
 
   const alertData: TableData = { ...materials, rows: alertRows }
   const activeData = activeTab === 'requisicoes' ? requisitions : activeTab === 'cotacoes' ? rfqs : activeTab === 'pedidos' ? orders : activeTab === 'recebimentos' ? receipts : activeTab === 'fornecedores' ? suppliers : alertData
@@ -252,14 +216,7 @@ export default function ComprasWorkspace() {
     </header>
     {notice && <div className={notice.kind === 'success' ? 'compras-notice compras-notice--success' : 'compras-notice compras-notice--error'} role="status">{notice.message}</div>}
     <nav className="compras-tabs" aria-label="Etapas do módulo">{tabs.map(tab => { const Icon = tab.icon; const count = tab.key === 'requisicoes' ? requisitions : tab.key === 'cotacoes' ? rfqs : tab.key === 'fornecedores' ? suppliers : tab.key === 'alertas' ? materials : null; const total = tab.key === 'alertas' ? alertRows.length : count?.rows.length; return <button type="button" key={tab.key} className={activeTab === tab.key ? 'compras-tab is-active' : 'compras-tab'} onClick={() => setActiveTab(tab.key)}><Icon size={15} />{tab.label}{count && !count.loading ? <span>{total}</span> : null}</button> })}</nav>
-    {showRfqForm && activeTab === 'cotacoes' && <section className="compras-panel compras-form-panel"><div className="compras-panel-heading"><div><h2>Nova solicitação de cotação</h2><p>Cadastre o cabeçalho. Itens e fornecedores serão vinculados na etapa de detalhamento.</p></div><button className="compras-button compras-button--light" type="button" onClick={() => setShowRfqForm(false)}>Fechar</button></div><form onSubmit={createRfq} className="compras-form-grid">
-      <label className="compras-field"><span>Data de emissão</span><input value={dateValue(today)} readOnly aria-label="Data de emissão" /></label>
-      <label className="compras-field"><span>Data de necessidade</span><input type="date" value={form.dataNecessidade} onChange={event => setForm(value => ({ ...value, dataNecessidade: event.target.value }))} min={today} /></label>
-      <label className="compras-field"><span>Prazo para resposta</span><input type="date" value={form.prazoResposta} onChange={event => setForm(value => ({ ...value, prazoResposta: event.target.value }))} min={today} /></label>
-      <label className="compras-field"><span>Condição de pagamento</span><input value={form.condicaoPagamento} onChange={event => setForm(value => ({ ...value, condicaoPagamento: event.target.value }))} maxLength={120} placeholder="Ex.: 28/56 dias" /></label>
-      <label className="compras-field compras-field--full"><span>Observações</span><textarea value={form.observacoes} onChange={event => setForm(value => ({ ...value, observacoes: event.target.value }))} rows={3} maxLength={2000} placeholder="Especificações, condições de fornecimento e orientações para os fornecedores" /></label>
-      <div className="compras-form-footer"><span>O registro será salvo na empresa vinculada à sessão autenticada.</span><button className="compras-button compras-button--primary" type="submit" disabled={saving}>{saving ? 'Salvando…' : 'Salvar solicitação'}</button></div>
-    </form></section>}
+
     {showOrderForm && activeTab === 'pedidos' && <ComprasPedidoForm key={editingOrderId ?? 'novo-pedido'} pedidoId={editingOrderId ?? undefined} onCancel={() => { setShowOrderForm(false); setEditingOrderId(null) }} onSaved={(message) => { setNotice({kind:'success',message}); setSearch(''); setRefreshKey(value => value + 1) }} />}
     {activeTab === 'visao-geral' ? <section className="compras-panel compras-open-orders"><div className="compras-panel-heading"><div><h2>Pedidos de compra em aberto</h2><p>Pedidos que ainda precisam de aprovação, envio ou recebimento.</p></div><button className="compras-button compras-button--primary" type="button" onClick={() => { setEditingOrderId(null); setShowOrderForm(true); setActiveTab('pedidos'); setNotice(null) }}><Plus size={14} /> Novo pedido</button></div>
       {orders.loading ? <div className="compras-loading"><RefreshCw size={16} /> Carregando pedidos reais…</div> : orders.error ? <div className="compras-error" role="alert"><strong>Falha na consulta.</strong><span>{orders.error}</span></div> : (() => { const openOrders = filtered.orders.filter(row => !['RECEBIDO','CANCELADO','REJEITADO','CONCLUIDO','CONCLUÍDO'].includes(textValue(row,'status').toLocaleUpperCase('pt-BR'))); return openOrders.length ? <div className="compras-table-scroll"><table className="compras-table"><thead><tr><th>Nº pedido</th><th>Fornecedor</th><th>Emissão</th><th>Entrega prevista</th><th>Status</th><th>Valor total</th><th>Ação</th></tr></thead><tbody>{openOrders.map((row,index) => <tr key={textValue(row,'id') === '—' ? index : textValue(row,'id')}><td><strong>{textValue(row,'numero','id')}</strong></td><td>{textValue(row,'fornecedor_nome','razao_social','fornecedor_id')}</td><td>{dateValue(row.data_pedido ?? row.created_at)}</td><td>{dateValue(row.data_prevista)}</td><td><span className={statusClass(textValue(row,'status'))}>{textValue(row,'status').replaceAll('_',' ')}</span></td><td>{moneyValue(row.total)}</td><td><button className="compras-button compras-button--light erp-edit-button erp-row-action" type="button" onClick={() => { setEditingOrderId(textValue(row,'id')); setActiveTab('pedidos'); setShowOrderForm(true) }} disabled={textValue(row,'id') === '—'}>Editar pedido</button></td></tr>)}</tbody></table></div> : <div className="compras-empty"><ShoppingCart size={22}/><strong>Nenhum pedido em aberto</strong><span>Quando houver pedidos em rascunho, aguardando aprovação ou recebimento, eles aparecerão neste grid.</span><button className="compras-button compras-button--primary" type="button" onClick={() => { setEditingOrderId(null); setShowOrderForm(true); setActiveTab('pedidos') }}><Plus size={14}/> Criar primeiro pedido</button></div> })()}
