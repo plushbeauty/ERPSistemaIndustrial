@@ -1,8 +1,8 @@
 /**
  * @AUTOR: FernandoSch
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-11
+ * @REVISAO: REV-VENDAS-METAS-GEOMETRIA-20261111-01 — grade responsiva, campos numéricos com 32px, valores tabulares alinhados à direita
+ * @STATUS_APROVACAO: REVISÃO AUTORIZADA PELO PROPRIETÁRIO NO COMMIT 7a90d08277d78c38ca4fb54a70b27bd50fc474d3; pendente de CI e validação visual
  */
 import { useEffect, useState } from 'react'
 import { Plus, Save } from 'lucide-react'
@@ -68,7 +68,7 @@ export default function VendasMetas(){
     </div>
     <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,220px),1fr))',gap:10,padding:'0 14px 14px'}}>
      <label style={{display:'grid',gap:4,fontSize:10,fontWeight:600,color:'#526a73'}}>Meta de faturamento<input type='number' min='0' step='0.01' value={valor} onChange={e=>setValor(e.target.value)} style={{height:32,minWidth:0,border:'1px solid #d3e0e3',borderRadius:2,padding:'0 8px',fontSize:11}}/></label>
-     <label style={{display:'grid',gap:4,fontSize:10,fontWeight:600,color:'#526a73'}}>Meta de pedidos<input type='number' min='0' step='1' value={pedidos} onChange={e=>setPedidos(e.target.value)} style={{height:30,border:'1px solid #d3e0e3',borderRadius:4,padding:'0 8px',fontSize:11}}/></label>
+     <label style={{display:'grid',gap:4,fontSize:10,fontWeight:600,color:'#526a73'}}>Meta de pedidos<input type='number' min='0' step='1' value={pedidos} onChange={e=>setPedidos(e.target.value)} style={{height:32,minWidth:0,border:'1px solid #d3e0e3',borderRadius:2,padding:'0 8px',fontSize:11}}/></label>
      <div style={{border:'1px solid #dfe8ea',background:'#f7f9fa',padding:'7px 10px'}}><span style={{fontSize:10,color:'#71838a'}}>Realizado</span><strong style={{display:'block',marginTop:3,fontSize:18,color:'#123b50'}}>{brl(realizado)}</strong></div>
     </div>
     {msg&&<div style={{margin:'0 14px 12px',padding:'8px 10px',border:'1px solid #cce1e6',background:'#f1f8fa',color:'#315c69',fontSize:10}}>{msg}</div>}
