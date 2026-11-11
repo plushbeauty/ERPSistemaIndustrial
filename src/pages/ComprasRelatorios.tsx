@@ -5,11 +5,12 @@
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 import { useEffect, useMemo, useState } from 'react'
-import { BarChart3, FileDown, RefreshCw, Search, TrendingUp } from 'lucide-react'
+import { ArrowLeft, BarChart3, FileDown, FileSpreadsheet, RefreshCw, Search, TrendingUp } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
+import { Link } from 'react-router-dom'
 
 type Purchase = { id:string; numero:number; status:string; total:number; created_at:string; fornecedor_id:string|null; data_prevista:string|null }
 type Request = { id:string; status:string; prioridade:string; created_at:string }
@@ -23,6 +24,8 @@ export default function ComprasRelatorios(){
  const [purchases,setPurchases]=useState<Purchase[]>([]),[requests,setRequests]=useState<Request[]>([]),[rfqs,setRfqs]=useState<Rfq[]>([]),[suppliers,setSuppliers]=useState<Supplier[]>([])
  const [busy,setBusy]=useState(false),[q,setQ]=useState(''),[message,setMessage]=useState(''),[error,setError]=useState('')
  const [rfqStatusFilter,setRfqStatusFilter]=useState('TODOS'),[rfqStartDate,setRfqStartDate]=useState(''),[rfqEndDate,setRfqEndDate]=useState('')
+ const [purchasePage,setPurchasePage]=useState(1),[rfqPage,setRfqPage]=useState(1)
+ const pageSize=25
  const load=async()=>{
   setBusy(true);setError('')
   try{
@@ -41,7 +44,7 @@ export default function ComprasRelatorios(){
  const supplierMap=useMemo(()=>new Map(suppliers.map(s=>[s.id,s.nome_fantasia||s.razao_social])),[suppliers])
  const visibleRfqs=useMemo(()=>rfqs.filter(r=>{
   const status=String(r.status||'EM_ANALISE')
-  const date=String(r.created_at||r.created_at||'').slice(0,10)
+  const date=String(r.created_at||'').slice(0,10)
   return (rfqStatusFilter==='TODOS'||status===rfqStatusFilter)
    &&(!rfqStartDate||date>=rfqStartDate)&&(!rfqEndDate||date<=rfqEndDate)
  }),[rfqs,rfqStatusFilter,rfqStartDate,rfqEndDate])
@@ -58,6 +61,22 @@ export default function ComprasRelatorios(){
   const map=new Map<string,number>();for(const p of visible)map.set(p.status,(map.get(p.status)||0)+1)
   return [...map.entries()].map(([status,quantidade])=>({status,quantidade}))
  },[visible])
+ const purchasePageCount=Math.max(1,Math.ceil(visible.length/pageSize))
+ const visiblePurchasePage=visible.slice((purchasePage-1)*pageSize,purchasePage*pageSize)
+ const rfqPageCount=Math.max(1,Math.ceil(visibleRfqs.length/pageSize))
+ const visibleRfqPage=visibleRfqs.slice((rfqPage-1)*pageSize,rfqPage*pageSize)
+ useEffect(()=>setPurchasePage(1),[q])
+ useEffect(()=>setRfqPage(1),[rfqStatusFilter,rfqStartDate,rfqEndDate])
+ const exportPurchasesCsv=()=>{
+  const lines=[['Pedido','Fornecedor','Status','Previsão','Data de registro','Total'],...visible.map(p=>['PC-'+String(p.numero).padStart(4,'0'),supplierMap.get(p.fornecedor_id||'')||'',p.status,p.data_prevista||'',p.created_at,p.total])]
+  const csv='\\ufeff'+lines.map(row=>row.map(value=>'"'+String(value??'').replace(/"/g,'""')+'"').join(';')).join('\\r\\n')
+  const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));const a=window.document.createElement('a');a.href=url;a.download='relatorio-pedidos-compra.csv';a.click();URL.revokeObjectURL(url)
+ }
+ const exportRfqsCsv=()=>{
+  const lines=[['RFQ','Status','Prazo resposta','Fornecedor escolhido','Justificativa'],...visibleRfqs.map(r=>[r.id,r.status,r.prazo_resposta||'',supplierMap.get(r.fornecedor_escolhido_id||'')||'',r.justificativa_escolha||''])]
+  const csv='\\ufeff'+lines.map(row=>row.map(value=>'"'+String(value??'').replace(/"/g,'""')+'"').join(';')).join('\\r\\n')
+  const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));const a=window.document.createElement('a');a.href=url;a.download='auditoria-rfq.csv';a.click();URL.revokeObjectURL(url)
+ }
  const topSuppliers=useMemo(()=>{
   const map=new Map<string,number>();for(const p of visible)if(p.fornecedor_id)map.set(p.fornecedor_id,(map.get(p.fornecedor_id)||0)+Number(p.total||0))
   return [...map.entries()].sort((a,b)=>b[1]-a[1]).slice(0,8).map(([id,total])=>({fornecedor:(supplierMap.get(id)||'Fornecedor').slice(0,24),total}))
