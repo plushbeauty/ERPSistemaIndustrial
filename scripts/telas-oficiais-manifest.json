@@ -837,7 +837,7 @@
     },
     {
       "path": "src/pages/FinanceiroCustoPadrao.tsx",
-      "sha": "bce3864877a897cac4b0c8d2067f57f085972be8",
+      "sha": "d9a7936214f4840ae0b4a9768bb765b4a37d3310",
       "autor": "FernandoSch",
       "revisao": "REV-FIN-CUSTO-PADRAO-CSV-20261110-02 — corrigido fechamento excedente que impedia o type-check; exportação CSV preservada. Incremento 2026-11-10: consultas integrais por empresa, KPIs, histórico paginado, composição persistida, totalizadores, CSV e manual; navegação Voltar 115x38 e impressão Plastibor.",
       "aprovadaEm": "2026-11-10",
