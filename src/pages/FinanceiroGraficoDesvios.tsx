@@ -28,6 +28,7 @@ export default function FinanceiroGraficoDesvios(){
   finally{setBusy(false)}
  },[])
  useEffect(()=>{void load()},[load])
+ useEffect(()=>{setPage(1)},[period,search,op,status])
  const filtered=useMemo(()=>rows.filter(r=>(!period||r.competencia===period)&&(!search||(r.codigo_produto+' '+r.descricao_produto).toLowerCase().includes(search.toLowerCase()))&&(!op||String(r.op_numero||'').toLowerCase().includes(op.toLowerCase()))&&(status==='TODOS'||(status==='FAVORAVEL'?Number(r.custo_real_total)<=Number(r.custo_padrao_total):Number(r.custo_real_total)>Number(r.custo_padrao_total)))),[rows,period,search,op,status])
  const totals=useMemo(()=>filtered.reduce((a,r)=>({standard:a.standard+Number(r.custo_padrao_total||0),real:a.real+Number(r.custo_real_total||0)}),{standard:0,real:0}),[filtered])
  const variation=totals.standard?((totals.real-totals.standard)/totals.standard)*100:0
