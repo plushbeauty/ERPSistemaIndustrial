@@ -235,3 +235,19 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Status:** CORRIGIDO AGUARDANDO VALIDAÇÃO. UI-040 e QA-040 permanecem abertos.
 
 - **Ajuste de implementação da normalização:** corrigida a expressão regular Unicode após revisão do conteúdo versionado; commit `1a5d04191e41206af501b51a72e8b9ca2e0f0d85`. A verificação continua pendente de CI/build e teste funcional.
+
+## Atualização da execução contínua — 2026-11-11
+
+- **UI-001:** permanece aberto. A execução do job `P0 — Full Release Gate` no commit `a88c27cd45a43cc1e57eb3cfd90384e1df524b30` passou (run `42928604423`), incluindo TypeScript, ESLint, auditorias global/brutal/interações e build; porém não executou `npm run audit:ui-standardization`. Não substituir a etapa específica por outras auditorias.
+- **UI-002:** resultado parcial refeito na branch `audit/loop-componente-20261110`: 335 declarações Route, 195 imports relativos únicos, nenhum import sem arquivo candidato na árvore recursiva do mesmo SHA. Wrappers/re-exports profundos, aliases, rotas órfãs e renderização permanecem sem validação; item continua aberto.
+- **Evidência detalhada:** `docs/erp-standardization/ROUTE-AUDIT-2026-10-16.md`, seção “Reexecução do inventário estático — 2026-11-11”.
+- **Bloqueio Vercel:** status do SHA consultado continua failure por limite diário; não declarar publicado.
+
+## Continuação de Compras — 2026-11-11
+
+- **UI-030 permanece aberto**; o lote não representa auditoria funcional completa de Compras/Suprimentos.
+- **Análise de preços:** corrigida a classificação indevida de propostas com `valor_total NULL` como preço zero; somente valores finitos/não negativos entram no ranking e o salvamento exige preço válido. Commit `8ecfe5f966c44f7d2cdd4e710c46649f6149ea59`.
+- **Fornecedores:** edição/exclusão/vínculo de certificado agora exigem confirmação de linha retornada; recarga limpa dados anteriores; homologação ISO exige certificado anexado ou já vinculado. Commit `6901a8ae80dd1f6ae3849d808cf815c1a5e72672`.
+- **Manifesto:** hashes das duas telas atualizados; relatório detalhado em `ROUTE-AUDIT-2026-10-16.md`.
+- **Validação:** P0 Release Gate do SHA `a95793105fbae7855e71293f1c2f6c6b2048392e` estava em execução na última consulta; Vercel continua bloqueada pelo limite diário. Não marcar como validado até o job terminal e testes funcionais/visuais.
+- **Próximas telas do lote:** recebimento de materiais/NF-e, análise de preços já corrigida aguardando validação, ajuda de Compras e demais vínculos fornecedor/RFQ; confirmar schema e RPC antes de alterar fluxo de estoque.
