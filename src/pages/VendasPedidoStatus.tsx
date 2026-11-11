@@ -1,8 +1,8 @@
 /**
  * @AUTOR: FernandoSch
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-11
+ * @REVISAO: REV-VENDAS-STATUS-PEDIDO-TENANT-20261111-01 — etapas de OP, expedição e liberação fiscal filtradas por empresa_id; sem alterar a navegação ou os dados exibidos
+ * @STATUS_APROVACAO: REVISÃO AUTORIZADA PELO PROPRIETÁRIO NO COMMIT 856eddd5a331d7f0eaac93a3c725d55653bd2e4e; pendente de CI e validação funcional
  */
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
