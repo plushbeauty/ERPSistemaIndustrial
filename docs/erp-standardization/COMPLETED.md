@@ -24,6 +24,15 @@ Nenhuma tela foi marcada como integralmente concluída por esta nova fila. Token
 - Commits: relatório `ebe0addaf52e6cfd8249a4e3c0c3e6c8ed55c7d3`; backlog `83ccaae8afd1f05a573e700bb73c9885e27543d3`.
 - Status: inventário estático concluído; sem alteração de telas ou regras de negócio.
 
+## UI-005 — Registro de exceções geométricas e larguras funcionais (2026-11-11)
+
+- Relatório: [UI-005-EXCEPTIONS-REGISTER-20261111.md](./UI-005-EXCEPTIONS-REGISTER-20261111.md).
+- Registradas exceções legítimas (checkbox/radio 16px, textarea multilinha, alvos de toque 40/44px, navegação e tabelas), exceção congelada de Novo Pedido e divergências pendentes/legadas (28/36/40/54px).
+- Larguras funcionais documentadas para código, descrição, quantidade, data, valor, identificador, lookup e grades responsivas.
+- Bloqueio visual: Vercel rate limit de 24h; não há medição renderizada nesta rodada.
+- Commits: relatório `b2b03955c4721d3cef5bb14edda0787f30cbc1c3`; backlog `74425551a70f21a4194eaac9eed87523262453bf`.
+- Status: registro de exceções concluído; UI-003 continua pendente de conferência visual.
+
 ## Formato por item concluído
 
 - ID e módulo/rota;
