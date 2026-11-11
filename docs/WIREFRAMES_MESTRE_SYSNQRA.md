@@ -69,6 +69,73 @@ Observações Padrão: [ Textarea: 100% x 90px ] | [ Btn Pri: Salvar Configuraç
 
 ---
 
+---
+
+## Bloco 2 — Financeiro e Controladoria Comercial
+
+**Bloco recebido:** 2  
+**Telas acrescentadas:** 4  
+**Total acumulado:** 7 telas
+
+## TELA 04 — FINANCEIRO: FLUXO DE CAIXA E DISPONIBILIDADES
+
+**Rota:** `/pageprincipal/financeiro/fluxo-caixa`
+
+```text
+[BREADCRUMB] SYSNQRA ERP INDUSTRIAL / FINANCEIRO
+[HEADER] Fluxo de Caixa e Disponibilidades [Badge: SUPABASE CONECTADO] [Btn: ATUALIZAR (135x40px)]
+[4 CARDS] Entradas previstas | Saídas previstas | Saldo projetado | Saldo liquidado
+[02 NOVO LANÇAMENTO]
+Descrição * [420x40] | Movimento * [Select: 160x40] | Valor (R$) * [160x40] | Vencimento * [Date: 160x40]
+O título será gravado como PENDENTE. [Btn: REGISTRAR TÍTULO (190x42px)]
+[03 EXTRATO PROJETADO - DBGRID]
+| Movimento | Descrição | Vencimento | Baixa | Valor (R$) | Status |
+Exibindo 0–0 de 0 [Btn ANTERIOR] Página 1 de 1 [Btn PRÓXIMA]
+```
+
+## TELA 05 — FINANCEIRO / TESOURARIA: CONTAS A RECEBER
+
+**Rota sugerida:** `/pageprincipal/financeiro/contas-receber`
+
+```text
+[BREADCRUMB] Financeiro / Tesouraria › Contas a receber
+[HEADER] Contas a receber [Btn: Atualizar (135x40px)] [Btn: + Novo título (155x40px)]
+[KPIs] Títulos | Saldo em aberto | Parcelas vencidas | Parceiros ativos
+Buscar título [520x40 | Parceiro, documento, categoria ou status] [Badge: quantidade]
+| Parceiro / descrição | Documento | Origem | Parcelas | Total / saldo | Status | Ações Ver/Baixar/Editar |
+Exibindo 0–0 de 0 [Btn Anterior] Página 1 de 1 [Btn Próxima]
+```
+
+## TELA 06 — FINANCEIRO / TESOURARIA: CAIXA
+
+**Rota sugerida:** `/pageprincipal/financeiro/caixa`
+
+```text
+[BREADCRUMB] Financeiro / Tesouraria › Caixa
+[HEADER] Fluxo de caixa [Btn: Atualizar (135x40px)]
+[8 KPIs] A receber hoje | A pagar hoje | A receber no mês | A pagar no mês | Recebido no mês | Pago no mês | A receber no ano | A pagar no ano
+[DIA (90x40)] [SEMANA (100x40)] [MÊS (90x40)] [ANO (90x40)] Data Base [Date: 160x40] Conta [Select: 260x40]
+| Data / Período | Entradas (R$) | Saídas (R$) | Variação do Dia (R$) | Variação Acumulada (R$) |
+```
+
+## TELA 07 — COMISSÕES: REGRAS, CÁLCULO E PERFIL DO VENDEDOR
+
+**Rota:** `/pageprincipal/comissoes/regras`  
+**Rotas relacionadas:** `/pageprincipal/comissoes/regras`, `/pageprincipal/comissoes/calculo` e `/pageprincipal/comissoes/perfil`
+
+```text
+[BREADCRUMB] FINANCEIRO › COMISSÕES › CONTROLADORIA COMERCIAL
+[Abas] Regras (130x40) | Cálculo (130x40) | Perfil Vendedor (160x40)
+1. REGRAS: Perfil * [Select: 300x40] | Novo Perfil [240x40] [+ Novo]
+SKU Produto * [340x40] | % Comissão * [140x40] | Meta Qtd * [140x40] [+ Add]
+| Perfil | SKU | Produto | % Comissão | Meta Qtd | Ações | [Btn Gravar]
+2. CÁLCULO: Competência * [Month: 190x40] | Vendedor * [340x40] | Meta Faturamento [180x40] [Btn Calcular]
+| Pedido | Cliente | SKU | Qtd Faturada | Valor Total Nota | % Comissão Regra | Comissão Líquida R$ |
+[Total Vendas] [Meta Batida] [Total Comissão] [Btn Exportar XLSX]
+3. PERFIL DO VENDEDOR: Vendedor/Agente * [320x40] | Perfil de Regras * [320x40] | Status * [Select: 160x40] [Btn Gravar Vínculo]
+| Vendedor | Perfil | Status | Ações |
+```
+
 ## Bloco 3 — Controladoria, RH e Produção/Qualidade
 
 **Bloco recebido:** 3 (final)  
