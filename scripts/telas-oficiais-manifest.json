@@ -1741,11 +1741,11 @@
     },
     {
       "path": "src/PublicIndustrialHome.tsx",
-      "sha": "8ac9a1cb51527e8494c194c6ad0c52b60bf9a05f",
+      "sha": "7daf332b2210fdf0c5aff6c07fee146236517a53",
       "autor": "FernandoSch",
-      "revisao": "REV-CARROSSEL-BAIXO-E-BARRA-FINA-20261106-01 — faixa do carrossel com altura própria e barra do topo sem o quadrado da marca",
-      "aprovadaEm": "2026-11-06",
-      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-06 — \"A IMAGEM FICOU GRANDE DE MAIS ELE TA PEGANDO"
+      "revisao": "REV-CARROSSEL-PRELOAD-E-MARCA-SYSNQRA-20261110-01 — pré-carregamento das artes e identidade pública SYSNQRA ERP INDUSTRIAL",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "ORDEM EXPLÍCITA DO PROPRIETÁRIO EM 2026-11-10 — padronizar a identidade pública como SYSNQRA ERP INDUSTRIAL e corrigir o carregamento/rotação do carrossel; sem alterações de dados ou autenticação."
     },
     {
       "path": "src/styles/industrial-login.css",
