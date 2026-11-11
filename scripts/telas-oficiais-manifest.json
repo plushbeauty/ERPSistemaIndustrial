@@ -461,9 +461,9 @@
     },
     {
       "path": "src/pages/ComprasAnalisePrecos.tsx",
-      "sha": "0284bea3f03975915db07b72fbdeea19c0eff88d",
+      "sha": "e819ae0382ee0c4b88445dc272e0c3752109c5c2",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-COTACAO-SCHEMA-20261110-01 — comparação limitada aos campos persistidos em erp_rfq_respostas: valor_total, prazo_dias, condicao_pagamento e validade; removidas colunas de frete, desconto e custo líquido sem persistência. | REV-COMPRAS-ANALISE-PAGINACAO-CSV-20261110-01 — KPIs reais, paginação de propostas, CSV, totalizadores, controles 40px, linhas 48px, impressão e manual; comparação restrita aos campos persistidos.",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-COTACAO-SCHEMA-20261110-01 — comparação limitada aos campos persistidos em erp_rfq_respostas: valor_total, prazo_dias, condicao_pagamento e validade; removidas colunas de frete, desconto e custo líquido sem persistência. | REV-COMPRAS-ANALISE-PAGINACAO-CSV-20261110-01 — KPIs reais, paginação de propostas, CSV, totalizadores, controles 40px, linhas 48px, impressão e manual; comparação restrita aos campos persistidos. | REV-COMPRAS-ANALISE-PAGINACAO-CSV-20261110-02 — fechamento JSX corrigido após type-check",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "ALTERAÇÃO TÉCNICA AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; implementação registrada e ainda sujeita a type-check, teste funcional e validação visual antes de aprovação final."
     },
