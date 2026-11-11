@@ -14,7 +14,7 @@
  * Nenhum dado é simulado: toda leitura e gravação passa pela sessão autenticada, RBAC e RLS.
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AlertTriangle, CheckCircle, Download, Home, Landmark, List, ScrollText, Shuffle } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
@@ -155,7 +155,7 @@ export default function BankReconciliation() {
 
   useEffect(() => { void load() }, [accountId, date, status])
 
-  const loadLedgerBalance = async () => {
+  const loadLedgerBalance = useCallback(async () => {
     if (!accountId) { setSaldoContabil(0); return }
     const company = await supabase.rpc('erp_current_empresa_id')
     if (company.error || !company.data) { setSaldoContabil(0); return }
@@ -164,9 +164,9 @@ export default function BankReconciliation() {
         .eq('empresa_id', String(company.data)).eq('conta_bancaria_id', accountId).range(from, to))
     const opening = Number(accounts.find((account) => account.id === accountId)?.saldo_inicial ?? 0)
     setSaldoContabil(opening + ledger.reduce((sum, row) => sum + Number(row.debito ?? 0) - Number(row.credito ?? 0), 0))
-  }
+  }, [accountId, accounts])
 
-  useEffect(() => { void loadLedgerBalance() }, [accountId, accounts])
+  useEffect(() => { void loadLedgerBalance() }, [loadLedgerBalance])
 
   const options: LinkOption[] = useMemo(() => accounts.map((account) => ({
     value: account.id,
