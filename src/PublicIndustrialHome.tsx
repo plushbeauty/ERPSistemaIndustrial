@@ -1,7 +1,8 @@
 /**
  * @AUTOR: FernandoSch
- * @DATA_REVISAO_APROVACAO: 2026-11-06
- * @REVISAO: REV-CARROSSEL-BAIXO-E-BARRA-FINA-20261106-01 — faixa do carrossel com altura própria e barra do topo sem o quadrado da marca
+ * @DATA_REVISAO_APROVACAO: 2026-11-10
+ * @REVISAO: REV-HOME-IDENTIDADE-COPY-20261110-01 — assinatura pública SYSNQRA padronizada, texto de embalagem corrigido; carrossel original de cinco artes e navegação real preservados
+ * Revisão autorizada pelo proprietário em 2026-11-10: aproveitar a identidade visual moderna de referência sem substituir o AppBootstrap nem a home pública já aprovada. Os cinco slides originais, as rotas reais /login e /cadastro-empresa, o menu responsivo, a ajuda e os planos existentes permanecem; a identificação interna FernandoSch_System saiu do rodapé e a descrição do fluxo foi corrigida.
  * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-06 — "A IMAGEM FICOU GRANDE DE MAIS ELE TA PEGANDO
  * A TELA TODA PERFEITO MAIS ELA FICOU MUITNA ALTA PEGANDO A TELA MUITO PARA BAIXO CONSEGUE ARRUA" e
  * "SABE A BARRA DO TOPO ACHO QUE PODEMOS TIRAR O LOGO DELA PORQUE JA TEM O LOGO NAS IMAGENS ASSIM
