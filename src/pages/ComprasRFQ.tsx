@@ -5,7 +5,7 @@
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Plus, Printer, Save, Search, Trash2 } from 'lucide-react'
+import { ArrowLeft, FileSpreadsheet, Plus, Printer, Save, Search, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
@@ -107,6 +107,18 @@ export default function ComprasRFQ() {
     () => items.reduce((sum, item) => sum + Number(item.quantidade), 0),
     [items],
   )
+  const exportItemsCsv = () => {
+    const lines = [['Código','Produto','Quantidade','Unidade','Data necessidade','Observações'], ...items.map(item => [item.codigo,item.descricao,item.quantidade,item.unidade,item.data_necessidade,item.observacoes])]
+    const csv = '\ufeff' + lines.map(row => row.map(value => '"' + String(value ?? '').replace(/"/g, '""') + '"').join(';')).join('\r\n')
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }))
+    const anchor = window.document.createElement('a'); anchor.href = url; anchor.download = 'itens-rfq.csv'; anchor.click(); URL.revokeObjectURL(url)
+  }
+  const exportQuotesCsv = () => {
+    const lines = [['Fornecedor','Valor total','Prazo dias','Condição','Validade','Vencedor'], ...selectedSuppliers.map(id => { const supplier=suppliers.find(row=>row.id===id); const quote=quotes[id]??{custo:'',prazo:'',condicao:'',validade:''}; return [supplier?.razao_social||id,quote.custo,quote.prazo,quote.condicao,quote.validade,winnerId===id?'SIM':'NÃO'] })]
+    const csv = '\ufeff' + lines.map(row => row.map(value => '"' + String(value ?? '').replace(/"/g, '""') + '"').join(';')).join('\r\n')
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }))
+    const anchor = window.document.createElement('a'); anchor.href = url; anchor.download = 'propostas-rfq.csv'; anchor.click(); URL.revokeObjectURL(url)
+  }
   const visibleProducts = useMemo(() => {
     const query = productQuery.trim().toLocaleLowerCase('pt-BR')
     if (!query) return products.slice(0, 30)
