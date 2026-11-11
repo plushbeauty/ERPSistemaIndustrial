@@ -101,7 +101,7 @@
     },
     {
       "path": "src/features/controladoria/PainelLucratividade.tsx",
-      "sha": "27aa653592a92e79a7c0a66cbbb4f8bd9869d0fe",
+      "sha": "39756aa2d5dfc3f1e639cf92801efce6aa46c571",
       "autor": "FernandoSch",
       "revisao": "REV-CONTROLADORIA-LUCRATIVIDADE-KPI-PRINT-PAGINACAO-20261111-02 — quatro KPIs derivados dos pedidos reais; margem consolidada restrita a pedidos com custo completo; consulta paginada integral por empresa; paginação de grade, CSV e impressão Plastibor.",
       "aprovadaEm": "2026-11-11",
