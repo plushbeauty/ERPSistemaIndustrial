@@ -101,7 +101,7 @@
     },
     {
       "path": "src/features/controladoria/PainelLucratividade.tsx",
-      "sha": "a0539ba0954a0ef98e9aaf8c02400ce7d5d446cc",
+      "sha": "e55c0a6ee390be204e80b3a2cedd43242884da3c",
       "autor": "FernandoSch",
       "revisao": "REV-CONTROLADORIA-LUCRATIVIDADE-KPI-PRINT-20261111-01 — 4 KPIs calculados dos pedidos carregados; margem consolidada considera somente pedidos com custo completo; impressão Plastibor e filtros de 40px.",
       "aprovadaEm": "2026-11-11",
