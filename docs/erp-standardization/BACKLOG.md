@@ -325,3 +325,12 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Commit de código:** `7a90d08277d78c38ca4fb54a70b27bd50fc474d3`.
 - **Validação:** diff conferido no GitHub; validação automatizada completa ainda não executada. Os commits de código desta rodada estão sujeitos ao bloqueio Vercel `build-rate-limit` já registrado acima.
 - **Estado:** correção incremental aplicada, **aguardando type-check, lint, auditorias, rotas e build**. UI-010 permanece aberto.
+
+
+## UI-010 — geometria e limpeza de filtros em Relatórios de Vendas (2026-11-11)
+
+- **Rota/componente:** `/pageprincipal/vendas/relatorios` → `src/pages/VendasRelatorios.tsx`.
+- **Correção aplicada:** busca, select de status e botão de impressão alinhados a 32px; incluído botão funcional para limpar busca/status; valores monetários usam números tabulares e alinhamento à direita. Consultas Supabase, filtro `empresa_id`, impressão e regras de negócio preservados.
+- **Commit de código:** `1a57f81b04a896083d858c2eed3c112ce24e8ed9`.
+- **Validação:** diff registrado pelo GitHub; type-check, lint, auditorias, lazy imports, rotas e build não executados nesta sessão por ausência de checkout/terminal. Não há aprovação de CI para este commit nesta consulta.
+- **Estado:** ajuste incremental, aguardando validação; UI-010 permanece aberto.
