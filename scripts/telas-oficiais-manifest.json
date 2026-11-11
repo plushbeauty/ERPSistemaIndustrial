@@ -517,11 +517,11 @@
     },
     {
       "path": "src/pages/ComprasWorkspace.tsx",
-      "sha": "de550ad0a6dbe9842b8570ab4da00a4dd6cb2da6",
+      "sha": "af8c8701974d6ceb30492ccc435943c066d495a7",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-COMPRAS-SCHEMA-REAL-NFE-20261110-01 — corrigidos campos inexistentes na criação de RFQ, leitura de NF-e de entrada pela tabela fiscal real, colunas alinhadas ao schema e ajuda operacional; revisão funcional sem alterar o fluxo aprovado de pedido.",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "REVISAO TECNICA AUTORIZADA PELO PROPRIETARIO EM 2026-11-10 PARA AUDITORIA E CORRECAO FUNCIONAL, PRESERVANDO IDENTIDADE E FLUXOS EXISTENTES"
     },
     {
       "path": "src/pages/ConfiguracaoLote.tsx",
