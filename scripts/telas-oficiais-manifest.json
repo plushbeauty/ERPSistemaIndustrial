@@ -29,7 +29,7 @@
     },
     {
       "path": "src/features/banking/BankReconciliation.tsx",
-      "sha": "adf687a9e1905478f3b494ef2f3fa1458fbb9663",
+      "sha": "1b560332d27f4d388c86bbe036afdf4677cf15ca",
       "autor": "FernandoSch",
       "revisao": "REV-CONCILIACAO-BANCARIA-RPC-20261111-02 — RPC transacional, lançamento no razão e saldo integral após conciliação.",
       "aprovadaEm": "2026-11-10",
