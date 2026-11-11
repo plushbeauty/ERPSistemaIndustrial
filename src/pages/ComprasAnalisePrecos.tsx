@@ -160,19 +160,19 @@ export default function ComprasAnalisePrecos() {
   }
 
   return <VendasLayout title="Análise de preços" subtitle="Mapa comparativo real de propostas RFQ para decisão de suprimentos" onRefresh={() => void load()}>
-    <main className="min-h-screen bg-slate-50 p-3 text-slate-800 antialiased">
+    <main className="min-h-screen bg-slate-50 p-3 text-slate-800 antialiased print:bg-white print:p-0"><div className="hidden border-b-2 border-[#123B50] pb-3 print:block"><strong className="text-[19px] tracking-[.16em]">PLASTIBOR</strong><p className="text-[10px]">Compras · Análise comparativa de preços</p><p className="text-[10px]">Emitido em {new Date().toLocaleString()}</p></div>
       <style>{`
         .compras-analise-card { border: 1px solid #dbe5ef; border-radius: 12px; background: #fff; box-shadow: 0 4px 14px rgba(15, 45, 75, .055), 0 1px 2px rgba(15, 45, 75, .035); }
-        .compras-analise-edit { height: 36px; min-width: 0; width: 100%; border: 1px solid #cbd5e1; border-radius: 7px; background: #fff; padding: 0 10px; color: #1e293b; font-size: 12px; outline: none; transition: border-color .15s, box-shadow .15s; }
+        .compras-analise-edit { height: 40px; min-width: 0; width: 100%; border: 1px solid #cbd5e1; border-radius: 7px; background: #fff; padding: 0 10px; color: #1e293b; font-size: 12px; outline: none; transition: border-color .15s, box-shadow .15s; }
         .compras-analise-edit:focus { border-color: #287fbd; box-shadow: 0 0 0 2px rgba(40,127,189,.14); }
         .compras-analise-label { display: block; margin-bottom: 5px; color: #526579; font-size: 9px; font-weight: 700; letter-spacing: .075em; text-transform: uppercase; }
-        .compras-analise-table th { height: 34px; background: #173f5d; color: #f8fbff; font-size: 9px; font-weight: 700; letter-spacing: .055em; text-transform: uppercase; white-space: nowrap; }
-        .compras-analise-table td { height: 38px; border-bottom: 1px solid #e8eef4; font-size: 11px; }
-        .compras-analise-table tbody tr:hover { background: #f0f8fd; }\n        @media print { .compras-analise-no-print { display:none!important; } .compras-analise-card { box-shadow:none; break-inside:avoid; } main { background:#fff!important; padding:0!important; } }
+        .compras-analise-table th { height: 40px; background: #173f5d; color: #f8fbff; font-size: 9px; font-weight: 700; letter-spacing: .055em; text-transform: uppercase; white-space: nowrap; }
+        .compras-analise-table td { height: 48px; border-bottom: 1px solid #e8eef4; font-size: 11px; }
+        .compras-analise-table tbody tr:hover { background: #f0f8fd; }\n        @media print { @page { size: landscape; margin: 12mm; } .compras-analise-header,.compras-analise-no-print { display:none!important; } .compras-analise-card { box-shadow:none; break-inside:avoid; } main { background:#fff!important; padding:0!important; } }
         @media (prefers-reduced-motion: reduce) { .compras-analise-edit { transition: none; } }
       `}</style>
 
-      <header className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
+      <header className="compras-analise-header mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 print:hidden">
         <div>
           <div className="mb-1 flex flex-wrap items-center gap-2">
             <span className="text-[9px] font-bold uppercase tracking-[.16em] text-sky-700">Compras / Suprimentos</span>
@@ -182,17 +182,18 @@ export default function ComprasAnalisePrecos() {
           <p className="mt-1 text-[11px] text-slate-500">Comparação por valor total informado, prazo comercial e condição de pagamento.</p>
         </div>
         <div className="compras-analise-no-print flex items-center gap-2">
-          <button type="button" title="Imprimir mapa comparativo" aria-label="Imprimir mapa comparativo" className="flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50" onClick={() => window.print()}><Printer size={14}/> Imprimir / PDF</button>
-          <button type="button" title="Atualizar dados" aria-label="Atualizar dados" className="flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50" onClick={() => void load()} disabled={busy}>
+          <button type="button" onClick={exportQuotesCsv} disabled={!rows.length} title="Exportar propostas CSV" className="flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50"><FileSpreadsheet size={14}/> CSV propostas</button><button type="button" onClick={exportItemsCsv} disabled={!rfqItems.length} title="Exportar itens CSV" className="flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50"><FileSpreadsheet size={14}/> CSV itens</button><button type="button" title="Imprimir mapa comparativo" aria-label="Imprimir mapa comparativo" className="flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50" onClick={() => window.print()}><Printer size={14}/> Imprimir / PDF</button>
+          <button type="button" title="Atualizar dados" aria-label="Atualizar dados" className="flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50" onClick={() => void load()} disabled={busy}>
             <RefreshCw size={14} className={busy ? 'animate-spin' : ''} /> Atualizar
           </button>
-          <Link className="flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50" to="/compras/rfq"><ArrowLeft size={14} /> RFQ</Link>
+          <Link className="flex h-[38px] w-[115px] items-center justify-center gap-2 rounded-full border border-[#E2E8F0] bg-white text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50" to="/pageprincipal/compras"><ArrowLeft size={14} /> RFQ</Link>
         </div>
       </header>
 
       {error && <div role="alert" className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">{error}</div>}
       {success && <div role="status" className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">{success}</div>}
 
+      <section className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 print:hidden">{[{label:"RFQs cadastradas",value:rfqs.length},{label:"Propostas registradas",value:quotes.length},{label:"Itens da RFQ selecionada",value:rfqItems.length},{label:"Menor valor total informado",value:winner?money(winner.valorComparavel):"—"}].map(item=><article key={item.label} className="min-h-[96px] rounded-lg border border-[#D3E3EA] bg-white p-4 shadow-sm"><p className="text-[10px] font-bold uppercase tracking-wide text-[#607987]">{item.label}</p><strong className="mt-2 block text-xl font-bold tabular-nums text-[#123B50]">{busy?"Carregando…":error?"—":item.value}</strong></article>)}</section>
       <section className="compras-analise-card mb-3 p-3 sm:p-4">
         <div className="mb-3 flex items-center gap-2">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-50 text-sky-700"><Search size={15} /></span>
