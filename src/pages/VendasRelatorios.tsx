@@ -90,15 +90,18 @@ export default function VendasRelatorios() {
               Buscar pedido, PO ou cliente
               <span className="relative">
                 <Search size={17} className="absolute left-3 top-3 text-slate-400" />
-                <input value={query} onChange={event => setQuery(event.target.value)} className="h-7 w-full border border-slate-300 pl-9 pr-3 text-[11px] font-semibold outline-none focus:border-[#2D8DB8]" placeholder="Ex.: 000123 ou PO-456" />
+                <input value={query} onChange={event => setQuery(event.target.value)} className="h-8 w-full min-w-0 border border-slate-300 pl-9 pr-3 text-[11px] font-semibold outline-none focus:border-[#2D8DB8]" placeholder="Ex.: 000123 ou PO-456" />
               </span>
             </label>
             <label className="grid gap-1 text-[11px] font-medium">
               Status
-              <select value={status} onChange={event => setStatus(event.target.value)} className="h-7 border border-slate-300 bg-white px-3 text-[11px] font-semibold">
+              <select value={status} onChange={event => setStatus(event.target.value)} className="h-8 min-w-0 border border-slate-300 bg-white px-3 text-[11px] font-semibold">
                 {statuses.map(value => <option key={value}>{value}</option>)}
               </select>
             </label>
+            <div className="flex items-end">
+              <button type="button" onClick={() => { setQuery(''); setStatus('TODOS') }} className="inline-flex h-8 items-center justify-center border border-slate-300 bg-white px-3 text-[10px] font-semibold text-slate-700 hover:bg-slate-50">LIMPAR FILTROS</button>
+            </div>
           </div>
         </div>
 
@@ -109,7 +112,7 @@ export default function VendasRelatorios() {
             <div>
               <h2 className="text-[11px] font-medium text-[#123B50]">Relatório de Pedidos</h2>
               <p className="text-[11px] font-semibold text-slate-500">{filtered.length} pedido(s) • total filtrado {money(total)}</p>
-            <button type="button" onClick={() => window.print()} className="print-hidden inline-flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px] font-medium"><Printer size={13}/> IMPRIMIR RELATÓRIO</button>
+            <button type="button" onClick={() => window.print()} className="print-hidden inline-flex h-8 items-center justify-center gap-1 border border-slate-300 bg-white px-2 text-[10px] font-medium"><Printer size={13}/> IMPRIMIR RELATÓRIO</button>
             </div>
           </div>
           <div className="overflow-x-auto">
@@ -134,7 +137,7 @@ export default function VendasRelatorios() {
                     <td className="px-4 py-3">{order.data_entrada ? new Date(order.data_entrada).toLocaleDateString('pt-BR') : '—'}</td>
                     <td className="px-4 py-3">{order.data_entrega_prometida ? new Date(order.data_entrega_prometida).toLocaleDateString('pt-BR') : '—'}</td>
                     <td className="px-4 py-3 font-medium">{order.status}</td>
-                    <td className="px-4 py-3 text-right font-medium">{money(order.total)}</td>
+                    <td className="px-4 py-3 text-right font-medium tabular-nums">{money(order.total)}</td>
                   </tr>
                 ))}
                 {!loading && !filtered.length && (
