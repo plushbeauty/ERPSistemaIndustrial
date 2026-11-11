@@ -5,7 +5,7 @@
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, ClipboardList, FileText, PackageCheck, Plus, RefreshCw, Search, ShoppingCart, Truck, Users } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, BarChart3, ClipboardList, FileText, PackageCheck, Plus, Printer, RefreshCw, Search, ShoppingCart, Truck, Users } from 'lucide-react'
 import ComprasPedidoForm from './ComprasPedidoForm'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
@@ -132,7 +132,7 @@ function DataTable({ rows, kind, onEdit }: { rows: DbRow[]; kind: 'requisicoes' 
       const value = column.keys.map(key => row[key]).find(item => item !== undefined && item !== null && item !== '')
       const formatted = column.format === 'date' ? dateValue(value) : column.format === 'money' ? moneyValue(value) : typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : '—'
       return <td key={column.label}>{column.format === 'status' ? <span className={statusClass(formatted)}>{formatted.replaceAll('_', ' ')}</span> : formatted}</td>
-    })}{kind === 'pedidos' && <td><button className="compras-button compras-button--light erp-edit-button erp-row-action" type="button" onClick={() => onEdit?.(textValue(row, 'id'))} disabled={textValue(row, 'id') === '—'}>Editar</button></td>}</tr>)}</tbody><tfoot><tr className="h-12 border-t-2 border-[#D3E3EA] bg-[#F4F8FA] text-[10px] font-bold"><td colSpan={columns[kind].length + (kind === 'pedidos' ? 1 : 0)}>TOTALIZADORES: {rows.length} registro(s){kind === 'pedidos' ? ' · Valor total ' + moneyValue(totalPedidos) : ''}</td></tr></tfoot></table>
+    })}{kind === 'pedidos' && <td><button className="compras-button compras-button--light erp-edit-button erp-row-action" type="button" title={['RASCUNHO','PENDENTE_APROVACAO'].includes(textValue(row,'status').toUpperCase())?'Editar pedido em aberto':'Pedido aprovado/recebido: edição bloqueada'} onClick={() => onEdit?.(textValue(row, 'id'))} disabled={textValue(row, 'id') === '—' || !['RASCUNHO','PENDENTE_APROVACAO'].includes(textValue(row,'status').toUpperCase())}>{['RASCUNHO','PENDENTE_APROVACAO'].includes(textValue(row,'status').toUpperCase())?'Editar':'Somente leitura'}</button></td>}</tr>)}</tbody><tfoot><tr className="h-12 border-t-2 border-[#D3E3EA] bg-[#F4F8FA] text-[10px] font-bold"><td colSpan={columns[kind].length + (kind === 'pedidos' ? 1 : 0)}>TOTALIZADORES: {rows.length} registro(s){kind === 'pedidos' ? ' · Valor total ' + moneyValue(totalPedidos) : ''}</td></tr></tfoot></table>
     {pageCount > 1 && <nav aria-label="Paginação da grade de compras" className="mt-3 flex flex-wrap items-center justify-between gap-2 print:hidden"><span className="text-[10px] text-[#607987]">Exibindo {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, rows.length)} de {rows.length}</span><div className="flex gap-2"><button type="button" className="compras-button compras-button--light" disabled={page <= 1} onClick={() => setPage(value => Math.max(1, value - 1))}>Anterior</button><button type="button" className="compras-button compras-button--light" disabled={page >= pageCount} onClick={() => setPage(value => Math.min(pageCount, value + 1))}>Próxima</button></div></nav>}
   </div>
 }
