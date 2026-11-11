@@ -36,7 +36,6 @@ export default function FinanceiroCustoPadrao(){
     fetchAllPages<Machine>((from,to)=>supabase.from('erp_maquinas').select('id,codigo,nome,custo_hora',{count:'exact'}).eq('empresa_id',company).eq('ativo',true).order('codigo').order('id').range(from,to)),
     fetchAllPages<Saved>((from,to)=>supabase.from('erp_financeiro_custo_padrao').select('id,created_at,quantidade_base,custo_total,preco_venda,margem_percentual,produto_codigo,produto_nome,componentes',{count:'exact'}).eq('empresa_id',company).order('created_at',{ascending:false}).order('id').range(from,to))
    ])
-   if(m.error)throw m.error
    setProducts(p);setMachines(m);setSaved(h);setHistoryPage(1);setExpandedHistoryId('')
   }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar cadastros financeiros e industriais.')}
   finally{setLoading(false)}
