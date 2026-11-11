@@ -81,6 +81,7 @@ const ComprasRFQ = lazyPage(() => import('./pages/ComprasRFQ'), 'ComprasRFQ')
 const EngenhariaBOM = lazyPage(() => import('./pages/EngenhariaBOM'), 'EngenhariaBOM')
 const FiscalCompras = lazyPage(() => import('./pages/FiscalCompras'), 'FiscalCompras')
 const PCPFichasProcesso = lazyPage(() => import('./pages/PCPFichasProcesso'), 'PCPFichasProcesso')
+const FichaMontagem = lazy(() => import('./pages/FichaMontagem'))
 const PCPIndustrial = lazyPage(() => import('./pages/PCPIndustrial'), 'PCPIndustrial')
 // Formulário RPNC (Ishikawa / 5 Porquês / CAPA / recorrência) e grade de auditorias — prompts SGQ de 2026-10-31
 const QualidadeRPNC = lazy(() => import('./pages/QualityRpncUnified'))
