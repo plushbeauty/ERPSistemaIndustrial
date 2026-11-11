@@ -661,11 +661,11 @@
     },
     {
       "path": "src/pages/DashboardComercial.tsx",
-      "sha": "75a9335681276a0c858a1b7f26dacf04ea4875a5",
+      "sha": "0f4d1c4cd5544fac5c4265d584d9752dd181edfa",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-DASHBOARD-IMPRIMIR-ALTURA-20261111-01 — botões de impressão dos cartões de gráfico padronizados em 32px (h-8), centralizados e sem encolhimento; consultas, dados e fluxo de impressão preservados; alteração visual autorizada pelo proprietário no commit 01c9e46dd761ff3699dd160ef9364720e7956d1f",
+      "aprovadaEm": "2026-11-11",
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-11; pendente de CI e validação visual no Preview"
     },
     {
       "path": "src/pages/DiretoriaDashboard.tsx",
