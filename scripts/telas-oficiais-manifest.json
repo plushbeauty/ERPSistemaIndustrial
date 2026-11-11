@@ -1701,11 +1701,11 @@
     },
     {
       "path": "src/pages/VendasMetas.tsx",
-      "sha": "dc9ccb586e8b39611efdb2a3a72b79f55fe5252b",
+      "sha": "23626eaf166124588ea8e0a0868a5d8511432fd1",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-VENDAS-METAS-GEOMETRIA-20261111-01 — grade responsiva, campos numéricos com 32px, valores tabulares alinhados à direita",
+      "aprovadaEm": "2026-11-11",
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO NO COMMIT 7a90d08277d78c38ca4fb54a70b27bd50fc474d3; pendente de CI e validação visual"
     },
     {
       "path": "src/pages/VendasPDV.tsx",
@@ -1717,11 +1717,11 @@
     },
     {
       "path": "src/pages/VendasPedidoStatus.tsx",
-      "sha": "ae6e8decdbb552e17c136feeb444fc6a5dab2dc5",
+      "sha": "355353e81a40e7ffbd4811b2328b439b4cf9ddea",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-VENDAS-STATUS-PEDIDO-TENANT-20261111-01 — etapas de OP, expedição e liberação fiscal filtradas por empresa_id; sem alterar a navegação ou os dados exibidos",
+      "aprovadaEm": "2026-11-11",
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO NO COMMIT 856eddd5a331d7f0eaac93a3c725d55653bd2e4e; pendente de CI e validação funcional"
     },
     {
       "path": "src/pages/VendasRelatorios.tsx",
