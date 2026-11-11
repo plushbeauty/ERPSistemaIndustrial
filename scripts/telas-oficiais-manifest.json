@@ -493,11 +493,11 @@
     },
     {
       "path": "src/pages/ComprasRequisicoes.tsx",
-      "sha": "4dcf0621ee10c37ab92944d0c895cc7808549a11",
+      "sha": "1c474287fc23bacb6115dc04e9189a4f707f9022",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-COMPRAS-REQUISICOES-OPS-20261110-01 — indicadores reais, manual operacional, voltar, exportação CSV, paginação e totalizadores; RPC transacional erp_compras_encaminhar_requisicoes aplicada e registrada no Supabase.",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "REVISAO TECNICA AUTORIZADA PELO PROPRIETARIO EM 2026-11-10 PARA CONFORMIDADE FUNCIONAL"
     },
     {
       "path": "src/pages/ComprasRFQ.tsx",
