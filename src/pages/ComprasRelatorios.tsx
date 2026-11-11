@@ -107,7 +107,7 @@ export default function ComprasRelatorios(){
       <div className="buy-report-toolbar" style={{flexWrap:'wrap'}}>
         <div style={{marginRight:'auto'}}><h2 style={{margin:0}}>Auditoria de cotações (RFQ)</h2><span style={{fontSize:10,color:'#64748b'}}>Decisão comercial, prazo e justificativa de custo da empresa autenticada.</span></div>
         <select aria-label="Filtrar status de aprovação das RFQs" className="buy-report-filter" value={rfqStatusFilter} onChange={e=>setRfqStatusFilter(e.target.value)}>
-          <option value="TODOS">Todos os status</option><option value="EM_ANALISE">Em análise</option><option value="APROVADO">Aprovado</option><option value="REJEITADO">Rejeitado</option>
+          <option value="TODOS">Todos os status</option><option value="EM_ANALISE">Em análise</option><option value="APROVADO">Aprovado</option><option value="REJEITADO">Rejeitado</option><option value="REPROVADO">Reprovado</option>
         </select>
         <input aria-label="Data inicial das RFQs" className="buy-report-filter" type="date" value={rfqStartDate} onChange={e=>setRfqStartDate(e.target.value)}/>
         <input aria-label="Data final das RFQs" className="buy-report-filter" type="date" value={rfqEndDate} onChange={e=>setRfqEndDate(e.target.value)}/>
