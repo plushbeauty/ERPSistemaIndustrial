@@ -629,7 +629,7 @@
     },
     {
       "path": "src/pages/CustomerDnFinanceList.tsx",
-      "sha": "137df423770635052830726fb1c993857aaede36",
+      "sha": "9e57a57cb80eee46d10d3240c8c1b269452be029",
       "autor": "FernandoSch",
       "revisao": "REV-NOTAS-DEBITO-FINANCEIRAS-20261110-03 — cadastro financeiro completo, seleção tipada de parceiro, rota integrada, anexo privado e título transacional.",
       "aprovadaEm": "2026-11-10",
