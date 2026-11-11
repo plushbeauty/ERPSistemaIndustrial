@@ -1,7 +1,8 @@
 /**
  * @AUTOR: FernandoSch
- * @DATA_REVISAO_APROVACAO: 2026-11-06
- * @REVISAO: REV-CARROSSEL-BAIXO-E-BARRA-FINA-20261106-01 — faixa do carrossel com altura própria e barra do topo sem o quadrado da marca
+ * @DATA_REVISAO_APROVACAO: 2026-11-10
+ * @REVISAO: REV-HOME-IDENTIDADE-COPY-20261110-01 — assinatura pública SYSNQRA padronizada, texto de embalagem corrigido; carrossel original de cinco artes e navegação real preservados
+ * Revisão autorizada pelo proprietário em 2026-11-10: aproveitar a identidade visual moderna de referência sem substituir o AppBootstrap nem a home pública já aprovada. Os cinco slides originais, as rotas reais /login e /cadastro-empresa, o menu responsivo, a ajuda e os planos existentes permanecem; a identificação interna FernandoSch_System saiu do rodapé e a descrição do fluxo foi corrigida.
  * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-06 — "A IMAGEM FICOU GRANDE DE MAIS ELE TA PEGANDO
  * A TELA TODA PERFEITO MAIS ELA FICOU MUITNA ALTA PEGANDO A TELA MUITO PARA BAIXO CONSEGUE ARRUA" e
  * "SABE A BARRA DO TOPO ACHO QUE PODEMOS TIRAR O LOGO DELA PORQUE JA TEM O LOGO NAS IMAGENS ASSIM
@@ -149,7 +150,7 @@ const moduleDetails: Record<string, ModuleDetail> = {
   'chao-fabrica': { items: ['Terminal de apontamento por posto', 'Contador de peças boas e refugo', 'Parada com motivo e tempo', 'Lote, operador e turno registrados'], flow: ['Selecionar máquina', 'Iniciar', 'Apontar', 'Registrar parada', 'Encerrar turno'], results: ['Produção em tempo real', 'Paradas e motivos', 'Refugo por operação', 'Avanço da ordem'] },
   metrologia: { items: ['Medição dimensional com paquímetro digital', 'Tolerâncias e critérios de aceitação', 'Instrumentos, certificados e validade', 'Evidência vinculada ao lote'], flow: ['Medir', 'Comparar', 'Julgar', 'Registrar', 'Calibrar'], results: ['Medições e desvios', 'Instrumentos vencidos', 'Histórico por item', 'Evidência de inspeção'] },
   documentos: { items: ['Repositório controlado de documentos do SGQ', 'Procedimentos, instruções de trabalho e registros', 'Revisões, vigência e obsoletos', 'Trilha de acesso por empresa'], flow: ['Elaborar', 'Aprovar', 'Publicar', 'Revisar', 'Tornar obsoleto'], results: ['Documentos vigentes', 'Revisões pendentes', 'Obsoletos arquivados', 'Acessos e evidências'] },
-  expedicao: { items: ['Separação e conferência de pedidos', 'Embalagem, romaneio e etiquetagem', 'Roteirização de carga e entrega', 'Comprovante de entrega (POD)'], flow: ['Separar', 'Conferir', 'Embalhar', 'Carregar', 'Entregar'], results: ['Pedidos prontos', 'Cargas e rotas', 'Volumes e cubagem', 'Entregas confirmadas'] },
+  expedicao: { items: ['Separação e conferência de pedidos', 'Embalagem, romaneio e etiquetagem', 'Roteirização de carga e entrega', 'Comprovante de entrega (POD)'], flow: ['Separar', 'Conferir', 'Embalar', 'Carregar', 'Entregar'], results: ['Pedidos prontos', 'Cargas e rotas', 'Volumes e cubagem', 'Entregas confirmadas'] },
   indicadores: { items: ['Índices de produção, qualidade e estoque', 'Custo, margem e resultado por período', 'Painéis por setor, máquina e produto', 'Base para a reunião de resultados'], flow: ['Coletar', 'Consolidar', 'Comparar', 'Decidir'], results: ['Eficiência e OEE', 'Refugo e retrabalho', 'Acurácia de estoque', 'Margem industrial'] },
   comissoes: { items: ['Regras por vendedor, produto e período', 'Cálculo sobre faturamento e metas', 'Perfil do vendedor e custo de hora', 'Auditoria antes do pagamento'], flow: ['Regra', 'Faturar', 'Calcular', 'Auditar', 'Pagar'], results: ['Base de cálculo', 'Comissão apurada', 'Divergências', 'Histórico de pagamento'] },
 }
@@ -379,7 +380,7 @@ export default function PublicIndustrialHome() {
     <footer className="ph-footer">
       <div className="ph-footer-brand">
         <img src="/logo/logo-marca.png" alt="" aria-hidden="true" />
-        <div><strong>SYSNQRA</strong><br />ERP &amp; SGQ Industrial · FernandoSch_System</div>
+        <div><strong>SYSNQRA</strong><br />ERP &amp; SGQ Industrial · Gestão industrial inteligente</div>
       </div>
       <div><a href="/contato">Contato</a> · <a href="/blog">Blog</a> · <a href="/planos">Planos</a> · <a href="/login">Entrar</a></div>
     </footer>
