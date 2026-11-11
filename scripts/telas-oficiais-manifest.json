@@ -925,11 +925,11 @@
     },
     {
       "path": "src/pages/FornecedoresIndustrial.tsx",
-      "sha": "6fa27a540c417cf6128c5adba54f5de655a4fff8",
+      "sha": "1258cbd8480bd5bb17eb8666cd596e7c38364312",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-FORNECEDOR-GRAVACAO-CONFIRMADA-20261111-01 — confirma linha em edição/exclusão/vínculo de certificado e exige documento ISO",
+      "aprovadaEm": "2026-11-11",
+      "statusAprovacao": "CORRIGIDO EM BRANCH DE AUDITORIA; type-check/build, teste autenticado e visual pendentes; não liberado para produção."
     },
     {
       "path": "src/pages/HelpPCPFichas.tsx",
