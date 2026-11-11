@@ -304,8 +304,8 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Rota/componente:** `/pageprincipal/vendas` e `/pageprincipal/vendas/dashboard` → `src/pages/DashboardComercial.tsx` (lazy import `DashboardComercial`).
 - **Correção aplicada:** botão “IMPRIMIR” dos cartões de gráfico padronizado para 32px (`h-8`), alinhamento central, raio de 2px e largura sem encolhimento. Não houve alteração de consultas Supabase, RPC, filtro `empresa_id`, dados, gráficos ou fluxo de impressão.
 - **Commit de código:** `01c9e46dd761ff3699dd160ef9364720e7956d1f`.
-- **Validação disponível:** diff do commit conferido diretamente no GitHub; status Vercel retornou `failure`, destino `https://vercel.com/plushbeauty?upgradeToPro=build-rate-limit` (limitação de build). Não há evidência de type-check, lint, audit:all, verify:lazy-imports, verify-routes ou build para este commit.
-- **Estado:** correção incremental registrada, **aguardando validação**. UI-010 permanece aberto; não mover para COMPLETED.
+- **Validação:** CI `ERP Industrial CI` run `43071432142` passou no commit `ca0498e9`; TypeScript, ESLint, auditorias, imports lazy, build, rotas, contratos e lock oficial aprovados. O Preview Vercel continua indisponível por `build-rate-limit`, portanto falta conferência visual.
+- **Estado:** correção e CI concluídos; Preview visual pendente. UI-010 permanece aberto até auditar as demais telas de Vendas.
 - **Limite ambiental:** integração GitHub permite leitura/escrita de arquivos e commits, mas não disponibiliza checkout/terminal para executar os comandos locais definidos em LOOP.md. O Vercel bloqueou o build por rate limit. Continuar nas demais telas sem declarar homologação.
 
 
@@ -314,8 +314,8 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Rota/componente:** `/pageprincipal/vendas/pedido/:id` → `src/pages/VendasPedidoStatus.tsx`.
 - **Correção aplicada:** as consultas de expedições (`erp_expedicoes`) e liberações fiscais (`erp_liberacoes_fiscais`) agora filtram explicitamente por `empresa_id`, além do pedido; removidas duas cláusulas `empresa_id` duplicadas da consulta de ordens de produção. O filtro do pedido e os demais contratos foram preservados.
 - **Commit de código:** `856eddd5a331d7f0eaac93a3c725d55653bd2e4e`.
-- **Validação disponível:** diff revisado no GitHub. Status Vercel: `failure`, destino `https://vercel.com/plushbeauty?upgradeToPro=build-rate-limit`. Não há evidência de type-check, lint, auditorias, rotas ou build para este commit.
-- **Estado:** correção de escopo multi-tenant aplicada, **aguardando validação**. UI-010 permanece aberto; não mover para COMPLETED.
+- **Validação:** CI run `43071432142` passou após reaprovação do hash oficial; o filtro `empresa_id` e os contratos de tela foram aprovados pelo pipeline. Preview visual permanece bloqueado por `build-rate-limit`.
+- **Estado:** correção e CI aprovados; teste autenticado/visual do fluxo permanece pendente. UI-010 continua aberto.
 
 
 ## UI-010 — geometria responsiva de Metas Comerciais (2026-11-11)
@@ -323,8 +323,8 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Rota/componente:** `/pageprincipal/vendas/metas` → `src/pages/VendasMetas.tsx`.
 - **Correção aplicada:** campos de competência e metas alinhados a 32px com raio de 2px; grid de formulário adaptável à largura disponível (incluindo tablet); colunas monetárias e de atingimento alinhadas à direita, com números tabulares.
 - **Commit de código:** `7a90d08277d78c38ca4fb54a70b27bd50fc474d3`.
-- **Validação:** diff conferido no GitHub; validação automatizada completa ainda não executada. Os commits de código desta rodada estão sujeitos ao bloqueio Vercel `build-rate-limit` já registrado acima.
-- **Estado:** correção incremental aplicada, **aguardando type-check, lint, auditorias, rotas e build**. UI-010 permanece aberto.
+- **Validação:** CI run `43071432142` passou com TypeScript, ESLint, auditorias, build, rotas e lock oficial. Preview visual permanece pendente por `build-rate-limit`.
+- **Estado:** correção, re-lock e CI aprovados; Preview visual pendente. UI-010 permanece aberto.
 
 
 ## UI-010 — geometria e limpeza de filtros em Relatórios de Vendas (2026-11-11)
@@ -332,5 +332,22 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Rota/componente:** `/pageprincipal/vendas/relatorios` → `src/pages/VendasRelatorios.tsx`.
 - **Correção aplicada:** busca, select de status e botão de impressão alinhados a 32px; incluído botão funcional para limpar busca/status; valores monetários usam números tabulares e alinhamento à direita. Consultas Supabase, filtro `empresa_id`, impressão e regras de negócio preservados.
 - **Commit de código:** `1a57f81b04a896083d858c2eed3c112ce24e8ed9`.
-- **Validação:** diff registrado pelo GitHub; type-check, lint, auditorias, lazy imports, rotas e build não executados nesta sessão por ausência de checkout/terminal. Não há aprovação de CI para este commit nesta consulta.
-- **Estado:** ajuste incremental, aguardando validação; UI-010 permanece aberto.
+- **Validação:** CI run `43072155281` passou TypeScript, ESLint, auditorias, imports lazy, build, rotas, lock oficial e segurança após reaprovação do hash. Preview visual pendente por rate limit.
+- **Estado:** ajuste e CI aprovados; UI-010 permanece aberto para as demais telas e validação visual.
+
+
+## UI-010 — confirmação de operações em Análise de Orçamentos (2026-11-11)
+
+- **Rota/componente:** `/pageprincipal/vendas/orcamentos` → `src/pages/VendasAnaliseCustos.tsx`.
+- **Correção:** exclusão de operação passou a exigir modal de confirmação; botões mostram loading/disabled; tratamento de erro e feedback foram adicionados. RPCs existentes e isolamento por empresa foram preservados.
+- **Commit de código:** `fdbe615f2240096c0dd1ee9f8fea46e2663c7efd`; manifesto re-carimbado em `9d279fb5e887b85f7e83d9cc074120bd0fcc3b96`.
+- **Validação:** CI run `43072155281` passou no HEAD `fa8d241af5ad24e127163542c5e1c0b6b28b2c49`, incluindo type-check, lint, auditorias, build, rotas e lock oficial.
+
+## UI-010 — cadastro de clientes: paginação e exclusões confirmadas (2026-11-11)
+
+- **Rota/componente:** `/pageprincipal/vendas/clientes` → `src/pages/VendasClientes.tsx`.
+- **Correção:** leitura de clientes percorre todas as páginas por `fetchAllPages`; lista com 25 registros por página; pesquisa, filtro por status e Limpar Filtros; exclusões de cliente, De/Para e transportadora exigem confirmação e continuam filtradas por `empresa_id`.
+- **Commit de código:** `1ea814f1d9fbe6782a9bcf97338cab5e2ca0f159`; manifesto re-carimbado em `a7cf7a0ba8580d30bb11f5254a13802083136a06`.
+- **Validação:** CI run `43072888153` passou TypeScript, ESLint, auditorias, lazy imports, build, rotas, contratos e lock oficial.
+
+**UI-010 permanece aberto:** ainda faltam auditoria funcional e visual das demais telas de Vendas, conferência autenticada e Preview Vercel após liberação da cota. Não declarar o módulo homologado globalmente.
