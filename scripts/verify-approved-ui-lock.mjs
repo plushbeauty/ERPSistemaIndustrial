@@ -6,7 +6,7 @@ import { existsSync, readFileSync } from 'node:fs'
  * Locks the shared workspace, authentication, start-menu navigation, PCP,
  * Paquímetro and Fiscal contracts without weakening security/build checks.
  * Ordem do proprietario (2026-11-02): a barra Windows 11 da base da tela foi
- * deletada e nao pode voltar; o destaque laranja do menu tambem saiu.
+ * deletada e nao pode voltar; o destaque global legado continua proibido. Ordem explicita de 2026-11-11: somente Ficha de Montagem recebe destaque ambar no menu PCP.
  */
 const read = (path) => readFileSync(path, 'utf8')
 const app = read('src/AppEntryV2.tsx')
