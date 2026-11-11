@@ -471,9 +471,9 @@
       "path": "src/pages/ComprasIndustrial.tsx",
       "sha": "37c4192d93729c6bf50cd7658b256366e01e5c3e",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-PEDIDO-RPC-20261110-01 — salvamento por erp_compras_salvar_pedido(p_payload), alinhado às colunas remotas e retorno pedido_compra_id/numero_pedido. REV-COMPRAS-PEDIDO-FORM-COMPARTILHADO-20261110-02 — rota industrial reutiliza o formulário comum para criação, edição e impressão, removendo o modal simplificado duplicado. REV-COMPRAS-GRADE-40-48-PRINT-20261110-01 — campos/selects 40px, linhas 48px e impressão A4 institucional.",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-PEDIDO-RPC-20261110-01 — salvamento por erp_compras_salvar_pedido(p_payload), alinhado às colunas remotas e retorno pedido_compra_id/numero_pedido. REV-COMPRAS-PEDIDO-FORM-COMPARTILHADO-20261110-02 — rota industrial reutiliza o formulário comum para criação, edição e impressão, removendo o modal simplificado duplicado. REV-COMPRAS-GRADE-40-48-PRINT-20261110-01 — campos/selects 40px, linhas 48px e impressão A4 institucional. REV-COMPRAS-INDUSTRIAL-GRADE-40-48-PRINT-20261110-01 — atualização visual registrada; auditoria funcional/build pendentes.",
       "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "ALTERAÇÃO VISUAL REGISTRADA; auditoria funcional, comparação completa e build ainda pendentes."
+      "statusAprovacao": "ALTERAÇÃO EM BRANCH DE AUDITORIA; NÃO LIBERADA PARA PRODUÇÃO."
     },
     {
       "path": "src/pages/ComprasPedidoForm.tsx",
@@ -517,11 +517,11 @@
     },
     {
       "path": "src/pages/ComprasWorkspace.tsx",
-      "sha": "98d1ce222aadd7958af2a4aa4944ccc868836d07",
+      "sha": "33c3b772e148ba5c9a03796b86e69eb6134bf882",
       "autor": "FernandoSch",
-      "revisao": "REV-COMPRAS-CENTRAL-ABAS-20261110-02 — abas Painel, Requisições, Alertas MRP, Cotações, Pedidos, Recebimentos e Fornecedores; filtros explícitos por empresa, MRP baseado somente em estoque_atual e ponto_reposicao existentes; preserva edição de pedidos e contrato real de RFQ.",
+      "revisao": "REV-COMPRAS-CENTRAL-ABAS-20261110-02 — abas Painel, Requisições, Alertas MRP, Cotações, Pedidos, Recebimentos e Fornecedores; filtros explícitos por empresa, MRP baseado somente em estoque_atual e ponto_reposicao existentes; preserva edição de pedidos e contrato real de RFQ. REV-COMPRAS-WORKSPACE-AJUDA-KPI-GRID-PRINT-EXPORT-20261110-01 — atualização visual registrada; auditoria funcional/build pendentes.",
       "aprovadaEm": "2026-11-10",
-      "statusAprovacao": "INTEGRAÇÃO ADITIVA NA BRANCH GLOBAL; validação CI pendente; não reintroduz comprador_responsavel/status_aprovacao ausentes no schema remoto."
+      "statusAprovacao": "ALTERAÇÃO EM BRANCH DE AUDITORIA; NÃO LIBERADA PARA PRODUÇÃO."
     },
     {
       "path": "src/pages/ConfiguracaoLote.tsx",
