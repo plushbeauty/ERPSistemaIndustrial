@@ -93,7 +93,7 @@
     },
     {
       "path": "src/features/controladoria/CadastroDecimais.tsx",
-      "sha": "51cdc992e5e174b47d9b85e2c4bfe002f276d56a",
+      "sha": "6c116c3686a3dd4c6b72bfd09ddc87233900f90f",
       "autor": "FernandoSch",
       "revisao": "REV-CADASTRO-DECIMAIS-CRUD-TENANT-20261111-01 — edição via RPC oficial, ativação/desativação por id + empresa_id, grade ativa/inativa e carga explícita dos seis padrões.",
       "aprovadaEm": "2026-11-11",
