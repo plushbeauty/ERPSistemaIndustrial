@@ -14,7 +14,7 @@
 /**
  * @DATA_REVISAO_ANTERIOR: 2026-10-19
  * @DESENVOLVEDOR: FernandoSch
- * @NOME_SISTEMA: MOLDPLÁS ERP INDUSTRIAL
+ * @NOME_SISTEMA: SYSNQRA ERP INDUSTRIAL ERP INDUSTRIAL
  * @STATUS_ANTERIOR: CONTROLE-PROCESSO-INJETORA-PREMIUM-OK
  * Revisão visual: Steel Blue, controles compactos, cantos retos e impressão A4 paisagem.
  */
@@ -430,7 +430,7 @@ export default function ControleProcessoInjetora() {
   return <main className="pcp-injetora-page min-h-full bg-[#F4FBFD] p-2 text-[#123B50] antialiased">
       <style>{'@media print{.no-print{display:none!important}.pcp-injetora-page{background:#fff!important;color:#111827!important;padding:0!important}.pcp-injetora-page *{color:#111827!important;box-shadow:none!important}.pcp-injetora-page section,.pcp-injetora-page form,.pcp-injetora-page aside,.pcp-injetora-page header{background:#fff!important;border-color:#cbd5e1!important}.pcp-injetora-page input,.pcp-injetora-page select,.pcp-injetora-page textarea{background:#fff!important;border-color:#cbd5e1!important;color:#111827!important}.pcp-injetora-page{font-family:Arial,sans-serif!important}@page{size:A4 landscape;margin:10mm}}'}</style>
       <div className="mx-auto max-w-[1600px] space-y-2">
-        <div className="hidden print:block border-b-2 border-slate-900 pb-2 text-[#123B50]"><h1 className="text-base font-black uppercase">MOLDPLÁS ERP INDUSTRIAL — Controle de Processo da Injetora</h1><p className="text-[9px]">Emitido em {new Date().toLocaleString()} • Desenvolvedor FernandoSch • Registro controlado do SGQ</p></div>
+        <div className="hidden print:block border-b-2 border-slate-900 pb-2 text-[#123B50]"><h1 className="text-base font-black uppercase">SYSNQRA ERP INDUSTRIAL ERP INDUSTRIAL — Controle de Processo da Injetora</h1><p className="text-[9px]">Emitido em {new Date().toLocaleString()} • Desenvolvedor FernandoSch • Registro controlado do SGQ</p></div>
         <div className="no-print flex flex-wrap items-center justify-end gap-2">
           <span className="mr-auto text-[9px] font-bold uppercase tracking-wide text-slate-500">IT-IJ-001 Rev. 00 · próxima revisão 05/06/2028</span>
           <button className={secondaryClass} type="button" onClick={() => { void emitirCcpp() }}><Printer size={13} /> Imprimir A4</button><button className={secondaryClass} type="button" onClick={() => void load()} disabled={loading || busy}><RefreshCw size={13} /> Atualizar</button>
