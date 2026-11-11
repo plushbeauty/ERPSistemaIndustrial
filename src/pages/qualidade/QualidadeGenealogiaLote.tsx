@@ -14,7 +14,7 @@
 /**
  * @DATA_REVISAO_ANTERIOR: 2026-10-19
  * @DESENVOLVEDOR: FernandoSch
- * @NOME_SISTEMA: SYSNQRA ERP INDUSTRIAL ERP INDUSTRIAL
+ * @NOME_SISTEMA: SYSNQRA ERP INDUSTRIAL
  * @REVISAO_ANTERIOR: Genealogia de lotes — Steel Blue, persistência real e isolamento por empresa
  * @NOTA: Indicador de banco representa leitura confirmada; não declara status de build/deploy.
  */
