@@ -1101,11 +1101,11 @@
     },
     {
       "path": "src/pages/pcp/ControleProcessoInjetora.tsx",
-      "sha": "450b34ce8909422a19a2453258848e4f2f8de173",
+      "sha": "2e5496ffb0adb720326dec6ec6db200aa9a0b352",
       "autor": "FernandoSch",
-      "revisao": "REV-TELAS-CONSISTENTES-20261108-01 — ordem do proprietário em 2026-11-08: a tela deixou de renderizar um segundo ERPHorizontalShell e o cabeçalho próprio; a abertura é o card navy padrão do shell e resta a barra de ações (Imprimir A4, Atualizar). Formulário, consultas e relatório A4 inalterados.",
+      "revisao": "REV-TELAS-CONSISTENTES-20261108-01 — ordem do proprietário em 2026-11-08: a tela deixou de renderizar um segundo ERPHorizontalShell e o cabeçalho próprio; a abertura é o card navy padrão do shell e resta a barra de ações (Imprimir A4, Atualizar). Formulário, consultas e relatório A4 inalterados. | REV-BRANDING-SYSNQRA-20261111-01",
       "aprovadaEm": "2026-11-05",
-      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-11; marca visual padronizada para SYSNQRA ERP INDUSTRIAL; pendente de CI."
     },
     {
       "path": "src/pages/pcp/PCPAuditoria.tsx",
@@ -1325,11 +1325,11 @@
     },
     {
       "path": "src/pages/qualidade/QualidadeGenealogiaLote.tsx",
-      "sha": "36bb1ea918f864b48a05fa9779982e2dd9823739",
+      "sha": "0e15b73ae33153479d5383504dd4696f4ea4714e",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
+      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta | REV-BRANDING-SYSNQRA-20261111-01",
       "aprovadaEm": "2026-11-04",
-      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-11; marca visual padronizada para SYSNQRA ERP INDUSTRIAL; pendente de CI."
     },
     {
       "path": "src/pages/qualidade/QualidadeInspecaoProcessoVersionada.tsx",
@@ -1357,11 +1357,11 @@
     },
     {
       "path": "src/pages/qualidade/QualidadeQuarentena.tsx",
-      "sha": "5faa679732b564b2a233d582e20944928831c564",
+      "sha": "677a21776e89a1425d5b895abcc55bb1dadfdd32",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta",
+      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — tela convertida do tema escuro para o padrao industrial claro (fundo #F4FBFD, paineis brancos, texto #123B50); nenhuma alteracao de logica ou de consulta | REV-BRANDING-SYSNQRA-20261111-01",
       "aprovadaEm": "2026-11-04",
-      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-11; marca visual padronizada para SYSNQRA ERP INDUSTRIAL; pendente de CI."
     },
     {
       "path": "src/pages/qualidade/QualidadeTemplatesInspecao.tsx",
@@ -1397,11 +1397,11 @@
     },
     {
       "path": "src/pages/QualidadeCentralTablet.tsx",
-      "sha": "e5583265a0ae66612042057e3093ffc91c304400",
+      "sha": "40a3096005d9f220926659fd6090b40d6e3467aa",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — console do tablet convertido do tema escuro para o padrão industrial claro (fundo #F4FBFD, painéis brancos, texto #123B50) e marca alinhada para SYSNQRA; nenhuma alteração de lógica ou de consulta",
+      "revisao": "REV-PADRAO-COR-CLARO-20261104-01 — console do tablet convertido do tema escuro para o padrão industrial claro (fundo #F4FBFD, painéis brancos, texto #123B50) e marca alinhada para SYSNQRA; nenhuma alteração de lógica ou de consulta | REV-BRANDING-SYSNQRA-20261111-01",
       "aprovadaEm": "2026-11-04",
-      "statusAprovacao": "PADRAO UNICO DE COR APLICADO POR ORDEM DO PROPRIETARIO EM 2026-11-04"
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-11; marca visual padronizada para SYSNQRA ERP INDUSTRIAL; pendente de CI."
     },
     {
       "path": "src/pages/QualidadeDashboardRNC.tsx",
@@ -1445,11 +1445,11 @@
     },
     {
       "path": "src/pages/QualidadeInspecoesIndustrial.tsx",
-      "sha": "b040e5a250f767656f9a5860224fd2a2ed6c1544",
+      "sha": "dc78017bf4c019a3ed8cc7f465be3e7c08e170b1",
       "autor": "FernandoSch",
-      "revisao": "REV-INSPECOES-IMPORT-PLUS-20261108-01 — corrigido import do ícone Plus ausente; nenhuma alteração visual, de consulta ou de fluxo",
+      "revisao": "REV-INSPECOES-IMPORT-PLUS-20261108-01 — corrigido import do ícone Plus ausente; nenhuma alteração visual, de consulta ou de fluxo | REV-BRANDING-SYSNQRA-20261111-01",
       "aprovadaEm": "2026-11-08",
-      "statusAprovacao": "CORREÇÃO TÉCNICA NÃO VISUAL; APROVAÇÃO E CONTRATO VISUAL ANTERIORES PRESERVADOS"
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-11; marca visual padronizada para SYSNQRA ERP INDUSTRIAL; pendente de CI."
     },
     {
       "path": "src/pages/QualidadeInstrumentosCadastro.tsx",
