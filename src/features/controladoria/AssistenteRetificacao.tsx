@@ -136,11 +136,13 @@ export default function AssistenteRetificacao() {
           amount:Number(q.data.valor_total || 0), date:q.data.data_emissao || '', account:q.data.conta_bancaria_id || 'Não vinculada',
           costCenter:q.data.centro_custo || 'Não informado', status:q.data.status || '—', sourceTable:'erp_financeiro_titulos' }
       } else {
-        const [out, incoming] = await Promise.all([
-          supabase.from('fiscal_nfe_saidas').select('id,numero,chave_acesso,razao_social_destinatario,valor_total,emitida_em,status').or('numero.eq.'+docNumber.trim()+',chave_acesso.eq.'+docNumber.trim()).limit(1).maybeSingle(),
-          supabase.from('fiscal_nfe_entradas').select('id,numero,chave_acesso,razao_social_emitente,valor_total,created_at,status').or('numero.eq.'+docNumber.trim()+',chave_acesso.eq.'+docNumber.trim()).limit(1).maybeSingle()
-        ])
+        const outNumber = await supabase.from('fiscal_nfe_saidas').select('id,numero,chave_acesso,razao_social_destinatario,valor_total,emitida_em,status').eq('numero', docNumber.trim()).limit(1).maybeSingle()
+        if (outNumber.error) throw outNumber.error
+        const out = outNumber.data ? outNumber : await supabase.from('fiscal_nfe_saidas').select('id,numero,chave_acesso,razao_social_destinatario,valor_total,emitida_em,status').eq('chave_acesso', docNumber.trim()).limit(1).maybeSingle()
         if (out.error) throw out.error
+        const inNumber = await supabase.from('fiscal_nfe_entradas').select('id,numero,chave_acesso,razao_social_emitente,valor_total,created_at,status').eq('numero', docNumber.trim()).limit(1).maybeSingle()
+        if (inNumber.error) throw inNumber.error
+        const incoming = inNumber.data ? inNumber : await supabase.from('fiscal_nfe_entradas').select('id,numero,chave_acesso,razao_social_emitente,valor_total,created_at,status').eq('chave_acesso', docNumber.trim()).limit(1).maybeSingle()
         if (incoming.error) throw incoming.error
         const nfe = out.data ? { ...out.data, party:out.data.razao_social_destinatario, date:out.data.emitida_em, table:'fiscal_nfe_saidas' }
           : incoming.data ? { ...incoming.data, party:incoming.data.razao_social_emitente, date:incoming.data.created_at, table:'fiscal_nfe_entradas' } : null
@@ -215,7 +217,7 @@ export default function AssistenteRetificacao() {
       {access === null && <div role="status" className={card}>Verificando permissões de acesso…</div>}
       {access === false && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">Acesso restrito à Administração, Controladoria ou Financeiro. {error}</div>}
       {access === true && <>
-        <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 print:hidden">{[{label:'Solicitações registradas',value:audit.length},{label:'Registradas hoje',value:auditToday},{label:'Com vínculo documental',value:auditLinked},{label:'Sem vínculo documental',value:audit.length-auditLinked}].map(item=><article key={item.label} className="min-h-[96px] rounded-lg border border-[#D3E3EA] bg-white p-4 shadow-sm"><p className="text-[10px] font-bold uppercase tracking-wide text-[#607987]">{item.label}</p><strong className="mt-2 block text-xl font-bold tabular-nums text-[#123B50]">{refreshing?'—':item.value}</strong></article>)}</section>
+        <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 print:hidden">{[{label:'Solicitações registradas',value:audit.length},{label:'Registradas hoje',value:auditToday},{label:'Com vínculo documental',value:auditLinked},{label:'Sem vínculo documental',value:audit.length-auditLinked}].map(item=><article key={item.label} className="min-h-[96px] rounded-lg border border-[#D3E3EA] bg-white p-4 shadow-sm"><p className="text-[10px] font-bold uppercase tracking-wide text-[#607987]">{item.label}</p><strong className="mt-2 block text-xl font-bold tabular-nums text-[#123B50]">{refreshing||error?'—':item.value}</strong></article>)}</section>
         <section className={card}>
           <div className="mb-4 flex items-center gap-2"><Search size={16} className="text-[#2D8DB8]"/><h2 className="text-sm font-bold">1. Localizar documento para estorno</h2></div>
           <div className="grid grid-cols-1 items-end gap-3 lg:grid-cols-[240px_minmax(240px,1fr)_160px_175px]">
