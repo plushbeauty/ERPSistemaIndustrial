@@ -9,6 +9,42 @@ export type ContextualHelp = {
 }
 
 const help: Record<string, ContextualHelp> = {
+  '/pageprincipal/controladoria/cadastro-decimais': {
+    title: 'Cadastro de Precisão Decimal — Cubagem',
+    purpose: 'Definir quantas casas decimais serão utilizadas no arredondamento de cubagem, pesos, medidas técnicas, consumo da ficha técnica (BOM) e valores unitários, mantendo consistência nos cálculos industriais, logísticos e de faturamento.',
+    steps: [
+      'Confira a empresa ativa exibida no formulário. As regras são gravadas no contexto da empresa selecionada.',
+      'Informe um código único em letras maiúsculas, como VOLUME, PESO_LIQ ou MEDIDA_TEC.',
+      'Descreva a aplicação da regra para que outras áreas identifiquem seu uso.',
+      'Informe de 0 a 6 casas decimais. O exemplo da grade é atualizado conforme a quantidade definida.',
+      'Clique em Gravar para persistir a regra no Supabase.',
+      'Para alterar uma regra, clique em Editar, ajuste descrição ou casas e grave novamente.',
+      'Para remover uma regra da lista ativa, use Excluir e confirme a desativação.',
+      'Se a empresa ainda não possuir parâmetros, use Carregar padrões industriais para gravar as seis regras sugeridas.'
+    ],
+    fields: [
+      'Empresa: contexto de trabalho somente para consulta; não pode ser alterado nesta tela.',
+      'Código: identificador único da regra dentro da empresa.',
+      'Descrição: finalidade operacional da precisão.',
+      'Casas: número inteiro entre 0 e 6.',
+      'Exemplo: representação formatada com as casas decimais configuradas.',
+      'Regras ativas: lista de parâmetros vigentes para a empresa.'
+    ],
+    buttons: [
+      'Voltar: retorna à tela anterior.',
+      'Gravar: cria ou atualiza a regra no banco.',
+      'Editar: carrega a regra selecionada no formulário.',
+      'Excluir: desativa a regra, sem apagar fisicamente seu histórico.',
+      'Carregar padrões industriais: grava VOLUME (4), PESO_LIQ (4), PESO_BRUTO (3), MEDIDA_TEC (2), QTD_BOM (4) e VALOR_UNIT (4).',
+      'Atualizar: consulta novamente as regras ativas.'
+    ],
+    tips: [
+      'A alteração da precisão pode mudar a forma de exibição e os arredondamentos em cálculos que consumam essas regras; valide o impacto com as áreas de PCP, estoque, expedição e faturamento.',
+      'O carregamento dos padrões é uma ação explícita e atualiza regras de mesmo código; não é executado automaticamente ao abrir a tela.',
+      'O código fica bloqueado durante a edição para preservar a chave única da regra.'
+    ],
+    verified: true,
+  },
   '/pageprincipal/ajuda': {
     title: 'Central de Ajuda',
     purpose: 'Localizar orientações operacionais por tela, módulo ou assunto e abrir diretamente a rotina correspondente.',
