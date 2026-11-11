@@ -32,7 +32,7 @@
 | `Menubar` | barra 36px e trigger 28px. |
 | `RequiredField` / FormCheckbox | marcador obrigatório e checkbox nativo; checkbox mede 16px no CSS do form system. |
 
-A folha `erp-compact-global.css` força inputs/selects/textarea para 30px e labels para 9px dentro de `.erp-global-surface`; em `.erp-compact` também aplica min-height de 30px aos botões. Isso pode sobrescrever classes de componentes conforme a cascata e o contexto. Não converter classes declaradas em dimensões renderizadas sem conferir o navegador.
+A folha `erp-compact-global.css` declara regras que forçam inputs/selects/textarea para 30px e labels para 9px dentro de `.erp-global-surface`; em `.erp-compact` também declara min-height de 30px para botões. Porém não foi localizada importação direta dela em `main.tsx`, `AppEntryV2.tsx`, `ERPHorizontalShell.tsx`, `PagePrincipal.tsx` ou `styles/index.css`; a ativação efetiva dessa folha permanece não confirmada. Em contraste, `form-system-2026.css` é importada por `main.tsx`. Não assumir override em runtime sem rastrear a cadeia de imports e conferir o navegador.
 
 ## 3. Botões e ações
 
