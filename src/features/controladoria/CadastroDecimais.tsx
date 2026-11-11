@@ -1,7 +1,7 @@
 /**
  * @AUTOR: FernandoSch
- * @DATA_REVISAO: 2026-11-11
- * @REVISAO: REV-CADASTRO-DECIMAIS-CRUD-TENANT-20261111-01
+ * @DATA_REVISAO: 2026-11-10
+ * @REVISAO: REV-CADASTRO-DECIMAIS-CRUD-TENANT-20261110-01
  * @STATUS: incremento aditivo; contrato oficial de tabela e RPC preservados
  */
 import { useEffect, useState } from 'react'
