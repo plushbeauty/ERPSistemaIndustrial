@@ -1805,11 +1805,11 @@
     },
     {
       "path": "src/pages/FichaMontagem.tsx",
-      "sha": "6cbb9061de368c25c9b8556b49f98e3da3e24b64",
+      "sha": "2ab8c693ccd33be0e919b0e0a4dc061ce514e1ec",
       "autor": "SYSNQRA",
-      "revisao": "REV-FICHA-MONTAGEM-4-ETAPAS-REAL-20261111-02 — montagem, acabamento, inspeção versionada e liberação de lote com dados reais.",
+      "revisao": "REV-FICHA-MONTAGEM-4-ETAPAS-REAL-20261111-03 — OP, roteiro, apontamentos, acabamento, inspeção e liberação reais; sem dados fictícios.",
       "aprovadaEm": "2026-11-11",
-      "statusAprovacao": "IMPLEMENTAÇÃO EM BRANCH DE INTEGRAÇÃO; pendente de CI e validação visual."
+      "statusAprovacao": "IMPLEMENTAÇÃO AUTORIZADA PELO PROPRIETÁRIO; pendente de CI e validação visual."
     },
     {
       "path": "src/features/controladoria/ControladoriaWorkspace.tsx",
