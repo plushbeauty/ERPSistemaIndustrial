@@ -75,10 +75,24 @@ const legacyReferences = fs.readdirSync(migrationsDirectory)
   .filter(file => file.endsWith('.sql'))
   .filter(file => /erp_current_company_id/i.test(fs.readFileSync(path.join(migrationsDirectory, file), 'utf8')))
   .sort()
+const comprasRpcSchemaMigration = read('supabase/migrations/20261110170000_compras_pedido_rpc_schema_aditivo.sql')
+const comprasRpcSequenceMigration = read('supabase/migrations/20261110183000_compras_pedido_numero_sequencia_isolada.sql')
+for (const [migration, name] of [
+  [comprasRpcSchemaMigration, '20261110170000_compras_pedido_rpc_schema_aditivo.sql'],
+  [comprasRpcSequenceMigration, '20261110183000_compras_pedido_numero_sequencia_isolada.sql'],
+]) {
+  requireIn(
+    migration,
+    /v_empresa_id\s+uuid\s*:=\s*public\.erp_current_empresa_id\(\)[\s\S]*v_empresa_policy_id\s+uuid\s*:=\s*public\.erp_current_company_id\(\)[\s\S]*v_empresa_id\s+is\s+null\s+or\s+v_empresa_policy_id\s+is\s+distinct\s+from\s+v_empresa_id/i,
+    `Migration ${name} deve comparar o tenant canônico com o contexto usado pelas policies.`
+  )
+}
 const expectedLegacyReferences = [
   '20260921140500_erp_nfe_legacy_tenant_helper_compatibility.sql',
   '20260921141000_erp_nfe_itens_form.sql',
   '20260924210000_erp_nfe_rascunho_transacional_v1.sql',
+  '20261110170000_compras_pedido_rpc_schema_aditivo.sql',
+  '20261110183000_compras_pedido_numero_sequencia_isolada.sql',
 ].sort()
 if (JSON.stringify(legacyReferences) !== JSON.stringify(expectedLegacyReferences)) {
   failures.push(`Referências ao helper legado fora da compatibilidade/migrations históricas: ${legacyReferences.join(', ')}`)
