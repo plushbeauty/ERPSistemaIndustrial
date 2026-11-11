@@ -14,7 +14,7 @@
 /**
  * @DATA_REVISAO_ANTERIOR: 2026-10-19
  * @DESENVOLVEDOR: FernandoSch
- * @NOME_SISTEMA: MOLDPLÁS ERP INDUSTRIAL
+ * @NOME_SISTEMA: SYSNQRA ERP INDUSTRIAL ERP INDUSTRIAL
  * @STATUS_ANTERIOR: QUALIDADE-QUARENTENA-STEEL-BLUE-REVISAO
  * @ESCOPO: Interface compacta; retenção transacional existente preservada via erp_reter_lote.
  */
@@ -172,7 +172,7 @@ export default function QualidadeQuarentena() {
           <div className="flex min-w-0 items-center gap-2.5">
             <span className="grid h-9 w-9 shrink-0 place-items-center border border-[#CFE1E7] bg-[#F8FAFC] text-[#176487]"><ShieldAlert size={19} /></span>
             <div className="min-w-0">
-              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[#176487]">MOLDPLÁS ERP · SGQ / CONTENÇÃO</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[#176487]">SYSNQRA ERP INDUSTRIAL ERP · SGQ / CONTENÇÃO</p>
               <h1 className="text-sm font-black uppercase tracking-wide text-[#123B50] sm:text-base">Quarentena de lotes e materiais bloqueados</h1>
               <p className="mt-0.5 text-[9px] font-semibold text-slate-500">Retenção transacional de lotes com rastreabilidade por empresa autenticada.</p>
             </div>
@@ -267,7 +267,7 @@ export default function QualidadeQuarentena() {
         </div>
 
         <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-[#CFE1E7] pt-2 text-[8px] font-bold uppercase tracking-wider text-slate-500">
-          <span className="flex items-center gap-1.5"><ShieldCheck size={11} /> MOLDPLÁS · CONTROLE SGQ</span>
+          <span className="flex items-center gap-1.5"><ShieldCheck size={11} /> SYSNQRA ERP INDUSTRIAL · CONTROLE SGQ</span>
           <span>Empresa: {empresaId ? empresaId.slice(0, 8).toUpperCase() : 'AGUARDANDO SESSÃO'} · Revisão 2026-10-19</span>
         </footer>
       </div>
