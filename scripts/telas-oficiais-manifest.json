@@ -93,27 +93,27 @@
     },
     {
       "path": "src/features/controladoria/CadastroDecimais.tsx",
-      "sha": "6c116c3686a3dd4c6b72bfd09ddc87233900f90f",
+      "sha": "05da69947cda403a3f239291ff555f06f38840c6",
       "autor": "FernandoSch",
-      "revisao": "REV-CADASTRO-DECIMAIS-CRUD-KPI-20261111-02 — edição via RPC oficial, ativação/desativação por id + empresa_id, seis padrões acionados pelo usuário, KPIs, paginação, CSV e impressão Plastibor.",
-      "aprovadaEm": "2026-11-11",
-      "statusAprovacao": "INCREMENTO ADITIVO AUTORIZADO PELO PROPRIETÁRIO EM 2026-11-11; tabela erp_regras_decimais, RLS e RPC erp_decimal_salvar_regra preservadas."
+      "revisao": "REV-CADASTRO-DECIMAIS-CRUD-KPI-20261110-02 — edição via RPC oficial, ativação/desativação por id + empresa_id, seis padrões acionados pelo usuário, KPIs, paginação, CSV e impressão Plastibor.",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "INCREMENTO ADITIVO AUTORIZADO PELO PROPRIETÁRIO EM 2026-11-10; tabela erp_regras_decimais, RLS e RPC erp_decimal_salvar_regra preservadas."
     },
     {
       "path": "src/features/controladoria/PainelLucratividade.tsx",
-      "sha": "39756aa2d5dfc3f1e639cf92801efce6aa46c571",
+      "sha": "ae9b6806bfac7051086a854d7cf3ae17a3a17f37",
       "autor": "FernandoSch",
-      "revisao": "REV-CONTROLADORIA-LUCRATIVIDADE-KPI-PRINT-PAGINACAO-20261111-02 — quatro KPIs derivados dos pedidos reais; margem consolidada restrita a pedidos com custo completo; consulta paginada integral por empresa; paginação de grade, CSV e impressão Plastibor.",
-      "aprovadaEm": "2026-11-11",
-      "statusAprovacao": "INCREMENTO ADITIVO AUTORIZADO PELO PROPRIETÁRIO EM 2026-11-11; consultas e cálculos preservados; custos incompletos destacados como pendentes."
+      "revisao": "REV-CONTROLADORIA-LUCRATIVIDADE-KPI-PRINT-PAGINACAO-20261110-02 — quatro KPIs derivados dos pedidos reais; margem consolidada restrita a pedidos com custo completo; consulta paginada integral por empresa; paginação de grade, CSV e impressão Plastibor.",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "INCREMENTO ADITIVO AUTORIZADO PELO PROPRIETÁRIO EM 2026-11-10; consultas e cálculos preservados; custos incompletos destacados como pendentes."
     },
     {
       "path": "src/features/controladoria/PainelRazaoGeral.tsx",
-      "sha": "fac6a0461e7b5a4d39e9aff9233c71db46d1a5c5",
+      "sha": "fcfd61e1148adca3a029f007ab7a95f35aa80839",
       "autor": "FernandoSch",
-      "revisao": "REV-CONTROLADORIA-RAZAO-GERAL-GL-PAGINACAO-20261111-02 — quatro KPIs, saldo integral via RPC oficial, leitura paginada tenant-scoped, paginação, CSV e impressão Plastibor.",
-      "aprovadaEm": "2026-11-11",
-      "statusAprovacao": "INCREMENTO ADITIVO AUTORIZADO PELO PROPRIETÁRIO EM 2026-11-11; leitura contábil e RPC de saldo preservadas."
+      "revisao": "REV-CONTROLADORIA-RAZAO-GERAL-GL-PAGINACAO-20261110-02 — quatro KPIs, saldo integral via RPC oficial, leitura paginada tenant-scoped, paginação, CSV e impressão Plastibor.",
+      "aprovadaEm": "2026-11-10",
+      "statusAprovacao": "INCREMENTO ADITIVO AUTORIZADO PELO PROPRIETÁRIO EM 2026-11-10; leitura contábil e RPC de saldo preservadas."
     },
     {
       "path": "src/features/controladoria/RetificacaoPedido.tsx",
