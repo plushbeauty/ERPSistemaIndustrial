@@ -226,7 +226,8 @@ export default function ComprasRequisicoes() {
   return (
     <VendasLayout title="Requisições de compra" subtitle="PCP • MRP • materiais • cotação" onRefresh={() => void load()}>
       <main className="min-h-screen bg-[#F4F7F9] p-3 text-[#183746] sm:p-4">
-        <div className="mx-auto max-w-[1800px]">
+        <style>{`.compras-requisicoes input:not([type="checkbox"]),.compras-requisicoes select{box-sizing:border-box;height:40px;min-height:40px;border-radius:8px}.compras-requisicoes input:disabled,.compras-requisicoes input[readonly],.compras-requisicoes select:disabled{background:#F3F4F6!important;color:#64748b!important}.compras-requisicoes table tbody tr,.compras-requisicoes table tbody td{height:48px;vertical-align:middle}.compras-requisicoes button{min-height:40px}`}</style>
+        <div className="compras-requisicoes mx-auto max-w-[1800px]">
           <header className="overflow-hidden rounded-[3px] border border-[#0E1E2F] bg-gradient-to-r from-[#123B50] to-[#0E1E2F] text-[#F4FBFD] shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
               <div className="flex min-w-0 items-center gap-3">
