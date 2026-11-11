@@ -118,3 +118,11 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - O Novo Pedido já chama erp_calcular_preco_sugerido_venda ao selecionar cliente e produto; a função consulta erp_preco_especial_cliente e usa o preço especial vigente, mantendo o cálculo padrão quando não há preço especial válido.
 - CSS global dos diálogos Radix reforça superfície branca, texto escuro e campos claros em todas as páginas, sem remover o scrim atrás da janela.
 - Nenhuma migration remota ou cadastro de banco foi alterado nesta revisão.
+
+
+## Registro da revisão APROV-015 — 2026-11-11
+
+- Página pública `src/PublicIndustrialHome.tsx`: mantidas as cinco artes oficiais de `public/images/carrossel/`, a proporção 16:9, dimensões, composição e transição de 0,9 s aprovadas.
+- O carrossel agora pré-carrega as cinco artes antes de iniciar a rotação automática; o intervalo permanece em 7 segundos. `onerror` também conclui a etapa de pré-carregamento, evitando que uma imagem indisponível congele a rotação.
+- O hash da tela pública foi atualizado deliberadamente no `scripts/telas-oficiais-manifest.json`, conforme autorização explícita do proprietário para esta nova revisão.
+- Varredura de texto do código-fonte não encontrou a marca “PLUSH BEAUTY” nas telas; referências em documentação histórica/repositório não foram tratadas como texto de interface.
