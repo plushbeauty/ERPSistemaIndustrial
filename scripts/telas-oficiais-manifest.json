@@ -37,7 +37,7 @@
     },
     {
       "path": "src/features/banking/BankStatementImporter.tsx",
-      "sha": "23d8bb0e79124ca0d6e255a6b037c843f8f26d56",
+      "sha": "29ef8e4a8a5d5aded7d380892c9bdfc19230eb78",
       "autor": "FernandoSch",
       "revisao": "REV-IMPORTADOR-EXTRATO-CSV-REAL-20261111-02 — parser CSV, validação, deduplicação, upload privado e persistência de transações; XLSX/PDF bloqueados até parser validado.",
       "aprovadaEm": "2026-11-10",
