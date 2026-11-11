@@ -124,3 +124,12 @@
   .compras-page .compras-table th,.compras-page .compras-table td{padding:6px 7px}
   .compras-page .compras-table tr{break-inside:avoid}
 }
+
+/* REV-COMPRAS-WORKSPACE-DBGRID-20261110-02 */
+.compras-page .compras-field input,.compras-page .compras-field select{height:40px;min-height:40px}
+.compras-page .compras-table tbody tr{height:48px}
+.compras-page .compras-pagination{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 12px;border-top:1px solid #d8e4ea;background:#fff;color:#496574;font-size:10px}
+.compras-page .compras-pagination>div{display:flex;gap:8px}
+.compras-page .compras-pagination .compras-button{height:36px;min-height:36px}
+.compras-page .compras-button{height:40px;min-height:40px}
+@media print{.compras-page .compras-pagination{display:none!important}}
