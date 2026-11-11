@@ -133,3 +133,12 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - Varredura do código-fonte das telas não encontrou mais a marca antiga `MOLDPLÁS`; as telas de Quarentena, Central Tablet da Qualidade, Inspeções, Controle de Processo da Injetora e Genealogia de Lote foram padronizadas para `SYSNQRA ERP INDUSTRIAL`.
 - A busca por `PLUSH BEAUTY` em `src/` não encontrou ocorrências em telas. Referências históricas/documentais e identificadores técnicos do repositório foram preservados.
 - Os hashes das telas presentes no manifesto foram atualizados deliberadamente nesta revisão autorizada.
+
+
+## Registro da revisão APROV-017 — 2026-11-11
+
+- Ordem do proprietário: aplicar os wireframes enviados em 10/11 e tornar as telas acessíveis no menu oficial.
+- Integração: Central de Compras, RFQ, Pedido de Compra, Requisições, Análise de Preços, Relatórios e Fornecedores; Fluxo de Caixa; Caixa 4×2; Notas de Débito e suas configurações; Retificação Financeira; Razão Geral; Cadastro de Precisão Decimal; Controladoria Integrada; Ficha de Montagem e Acabamento.
+- `Ficha de Montagem` entrou no menu PCP com destaque âmbar/laranja e quatro abas reais: Montagem/Embalagem, Acabamento, Inspeção em Processo e Liberação de Lote. As abas reutilizam fichas e rotinas reais; nenhum registro de demonstração foi introduzido.
+- `Controladoria Integrada` reúne Lucratividade, Razão Geral e Precisão Decimal. Engenharia de Custo Padrão, Desvios de Custo e Estorno Documental/Compliance ganharam rotas e entradas no menu Controladoria.
+- As alterações nas telas oficiais foram autorizadas nesta revisão; hashes correspondentes foram atualizados no manifesto. A `main` permanece protegida até os gates desta branch passarem.
