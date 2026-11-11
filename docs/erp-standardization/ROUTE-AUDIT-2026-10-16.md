@@ -205,3 +205,37 @@ O título e as mensagens agora identificam a função como **registro de parecer
 ### CI/deployment observado antes desta nova alteração
 - Deployment do commit anterior `9322205ec24ee5f9228f146b0bc0f7bbbe345cca` consultado como `READY` e status Vercel `success`.
 - O novo commit `ec542753c386ce50e951b45fdbba95905a78f128` ainda requer consulta de deployment própria; o estado anterior não valida esta mudança.
+
+## Reexecução do inventário estático — 2026-11-11
+
+- **Branch/HEAD analisado:** `audit/loop-componente-20261110`, commit `a88c27cd45a43cc1e57eb3cfd90384e1df524b30` (HEAD do PR #317).
+- **Fonte:** `src/AppEntryV2.tsx` (blob `671c99b2909aa104a461af0fbd53f35cedf8a266`) e árvore Git recursiva do mesmo commit (982 arquivos versionados; árvore sem truncamento).
+- **Resultado estático:** 335 declarações `<Route path=...>`; 195 caminhos de import relativo únicos no roteador; 0 imports relativos sem arquivo candidato na árvore (`.tsx/.ts/.jsx/.js` e `index.*`).
+- **Limites:** a verificação confirma existência de candidatos de arquivo para os imports relativos encontrados; não prova export default/nomeado, resolução de wrappers/re-exports em profundidade, alcance de cada rota, ausência de rotas órfãs, permissão/RLS, carregamento real ou comportamento em navegador. A contagem de declarações não equivale a 335 telas funcionais.
+- **UI-002:** permanece **PENDENTE — resultado parcial atualizado**, aguardando análise de aliases, wrappers/re-exports, duplicidades e rotas órfãs.
+- **UI-001:** permanece **PENDENTE**; o comando `npm run audit:ui-standardization` não foi executado nesta rodada. A execução do P0 Release Gate no mesmo SHA não contém essa etapa específica.
+- **Gate CI no mesmo SHA:** workflow run `42928604423`, job `P0 — Full Release Gate`, conclusão `success`; steps confirmados como sucesso: instalação determinística, lockfile, Vercel config, CI policy, release lineage, reset/tenant, lock de telas oficiais, migration SQL, Auth Master, public naming, Supabase env/guard, deploy integrity, TypeScript, ESLint, auditorias global/brutal/interações, imports lazy, build de produção, verificação do build, rotas e contratos de regressão tablet/shell/logo/UI.
+- **Vercel:** status separado no commit `a88c27c` permanece `failure` por limite diário de implantações; CI verde não significa deployment publicado.
+- **Estado:** inventário parcial com evidência; sem declaração de conclusão global.
+
+## Compras — análise comparativa de propostas (2026-11-11)
+
+- **Rota:** `/pageprincipal/compras/analise-precos` (rota filha `compras/analise-precos` no roteador, protegida pelo wrapper `ComprasRoute`).
+- **Arquivo:** `src/pages/ComprasAnalisePrecos.tsx`.
+- **Achado reproduzível no código:** a normalização `Number(q.valor_total || 0)` convertia `NULL` em zero; a proposta sem valor informado podia aparecer como menor preço e ser escolhida como vencedora. Valores inválidos/negativos também não eram distinguidos corretamente.
+- **Correção:** somente valores finitos e não negativos participam do ranking; propostas sem valor são identificadas como “Não informado/SEM VALOR”; a escolha fica bloqueada se o fornecedor selecionado não tiver valor válido; recarga limpa os dados anteriores antes de consultar a empresa ativa, evitando manter resultados antigos durante falha/troca de sessão. Nenhuma coluna, RPC, migration ou tabela foi criada/alterada.
+- **Dados/segurança preservados:** consultas existentes continuam usando `erp_current_empresa_id` e filtro `empresa_id`; atualização continua exigindo retorno de linha com `.select('id').maybeSingle()`.
+- **Registro de hash:** manifesto atualizado na revisão `REV-COMPRAS-ANALISE-VALOR-20261111-01`.
+- **Commit de código:** `8ecfe5f966c44f7d2cdd4e710c46649f6149ea59`.
+- **Estado:** **CORRIGIDO AGUARDANDO VALIDAÇÃO**. Type-check, lint, testes com propostas reais (NULL/zero/valor válido), interação autenticada/RLS, inspeção visual e deployment deste SHA ainda não foram confirmados.
+
+## Compras — cadastro e homologação de fornecedores (2026-11-11)
+
+- **Rotas:** `/pageprincipal/cadastros/fornecedores` e `/pageprincipal/fornecedores` (ambas usam `FornecedoresIndustrial`).
+- **Arquivo:** `src/pages/FornecedoresIndustrial.tsx`.
+- **Achados:** edição e exclusão verificavam somente `error`, sem confirmar que uma linha do tenant foi afetada; o vínculo do certificado ISO também não confirmava a linha atualizada. Ao recarregar, dados anteriores permaneciam no estado até a nova consulta terminar/falhar. Edição podia marcar ISO 9001 sem anexo nem certificado previamente vinculado.
+- **Correções:** edição, exclusão e vínculo do certificado agora exigem linha retornada; recarga limpa empresa/listas/seleção antes de buscar dados; homologação ISO exige arquivo novo ou certificado já vinculado ao fornecedor selecionado. Mantidos RPC `erp_current_empresa_id`, filtros `empresa_id`, tabela `erp_fornecedores`, bucket `erp-fornecedor-certificados` e campos existentes.
+- **Schema:** nenhuma coluna, tabela, RPC ou migration adicionada.
+- **Manifesto:** hash atualizado na revisão `REV-FORNECEDOR-GRAVACAO-CONFIRMADA-20261111-01`.
+- **Commit de código:** `6901a8ae80dd1f6ae3849d808cf815c1a5e72672`.
+- **Estado:** **CORRIGIDO AGUARDANDO VALIDAÇÃO**. Type-check, lint, CRUD autenticado/RLS, upload/recuperação do certificado, inspeção visual e deployment deste SHA pendentes.
