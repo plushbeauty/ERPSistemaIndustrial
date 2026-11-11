@@ -6,7 +6,7 @@
 
 ## P0 — Fundação e medição
 
-- [ ] UI-001 — Executar npm run audit:ui-standardization e revisar o relatório gerado.
+- [x] UI-001 — Executar `audit:ui-standardization` no CI e revisar o artefato `erp-ui-standardization-audit` (run 43044102410, 11/11/2026). Evidência: 244 arquivos, 334 declarações de rota, 3 arquivos usando tokens compartilhados, 94 com estilos locais e 208 com controles sem altura estática detectada. Limitações de análise regex e inspeção visual registradas; isso não homologa telas.
 - [ ] UI-002 — Cruzar src/AppEntryV2.tsx com arquivos reais, wrappers/re-exports e rotas duplicadas/orfãs.
 - [ ] UI-003 — Medir Vendas > Novo Pedido por seção: largura/altura dos campos, labels, botões, grids, lupas, abas, cores e impressão, sem alterar a tela aprovada.
 - [ ] UI-004 — Inventariar componentes de texto, código, descrição, numérico, data, select, lupa, botão, checkbox, grid, card, modal, mensagens e impressão.
