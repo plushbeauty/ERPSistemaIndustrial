@@ -1,7 +1,7 @@
 /**
  * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-06
- * @REVISAO: REV-CARROSSEL-BAIXO-E-BARRA-FINA-20261106-01 — faixa do carrossel com altura própria e barra do topo sem o quadrado da marca
+ * @REVISAO: REV-CARROSSEL-PRELOAD-E-MARCA-SYSNQRA-20261110-01 — pré-carregamento das artes e identificação pública SYSNQRA
  * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-06 — "A IMAGEM FICOU GRANDE DE MAIS ELE TA PEGANDO
  * A TELA TODA PERFEITO MAIS ELA FICOU MUITNA ALTA PEGANDO A TELA MUITO PARA BAIXO CONSEGUE ARRUA" e
  * "SABE A BARRA DO TOPO ACHO QUE PODEMOS TIRAR O LOGO DELA PORQUE JA TEM O LOGO NAS IMAGENS ASSIM
@@ -199,8 +199,42 @@ function HeroCarousel() {
   const total = heroSlides.length
 
   useEffect(() => {
-    const timer = window.setInterval(() => setIndice(atual => (atual + 1) % total), INTERVALO_SLIDE_MS)
-    return () => window.clearInterval(timer)
+    let cancelado = false
+    let timer: number | undefined
+
+    // Aguarda todas as artes terminarem de carregar antes de iniciar a rotacao.
+    // Uma falha individual e isolada: o carrossel continua apenas com as artes disponiveis.
+    const carregarArte = (src: string) => new Promise<boolean>(resolve => {
+      const imagem = new Image()
+      imagem.onload = () => resolve(imagem.naturalWidth > 0)
+      imagem.onerror = () => resolve(false)
+      imagem.src = src
+      if (imagem.complete) resolve(imagem.naturalWidth > 0)
+    })
+
+    void Promise.all(heroSlides.map(slide => carregarArte(slide.art))).then(carregadas => {
+      if (cancelado) return
+
+      const indicesDisponiveis = carregadas
+        .map((carregada, indiceArte) => carregada ? indiceArte : -1)
+        .filter(indiceArte => indiceArte >= 0)
+
+      if (indicesDisponiveis.length === 0) return
+
+      setIndice(indicesDisponiveis[0])
+      if (indicesDisponiveis.length < 2) return
+
+      let posicao = 0
+      timer = window.setInterval(() => {
+        posicao = (posicao + 1) % indicesDisponiveis.length
+        setIndice(indicesDisponiveis[posicao])
+      }, INTERVALO_SLIDE_MS)
+    })
+
+    return () => {
+      cancelado = true
+      if (timer !== undefined) window.clearInterval(timer)
+    }
   }, [total])
 
   return (
@@ -219,7 +253,7 @@ function HeroCarousel() {
               alt=""
               aria-hidden="true"
               className="ph-carousel-fill"
-              loading={i === 0 ? 'eager' : 'lazy'}
+              loading="eager"
               decoding="async"
             />
             <img
@@ -227,7 +261,7 @@ function HeroCarousel() {
               alt={i === indice ? item.titulo : ''}
               aria-hidden={i === indice ? undefined : true}
               className="ph-carousel-art"
-              loading={i === 0 ? 'eager' : 'lazy'}
+              loading="eager"
               decoding="async"
             />
           </div>
@@ -379,7 +413,7 @@ export default function PublicIndustrialHome() {
     <footer className="ph-footer">
       <div className="ph-footer-brand">
         <img src="/logo/logo-marca.png" alt="" aria-hidden="true" />
-        <div><strong>SYSNQRA</strong><br />ERP &amp; SGQ Industrial · FernandoSch_System</div>
+        <div><strong>SYSNQRA</strong><br />SYSNQRA ERP INDUSTRIAL</div>
       </div>
       <div><a href="/contato">Contato</a> · <a href="/blog">Blog</a> · <a href="/planos">Planos</a> · <a href="/login">Entrar</a></div>
     </footer>
