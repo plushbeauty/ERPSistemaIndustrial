@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ClipboardList, Paintbrush, ShieldCheck, PackageCheck } from 'lucide-react'
 import PCPFichasProcesso from './PCPFichasProcesso'
+import QualityPlanGate from '../components/quality/QualityPlanGate'
 import QualidadeInspecaoProcessoVersionada from './qualidade/QualidadeInspecaoProcessoVersionada'
 import QualidadeLiberacaoLotes from './qualidade/QualidadeLiberacaoLotes'
 
@@ -39,10 +40,10 @@ export default function FichaMontagem() {
       <nav aria-label="Etapas da ficha de montagem" className="mb-3 flex flex-wrap gap-2 rounded-lg border border-[#D3E3EA] bg-white p-2">
         {tabs.map(tab=>{const Icon=tab.icon;return <button key={tab.id} type="button" aria-pressed={active===tab.id} onClick={()=>changeTab(tab.id)} className={`inline-flex h-10 items-center gap-2 rounded-full border px-4 text-xs font-bold transition ${active===tab.id?'border-[#123B50] bg-[#123B50] text-white':'border-[#D3E3EA] bg-white text-[#315466] hover:bg-[#EDF6F9]'}`}><Icon size={14}/>{tab.label}</button>})}
       </nav>
-      {active==='montagem'&&<PCPFichasProcesso/>}
-      {active==='acabamento'&&<PCPFichasProcesso/>}
-      {active==='inspecao'&&<QualidadeInspecaoProcessoVersionada/>}
-      {active==='liberacao'&&<QualidadeLiberacaoLotes/>}
+      {active==='montagem'&&<QualityPlanGate><PCPFichasProcesso/></QualityPlanGate>}
+      {active==='acabamento'&&<QualityPlanGate><PCPFichasProcesso/></QualityPlanGate>}
+      {active==='inspecao'&&<QualityPlanGate><QualidadeInspecaoProcessoVersionada/></QualityPlanGate>}
+      {active==='liberacao'&&<QualityPlanGate><QualidadeLiberacaoLotes/></QualityPlanGate>}
     </div>
   </main>
 }
