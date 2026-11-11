@@ -493,11 +493,11 @@
     },
     {
       "path": "src/pages/ComprasRequisicoes.tsx",
-      "sha": "4dcf0621ee10c37ab92944d0c895cc7808549a11",
+      "sha": "65d1910400935f138a8e8dab639b898370280de5",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-REQUISICOES-40-48-20261110-01",
       "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "statusAprovacao": "ALTERAÇÃO EM BRANCH DE AUDITORIA; NÃO LIBERADA PARA PRODUÇÃO."
     },
     {
       "path": "src/pages/ComprasRFQ.tsx",
