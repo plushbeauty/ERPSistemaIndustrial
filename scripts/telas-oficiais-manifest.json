@@ -1741,11 +1741,11 @@
     },
     {
       "path": "src/PublicIndustrialHome.tsx",
-      "sha": "8ac9a1cb51527e8494c194c6ad0c52b60bf9a05f",
+      "sha": "21c0726a3fbb84e85c2ea56dfb7d575a50d87957",
       "autor": "FernandoSch",
-      "revisao": "REV-CARROSSEL-BAIXO-E-BARRA-FINA-20261106-01 — faixa do carrossel com altura própria e barra do topo sem o quadrado da marca",
+      "revisao": "REV-CARROSSEL-PRELOAD-5-ARTES-7S-20261111-01 — aguarda as cinco imagens carregarem ou falharem antes de iniciar a rotação; mantém intervalo de 7s e transição aprovada.",
       "aprovadaEm": "2026-11-06",
-      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-06 — \"A IMAGEM FICOU GRANDE DE MAIS ELE TA PEGANDO"
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-11; layout e cinco artes preservados; pendente de CI e inspeção visual."
     },
     {
       "path": "src/styles/industrial-login.css",
