@@ -237,9 +237,9 @@ export default function ComprasRequisicoes() {
 
   return (
     <VendasLayout title="Requisições de compra" subtitle="PCP • MRP • materiais • cotação" onRefresh={() => void load()}>
-      <main className="min-h-screen bg-[#F4F7F9] p-3 text-[#183746] sm:p-4">
+      <main className="min-h-screen bg-[#F4F7F9] p-3 text-[#183746] sm:p-4 print:bg-white print:p-0"><div className="hidden border-b-2 border-[#123B50] pb-3 print:block"><strong className="text-[19px] tracking-[.16em]">PLASTIBOR</strong><p className="text-[10px]">Compras · Requisições</p><p className="text-[10px]">Emitido em {new Date().toLocaleString()}</p></div>
         <div className="mx-auto max-w-[1800px]">
-          <header className="overflow-hidden rounded-[3px] border border-[#0E1E2F] bg-gradient-to-r from-[#123B50] to-[#0E1E2F] text-[#F4FBFD] shadow-sm">
+          <header className="overflow-hidden rounded-[3px] border border-[#0E1E2F] bg-gradient-to-r from-[#123B50] to-[#0E1E2F] text-[#F4FBFD] shadow-sm print:hidden">
             <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
               <div className="flex min-w-0 items-center gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[3px] border border-white/20 bg-white/10">
@@ -252,6 +252,8 @@ export default function ComprasRequisicoes() {
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2">
+                <Link to="/pageprincipal/compras" className="inline-flex h-[38px] w-[115px] items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 text-xs font-semibold text-white"><ArrowLeft size={14}/>Voltar</Link>
+                <button type="button" onClick={exportCsv} disabled={!visibleItems.length} className={`${buttonClass} border-white/30 bg-white/10 text-white hover:bg-white/20`}><FileSpreadsheet size={13}/>CSV</button>
                 <button type="button" onClick={() => void forwardSelected()} disabled={busy || selectedEligibleCount === 0} className={`${buttonClass} border-[#48B7C7] bg-[#2D8DB8] text-white hover:bg-[#24799E]`}>
                   <ShoppingCart size={14} aria-hidden="true" />Encaminhar ({selectedEligibleCount})
                 </button>
@@ -265,7 +267,7 @@ export default function ComprasRequisicoes() {
             </div>
           </header>
 
-          <div className="mt-3">
+          <div className="mt-3 print:hidden">
             <KioskConsultaRapida />
           </div>
 
