@@ -70,6 +70,13 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - Status: inventário/matriz documentados; execução funcional, build, type-check e publicação ainda pendentes. Nenhuma rota/módulo marcado concluído.
 
 
+## Atualização UI-001 / UI-002 — 2026-11-11
+
+- UI-001: sincronizado o checkbox com a evidência já registrada em `COMPLETED.md`: workflow `Industrial Code Quality`, run `43044102410`, conclusão `success`, commit auditado `a895eb88bc89c6b16408865388d5cfcbfb17967d`, artefato `erp-ui-standardization-audit` ID `13865828141`. Métricas e limitações permanecem descritas em COMPLETED.md. O checkbox não declara homologação visual global.
+- UI-002: inspeção estática parcial no HEAD `4349381fb144ce9a12f0cde9f99606ea8e677ee4`: 341 declarações Route com path/element, 197 imports lazy, nenhum arquivo lazy ausente e nenhum path duplicado detectado nessa amostra. O import `FichasProcesso` não possui uso JSX/Route detectável em AppEntryV2, mas seu arquivo é exigido pelo contrato de UI aprovada; não foi removido.
+- Ficha de Montagem: menu, rota, import lazy e arquivo foram encontrados; o menu aplica destaque âmbar. Evidência detalhada: [UI-002-ROUTE-CROSSCHECK-20261111.md](./UI-002-ROUTE-CROSSCHECK-20261111.md), commit `be11c1736210e297776b98e0e33f37e142f357cd`.
+- UI-002 continua aberto até executar `npm run verify-routes`, `npm run verify:lazy-imports`, auditorias e navegação autenticada. A inspeção estática não substitui esses testes.
+
 ## Evidência incremental — 2026-10-22
 
 - **Correção isolada:** `src/pages/CalibracaoIndustrial.tsx`, rota `/qualidade/calibracao`. A auditoria do formulário identificou duas instâncias do campo “Tipo de instrumento” ligadas à mesma propriedade `equipamento`, criando controle duplicado e confuso. Removida a segunda instância; mantido o campo original e preservados os fluxos de Supabase/RPC, validações e persistência.
