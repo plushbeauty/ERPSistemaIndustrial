@@ -83,13 +83,16 @@ function DataTable({ rows, kind, onEdit }: { rows: DbRow[]; kind: 'requisicoes' 
       { label: 'Status', keys: ['status'], format: 'status' },
     ],
     recebimentos: [
-      { label: 'Pedido', keys: ['numero', 'id'] },
+      { label: 'NF', keys: ['nf_numero'] },
+      { label: 'Produto', keys: ['produto_codigo', 'produto_id'] },
+      { label: 'Descrição', keys: ['produto_nome'] },
       { label: 'Fornecedor', keys: ['fornecedor_nome', 'fornecedor_id'] },
-      { label: 'Recebido em', keys: ['recebido_em'], format: 'date' },
-      { label: 'Lote informado', keys: ['lote_recebimento'] },
-      { label: 'Valor do pedido', keys: ['total'], format: 'money' },
-      { label: 'Status', keys: ['status'], format: 'status' },
-      { label: 'Observações do recebimento', keys: ['observacoes_recebimento'] },
+      { label: 'Lote interno', keys: ['lote_interno'] },
+      { label: 'Lote fornecedor', keys: ['lote_fornecedor'] },
+      { label: 'Qtd. recebida', keys: ['quantidade_recebida'] },
+      { label: 'Qtd. disponível', keys: ['quantidade_disponivel'] },
+      { label: 'Inspeção', keys: ['status_inspecao'], format: 'status' },
+      { label: 'Data entrada', keys: ['data_entrada'], format: 'date' },
     ],
     fornecedores: [
       { label: 'Código', keys: ['codigo'] },
@@ -124,10 +127,10 @@ function DataTable({ rows, kind, onEdit }: { rows: DbRow[]; kind: 'requisicoes' 
     anchor.click()
     URL.revokeObjectURL(url)
   }
-  if (!rows.length) return <div className="compras-empty"><PackageCheck size={22} /><strong>{kind === 'alertas' ? 'Nenhum material no ponto de reposição' : kind === 'fornecedores' ? 'Nenhum fornecedor cadastrado' : 'Nenhum registro encontrado'}</strong><span>{kind === 'alertas' ? 'Os alertas aparecem quando o estoque real atinge ou fica abaixo do ponto de reposição cadastrado no produto.' : kind === 'recebimentos' ? 'Nenhum pedido está marcado como recebimento parcial ou recebido.' : 'Os registros aparecerão aqui quando existirem dados para a empresa autenticada.'}</span></div>
+  if (!rows.length) return <div className="compras-empty"><PackageCheck size={22} /><strong>{kind === 'alertas' ? 'Nenhum material no ponto de reposição' : kind === 'fornecedores' ? 'Nenhum fornecedor cadastrado' : 'Nenhum registro encontrado'}</strong><span>{kind === 'alertas' ? 'Os alertas aparecem quando o estoque real atinge ou fica abaixo do ponto de reposição cadastrado no produto.' : kind === 'recebimentos' ? 'Nenhum lote de recebimento registrado para esta empresa.' : 'Os registros aparecerão aqui quando existirem dados para a empresa autenticada.'}</span></div>
   return <div className="compras-table-scroll">
     <div className="mb-2 flex flex-wrap items-center justify-between gap-2 print:hidden"><span className="text-[10px] text-[#607987]">{rows.length} registro(s) · Página {page} de {pageCount}</span><button type="button" className="compras-button compras-button--light" onClick={exportCsv}><FileText size={13}/> Exportar CSV</button></div>
-    {kind === 'recebimentos' && <p className="mb-2 rounded-md border border-[#E7D9B6] bg-[#FFF9EB] p-2 text-[10px] text-[#765A20]">O schema atual registra recebimento no próprio pedido (status, data, lote e observações); esta grade é uma visão separada dos pedidos com recebimento informado, não um livro de eventos parciais por item.</p>}
+    {kind === 'recebimentos' && <p className="mb-2 rounded-md border border-[#E7D9B6] bg-[#FFF9EB] p-2 text-[10px] text-[#765A20]">Esta grade lê os lotes reais de entrada em erp_estoque_lotes, com NF, produto, fornecedor, lote, quantidades e inspeção; não infere recebimento a partir do status do pedido.</p>}
     <table className="compras-table"><thead><tr className="h-10">{columns[kind].map(column => <th key={column.label}>{column.label}</th>)}{kind === 'pedidos' && <th>Ação</th>}</tr></thead><tbody>{pageRows.map((row, index) => <tr className="h-12" key={textValue(row, 'id') === '—' ? index : textValue(row, 'id')}>{columns[kind].map(column => {
       const value = column.keys.map(key => row[key]).find(item => item !== undefined && item !== null && item !== '')
       const formatted = column.format === 'date' ? dateValue(value) : column.format === 'money' ? moneyValue(value) : typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : '—'
@@ -177,7 +180,7 @@ export default function ComprasWorkspace({ initialTab = 'visao-geral' }: { initi
       (async () => {
         setReceipts({ rows: [], loading: true, error: null })
         try {
-          const rows = await fetchAllPages<DbRow>((from, to) => supabase.from('erp_pedidos_compra').select('*', { count: 'exact' }).eq('empresa_id', empresaId).in('status', ['RECEBIMENTO_PARCIAL', 'RECEBIDO']).order('recebido_em', { ascending: false }).order('id').range(from, to))
+          const rows = await fetchAllPages<DbRow>((from, to) => supabase.from('erp_estoque_lotes').select('id,empresa_id,produto_id,fornecedor_id,nf_numero,lote_interno,lote_fornecedor,quantidade_recebida,quantidade_disponivel,quantidade_reservada,localizacao,status_inspecao,data_entrada,created_at', { count: 'exact' }).eq('empresa_id', empresaId).order('data_entrada', { ascending: false }).order('id').range(from, to))
           setReceipts({ rows, loading: false, error: null })
         } catch (cause) {
           setReceipts({ rows: [], loading: false, error: cause instanceof Error ? cause.message : 'Falha ao consultar recebimentos.' })
@@ -200,7 +203,8 @@ export default function ComprasWorkspace({ initialTab = 'visao-geral' }: { initi
 
   const supplierMap = useMemo(() => new Map(suppliers.rows.map(row => [String(row.id), textValue(row, 'nome_fantasia', 'razao_social')])), [suppliers.rows])
   const ordersWithSupplier = useMemo(() => orders.rows.map(row => ({ ...row, fornecedor_nome: supplierMap.get(String(row.fornecedor_id ?? '')) || row.fornecedor_nome || '—' })), [orders.rows, supplierMap])
-  const receiptsWithSupplier = useMemo(() => receipts.rows.map(row => ({ ...row, fornecedor_nome: supplierMap.get(String(row.fornecedor_id ?? '')) || row.fornecedor_nome || '—' })), [receipts.rows, supplierMap])
+  const productMap = useMemo(() => new Map(materials.rows.map(row => [String(row.id), { code: textValue(row, 'codigo'), name: textValue(row, 'nome') }])), [materials.rows])
+  const receiptsWithSupplier = useMemo(() => receipts.rows.map(row => ({ ...row, fornecedor_nome: supplierMap.get(String(row.fornecedor_id ?? '')) || row.fornecedor_nome || '—', produto_codigo: productMap.get(String(row.produto_id ?? ''))?.code || '—', produto_nome: productMap.get(String(row.produto_id ?? ''))?.name || '—' })), [receipts.rows, supplierMap, productMap])
   const filtered = useMemo(() => {
     const filterRows = (rows: DbRow[]) => rows.filter(row => Object.values(row).some(value => String(value ?? '').toLocaleLowerCase('pt-BR').includes(search.trim().toLocaleLowerCase('pt-BR'))))
     return { rfqs: filterRows(rfqs.rows), requisitions: filterRows(requisitions.rows), orders: filterRows(ordersWithSupplier), receipts: filterRows(receiptsWithSupplier), suppliers: filterRows(suppliers.rows), alerts: filterRows(alertRows) }
@@ -234,13 +238,14 @@ export default function ComprasWorkspace({ initialTab = 'visao-geral' }: { initi
         <Link to="/pageprincipal/compras/rfq" className="compras-button compras-button--light"><FileText size={14}/>RFQ completa</Link>
         <Link to="/pageprincipal/compras/analise-precos" className="compras-button compras-button--light"><BarChart3 size={14}/>Análise de preços</Link>
         <Link to="/pageprincipal/compras/relatorios" className="compras-button compras-button--light"><FileText size={14}/>Relatórios</Link>
+        <Link to="/pageprincipal/estoque/rastreabilidade" className="compras-button compras-button--light"><Truck size={14}/>Recebimento / rastreabilidade</Link>
         <button type="button" onClick={() => void load()} disabled={summaryBusy} className="compras-button compras-button--light"><RefreshCw size={14}/>Atualizar</button>
         <button type="button" onClick={() => window.print()} className="compras-button compras-button--primary"><Printer size={14}/>Imprimir / PDF</button>
       </div>
     </header>
     {notice && <div className={notice.kind === 'success' ? 'compras-notice compras-notice--success' : 'compras-notice compras-notice--error'} role={notice.kind === 'error' ? 'alert' : 'status'}>{notice.message}</div>}
     <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 print:hidden">
-      {[{label:'Requisições pendentes',value:pendingRequisitions},{label:'Cotações em andamento',value:activeRfqs},{label:'Pedidos em aberto',value:openOrders.length},{label:'Pedidos com recebimento',value:receipts.rows.length}].map(item=><article key={item.label} className="min-h-[96px] rounded-lg border border-[#D3E3EA] bg-white p-4 shadow-sm"><p className="text-[10px] font-bold uppercase tracking-wide text-[#607987]">{item.label}</p><strong className="mt-2 block text-xl font-bold tabular-nums text-[#123B50]">{summaryBusy?'Carregando…':summaryError?'—':item.value}</strong></article>)}
+      {[{label:'Requisições pendentes',value:pendingRequisitions},{label:'Cotações em andamento',value:activeRfqs},{label:'Pedidos em aberto',value:openOrders.length},{label:'Lotes recebidos',value:receipts.rows.length}].map(item=><article key={item.label} className="min-h-[96px] rounded-lg border border-[#D3E3EA] bg-white p-4 shadow-sm"><p className="text-[10px] font-bold uppercase tracking-wide text-[#607987]">{item.label}</p><strong className="mt-2 block text-xl font-bold tabular-nums text-[#123B50]">{summaryBusy?'Carregando…':summaryError?'—':item.value}</strong></article>)}
     </section>
     <nav className="compras-tabs flex flex-wrap gap-1 rounded-lg border border-[#D3E3EA] bg-white p-2 print:hidden" aria-label="Etapas do módulo">{tabs.map(tab => { const Icon = tab.icon; const count = tab.key === 'requisicoes' ? requisitions : tab.key === 'cotacoes' ? rfqs : tab.key === 'fornecedores' ? suppliers : tab.key === 'alertas' ? materials : tab.key === 'pedidos' ? orders : tab.key === 'recebimentos' ? receipts : null; const total = count?.rows.length; return <button type="button" key={tab.key} className={activeTab === tab.key ? 'compras-tab is-active' : 'compras-tab'} onClick={() => setActiveTab(tab.key)}><Icon size={15} />{tab.label}{count && !count.loading ? <span>{total}</span> : null}</button> })}</nav>
 
@@ -262,7 +267,7 @@ export default function ComprasWorkspace({ initialTab = 'visao-geral' }: { initi
       {activeData.loading ? <div className="compras-loading"><RefreshCw size={16}/>Carregando dados reais…</div> : activeData.error ? <div className="compras-error" role="alert"><strong>Falha na consulta.</strong><span>{activeData.error}</span><button className="compras-button compras-button--light" type="button" onClick={() => setRefreshKey(value => value + 1)}>Tentar novamente</button></div> : <DataTable key={activeTab} rows={activeRows} kind={tableKind} onEdit={id => {setEditingOrderId(id);setShowOrderForm(true)}}/>}
     </section>}
 
-    <section className="compras-panel rounded-lg border border-[#D3E3EA] bg-white p-4 text-[11px] text-[#526C79] print:hidden"><h2 className="font-bold uppercase tracking-wide">Como usar esta tela</h2><p className="mt-2"><strong>Para que serve:</strong> acompanhar o ciclo de suprimentos da empresa: requisição, alerta MRP, cotação, pedido, recebimento e fornecedor.</p><p className="mt-1"><strong>Passo a passo:</strong> revise as requisições e alertas, abra a RFQ completa para cadastrar itens e fornecedores, registre o pedido pela RPC transacional, acompanhe a entrega e consulte a grade de recebimentos.</p><p className="mt-1"><strong>Regras importantes:</strong> todas as consultas são filtradas por empresa e RLS. A grade de recebimentos é uma visão dos pedidos marcados como parcial/recebido; o schema atual não contém tabela de eventos de recebimento por item. Não use esta grade como comprovante de quantidades parciais.</p></section>
+    <section className="compras-panel rounded-lg border border-[#D3E3EA] bg-white p-4 text-[11px] text-[#526C79] print:hidden"><h2 className="font-bold uppercase tracking-wide">Como usar esta tela</h2><p className="mt-2"><strong>Para que serve:</strong> acompanhar o ciclo de suprimentos da empresa: requisição, alerta MRP, cotação, pedido, recebimento e fornecedor.</p><p className="mt-1"><strong>Passo a passo:</strong> revise as requisições e alertas, abra a RFQ completa para cadastrar itens e fornecedores, registre o pedido pela RPC transacional, acompanhe a entrega e consulte a grade de recebimentos.</p><p className="mt-1"><strong>Regras importantes:</strong> todas as consultas são filtradas por empresa e RLS. A grade de recebimentos consulta os lotes reais persistidos em erp_estoque_lotes, com RLS por empresa. Use a página Estoque › Rastreabilidade para registrar e acompanhar lote, NF, inspeção e disponibilidade.</p></section>
     <footer className="compras-footer flex flex-wrap items-center justify-between gap-2 border-t border-[#D3E3EA] pt-3 text-[9px] text-[#718792] print:hidden"><span>SYSNQRA ERP INDUSTRIAL · SUPRIMENTOS</span><span>Dados reais da empresa autenticada · RLS ativo · Atualizado em {new Date().toLocaleString('pt-BR')}</span></footer>
   </main>
 }
