@@ -50,7 +50,7 @@ function statusClass(value: string): string {
   const normalized = value.toLocaleUpperCase('pt-BR')
   if (['APROVADO', 'APROVADA', 'CONCLUIDO', 'CONCLUÍDO', 'RECEBIDO', 'FINALIZADO', 'FINALIZADA'].includes(normalized)) return 'compras-status compras-status--success'
   if (['CANCELADO', 'CANCELADA', 'REPROVADO', 'REPROVADA'].includes(normalized)) return 'compras-status compras-status--danger'
-  if (['EM_ANALISE', 'EM ANÁLISE', 'AGUARDANDO_COTACAO', 'AGUARDANDO COTAÇÃO', 'PENDENTE'].includes(normalized)) return 'compras-status compras-status--warning'
+  if (['EM_ANALISE', 'EM ANÁLISE', 'AGUARDANDO_COTACAO', 'AGUARDANDO COTAÇÃO', 'PENDENTE', 'RECEBIMENTO_PARCIAL', 'RASCUNHO', 'PENDENTE_APROVACAO'].includes(normalized)) return 'compras-status compras-status--warning'
   return 'compras-status'
 }
 
@@ -198,17 +198,27 @@ export default function ComprasWorkspace() {
     return [{ ...row, saldo_reposicao: stock - reorder }]
   }), [materials.rows])
 
+  const supplierMap = useMemo(() => new Map(suppliers.rows.map(row => [String(row.id), textValue(row, 'nome_fantasia', 'razao_social')])), [suppliers.rows])
+  const ordersWithSupplier = useMemo(() => orders.rows.map(row => ({ ...row, fornecedor_nome: supplierMap.get(String(row.fornecedor_id ?? '')) || row.fornecedor_nome || '—' })), [orders.rows, supplierMap])
+  const receiptsWithSupplier = useMemo(() => receipts.rows.map(row => ({ ...row, fornecedor_nome: supplierMap.get(String(row.fornecedor_id ?? '')) || row.fornecedor_nome || '—' })), [receipts.rows, supplierMap])
   const filtered = useMemo(() => {
     const filterRows = (rows: DbRow[]) => rows.filter(row => Object.values(row).some(value => String(value ?? '').toLocaleLowerCase('pt-BR').includes(search.trim().toLocaleLowerCase('pt-BR'))))
-    return { rfqs: filterRows(rfqs.rows), requisitions: filterRows(requisitions.rows), orders: filterRows(orders.rows), receipts: filterRows(receipts.rows), suppliers: filterRows(suppliers.rows), alerts: filterRows(alertRows) }
-  }, [rfqs.rows, requisitions.rows, orders.rows, receipts.rows, suppliers.rows, alertRows, search])
+    return { rfqs: filterRows(rfqs.rows), requisitions: filterRows(requisitions.rows), orders: filterRows(ordersWithSupplier), receipts: filterRows(receiptsWithSupplier), suppliers: filterRows(suppliers.rows), alerts: filterRows(alertRows) }
+  }, [rfqs.rows, requisitions.rows, ordersWithSupplier, receiptsWithSupplier, suppliers.rows, alertRows, search])
 
 
 
   const alertData: TableData = { ...materials, rows: alertRows }
   const activeData = activeTab === 'requisicoes' ? requisitions : activeTab === 'cotacoes' ? rfqs : activeTab === 'pedidos' ? orders : activeTab === 'recebimentos' ? receipts : activeTab === 'fornecedores' ? suppliers : alertData
-  const activeRows = activeTab === 'requisicoes' ? filtered.requisitions : activeTab === 'cotacoes' ? filtered.rfqs : activeTab === 'pedidos' ? filtered.orders : activeTab === 'recebimentos' ? filtered.receipts : activeTab === 'fornecedores' ? filtered.suppliers : filtered.alerts
+  const activeRowsBase = activeTab === 'requisicoes' ? filtered.requisitions : activeTab === 'cotacoes' ? filtered.rfqs : activeTab === 'pedidos' ? filtered.orders : activeTab === 'recebimentos' ? filtered.receipts : activeTab === 'fornecedores' ? filtered.suppliers : filtered.alerts
+  const activeRows = statusFilter === 'TODOS' ? activeRowsBase : activeRowsBase.filter(row => textValue(row, 'status').toUpperCase() === statusFilter)
+  const availableStatuses = Array.from(new Set(activeRowsBase.map(row => textValue(row, 'status')).filter(value => value !== '—'))).sort()
   const tableKind = activeTab === 'requisicoes' ? 'requisicoes' : activeTab === 'pedidos' ? 'pedidos' : activeTab === 'recebimentos' ? 'recebimentos' : activeTab === 'fornecedores' ? 'fornecedores' : activeTab === 'alertas' ? 'alertas' : 'cotacoes'
+  const openOrders = filtered.orders.filter(row => !['RECEBIDO','CANCELADO','REJEITADO','CONCLUIDO','CONCLUÍDO'].includes(textValue(row,'status').toLocaleUpperCase('pt-BR')))
+  const pendingRequisitions = requisitions.rows.filter(row => !['AUTORIZADA','CONCLUIDA','CONCLUÍDA','CANCELADA'].includes(textValue(row,'status').toLocaleUpperCase('pt-BR'))).length
+  const activeRfqs = rfqs.rows.filter(row => !['APROVADO','REJEITADO','CANCELADO','CONCLUIDO','CONCLUÍDO'].includes(textValue(row,'status').toLocaleUpperCase('pt-BR'))).length
+  const summaryBusy = [rfqs,requisitions,orders,receipts].some(table => table.loading)
+  const summaryError = [rfqs,requisitions,orders,receipts].some(table => Boolean(table.error))
 
   return <main className="compras-page" aria-label="Módulo de Compras SYSNQRA">
     <header className="compras-header">
