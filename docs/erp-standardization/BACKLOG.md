@@ -7,7 +7,7 @@
 ## P0 — Fundação e medição
 
 - [x] UI-001 — Executar `audit:ui-standardization` no CI e revisar o artefato `erp-ui-standardization-audit` (run 43044102410, 11/11/2026). Evidência: 244 arquivos, 334 declarações de rota, 3 arquivos usando tokens compartilhados, 94 com estilos locais e 208 com controles sem altura estática detectada. Limitações de análise regex e inspeção visual registradas; isso não homologa telas.
-- [x] UI-002 — Cruzar src/AppEntryV2.tsx com arquivos reais, wrappers/re-exports e rotas duplicadas/orfãs.
+- [ ] UI-002 — Cruzar src/AppEntryV2.tsx com arquivos reais, wrappers/re-exports e rotas duplicadas/orfãs.
 - [ ] UI-003 — Medir Vendas > Novo Pedido por seção: largura/altura dos campos, labels, botões, grids, lupas, abas, cores e impressão, sem alterar a tela aprovada.
 - [x] UI-004 — Inventariar componentes de texto, código, descrição, numérico, data, select, lupa, botão, checkbox, grid, card, modal, mensagens e impressão.
 - [x] UI-005 — Registrar exceções legítimas à altura padrão de 32 px e às larguras por função.
@@ -100,9 +100,9 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 ## Atualização UI-001 / UI-002 — 2026-11-11
 
 - UI-001: sincronizado o checkbox com a evidência já registrada em `COMPLETED.md`: workflow `Industrial Code Quality`, run `43044102410`, conclusão `success`, commit auditado `a895eb88bc89c6b16408865388d5cfcbfb17967d`, artefato `erp-ui-standardization-audit` ID `13865828141`. Métricas e limitações permanecem descritas em COMPLETED.md. O checkbox não declara homologação visual global.
-- UI-002: cruzamento estático concluído e CI aprovado no HEAD `4349381fb144ce9a12f0cde9f99606ea8e677ee4`: 341 declarações Route com path/element, 197 imports lazy, nenhum arquivo lazy ausente e nenhum path duplicado detectado nessa amostra. O import `FichasProcesso` não possui uso JSX/Route detectável em AppEntryV2, mas seu arquivo é exigido pelo contrato de UI aprovada; não foi removido.
+- UI-002: evidência estática parcial no HEAD `4349381fb144ce9a12f0cde9f99606ea8e677ee4`: 341 declarações Route com path/element e 197 imports lazy detectados pela inspeção regex; nenhum arquivo lazy ausente e nenhum path duplicado nessa amostra. O import `FichasProcesso` não possui uso JSX/Route detectável em AppEntryV2, mas o arquivo é exigido pelo contrato de UI aprovada; não foi removido. Contagens são amostras e não substituem a análise AST/normalização.
 - Ficha de Montagem: menu, rota, import lazy e arquivo foram encontrados; o menu aplica destaque âmbar. Evidência detalhada: [UI-002-ROUTE-CROSSCHECK-20261111.md](./UI-002-ROUTE-CROSSCHECK-20261111.md), commit `be11c1736210e297776b98e0e33f37e142f357cd`.
-- UI-002 concluído para o escopo de roteador/imports/arquivos: CI run `43068889786` passou type-check, lint, auditorias, lazy imports, build e routes. A inspeção estática não homologa a experiência visual ou os fluxos de negócio das telas.
+- UI-002 permanece aberto: embora o CI run `43068889786` tenha passado no commit `3957c1a`, o cruzamento não classifica integralmente aliases, rotas órfãs, catch-all, wrappers/re-exports indiretos nem confirma que cada Route renderiza o componente esperado em runtime. A próxima rodada precisa concluir análise AST/normalização e navegação.
 
 ## Evidência incremental — 2026-10-22
 
