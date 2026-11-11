@@ -1725,11 +1725,11 @@
     },
     {
       "path": "src/pages/VendasRelatorios.tsx",
-      "sha": "e3e8b9c38add7e95a9bceb363645db129791ba59",
+      "sha": "00eddc81b49092cf0abc064ce69e32474537d9a8",
       "autor": "FernandoSch",
-      "revisao": "REV-VENDAS-RELATORIOS-FILTROS-IMPRESSAO-20261111-01 — busca, status e impressão em 32px; botão Limpar Filtros; valores monetários tabulares à direita; preserva a paginação completa da revisão REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 e as consultas por empresa.",
+      "revisao": "REV-VENDAS-RELATORIOS-PERIODO-PAGINACAO-20261111-02 — busca, status, período de entrada, paginação de 50 linhas e impressão de todos os resultados filtrados; preserva paginação completa da consulta e escopo empresa_id.",
       "aprovadaEm": "2026-11-11",
-      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO NO COMMIT 1a57f81b04a896083d858c2eed3c112ce24e8ed9; pendente de CI e validação visual"
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO NO COMANDO MESTRE DE 2026-11-11; pendente de CI e validação visual"
     },
     {
       "path": "src/pages/VendasTablet.tsx",
