@@ -77,11 +77,11 @@
     },
     {
       "path": "src/features/controladoria/AssistenteRetificacao.tsx",
-      "sha": "b3e9b82824d9bc1098c14cf983bc6e112a21f394",
+      "sha": "c58ccc3f272ca942dd41729f3906a8bb41775368",
       "autor": "FernandoSch",
-      "revisao": "REV-ESTORNO-DOCUMENTAL-COMPLIANCE-20261110-01 — localização multiorigem, conferência somente leitura, checklist de compliance e grade de auditoria real; limitações da RPC registradas na interface.",
+      "revisao": "REV-ESTORNO-INVERSO-REAL-20261111-02 — estorno inverso, trava de período no banco, anexo privado e trilha de auditoria; sem lançamento original, bloqueia.",
       "aprovadaEm": "2026-11-10",
-      "statusAprovacao": "IMPLEMENTAÇÃO AUTORIZADA PELO PROPRIETÁRIO; registro auditável integrado; operações contábeis/fiscais inversas e anexos não habilitados até integração transacional própria."
+      "statusAprovacao": "IMPLEMENTAÇÃO EM BRANCH DE INTEGRAÇÃO; pendente de CI e validação visual."
     },
     {
       "path": "src/features/controladoria/AuditoriaComissoes.tsx",
