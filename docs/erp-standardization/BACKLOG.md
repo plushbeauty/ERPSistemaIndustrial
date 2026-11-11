@@ -307,3 +307,12 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Validação disponível:** diff do commit conferido diretamente no GitHub; status Vercel retornou `failure`, destino `https://vercel.com/plushbeauty?upgradeToPro=build-rate-limit` (limitação de build). Não há evidência de type-check, lint, audit:all, verify:lazy-imports, verify-routes ou build para este commit.
 - **Estado:** correção incremental registrada, **aguardando validação**. UI-010 permanece aberto; não mover para COMPLETED.
 - **Limite ambiental:** integração GitHub permite leitura/escrita de arquivos e commits, mas não disponibiliza checkout/terminal para executar os comandos locais definidos em LOOP.md. O Vercel bloqueou o build por rate limit. Continuar nas demais telas sem declarar homologação.
+
+
+## UI-010 — isolamento de tenant no detalhe do pedido (2026-11-11)
+
+- **Rota/componente:** `/pageprincipal/vendas/pedido/:id` → `src/pages/VendasPedidoStatus.tsx`.
+- **Correção aplicada:** as consultas de expedições (`erp_expedicoes`) e liberações fiscais (`erp_liberacoes_fiscais`) agora filtram explicitamente por `empresa_id), além do pedido; removidas duas cláusulas `empresa_id` duplicadas da consulta de ordens de produção. O filtro do pedido e os demais contratos foram preservados.
+- **Commit de código:** `856eddd5a331d7f0eaac93a3c725d55653bd2e4e`.
+- **Validação disponível:** diff revisado no GitHub. Status Vercel: `failure`, destino `https://vercel.com/plushbeauty?upgradeToPro=build-rate-limit`. Não há evidência de type-check, lint, auditorias, rotas ou build para este commit.
+- **Estado:** correção de escopo multi-tenant aplicada, **aguardando validação**. UI-010 permanece aberto; não mover para COMPLETED.
