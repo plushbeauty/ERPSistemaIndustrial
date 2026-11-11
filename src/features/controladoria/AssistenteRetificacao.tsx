@@ -68,12 +68,16 @@ export default function AssistenteRetificacao() {
 
   const loadAudit = useCallback(async () => {
     setRefreshing(true)
-    const result = await fetchAllPages<AuditRow>((from, to) => supabase.from('erp_fiscal_estornos')
-      .select('id,documento_alvo,data_estorno,justificativa,documento_estornado_id,criado_em', { count: 'exact' })
-      .order('criado_em', { ascending: false }).order('id').range(from, to))
-    setAudit(result)
-    setAuditPage(1)
-    setRefreshing(false)
+    setError('')
+    try {
+      const result = await fetchAllPages<AuditRow>((from, to) => supabase.from('erp_fiscal_estornos')
+        .select('id,documento_alvo,data_estorno,justificativa,documento_estornado_id,criado_em', { count: 'exact' })
+        .order('criado_em', { ascending: false }).order('id').range(from, to))
+      setAudit(result)
+      setAuditPage(1)
+    } catch (cause) {
+      setError(cause instanceof Error ? 'Falha ao carregar auditoria: ' + cause.message : 'Falha ao carregar auditoria.')
+    } finally { setRefreshing(false) }
   }, [])
 
   useEffect(() => {
@@ -203,7 +207,7 @@ export default function AssistenteRetificacao() {
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div><h1 className="text-lg font-bold text-[#123B50]">Assistente de Retificação e Compliance Financeiro</h1>
-            <p className="mt-1 text-xs text-[#607987]">Cancelamento, estorno contábil e reversão documental com rastreabilidade de auditoria e trava de período fechado.</p></div>
+            <p className="mt-1 text-xs text-[#607987]">Registro auditável de solicitações de retificação; não executa estorno contábil, cancelamento fiscal ou alteração automática de títulos.</p></div>
           <div className="flex flex-wrap items-center gap-2 print:hidden"><button type="button" onClick={() => window.print()} className="inline-flex h-10 items-center gap-2 rounded-md border border-[#CBD9E0] bg-white px-3 text-xs font-semibold"><FileText size={14}/>Imprimir / PDF</button><span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] font-bold text-amber-800"><LockKeyhole size={13}/>Acesso restrito à Administração, Controladoria ou Financeiro</span></div>
         </div>
       </header>
@@ -240,7 +244,7 @@ export default function AssistenteRetificacao() {
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(280px,1.2fr)_160px_minmax(260px,1fr)]">
             <label><span className={label}>Motivo padronizado (Compliance) *</span><select className={control} value={reason} onChange={e=>setReason(e.target.value)}><option value="">Selecione o motivo…</option><option>Lançamento em duplicidade</option><option>Erro de valor / alíquota</option><option>Devolução total</option><option>Cancelamento operacional</option><option>Documento emitido incorretamente</option><option>Outros</option></select></label>
             <label><span className={label}>Data contábil do estorno *</span><input className={control} type="date" value={reversalDate} onChange={e=>setReversalDate(e.target.value)}/></label>
-            <label><span className={label}>Ação nos títulos vinculados *</span><select className={control} value={linkedAction} onChange={e=>setLinkedAction(e.target.value)}><option value="REABRIR">Reabrir título em aberto</option><option value="CANCELAR">Cancelar título definitivamente</option><option value="SEM_VINCULO">Não alterar título vinculado</option></select></label>
+            <label><span className={label}>Intenção para tratamento posterior *</span><select className={control} value={linkedAction} onChange={e=>setLinkedAction(e.target.value)}><option value="REABRIR">Solicitar reabertura do título</option><option value="CANCELAR">Solicitar cancelamento do título</option><option value="SEM_VINCULO">Não solicitar alteração do título</option></select></label>
           </div>
           <div className="mt-4">
             <label><span className={label}>Justificativa da Controladoria * (mínimo 25 caracteres)</span><textarea className="min-h-[85px] w-full rounded-md border border-[#CBD9E0] bg-white px-3 py-2 text-xs text-[#183B4D] outline-none focus:border-[#2D8DB8]" value={justification} onChange={e=>setJustification(e.target.value)} placeholder="Descreva detalhadamente o motivo do estorno documental para fins de auditoria..." maxLength={2000}/></label>
@@ -251,8 +255,8 @@ export default function AssistenteRetificacao() {
           </div>
           <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3">
             <p className="mb-2 text-[10px] font-bold uppercase tracking-wide text-amber-900">Travas de segurança e confirmação</p>
-            <label className="flex items-start gap-2 text-xs text-amber-950"><input type="checkbox" checked={periodOpen} onChange={e=>setPeriodOpen(e.target.checked)} className="mt-0.5"/>Confirmo que o período contábil desta competência encontra-se ABERTO para estorno.</label>
-            <label className="mt-2 flex items-start gap-2 text-xs text-amber-950"><input type="checkbox" checked={inverseAware} onChange={e=>setInverseAware(e.target.checked)} className="mt-0.5"/>Estou ciente de que a operação deve gerar lançamento inverso de auditoria e não apagar o histórico.</label>
+            <label className="flex items-start gap-2 text-xs text-amber-950"><input type="checkbox" checked={periodOpen} onChange={e=>setPeriodOpen(e.target.checked)} className="mt-0.5"/>Confirmo que consultei o fechamento financeiro e verifiquei que o período está aberto.</label>
+            <label className="mt-2 flex items-start gap-2 text-xs text-amber-950"><input type="checkbox" checked={inverseAware} onChange={e=>setInverseAware(e.target.checked)} className="mt-0.5"/>Estou ciente de que esta tela registra somente uma solicitação; não executa lançamento inverso nem apaga o histórico.</label>
           </div>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#E3EBEF] pt-4">
             <button type="button" onClick={clear} className="inline-flex h-[42px] items-center justify-center gap-2 rounded-md border border-[#CBD9E0] bg-white px-5 text-xs font-bold text-[#526C79]"><RotateCcw size={14}/>Limpar tela</button>
@@ -266,6 +270,7 @@ export default function AssistenteRetificacao() {
           <div className="overflow-x-auto"><table className="w-full min-w-[820px] border-collapse text-[11px]"><thead><tr className="h-10 bg-[#EAF2F6] text-left text-[10px] uppercase tracking-wide text-[#526C79]"><th className="px-3">Data / Hora</th><th className="px-3">Documento informado</th><th className="px-3">Tipo de registro</th><th className="px-3">Justificativa</th><th className="px-3">Vínculo documental</th></tr></thead><tbody>{refreshing?<tr><td colSpan={5} className="h-16 text-center text-[#718792]">Carregando auditoria…</td></tr>:visibleAudit.map(item=><tr key={item.id} className="h-12 border-b border-[#E6EDF1]"><td className="whitespace-nowrap px-3">{new Date(item.criado_em).toLocaleString('pt-BR')}</td><td className="px-3 font-semibold">{item.documento_alvo}</td><td className="px-3">Solicitação registrada</td><td className="max-w-[420px] px-3">{item.justificativa}</td><td className="px-3">{item.documento_estornado_id || 'Sem vínculo'}</td></tr>)}{!refreshing&&!audit.length&&<tr><td colSpan={5} className="h-16 text-center text-[#718792]">Nenhuma solicitação registrada para a empresa atual.</td></tr>}</tbody><tfoot><tr className="h-11 border-t-2 border-[#D3E3EA] bg-[#F4F8FA] text-[10px] font-bold"><td colSpan={4} className="px-3">TOTAL DE SOLICITAÇÕES REGISTRADAS</td><td className="px-3 text-right">{audit.length}</td></tr></tfoot></table></div><div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[10px] text-[#607987] print:hidden"><span>Página {auditPage} de {auditPages} · {audit.length} registros</span><div className="flex gap-2"><button type="button" disabled={auditPage<=1} onClick={()=>setAuditPage(p=>Math.max(1,p-1))} className="h-8 rounded-md border border-[#CBD9E0] px-3 disabled:opacity-40">Anterior</button><button type="button" disabled={auditPage>=auditPages} onClick={()=>setAuditPage(p=>Math.min(auditPages,p+1))} className="h-8 rounded-md border border-[#CBD9E0] px-3 disabled:opacity-40">Próxima</button></div></div>
         </section>
         <p className="text-[10px] text-[#718792]">{helpText}</p>
+        <section className={card + ' print:hidden'}><h2 className="text-xs font-bold uppercase tracking-wide">Como usar esta tela</h2><p className="mt-2 text-[11px]">Localize o documento pelo identificador exato e confira os dados retornados. Escolha o motivo e a intenção de tratamento, informe justificativa com pelo menos 25 caracteres e confirme que consultou o período no fechamento financeiro.</p><p className="mt-1 text-[11px]">A gravação usa a RPC <code>erp_fiscal_estornar_documento</code> e registra a solicitação no histórico da empresa. A RPC atual não reverte lançamentos, não cancela NF-e, não altera títulos e não armazena anexos; essas ações não são anunciadas como concluídas.</p></section>
       </>}
       {error && access === true && <div role="alert" className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{error}</div>}
       {message && access === true && <div role="status" className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">{message}</div>}
