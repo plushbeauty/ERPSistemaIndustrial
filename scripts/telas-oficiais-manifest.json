@@ -424,7 +424,7 @@
       "sha": "537650f5ea58c02cc516ff30c1360db86776721c",
       "autor": "FernandoSch",
       "revisao": "REV-CENTRAL-EVOLUCAO-20261106-01",
-      "aprovadaEm": "2026-11-06",
+      "aprovadaEm": "2026-11-10",
       "statusAprovacao": "ORDEM MASTER 2026-11-06 §7 — painel permanente de acompanhamento do projeto,"
     },
     {
@@ -1733,9 +1733,9 @@
     },
     {
       "path": "src/PublicIndustrialHome.tsx",
-      "sha": "df4e9ce125e4ad3458ee1247f8bc906c486cebe1",
+      "sha": "514d08705c0787609eccc4f89a8db13579b6c7e2",
       "autor": "FernandoSch",
-      "revisao": "REV-CARROSSEL-BAIXO-E-BARRA-FINA-20261106-01 — faixa do carrossel com altura própria e barra do topo sem o quadrado da marca",
+      "revisao": "REV-HOME-IDENTIDADE-COPY-20261110-01 — faixa do carrossel com altura própria e barra do topo sem o quadrado da marca",
       "aprovadaEm": "2026-11-06",
       "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-06 — \"A IMAGEM FICOU GRANDE DE MAIS ELE TA PEGANDO"
     },
