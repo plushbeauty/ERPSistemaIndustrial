@@ -1,3 +1,9 @@
+/**
+ * @AUTOR: FernandoSch
+ * @DATA_REVISAO_APROVACAO: 2026-11-11
+ * @REVISAO: REV-CATALOGO-WIREFRAMES-MESTRE-20261111-01 — catálogo solicitado pelo proprietário com 13 telas, visual monoespaçado e cópia individual de cada wireframe.
+ * @STATUS_APROVACAO: IMPLEMENTAÇÃO EXPRESSAMENTE SOLICITADA PELO PROPRIETÁRIO EM 2026-11-10; adição documental sem alterar telas operacionais, dados, rotas de negócio ou permissões.
+ */
 import { useState } from 'react'
 import { ArrowLeft, Check, Clipboard, FileText, Layers3 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
