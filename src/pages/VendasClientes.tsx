@@ -1,8 +1,8 @@
 /**
  * @AUTOR: FernandoSch
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-11
+ * @REVISAO: REV-VENDAS-CLIENTES-PAGINACAO-EXCLUSAO-20261111-01 — paginação completa, filtro de status, limpar filtros e confirmação para exclusões de cliente, De/Para e transportadora; escopo empresa_id preservado
+ * @STATUS_APROVACAO: REVISÃO AUTORIZADA PELO PROPRIETÁRIO NO COMANDO MESTRE DE 2026-11-11; pendente de CI e validação funcional
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Building2, Check, MapPin, Pencil, Plus, RefreshCw, Search, Trash2, Truck, UserRound } from 'lucide-react'
@@ -71,6 +71,7 @@ type PriceTable = { id: string; codigo: string; nome: string }
 type Transportadora = { id: string; codigo: string; razao_social: string; cnpj: string | null; ie: string | null; telefone: string | null; cidade: string | null; uf: string | null; ativo: boolean }
 type ClientTransportLink = { id: string; cliente_id: string; transportadora_id: string }
 type DePara = { id: string; cliente_id: string; produto_id: string | null; codigo_interno: string; codigo_cliente: string; dimensoes: string | null; canal: string | null; molde: string | null; ativo: boolean }
+type PendingDelete = { kind: 'cliente' | 'depara' | 'transportadora'; id: string; description: string }
 
 const empty = (): Form => ({
   codigo: 'CLI-' + crypto.randomUUID().slice(0, 8).toUpperCase(),
@@ -99,6 +100,7 @@ const empty = (): Form => ({
   ativo: true,
 })
 
+const PAGE_SIZE = 25
 const baseInput = 'h-[28px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-normal text-slate-900 outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-100'
 const shortInput = baseInput + ' max-w-[110px]'
 function HelpTip({ text }: { text: string }) {
@@ -177,6 +179,9 @@ export default function VendasClientes() {
   const [cnpjLoading, setCnpjLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null)
+  const [statusFilter, setStatusFilter] = useState<'TODOS' | 'ATIVO' | 'INATIVO'>('TODOS')
+  const [pagina, setPagina] = useState(1)
   const [produto, setProduto] = useState('')
   const [codigoCliente, setCodigoCliente] = useState('')
   const [dimensoes, setDimensoes] = useState('')
@@ -193,15 +198,14 @@ export default function VendasClientes() {
       setEmpresa(empresaId)
 
       const [clients, productsResult, mappingsResult, priceTablesResult, transportadorasResult, clientTransportResult] = await Promise.all([
-        supabase.from('erp_clientes').select('id,codigo,nome,nome_fantasia,documento,inscricao_estadual,inscricao_municipal,tipo_pessoa,regime_tributario,contato_nome,email,email_nfe,telefone,whatsapp,cep,endereco,numero,complemento,bairro,cidade,estado,tipo_cliente,tabela_preco_id,desconto_padrao_percentual,ativo').eq('empresa_id', empresaId).order('nome'),
+        fetchAllPages<Client>((from, to) => supabase.from('erp_clientes').select('id,codigo,nome,nome_fantasia,documento,inscricao_estadual,inscricao_municipal,tipo_pessoa,regime_tributario,contato_nome,email,email_nfe,telefone,whatsapp,cep,endereco,numero,complemento,bairro,cidade,estado,tipo_cliente,tabela_preco_id,desconto_padrao_percentual,ativo', { count: 'exact' }).eq('empresa_id', empresaId).order('nome').order('id').range(from, to)),
         fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,descricao,estoque_atual',{count:'exact'}).eq('empresa_id', empresaId).eq('ativo', true).order('codigo').range(from,to)),
         supabase.from('erp_vendas_depara_produtos').select('id,cliente_id,produto_id,codigo_interno,codigo_cliente,dimensoes,canal,molde,ativo').eq('empresa_id', empresaId).eq('ativo', true).order('codigo_cliente'),
         supabase.from('erp_tabelas_preco').select('id,codigo,nome').eq('empresa_id', empresaId).eq('ativo', true).order('nome'),
         supabase.from('erp_transportadoras').select('id,codigo,razao_social,cnpj,ie,telefone,cidade,uf,ativo').eq('empresa_id', empresaId).eq('ativo', true).order('razao_social'),
         supabase.from('erp_cliente_transportadoras').select('id,cliente_id,transportadora_id').eq('empresa_id', empresaId),
       ])
-      if (clients.error) throw clients.error
-      setRows((clients.data ?? []) as Client[])
+      setRows(clients)
       setProducts(productsResult)
       setMappings((mappingsResult.data ?? []) as DePara[])
       setPriceTables((priceTablesResult.data ?? []) as PriceTable[])
@@ -220,8 +224,15 @@ export default function VendasClientes() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return rows.filter(row => !q || [row.codigo, row.nome, row.nome_fantasia, row.documento, row.email].filter(Boolean).join(' ').toLowerCase().includes(q))
-  }, [rows, query])
+    return rows.filter(row => {
+      const matchesStatus = statusFilter === 'TODOS' || (statusFilter === 'ATIVO' ? row.ativo : !row.ativo)
+      const matchesQuery = !q || [row.codigo, row.nome, row.nome_fantasia, row.documento, row.email].filter(Boolean).join(' ').toLowerCase().includes(q)
+      return matchesStatus && matchesQuery
+    })
+  }, [rows, query, statusFilter])
+  const totalPaginas = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const visibleRows = useMemo(() => filtered.slice((pagina - 1) * PAGE_SIZE, pagina * PAGE_SIZE), [filtered, pagina])
+  useEffect(() => { setPagina(current => Math.min(current, totalPaginas)) }, [totalPaginas])
 
   const selectedClient = rows.find(row => row.id === selected) ?? null
   const productRecords = products.map(product => ({ id: product.id, codigo: product.codigo, nome: product.nome, descricao: product.descricao ?? undefined }))
@@ -380,20 +391,9 @@ export default function VendasClientes() {
     }
   }
 
-  const remove = async () => {
-    if (!selected || !window.confirm('Excluir este cliente?')) return
-    setBusy(true)
-    try {
-      const result = await supabase.from('erp_clientes').delete().eq('id', selected).eq('empresa_id', empresa)
-      if (result.error) throw result.error
-      setSelected(null)
-      setMessage('Cliente excluído.')
-      await load()
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Falha ao excluir cliente.')
-    } finally {
-      setBusy(false)
-    }
+  const remove = () => {
+    if (!selected) return
+    setPendingDelete({ kind: 'cliente', id: selected, description: `Excluir o cliente ${selectedClient?.nome ?? selected}?` })
   }
 
   const addMapping = async () => {
@@ -467,16 +467,49 @@ export default function VendasClientes() {
     else { setTransportadoraId(''); setMessage('Transportadora vinculada ao cliente.'); await load() }
   }
 
-  const unlinkTransportadora = async (id: string) => {
-    const result = await supabase.from('erp_cliente_transportadoras').delete().eq('id', id).eq('empresa_id', empresa)
-    if (result.error) setError(result.error.message)
-    else await load()
+  const unlinkTransportadora = (id: string) => {
+    const link = clientTransportLinks.find(item => item.id === id)
+    const transportadora = transportadoras.find(item => item.id === link?.transportadora_id)
+    setPendingDelete({ kind: 'transportadora', id, description: `Desvincular ${transportadora?.razao_social ?? 'a transportadora'} deste cliente?` })
   }
 
-  const deleteMapping = async (id: string) => {
-    const result = await supabase.from('erp_vendas_depara_produtos').delete().eq('id', id).eq('empresa_id', empresa)
-    if (result.error) setError(result.error.message)
-    else await load()
+  const deleteMapping = (id: string) => {
+    const mapping = mappings.find(item => item.id === id)
+    setPendingDelete({ kind: 'depara', id, description: `Excluir o vínculo De/Para ${mapping?.codigo_cliente ?? ''}?` })
+  }
+
+  const confirmDelete = async () => {
+    const pending = pendingDelete
+    if (!pending || !empresa) return
+    setBusy(true)
+    setError('')
+    setMessage('')
+    try {
+      if (pending.kind === 'cliente') {
+        const result = await supabase.from('erp_clientes').delete().eq('id', pending.id).eq('empresa_id', empresa)
+        if (result.error) throw result.error
+        if (selected === pending.id) {
+          setSelected(null)
+          setOpen(false)
+          setForm(empty())
+        }
+        setMessage('Cliente excluído.')
+      } else if (pending.kind === 'depara') {
+        const result = await supabase.from('erp_vendas_depara_produtos').delete().eq('id', pending.id).eq('empresa_id', empresa)
+        if (result.error) throw result.error
+        setMessage('Vínculo De/Para removido.')
+      } else {
+        const result = await supabase.from('erp_cliente_transportadoras').delete().eq('id', pending.id).eq('empresa_id', empresa)
+        if (result.error) throw result.error
+        setMessage('Transportadora desvinculada do cliente.')
+      }
+      setPendingDelete(null)
+      await load()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao excluir vínculo.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   const tabs = [
@@ -567,7 +600,7 @@ export default function VendasClientes() {
                   <label className="grid gap-0.5 text-[9px] font-semibold uppercase text-slate-500">Canal<input value={canal} onChange={event => setCanal(event.target.value)} className={baseInput}/></label>
                   <button type="button" onClick={() => void addMapping()} className="erp-standard-button self-end">VINCULAR</button>
                 </div>
-                <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-[10px]"><thead className="bg-slate-100"><tr className="h-7 text-left"><th className="px-2">Código ERP</th><th className="px-2">Código Cliente</th><th className="px-2">Dimensões</th><th className="px-2">Canal</th><th className="px-2">Molde</th><th/></tr></thead><tbody>{mappings.filter(item => item.cliente_id === selected).map(item => <tr key={item.id} className="h-7 border-t border-slate-200"><td className="px-2 font-mono">{products.find(product => product.id === item.produto_id)?.codigo ?? '—'}</td><td className="px-2">{item.codigo_cliente}</td><td className="px-2">{item.dimensoes ?? '—'}</td><td className="px-2">{item.canal ?? '—'}</td><td className="px-2">{item.molde ?? '—'}</td><td className="px-2 text-right"><button type="button" onClick={() => void deleteMapping(item.id)} title="Excluir De/Para" className="text-rose-700"><Trash2 size={12}/></button></td></tr>)}</tbody></table></div>
+                <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-[10px]"><thead className="bg-slate-100"><tr className="h-7 text-left"><th className="px-2">Código ERP</th><th className="px-2">Código Cliente</th><th className="px-2">Dimensões</th><th className="px-2">Canal</th><th className="px-2">Molde</th><th/></tr></thead><tbody>{mappings.filter(item => item.cliente_id === selected).map(item => <tr key={item.id} className="h-7 border-t border-slate-200"><td className="px-2 font-mono">{products.find(product => product.id === item.produto_id)?.codigo ?? '—'}</td><td className="px-2">{item.codigo_cliente}</td><td className="px-2">{item.dimensoes ?? '—'}</td><td className="px-2">{item.canal ?? '—'}</td><td className="px-2">{item.molde ?? '—'}</td><td className="px-2 text-right"><button type="button" onClick={() => deleteMapping(item.id)} disabled={busy} aria-label={`Solicitar exclusão do vínculo ${item.codigo_cliente}`} title="Excluir De/Para" className="text-rose-700 disabled:opacity-40"><Trash2 size={12}/></button></td></tr>)}</tbody></table></div>
               </div>}
 
               {tab === 'transportadora' && selected && <div className="space-y-2">
@@ -588,27 +621,49 @@ export default function VendasClientes() {
                   <label className="grid gap-0.5 text-[9px] font-semibold uppercase text-slate-500">UF<input maxLength={2} value={transportadoraForm.uf} onChange={event => setTransportadoraForm({...transportadoraForm, uf: event.target.value.toUpperCase()})} className={shortInput}/></label>
                   <button type="button" onClick={() => void saveTransportadora()} className="erp-standard-button self-end"><Truck size={12}/> CADASTRAR + VINCULAR</button>
                 </div>
-                <div className="overflow-x-auto"><table className="w-full min-w-[600px] text-[10px]"><thead className="bg-slate-100"><tr className="h-7 text-left"><th className="px-2">Código</th><th className="px-2">Transportadora</th><th className="px-2">CNPJ</th><th className="px-2">Cidade/UF</th><th/></tr></thead><tbody>{clientTransportLinks.filter(link => link.cliente_id === selected).map(link => { const item=transportadoras.find(row => row.id === link.transportadora_id); return item ? <tr key={link.id} className="h-7 border-t border-slate-200"><td className="px-2">{item.codigo}</td><td className="px-2">{item.razao_social}</td><td className="px-2">{item.cnpj ?? '—'}</td><td className="px-2">{[item.cidade,item.uf].filter(Boolean).join(' / ') || '—'}</td><td className="px-2 text-right"><button type="button" onClick={() => void unlinkTransportadora(link.id)} title="Desvincular transportadora" className="text-rose-700"><Trash2 size={12}/></button></td></tr> : null })}</tbody></table></div>
+                <div className="overflow-x-auto"><table className="w-full min-w-[600px] text-[10px]"><thead className="bg-slate-100"><tr className="h-7 text-left"><th className="px-2">Código</th><th className="px-2">Transportadora</th><th className="px-2">CNPJ</th><th className="px-2">Cidade/UF</th><th/></tr></thead><tbody>{clientTransportLinks.filter(link => link.cliente_id === selected).map(link => { const item=transportadoras.find(row => row.id === link.transportadora_id); return item ? <tr key={link.id} className="h-7 border-t border-slate-200"><td className="px-2">{item.codigo}</td><td className="px-2">{item.razao_social}</td><td className="px-2">{item.cnpj ?? '—'}</td><td className="px-2">{[item.cidade,item.uf].filter(Boolean).join(' / ') || '—'}</td><td className="px-2 text-right"><button type="button" onClick={() => unlinkTransportadora(link.id)} disabled={busy} aria-label={`Solicitar desvinculação de ${item.razao_social}`} title="Desvincular transportadora" className="text-rose-700 disabled:opacity-40"><Trash2 size={12}/></button></td></tr> : null })}</tbody></table></div>
               </div>}
             </div>
             <footer className="border-t border-slate-200 bg-slate-50 px-2 py-1.5 text-[9px] text-slate-500">SALVAMENTO PELO BOTÃO SUPERIOR • O FORMULÁRIO PERMANECE FIXO NA TELA.</footer>
           </section>
 
           <section className="border border-slate-200 bg-white">
-            <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-2 py-1">
-              <Search size={13} className="text-sky-700"/>
-              <input value={query} onChange={event => setQuery(event.target.value)} placeholder="Pesquisar por código, razão social, CNPJ ou e-mail" className="h-[28px] min-w-0 flex-1 border-0 bg-transparent px-1 text-[10px] outline-none"/>
-              <HelpTip text="Digite parte do código, razão social, CNPJ ou e-mail. A grade abaixo filtra os clientes já cadastrados na empresa atual." />
+            <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-50 px-2 py-1">
+              <Search size={13} className="shrink-0 text-sky-700"/>
+              <input value={query} onChange={event => { setQuery(event.target.value); setPagina(1) }} placeholder="Pesquisar por código, razão social, CNPJ ou e-mail" className="h-8 min-w-[180px] flex-1 border border-slate-300 bg-white px-2 text-[10px] outline-none"/>
+              <select aria-label="Filtrar clientes por status" value={statusFilter} onChange={event => { setStatusFilter(event.target.value as 'TODOS' | 'ATIVO' | 'INATIVO'); setPagina(1) }} className="h-8 min-w-[110px] border border-slate-300 bg-white px-2 text-[10px]">
+                <option value="TODOS">Todos os status</option><option value="ATIVO">Ativos</option><option value="INATIVO">Inativos</option>
+              </select>
+              <button type="button" onClick={() => { setQuery(''); setStatusFilter('TODOS'); setPagina(1) }} className="h-8 shrink-0 border border-slate-300 bg-white px-2 text-[10px] font-semibold text-slate-700 hover:bg-slate-100">LIMPAR FILTROS</button>
+              <span className="text-[9px] text-slate-500">{filtered.length} cliente(s)</span>
+              <HelpTip text="Digite parte do código, razão social, CNPJ ou e-mail e filtre por status. A grade consulta somente clientes da empresa atual." />
             </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[900px] text-[10px]">
                 <thead className="bg-slate-100"><tr className="h-7 text-left font-semibold"><th className="px-2">Código</th><th className="px-2">Razão Social / Nome</th><th className="px-2">CNPJ / CPF</th><th className="px-2">Contato</th><th className="px-2">Cidade/UF</th><th className="px-2">Status</th></tr></thead>
-                <tbody>{filtered.map(row => <tr key={row.id} onClick={() => { setSelected(row.id); if (!open) edit(row) }} className={'h-7 cursor-pointer border-t border-slate-200 ' + (selected === row.id ? 'bg-sky-50' : 'hover:bg-slate-50')}><td className="px-2 font-mono">{row.codigo ?? '—'}</td><td className="px-2">{row.nome}<span className="ml-2 text-slate-500">{row.nome_fantasia ?? ''}</span></td><td className="px-2">{row.documento ?? '—'}</td><td className="px-2">{row.contato_nome ?? '—'}</td><td className="px-2">{[row.cidade, row.estado].filter(Boolean).join(' / ') || '—'}</td><td className={row.ativo ? 'px-2 text-emerald-700' : 'px-2 text-rose-700'}>{row.ativo ? 'ATIVO' : 'INATIVO'}</td></tr>)}</tbody>
+                <tbody>{visibleRows.map(row => <tr key={row.id} onClick={() => { setSelected(row.id); if (!open) edit(row) }} className={'h-7 cursor-pointer border-t border-slate-200 ' + (selected === row.id ? 'bg-sky-50' : 'hover:bg-slate-50')}><td className="px-2 font-mono">{row.codigo ?? '—'}</td><td className="px-2">{row.nome}<span className="ml-2 text-slate-500">{row.nome_fantasia ?? ''}</span></td><td className="px-2">{row.documento ?? '—'}</td><td className="px-2">{row.contato_nome ?? '—'}</td><td className="px-2">{[row.cidade, row.estado].filter(Boolean).join(' / ') || '—'}</td><td className={row.ativo ? 'px-2 text-emerald-700' : 'px-2 text-rose-700'}>{row.ativo ? 'ATIVO' : 'INATIVO'}</td></tr>)}</tbody>
               </table>
             </div>
             {!busy && !filtered.length && <p className="p-6 text-center text-[10px] text-slate-500">Nenhum cliente encontrado.</p>}
+            <nav className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 px-2 py-2" aria-label="Paginação de clientes">
+              <span className="text-[10px] text-slate-600">Página {pagina} de {totalPaginas} · {filtered.length} cliente(s)</span>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={() => setPagina(current => Math.max(1, current - 1))} disabled={busy || pagina <= 1} className="h-8 border border-slate-300 bg-white px-3 text-[10px] disabled:opacity-40">ANTERIOR</button>
+                <button type="button" onClick={() => setPagina(current => Math.min(totalPaginas, current + 1))} disabled={busy || pagina >= totalPaginas} className="h-8 border border-slate-300 bg-white px-3 text-[10px] disabled:opacity-40">PRÓXIMA</button>
+              </div>
+            </nav>
           </section>
         </div>
+        {pendingDelete && <div className="fixed inset-0 z-[1400] grid place-items-center bg-slate-950/50 p-4">
+          <section role="dialog" aria-modal="true" aria-labelledby="confirmar-exclusao-cliente" aria-describedby="descricao-exclusao-cliente" className="w-full max-w-md border border-slate-200 bg-white p-4 text-slate-800 shadow-xl">
+            <h2 id="confirmar-exclusao-cliente" className="text-sm font-bold">Confirmar exclusão</h2>
+            <p id="descricao-exclusao-cliente" className="mt-2 text-xs text-slate-600">{pendingDelete.description}</p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button type="button" onClick={() => setPendingDelete(null)} disabled={busy} className="h-8 border border-slate-300 bg-white px-3 text-xs disabled:opacity-50">CANCELAR</button>
+              <button type="button" onClick={() => void confirmDelete()} disabled={busy} className="h-8 border border-rose-700 bg-rose-700 px-3 text-xs font-semibold text-white disabled:cursor-wait disabled:opacity-60">{busy ? 'EXCLUINDO…' : 'CONFIRMAR EXCLUSÃO'}</button>
+            </div>
+          </section>
+        </div>}
       </main>
     </VendasLayout>
   )
