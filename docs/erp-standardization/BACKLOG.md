@@ -245,3 +245,12 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Não classificar como falha de build:** o build e os checks do CI passaram; a falha do gate de produção é a verificação estática do contrato NF-e/tenant. Não alterar migrations já aplicadas sem confirmar estado remoto; avaliar correção aditiva e compatibilidade antes de mexer.
 - **UI-002:** pendente de confronto completo entre rotas, imports, wrappers/re-exports e arquivos renderizados. As contagens do relatório não substituem esse cruzamento.
 - **Próxima ação preservada:** concluir UI-001 com artefato atual; depois UI-002. Nenhum item de tela removido do backlog e nenhuma tela declarada concluída nesta rodada.
+
+
+## Continuação do LOOP — execução 2026-11-11
+
+- **Contrato NF-e/tenant:** ajustado `scripts/verify-nfe-contract.mjs` para reconhecer explicitamente as duas migrations históricas de Compras que comparam `erp_current_empresa_id()` com `erp_current_company_id()`; a verificação também exige essa comparação nas duas migrations. Não foram alteradas migrations SQL nem contratos de runtime. Commit: `506df820dafc4a4a5745d630d2d1a4e063bc0f40`.
+- **Gap analysis:** criado `docs/erp-standardization/GAP_ANALYSIS_ODOO.md`, com inventário de módulos, lacunas por domínio e roadmap conservador. Commit: `1882e20cfdc32506b38fa44ab3b74cdd81c67e67`.
+- **Validação:** os workflows disparados para o commit do ajuste do gate ainda estavam em execução na consulta. A análise de gap é estática e não substitui validação funcional.
+- **Backlog:** UI-001, UI-002, UI-003 a UI-005, UI-010 a UI-100, QA-010 a QA-040, SGQ-REL-001 e itens CMP ainda pendentes permanecem abertos. Nenhuma tela foi declarada concluída nesta execução.
+- **Limite ambiental:** não há checkout local interativo nesta sessão; os comandos são executados por GitHub Actions, e a inspeção visual/autenticada do browser e confirmação do schema/RLS remoto não estão disponíveis aqui.
