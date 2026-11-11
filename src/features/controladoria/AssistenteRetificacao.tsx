@@ -5,9 +5,10 @@
  * @STATUS_APROVACAO: IMPLEMENTAÇÃO AUTORIZADA PELO PROPRIETÁRIO; execução bloqueada sem lançamento contábil original correspondente.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Search, RotateCcw, ShieldAlert, FileText, RefreshCw, Paperclip, LockKeyhole, ExternalLink, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, Search, RotateCcw, ShieldAlert, FileText, RefreshCw, Paperclip, LockKeyhole, ExternalLink } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
+import { Pill } from '../../components/compras/ui'
 
 type DocType='TITULO'|'BAIXA'|'NOTA_DEBITO'|'NFE'
 type SourceTable='erp_financeiro_titulos'|'erp_notas_debito_financeiras'
