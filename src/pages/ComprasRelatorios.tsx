@@ -5,7 +5,7 @@
  * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
  */
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, BarChart3, FileDown, FileSpreadsheet, RefreshCw, Search, TrendingUp } from 'lucide-react'
+import { ArrowLeft, FileDown, FileSpreadsheet, RefreshCw, Search } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
