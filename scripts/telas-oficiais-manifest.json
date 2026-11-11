@@ -653,11 +653,11 @@
     },
     {
       "path": "src/pages/CustomerDnSettings.tsx",
-      "sha": "c72ff0f3b847bc67959f357a69f33d014c3d317d",
+      "sha": "befbf06db23330aefcdfae921d662fb96e2e574f",
       "autor": "FernandoSch",
-      "revisao": "REV-FIN-NOTAS-DEBITO-WORKSPACE-20261110-01 — central financeira com consulta, cadastro, edição, anexos e persistência multiempresa.",
+      "revisao": "REV-FIN-NOTAS-DEBITO-CONFIG-20261111-01 — parâmetros por empresa, conta e centro de custo reais, persistidos em tabela tenant-scoped.",
       "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "IMPLEMENTAÇÃO EM BRANCH DE INTEGRAÇÃO; pendente de CI e validação visual."
+      "statusAprovacao": "IMPLEMENTAÇÃO EM BRANCH DE INTEGRAÇÃO; migration aplicada no Supabase; pendente de CI e validação visual."
     },
     {
       "path": "src/pages/DashboardComercial.tsx",
