@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { DownloadCloud, Upload, FileSpreadsheet, RefreshCw } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { fetchAllPages } from '../../lib/supabasePagination'
@@ -98,7 +98,7 @@ export default function BankStatementImporter(){
  const [message,setMessage]=useState('')
  const fileRef=useRef<HTMLInputElement>(null)
 
- const load=async()=>{
+ const load=useCallback(async()=>{
   setLoading(true);setError('')
   try{
    const company=await supabase.rpc('erp_current_empresa_id')
@@ -113,8 +113,8 @@ export default function BankStatementImporter(){
    setLogs((logsResult.data??[]) as Log[])
   }catch(cause){setError(cause instanceof Error?cause.message:'Falha ao carregar contas e histórico.')}
   finally{setLoading(false)}
- }
- useEffect(()=>{void load()},[])
+ },[accountId])
+ useEffect(()=>{void load()},[load])
 
  const options:LinkOption[]=accounts.map(account=>({value:account.id,label:account.codigo+' · '+account.nome,description:account.banco}))
  const choose=(next:File|null)=>{
