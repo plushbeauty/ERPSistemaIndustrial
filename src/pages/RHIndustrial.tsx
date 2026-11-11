@@ -309,7 +309,7 @@ export default function RHIndustrial() {
   const startNew = () => {
     if (tab === 'Visão geral' || tab === 'Turnos e escalas' || tab === 'EPIs') return
     setEditingId(null)
-    setForm(tab === 'Funcionários' ? blank(employeeFields) : blank(schemas[tab as Exclude<Tab, 'Funcionários' | 'Visão geral'>].fields))
+    setForm(tab === 'Funcionários' ? blank(employeeFields) : blank(schemas[tab as Exclude<Tab, 'Funcionários' | 'Visão geral' | 'Turnos e escalas' | 'EPIs'>].fields))
     setPhoto(null); setPhotoUrl(''); setMessage('')
   }
   const editStaff = async (person: Staff) => {
@@ -359,7 +359,7 @@ export default function RHIndustrial() {
     if (!empresaId || tab === 'Funcionários' || tab === 'Visão geral' || tab === 'Turnos e escalas' || tab === 'EPIs') return
     setBusy(true); setMessage('')
     try {
-      const schema = schemas[tab as Exclude<Tab, 'Funcionários' | 'Visão geral'>]
+      const schema = schemas[tab as Exclude<Tab, 'Funcionários' | 'Visão geral' | 'Turnos e escalas' | 'EPIs'>]
       const payload: Record<string, unknown> = { empresa_id: empresaId, criado_por: (await supabase.auth.getUser()).data.user?.id ?? null }
       for (const field of schema.fields) {
         const value = (form[field.key] ?? '').trim()
@@ -379,7 +379,7 @@ export default function RHIndustrial() {
     const path = `${empresaId}/anexos/${rowId}/${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
     const { error } = await supabase.storage.from('rh-arquivos').upload(path, file, { upsert: true, contentType: file.type })
     if (error) throw error
-    const schema = schemas[tab as Exclude<Tab, 'Funcionários' | 'Visão geral'>]
+    const schema = schemas[tab as Exclude<Tab, 'Funcionários' | 'Visão geral' | 'Turnos e escalas' | 'EPIs'>]
     const { error: updateError } = await supabase.from(schema.table).update({ [column]: path }).eq('id', rowId).eq('empresa_id', empresaId)
     if (updateError) throw updateError
     setMessage('Anexo enviado com controle de acesso por empresa.')
@@ -404,7 +404,7 @@ export default function RHIndustrial() {
         numeros passam a ser lidos na Visão geral, onde todo valor ausente chega como 0 do banco. */}
     <div className="mb-4 flex flex-wrap items-start gap-2">
       <nav role="tablist" aria-label="Abas do módulo RH" className="flex min-w-0 flex-1 flex-nowrap gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm md:flex-wrap">
-        {tabs.map(item => { const Icon = item.icon; return <button key={item.label} type="button" role="tab" aria-selected={tab === item.label} onClick={() => { setTab(item.label); setForm(item.label === 'Funcionários' ? blank(employeeFields) : item.label === 'Visão geral' ? {} : blank(schemas[item.label as Exclude<Tab, 'Funcionários' | 'Visão geral'>].fields)); setEditingId(null); setMessage('') }} className={`flex min-h-[30px] shrink-0 items-center gap-2 rounded-[2px] px-3 text-xs font-bold transition ${tab === item.label ? 'bg-sky-700 text-white' : 'text-slate-600 hover:bg-slate-100'}`}><Icon size={15}/>{item.label}</button> })}
+        {tabs.map(item => { const Icon = item.icon; return <button key={item.label} type="button" role="tab" aria-selected={tab === item.label} onClick={() => { setTab(item.label); setForm(item.label === 'Funcionários' ? blank(employeeFields) : ['Visão geral','Turnos e escalas','EPIs'].includes(item.label) ? {} : blank(schemas[item.label as Exclude<Tab, 'Funcionários' | 'Visão geral' | 'Turnos e escalas' | 'EPIs'>].fields)); setEditingId(null); setMessage('') }} className={`flex min-h-[30px] shrink-0 items-center gap-2 rounded-[2px] px-3 text-xs font-bold transition ${tab === item.label ? 'bg-sky-700 text-white' : 'text-slate-600 hover:bg-slate-100'}`}><Icon size={15}/>{item.label}</button> })}
       </nav>
       <button type="button" onClick={() => empresaId && void reload(empresaId, tab)} className="inline-flex h-[30px] shrink-0 items-center gap-2 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"><RefreshCw size={14}/> Atualizar</button>
     </div>
