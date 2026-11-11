@@ -93,3 +93,34 @@
 .produtos-cadastro-page .produto-origem-opcoes input{width:14px;height:14px;min-height:0}
 @media(max-width:900px){.produtos-cadastro-page .produto-field--span-2,.produtos-cadastro-page .produto-field--span-3,.produtos-cadastro-page .produto-field--span-4{grid-column:span 6 / span 6}}
 @media(max-width:600px){.produtos-cadastro-page .produto-field--span-2,.produtos-cadastro-page .produto-field--span-3,.produtos-cadastro-page .produto-field--span-4{grid-column:1 / -1}}
+
+
+/* REV-COMPRAS-SCHEMA-REAL-NFE-20261110-01 — régua operacional isolada da Central. */
+.compras-page .compras-field input,
+.compras-page .compras-field select{height:40px;min-height:40px}
+.compras-page .compras-field textarea{min-height:88px}
+.compras-page .compras-button{height:40px;min-height:40px;border-radius:999px;transition:background-color .18s ease,border-color .18s ease,transform .18s ease}
+.compras-page .compras-button:hover{transform:translateY(-1px)}
+.compras-page .compras-table tbody tr{height:48px}
+.compras-page .compras-kpi{min-height:100px;justify-content:center}
+.compras-page .compras-howto{padding:10px 13px;border:1px solid #dbe4e9;border-radius:8px;background:#fff;color:#475569;font-size:11px}
+.compras-page .compras-howto summary{color:#123b50;font-weight:800;cursor:pointer}
+.compras-page .compras-howto>div{padding-top:9px;line-height:1.8}
+.compras-page .compras-print-brand{display:none}
+@media print{
+  @page{size:A4 landscape;margin:12mm}
+  body{background:#fff!important}
+  .compras-page{gap:8px;color:#111827;font-size:10px}
+  .compras-page .compras-header{display:block;padding:0 0 8px;border:0;border-bottom:2px solid #123b50;border-radius:0;background:#fff!important;color:#123b50!important}
+  .compras-page .compras-header h1,.compras-page .compras-header p{color:#123b50!important}
+  .compras-page .compras-eyebrow{display:none}
+  .compras-page .compras-print-brand{display:block;margin-bottom:5px;color:#123b50;font-size:10px;font-weight:900;letter-spacing:.08em}
+  .compras-page .compras-header-actions,.compras-page .compras-tabs,.compras-page .compras-howto,.compras-page .compras-footer,.compras-page .compras-button,.compras-page .compras-search{display:none!important}
+  .compras-page .compras-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .compras-page .compras-kpi{min-height:64px;padding:7px;box-shadow:none}
+  .compras-page .compras-panel{padding:8px;border:0;box-shadow:none}
+  .compras-page .compras-table-scroll{overflow:visible;border:1px solid #cbd5e1}
+  .compras-page .compras-table{font-size:9px;white-space:normal}
+  .compras-page .compras-table th,.compras-page .compras-table td{padding:6px 7px}
+  .compras-page .compras-table tr{break-inside:avoid}
+}
