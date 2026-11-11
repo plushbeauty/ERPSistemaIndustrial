@@ -20,7 +20,7 @@ const tabs: Array<{ key: TabKey; label: string; icon: typeof ClipboardList }> = 
   { key: 'alertas', label: 'Alertas MRP', icon: AlertTriangle },
   { key: 'cotacoes', label: 'Cotações', icon: FileText },
   { key: 'pedidos', label: 'Pedidos de compra', icon: Truck },
-  { key: 'recebimentos', label: 'Recebimentos', icon: PackageCheck },
+  { key: 'recebimentos', label: 'NF-e de entrada', icon: PackageCheck },
   { key: 'fornecedores', label: 'Fornecedores', icon: Users },
 ]
 
@@ -55,6 +55,10 @@ function statusClass(value: string): string {
 }
 
 function DataTable({ rows, kind, onEdit }: { rows: DbRow[]; kind: 'requisicoes' | 'alertas' | 'cotacoes' | 'pedidos' | 'recebimentos' | 'fornecedores'; onEdit?: (id: string) => void }) {
+  const [page, setPage] = useState(1)
+  const pageCount = Math.max(1, Math.ceil(rows.length / 20))
+  const pageRows = rows.slice((page - 1) * 20, page * 20)
+  useEffect(() => { setPage(current => Math.min(current, pageCount)) }, [pageCount, rows.length])
   if (!rows.length) return <div className="compras-empty"><PackageCheck size={22} /><strong>{kind === 'alertas' ? 'Nenhum material no ponto de reposição' : kind === 'fornecedores' ? 'Nenhum fornecedor cadastrado' : 'Nenhum registro encontrado'}</strong><span>{kind === 'alertas' ? 'Os alertas aparecem quando o estoque real atinge ou fica abaixo do ponto de reposição cadastrado no produto.' : 'Os registros aparecerão aqui quando existirem dados para a empresa autenticada.'}</span></div>
   const columns: Record<typeof kind, Array<{ label: string; keys: string[]; format?: 'date' | 'money' | 'status' }>> = {
     requisicoes: [
@@ -75,17 +79,20 @@ function DataTable({ rows, kind, onEdit }: { rows: DbRow[]; kind: 'requisicoes' 
     ],
     pedidos: [
       { label: 'Pedido', keys: ['numero', 'id'] },
-      { label: 'Fornecedor', keys: ['fornecedor_nome', 'fornecedor_id'] },
-      { label: 'Emissão', keys: ['data_pedido', 'created_at'], format: 'date' },
+      { label: 'Fornecedor (ID)', keys: ['fornecedor_id'] },
+      { label: 'Emissão', keys: ['created_at'], format: 'date' },
       { label: 'Entrega prevista', keys: ['data_prevista'], format: 'date' },
       { label: 'Total', keys: ['total'], format: 'money' },
       { label: 'Status', keys: ['status'], format: 'status' },
     ],
     recebimentos: [
-      { label: 'Pedido', keys: ['numero', 'id'] },
-      { label: 'Fornecedor', keys: ['fornecedor_nome', 'fornecedor_id'] },
-      { label: 'Data do pedido', keys: ['data_pedido', 'created_at'], format: 'date' },
-      { label: 'Status', keys: ['status'], format: 'status' },
+      { label: 'NF-e', keys: ['numero'] },
+      { label: 'Série', keys: ['serie'] },
+      { label: 'Chave de acesso', keys: ['chave_acesso'] },
+      { label: 'Emitente', keys: ['razao_social_emitente'] },
+      { label: 'Entrada', keys: ['created_at'], format: 'date' },
+      { label: 'Valor', keys: ['valor_total'], format: 'money' },
+      { label: 'Status fiscal', keys: ['status'], format: 'status' },
     ],
     fornecedores: [
       { label: 'Código', keys: ['codigo'] },
@@ -103,11 +110,11 @@ function DataTable({ rows, kind, onEdit }: { rows: DbRow[]; kind: 'requisicoes' 
       { label: 'Unidade', keys: ['unidade'] },
     ],
   }
-  return <div className="compras-table-scroll"><table className="compras-table"><thead><tr>{columns[kind].map(column => <th key={column.label}>{column.label}</th>)}{kind === 'pedidos' && <th>Ação</th>}</tr></thead><tbody>{rows.map((row, index) => <tr key={textValue(row, 'id') === '—' ? index : textValue(row, 'id')}>{columns[kind].map(column => {
+  return <div className="compras-table-scroll"><table className="compras-table"><thead><tr>{columns[kind].map(column => <th key={column.label}>{column.label}</th>)}{kind === 'pedidos' && <th>Ação</th>}</tr></thead><tbody>{pageRows.map((row, index) => <tr key={textValue(row, 'id') === '—' ? index : textValue(row, 'id')}>{columns[kind].map(column => {
     const value = column.keys.map(key => row[key]).find(item => item !== undefined && item !== null && item !== '')
     const formatted = column.format === 'date' ? dateValue(value) : column.format === 'money' ? moneyValue(value) : typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : '—'
     return <td key={column.label}>{column.format === 'status' ? <span className={statusClass(formatted)}>{formatted.replaceAll('_', ' ')}</span> : formatted}</td>
-  })}{kind === 'pedidos' && <td><button className="compras-button compras-button--light erp-edit-button erp-row-action" type="button" onClick={() => onEdit?.(textValue(row, 'id'))} disabled={textValue(row, 'id') === '—'}>Editar</button></td>}</tr>)}</tbody></table></div>
+  })}{kind === 'pedidos' && <td><button className="compras-button compras-button--light erp-edit-button erp-row-action" type="button" onClick={() => onEdit?.(textValue(row, 'id'))} disabled={textValue(row, 'id') === '—'}>Editar</button></td>}</tr>)}</tbody></table><nav className="compras-pagination" aria-label="Paginação da tabela"><span>{rows.length} registro(s) · Página {page} de {pageCount}</span><div><button type="button" className="compras-button compras-button--light" disabled={page===1} onClick={()=>setPage(current=>Math.max(1,current-1))}>Anterior</button><button type="button" className="compras-button compras-button--light" disabled={page===pageCount} onClick={()=>setPage(current=>Math.min(pageCount,current+1))}>Próxima</button></div></nav></div>
 }
 
 export default function ComprasWorkspace() {
@@ -148,7 +155,7 @@ export default function ComprasWorkspace() {
       loadTable('erp_produtos', setMaterials, 'codigo'),
       (async () => {
         setReceipts({ rows: [], loading: true, error: null })
-        const { data, error } = await supabase.from('erp_pedidos_compra').select('*').eq('empresa_id', empresaId).in('status', ['RECEBIMENTO_PARCIAL', 'RECEBIDO']).order('created_at', { ascending: false }).limit(100)
+        const { data, error } = await supabase.from('fiscal_nfe_entradas').select('id,empresa_id,chave_acesso,numero,serie,cnpj_emitente,razao_social_emitente,valor_total,status,created_at').eq('empresa_id', empresaId).order('created_at', { ascending: false }).limit(100)
         if (error) setReceipts({ rows: [], loading: false, error: error.message })
         else setReceipts({ rows: (data ?? []) as DbRow[], loading: false, error: null })
       })(),
@@ -180,8 +187,6 @@ export default function ComprasWorkspace() {
       const { data: empresaId, error: empresaError } = await supabase.rpc('erp_current_empresa_id')
       if (empresaError) throw empresaError
       if (typeof empresaId !== 'string' || !empresaId) throw new Error('Não foi possível identificar a empresa da sessão autenticada.')
-      const { data: authData, error: authError } = await supabase.auth.getUser()
-      if (authError) throw authError
       const { data, error } = await supabase.from('erp_rfq').insert({
         empresa_id: empresaId,
         data_emissao: today,
@@ -190,7 +195,6 @@ export default function ComprasWorkspace() {
         condicao_pagamento: form.condicaoPagamento.trim() || null,
         observacoes: form.observacoes.trim() || null,
         status: 'RASCUNHO',
-        created_by: authData.user?.id ?? null,
       }).select('id,numero').single()
       if (error) throw error
       setNotice({ kind: 'success', message: 'Solicitação de cotação criada. Agora adicione itens e fornecedores na etapa de cotação.' })
@@ -207,15 +211,46 @@ export default function ComprasWorkspace() {
   }
 
   const alertData: TableData = { ...materials, rows: alertRows }
+  const exportCurrentCsv = () => {
+    if (!activeRows.length) return
+    const fields = activeTab === 'pedidos'
+      ? ['numero','fornecedor_id','created_at','data_prevista','total','status']
+      : activeTab === 'cotacoes'
+        ? ['numero','data_emissao','data_necessidade','prazo_resposta','condicao_pagamento','status']
+        : activeTab === 'requisicoes'
+          ? ['codigo','ordem_producao_id','comprador_nome','data_limite','nivel_urgencia','status']
+          : activeTab === 'recebimentos'
+            ? ['numero','serie','chave_acesso','cnpj_emitente','razao_social_emitente','valor_total','status','created_at']
+            : activeTab === 'fornecedores'
+              ? ['codigo','razao_social','nome_fantasia','documento','ativo']
+              : ['codigo','nome','estoque_atual','ponto_reposicao','saldo_reposicao','unidade']
+    const csv = [fields, ...activeRows.map(row => fields.map(field => String(row[field] ?? '')))]
+      .map(row => row.map(value => `"${String(value).replaceAll('"','""')}"`).join(';')).join('\r\n')
+    const url = URL.createObjectURL(new Blob(['\uFEFF',csv],{type:'text/csv;charset=utf-8;'}))
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `compras-${activeTab}-${new Date().toISOString().slice(0,10)}.csv`
+    anchor.click()
+    URL.revokeObjectURL(url)
+  }
   const activeData = activeTab === 'requisicoes' ? requisitions : activeTab === 'cotacoes' ? rfqs : activeTab === 'pedidos' ? orders : activeTab === 'recebimentos' ? receipts : activeTab === 'fornecedores' ? suppliers : alertData
   const activeRows = activeTab === 'requisicoes' ? filtered.requisitions : activeTab === 'cotacoes' ? filtered.rfqs : activeTab === 'pedidos' ? filtered.orders : activeTab === 'recebimentos' ? filtered.receipts : activeTab === 'fornecedores' ? filtered.suppliers : filtered.alerts
   const tableKind = activeTab === 'requisicoes' ? 'requisicoes' : activeTab === 'pedidos' ? 'pedidos' : activeTab === 'recebimentos' ? 'recebimentos' : activeTab === 'fornecedores' ? 'fornecedores' : activeTab === 'alertas' ? 'alertas' : 'cotacoes'
 
   return <main className="compras-page" aria-label="Módulo de Compras SYSNQRA">
     <header className="compras-header">
-      <div><h1>Central de Compras</h1><p>Requisições, MRP, cotações, pedidos, recebimentos e fornecedores em um único fluxo.</p></div>
+      <div><span className="compras-eyebrow">Compras › Suprimentos › Central de Compras</span><h1>Central de Compras</h1><p>Requisições, MRP, cotações, pedidos e documentos fiscais de entrada.</p></div>
+      <div className="compras-header-actions"><button className="compras-button compras-button--light" type="button" onClick={() => setRefreshKey(value => value + 1)}><RefreshCw size={14}/> Atualizar</button><button className="compras-button compras-button--light" type="button" disabled={!activeRows.length} onClick={exportCurrentCsv}>Exportar CSV</button><button className="compras-button compras-button--light" type="button" onClick={() => window.print()}>Imprimir / PDF</button></div>
+      <div className="compras-print-brand">PLASTIBOR · SYSNQRA ERP INDUSTRIAL</div>
     </header>
     {notice && <div className={notice.kind === 'success' ? 'compras-notice compras-notice--success' : 'compras-notice compras-notice--error'} role="status">{notice.message}</div>}
+    <section className="compras-kpis" aria-label="Indicadores reais da Central de Compras">
+      <article className="compras-kpi"><span>Requisições</span><strong>{requisitions.rows.length}</strong><small>Até 100 registros recentes</small></article>
+      <article className="compras-kpi"><span>Cotações</span><strong>{rfqs.rows.length}</strong><small>Até 100 registros recentes</small></article>
+      <article className="compras-kpi"><span>Pedidos</span><strong>{orders.rows.length}</strong><small>Até 100 registros recentes</small></article>
+      <article className="compras-kpi"><span>NF-e de entrada</span><strong>{receipts.rows.length}</strong><small>Documentos fiscais da empresa ativa</small></article>
+    </section>
+    <details className="compras-howto"><summary>Como usar esta tela</summary><div><strong>Para que serve:</strong> acompanhar requisições, alertas MRP, cotações, pedidos, NF-e de entrada e fornecedores. <strong>Passo a passo:</strong> selecione a etapa, pesquise os registros, atualize os dados ou abra a criação de RFQ/pedido. <strong>Regras:</strong> os dados são limitados à empresa da sessão pelo RLS; NF-e de entrada não substitui a conferência física no estoque.</div></details>
     <nav className="compras-tabs" aria-label="Etapas do módulo">{tabs.map(tab => { const Icon = tab.icon; const count = tab.key === 'requisicoes' ? requisitions : tab.key === 'cotacoes' ? rfqs : tab.key === 'fornecedores' ? suppliers : tab.key === 'alertas' ? materials : null; const total = tab.key === 'alertas' ? alertRows.length : count?.rows.length; return <button type="button" key={tab.key} className={activeTab === tab.key ? 'compras-tab is-active' : 'compras-tab'} onClick={() => setActiveTab(tab.key)}><Icon size={15} />{tab.label}{count && !count.loading ? <span>{total}</span> : null}</button> })}</nav>
     {showRfqForm && activeTab === 'cotacoes' && <section className="compras-panel compras-form-panel"><div className="compras-panel-heading"><div><h2>Nova solicitação de cotação</h2><p>Cadastre o cabeçalho. Itens e fornecedores serão vinculados na etapa de detalhamento.</p></div><button className="compras-button compras-button--light" type="button" onClick={() => setShowRfqForm(false)}>Fechar</button></div><form onSubmit={createRfq} className="compras-form-grid">
       <label className="compras-field"><span>Data de emissão</span><input value={dateValue(today)} readOnly aria-label="Data de emissão" /></label>
@@ -227,7 +262,7 @@ export default function ComprasWorkspace() {
     </form></section>}
     {showOrderForm && activeTab === 'pedidos' && <ComprasPedidoForm key={editingOrderId ?? 'novo-pedido'} pedidoId={editingOrderId ?? undefined} onCancel={() => { setShowOrderForm(false); setEditingOrderId(null) }} onSaved={(message) => { setNotice({kind:'success',message}); setSearch(''); setRefreshKey(value => value + 1) }} />}
     {activeTab === 'visao-geral' ? <section className="compras-panel compras-open-orders"><div className="compras-panel-heading"><div><h2>Pedidos de compra em aberto</h2><p>Pedidos que ainda precisam de aprovação, envio ou recebimento.</p></div><button className="compras-button compras-button--primary" type="button" onClick={() => { setEditingOrderId(null); setShowOrderForm(true); setActiveTab('pedidos'); setNotice(null) }}><Plus size={14} /> Novo pedido</button></div>
-      {orders.loading ? <div className="compras-loading"><RefreshCw size={16} /> Carregando pedidos reais…</div> : orders.error ? <div className="compras-error" role="alert"><strong>Falha na consulta.</strong><span>{orders.error}</span></div> : (() => { const openOrders = filtered.orders.filter(row => !['RECEBIDO','CANCELADO','REJEITADO','CONCLUIDO','CONCLUÍDO'].includes(textValue(row,'status').toLocaleUpperCase('pt-BR'))); return openOrders.length ? <div className="compras-table-scroll"><table className="compras-table"><thead><tr><th>Nº pedido</th><th>Fornecedor</th><th>Emissão</th><th>Entrega prevista</th><th>Status</th><th>Valor total</th><th>Ação</th></tr></thead><tbody>{openOrders.map((row,index) => <tr key={textValue(row,'id') === '—' ? index : textValue(row,'id')}><td><strong>{textValue(row,'numero','id')}</strong></td><td>{textValue(row,'fornecedor_nome','razao_social','fornecedor_id')}</td><td>{dateValue(row.data_pedido ?? row.created_at)}</td><td>{dateValue(row.data_prevista)}</td><td><span className={statusClass(textValue(row,'status'))}>{textValue(row,'status').replaceAll('_',' ')}</span></td><td>{moneyValue(row.total)}</td><td><button className="compras-button compras-button--light erp-edit-button erp-row-action" type="button" onClick={() => { setEditingOrderId(textValue(row,'id')); setActiveTab('pedidos'); setShowOrderForm(true) }} disabled={textValue(row,'id') === '—'}>Editar pedido</button></td></tr>)}</tbody></table></div> : <div className="compras-empty"><ShoppingCart size={22}/><strong>Nenhum pedido em aberto</strong><span>Quando houver pedidos em rascunho, aguardando aprovação ou recebimento, eles aparecerão neste grid.</span><button className="compras-button compras-button--primary" type="button" onClick={() => { setEditingOrderId(null); setShowOrderForm(true); setActiveTab('pedidos') }}><Plus size={14}/> Criar primeiro pedido</button></div> })()}
+      {orders.loading ? <div className="compras-loading"><RefreshCw size={16} /> Carregando pedidos reais…</div> : orders.error ? <div className="compras-error" role="alert"><strong>Falha na consulta.</strong><span>{orders.error}</span></div> : (() => { const openOrders = filtered.orders.filter(row => !['RECEBIDO','CANCELADO','REJEITADO','CONCLUIDO','CONCLUÍDO'].includes(textValue(row,'status').toLocaleUpperCase('pt-BR'))); return openOrders.length ? <DataTable rows={openOrders} kind="pedidos" onEdit={(id) => { setEditingOrderId(id); setActiveTab('pedidos'); setShowOrderForm(true) }} />: <div className="compras-empty"><ShoppingCart size={22}/><strong>Nenhum pedido em aberto</strong><span>Quando houver pedidos em rascunho, aguardando aprovação ou recebimento, eles aparecerão neste grid.</span><button className="compras-button compras-button--primary" type="button" onClick={() => { setEditingOrderId(null); setShowOrderForm(true); setActiveTab('pedidos') }}><Plus size={14}/> Criar primeiro pedido</button></div> })()}
     </section> : !showOrderForm && <section className="compras-panel"><div className="compras-panel-heading"><div><h2>{tabs.find(tab => tab.key === activeTab)?.label}</h2><p>{activeData.loading ? 'Consultando o banco de dados…' : activeData.error ? 'Não foi possível consultar esta tabela.' : activeRows.length + ' registro(s) nesta consulta'}</p></div><div className="compras-heading-actions">{activeTab === 'pedidos' && <button className="compras-button compras-button--primary" type="button" onClick={() => { setEditingOrderId(null); setShowOrderForm(true); setNotice(null) }}><Plus size={14}/> Novo pedido</button>}{activeTab === 'cotacoes' && <button className="compras-button compras-button--primary" type="button" onClick={() => { setShowRfqForm(true); setNotice(null) }}><Plus size={14}/> Nova cotação</button>}<label className="compras-search"><Search size={15} /><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Pesquisar nesta lista…" aria-label="Pesquisar registros" /></label></div></div>
       {activeData.loading ? <div className="compras-loading"><RefreshCw size={16} /> Carregando dados reais…</div> : activeData.error ? <div className="compras-error" role="alert"><strong>Falha na consulta.</strong><span>{activeData.error}</span><button className="compras-button compras-button--light" type="button" onClick={() => setRefreshKey(value => value + 1)}>Tentar novamente</button></div> : <DataTable rows={activeRows} kind={tableKind} onEdit={(id) => { setEditingOrderId(id); setShowOrderForm(true) }} />}
     </section>}    <footer className="compras-footer"><span>SYSNQRA ERP INDUSTRIAL · SUPRIMENTOS</span><span>Dados vinculados à sessão autenticada · Revisão visual em andamento · 28/10/2026</span></footer>
