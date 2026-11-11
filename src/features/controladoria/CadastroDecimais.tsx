@@ -24,6 +24,12 @@ const defaults: DefaultRule[] = [
 const inputClass = 'h-10 rounded-lg border border-slate-200 bg-white px-3 text-[12px] text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100'
 const labelClass = 'mb-1.5 block text-[10px] font-bold uppercase tracking-wide text-slate-500'
 const buttonBase = 'inline-flex h-10 items-center justify-center gap-2 rounded-full px-4 text-[12px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-50'
+const exportCsv = (rows: Rule[]) => {
+  const quote = (value: unknown) => '"' + String(value ?? '').replace(/"/g, '""') + '"'
+  const csv = ['Código;Descrição;Casas;Status', ...rows.map(rule => [rule.codigo,rule.descricao,rule.casas,rule.ativo ? 'ATIVA' : 'INATIVA'].map(quote).join(';'))].join('\r\n')
+  const url = URL.createObjectURL(new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8' }))
+  const link = document.createElement('a'); link.href = url; link.download = 'plastibor-regras-decimais.csv'; link.click(); URL.revokeObjectURL(url)
+}
 
 function exampleFor(rule: Pick<Rule, 'codigo' | 'casas'>) {
   const values: Record<string, { value: number; suffix: string }> = {
@@ -54,6 +60,8 @@ export default function CadastroDecimais() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
+  const [page, setPage] = useState(1)
+  const pageSize = 20
 
   const load = async () => {
     setLoading(true)
@@ -180,11 +188,16 @@ export default function CadastroDecimais() {
   }
 
   const activeCount = rules.filter(rule => rule.ativo).length
+  const inactiveCount = rules.length - activeCount
+  const defaultCount = defaults.filter(rule => rules.some(saved => saved.codigo === rule.codigo)).length
+  const pageCount = Math.max(1, Math.ceil(rules.length / pageSize))
+  const pageRules = rules.slice((page - 1) * pageSize, page * pageSize)
 
   return (
     <main className="min-h-full bg-[#F4FBFD] p-3 text-slate-800">
-      <div className="mx-auto max-w-[1400px] space-y-4">
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="mx-auto max-w-[1400px] space-y-4 print:max-w-none print:space-y-2">
+        <div className="hidden border-b-2 border-[#123B50] pb-3 print:block"><strong className="text-[19px] tracking-[0.16em]">PLASTIBOR</strong><p className="text-[10px]">Controladoria industrial · Cadastro de precisão decimal</p><p className="text-[10px]">Emitido em {new Date().toLocaleString('pt-BR')}</p></div>
+        <div className="flex flex-wrap items-center gap-3 print:hidden">
           <button type="button" onClick={() => navigate(-1)} className={buttonBase + ' w-[115px] border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50'}>
             <ArrowLeft size={14} /> Voltar
           </button>
@@ -193,9 +206,12 @@ export default function CadastroDecimais() {
             <h1 className="text-[16px] font-bold tracking-tight text-[#123B50]">CADASTRO DE PRECISÃO DECIMAL — CUBAGEM</h1>
             <p className="mt-1 text-[11px] text-slate-500">Configuração das casas decimais para cubagem, peso, medidas técnicas, ficha técnica e faturamento.</p>
           </div>
+          <button type="button" onClick={() => window.print()} disabled={!rules.length} className={buttonBase + ' border border-slate-200 bg-white text-slate-700 disabled:opacity-50'}>Imprimir / PDF</button>
         </div>
 
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 print:grid-cols-4">{[{label:'Regras cadastradas',value:rules.length},{label:'Regras ativas',value:activeCount},{label:'Regras inativas',value:inactiveCount},{label:'Padrões industriais disponíveis',value:defaultCount}].map(card=><article key={card.label} className="flex min-h-[100px] flex-col justify-between rounded-xl border border-slate-200 bg-white p-4"><span className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{card.label}</span><strong className="text-[22px] tabular-nums text-[#123B50]">{loading?'—':card.value}</strong><span className="text-[10px] text-slate-500">{error?'Falha ao consultar':loading?'Carregando dados…':'Dados reais da empresa ativa'}</span></article>)}</section>
+
+        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm print:hidden">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <div>
               <h2 className="text-[12px] font-bold text-[#123B50]">Formulário de precisão decimal</h2>
@@ -231,11 +247,11 @@ export default function CadastroDecimais() {
               <h2 className="text-[12px] font-bold text-[#123B50]">Regras de Precisão Decimal</h2>
               <p className="mt-1 text-[10px] text-slate-500">{activeCount} ativa(s) · {rules.length - activeCount} inativa(s) · exemplos formatados conforme as casas decimais.</p>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <button type="button" onClick={() => void loadDefaults()} disabled={saving || loading || !empresaId} className={buttonBase + ' h-9 border border-slate-200 bg-white text-slate-700'}>
+            <div className="flex flex-wrap items-center gap-2 print:hidden"><button type="button" onClick={() => exportCsv(rules)} disabled={!rules.length || loading} className={buttonBase + ' border border-slate-200 bg-white text-slate-700 disabled:opacity-50'}>Exportar CSV</button>
+              <button type="button" onClick={() => void loadDefaults()} disabled={saving || loading || !empresaId} className={buttonBase + ' border border-slate-200 bg-white text-slate-700'}>
                 <Plus size={13} /> Carregar padrões industriais
               </button>
-              <button type="button" onClick={() => void load()} disabled={loading || saving} className={buttonBase + ' h-9 border border-slate-200 bg-white text-slate-700'}>
+              <button type="button" onClick={() => void load()} disabled={loading || saving} className={buttonBase + ' border border-slate-200 bg-white text-slate-700'}>
                 <RotateCcw size={13} /> Atualizar
               </button>
             </div>
@@ -255,7 +271,7 @@ export default function CadastroDecimais() {
               <tbody>
                 {loading ? <tr><td colSpan={6} className="h-16 text-center text-slate-500">Carregando regras...</td></tr> :
                   rules.length === 0 ? <tr><td colSpan={6} className="h-20 px-4 text-center text-slate-500">Nenhuma regra cadastrada. Use “Carregar padrões industriais” ou cadastre uma regra acima.</td></tr> :
-                  rules.map(rule => (
+                  pageRules.map(rule => (
                     <tr key={rule.id} className="h-12 border-b border-slate-100 last:border-0 hover:bg-slate-50">
                       <td className="px-4 font-bold text-[#123B50]">{rule.codigo}</td>
                       <td className="px-4 text-slate-600">{rule.descricao}</td>
@@ -280,13 +296,15 @@ export default function CadastroDecimais() {
               </tbody>
             </table>
           </div>
+          <div className="flex items-center justify-end gap-3 border-t border-slate-100 px-5 py-3 print:hidden"><button type="button" disabled={page<=1} onClick={()=>setPage(p=>p-1)} className={buttonBase+' border border-slate-200 bg-white text-slate-700 disabled:opacity-40'}>Anterior</button><span className="text-[11px] font-semibold">Página {page} de {pageCount}</span><button type="button" disabled={page>=pageCount} onClick={()=>setPage(p=>p+1)} className={buttonBase+' border border-slate-200 bg-white text-slate-700 disabled:opacity-40'}>Próxima</button></div>
         </section>
 
-        <div className="flex items-start gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-[10px] leading-5 text-slate-500">
+        <div className="flex items-start gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-[10px] leading-5 text-slate-500 print:hidden">
           <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-emerald-600" />
           <p>Como usar: selecione uma regra para editar, ajuste descrição ou casas decimais e grave. Ative/desative pela grade. A carga dos seis padrões só ocorre quando o botão for acionado; regras são isoladas pela empresa ativa.</p>
         </div>
       </div>
+    <style>{'@media print { @page { size: portrait; margin: 12mm; } body { background: #fff !important; } main { background: #fff !important; padding: 0 !important; } }'}</style>
     </main>
   )
 }
