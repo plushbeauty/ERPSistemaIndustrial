@@ -8,9 +8,9 @@ Base: `main` no commit `f5c8ac39d3e8cfc5c341f01ce57fd6e55f6b32f1`.
 - [x] `src/features/controladoria/PainelLucratividade.tsx` — KPIs reais, margem somente com custo completo, consulta/paginação, CSV e impressão Plastibor.
 - [x] `src/features/controladoria/PainelRazaoGeral.tsx` — KPIs, lançamentos tenant-scoped, saldo pela RPC oficial, paginação, CSV e impressão Plastibor.
 - [x] `src/features/controladoria/CadastroDecimais.tsx` — CRUD de regra por RPC oficial, ativação/desativação tenant-scoped, seis padrões sob ação explícita, paginação, CSV e impressão.
-- [x] `src/features/controladoria/AssistenteRetificacao.tsx` — correção do papel Master para o contrato canônico `SUPER_ADMIN`; preservado o comportamento auditável existente, sem simular reversão contábil.
-- [x] `src/pages/FinanceiroCustoPadrao.tsx` — Voltar padronizado e impressão Plastibor adicionados; MRP, persistência e exportação preservados.
-- [x] `src/pages/FinanceiroGraficoDesvios.tsx` — Voltar, impressão Plastibor e paginação adicionados; leitura tenant-scoped e dados persistidos preservados.
+- [~] `src/features/controladoria/AssistenteRetificacao.tsx` — corrigido o papel Master para `SUPER_ADMIN`; auditoria e localização existentes preservadas. Faltam ações transacionais de estorno e upload real de comprovante, não suportadas pela RPC atual.
+- [~] `src/pages/FinanceiroCustoPadrao.tsx` — Voltar e impressão Plastibor adicionados; MRP, persistência e CSV preservados. Ainda faltam KPIs, paginação/totalização do histórico e manual contextual.
+- [~] `src/pages/FinanceiroGraficoDesvios.tsx` — Voltar, impressão Plastibor e paginação adicionados; filtros reiniciam a página e leitura tenant-scoped preservada. Ainda faltam exportação e manual contextual.
 - [x] `scripts/telas-oficiais-manifest.json` — hashes sincronizados para os arquivos alterados.
 
 ### Pendências de validação do Lote 1
