@@ -235,3 +235,13 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Status:** CORRIGIDO AGUARDANDO VALIDAÇÃO. UI-040 e QA-040 permanecem abertos.
 
 - **Ajuste de implementação da normalização:** corrigida a expressão regular Unicode após revisão do conteúdo versionado; commit `1a5d04191e41206af501b51a72e8b9ca2e0f0d85`. A verificação continua pendente de CI/build e teste funcional.
+
+
+## Execução do LOOP — baseline 2026-11-11 (HEAD a073691072b74d428e0e29916c8f4c2cca2db446)
+
+- **UI-001 — evidência de execução:** o workflow `ERP Industrial CI` executou `npm run audit:ui-standardization` em 2026-11-11 às 14:52Z. Saída: `sourceFilesScanned=244`, `routeDeclarationsDetected=334`, `filesUsingSharedFormTokens=3`, `filesWithLocalStyleHints=94`, `filesWithControlsWithoutDetectedStaticHeight=208`. O script confirma que a auditoria é estática e não comprova altura renderizada, responsividade ou comportamento.
+- **Divergência de evidência:** o arquivo versionado `generated/ui-audit.json` ainda registra `generatedAt=2026-11-09`, 242 arquivos e 323 rotas; portanto, não representa a execução de 11/11. UI-001 permanece aberto até o JSON atual ser preservado e revisado.
+- **Validação do HEAD:** workflow `ERP Industrial CI` passou integralmente (type-check, ESLint, auditorias, lazy imports, build e rotas). Workflow `Industrial Production Gate` falhou exclusivamente no `verify:nfe-contract`: duas migrations recentes de Compras também contêm referência a `erp_current_company_id`, além das três referências históricas esperadas. Arquivos apontados: `20261110170000_compras_pedido_rpc_schema_aditivo.sql` e `20261110183000_compras_pedido_numero_sequencia_isolada.sql`.
+- **Não classificar como falha de build:** o build e os checks do CI passaram; a falha do gate de produção é a verificação estática do contrato NF-e/tenant. Não alterar migrations já aplicadas sem confirmar estado remoto; avaliar correção aditiva e compatibilidade antes de mexer.
+- **UI-002:** pendente de confronto completo entre rotas, imports, wrappers/re-exports e arquivos renderizados. As contagens do relatório não substituem esse cruzamento.
+- **Próxima ação preservada:** concluir UI-001 com artefato atual; depois UI-002. Nenhum item de tela removido do backlog e nenhuma tela declarada concluída nesta rodada.
