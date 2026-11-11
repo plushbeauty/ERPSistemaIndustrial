@@ -13,7 +13,7 @@
 /**
  * @DATA_REVISAO_ANTERIOR: 2026-10-19
  * @DESENVOLVEDOR: FernandoSch
- * @NOME_SISTEMA: SYSNQRA ERP INDUSTRIAL ERP INDUSTRIAL
+ * @NOME_SISTEMA: SYSNQRA ERP INDUSTRIAL
  * @STATUS_ANTERIOR: CENTRAL-TABLET-HIGH-CONTRAST-FIX
  * @REVISAO_VISUAL: Contraste explícito, grade compacta e cards quadrados
  * @REVISAO_ANTERIOR: Bento grid compacto, indicadores consultados no Supabase e navegação SGQ.
