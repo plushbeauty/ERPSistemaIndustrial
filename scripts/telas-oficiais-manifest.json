@@ -1677,11 +1677,11 @@
     },
     {
       "path": "src/pages/VendasClientes.tsx",
-      "sha": "127a545bb3e56ad929d572154bc4b268e4829060",
+      "sha": "00ac5f55715d31039d40f8779fc2532795c02b1d",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-VENDAS-CLIENTES-PAGINACAO-EXCLUSAO-20261111-01 — paginação completa, filtro de status, limpar filtros e confirmação para exclusões de cliente, De/Para e transportadora; escopo empresa_id preservado",
+      "aprovadaEm": "2026-11-11",
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO NO COMANDO MESTRE DE 2026-11-11; pendente de CI e validação funcional"
     },
     {
       "path": "src/pages/VendasDashboardGraficos.tsx",
