@@ -517,11 +517,11 @@
     },
     {
       "path": "src/pages/ComprasWorkspace.tsx",
-      "sha": "98d1ce222aadd7958af2a4aa4944ccc868836d07",
+      "sha": "79efaca2040d617faf4af7b274ebe5db7e6f1929",
       "autor": "FernandoSch",
-      "revisao": "REV-COMPRAS-CENTRAL-ABAS-20261110-02 — abas Painel, Requisições, Alertas MRP, Cotações, Pedidos, Recebimentos e Fornecedores; filtros explícitos por empresa, MRP baseado somente em estoque_atual e ponto_reposicao existentes; preserva edição de pedidos e contrato real de RFQ.",
+      "revisao": "REV-COMPRAS-CENTRAL-DBGRID-20261110-02 — NF-e lida de fiscal_nfe_entradas com RLS, RFQ sem FK inválida em created_by, paginação 20 linhas, exportação CSV, KPIs reais e impressão Plastibor.",
       "aprovadaEm": "2026-11-10",
-      "statusAprovacao": "INTEGRAÇÃO ADITIVA NA BRANCH GLOBAL; validação CI pendente; não reintroduz comprador_responsavel/status_aprovacao ausentes no schema remoto."
+      "statusAprovacao": "REVISAO TECNICA AUTORIZADA PELO PROPRIETARIO EM 2026-11-10 PARA CONFORMIDADE FUNCIONAL"
     },
     {
       "path": "src/pages/ConfiguracaoLote.tsx",
