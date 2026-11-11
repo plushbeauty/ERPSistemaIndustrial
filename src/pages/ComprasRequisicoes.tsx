@@ -346,6 +346,7 @@ export default function ComprasRequisicoes() {
                   {!busy && !pageItems.length && <tr><td colSpan={10} className="p-8 text-center text-xs text-[#617986]">Nenhum item encontrado para o filtro selecionado.</td></tr>}
                   {busy && <tr><td colSpan={10} className="p-6 text-center text-xs text-[#617986]">Carregando dados da empresa autenticada…</td></tr>}
                 </tbody>
+                <tfoot><tr className="h-12 border-t-2 border-[#D3E3EA] bg-[#F4F8FA] text-[10px] font-bold"><td colSpan={7} className="px-3">TOTALIZADORES: {visibleItems.length} item(ns) · {uniqueVisibleRequests} requisição(ões)</td><td className="px-3 text-right">{formatQuantity(totalVisibleQuantity)}</td><td colSpan={2} className="px-3">Aguardando cotação: {pendingVisibleCount}</td></tr></tfoot>
               </table>
             </div>
             {visibleItems.length > PAGE_SIZE && (
@@ -359,8 +360,9 @@ export default function ComprasRequisicoes() {
               </nav>
             )}
           </section>
-          <footer className="mt-2 flex flex-wrap items-center justify-between gap-2 px-1 text-[9px] text-[#6B818D]">
-            <span>SYSNQRA ERP &amp; SGQ INDUSTRIAL • Compras • Revisão 20/10/2026</span>
+          <section className={`${panelClass} mt-3 p-4 text-[11px] text-[#526C79] print:hidden`}><h2 className="font-bold uppercase tracking-wide">Como usar esta tela</h2><p className="mt-2"><strong>Para que serve:</strong> consultar itens requisitados pelo PCP/MRP e encaminhar requisições elegíveis para cotação.</p><p className="mt-1"><strong>Passo a passo:</strong> filtre por OP ou urgência, selecione as requisições com status aguardando cotação e acione Encaminhar. Use CSV para exportar a lista filtrada.</p><p className="mt-1"><strong>Regras importantes:</strong> o encaminhamento é feito pela RPC <code>erp_compras_encaminhar_requisicoes</code>; somente IDs elegíveis e da empresa ativa são processados. A tela não cria quantidades ou fornecedores fictícios.</p></section>
+          <footer className="mt-2 flex flex-wrap items-center justify-between gap-2 px-1 text-[9px] text-[#6B818D] print:hidden">
+            <span>SYSNQRA ERP &amp; SGQ INDUSTRIAL • Compras • Revisão 10/11/2026</span>
             <span>Dados filtrados pela empresa da sessão e protegidos pelas políticas RLS/RBAC do banco.</span>
           </footer>
         </div>
