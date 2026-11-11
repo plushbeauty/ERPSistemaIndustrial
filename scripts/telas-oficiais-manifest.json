@@ -1,7 +1,7 @@
 {
   "contrato": "SYNQRA-R-20261103-01",
   "geradoPor": "npm run telas:manifest",
-  "totalTelas": 227,
+  "totalTelas": 228,
   "telas": [
     {
       "path": "src/components/layout/ModuleTabletMenuModal.tsx",
@@ -1743,7 +1743,7 @@
       "path": "src/PublicIndustrialHome.tsx",
       "sha": "21c0726a3fbb84e85c2ea56dfb7d575a50d87957",
       "autor": "FernandoSch",
-      "revisao": "REV-CARROSSEL-PRELOAD-5-ARTES-7S-20261111-01 — aguarda as cinco imagens carregarem ou falharem antes de iniciar a rotação; mantém intervalo de 7s e transição aprovada.",
+      "revisao": "REV-CARROSSEL-PRELOAD-5-ARTES-7S-20261111-01",
       "aprovadaEm": "2026-11-06",
       "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-11; layout e cinco artes preservados; pendente de CI e inspeção visual."
     },
@@ -1789,11 +1789,11 @@
     },
     {
       "path": "src/features/financeiro/RetificacaoFinanceira.tsx",
-      "sha": "d50e2763bc6206462706c78434f2901775dc71c2",
+      "sha": "1f0cc4c3a4c8c2ea3dc277263adeb80ce853cdb3",
       "autor": "FernandoSch",
-      "revisao": "REV-RETIFICACAO-FINANCEIRA-AUDITADA-20261110-01 — busca de títulos/parcelas, retificação transacional, justificativa, anexos, histórico e bloqueio de período",
+      "revisao": "REV-RETIFICACAO-FINANCEIRA-WIREFRAME-20261110-01 — rotina de retificação com auditoria e controles financeiros reais.",
       "aprovadaEm": "2026-11-10",
-      "statusAprovacao": "ALTERAÇÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10"
+      "statusAprovacao": "ALTERAÇÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; pendente de CI e validação visual."
     },
     {
       "path": "src/features/banking/BankAccountManager.tsx",
@@ -1805,11 +1805,11 @@
     },
     {
       "path": "src/pages/FichaMontagem.tsx",
-      "sha": "4d4628c03659ec802645785ae0a493d362bdda5a",
+      "sha": "6cbb9061de368c25c9b8556b49f98e3da3e24b64",
       "autor": "SYSNQRA",
-      "revisao": "REV-FICHA-MONTAGEM-4-ETAPAS-REAL-20261111-01 — montagem, acabamento, inspeção versionada e liberação de lote com dados reais.",
+      "revisao": "REV-FICHA-MONTAGEM-4-ETAPAS-REAL-20261111-02 — montagem, acabamento, inspeção versionada e liberação de lote com dados reais.",
       "aprovadaEm": "2026-11-11",
-      "statusAprovacao": "IMPLEMENTAÇÃO EM BRANCH DE INTEGRAÇÃO; pendente de CI, validação visual e aprovação final."
+      "statusAprovacao": "IMPLEMENTAÇÃO EM BRANCH DE INTEGRAÇÃO; pendente de CI e validação visual."
     },
     {
       "path": "src/features/controladoria/ControladoriaWorkspace.tsx",
@@ -1818,6 +1818,14 @@
       "revisao": "REV-CONTROLADORIA-INTEGRADA-20261111-01 — lucratividade, razão geral e precisão decimal em abas.",
       "aprovadaEm": "2026-11-11",
       "statusAprovacao": "IMPLEMENTAÇÃO EM BRANCH DE INTEGRAÇÃO; pendente de CI, validação visual e aprovação final."
+    },
+    {
+      "path": "src/pages/CatalogoWireframes.tsx",
+      "sha": "efc9a869b40fa9e4497842e3cd13f530ff6424eb",
+      "autor": "FernandoSch",
+      "revisao": "REV-CATALOGO-WIREFRAMES-13-TELAS-20261111-01 — catálogo interno copiável dos 13 wireframes recebidos.",
+      "aprovadaEm": "2026-11-11",
+      "statusAprovacao": "FERRAMENTA INTERNA DE DESENVOLVIMENTO; não é tela de negócio homologada."
     }
   ]
 }
