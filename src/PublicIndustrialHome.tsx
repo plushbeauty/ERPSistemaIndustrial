@@ -196,12 +196,29 @@ const INTERVALO_SLIDE_MS = 7000
 
 function HeroCarousel() {
   const [indice, setIndice] = useState(0)
+  const [preloadConcluido, setPreloadConcluido] = useState(false)
   const total = heroSlides.length
 
   useEffect(() => {
+    let ativo = true
+    const preloads = heroSlides.map(item => new Promise<void>(resolve => {
+      const imagem = new window.Image()
+      imagem.onload = () => resolve()
+      imagem.onerror = () => resolve()
+      imagem.src = item.art
+      if (imagem.complete) resolve()
+    }))
+    void Promise.all(preloads).then(() => {
+      if (ativo) setPreloadConcluido(true)
+    })
+    return () => { ativo = false }
+  }, [])
+
+  useEffect(() => {
+    if (!preloadConcluido || total < 2) return
     const timer = window.setInterval(() => setIndice(atual => (atual + 1) % total), INTERVALO_SLIDE_MS)
     return () => window.clearInterval(timer)
-  }, [total])
+  }, [preloadConcluido, total])
 
   return (
     <section
@@ -219,7 +236,7 @@ function HeroCarousel() {
               alt=""
               aria-hidden="true"
               className="ph-carousel-fill"
-              loading={i === 0 ? 'eager' : 'lazy'}
+              loading="eager"
               decoding="async"
             />
             <img
