@@ -118,3 +118,4 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - O Novo Pedido já chama erp_calcular_preco_sugerido_venda ao selecionar cliente e produto; a função consulta erp_preco_especial_cliente e usa o preço especial vigente, mantendo o cálculo padrão quando não há preço especial válido.
 - CSS global dos diálogos Radix reforça superfície branca, texto escuro e campos claros em todas as páginas, sem remover o scrim atrás da janela.
 - Nenhuma migration remota ou cadastro de banco foi alterado nesta revisão.
+- 2026-11-10 — revisão autorizada da home pública SYSNQRA (`src/PublicIndustrialHome.tsx`): assinatura institucional do rodapé padronizada, texto “Embalar” corrigido e hash oficial/manifesto atualizados. As cinco artes do carrossel, altura aprovada, navegação `/login` e `/cadastro-empresa`, menu responsivo e ajuda foram preservados. A trava continua ativa contra retorno de versões antigas.
