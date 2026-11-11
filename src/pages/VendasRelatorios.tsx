@@ -1,5 +1,5 @@
 /**
- * @REVISAO: REV-VENDAS-RELATORIOS-PERIODO-PAGINACAO-20261111-02 — busca, status, período de entrada, paginação de 50 linhas e impressão de todos os resultados filtrados; preserva paginação completa da consulta e escopo empresa_id.
+ * @REVISAO: REV-VENDAS-RELATORIOS-PERIODO-PAGINACAO-20261111-03 — busca, status, período de entrada, paginação de 50 linhas e impressão de todos os resultados filtrados; preserva paginação completa da consulta e escopo empresa_id.
  * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-11
  * @STATUS_APROVACAO: REVISÃO AUTORIZADA PELO PROPRIETÁRIO NO COMANDO MESTRE DE 2026-11-11; pendente de CI e validação visual
@@ -92,7 +92,7 @@ export default function VendasRelatorios() {
 
   return (
     <VendasLayout title="Relatórios de Vendas" subtitle="Pedidos, filtros e impressão" onRefresh={()=>void load()}>
-      <style>{`@media print { .print-hidden { display:none!important } tr[data-page-hidden="true"] { display:table-row!important } body { background:white!important } }`}</style>
+      <style>{`tr[data-page-hidden="true"] { display:none } @media print { .print-hidden { display:none!important } tr[data-page-hidden="true"] { display:table-row!important } body { background:white!important } }`}</style>
       <section className="mx-auto max-w-[1600px] space-y-4 px-4 py-5 lg:px-6">
         <div className="border border-slate-200 bg-white p-4 shadow-sm print-hidden">
           <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_150px_150px_180px_auto]">
