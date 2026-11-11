@@ -3,14 +3,19 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import path from 'node:path'
 
 /**
- * CONTRATO DAS TELAS OFICIAIS — branch de producao (2026-11-02, por ordem explicita do proprietario:
- * "trocar todas as pages pelas novas que vc fez travando para que o vercel nao recupere mais telas antigas").
- * 1. As telas novas da experiencia publica (home com carrossel, planos, cadastro, blog, contato) e o login
- *    sobre a foto da planta estao travadas por hash: qualquer edicao reprova o build da Vercel ate que o
- *    proprietario ordene a revisao e este contrato seja atualizado.
- * 2. Toda tela em src/pages, src/features e src/modules precisa ser alcancavel a partir do entry
+ * CONTRATO DAS TELAS OFICIAIS — ORDEM PERMANENTE DO PROPRIETARIO (2026-11-10):
+ * "telas aprovadas podem ser trocadas por codigos novos. telas travadas aprovadas e para nao deixar
+ * que as antigas voltem".
+ * 1. O hash trava a REVISAO APROVADA ATUAL, nao congela a tela para sempre. O proprietario pode ordenar
+ *    melhoria, substituicao ou reescrita; nesse caso, atualizar o codigo, o hash oficial e o manifesto
+ *    na mesma entrega, registrando a nova revisao. A nova versao passa a ser a referencia protegida.
+ * 2. A trava continua obrigatoria depois da troca: impede que versoes anteriores, prototipos antigos ou
+ *    telas legadas voltem silenciosamente. Nunca restaurar codigo antigo apenas para satisfazer o hash.
+ * 3. Toda tela em src/pages, src/features e src/modules precisa ser alcancavel a partir do entry
  *    (src/AppBootstrap.tsx + src/AppEntryV2.tsx) por import literal: tela sem rota nao pode voltar a existir.
- * 3. As telas antigas ja deletadas estao banidas: recriar um desses caminhos reprova o build.
+ * 4. As telas antigas ja deletadas continuam banidas: recriar um desses caminhos reprova o build.
+ * 5. Toda substituicao autorizada deve preservar rotas, contratos de dados, RLS/RBAC e funcionalidades
+ *    existentes, salvo ordem explicita em contrario. A aprovacao passa para o novo codigo, nunca para o legado.
  * Revisao 2026-11-08 (trio APQP e cronograma colorido): ordem do proprietario — "veja o FMEA para vc
  * fazer FMEA E Plano de Controle juntos ok e Mapa de Processo ... ai vc junta e elemina os outros" e
  * "tela de Manutencao fazer tela de manutencao preventiva cronograma com corres". FMEA, Plano de
@@ -331,7 +336,7 @@ for (const rel of banidos) {
 if (falhas.length) {
   console.error('CONTRATO DAS TELAS OFICIAIS (PRODUCAO) FALHOU')
   for (const f of falhas) console.error('- ' + f)
-  console.error('Restaure as telas aprovadas ou obtenha ordem explicita do proprietario para nova revisao deste contrato.')
+  console.error('Nao restaure telas antigas. Se a mudanca foi ordenada pelo proprietario, atualize o hash e o manifesto para registrar a nova revisao aprovada.')
   process.exit(1)
 }
 const navegaveis = arquivosSrc.filter(f => TELAS.some(prefix => relOf(f).startsWith(prefix)))
