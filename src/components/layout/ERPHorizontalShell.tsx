@@ -37,8 +37,6 @@ const menus: MenuItem[] = [
     { label: 'Retificação Financeira', route: '/pageprincipal/financeiro/retificacao', icon: RotateCcw },
     { label: 'Notas de Débito', route: '/pageprincipal/financeiro/notas-debito', icon: FileWarning },
     { label: 'Configurações de Notas de Débito', route: '/pageprincipal/financeiro/notas-debito/configuracoes', icon: Settings },
-    { label: 'Custo padrão', route: '/pageprincipal/financeiro/custo-padrao' },
-    { label: 'Desvios de custo', route: '/pageprincipal/financeiro/grafico-desvios', icon: BarChart3 },
     { label: 'Contas a pagar', route: '/pageprincipal/financeiro/contas-pagar' },
     { label: 'Contas a receber', route: '/pageprincipal/financeiro/contas-receber' },
     { label: 'Caixa', route: '/pageprincipal/financeiro/caixa' }  ] },  { label: 'Comissões', route: '/pageprincipal/comissoes', icon: Calculator, children: [
@@ -46,10 +44,10 @@ const menus: MenuItem[] = [
     { label: 'Cálculo de Comissão', route: '/pageprincipal/comissoes/calculo', icon: Calculator },
     { label: 'Perfil do Vendedor', route: '/pageprincipal/comissoes/perfil', icon: UserRound },
   ] },  { label: 'Controladoria', route: '/pageprincipal/controladoria', icon: BookOpen, children: [
-    { label: 'Lucratividade e Margens', route: '/pageprincipal/controladoria/lucratividade', icon: ClipboardList },
-    { label: 'Razão Geral', route: '/pageprincipal/controladoria/razao-geral', icon: Landmark },
-    { label: 'Cadastro de Decimais', route: '/pageprincipal/controladoria/cadastro-decimais', icon: Settings },
-    { label: 'Estorno Documental', route: '/pageprincipal/controladoria/retificacao-assistente', icon: FileText },
+    { label: 'Controladoria Integrada', route: '/pageprincipal/controladoria/lucratividade-razao-decimais', icon: BookOpen },
+    { label: 'Engenharia de Custo Padrão', route: '/pageprincipal/controladoria/engenharia-custo-padrao', icon: Calculator },
+    { label: 'Desvios de Custo (Padrão × Real)', route: '/pageprincipal/controladoria/desvios-custo', icon: BarChart3 },
+    { label: 'Estorno Documental e Compliance', route: '/pageprincipal/controladoria/estorno-documental-compliance', icon: FileText },
     { label: 'Retificação de Pedido', route: '/pageprincipal/controladoria/retificacao-pedido', icon: RotateCcw },
     { label: 'Auditoria de Comissões', route: '/pageprincipal/controladoria/auditoria-comissoes', icon: Calculator },
   ] },  { label: 'Principal', route: '/pageprincipal', icon: Home },  { label: 'Cadastros Mestres', route: '/pageprincipal/cadastros/produtos', icon: Boxes, children: [
