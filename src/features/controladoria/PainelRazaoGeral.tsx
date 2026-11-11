@@ -198,22 +198,22 @@ export default function PainelRazaoGeral() {
         <section className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4 print:grid-cols-4">
           <article className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm print:shadow-none">
             <p className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Conta / Diário ativo</p>
-            <p className="mt-1 truncate text-[14px] font-extrabold text-[#123B50]">{selectedAccount ? selectedAccount.nome : '—'}</p>
-            <p className="mt-1 text-[9px] text-slate-500">{selectedAccount ? `${selectedAccount.codigo}${selectedAccount.banco ? ` · ${selectedAccount.banco}` : ''}` : `${accounts.length} conta(s) ativa(s) disponível(is)`}</p>
+            <p className="mt-1 truncate text-[14px] font-extrabold text-[#123B50]">{loadingAccounts ? 'Carregando…' : selectedAccount ? selectedAccount.nome : accounts.length ? 'Selecione uma conta' : error ? 'Erro ao carregar' : 'Nenhuma conta ativa'}</p>
+            <p className="mt-1 text-[9px] text-slate-500">{selectedAccount ? `${selectedAccount.codigo}${selectedAccount.banco ? ` · ${selectedAccount.banco}` : ''}` : loadingAccounts ? 'Consultando contas da empresa' : error ? 'Falha ao consultar' : `${accounts.length} conta(s) ativa(s) disponível(is)` }</p>
           </article>
           <article className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm print:shadow-none">
             <p className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Total débitos da grade</p>
-            <p className="mt-1 text-[17px] font-extrabold tabular-nums text-[#123B50]">{filtered ? money(totalDebit) : '—'}</p>
-            <p className="mt-1 text-[9px] text-slate-500">{filtered ? `${rows.length} lançamento(s) exibidos` : 'Aguardando consulta'}</p>
+            <p className="mt-1 text-[17px] font-extrabold tabular-nums text-[#123B50]">{filtered ? money(totalDebit) : loading ? 'Carregando…' : error ? 'Erro' : money(0)}</p>
+            <p className="mt-1 text-[9px] text-slate-500">{filtered ? `${rows.length} lançamento(s) exibidos` : loading ? 'Consultando banco…' : error ? 'Falha na consulta' : 'Aguardando consulta'}</p>
           </article>
           <article className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm print:shadow-none">
             <p className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Total créditos da grade</p>
-            <p className="mt-1 text-[17px] font-extrabold tabular-nums text-[#123B50]">{filtered ? money(totalCredit) : '—'}</p>
-            <p className="mt-1 text-[9px] text-slate-500">Soma dos lançamentos exibidos</p>
+            <p className="mt-1 text-[17px] font-extrabold tabular-nums text-[#123B50]">{filtered ? money(totalCredit) : loading ? 'Carregando…' : error ? 'Erro' : money(0)}</p>
+            <p className="mt-1 text-[9px] text-slate-500">{loading ? 'Consultando banco…' : error ? 'Falha na consulta' : 'Soma de todos os lançamentos carregados'}</p>
           </article>
           <article className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm print:shadow-none">
             <p className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Saldo total do razão · RPC</p>
-            <p className="mt-1 text-[17px] font-extrabold tabular-nums text-[#123B50]">{filtered ? money(balance) : '—'}</p>
+            <p className="mt-1 text-[17px] font-extrabold tabular-nums text-[#123B50]">{filtered ? money(balance) : loading ? 'Carregando…' : error ? 'Erro' : money(0)}</p>
             <p className="mt-1 text-[9px] text-slate-500">Saldo integral calculado no banco</p>
           </article>
         </section>
