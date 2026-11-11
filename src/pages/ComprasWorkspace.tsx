@@ -55,7 +55,8 @@ function statusClass(value: string): string {
 }
 
 function DataTable({ rows, kind, onEdit }: { rows: DbRow[]; kind: 'requisicoes' | 'alertas' | 'cotacoes' | 'pedidos' | 'recebimentos' | 'fornecedores'; onEdit?: (id: string) => void }) {
-  if (!rows.length) return <div className="compras-empty"><PackageCheck size={22} /><strong>{kind === 'alertas' ? 'Nenhum material no ponto de reposição' : kind === 'fornecedores' ? 'Nenhum fornecedor cadastrado' : 'Nenhum registro encontrado'}</strong><span>{kind === 'alertas' ? 'Os alertas aparecem quando o estoque real atinge ou fica abaixo do ponto de reposição cadastrado no produto.' : 'Os registros aparecerão aqui quando existirem dados para a empresa autenticada.'}</span></div>
+  const [page, setPage] = useState(1)
+  const pageSize = 20
   const columns: Record<typeof kind, Array<{ label: string; keys: string[]; format?: 'date' | 'money' | 'status' }>> = {
     requisicoes: [
       { label: 'Código', keys: ['codigo', 'numero', 'id'] },
@@ -84,8 +85,11 @@ function DataTable({ rows, kind, onEdit }: { rows: DbRow[]; kind: 'requisicoes' 
     recebimentos: [
       { label: 'Pedido', keys: ['numero', 'id'] },
       { label: 'Fornecedor', keys: ['fornecedor_nome', 'fornecedor_id'] },
-      { label: 'Data do pedido', keys: ['data_pedido', 'created_at'], format: 'date' },
+      { label: 'Recebido em', keys: ['recebido_em'], format: 'date' },
+      { label: 'Lote informado', keys: ['lote_recebimento'] },
+      { label: 'Valor do pedido', keys: ['total'], format: 'money' },
       { label: 'Status', keys: ['status'], format: 'status' },
+      { label: 'Observações do recebimento', keys: ['observacoes_recebimento'] },
     ],
     fornecedores: [
       { label: 'Código', keys: ['codigo'] },
@@ -103,11 +107,34 @@ function DataTable({ rows, kind, onEdit }: { rows: DbRow[]; kind: 'requisicoes' 
       { label: 'Unidade', keys: ['unidade'] },
     ],
   }
-  return <div className="compras-table-scroll"><table className="compras-table"><thead><tr>{columns[kind].map(column => <th key={column.label}>{column.label}</th>)}{kind === 'pedidos' && <th>Ação</th>}</tr></thead><tbody>{rows.map((row, index) => <tr key={textValue(row, 'id') === '—' ? index : textValue(row, 'id')}>{columns[kind].map(column => {
-    const value = column.keys.map(key => row[key]).find(item => item !== undefined && item !== null && item !== '')
-    const formatted = column.format === 'date' ? dateValue(value) : column.format === 'money' ? moneyValue(value) : typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : '—'
-    return <td key={column.label}>{column.format === 'status' ? <span className={statusClass(formatted)}>{formatted.replaceAll('_', ' ')}</span> : formatted}</td>
-  })}{kind === 'pedidos' && <td><button className="compras-button compras-button--light erp-edit-button erp-row-action" type="button" onClick={() => onEdit?.(textValue(row, 'id'))} disabled={textValue(row, 'id') === '—'}>Editar</button></td>}</tr>)}</tbody></table></div>
+  const pageCount = Math.max(1, Math.ceil(rows.length / pageSize))
+  const pageRows = rows.slice((page - 1) * pageSize, page * pageSize)
+  const totalPedidos = kind === 'pedidos' ? rows.reduce((sum, row) => sum + Number(row.total || 0), 0) : 0
+  useEffect(() => setPage(1), [kind, rows])
+  const exportCsv = () => {
+    const lines = [columns[kind].map(column => column.label), ...rows.map(row => columns[kind].map(column => {
+      const value = column.keys.map(key => row[key]).find(item => item !== undefined && item !== null && item !== '')
+      return column.format === 'date' ? dateValue(value) : column.format === 'money' ? moneyValue(value) : value === undefined ? '' : String(value)
+    }))]
+    const csv = '\ufeff' + lines.map(line => line.map(value => '"' + String(value ?? '').replace(/"/g, '""') + '"').join(';')).join('\r\n')
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }))
+    const anchor = window.document.createElement('a')
+    anchor.href = url
+    anchor.download = 'compras-' + kind + '.csv'
+    anchor.click()
+    URL.revokeObjectURL(url)
+  }
+  if (!rows.length) return <div className="compras-empty"><PackageCheck size={22} /><strong>{kind === 'alertas' ? 'Nenhum material no ponto de reposição' : kind === 'fornecedores' ? 'Nenhum fornecedor cadastrado' : 'Nenhum registro encontrado'}</strong><span>{kind === 'alertas' ? 'Os alertas aparecem quando o estoque real atinge ou fica abaixo do ponto de reposição cadastrado no produto.' : kind === 'recebimentos' ? 'Nenhum pedido está marcado como recebimento parcial ou recebido.' : 'Os registros aparecerão aqui quando existirem dados para a empresa autenticada.'}</span></div>
+  return <div className="compras-table-scroll">
+    <div className="mb-2 flex flex-wrap items-center justify-between gap-2 print:hidden"><span className="text-[10px] text-[#607987]">{rows.length} registro(s) · Página {page} de {pageCount}</span><button type="button" className="compras-button compras-button--light" onClick={exportCsv}><FileText size={13}/> Exportar CSV</button></div>
+    {kind === 'recebimentos' && <p className="mb-2 rounded-md border border-[#E7D9B6] bg-[#FFF9EB] p-2 text-[10px] text-[#765A20]">O schema atual registra recebimento no próprio pedido (status, data, lote e observações); esta grade é uma visão separada dos pedidos com recebimento informado, não um livro de eventos parciais por item.</p>}
+    <table className="compras-table"><thead><tr className="h-10">{columns[kind].map(column => <th key={column.label}>{column.label}</th>)}{kind === 'pedidos' && <th>Ação</th>}</tr></thead><tbody>{pageRows.map((row, index) => <tr className="h-12" key={textValue(row, 'id') === '—' ? index : textValue(row, 'id')}>{columns[kind].map(column => {
+      const value = column.keys.map(key => row[key]).find(item => item !== undefined && item !== null && item !== '')
+      const formatted = column.format === 'date' ? dateValue(value) : column.format === 'money' ? moneyValue(value) : typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : '—'
+      return <td key={column.label}>{column.format === 'status' ? <span className={statusClass(formatted)}>{formatted.replaceAll('_', ' ')}</span> : formatted}</td>
+    })}{kind === 'pedidos' && <td><button className="compras-button compras-button--light erp-edit-button erp-row-action" type="button" onClick={() => onEdit?.(textValue(row, 'id'))} disabled={textValue(row, 'id') === '—'}>Editar</button></td>}</tr>)}</tbody><tfoot><tr className="h-12 border-t-2 border-[#D3E3EA] bg-[#F4F8FA] text-[10px] font-bold"><td colSpan={columns[kind].length + (kind === 'pedidos' ? 1 : 0)}>TOTALIZADORES: {rows.length} registro(s){kind === 'pedidos' ? ' · Valor total ' + moneyValue(totalPedidos) : ''}</td></tr></tfoot></table>
+    {pageCount > 1 && <nav aria-label="Paginação da grade de compras" className="mt-3 flex flex-wrap items-center justify-between gap-2 print:hidden"><span className="text-[10px] text-[#607987]">Exibindo {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, rows.length)} de {rows.length}</span><div className="flex gap-2"><button type="button" className="compras-button compras-button--light" disabled={page <= 1} onClick={() => setPage(value => Math.max(1, value - 1))}>Anterior</button><button type="button" className="compras-button compras-button--light" disabled={page >= pageCount} onClick={() => setPage(value => Math.min(pageCount, value + 1))}>Próxima</button></div></nav>}
+  </div>
 }
 
 export default function ComprasWorkspace() {
