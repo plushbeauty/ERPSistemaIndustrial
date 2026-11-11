@@ -461,49 +461,49 @@
     },
     {
       "path": "src/pages/ComprasAnalisePrecos.tsx",
-      "sha": "3d4d1b08313589556bada6e70efad60d541ce23b",
+      "sha": "0284bea3f03975915db07b72fbdeea19c0eff88d",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-COTACAO-SCHEMA-20261110-01 — comparação limitada aos campos persistidos em erp_rfq_respostas: valor_total, prazo_dias, condicao_pagamento e validade; removidas colunas de frete, desconto e custo líquido sem persistência.",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-COTACAO-SCHEMA-20261110-01 — comparação limitada aos campos persistidos em erp_rfq_respostas: valor_total, prazo_dias, condicao_pagamento e validade; removidas colunas de frete, desconto e custo líquido sem persistência. | REV-COMPRAS-ANALISE-PAGINACAO-CSV-20261110-01 — KPIs reais, paginação de propostas, CSV, totalizadores, controles 40px, linhas 48px, impressão e manual; comparação restrita aos campos persistidos.",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "ALTERAÇÃO TÉCNICA AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; implementação registrada e ainda sujeita a type-check, teste funcional e validação visual antes de aprovação final."
     },
     {
       "path": "src/pages/ComprasIndustrial.tsx",
-      "sha": "37c4192d93729c6bf50cd7658b256366e01e5c3e",
+      "sha": "6670531e01b6afbea9482f7f64a70cc69bc983a4",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-PEDIDO-RPC-20261110-01 — salvamento por erp_compras_salvar_pedido(p_payload), alinhado às colunas remotas e retorno pedido_compra_id/numero_pedido. REV-COMPRAS-PEDIDO-FORM-COMPARTILHADO-20261110-02 — rota industrial reutiliza o formulário comum para criação, edição e impressão, removendo o modal simplificado duplicado. REV-COMPRAS-GRADE-40-48-PRINT-20261110-01 — campos/selects 40px, linhas 48px e impressão A4 institucional.",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-PEDIDO-RPC-20261110-01 — salvamento por erp_compras_salvar_pedido(p_payload), alinhado às colunas remotas e retorno pedido_compra_id/numero_pedido. REV-COMPRAS-PEDIDO-FORM-COMPARTILHADO-20261110-02 — rota industrial reutiliza o formulário comum para criação, edição e impressão, removendo o modal simplificado duplicado. REV-COMPRAS-GRADE-40-48-PRINT-20261110-01 — campos/selects 40px, linhas 48px e impressão A4 institucional. | REV-COMPRAS-ALIAS-CENTRAL-20261110-01 — rota legada preservada como alias da Central de Compras; removido shell lateral duplicado e redirecionamento para rota não existente.",
       "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "ALTERAÇÃO VISUAL REGISTRADA; auditoria funcional, comparação completa e build ainda pendentes."
+      "statusAprovacao": "ALTERAÇÃO TÉCNICA AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; alias da Central gravado, sujeito a type-check, teste funcional e validação visual."
     },
     {
       "path": "src/pages/ComprasPedidoForm.tsx",
-      "sha": "27ad66eab9a833089201001148bc298fb55cfbea",
+      "sha": "f535f7286ecfc8d269fe5d231dc9d6c7f3fa5fa0",
       "autor": "FernandoSch",
-      "revisao": "REV-COMPRAS-VALIDACAO-PEDIDO-20261108-01 — valida todas as linhas sem descarte silencioso, tenant e referências carregadas, NCM de 8 dígitos, valores não negativos e tributos apresentados sem somar ICMS em duplicidade REV-COMPRAS-PEDIDO-EDIT-PRINT-20261110-01 — edição por pedidoId com carregamento tenant-scoped, RPC atômica e impressão A4 Plastibor com número definitivo após gravação; validação funcional pendente.",
+      "revisao": "REV-COMPRAS-VALIDACAO-PEDIDO-20261108-01 — valida todas as linhas sem descarte silencioso, tenant e referências carregadas, NCM de 8 dígitos, valores não negativos e tributos apresentados sem somar ICMS em duplicidade REV-COMPRAS-PEDIDO-EDIT-PRINT-20261110-01 — edição por pedidoId com carregamento tenant-scoped, RPC atômica e impressão A4 Plastibor com número definitivo após gravação; validação funcional pendente. | REV-COMPRAS-PEDIDO-PAGINACAO-CSV-20261110-02 — referências de fornecedores, produtos, requisições e itens paginadas integralmente; formulário 40px, grade 48px, CSV de itens, impressão Plastibor, manual e tenant explícito; RPC oficial preservada.",
       "aprovadaEm": "2026-11-08",
       "statusAprovacao": "ALTERAÇÃO TÉCNICA AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; implementação registrada e ainda sujeita a type-check, teste funcional e validação visual antes de aprovação final."
     },
     {
       "path": "src/pages/ComprasRelatorios.tsx",
-      "sha": "c4d42087706efbb5efe2f881cdd637d0a6bb71de",
+      "sha": "c75e1a262c75bee3a49e60f7016484d6cfde6fc2",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-RELATORIOS-SCHEMA-REAL-20261110-01 — consultas e indicadores alinhados às colunas reais de Compras, sem indicador fiscal simulado.",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-RELATORIOS-SCHEMA-REAL-20261110-01 — consultas e indicadores alinhados às colunas reais de Compras, sem indicador fiscal simulado. | REV-COMPRAS-RELATORIOS-PAGINACAO-CSV-20261110-02 — removido corte visual de 100 registros; paginação 25, exportações CSV, totalizadores, filtros 40px, linhas 48px, retorno, impressão Plastibor e manual.",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "ALTERAÇÃO TÉCNICA AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; implementação registrada e ainda sujeita a type-check, teste funcional e validação visual antes de aprovação final."
     },
     {
       "path": "src/pages/ComprasRequisicoes.tsx",
-      "sha": "4dcf0621ee10c37ab92944d0c895cc7808549a11",
+      "sha": "a6eb55e43d635000d0299eccd3f2d5b471e943cb",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria | REV-COMPRAS-REQUISICOES-KPI-CSV-PRINT-20261110-01 — KPIs reais, exportação CSV, totalizadores, controles 40px, linhas 48px, impressão Plastibor, retorno padronizado e manual; RPC oficial preservada.",
       "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "statusAprovacao": "ALTERAÇÃO TÉCNICA AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; implementação gravada, sujeita a type-check, teste funcional e validação visual."
     },
     {
       "path": "src/pages/ComprasRFQ.tsx",
-      "sha": "224eba4011d82b55c3a7e305dfb0f2732f38d823",
+      "sha": "4ddd018a1444ec89e4b54f12a1718c42ba7da019",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-RFQ-CAMPOS-PERSISTIDOS-20261110-01 — proposta do fornecedor restrita a valor_total, prazo_dias, condicao_pagamento, validade e observacoes, sem campos de persistência inexistente.",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-RFQ-CAMPOS-PERSISTIDOS-20261110-01 — proposta do fornecedor restrita a valor_total, prazo_dias, condicao_pagamento, validade e observacoes, sem campos de persistência inexistente. | REV-COMPRAS-RFQ-KPI-CSV-PRINT-20261110-02 — KPIs reais, exportação de itens e propostas, totalizadores, controles 40px, linhas 48px, impressão Plastibor, manual e rotas internas corrigidas; RPC/tabelas reais preservadas.",
       "aprovadaEm": "2026-10-30",
       "statusAprovacao": "ALTERAÇÃO TÉCNICA AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10; implementação registrada e ainda sujeita a type-check, teste funcional e validação visual antes de aprovação final."
     },
@@ -517,9 +517,9 @@
     },
     {
       "path": "src/pages/ComprasWorkspace.tsx",
-      "sha": "98d1ce222aadd7958af2a4aa4944ccc868836d07",
+      "sha": "2d59edc98fc8659854d0848a5a542e10d32a2865",
       "autor": "FernandoSch",
-      "revisao": "REV-COMPRAS-CENTRAL-ABAS-20261110-02 — abas Painel, Requisições, Alertas MRP, Cotações, Pedidos, Recebimentos e Fornecedores; filtros explícitos por empresa, MRP baseado somente em estoque_atual e ponto_reposicao existentes; preserva edição de pedidos e contrato real de RFQ.",
+      "revisao": "REV-COMPRAS-CENTRAL-ABAS-20261110-02 — abas Painel, Requisições, Alertas MRP, Cotações, Pedidos, Recebimentos e Fornecedores; filtros explícitos por empresa, MRP baseado somente em estoque_atual e ponto_reposicao existentes; preserva edição de pedidos e contrato real de RFQ. | REV-COMPRAS-WORKSPACE-GRADE-RECEBIMENTOS-ERP-ESTOQUE-LOTES-20261110-01 — KPIs, filtros, paginação, CSV, totalizadores, impressão Plastibor e manual; recebimentos lidos da tabela real erp_estoque_lotes, com RLS por empresa; navegação para rastreabilidade.",
       "aprovadaEm": "2026-11-10",
       "statusAprovacao": "INTEGRAÇÃO ADITIVA NA BRANCH GLOBAL; validação CI pendente; não reintroduz comprador_responsavel/status_aprovacao ausentes no schema remoto."
     },
