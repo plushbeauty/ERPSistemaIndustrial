@@ -133,3 +133,6 @@
 .compras-page .compras-pagination .compras-button{height:36px;min-height:36px}
 .compras-page .compras-button{height:40px;min-height:40px}
 @media print{.compras-page .compras-pagination{display:none!important}}
+
+/* REV-COMPRAS-PEDIDO-COMPLETO-20261110 — campos da grade fiscal/industrial. */
+.compras-page .compras-grid-input{height:40px;min-height:40px}
