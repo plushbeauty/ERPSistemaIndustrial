@@ -16,6 +16,14 @@ Nenhuma tela foi marcada como integralmente concluída por esta nova fila. Token
 - Limite: a validação é de roteamento/arquivos e CI; não equivale a inspeção visual de todas as páginas nem a testes E2E autenticados de todos os módulos.
 - Commit de evidência inicial: `be11c1736210e297776b98e0e33f37e142f357cd`; sincronização do backlog: `3957c1a4de444f4816bf6bd077fa457e0017e4af`.
 
+## UI-004 — Inventário de componentes compartilhados (2026-11-11)
+
+- Relatório: [UI-004-COMPONENT-INVENTORY-20261111.md](./UI-004-COMPONENT-INVENTORY-20261111.md).
+- Inventariados wrappers de formulário, campos compactos, selects, números/moeda, datas/horas, checkbox, lookup, combobox, botões, cards/KPI, tabs, dialog, accordion, menubar, grid/tabela e impressão.
+- Achados: geometrias declaradas 28/30/32/36/40/44/54px conforme componente e contexto; CSS global altera alturas em `.erp-global-surface`; `maxLength` não é aplicado pelos wrappers; não há um único DataGrid, alert/toast ou datepicker compartilhado.
+- Commits: relatório `ebe0addaf52e6cfd8249a4e3c0c3e6c8ed55c7d3`; backlog `83ccaae8afd1f05a573e700bb73c9885e27543d3`.
+- Status: inventário estático concluído; sem alteração de telas ou regras de negócio.
+
 ## Formato por item concluído
 
 - ID e módulo/rota;
