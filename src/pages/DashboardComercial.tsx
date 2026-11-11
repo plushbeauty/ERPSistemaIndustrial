@@ -1,8 +1,8 @@
 /**
  * @AUTOR: FernandoSch
- * @DATA_REVISAO_APROVACAO: 2026-10-30
- * @REVISAO: REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-11
+ * @REVISAO: REV-DASHBOARD-IMPRIMIR-ALTURA-20261111-01 — botões de impressão dos cartões de gráfico padronizados em 32px (h-8), centralizados e sem encolhimento; consultas, dados e fluxo de impressão preservados; alteração visual autorizada pelo proprietário no commit 01c9e46dd761ff3699dd160ef9364720e7956d1f
+ * @STATUS_APROVACAO: REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-11; pendente de CI e validação visual no Preview
  */
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
