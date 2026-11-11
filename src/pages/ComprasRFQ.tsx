@@ -261,7 +261,7 @@ export default function ComprasRFQ() {
   return (
     <VendasLayout title="Cotação de compras" subtitle="Fornecedores • materiais • prazo • condição de pagamento" onRefresh={() => window.location.reload()}>
     <div className="compras-rfq-compact min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b bg-white">
+      <header className="border-b bg-white print:hidden">
         <div className="flex min-h-[70px] items-center justify-between gap-3 px-5 lg:px-8">
           <div>
             <p className="text-[10px] uppercase tracking-[.16em] text-[#2D8DB8]">Compras • Suprimentos</p>
@@ -269,20 +269,8 @@ export default function ComprasRFQ() {
           </div>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={exportItemsCsv} disabled={!items.length} className="flex h-10 items-center gap-2 rounded-md border px-3 py-2 text-xs disabled:opacity-50"><FileSpreadsheet size={15}/> Itens CSV</button><button type="button" onClick={exportQuotesCsv} disabled={!selectedSuppliers.length} className="flex h-10 items-center gap-2 rounded-md border px-3 py-2 text-xs disabled:opacity-50"><FileSpreadsheet size={15}/> Propostas CSV</button><button type="button" onClick={() => window.print()} className="flex h-10 items-center gap-2 rounded-md border px-3 py-2 text-xs"><Printer size={15}/> Imprimir / PDF</button>
-            <button
-              type="button"
-              onClick={() => navigate('/pageprincipal/compras/requisicoes')}
-              className="flex min-h-10 items-center gap-2 rounded-md border px-3 py-2 text-xs"
-            >
-              <ArrowLeft size={15} /> Solicitações
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/pageprincipal/compras')}
-              className="flex min-h-10 items-center gap-2 rounded-md border px-3 py-2 text-xs"
-            >
-              Pedido de compra
-            </button>
+            <button type="button" onClick={() => navigate('/pageprincipal/compras')} className="flex h-[38px] w-[115px] items-center justify-center gap-2 rounded-full border border-[#E2E8F0] bg-white text-xs font-semibold"><ArrowLeft size={15}/> Voltar</button>
+            <button type="button" onClick={() => navigate('/pageprincipal/compras/requisicoes')} className="flex h-[38px] items-center gap-2 rounded-full border border-[#E2E8F0] bg-white px-4 text-xs font-semibold">Requisições</button>
           </div>
         </div>
       </header>
