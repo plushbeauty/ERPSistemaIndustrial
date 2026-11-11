@@ -3,14 +3,19 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import path from 'node:path'
 
 /**
- * CONTRATO DAS TELAS OFICIAIS — branch de producao (2026-11-02, por ordem explicita do proprietario:
- * "trocar todas as pages pelas novas que vc fez travando para que o vercel nao recupere mais telas antigas").
- * 1. As telas novas da experiencia publica (home com carrossel, planos, cadastro, blog, contato) e o login
- *    sobre a foto da planta estao travadas por hash: qualquer edicao reprova o build da Vercel ate que o
- *    proprietario ordene a revisao e este contrato seja atualizado.
- * 2. Toda tela em src/pages, src/features e src/modules precisa ser alcancavel a partir do entry
+ * CONTRATO DAS TELAS OFICIAIS — ORDEM PERMANENTE DO PROPRIETARIO (2026-11-10):
+ * "telas aprovadas podem ser trocadas por codigos novos. telas travadas aprovadas e para nao deixar
+ * que as antigas voltem".
+ * 1. O hash trava a REVISAO APROVADA ATUAL, nao congela a tela para sempre. O proprietario pode ordenar
+ *    melhoria, substituicao ou reescrita; nesse caso, atualizar o codigo, o hash oficial e o manifesto
+ *    na mesma entrega, registrando a nova revisao. A nova versao passa a ser a referencia protegida.
+ * 2. A trava continua obrigatoria depois da troca: impede que versoes anteriores, prototipos antigos ou
+ *    telas legadas voltem silenciosamente. Nunca restaurar codigo antigo apenas para satisfazer o hash.
+ * 3. Toda tela em src/pages, src/features e src/modules precisa ser alcancavel a partir do entry
  *    (src/AppBootstrap.tsx + src/AppEntryV2.tsx) por import literal: tela sem rota nao pode voltar a existir.
- * 3. As telas antigas ja deletadas estao banidas: recriar um desses caminhos reprova o build.
+ * 4. As telas antigas ja deletadas continuam banidas: recriar um desses caminhos reprova o build.
+ * 5. Toda substituicao autorizada deve preservar rotas, contratos de dados, RLS/RBAC e funcionalidades
+ *    existentes, salvo ordem explicita em contrario. A aprovacao passa para o novo codigo, nunca para o legado.
  * Revisao 2026-11-08 (trio APQP e cronograma colorido): ordem do proprietario — "veja o FMEA para vc
  * fazer FMEA E Plano de Controle juntos ok e Mapa de Processo ... ai vc junta e elemina os outros" e
  * "tela de Manutencao fazer tela de manutencao preventiva cronograma com corres". FMEA, Plano de
@@ -109,7 +114,7 @@ const ROOT = path.resolve(import.meta.dirname, '..')
 const read = rel => readFileSync(path.join(ROOT, rel), 'utf8')
 
 const oficiais = [
-  { path: 'src/PublicIndustrialHome.tsx', sha: '8ac9a1cb51527e8494c194c6ad0c52b60bf9a05f', label: 'Publica / Home com o carrossel das 5 artes enviadas pelo proprietario (REV-HOME-ALTURA-E-TOPO-20261106-01: ordem do proprietario — "A IMAGEM FICOU GRANDE DE MAIS ... ELA FICOU MUITNA ALTA PEGANDO A TELA MUITO PARA BAIXO" e "A BARRA DO TOPO ACHO QUE PODEMOS TIRAR O LOGO DELA PORQUE JA TEM O LOGO NAS IMAGENS ASSIM DEIXANDO ESSA BARRA MAIS FINA"; o logo saiu do header e a faixa do carrossel ganhou teto de 780px. Mantem REV-CARROSSEL-ARTES-20261105-01: "MANDEI TROCAR AS IMAGENS DO FUNDO COM AQUELAS IMAGENS QUE MANDEI PARA VC"; contrato das artes em scripts/verify-carousel-artes.mjs)' },
+  { path: 'src/PublicIndustrialHome.tsx', sha: '7daf332b2210fdf0c5aff6c07fee146236517a53', label: 'Publica / Home SYSNQRA ERP INDUSTRIAL com as 5 artes e preload do carrossel (REV-CARROSSEL-PRELOAD-E-MARCA-SYSNQRA-20261110-01; mantém a geometria aprovada em 2026-11-06: ordem do proprietario — "A IMAGEM FICOU GRANDE DE MAIS ... ELA FICOU MUITNA ALTA PEGANDO A TELA MUITO PARA BAIXO" e "A BARRA DO TOPO ACHO QUE PODEMOS TIRAR O LOGO DELA PORQUE JA TEM O LOGO NAS IMAGENS ASSIM DEIXANDO ESSA BARRA MAIS FINA"; o logo saiu do header e a faixa do carrossel ganhou teto de 780px. Mantem REV-CARROSSEL-ARTES-20261105-01: "MANDEI TROCAR AS IMAGENS DO FUNDO COM AQUELAS IMAGENS QUE MANDEI PARA VC"; contrato das artes em scripts/verify-carousel-artes.mjs)' },
   { path: 'src/components/marketing/TelaVitrine.tsx', sha: '810640098487ae4a3e51b913113a776c3702d4c7', label: 'Publica / Replica de tela do sistema na vitrine' },
   { path: 'src/styles/public-home-premium-20261101.css', sha: '27e48f60406e5a9fa396a1a65d3584c3c00c01df', label: 'Publica / estilos do carrossel e vitrine (REV-HOME-ALTURA-E-TOPO-20261106-01: ordem do proprietario — barra do topo afinada em --ph-nav-h:52px e faixa do carrossel limitada a clamp(340px, 100svh-52px, 780px) com arte em contain sobre copia desfocada, porque "ELA FICOU MUITNA ALTA PEGANDO A TELA MUITO PARA BAIXO". Antes REV-CARROSSEL-FULL-BLEED-20261105-01 — "ELA TEM QUE SER MAIS LARGA PEGANDO DO LADO ESQUERDO AO LADO DIREITO TODO" — e REV-CARROSSEL-ARTES-20261105-01 — folha 16:9 das artes do proprietario, sem scrim e sem texto do DOM sobre a imagem)' },
   { path: 'src/pages/PlanosIndustrial.tsx', sha: '76e09e54e07c903020d12665361782bfb344a476', label: 'Publica / Planos (REV-PLANOS-SISTEMA-20261106-01: ordem do proprietario — "TELA DE PLANOS ESTA FEIA DE MAIS ARRUMAR ELA ACHAR EM OUTROS SISTEMA PARA MELHORAR O VISUAL DELA BASEADO NO NOSSO SISTEMA VER AS OUTRAS TELAS DO SISTEMA E VERIFICAR SE TEMOS TODOS ESSES ITENS NO SISTEMA QUE CONSTA NOS PLANOS"; visual nas cores do ERP, matriz comercial dele com 31 linhas e leitura real de erp_planos_catalogo + erp_plano_modulos, sem preco inventado durante o carregamento) e o CSS propio src/styles/planos-industrial-20261106.css' },
@@ -331,7 +336,7 @@ for (const rel of banidos) {
 if (falhas.length) {
   console.error('CONTRATO DAS TELAS OFICIAIS (PRODUCAO) FALHOU')
   for (const f of falhas) console.error('- ' + f)
-  console.error('Restaure as telas aprovadas ou obtenha ordem explicita do proprietario para nova revisao deste contrato.')
+  console.error('Nao restaure telas antigas. Se a mudanca foi ordenada pelo proprietario, atualize o hash e o manifesto para registrar a nova revisao aprovada.')
   process.exit(1)
 }
 const navegaveis = arquivosSrc.filter(f => TELAS.some(prefix => relOf(f).startsWith(prefix)))

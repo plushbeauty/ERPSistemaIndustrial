@@ -433,11 +433,12 @@ const introCatalog: Record<string, PageIntro> = {
     },
   },
   'comissoes/calculo': {
-    module: 'Comissões', title: 'Cálculo de Comissões',
-    description: 'Comissão apurada sobre faturamento e metas, conforme as regras vigentes da empresa.',
+    module: 'Comissões', title: 'Cálculo de Comissão',
+    description: 'Apuração analítica dos pedidos faturados na competência, por vendedor e regra de SKU, com total de vendas, meta e comissão líquida.',
     help: {
-      fill: ['Selecione o período de apuração; o cálculo usa o faturamento já emitido.'],
-      use: ['Apuração conferida vira base de pagamento ao vendedor.', 'Nota cancelada ou estornada deve ser retirada antes de validar o valor.'],
+      fill: ['Selecione a Competência (mês/ano) que deseja apurar.', 'Pesquise e selecione o Vendedor / Agente cadastrado e vinculado a um Perfil de Comissão ativo.', 'A Meta Faturamento é carregada da meta comercial cadastrada para a competência; ajuste o valor se a apuração exigir uma meta específica.'],
+      use: ['Clique em Calcular para executar a apuração real da empresa selecionada. A grade mostra os itens de pedidos com status Faturado, vinculados ao vendedor e às regras de SKU ativas.', 'Confira Pedido, Cliente, SKU, quantidade faturada, valor do item, percentual aplicado e comissão líquida.', 'Compare Total Vendas com a Meta Batida e confira o Total Comissão antes de exportar a planilha XLSX.'],
+      watch: 'A grade começa vazia e os totalizadores começam em R$ 0,00. O sistema não cria valores de demonstração. Sem vínculo ativo ou regra de SKU ativa, o item não entra na apuração. A competência utiliza a data de entrada do pedido registrada no banco.',
     },
   },
   'comissoes/regras': {
@@ -450,10 +451,11 @@ const introCatalog: Record<string, PageIntro> = {
   },
   'comissoes/perfil': {
     module: 'Comissões', title: 'Perfil do Vendedor',
-    description: 'Vendedores e agentes com taxa de custo de hora, metas e perfil de comissão vinculado.',
+    description: 'Associação de cada vendedor ou agente comercial a um perfil de regras de comissão, com status e manutenção dos vínculos da empresa.',
     help: {
-      fill: ['Vincule o vendedor ao usuário do sistema e ao perfil de comissão correto.', 'Informe meta e custo de hora usados no rateio.'],
-      use: ['Perfil sem comissão vinculada sai da apuração.', 'Vendedor com mais de um vínculo recebe cálculo duplicado: mantenha um perfil por pessoa.'],
+      fill: ['Pesquise o Vendedor/Agente pelo nome ou e-mail no cadastro de usuários da empresa.', 'Selecione um Perfil de Regras já criado e gravado na aba Regras.', 'Defina o Status como Ativo para permitir a aplicação do perfil nos próximos cálculos ou Inativo para suspender o vínculo.'],
+      use: ['Clique em Gravar Vínculo para salvar a associação. A tabela inferior é atualizada com o vendedor, o perfil, o status e as ações.', 'Para trocar o perfil, edite a linha ou selecione novamente o mesmo vendedor, escolha o novo perfil e grave; o vínculo existente é atualizado.', 'Use Editar para carregar os dados no formulário. Use Excluir para remover o vínculo da empresa.'],
+      watch: 'É permitido um vínculo por vendedor em cada empresa. O perfil precisa existir e estar ativo na aba Regras antes da associação.',
     },
   },
   'controladoria/auditoria-comissoes': {
@@ -473,11 +475,12 @@ const introCatalog: Record<string, PageIntro> = {
     },
   },
   'controladoria/lucratividade': {
-    module: 'Controladoria', title: 'Painel de Lucratividade',
-    description: 'Custos, margens industriais e resultado por produto, cliente ou pedido.',
+    module: 'Controladoria', title: 'Lucratividade e Margens',
+    description: 'Análise por pedido do faturamento bruto, custo industrial cadastrado, margem bruta e comparação com a margem alvo da controladoria.',
     help: {
-      fill: ['Filtre por produto, cliente ou período; não edite valores no painel.'],
-      use: ['Margem negativa indica custo cadastrado errado, consumo acima da BOM ou preço de venda abaixo do custo real.', 'Compare com o custo padrão da Ficha de Processo para saber se é erro de cadastro ou de execução.'],
+      fill: ['Selecione o Mês / Competência que deseja analisar.', 'Informe a Margem Alvo (%); o padrão inicial é 25% e serve como referência visual, não altera o custo cadastrado.'],
+      use: ['Clique em Filtrar Custos para consultar os pedidos reais da empresa na competência.', 'Confira Nº Pedido, Razão Social / Produtos, Faturamento Bruto, Custo Fabricação, Margem Bruta e Taxa de Margem.', 'Com custo completo, a taxa aparece em verde quando atinge a margem alvo e em vermelho quando fica abaixo dela.'],
+      watch: 'A consulta limita-se aos primeiros 1.000 pedidos. Se qualquer item do pedido estiver sem preco_custo_industrial cadastrado, o pedido aparece como CUSTO PENDENTE e não recebe margem calculada. Cadastre o custo industrial na Engenharia de Custo Padrão para completar a apuração.',
     },
   },
   'financeiro/retificacao': {

@@ -175,7 +175,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [dataEpoch, setDataEpoch] = useState(0)
   const [sessionNivel, setSessionNivel] = useState(0)
   const [sessionPerfil, setSessionPerfil] = useState('')
-  const [sessionEmpresa, setSessionEmpresa] = useState('')
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -212,24 +211,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000)
     return () => window.clearInterval(timer)
-  }, [])
-
-  // Identidade da empresa autenticada (nome padrão do link/aba): vem do cadastro, nunca de texto fixo.
-  useEffect(() => {
-    let ativo = true
-    void (async () => {
-      const tenant = await supabase.rpc('erp_current_empresa_id')
-      if (typeof tenant.data !== 'string' || !tenant.data) return
-      const empresa = await supabase
-        .from('erp_empresas')
-        .select('nome_fantasia,razao_social')
-        .eq('id', tenant.data)
-        .maybeSingle<{ nome_fantasia: string | null; razao_social: string | null }>()
-      if (!ativo) return
-      const nome = empresa.data?.nome_fantasia?.trim() || empresa.data?.razao_social?.trim() || ''
-      if (nome) setSessionEmpresa(nome)
-    })()
-    return () => { ativo = false }
   }, [])
 
   useEffect(() => {
@@ -329,12 +310,12 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     ? null
     : resolvePageIntro(pathname) ?? fallbackPageIntro({ module: introModule, label: menuLeafLabel, purpose: contextualPurpose })
 
-  // Padrão de nome do link/aba, ordem do proprietário em 2026-11-04: sistema · empresa · módulo · tela.
-  // O hostname da Vercel não muda pelo código — renaming do projeto é decisão do painel dele.
+  // Identificação pública padronizada: sistema · módulo · tela, sem expor nome legado de empresa no título.
+  // O nome da empresa continua intacto no cadastro e no banco; apenas não compõe a identidade do produto.
   const tituloDaTela = pageIntro?.title ?? menuLeafLabel ?? (contextualHelp.title === 'Ajuda da tela atual' ? '' : contextualHelp.title)
   useEffect(() => {
-    document.title = ['SYSNQRA ERP', sessionEmpresa, introModule, tituloDaTela].filter(Boolean).join(' · ')
-  }, [sessionEmpresa, introModule, tituloDaTela])
+    document.title = ['SYSNQRA ERP INDUSTRIAL', introModule, tituloDaTela].filter(Boolean).join(' · ')
+  }, [introModule, tituloDaTela])
 
   const logout = async () => {
     await supabase.auth.signOut()

@@ -118,3 +118,10 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - O Novo Pedido já chama erp_calcular_preco_sugerido_venda ao selecionar cliente e produto; a função consulta erp_preco_especial_cliente e usa o preço especial vigente, mantendo o cálculo padrão quando não há preço especial válido.
 - CSS global dos diálogos Radix reforça superfície branca, texto escuro e campos claros em todas as páginas, sem remover o scrim atrás da janela.
 - Nenhuma migration remota ou cadastro de banco foi alterado nesta revisão.
+
+## Registro da revisão REV-CARROSSEL-PRELOAD-E-MARCA-SYSNQRA-20261110-01 — 2026-11-10
+
+- Ordem explícita do proprietário: padronizar a identidade pública para **SYSNQRA ERP INDUSTRIAL** e corrigir o carregamento/rotação do carrossel da página inicial.
+- `src/PublicIndustrialHome.tsx`: identidade SYSNQRA no título acessível, marca do cabeçalho e rodapé; rodapé identificado como SYSNQRA ERP INDUSTRIAL. As cinco artes originais permanecem como fonte única do carrossel; pré-carregamento aguarda as imagens disponíveis antes de iniciar a rotação automática de 7 segundos e isola falhas individuais.
+- Preservados o layout aprovado, a altura da faixa, a barra superior de 52px, os assets e o contrato de hashes das cinco artes. Nenhuma consulta, autenticação, dado ou estrutura do Supabase foi alterada.
+- Hash de `src/PublicIndustrialHome.tsx` atualizado no verificador e no manifesto de telas oficiais; build de produção continua condicionado à validação integral.
