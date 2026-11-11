@@ -461,11 +461,11 @@
     },
     {
       "path": "src/pages/ComprasAnalisePrecos.tsx",
-      "sha": "efe37bb4ae18d04c04e53c5e1191ade6c8ed6563",
+      "sha": "cd91089643216834f2c96fca096e28850a14773b",
       "autor": "FernandoSch",
-      "revisao": "REV-COMPRAS-ANALISE-RFQ-RESPOSTAS-20261110-01 — consulta corrigida para erp_rfq_respostas, grade usa apenas colunas reais e seleção grava fornecedor/justificativa/status no cabeçalho da RFQ.",
+      "revisao": "REV-COMPRAS-ANALISE-RFQ-RESPOSTAS-20261110-02 — propostas registradas em erp_rfq_respostas com empresa, usuário autenticado, prazo, validade e condição; análise lê tabela real e seleção grava somente campos existentes.",
       "aprovadaEm": "2026-11-10",
-      "statusAprovacao": "REVISAO TECNICA AUTORIZADA PELO PROPRIETARIO EM 2026-11-10 PARA ALINHAMENTO DO SCHEMA RFQ"
+      "statusAprovacao": "REVISAO TECNICA AUTORIZADA PELO PROPRIETARIO EM 2026-11-10 PARA FLUXO RFQ END-TO-END"
     },
     {
       "path": "src/pages/ComprasIndustrial.tsx",
