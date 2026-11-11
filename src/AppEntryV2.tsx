@@ -56,6 +56,7 @@ import './styles/erp-premium-global-20261108.css'
 import './styles/erp-industrial-ds-20261108.css'
 import './styles/rh-employee-wireframe.css'
 
+const CatalogoWireframes = lazy(() => import('./pages/CatalogoWireframes'))
 const PagePrincipal = lazy(() => import('./pages/PagePrincipal'))
 const AppIndustrial = lazy(() => import('./AppIndustrialV7'))
 const Fiscal = lazy(() => import('./pages/Fiscal'))
@@ -302,6 +303,7 @@ export default function AppEntryV2() {
             <Route path="/cadastro-master" element={<SetupADMInicial />} />
             <Route path="/pageprincipal" element={<PagePrincipal />}>
               <Route path="ajuda" element={<CentralAjuda />} />
+              <Route path="dev/catalogo-wireframes" element={<CatalogoWireframes />} />
               <Route path="financeiro" element={<FinanceiroWorkspace />} />
               <Route index element={<AppIndustrial />} />
               <Route path="compras" element={<ComprasWorkspace />} />
@@ -322,6 +324,7 @@ export default function AppEntryV2() {
               <Route path="rh/entrega-epis" element={<EpisScreen />} />
               <Route path="rh/epis/entregas" element={<EpisScreen />} />
               <Route path="pcp/fichas-processo" element={<QualityPlanGate><PCPFichasProcesso /></QualityPlanGate>} />
+              <Route path="pcp/ficha-montagem" element={<Navigate to="/pageprincipal/pcp/fichas-processo?tipo=MONTAGEM_EMBALAGEM" replace />} />
               <Route path="pcp/roteiro-producao" element={<Navigate to="/pageprincipal/pcp/fichas-processo" replace />} />
               <Route path="qualidade/rpnc" element={<QualityPlanGate><QualidadeRPNC /></QualityPlanGate>} />
               <Route path="qualidade/rpnc-formulario" element={<Navigate to="/pageprincipal/qualidade/rpnc" replace />} />
