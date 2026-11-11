@@ -1,10 +1,10 @@
 /**
  * @AUTOR: FernandoSch
  * @DATA_REVISAO_APROVACAO: 2026-11-10
- * @REVISAO: REV-CONTROLADORIA-RAZAO-GERAL-GL-20261110-01 — filtros, grade e consolidação conforme wireframe oficial; consultas reais e saldo integral por RPC preservados.
- * @STATUS_APROVACAO: ALTERAÇÃO VISUAL E FUNCIONAL AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-10.
+ * @REVISAO: REV-CONTROLADORIA-RAZAO-GERAL-KPI-PRINT-20261111-01
+ * @STATUS_APROVACAO: INCREMENTO ADITIVO AUTORIZADO PELO PROPRIETARIO EM 2026-11-11.
  */
-import { ArrowLeft, Info, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Info, Printer, RefreshCw } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -32,6 +32,7 @@ const money = (value: number) =>
 
 const fieldClass =
   'h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-[13px] text-slate-700 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100 disabled:bg-slate-50 disabled:text-slate-500'
+const actionClass = 'inline-flex h-[38px] items-center justify-center gap-2 rounded-full px-4 text-[12px] font-semibold transition'
 
 export default function PainelRazaoGeral() {
   const navigate = useNavigate()
@@ -148,20 +149,23 @@ export default function PainelRazaoGeral() {
   const selectedAccount = accounts.find((account) => account.id === accountId)
 
   return (
-    <main className="min-h-full bg-[#F4FBFD] p-4 text-slate-800">
-      <div className="mx-auto max-w-[1600px] space-y-4">
-        <div className="flex flex-wrap items-center gap-3">
+    <main className="min-h-full bg-[#F4FBFD] p-4 text-slate-800 print:bg-white print:p-0">
+      <div className="mx-auto max-w-[1600px] space-y-4 print:max-w-none print:space-y-2">
+        <div className="hidden border-b-2 border-[#123B50] pb-3 print:block">
+          <div className="text-[19px] font-extrabold tracking-[0.16em] text-[#123B50]">PLASTIBOR</div>
+          <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-600">Controladoria industrial · Razão geral</div>
+          <div className="mt-1 text-[10px] text-slate-500">Conta/Diário: {selectedAccount ? `${selectedAccount.codigo} · ${selectedAccount.nome}` : '—'} · Emitido em {new Date().toLocaleString('pt-BR')}</div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 print:hidden">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="group inline-flex h-[38px] w-[115px] items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-700 shadow-xs transition-all duration-150 hover:-translate-y-px hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 hover:shadow-sm active:scale-[0.98]"
+            className={actionClass + ' w-[115px] border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50'}
           >
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition-transform duration-150 group-hover:-translate-x-0.5 group-hover:bg-slate-200 group-hover:text-slate-900">
-              <ArrowLeft size={14} />
-            </span>
-            Voltar
+            <ArrowLeft size={14} /> Voltar
           </button>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
               Controladoria <span className="px-1 text-slate-300">›</span> Razão Geral
             </p>
@@ -172,9 +176,35 @@ export default function PainelRazaoGeral() {
               Consulta analítica de débitos, créditos e saldo contábil consolidado por conta bancária ou diário.
             </p>
           </div>
+          <button type="button" onClick={() => window.print()} disabled={!filtered} className={actionClass + ' border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50'}>
+            <Printer size={14} /> Imprimir / PDF
+          </button>
         </div>
 
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4 print:grid-cols-4">
+          <article className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm print:shadow-none">
+            <p className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Conta / Diário ativo</p>
+            <p className="mt-1 truncate text-[14px] font-extrabold text-[#123B50]">{selectedAccount ? selectedAccount.nome : '—'}</p>
+            <p className="mt-1 text-[9px] text-slate-500">{selectedAccount ? `${selectedAccount.codigo}${selectedAccount.banco ? ` · ${selectedAccount.banco}` : ''}` : `${accounts.length} conta(s) ativa(s) disponível(is)`}</p>
+          </article>
+          <article className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm print:shadow-none">
+            <p className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Total débitos da grade</p>
+            <p className="mt-1 text-[17px] font-extrabold tabular-nums text-[#123B50]">{filtered ? money(totalDebit) : '—'}</p>
+            <p className="mt-1 text-[9px] text-slate-500">{filtered ? `${rows.length} lançamento(s) exibidos` : 'Aguardando consulta'}</p>
+          </article>
+          <article className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm print:shadow-none">
+            <p className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Total créditos da grade</p>
+            <p className="mt-1 text-[17px] font-extrabold tabular-nums text-[#123B50]">{filtered ? money(totalCredit) : '—'}</p>
+            <p className="mt-1 text-[9px] text-slate-500">Soma dos lançamentos exibidos</p>
+          </article>
+          <article className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm print:shadow-none">
+            <p className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Saldo total do razão · RPC</p>
+            <p className="mt-1 text-[17px] font-extrabold tabular-nums text-[#123B50]">{filtered ? money(balance) : '—'}</p>
+            <p className="mt-1 text-[9px] text-slate-500">Saldo integral calculado no banco</p>
+          </article>
+        </section>
+
+        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm print:hidden">
           <div className="grid grid-cols-1 items-end gap-4 lg:grid-cols-[280px_340px_140px]">
             <div>
               <label htmlFor="razao-empresa" className="mb-1.5 block text-[12px] font-semibold text-slate-600">
@@ -235,16 +265,15 @@ export default function PainelRazaoGeral() {
           </p>
 
           {error && (
-            <div
-              role="alert"
-              className="mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[12px] text-rose-700"
-            >
+            <div role="alert" className="mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[12px] text-rose-700">
               {error}
             </div>
           )}
         </section>
 
-        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        {error && <div role="alert" className="hidden rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[12px] text-rose-700 print:block">{error}</div>}
+
+        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm print:shadow-none">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
             <div>
               <h2 className="text-[14px] font-bold text-[#123B50]">
@@ -262,9 +291,9 @@ export default function PainelRazaoGeral() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] border-collapse text-[12px]">
-              <thead className="bg-slate-50 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                <tr className="h-11 border-b border-slate-200">
+            <table className="w-full min-w-[760px] border-collapse text-[12px] print:min-w-0 print:text-[9px]">
+              <thead className="bg-slate-50 text-[11px] font-semibold uppercase tracking-wide text-slate-500 print:bg-slate-200 print:text-slate-900">
+                <tr className="h-11 border-b border-slate-200 print:h-8">
                   <th className="px-4 text-left">Data</th>
                   <th className="px-4 text-left">Documento</th>
                   <th className="px-4 text-left">Descrição</th>
@@ -274,7 +303,7 @@ export default function PainelRazaoGeral() {
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <tr key={row.id} className="h-12 border-b border-slate-100 text-slate-700 last:border-0 hover:bg-slate-50/70">
+                  <tr key={row.id} className="h-12 border-b border-slate-100 text-slate-700 last:border-0 hover:bg-slate-50/70 print:h-8">
                     <td className="whitespace-nowrap px-4">
                       {new Date(row.criado_em).toLocaleDateString('pt-BR')}
                     </td>
@@ -303,7 +332,7 @@ export default function PainelRazaoGeral() {
             </table>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-slate-200 bg-slate-50/70 px-5 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-slate-200 bg-slate-50/70 px-5 py-4 print:break-inside-avoid">
             <p className="text-[12px] font-medium text-slate-600">
               Débitos <strong className="text-slate-800">{money(totalDebit)}</strong>
               <span className="px-2 text-slate-300">·</span>
@@ -311,7 +340,7 @@ export default function PainelRazaoGeral() {
             </p>
             <div className="rounded-lg border border-slate-300 bg-[#F8FAFC] px-[18px] py-2.5">
               <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">
-                Saldo total do razão
+                Saldo total do razão (RPC)
               </p>
               <p className="text-[16px] font-bold tabular-nums text-[#123B50]">
                 {money(balance)}
