@@ -17,8 +17,8 @@ type Supplier={id:string;razao_social:string;nome_fantasia:string|null;documento
 type Product={id:string;codigo:string;nome:string;unidade:string|null;estoque_atual:number}
 type Purchase={id:string;numero:number;fornecedor_id:string|null;produto_id:string|null;produto_nome:string;total:number;status:string;data_prevista:string|null;created_at:string}
 type Request={id:string;numero:number;descricao:string;prioridade:string;status:string;fornecedor_id:string|null;created_at:string}
-type PurchaseHeader={id:string;numero:number;fornecedor_id:string|null;total:number;status:string;prazo_entrega:string|null;created_at:string}
-type PurchaseItem={pedido_id:string;produto_id:string;codigo_produto:string;descricao_produto:string}
+type PurchaseHeader={id:string;numero:number;fornecedor_id:string|null;total:number;status:string;data_prevista:string|null;created_at:string}
+type PurchaseItem={pedido_id:string;produto_id:string;codigo_mp:string;descricao:string}
 
 const money=(n:number)=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})
 const date=(v:string|null)=>v?new Date(v).toLocaleDateString('pt-BR'):'—'
@@ -33,12 +33,12 @@ export default function ComprasIndustrial({initialTab='dashboard'}:{initialTab?:
   const [s,p,o,i,r]=await Promise.all([
    fetchAllPages<Supplier>((from,to)=>supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia,documento,iso_9001_certificado,ativo',{count:'exact'}).eq('empresa_id',empresa_id).eq('ativo',true).order('razao_social').range(from,to)),
    fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,unidade,estoque_atual',{count:'exact'}).eq('empresa_id',empresa_id).eq('ativo',true).order('codigo').range(from,to)),
-   fetchAllPages<PurchaseHeader>((from,to)=>supabase.from('erp_pedidos_compra').select('id,numero,fornecedor_id,total,status,prazo_entrega,created_at',{count:'exact'}).eq('empresa_id',empresa_id).order('created_at',{ascending:false}).range(from,to)),
-   fetchAllPages<PurchaseItem>((from,to)=>supabase.from('erp_pedidos_compra_itens').select('pedido_id,produto_id,codigo_produto,descricao_produto',{count:'exact'}).eq('empresa_id',empresa_id).range(from,to)),
+   fetchAllPages<PurchaseHeader>((from,to)=>supabase.from('erp_pedidos_compra').select('id,numero,fornecedor_id,total,status,data_prevista,created_at',{count:'exact'}).eq('empresa_id',empresa_id).order('created_at',{ascending:false}).range(from,to)),
+   fetchAllPages<PurchaseItem>((from,to)=>supabase.from('erp_pedidos_compra_itens').select('pedido_id,produto_id,codigo_mp,descricao',{count:'exact'}).eq('empresa_id',empresa_id).range(from,to)),
    fetchAllPages<Request>((from,to)=>supabase.from('erp_solicitacoes_compra').select('id,numero,descricao,prioridade,status,fornecedor_id,created_at',{count:'exact'}).eq('empresa_id',empresa_id).order('created_at',{ascending:false}).range(from,to))
   ])
   const itemsByPurchase=new Map<string,PurchaseItem[]>();for(const item of i){const rows=itemsByPurchase.get(item.pedido_id)||[];rows.push(item);itemsByPurchase.set(item.pedido_id,rows)}
-  setSuppliers(s);setProducts(p);setPurchases(o.map(header=>{const lines=itemsByPurchase.get(header.id)||[];return {...header,produto_id:lines[0]?.produto_id??null,produto_nome:lines.map(line=>`${line.codigo_produto} — ${line.descricao_produto}`).join(', ')||'—',data_prevista:header.prazo_entrega}}));setRequests(r)
+  setSuppliers(s);setProducts(p);setPurchases(o.map(header=>{const lines=itemsByPurchase.get(header.id)||[];return {...header,produto_id:lines[0]?.produto_id??null,produto_nome:lines.map(line=>`${line.codigo_mp} — ${line.descricao}`).join(', ')||'—',data_prevista:header.data_prevista}}));setRequests(r)
  }catch(e){setMessage(e instanceof Error?e.message:'Erro ao carregar Compras.')}finally{setBusy(false)}}
  useEffect(()=>{void load()},[])
  const supplierMap=useMemo(()=>new Map(suppliers.map(x=>[x.id,x.razao_social])),[suppliers])
@@ -55,8 +55,8 @@ export default function ComprasIndustrial({initialTab='dashboard'}:{initialTab?:
   const profile=await supabase.from('erp_usuarios').select('nome,empresa_id,ativo,deleted_at').eq('auth_user_id',auth.data.user.id).maybeSingle();if(profile.error)throw profile.error
   const currentProfile=profile.data
   if(!currentProfile?.ativo||currentProfile.deleted_at||currentProfile.empresa_id!==String(company.data)||!currentProfile.nome)throw new Error('Perfil ERP ativo da empresa não localizado.')
-  const {data,error}=await supabase.rpc('erp_compras_salvar_pedido',{p_pedido_id:null,p_fornecedor_id:form.fornecedor_id,p_comprador_nome:currentProfile.nome,p_condicao_pagamento:form.condicao_pagamento||null,p_prazo_entrega:form.data_prevista||null,p_observacoes:form.observacoes||null,p_status:'PENDENTE_APROVACAO',p_itens:[{produto_id:form.produto_id,quantidade:q,preco_unitario:v,unidade:selectedProduct.unidade||'UN'}]})
-  if(error)throw error;const created=data?.[0];if(!created)throw new Error('O banco não retornou o pedido criado.');const meta=await supabase.from('erp_pedidos_compra').update({centro_custo:form.centro_custo.trim()||null,local_entrega:form.local_entrega.trim()||null,condicao_pagamento:form.condicao_pagamento.trim()||null,referencia_cotacao:form.referencia_cotacao.trim()||null,especificacao_tecnica:form.especificacao_tecnica.trim()||null}).eq('id',created.id).eq('empresa_id',String(company.data));if(meta.error)throw meta.error;setMessage('Pedido de compra #'+created.numero+' enviado para aprovação.');setShowForm(false);setForm({fornecedor_id:'',produto_id:'',quantidade:'1',valor_unitario:'0',data_prevista:'',centro_custo:'',local_entrega:'',condicao_pagamento:'',referencia_cotacao:'',especificacao_tecnica:'',observacoes:''});await load()
+  const {data,error}=await supabase.rpc('erp_compras_salvar_pedido',{p_payload:{fornecedor_id:form.fornecedor_id,status:'PENDENTE_APROVACAO',data_prevista:form.data_prevista||null,condicao_pagamento:form.condicao_pagamento.trim()||null,centro_custo:form.centro_custo.trim()||null,local_entrega:form.local_entrega.trim()||null,referencia_cotacao:form.referencia_cotacao.trim()||null,especificacao_tecnica:form.especificacao_tecnica.trim()||null,observacoes:form.observacoes.trim()||null,origem_solicitacao:'INTERNO',nivel_urgencia:'NORMAL',itens:[{produto_id:form.produto_id,quantidade:q,valor_unitario:v,unidade:selectedProduct.unidade||'UN'}]}})
+  if(error)throw error;const created=data as {pedido_id?:string;numero_pedido?:number}|null;if(!created?.pedido_id)throw new Error('O banco não retornou o identificador do pedido criado.');setMessage('Pedido de compra #'+String(created.numero_pedido??'').padStart(4,'0')+' enviado para aprovação.');setShowForm(false);setForm({fornecedor_id:'',produto_id:'',quantidade:'1',valor_unitario:'0',data_prevista:'',centro_custo:'',local_entrega:'',condicao_pagamento:'',referencia_cotacao:'',especificacao_tecnica:'',observacoes:''});await load()
  }catch(e){setMessage(e instanceof Error?e.message:'Não foi possível salvar.')}finally{setBusy(false)}}
  const menu:[Tab,string,string,LucideIcon][]=[['dashboard','Dashboard','Visão geral e indicadores',BarChart3],['solicitacoes','Solicitações','Necessidades e aprovações',ClipboardList],['pedidos','Pedidos de compra','Pedidos em aberto e histórico',ShoppingCart],['fornecedores','Fornecedores','Cadastro e qualificação',Truck],['recebimentos','Recebimentos','Entrada e conferência',PackageCheck]]
  const current=menu.find(x=>x[0]===tab)!
