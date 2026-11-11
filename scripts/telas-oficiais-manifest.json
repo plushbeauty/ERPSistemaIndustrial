@@ -143,13 +143,13 @@
       "path": "src/features/fiscal/ClassificacaoFiscal.tsx",
       "sha": "1948fa8198c173c36863f31ca9d714f034d7c884",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-CLASSIFICACAO-FISCAL-REVISAO-20261109-01 — revisão individual autorizada pelo proprietário em 2026-11-09; código e contrato verificados. REV-HASH-LF-20261109-01 — contrato sincronizado com o hash Git normalizado em LF, conforme algoritmo do verificador oficial.",
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-CLASSIFICACAO-FISCAL-REVISAO-20261109-01 — revisão individual autorizada pelo proprietário em 2026-11-09; código e contrato verificados. REV-HASH-LF-20261109-01 — contrato sincronizado com o hash Git normalizado em LF, conforme algoritmo do verificador oficial. Incremento 2026-11-10: RBAC finance.create no servidor e tenant obrigatório; consulta integral paginada, filtros, KPIs, totalizadores, CSV, impressão Plastibor e manual.",
       "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "REVISÃO DO PROPRIETÁRIO EM 2026-11-09 REGISTRADA EM COMMIT INDIVIDUAL; hash LF alinhado ao verificador; build pendente."
+      "statusAprovacao": "REVISÃO DO PROPRIETÁRIO EM 2026-11-09 PRESERVADA; revisão aditiva na branch de integração; RPC mantém assinatura e SECURITY INVOKER; migration RBAC aguardando aplicação; type-check/build e preview pendentes."
     },
     {
       "path": "src/features/fiscal/EstornoLancamentos.tsx",
-      "sha": "e13f265864cdb7a48dd1ffb1085f14d2f753d60a",
+      "sha": "6675479279788219597728f5b2043665239633a6",
       "autor": "FernandoSch",
       "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-ESTORNO-CONTABIL-SOLICITACAO-20261109-01 — revisão individual autorizada pelo proprietário em 2026-11-09; código e contrato verificados. REV-HASH-LF-20261109-01 — contrato sincronizado com o hash Git normalizado em LF, conforme algoritmo do verificador oficial.",
       "aprovadaEm": "2026-10-30",
