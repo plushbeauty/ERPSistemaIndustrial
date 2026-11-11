@@ -189,7 +189,7 @@ export default function RetificacaoPedido() {
 
     setMessage('Retificação gravada e auditada no PostgreSQL.')
     setSaving(false)
-    window.setTimeout(() => navigate('/controladoria/assistente-retificacao'), 450)
+    window.setTimeout(() => navigate('/pageprincipal/controladoria/retificacao-assistente'), 450)
   }
 
   const pageHeading = (
@@ -201,7 +201,7 @@ export default function RetificacaoPedido() {
       </div>
       <button
         type="button"
-        onClick={() => navigate(pedidoId ? '/financeiro/retificacao' : '/controladoria/assistente-retificacao')}
+        onClick={() => navigate(pedidoId ? '/pageprincipal/controladoria/retificacao-pedido' : '/pageprincipal/controladoria/retificacao-assistente')}
         className="inline-flex min-h-10 items-center gap-2 border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
       >
         <ArrowLeft size={14} /> {pedidoId ? 'Voltar aos pedidos' : 'Estorno Documental'}
