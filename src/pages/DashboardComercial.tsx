@@ -360,5 +360,5 @@ function Kpi({ label, value, icon: Icon, tone }: { label: string; value: string 
 }
 
 function ChartCard({ title, onPrint, className = '', children }: { title: string; onPrint: () => void; className?: string; children: ReactNode }) {
-  return <section className={`border border-slate-300 bg-white ${className}`}><div className="flex items-center justify-between border-b bg-[#F4F7FE] px-2 py-1.5"><b className="text-[10px] uppercase">{title}</b><button type="button" title="Imprimir relatório deste gráfico" onClick={onPrint} className="no-print flex items-center gap-1 border px-1.5 py-1 text-[9px]"><Printer size={12}/>IMPRIMIR</button></div>{children}</section>
+  return <section className={`border border-slate-300 bg-white ${className}`}><div className="flex items-center justify-between border-b bg-[#F4F7FE] px-2 py-1.5"><b className="text-[10px] uppercase">{title}</b><button type="button" title="Imprimir relatório deste gráfico" onClick={onPrint} className="no-print flex h-8 min-h-8 shrink-0 items-center justify-center gap-1 rounded-[2px] border px-2 py-0 text-[9px]"><Printer size={12}/>IMPRIMIR</button></div>{children}</section>
 }
