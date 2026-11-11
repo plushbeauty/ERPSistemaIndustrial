@@ -351,3 +351,20 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Validação:** CI run `43072888153` passou TypeScript, ESLint, auditorias, lazy imports, build, rotas, contratos e lock oficial.
 
 **UI-010 permanece aberto:** ainda faltam auditoria funcional e visual das demais telas de Vendas, conferência autenticada e Preview Vercel após liberação da cota. Não declarar o módulo homologado globalmente.
+
+
+## UI-010 — período, paginação e impressão integral em Relatórios de Vendas (2026-11-11)
+
+- **Rota/componente:** `/pageprincipal/vendas/relatorios` → `src/pages/VendasRelatorios.tsx`.
+- **Correção adicional:** filtros de data inicial/final sobre `data_entrada`; paginação visual de 50 pedidos; impressão continua incluindo todos os resultados filtrados, não apenas a página visível; loading/empty states preservados; botão Limpar Filtros limpa busca, status e período.
+- **Commits:** código `7406f41faadc5f6a7102a64be6b2187723541071` e correção de visibilidade/print `cc0eacc759e81c4cea9b5728557cf48c8b625b7a`; manifesto `cfd6970b28ffb6bb68c78af7116c959106c94e0a`.
+- **Validação:** CI run `43073856321` passou type-check, lint, auditorias, imports lazy, build, rotas e lock oficial.
+
+## UI-010 — busca e padronização da Tabela de Preços (2026-11-11)
+
+- **Rota/componente:** `/pageprincipal/vendas/reajuste` → `src/pages/TabelaPrecos.tsx`.
+- **Correção:** pesquisa por SKU/produto/grupo, paginação sobre resultados filtrados, contagem e Limpar Busca; controles do formulário e ação de reajuste em 32px; loading e feedback de aplicação; preços alinhados à direita com `tabular-nums`. A consulta integral por empresa e RPCs de reajuste foram preservadas.
+- **Commits:** código `fe90ee4cdb65482aaf3196e19937490a2bde2208`; manifesto `c8fc87d4753ec931110f081d9878b19c32a6a2e2`.
+- **Validação:** CI run `43074270811` passou type-check, lint, auditorias, imports lazy, build, rotas, contratos e lock oficial.
+
+**UI-010 permanece aberto:** faltam as demais telas comerciais, validação visual/autenticada e Preview Vercel após liberação do rate limit. As correções listadas não equivalem à homologação integral do módulo.
