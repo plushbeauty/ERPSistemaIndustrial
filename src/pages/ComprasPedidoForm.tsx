@@ -24,6 +24,7 @@ export default function ComprasPedidoForm({ onCancel, onSaved, pedidoId }: { onC
   const [products, setProducts] = useState<Row[]>([])
   const [requisitions, setRequisitions] = useState<Row[]>([])
   const [company, setCompany] = useState<Company | null>(null)
+  const [companyId, setCompanyId] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -51,6 +52,7 @@ export default function ComprasPedidoForm({ onCancel, onSaved, pedidoId }: { onC
         ])
         if (!active) return
         if (companyResult.error) throw companyResult.error
+        setCompanyId(empresaId)
         setSuppliers(supplierRows)
         setProducts(productRows)
         setRequisitions(requisitionRows)
@@ -129,8 +131,9 @@ export default function ComprasPedidoForm({ onCancel, onSaved, pedidoId }: { onC
       if (!record?.pedido_compra_id || record.numero_pedido === undefined || record.numero_pedido === null) throw new Error('A RPC não retornou os identificadores do pedido.')
       setSavedPedidoId(record.pedido_compra_id)
       setSavedOrderNumber(String(record.numero_pedido))
-      const { data: savedHeader } = await supabase.from('erp_pedidos_compra').select('created_at').eq('id', record.pedido_compra_id).maybeSingle()
+      const { data: savedHeader, error: headerReadError } = await supabase.from('erp_pedidos_compra').select('created_at').eq('id', record.pedido_compra_id).eq('empresa_id', companyId).maybeSingle()
       setEmissionDate(typeof savedHeader?.created_at === 'string' ? savedHeader.created_at : '')
+      if (headerReadError) setError('Pedido gravado; não foi possível carregar a data de emissão para impressão: ' + headerReadError.message)
       onSaved('Pedido PC-' + String(record.numero_pedido).padStart(4, '0') + ' salvo com ' + payloadItems.length + ' item(ns).')
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível salvar o pedido.')
@@ -140,6 +143,10 @@ export default function ComprasPedidoForm({ onCancel, onSaved, pedidoId }: { onC
   return <section className="compras-panel compras-form-panel compras-order-editor">
     <style>{`
       .compras-order-print{display:none}
+      .compras-order-editor .compras-form-grid :is(input,select){height:40px!important;min-height:40px!important}
+      .compras-order-editor .compras-grid-input{height:40px!important;min-height:40px!important}
+      .compras-order-editor .compras-items-editor tbody tr{height:48px}
+      .compras-order-editor .compras-button{min-height:40px}
       @media print{
         @page{size:A4 portrait;margin:12mm}
         body *{visibility:hidden!important}
@@ -177,8 +184,9 @@ export default function ComprasPedidoForm({ onCancel, onSaved, pedidoId }: { onC
       </div>
       <div className="compras-order-totals"><span>Total do pedido <strong>{brl(subtotal)}</strong></span></div>
       <label className="compras-field compras-field--wide"><span>Observações</span><textarea rows={2} value={header.observacoes} onChange={e=>setHeader(v=>({...v,observacoes:e.target.value}))}/></label>
-      <div className="compras-form-footer"><span>{savedOrderNumber ? 'Pedido PC-' + savedOrderNumber.padStart(4, '0') + ' gravado. A impressão usa o número definitivo.' : 'Gravação atômica com validação de empresa e permissão no servidor.'}</span><button className="compras-button compras-button--primary" type="submit" disabled={saving||loading||Boolean(referenceError)||!suppliers.length||!products.length}>{saving?'Salvando…':savedPedidoId?'Salvar alterações':'Salvar pedido de compra'}</button></div>
+      <div className="compras-form-footer"><span>{savedOrderNumber ? 'Pedido PC-' + savedOrderNumber.padStart(4, '0') + ' gravado. A impressão usa o número definitivo.' : 'Gravação atômica com validação de empresa e permissão no servidor.'}</span><button className="compras-button compras-button--primary h-10" type="submit" disabled={saving||loading||Boolean(referenceError)||!suppliers.length||!products.length}>{saving?'Salvando…':savedPedidoId?'Salvar alterações':'Salvar pedido de compra'}</button></div>
     </form>
+    <section className="compras-panel no-print mt-3 p-4 text-[11px] text-[#526C79]"><h2 className="font-bold uppercase tracking-wide">Como usar esta tela</h2><p className="mt-2"><strong>Para que serve:</strong> criar ou editar pedido de compra com fornecedor, requisição vinculada, condições e itens reais do catálogo.</p><p className="mt-1"><strong>Passo a passo:</strong> selecione fornecedor, informe condição e entrega, adicione produtos e quantidades, confira subtotais e total, então grave o pedido pela RPC transacional.</p><p className="mt-1"><strong>Regras importantes:</strong> somente pedidos em rascunho ou pendentes de aprovação podem ser editados; itens e referências são validados por empresa; o histórico e os pedidos aprovados não são alterados por esta tela.</p></section>
     <section className="compras-order-print" aria-hidden="true">
       <div className="print-head"><div><div className="print-brand">PLASTIBOR</div><strong>{company?.razao_social || company?.nome_fantasia || 'Dados cadastrais da empresa'}</strong><div>CNPJ: {company?.cnpj || 'Não informado no cadastro'}</div><div>{company?.endereco || 'Endereço não informado'} {company?.cidade || ''} {company?.uf || ''} CEP {company?.cep || ''}</div><div>{company?.telefone || ''} {company?.email || ''}</div></div><div className="print-meta"><h1>PEDIDO DE COMPRA</h1><div>Nº: {savedOrderNumber ? 'PC-' + savedOrderNumber.padStart(4, '0') : 'Aguardando gravação'}</div><div>Emissão: {emissionDate ? new Date(emissionDate).toLocaleDateString('pt-BR') : '—'}</div><div>Status: {header.status}</div></div></div>
       <h2>Fornecedor</h2><div><strong>{selectedSupplier?value(selectedSupplier,'razao_social'):'Não selecionado'}</strong></div><div>CNPJ/CPF: {selectedSupplier?value(selectedSupplier,'documento'):'—'} | Contato: {selectedSupplier?value(selectedSupplier,'contato'):'—'}</div><div>{selectedSupplier?value(selectedSupplier,'endereco'):''} {selectedSupplier?value(selectedSupplier,'cidade'):''} {selectedSupplier?value(selectedSupplier,'estado'):''}</div><div>{selectedSupplier?value(selectedSupplier,'telefone'):''} {selectedSupplier?value(selectedSupplier,'email'):''}</div>
