@@ -157,11 +157,11 @@
     },
     {
       "path": "src/features/fiscal/PainelRazaoGeral.tsx",
-      "sha": "fac6a0461e7b5a4d39e9aff9233c71db46d1a5c5",
+      "sha": "27f7be58f0f54fb4b5fdcdb18dc88004e3cd8672",
       "autor": "FernandoSch",
-      "revisao": "REV-CONTROLADORIA-RAZAO-GERAL-GL-PAGINACAO-20261111-02 — quatro KPIs, saldo integral via RPC oficial, leitura paginada tenant-scoped, paginação, CSV e impressão Plastibor.",
-      "aprovadaEm": "2026-11-11",
-      "statusAprovacao": "INCREMENTO ADITIVO AUTORIZADO PELO PROPRIETÁRIO EM 2026-11-11; leitura contábil e RPC de saldo preservadas."
+      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
+      "aprovadaEm": "2026-10-30",
+      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
     {
       "path": "src/features/inventario/AuditoriaSaldos.tsx",
