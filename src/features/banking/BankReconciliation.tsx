@@ -20,6 +20,7 @@ import { AlertTriangle, CheckCircle, Download, Home, Landmark, List, ScrollText,
 import { supabase } from '../../lib/supabaseClient'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import LinkFieldCombobox, { type LinkOption } from '../../components/ui/LinkFieldCombobox'
+import BankAccountManager from './BankAccountManager'
 import { fetchAllPages } from '../../lib/supabasePagination'
 
 type Account = { id: string; codigo: string; nome: string; banco: string; saldo_inicial: number; ativo: boolean }
@@ -203,7 +204,7 @@ export default function BankReconciliation() {
     <div className="flex min-h-14 flex-wrap items-center gap-2 border-b border-[#D7E8EF] bg-white px-4 py-2">
       <label className="text-[10px] text-gray-500">Empresa</label><select className="h-7 w-40 rounded-md border border-gray-200 text-[11px]" disabled><option>Empresa atual</option></select>
       <label className="ml-1 text-[10px] text-gray-500">Data Limite</label><input type="date" value={date} onChange={(event) => setDate(event.target.value)} className="h-7 w-[110px] rounded-md border border-gray-200 px-1 text-[11px]" />
-      <label className="ml-1 text-[10px] text-gray-500">Banco/Diário</label><div className="w-40"><LinkFieldCombobox value={accountId} options={options} onChange={setAccountId} placeholder="Banco" /></div>
+      <label className="ml-1 text-[10px] text-gray-500">Banco/Diário</label><div className="w-40"><LinkFieldCombobox value={accountId} options={options} onChange={setAccountId} placeholder="Banco" /></div><BankAccountManager onCreated={() => void load()} />
       <label className="ml-1 text-[10px] text-gray-500">Status Lançamentos</label><select value={status} onChange={(event) => setStatus(event.target.value)} className="h-7 w-[140px] rounded-md border border-gray-200 px-1 text-[11px]"><option>TODOS</option><option>PENDENTE</option><option>CONCILIADO</option><option>IGNORADO</option></select>
       <button type="button" onClick={exportXlsx} className="ml-auto flex h-7 w-[110px] items-center justify-center gap-1 rounded-md bg-[#2D8DB8] text-[11px] font-semibold text-white"><Download size={12} />EXPORTAR XLSX</button>
     </div>
