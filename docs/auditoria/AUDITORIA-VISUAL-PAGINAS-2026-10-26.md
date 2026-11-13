@@ -360,3 +360,16 @@ Foi padronizada a página central `src/pages/Fiscal.tsx`, mantendo os fluxos e c
 | `src/pages/RHIndustrial.tsx` | `0b20ca8166da2d06b78b750a3704e1b63fe21c66` | ATUALIZADO E CONGELADO — validação estática aprovada; inspeção visual autenticada pendente | RH unificado por abas; removido título/atualização duplicados do shell; grids, controles, indicadores, tabelas e modais alinhados ao padrão premium. Carregamento e gravação RH preservados. |
 
 Esta entrega não fecha UI-070: páginas fiscais auxiliares e a homologação visual da tela central continuam pendentes. O inventário técnico gerado em `docs/erp-standardization/generated/ui-audit.json` é estático; heurísticas de altura não confirmam o tamanho real calculado no navegador.
+
+
+## Quinta passada — início de correção visual do módulo Compras (26/10/2026)
+
+**Escopo desta alteração:** `src/pages/ComprasRelatorios.tsx` e contrato de estilo compartilhado `src/styles/compras-compact.css`. A Central de Compras aprovada e os arquivos protegidos não foram modificados.
+
+| Tela/arquivo | Evidência encontrada | Ação desta rodada | Situação após alteração |
+|---|---|---|---|
+| Relatórios de Compras — `src/pages/ComprasRelatorios.tsx` | CSS local com título de 27px, botões/campos arredondados em 7px, cartões com sombra e espaçamentos maiores que o padrão compacto industrial; grids com comportamento próprio. | Adicionado contrato CSS escopado em `.buy-report` no stylesheet compartilhado: paleta institucional clara, campos/botões h-9, bordas compactas, tipografia e tabelas alinhadas, foco visível, responsividade e impressão. | **CORREÇÃO DE CÓDIGO REGISTRADA — validação de build e tela publicada ainda pendentes.** |
+| Central de Compras — `src/pages/ComprasCentral.tsx` | Revisão `APROV-COMPRAS-2026-10-24-R1`, arquivo protegido por hash. | Nenhuma alteração. Continua como referência congelada. | **PRESERVADA.** |
+| RFQ, requisições, pedidos, recebimentos e demais rotas de Compras | Há páginas com folhas de estilo e shells diferentes; a existência de tokens compactos não comprova uniformidade visual de ponta a ponta. | Permanecem no inventário de validação desta etapa; não marcar o módulo como concluído até revisar todas as rotas ativas, os fluxos e os gates. | **PENDENTE DE AUDITORIA E TESTES.** |
+
+**Validação exigida antes de concluir:** `verify:approved-ui-lock`, `verify:compras-rfq-premium-lock`, `type-check`, `lint:check`, `audit:all`, `verify:lazy-imports`, `build`, `verify:build` e `verify-routes`, além do resultado real de CI/Vercel. A alteração CSS não declara por si só que esses gates passaram nem que a produção foi atualizada.
