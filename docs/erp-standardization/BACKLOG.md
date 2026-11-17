@@ -368,3 +368,14 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Validação:** CI run `43074270811` passou type-check, lint, auditorias, imports lazy, build, rotas, contratos e lock oficial.
 
 **UI-010 permanece aberto:** faltam as demais telas comerciais, validação visual/autenticada e Preview Vercel após liberação do rate limit. As correções listadas não equivalem à homologação integral do módulo.
+
+
+## Execução da arquitetura SaaS multimercado — 2026-11-17
+
+- **Escopo aplicado:** `supabase/functions/erp-user-admin/index.ts` sincroniza os claims industriais confiáveis `erp_empresa_id`, `erp_role` e `erp_nivel_admin` no `app_metadata` nos fluxos de criação direta, convite, finalização do convite e atualização de perfil.
+- **Isolamento de contexto:** o helper mescla os metadados existentes, preservando chaves `salon_*`; não cria nem reutiliza contexto SALON a partir do contexto ERP.
+- **Compatibilidade:** as chaves legadas `empresa_id`, `role` e `is_master` foram mantidas nesta mudança para não quebrar consumidores existentes. RLS e o perfil operacional `erp_usuarios` continuam sendo a fonte de autorização/tenant no banco.
+- **Commit de código:** `d942e79a67aa110c4371108cc58a50f4f7c65dd1`.
+- **Validação estática do patch:** sete verificações no conteúdo confirmaram os três claims, os quatro fluxos e a preservação do objeto de metadados existente.
+- **[BLOQUEIO AMBIENTAL]:** não há checkout local/runner interativo nesta sessão; `npm run type-check`, testes Deno, `npm run audit:all`, `npm run verify:production` e testes autenticados/RLS não foram executados. O status Vercel do commit está `pending`; nenhum deploy ou homologação foi declarado.
+- **Pendências preservadas:** CMP-004, QA-040, UI-002 e demais itens do backlog permanecem abertos até validação completa; a matriz de contas Auth reais e o isolamento entre empresas ainda precisam de E2E no Supabase.
