@@ -74,6 +74,27 @@ function clean(value: unknown) {
     : null
 }
 
+/**
+ * Claims ERP são escritos exclusivamente no backend após validação do perfil e tenant.
+ * As chaves salon_* existentes são preservadas e nunca reutilizadas pelo contexto industrial.
+ */
+function withErpAuthorizationMetadata(
+  existing: Record<string, unknown> | null | undefined,
+  empresaId: string,
+  role: string,
+  nivelAdmin: number,
+): Record<string, unknown> {
+  return {
+    ...(existing ?? {}),
+    empresa_id: empresaId,
+    role,
+    is_master: false,
+    erp_empresa_id: empresaId,
+    erp_role: role,
+    erp_nivel_admin: nivelAdmin,
+  }
+}
+
 async function actorFor(authUserId: string) {
   const { data, error } = await admin.from('erp_usuarios').select('id,auth_user_id,empresa_id,nome,email,ativo,role,perfil,role_id,nivel_admin,is_master,deleted_at').eq('auth_user_id', authUserId).eq('ativo', true).is('deleted_at', null).maybeSingle()
   if (error) throw error
@@ -153,7 +174,12 @@ Deno.serve(async (req) => {
       const changed = await admin.auth.admin.updateUserById(authData.user.id, {
         password,
         user_metadata: { ...authData.user.user_metadata, nome, must_change_password: false, invited_user: true },
-        app_metadata: { ...authData.user.app_metadata, empresa_id: invite.empresa_id, role: invite.role, is_master: false },
+        app_metadata: withErpAuthorizationMetadata(
+          authData.user.app_metadata,
+          invite.empresa_id,
+          invite.role,
+          Number(invite.nivel_admin),
+        ),
       })
       if (changed.error) return json(req,{ error: changed.error.message }, 400)
 
@@ -275,7 +301,7 @@ Deno.serve(async (req) => {
           password: randomPassword(),
           email_confirm: true,
           user_metadata: { nome, invited_user: true, must_change_password: true, empresa_id: empresaId },
-          app_metadata: { empresa_id: empresaId, role: roleCode, is_master: false },
+          app_metadata: withErpAuthorizationMetadata(null, empresaId, roleCode, nivelAdmin),
         })
         if (created.error || !created.data.user) return json(req,{ error: created.error?.message || 'Não foi possível criar a identidade de acesso.' }, 400)
         authUserId = created.data.user.id
@@ -318,7 +344,13 @@ Deno.serve(async (req) => {
 
       const password = String(body.password || randomPassword())
       if (!passwordIsStrong(password)) return json(req,{ error: 'A senha deve ter pelo menos 12 caracteres e conter maiúsculas, minúsculas, números e símbolos.' }, 400)
-      const created = await admin.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { must_change_password: !body.password, empresa_id: empresaId } })
+      const created = await admin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: { must_change_password: !body.password, empresa_id: empresaId },
+        app_metadata: withErpAuthorizationMetadata(null, empresaId, roleCode, nivelAdmin),
+      })
       if (created.error || !created.data.user) return json(req,{ error: created.error?.message || 'Não foi possível criar o usuário Auth.' }, 400)
       authUserId = created.data.user.id
       temporaryPassword = body.password ? null : password
@@ -400,6 +432,24 @@ Deno.serve(async (req) => {
       }
       const { data: updated, error } = await admin.from('erp_usuarios').update(patch).eq('id', target.id).eq('empresa_id', target.empresa_id).select('id,empresa_id,nome,email,role,nivel_admin,ativo,role_id,setor_id,cargo_id,login_nome').single()
       if (error) throw error
+
+      const targetAuthId = target.auth_user_id || target.id
+      const targetAuth = await admin.auth.admin.getUserById(targetAuthId)
+      if (targetAuth.error || !targetAuth.data.user) {
+        return json(req,{ error: `Perfil atualizado, mas a identidade Auth não pôde ser sincronizada: ${targetAuth.error?.message || 'usuário não encontrado'}` }, 409)
+      }
+      const metadataUpdate = await admin.auth.admin.updateUserById(targetAuthId, {
+        app_metadata: withErpAuthorizationMetadata(
+          targetAuth.data.user.app_metadata,
+          updated.empresa_id,
+          updated.role,
+          Number(updated.nivel_admin),
+        ),
+      })
+      if (metadataUpdate.error) {
+        return json(req,{ error: `Perfil atualizado, mas os metadados de autorização Auth não foram sincronizados: ${metadataUpdate.error.message}` }, 409)
+      }
+
       const auditWarning = await writeAudit(actor, 'user.updated', target.id, target, updated, req, target.empresa_id)
       return json(req,{ ok: true, message: 'Usuário atualizado.', user: updated, audit_warning: auditWarning })
     }
