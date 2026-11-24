@@ -317,11 +317,11 @@
     },
     {
       "path": "src/pages/cadastro-produtos/FormFichaTecnica.tsx",
-      "sha": "1e9647f8c85e27143455d300326322871587f3ee",
+      "sha": "0930b0e72bc54284a36384c7738a6055ec656d61",
       "autor": "FernandoSch",
-      "revisao": "REV-CONTRATO-BANCO-20261103-01 — o SKU passa a ser gerado pela rotina erp_gerar_codigo (a existente no banco) e a prévia respeita digitos_produto",
-      "aprovadaEm": "2026-11-03",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-CADASTRO-PRODUTOS-PADRAO-OURO-20261124-02 — revisão visual e funcional consolidada; preserva rotas, geração oficial de SKU, isolamento por empresa e colunas confirmadas no schema.",
+      "aprovadaEm": "2026-11-24",
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-24; validação estática e funcional completa pendente."
     },
     {
       "path": "src/pages/cadastro-produtos/HelpFichaTecnica.tsx",
@@ -357,19 +357,19 @@
     },
     {
       "path": "src/pages/cadastro-produtos/ListagemProdutos.tsx",
-      "sha": "34b5a49ea60b62b926b9ff04ccb7ac2b5805459a",
+      "sha": "40809e23653dc741c8e2dc00ccd3b6ed5f14e81b",
       "autor": "FernandoSch",
-      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — o catálogo mestre parava em 2000 SKUs: produto acima disso sumia da listagem, da impressão e das opções de categoria/unidade/cliente. Leitura agora percorre todos os SKUs da empresa por paginação.",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-CADASTRO-PRODUTOS-PADRAO-OURO-20261124-03 — revisão visual e funcional consolidada; preserva rotas, geração oficial de SKU, isolamento por empresa e colunas confirmadas no schema.",
+      "aprovadaEm": "2026-11-24",
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-24; validação estática e funcional completa pendente."
     },
     {
       "path": "src/pages/cadastro-produtos/ModuloCadastroProdutos.tsx",
-      "sha": "71dd92112cbbdf9356aebd9dbfe2b965d111d5eb",
+      "sha": "8952c27e04a8cf62650452f387a537a34898ea12",
       "autor": "FernandoSch",
-      "revisao": "REV-PRODUTOS-TELA-UNICA-20261104-01 — vira a tela principal de /cadastros/produtos; abre a aba pela URL (?aba=) para absorver as rotas antigas de ficha técnica e de parâmetros",
-      "aprovadaEm": "2026-11-04",
-      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-04: \"MANDEI TELA NOVA E NAO FOI APLICADO\" e \"NAO DEIXAR VARIAS TELAS COM MESMA FUNCÇAO OU PARECIDADAS\""
+      "revisao": "REV-CADASTRO-PRODUTOS-PADRAO-OURO-20261124-01 — revisão visual e funcional consolidada; preserva rotas, geração oficial de SKU, isolamento por empresa e colunas confirmadas no schema.",
+      "aprovadaEm": "2026-11-24",
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-24; validação estática e funcional completa pendente."
     },
     {
       "path": "src/pages/cadastro-produtos/ParametrosCodigo.tsx",
