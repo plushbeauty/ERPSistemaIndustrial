@@ -141,7 +141,7 @@ export default function ComprasPedidoForm({ onCancel, onSaved, pedidoId }: { onC
 
       .compras-order-print{display:none}
       @media print{
-        @page{size:A4 portrait;margin:12mm}
+        @page{size:A4 landscape;margin:9mm}
         body *{visibility:hidden!important}
         .compras-order-print,.compras-order-print *{visibility:visible!important}
         .compras-order-print{display:block!important;position:absolute;inset:0;width:100%;font:11px Arial,sans-serif;color:#172b3a;background:#fff}
