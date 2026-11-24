@@ -32,6 +32,7 @@ import './styles/industrial-command-center-2026.css'
 import './styles/design-system-2026.css'
 import './styles/form-system-2026.css'
 import './styles/erp-mobile-first-20261104.css'
+import './styles/erp-global-button-standard.css' // padrão único de botões em todas as telas
 
 const AppBootstrap = lazyPage(() => import('./AppBootstrap'), 'AppBootstrap')
 
