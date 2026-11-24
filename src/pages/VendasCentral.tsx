@@ -242,10 +242,10 @@ export default function VendasCentral() {
               <thead>
                 <tr>
                   <th>Pedido interno</th><th>Pedido cliente</th><th>Cliente</th><th>Entrada pedido</th>
-                  <th>Código interno</th><th>Produto cliente</th><th>Data entrega</th><th>Descrição da peça</th>
-                  <th>Qtde pedido</th><th>Status pedido</th><th>PCP · produzido / planejar</th>
-                  <th>Acabamento / qualidade</th><th>Lote produção</th><th>Expedição · entrada / saída</th>
-                  <th>Número fiscal / NF</th><th className="sales-number">Total</th>
+                  <th>Estoque · status</th><th>Qtde em estoque</th><th>PCP</th><th>Qtde produzir</th><th>Data término PCP</th>
+                  <th>Acabamento</th><th>Data término acabamento</th><th>Lote produção</th><th>Expedição · entrada</th>
+                  <th>Expedição · saída</th><th>Número fiscal</th><th>Código interno</th><th>Produto cliente</th>
+                  <th>Data de entrega</th><th>Descrição da peça</th><th>Qtde pedido</th><th>Status</th><th className="sales-number">Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -255,22 +255,26 @@ export default function VendasCentral() {
                     <td>{order.pedido_cliente || '—'}</td>
                     <td><strong className="sales-client-name">{order.cliente?.nome ?? 'Cliente não identificado'}</strong>{order.cliente?.codigo && <small className="sales-secondary-line">Cód. {order.cliente.codigo}</small>}</td>
                     <td>{formatDate(order.data_entrada)}</td>
-                    <td>{(linesByOrder[order.id] ?? []).map((line, index) => <div key={index}>{line.codigo_interno || '—'}</div>)}</td>
-                    <td>{(linesByOrder[order.id] ?? []).map((line, index) => <div key={index}>{line.produto_cliente || '—'}</div>)}</td>
-                    <td><span className={isOverdue(order) ? 'sales-delivery sales-delivery--late' : 'sales-delivery'}>{formatDate(order.data_entrega_prometida)}{isOverdue(order) && <small>Atrasado</small>}</span></td>
-                    <td>{(linesByOrder[order.id] ?? []).map((line, index) => <div key={index}>{line.descricao}</div>)}</td>
-                    <td className="sales-number">{(linesByOrder[order.id] ?? []).map((line, index) => <div key={index}>{Number(line.quantidade || 0).toLocaleString('pt-BR')}</div>)}</td>
-                    <td><span className={`sales-status ${statusTone(order.status)}`}>{order.status}</span></td>
-                    <td>{(productionByOrder[order.id] ?? []).map((row) => <div key={row.id}>OP {row.numero_op}: {Number(row.quantidade_produzida || 0)} / {Number(row.quantidade_planejada || row.quantidade || 0)} · {row.status}<small className="sales-secondary-line">Término previsto: {formatDate(row.data_prevista)}</small></div>)}</td>
-                    <td>{(qualityByOrder[order.id] ?? []).map((row, index) => <div key={index}>{row.tipo}: {row.resultado} · reprovado {Number(row.quantidade_reprovada || 0)}</div>)}</td>
+                    <td>—</td><td>—</td>
+                    <td>{(productionByOrder[order.id] ?? []).map((op) => <div key={op.id}>{op.status || '—'}</div>)}</td>
+                    <td>{(productionByOrder[order.id] ?? []).map((op) => <div key={op.id}>{Math.max(0,Number(op.quantidade_planejada || op.quantidade || 0)-Number(op.quantidade_produzida || 0)).toLocaleString('pt-BR')}</div>)}</td>
+                    <td>{(productionByOrder[order.id] ?? []).map((op) => <div key={op.id}>{formatDate(op.data_prevista)}</div>)}</td>
+                    <td>{(qualityByOrder[order.id] ?? []).map((q,index) => <div key={index}>{q.resultado || q.tipo}</div>)}</td>
+                    <td>—</td><td>—</td>
                     <td>—</td>
-                    <td>{(expeditionByOrder[order.id] ?? []).map((row) => <div key={row.numero}>EXP {row.numero}: {row.status}<small className="sales-secondary-line">Saída: {formatDate(row.data_expedicao)}</small></div>)}</td>
-                    <td>{(fiscalByOrder[order.id] ?? []).map((row, index) => <div key={index}>{row.tipo}: {row.status}<small className="sales-secondary-line">Qtd. pendente: {Number(row.quantidade_pendente || 0)}</small></div>)}</td>
+                    <td>{(expeditionByOrder[order.id] ?? []).map((ex) => <div key={ex.numero}>{ex.status || '—'}</div>)}</td>
+                    <td>{(fiscalByOrder[order.id] ?? []).map((nf,index) => <div key={index}>{nf.tipo}: {nf.status}</div>)}</td>
+                    <td>{(linesByOrder[order.id] ?? []).map((line,index) => <div key={index}>{line.codigo_interno || '—'}</div>)}</td>
+                    <td>{(linesByOrder[order.id] ?? []).map((line,index) => <div key={index}>{line.produto_cliente || '—'}</div>)}</td>
+                    <td><span className={isOverdue(order) ? 'sales-delivery sales-delivery--late' : 'sales-delivery'}>{formatDate(order.data_entrega_prometida)}{isOverdue(order) && <small>Atrasado</small>}</span></td>
+                    <td>{(linesByOrder[order.id] ?? []).map((line,index) => <div key={index}>{line.descricao}</div>)}</td>
+                    <td className="sales-number">{(linesByOrder[order.id] ?? []).map((line,index) => <div key={index}>{Number(line.quantidade || 0).toLocaleString('pt-BR')}</div>)}</td>
+                    <td><span className={`sales-status ${statusTone(order.status)}`}>{order.status}</span></td>
                     <td className="sales-number sales-total">{currency.format(Number(order.total ?? 0))}</td>
                   </tr>
                 ))}
                 {!loading && visibleOrders.length === 0 && (
-                  <tr><td colSpan={16}>
+                  <tr><td colSpan={22}>
                     <div className="sales-empty-state">
                       <ClipboardList size={26} />
                       <strong>{query || filter !== 'todos' ? 'Nenhum pedido corresponde aos filtros.' : 'Nenhum pedido encontrado.'}</strong>
