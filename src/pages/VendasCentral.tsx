@@ -238,7 +238,7 @@ export default function VendasCentral() {
           </div>
 
           <div className="sales-table-scroll">
-            <table className="sales-orders-table">
+            <table className="sales-orders-table sales-orders-table--tracking">
               <thead>
                 <tr>
                   <th>Pedido interno</th><th>Pedido cliente</th><th>Cliente</th><th>Entrada pedido</th>
