@@ -590,19 +590,6 @@ export default function ProdutosVendasIndustrial(){
         <div role="note" style={{marginTop:10,padding:'12px 14px',border:'1px solid #d5dde7',borderLeft:'4px solid #E6A34A',borderRadius:10,background:'#fffaf0',fontSize:12,color:'#52606d',lineHeight:1.55}}>ATENÇÃO FISCAL: esta tela não consulta nem sugere códigos automaticamente. NCM, CEST, CST/CSOSN e CFOP precisam ser confirmados nas fontes oficiais e conforme o produto, regime tributário e operação. A validação atual verifica somente o formato dos códigos preenchidos; não confirma vigência, enquadramento nem imposto devido. As alíquotas são informativas e não substituem o motor fiscal.</div>
       </section>}
 
-            {tab==='tecnica'&&<section style={{padding:14}}>
-        <div className="product-responsive-grid" style={{gridTemplateColumns:'repeat(4,minmax(0,1fr))'}}>
-          <label style={label}>ESTOQUE ATUAL <span style={{fontSize:10,fontWeight:500,color:'#667085'}}>calculado</span><input value={fmt(form.estoque_atual)+' '+form.unidade} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
-          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>PONTO DE REPOSIÇÃO <HelpTip text={helpFor('Ponto de reposição')}/></span><input type="number" value={String(form.ponto_reposicao??0)} disabled={!editing} onChange={e=>update('ponto_reposicao',n(e.target.value))} title="Quantidade que dispara a necessidade de reposição; não é estoque atual." style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
-          <label style={label}>ESTOQUE MÁXIMO<input type="number" value={String(form.estoque_maximo??0)} disabled={!editing} onChange={e=>update('estoque_maximo',n(e.target.value))} style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
-          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>LOCALIZAÇÃO PADRÃO <HelpTip text={helpFor('Localização padrão')}/></span><select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione a localização</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
-        </div>
-        <div className="product-responsive-grid" style={{gridTemplateColumns:'repeat(4,minmax(0,1fr))',marginTop:12}}>
-          {field('VALIDADE LOTE [dias] [?]','lote_validade_dias','number')}{check('Controla lote','controla_lote')}{check('Controla série','controla_serie')}{check('Permite estoque negativo','permite_estoque_negativo')}
-        </div>
-        <h2 style={{fontSize:14,margin:'16px 0 8px',color:'#123B50',fontWeight:900,letterSpacing:'.03em'}}>MOVIMENTAÇÕES RECENTES</h2>
-        <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse'}}><thead><tr>{['Data','Tipo','Quantidade','Origem','Documento','Observação'].map(h=><th key={h} style={{textAlign:'left',padding:'10px 8px',borderBottom:'1px solid #d9e1ea',fontSize:12,fontWeight:800,color:'#344054'}}>{h}</th>)}</tr></thead><tbody>{movements.map(m=><tr key={m.id}><td style={{padding:'10px 8px',fontSize:13}}>{new Date(m.created_at).toLocaleString('pt-BR')}</td><td style={{padding:'10px 8px',fontSize:13}}>{m.tipo}</td><td style={{padding:'10px 8px',fontSize:13,fontWeight:900}}>{fmt(m.quantidade)}</td><td style={{padding:'10px 8px',fontSize:13}}>{m.origem||'—'}</td><td style={{padding:'10px 8px',fontSize:13}}>{m.documento||'—'}</td><td style={{padding:'10px 8px',fontSize:13}}>{m.observacao||'—'}</td></tr>)}{!movements.length&&emptyRow('Nenhuma movimentação registrada para este produto.',6)}</tbody></table></div>
-      </section>}
 
       {tab==='tecnica'&&<section style={{padding:14}}>
         <div className="product-responsive-grid" style={{gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))'}}>
@@ -648,6 +635,8 @@ export default function ProdutosVendasIndustrial(){
         </div>
       </nav>
     </section>}
+    {tab==='consulta'&&selectedId&&<section style={{...panel,padding:16,marginTop:12}}><h2 style={{fontSize:14,margin:'16px 0 8px',color:'#123B50',fontWeight:900,letterSpacing:'.03em'}}>MOVIMENTAÇÕES RECENTES</h2>
+        <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse'}}><thead><tr>{['Data','Tipo','Quantidade','Origem','Documento','Observação'].map(h=><th key={h} style={{textAlign:'left',padding:'10px 8px',borderBottom:'1px solid #d9e1ea',fontSize:12,fontWeight:800,color:'#344054'}}>{h}</th>)}</tr></thead><tbody>{movements.map(m=><tr key={m.id}><td style={{padding:'10px 8px',fontSize:13}}>{new Date(m.created_at).toLocaleString('pt-BR')}</td><td style={{padding:'10px 8px',fontSize:13}}>{m.tipo}</td><td style={{padding:'10px 8px',fontSize:13,fontWeight:900}}>{fmt(m.quantidade)}</td><td style={{padding:'10px 8px',fontSize:13}}>{m.origem||'—'}</td><td style={{padding:'10px 8px',fontSize:13}}>{m.documento||'—'}</td><td style={{padding:'10px 8px',fontSize:13}}>{m.observacao||'—'}</td></tr>)}{!movements.length&&emptyRow('Nenhuma movimentação registrada para este produto.',6)}</tbody></table></div></section>}
     </div>
     {tab==='consulta'&&selectedId ? (
       <section style={{...panel,margin:'0 12px 12px',padding:12}}>
