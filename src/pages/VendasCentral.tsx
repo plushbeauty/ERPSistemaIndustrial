@@ -42,9 +42,10 @@ type Order = {
 }
 
 type StatusFilter = 'todos' | 'rascunho' | 'andamento' | 'atrasados' | 'faturados' | 'cancelados'
-type ProductionStage = { id: string; pedido_venda_id: string; numero_op: string; status: string; quantidade: number; quantidade_planejada: number; quantidade_produzida: number }
+type ProductionStage = { id: string; pedido_venda_id: string; numero_op: string; status: string; quantidade: number; quantidade_planejada: number; quantidade_produzida: number; data_prevista: string | null }
+type OrderLine = { pedido_id: string; produto_id: string | null; descricao: string; quantidade: number; produto_cliente: string | null; codigo_interno: string | null }
 type QualityStage = { ordem_producao_id: string; tipo: string; resultado: string; quantidade_reprovada: number }
-type ExpeditionStage = { pedido_venda_id: string; numero: number; status: string; transportadora: string | null }
+type ExpeditionStage = { pedido_venda_id: string; numero: number; status: string; transportadora: string | null; data_expedicao: string | null }
 type FiscalStage = { pedido_venda_id: string; tipo: string; status: string; quantidade_pendente: number }
 
 const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -81,6 +82,7 @@ const filters: Array<{ id: StatusFilter; label: string; icon: typeof ClipboardLi
 
 export default function VendasCentral() {
   const [orders, setOrders] = useState<Order[]>([])
+  const [linesByOrder, setLinesByOrder] = useState<Record<string, OrderLine[]>>({})
   const [productionByOrder, setProductionByOrder] = useState<Record<string, ProductionStage[]>>({})
   const [qualityByOrder, setQualityByOrder] = useState<Record<string, QualityStage[]>>({})
   const [expeditionByOrder, setExpeditionByOrder] = useState<Record<string, ExpeditionStage[]>>({})
@@ -105,6 +107,18 @@ export default function VendasCentral() {
         .range(from, to))
       const orderRows = result as unknown as Order[]
       setOrders(orderRows)
+      const orderIdsForLines = orderRows.map((order) => order.id)
+      if (orderIdsForLines.length) {
+        const lineResult = await supabase.from('erp_pedidos_venda_itens').select('pedido_id,produto_id,descricao,quantidade,produto_cliente').eq('empresa_id', String(tenant.data)).in('pedido_id', orderIdsForLines)
+        if (lineResult.error) setError(`Pedidos carregados; itens não disponíveis: ${lineResult.error.message}`)
+        const rawLines = (lineResult.data ?? []) as Omit<OrderLine, 'codigo_interno'>[]
+        const productIds = [...new Set(rawLines.map((line) => line.produto_id).filter((value): value is string => Boolean(value)))]
+        const productResult = productIds.length ? await supabase.from('erp_produtos').select('id,codigo').eq('empresa_id', String(tenant.data)).in('id', productIds) : { data: [], error: null }
+        if (productResult.error) setError(`Pedidos carregados; códigos internos indisponíveis: ${productResult.error.message}`)
+        const codeByProduct = new Map(((productResult.data ?? []) as { id: string; codigo: string }[]).map((product) => [product.id, product.codigo]))
+        const lines = rawLines.map((line) => ({ ...line, codigo_interno: line.produto_id ? codeByProduct.get(line.produto_id) ?? null : null }))
+        setLinesByOrder(lines.reduce<Record<string, OrderLine[]>>((map, line) => { map[line.pedido_id] = [...(map[line.pedido_id] ?? []), line]; return map }, {}))
+      } else setLinesByOrder({})
       const orderIds = orderRows.map((order) => order.id)
       if (!orderIds.length) {
         setProductionByOrder({})
@@ -114,8 +128,8 @@ export default function VendasCentral() {
       } else {
         const companyId = String(tenant.data)
         const [productionResult, expeditionResult, fiscalResult] = await Promise.all([
-          supabase.from('erp_ordens_producao').select('id,pedido_venda_id,numero_op,status,quantidade,quantidade_planejada,quantidade_produzida').eq('empresa_id', companyId).in('pedido_venda_id', orderIds),
-          supabase.from('erp_expedicoes').select('pedido_venda_id,numero,status,transportadora').eq('empresa_id', companyId).in('pedido_venda_id', orderIds),
+          supabase.from('erp_ordens_producao').select('id,pedido_venda_id,numero_op,status,quantidade,quantidade_planejada,quantidade_produzida,data_prevista').eq('empresa_id', companyId).in('pedido_venda_id', orderIds),
+          supabase.from('erp_expedicoes').select('pedido_venda_id,numero,status,transportadora,data_expedicao').eq('empresa_id', companyId).in('pedido_venda_id', orderIds),
           supabase.from('erp_liberacoes_fiscais').select('pedido_venda_id,tipo,status,quantidade_pendente').eq('empresa_id', companyId).in('pedido_venda_id', orderIds),
         ])
         const productionRows = (productionResult.data ?? []) as ProductionStage[]
@@ -227,14 +241,11 @@ export default function VendasCentral() {
             <table className="sales-orders-table">
               <thead>
                 <tr>
-                  <th>Pedido</th>
-                  <th>Cliente</th>
-                  <th>Vendedor</th>
-                  <th>Data</th>
-                  <th>Entrega prevista</th>
-                  <th>Status</th>
-                  <th>Processo da peça</th>
-                  <th className="sales-number">Total</th>
+                  <th>Pedido interno</th><th>Pedido cliente</th><th>Cliente</th><th>Entrada pedido</th>
+                  <th>Código interno</th><th>Produto cliente</th><th>Data entrega</th><th>Descrição da peça</th>
+                  <th>Qtde pedido</th><th>Status pedido</th><th>PCP · produzido / planejar</th>
+                  <th>Acabamento / qualidade</th><th>Lote produção</th><th>Expedição · entrada / saída</th>
+                  <th>Número fiscal / NF</th><th className="sales-number">Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -264,7 +275,7 @@ export default function VendasCentral() {
                   </tr>
                 ))}
                 {!loading && visibleOrders.length === 0 && (
-                  <tr><td colSpan={8}>
+                  <tr><td colSpan={16}>
                     <div className="sales-empty-state">
                       <ClipboardList size={26} />
                       <strong>{query || filter !== 'todos' ? 'Nenhum pedido corresponde aos filtros.' : 'Nenhum pedido encontrado.'}</strong>
