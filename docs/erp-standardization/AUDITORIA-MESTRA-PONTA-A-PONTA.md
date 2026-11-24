@@ -109,7 +109,7 @@ Para cada tela, preencher:
 | Data | Área | Resultado | Evidência |
 |---|---|---|---|
 | 2026-11-24 | Baseline de auditoria | Aberta; backlog e referências lidos; erro de build conhecido | commit Vercel `04273e5`, deployment ERROR |
-| 2026-11-24 | Barra de acesso rápido | Em implementação | registrar commit após alteração |
-| 2026-11-24 | Comparativo de rotas | Não iniciado | nenhuma rota será marcada como aprovada sem teste |
+| 2026-11-24 | Barra Windows 11 de acesso rápido | Implementada faixa horizontal rolável com atalhos para pedidos, GED/Qualidade, PCP, Fiscal, pagar, receber e produtos; validar rotas e permissões de leitura em navegador | shell `81d61bf`; CSS `bef39ec` |
+| 2026-11-24 | Consolidação dos relatórios | Relatórios parciais UI-002/003/004/005, CMP-003 e inventário comparativo vazio removidos e consolidados nesta auditoria; telas de negócio e histórico de CI preservados | commits `d171070`, `2eb3be2`, `1040155`, `f19d6f3`, `efeaa3d`, `59c7ea3`; backlog `1b10e86` |\n| 2026-11-24 | Comparativo de rotas | Não iniciado | nenhuma rota será marcada como aprovada sem teste |
 
 **Regra final:** esta auditoria é um documento vivo de execução. Não escrever "tudo corrigido" até cada rota passar pelos critérios acima.
