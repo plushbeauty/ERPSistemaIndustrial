@@ -113,7 +113,8 @@ for (const page of pagePaths) {
     if (/^tempor/i.test(match[0]) && /regime_trabalho/.test(line) && line.toLocaleLowerCase('pt-BR').includes('temporário')) return false
     const before = t.slice(Math.max(0, (match.index ?? 0) - 160), match.index ?? 0)
     const legitimateEmploymentOption = match[0].toLocaleLowerCase('pt-BR') === 'temporário' && /options:\s*\[[\s\S]*$/i.test(before)
-    return !legitimateEmploymentOption && !/nenhum dado fict[ií]cio (?:foi )?(?:inclu[ií]do|criado)|n[aã]o cria dados fict[ií]cios/i.test(context)
+    const explicitNoFakeDataDisclaimer = /nenhum (?:dado|valor|valor ou gr[aá]fico) fict[ií]cio (?:foi )?(?:inclu[ií]do|criado)|n[aã]o cria dados fict[ií]cios|nada aqui usa localStorage ou dado fict[ií]cio/i.test(line)
+    return !legitimateEmploymentOption && !explicitNoFakeDataDisclaimer
   }).length
   const alias = /^import [A-Za-z0-9_]+ from ['"][.][/]\S+['"]\s*\nexport default [A-Za-z0-9_]+/m.test(t)
   pageAudit.push({page, buttons, controls, editWords, editActions, editButtons, largeControls, fakeMarkers, compact: t.includes('erp-compact'), alias})
