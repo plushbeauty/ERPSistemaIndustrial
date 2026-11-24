@@ -2,12 +2,12 @@
    Camada única de acabamento visual; não altera handlers, permissões ou ações.
    Mantém as cores funcionais existentes (primário, perigo, sucesso, navegação e tablet). */
 :root{
-  --erp-button-radius:8px;
-  --erp-button-height:36px;
+  --erp-button-radius:2px;
+  --erp-button-height:32px;
   --erp-button-font:11px;
-  --erp-button-weight:750;
-  --erp-button-border:#c9dce4;
-  --erp-button-focus:#48b7c7;
+  --erp-button-weight:650;
+  --erp-button-border:#cbd5e1;
+  --erp-button-focus:#2d8db8;
   --erp-button-shadow:0 1px 2px rgba(18,59,80,.07);
   --erp-button-shadow-hover:0 4px 12px rgba(18,59,80,.12);
 }
@@ -57,15 +57,15 @@
   gap:6px;
 }
 :where(button,[role="button"]):has(> svg:only-child){
-  width:36px;
-  min-width:36px;
+  width:32px;
+  min-width:32px;
   padding:6px!important;
 }
 /* Ações pequenas em grids permanecem compactas, mas não voltam ao estilo legado. */
 :where(td,th) :where(button,[role="button"]){
   min-height:30px;
   padding:5px 9px;
-  border-radius:7px!important;
+  border-radius:2px!important;
 }
 /* Tabs, navegação, seletores segmentados e controles de chão de fábrica:
    preservar dimensões e estado visual do componente, uniformizar somente acabamento. */
@@ -81,7 +81,7 @@
 /* Faixa de atalhos Windows 11 — consultas rápidas, separada do menu completo. */
 .erp-quick-access{display:flex;align-items:center;gap:7px;min-width:0;overflow-x:auto;overflow-y:hidden;padding:7px 14px;background:linear-gradient(180deg,#e7f1f5 0%,#edf5f7 100%);border-top:2px solid #48b7c7;border-bottom:1px solid #c8dce4;scrollbar-width:thin;scrollbar-color:#7fa8b8 #e4eef2}
 .erp-quick-access-caption{position:sticky;left:0;flex:0 0 auto;padding:0 8px 0 1px;color:#527184;font-size:9px;font-weight:800;letter-spacing:.08em;white-space:nowrap;background:#e7f1f5}
-.erp-quick-access-item{display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;gap:7px;min-height:34px;padding:6px 11px!important;border:1px solid #d4e2e9!important;border-radius:8px!important;background:#fff;color:#23495d;white-space:nowrap;font-size:10px;font-weight:700;box-shadow:0 1px 2px rgba(18,59,80,.05)}
+.erp-quick-access-item{display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;gap:7px;min-height:32px;padding:6px 11px!important;border:1px solid #d4e2e9!important;border-radius:2px!important;background:#fff;color:#23495d;white-space:nowrap;font-size:10px;font-weight:700;box-shadow:0 1px 2px rgba(18,59,80,.05)}
 .erp-quick-access-item:hover{background:#eaf7fa!important;border-color:#91cbd4!important;color:#123b50}
 .erp-quick-access-item.is-active{background:#dff3f6!important;border-color:#48b7c7!important;color:#123b50;box-shadow:inset 0 -2px #2d8db8}
 .erp-quick-access-item:focus-visible{outline:3px solid #48b7c780;outline-offset:2px}
