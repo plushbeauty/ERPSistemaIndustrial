@@ -407,6 +407,24 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         </div>
 
       </header>
+      <nav className="erp-quick-access" aria-label="Acesso rápido para consultas">
+        <span className="erp-quick-access-caption">ACESSO RÁPIDO</span>
+        {[
+          { label: 'Status de pedidos', route: '/pageprincipal/vendas/status', icon: ClipboardList },
+          { label: 'Documentos da Qualidade', route: '/pageprincipal/qualidade/documentos', icon: FileText },
+          { label: 'PCP · visualizar', route: '/pageprincipal/pcp', icon: Factory },
+          { label: 'Fiscal', route: '/pageprincipal/fiscal', icon: Scale },
+          { label: 'Contas a pagar', route: '/pageprincipal/financeiro/contas-pagar', icon: Wallet },
+          { label: 'Contas a receber', route: '/pageprincipal/financeiro/contas-receber', icon: Wallet },
+          { label: 'Produtos · pesquisar', route: '/pageprincipal/cadastros/produtos', icon: Boxes },
+        ].map(item => {
+          const Icon = item.icon
+          const active = pathname === item.route || pathname.startsWith(item.route + '/')
+          return <button key={item.route} type="button" className={`erp-quick-access-item${active ? ' is-active' : ''}`} onClick={() => go(item.route)} aria-current={active ? 'page' : undefined} title={item.label}>
+            <Icon size={15} aria-hidden="true" /><span>{item.label}</span>
+          </button>
+        })}
+      </nav>
       {(buildForaDaLinhagem || __SYNQRA_CARIMBO__.commit === 'desconhecido') && <p className="erp-windows-release-alert" role="alert">
         {buildForaDaLinhagem
           ? `PRODUÇÃO SERVINDO BUILD FORA DA LINHAGEM OFICIAL: este bundle veio da branch "${__SYNQRA_CARIMBO__.branch}" (${carimboBuild}), e a produção oficial é ${__SYNQRA_CARIMBO__.branchOficial}. As telas abaixo são ANTIGAS — não lance pedido, nota ou apontamento aqui.`
