@@ -79,8 +79,8 @@
 }
 
 /* Faixa de atalhos Windows 11 — consultas rápidas, separada do menu completo. */
-.erp-quick-access{display:flex;align-items:center;gap:7px;min-width:0;overflow-x:auto;overflow-y:hidden;padding:7px 14px;background:linear-gradient(180deg,#f8fcfd 0%,#eef5f8 100%);border-bottom:1px solid #d3e3ea;scrollbar-width:thin;scrollbar-color:#9db8c5 #eaf1f4}
-.erp-quick-access-caption{position:sticky;left:0;flex:0 0 auto;padding:0 8px 0 1px;color:#527184;font-size:9px;font-weight:800;letter-spacing:.08em;white-space:nowrap;background:#f6fafb}
+.erp-quick-access{display:flex;align-items:center;gap:7px;min-width:0;overflow-x:auto;overflow-y:hidden;padding:7px 14px;background:linear-gradient(180deg,#e7f1f5 0%,#edf5f7 100%);border-top:2px solid #48b7c7;border-bottom:1px solid #c8dce4;scrollbar-width:thin;scrollbar-color:#7fa8b8 #e4eef2}
+.erp-quick-access-caption{position:sticky;left:0;flex:0 0 auto;padding:0 8px 0 1px;color:#527184;font-size:9px;font-weight:800;letter-spacing:.08em;white-space:nowrap;background:#e7f1f5}
 .erp-quick-access-item{display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;gap:7px;min-height:34px;padding:6px 11px!important;border:1px solid #d4e2e9!important;border-radius:8px!important;background:#fff;color:#23495d;white-space:nowrap;font-size:10px;font-weight:700;box-shadow:0 1px 2px rgba(18,59,80,.05)}
 .erp-quick-access-item:hover{background:#eaf7fa!important;border-color:#91cbd4!important;color:#123b50}
 .erp-quick-access-item.is-active{background:#dff3f6!important;border-color:#48b7c7!important;color:#123b50;box-shadow:inset 0 -2px #2d8db8}
