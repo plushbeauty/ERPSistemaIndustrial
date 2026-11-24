@@ -251,7 +251,7 @@ export default function VendasCentral() {
               <tbody>
                 {pageOrders.map((order) => (
                   <tr key={order.id} className={isOverdue(order) ? "is-overdue" : ""}>
-                    <td><Link className="sales-order-number" to={`/vendas/pedido/${order.id}`}>PV-${String(order.numero).padStart(6, '0')}</Link></td>
+                    <td><Link className="sales-order-number" to={`/vendas/pedido/${order.id}`}>{`PV-${String(order.numero).padStart(6, '0')}`}</Link></td>
                     <td>{order.pedido_cliente || '—'}</td>
                     <td><strong className="sales-client-name">{order.cliente?.nome ?? 'Cliente não identificado'}</strong>{order.cliente?.codigo && <small className="sales-secondary-line">Cód. {order.cliente.codigo}</small>}</td>
                     <td>{formatDate(order.data_entrada)}</td>
