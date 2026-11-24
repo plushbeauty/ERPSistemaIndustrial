@@ -477,11 +477,11 @@
     },
     {
       "path": "src/pages/ComprasPedidoForm.tsx",
-      "sha": "60883abbf1d1a638488e5bd8d685561b49e9fabb",
+      "sha": "b698d719c5ff647734182efe204f90e6e602b644",
       "autor": "FernandoSch",
-      "revisao": "REV-COMPRAS-VALIDACAO-PEDIDO-20261108-01 — valida todas as linhas sem descarte silencioso, tenant e referências carregadas, NCM de 8 dígitos, valores não negativos e tributos apresentados sem somar ICMS em duplicidade REV-COMPRAS-PEDIDO-EDIT-PRINT-20261110-01 — edição por pedidoId com carregamento tenant-scoped, RPC atômica e impressão A4 Plastibor com número definitivo após gravação; validação funcional pendente. REV-COMPRAS-PEDIDO-FORM-40-48-AJUDA-20261110-01. REV-COMPRAS-PEDIDO-FORM-40-48-AJUDA-20261110-01.",
-      "aprovadaEm": "2026-11-08",
-      "statusAprovacao": "ALTERAÇÃO EM BRANCH DE AUDITORIA; NÃO LIBERADA PARA PRODUÇÃO."
+      "revisao": "REVISAO-VISUAL-GLOBAL-AUTORIZADA-20261124 — identidade visual industrial compacta; lógica e consultas mantidas; validação funcional pendente",
+      "aprovadaEm": "2026-11-24",
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-24; HASH SINCRONIZADO COM O CÓDIGO ATUAL; HOMOLOGAÇÃO VISUAL/FUNCIONAL PENDENTE"
     },
     {
       "path": "src/pages/ComprasRelatorios.tsx",
@@ -493,19 +493,19 @@
     },
     {
       "path": "src/pages/ComprasRequisicoes.tsx",
-      "sha": "65d1910400935f138a8e8dab639b898370280de5",
+      "sha": "dfc6b036ce9d308d8b680ff7cc7e5e5e031a9220",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-REQUISICOES-40-48-20261110-01",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "ALTERAÇÃO EM BRANCH DE AUDITORIA; NÃO LIBERADA PARA PRODUÇÃO."
+      "revisao": "REVISAO-VISUAL-GLOBAL-AUTORIZADA-20261124 — identidade visual industrial compacta; lógica e consultas mantidas; validação funcional pendente",
+      "aprovadaEm": "2026-11-24",
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-24; HASH SINCRONIZADO COM O CÓDIGO ATUAL; HOMOLOGAÇÃO VISUAL/FUNCIONAL PENDENTE"
     },
     {
       "path": "src/pages/ComprasRFQ.tsx",
-      "sha": "1e5ce1c692fda69f69e2e1649c6c6b215c2aab12",
+      "sha": "e2ad42183ad7598f0b687e7d35e3e85ef212c277",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria REV-COMPRAS-RFQ-CAMPOS-PERSISTIDOS-20261110-01 — proposta do fornecedor restrita a valor_total, prazo_dias, condicao_pagamento, validade e observacoes, sem campos de persistência inexistente. REV-COMPRAS-RFQ-40-48-20261110-01",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "ALTERAÇÃO EM BRANCH DE AUDITORIA; NÃO LIBERADA PARA PRODUÇÃO."
+      "revisao": "REVISAO-VISUAL-GLOBAL-AUTORIZADA-20261124 — identidade visual industrial compacta; lógica e consultas mantidas; validação funcional pendente",
+      "aprovadaEm": "2026-11-24",
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-24; HASH SINCRONIZADO COM O CÓDIGO ATUAL; HOMOLOGAÇÃO VISUAL/FUNCIONAL PENDENTE"
     },
     {
       "path": "src/pages/ComprasSolicitacaoManual.tsx",
@@ -1061,11 +1061,11 @@
     },
     {
       "path": "src/pages/NovoPedido.tsx",
-      "sha": "ae54c4c2c4660fe9660db74efd0c2c4ae85302d3",
+      "sha": "35e26cb1ab2669438a7ff216ff94c799fbb32a1c",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REVISAO-VISUAL-GLOBAL-AUTORIZADA-20261124 — identidade visual industrial compacta; lógica e consultas mantidas; validação funcional pendente",
+      "aprovadaEm": "2026-11-24",
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-24; HASH SINCRONIZADO COM O CÓDIGO ATUAL; HOMOLOGAÇÃO VISUAL/FUNCIONAL PENDENTE"
     },
     {
       "path": "src/pages/OperacaoIndustrial.tsx",
@@ -1261,11 +1261,11 @@
     },
     {
       "path": "src/pages/ProdutosVendasIndustrial.tsx",
-      "sha": "e1675b1679a560e455ca63efa925c4f1d5c4c9fd",
+      "sha": "3e2fec6e6a77b9fc6bf8aec91ce8b43129755a46",
       "autor": "FernandoSch",
-      "revisao": "REV-COLUNAS-BANCO-20261104-02 — a trilha de auditoria do produto consultava company_id/entity e uma coluna 'module' inexistente em erp_audit_logs; contrato oficial é empresa_id/entity_type. Leitura corrigida e campo não usado removido da seleção.",
-      "aprovadaEm": "2026-11-04",
-      "statusAprovacao": "CORRECAO DE DEFEITO DE LEITURA PARCIAL APLICADA POR ORDEM DO PROPRIETARIO EM 2026-11-04 (\"verificar todas as pendencias e arrumar\")"
+      "revisao": "REVISAO-VISUAL-GLOBAL-AUTORIZADA-20261124 — identidade visual industrial compacta; lógica e consultas mantidas; validação funcional pendente",
+      "aprovadaEm": "2026-11-24",
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-24; HASH SINCRONIZADO COM O CÓDIGO ATUAL; HOMOLOGAÇÃO VISUAL/FUNCIONAL PENDENTE"
     },
     {
       "path": "src/pages/qualidade/CEP.tsx",
@@ -1725,11 +1725,11 @@
     },
     {
       "path": "src/pages/VendasRelatorios.tsx",
-      "sha": "7c7b55ebddc49a9c5c63a98b7f212f509c0c87e3",
+      "sha": "94c49987f6edda0c8f9f8422f00f76b310006b9a",
       "autor": "FernandoSch",
-      "revisao": "REV-VENDAS-RELATORIOS-PERIODO-PAGINACAO-20261111-03 — busca, status, período de entrada, paginação de 50 linhas e impressão de todos os resultados filtrados; preserva paginação completa da consulta e escopo empresa_id.",
-      "aprovadaEm": "2026-11-11",
-      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO NO COMANDO MESTRE DE 2026-11-11; pendente de CI e validação visual"
+      "revisao": "REVISAO-VISUAL-GLOBAL-AUTORIZADA-20261124 — identidade visual industrial compacta; lógica e consultas mantidas; validação funcional pendente",
+      "aprovadaEm": "2026-11-24",
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-24; HASH SINCRONIZADO COM O CÓDIGO ATUAL; HOMOLOGAÇÃO VISUAL/FUNCIONAL PENDENTE"
     },
     {
       "path": "src/pages/VendasTablet.tsx",
