@@ -56,12 +56,13 @@ type Movement={id:string;tipo:string;quantidade:number;origem:string|null;docume
 type Defect={id:string;ordem_producao_id:string;defeito:string;quantidade:number;observacao:string|null;created_at:string}
 type Audit={id:string;action:string;old_data:Record<string,unknown>|null;new_data:Record<string,unknown>|null;created_at:string}
 type Attachment={id:string;nome_arquivo:string;storage_path:string;mime_type:string|null;tamanho_bytes:number|null;created_at:string}
-type Tab='tecnica'|'fiscal'
+type Tab='tecnica'|'fiscal'|'consulta'
 type FormData=Omit<Product,'id'|'empresa_id'>
 
 const tabItems:Array<[Tab,string,typeof Boxes]>=[
   ['tecnica','FICHA TÉCNICA MESTRE',Boxes],
-  ['fiscal','INTELIGÊNCIA FISCAL',FileText]
+  ['fiscal','INTELIGÊNCIA FISCAL',FileText],
+  ['consulta','CONSULTA',Search]
 ]
 const empty=():FormData=>({
   codigo:'',nome:'',descricao:null,descricao_resumida:null,codigo_barras:null,grupo:null,subgrupo:null,marca:null,categoria:'Produto acabado',unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',
@@ -79,9 +80,9 @@ const money=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency
 const n=(v:unknown)=>Number(v??0)||0
 const fmt=(v:unknown)=>n(v).toLocaleString('pt-BR',{maximumFractionDigits:3})
 const panel:CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:12,boxShadow:'0 2px 7px rgba(18,59,80,.07),0 1px 2px rgba(16,24,40,.04)'}
-const input:CSSProperties={width:'100%',height:40,border:'1px solid #c4ced9',borderRadius:8,padding:'0 12px',fontSize:14,background:'#fff',boxSizing:'border-box',minWidth:0}
+const input:CSSProperties={width:'100%',height:36,border:'1px solid #c4ced9',borderRadius:8,padding:'0 12px',fontSize:14,background:'#fff',boxSizing:'border-box',minWidth:0}
 const label:CSSProperties={display:'grid',gap:5,minWidth:0,fontSize:11,lineHeight:'13px',fontWeight:800,color:'#344054',textTransform:'uppercase',overflowWrap:'anywhere'}
-const btn=(kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:7,height:40,padding:'0 14px',borderRadius:8,border:'1px solid '+(kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#B8CDD5'),background:kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#F4FBFD',color:kind==='primary'||kind==='danger'?'#fff':'#123B50',fontSize:13,fontWeight:800,textTransform:'uppercase',cursor:'pointer',whiteSpace:'nowrap'})
+const btn=(kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:7,height:36,padding:'0 14px',borderRadius:8,border:'1px solid '+(kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#B8CDD5'),background:kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#F4FBFD',color:kind==='primary'||kind==='danger'?'#fff':'#123B50',fontSize:13,fontWeight:800,textTransform:'uppercase',cursor:'pointer',whiteSpace:'nowrap'})
 const emptyRow=(text:string,col=7)=><tr><td colSpan={col} style={{padding:22,textAlign:'center',color:'#667085'}}>{text}</td></tr>
 const PRINT_ROUTE='/pageprincipal/cadastros/produtos/imprimir'
 
@@ -377,7 +378,7 @@ export default function ProdutosVendasIndustrial(){
       </main>
     )
   }
-  return <><main className="product-master-screen" style={{maxWidth:1600,margin:'0 auto',color:'#172033',fontFamily:'Arial,sans-serif',background:'#fff'}}>
+  return <><main className="product-master-screen" style={{maxWidth:1440,margin:'0 auto',padding:20,color:'#172033',fontFamily:'Arial,sans-serif',background:'#fff'}}>
     <style>{`
       .product-master-screen label{min-width:0}
       /* Os edits preenchem a célula do grid; o tamanho semântico define apenas o alinhamento do conteúdo. */
@@ -391,40 +392,40 @@ export default function ProdutosVendasIndustrial(){
       @media print{body *{visibility:hidden!important}.product-master-screen,.product-master-screen *{visibility:visible!important}.product-master-screen{position:absolute!important;inset:0!important;width:100%!important;max-width:none!important;background:#fff!important}.product-master-screen .product-workspace{display:block!important;margin:0!important}.product-master-screen .product-list-panel,.product-master-screen header button,.product-master-screen input[type=file],.product-master-screen .product-screen-footer button{display:none!important}.product-master-screen .product-editor-panel{border:0!important}.product-master-screen .product-form-section{break-inside:avoid}.product-master-screen .product-tabs{display:none!important}}
       .product-master-screen button:focus-visible{outline:2px solid #2D8DB8;outline-offset:1px}
       .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{max-width:100%;box-sizing:border-box}
-      .product-master-screen .product-form-section{margin:0 0 12px;padding:12px;background:#fff;border:1px solid #d5dde7;border-radius:12px;box-shadow:0 2px 6px rgba(18,59,80,.055),0 1px 2px rgba(16,24,40,.035);min-width:0}
+      .product-master-screen .product-form-section{margin:0 0 20px;padding:16px;background:#fff;border:1px solid #d5dde7;border-radius:12px;box-shadow:0 2px 6px rgba(18,59,80,.055),0 1px 2px rgba(16,24,40,.035);min-width:0}
       .product-master-screen .product-form-section:last-child{margin-bottom:0}
       .product-master-screen .product-form-section-title{margin:-1px -1px 12px;padding:10px 12px;background:linear-gradient(180deg,#f0f8fb 0%,#e7f2f7 100%);border-left:4px solid #2D8DB8;color:#123B50;font-size:13px;line-height:18px;font-weight:900;letter-spacing:.04em}
       /* Grid de 12 colunas: campos curtos ocupam 3, campos longos podem ocupar 6 ou 12. */
-      .product-master-screen .product-editor-panel form{width:100%;max-width:1560px;margin-inline:auto;min-width:0}
-      .product-master-screen .product-form-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px 14px;align-items:start;justify-items:stretch}
+      .product-master-screen .product-editor-panel form{width:100%;max-width:1440px;margin-inline:auto;min-width:0}
+      .product-master-screen .product-form-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px 16px;align-items:start;justify-items:stretch}
       .product-master-screen .product-form-grid>*{grid-column:span 3;min-width:0;align-self:start}
       .product-master-screen .product-form-grid .product-unit-row{grid-column:span 9}
-      .product-master-screen .product-general-row>*:nth-child(3),.product-master-screen .product-general-row>*:nth-child(4){grid-column:span 6!important}
-      .product-master-screen .product-form-grid label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(14px,auto) 40px;align-content:start;gap:5px;min-width:0}
-      .product-master-screen .product-form-grid label>input,.product-master-screen .product-form-grid label>select,.product-master-screen .product-form-grid label>textarea{min-width:0;width:100%;height:40px;box-sizing:border-box;max-width:100%}
+      .product-master-screen 
+      .product-master-screen .product-form-grid label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(14px,auto) 36px;align-content:start;gap:5px;min-width:0}
+      .product-master-screen .product-form-grid label>input,.product-master-screen .product-form-grid label>select,.product-master-screen .product-form-grid label>textarea{min-width:0;width:100%;height:36px;box-sizing:border-box;max-width:100%}
       .product-master-screen .product-form-grid label>span{display:flex;align-items:center;max-width:100%;min-height:14px;line-height:13px;white-space:normal;overflow-wrap:anywhere;word-break:normal}
       .product-master-screen .product-cost-stack{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;min-width:0}
-      .product-master-screen .product-cost-stack label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(14px,auto) 40px;gap:5px;align-content:start;min-width:0}
-      .product-master-screen .product-status-field{display:flex;align-items:center;align-self:end;gap:12px;min-height:40px;flex-wrap:wrap;border:1px solid #d5dde7;border-radius:8px;padding:8px 10px;background:#f8fbfd;box-sizing:border-box;min-width:0}
+      .product-master-screen .product-cost-stack label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(14px,auto) 36px;gap:5px;align-content:start;min-width:0}
+      .product-master-screen .product-status-field{display:flex;align-items:center;align-self:end;gap:12px;min-height:36px;flex-wrap:wrap;border:1px solid #d5dde7;border-radius:8px;padding:8px 10px;background:#f8fbfd;box-sizing:border-box;min-width:0}
       .product-master-screen .product-status-field>span{font-size:11px;font-weight:800;color:#344054;text-transform:uppercase}
       .product-master-screen .product-status-field label{display:flex;align-items:center;gap:6px;white-space:normal;font-size:12px;font-weight:700;min-width:0}
-      .product-master-screen .product-workspace{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"editor" "list";gap:12px;margin:12px auto;max-width:1560px;padding:0 10px;align-items:start}
+      .product-master-screen .product-workspace{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"editor";gap:12px;margin:0 auto;max-width:1440px;padding:0;align-items:start}
       .product-master-screen .product-editor-panel{grid-area:editor;margin:0!important;min-width:0}
-      .product-master-screen .product-list-panel{grid-area:list;margin:0!important;min-width:0;position:static}
+       .product-master-screen .product-list-panel{grid-area:list;margin:0!important;min-width:0;position:static}
       .product-master-screen .product-list-panel table{min-width:0!important;table-layout:fixed}
       .product-master-screen .product-list-panel th,.product-master-screen .product-list-panel td{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .product-master-screen .product-list-panel tbody tr:hover{background:#edf7fb!important}
       .product-master-screen .product-tabs{display:flex;align-items:stretch;gap:4px;overflow-x:auto;overscroll-behavior-x:contain}
       .product-master-screen .product-tabs button{flex:0 0 auto;min-height:46px}
-      .product-master-screen .product-responsive-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;align-items:start}
+      .product-master-screen .product-responsive-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 16px;align-items:start}
       .product-master-screen .product-responsive-grid>*{min-width:0}
       .product-master-screen .product-responsive-grid label{align-content:start;grid-template-rows:minmax(14px,auto) 40px;gap:5px}
       .product-master-screen .product-responsive-grid label>input,.product-master-screen .product-responsive-grid label>select{width:100%;min-width:0}      @media(max-width:1250px){.product-master-screen .product-workspace{grid-template-columns:minmax(0,1fr);gap:8px;margin:8px auto;padding:0 6px}}
       @media(max-width:1050px){.product-master-screen .product-workspace{grid-template-columns:minmax(0,1fr);grid-template-areas:"editor" "list"}.product-master-screen .product-list-panel{position:static}}
       @media(min-width:1051px){.product-master-screen .product-list-panel>div:last-child{max-height:420px;overflow:auto}}
-      @media(max-width:1150px){.product-master-screen .product-form-grid{grid-template-columns:repeat(12,minmax(0,1fr))}.product-master-screen .product-form-grid>*{grid-column:span 4}.product-master-screen .product-form-grid .product-unit-row{grid-column:span 12}.product-master-screen .product-general-row>*:nth-child(3),.product-master-screen .product-general-row>*:nth-child(4){grid-column:span 8!important}.product-master-screen .product-responsive-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
-      .product-master-screen .product-unit-row{grid-column:span 3;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start;min-width:0}.product-master-screen .product-unit-row label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(14px,auto) 40px;align-content:start;gap:5px}.product-master-screen .product-unit-row label>span{min-height:14px;line-height:13px}.product-master-screen .product-unit-row label>select{width:100%;min-width:0}.product-master-screen .product-photo-card{cursor:pointer;transition:border-color .12s,background .12s;border-radius:12px}.product-master-screen .product-photo-card:hover{border-color:#2D8DB8!important;background:#edf7fb!important}.product-master-screen .product-combo-wrap{display:grid;grid-template-columns:minmax(0,1fr) 40px;gap:6px;align-items:end;min-width:0}
-      .product-master-screen .product-plus-button{height:40px;width:40px;border:1px solid #2D8DB8;background:#eaf4f8;color:#123B50;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;cursor:pointer}
+      @media(max-width:1150px){.product-master-screen .product-form-grid{grid-template-columns:repeat(12,minmax(0,1fr))}.product-master-screen .product-form-grid>*{grid-column:span 4}.product-master-screen .product-form-grid .product-unit-row{grid-column:span 12}.product-master-screen .product-master-screen .product-responsive-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+      .product-master-screen .product-unit-row{grid-column:span 3;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 16px;align-items:start;min-width:0}.product-master-screen .product-unit-row label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(14px,auto) 40px;align-content:start;gap:5px}.product-master-screen .product-unit-row label>span{min-height:14px;line-height:13px}.product-master-screen .product-unit-row label>select{width:100%;min-width:0}.product-master-screen .product-photo-card{cursor:pointer;transition:border-color .12s,background .12s;border-radius:12px}.product-master-screen .product-photo-card:hover{border-color:#2D8DB8!important;background:#edf7fb!important}.product-master-screen .product-combo-wrap{display:grid;grid-template-columns:minmax(0,1fr) 36px;gap:6px;align-items:end;min-width:0}
+      .product-master-screen .product-plus-button{height:36px;width:36px;border:1px solid #2D8DB8;background:#eaf4f8;color:#123B50;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;cursor:pointer}
       .product-master-screen .product-inline-create{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) auto;gap:8px;padding:10px;margin-top:6px;background:#f4fbfd;border:1px solid #c8dfe8;border-radius:10px;align-items:end}
       @media(max-width:700px){.product-master-screen .product-form-grid{grid-template-columns:repeat(12,minmax(0,1fr))}.product-master-screen .product-form-grid>*{grid-column:span 6!important}.product-master-screen .product-form-grid .product-unit-row{grid-column:span 12!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.product-master-screen .product-unit-row label{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(14px,auto) 40px;gap:5px}.product-master-screen .product-general-row>*:nth-child(3),.product-master-screen .product-general-row>*:nth-child(4){grid-column:span 12!important}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 12!important}.product-master-screen .product-responsive-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-responsive-grid{row-gap:12px}.product-master-screen .product-tabs button{padding:10px 12px!important;font-size:12px!important}.product-master-screen .product-responsive-grid>*{grid-column:span 1!important}.product-master-screen .product-inline-create{grid-template-columns:1fr}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 1!important}}
     `}</style>
@@ -477,31 +478,35 @@ export default function ProdutosVendasIndustrial(){
         <section className="product-form-section" aria-label="Identificação do produto">
           <h3 className="product-form-section-title">IDENTIFICAÇÃO DO PRODUTO</h3>
           <div className="product-form-grid product-general-row">
-            {field('Código *','codigo','text',1,true)}
-            {field('Código de barras','codigo_barras','text')}
-            {field('Descrição *','nome','text',2)}
-            {field('Descrição resumida [?]','descricao_resumida','text',2)}
-            <div><label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>GRUPO <HelpTip text={helpFor('Grupo')}/></span><div className="product-combo-wrap"><input role="combobox" aria-autocomplete="list" list="product-group-options" value={String(form.grupo||'')} disabled={!editing} onChange={e=>update('grupo',e.target.value||null)} placeholder="Selecione ou digite um grupo..." autoComplete="off" style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id="product-group-options">{groups.map(g=><option key={g.id} value={g.nome} label={g.codigo+' • '+g.nome}/>)}</datalist><button type="button" className="product-plus-button" title="Adicionar o nome digitado como novo grupo" aria-label="Adicionar o nome digitado como novo grupo" disabled={!editing||busy} onClick={()=>void addGroup()}><Plus size={15}/></button></div></label></div>
-            <div><label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>SUBGRUPO <HelpTip text={helpFor('Subgrupo')}/></span><div className="product-combo-wrap"><input list="product-subgroup-options" value={String(form.subgrupo||'')} disabled={!editing} onChange={e=>update('subgrupo',e.target.value||null)} placeholder="Selecione ou digite..." autoComplete="off" style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id="product-subgroup-options">{subgroupCatalog.map(s=><option key={s} value={s}/>)}</datalist><button type="button" className="product-plus-button" title="Adicionar subgrupo às opções" aria-label="Adicionar subgrupo às opções" disabled={!editing} onClick={addSubgroupOption}><Plus size={15}/></button></div></label><div style={{fontSize:11,color:'#667085',marginTop:4,lineHeight:1.4}}>Digite um novo nome e clique +; ele entra no catálogo ao salvar o produto.</div></div>
+            {field('Código *','codigo','text',2/3,true)}
+            {field('Código de barras','codigo_barras','text',1)}
+            {field('Descrição *','nome','text',7/3)}
+            {field('Descrição resumida [?]','descricao_resumida','text',4/3)}
+            <div style={{gridColumn:'span 4'}}><label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>GRUPO <HelpTip text={helpFor('Grupo')}/></span><div className="product-combo-wrap"><input role="combobox" aria-autocomplete="list" list="product-group-options" value={String(form.grupo||'')} disabled={!editing} onChange={e=>update('grupo',e.target.value||null)} placeholder="Selecione ou digite um grupo..." autoComplete="off" style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id="product-group-options">{groups.map(g=><option key={g.id} value={g.nome} label={g.codigo+' • '+g.nome}/>)}</datalist><button type="button" className="product-plus-button" title="Adicionar o nome digitado como novo grupo" aria-label="Adicionar o nome digitado como novo grupo" disabled={!editing||busy} onClick={()=>void addGroup()}><Plus size={15}/></button></div></label></div>
+            <div style={{gridColumn:'span 4'}}><label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>SUBGRUPO <HelpTip text={helpFor('Subgrupo')}/></span><div className="product-combo-wrap"><input list="product-subgroup-options" value={String(form.subgrupo||'')} disabled={!editing} onChange={e=>update('subgrupo',e.target.value||null)} placeholder="Selecione ou digite..." autoComplete="off" style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id="product-subgroup-options">{subgroupCatalog.map(s=><option key={s} value={s}/>)}</datalist><button type="button" className="product-plus-button" title="Adicionar subgrupo às opções" aria-label="Adicionar subgrupo às opções" disabled={!editing} onClick={addSubgroupOption}><Plus size={15}/></button></div></label><div style={{fontSize:11,color:'#667085',marginTop:4,lineHeight:1.4}}>Digite um novo nome e clique +; ele entra no catálogo ao salvar o produto.</div></div>
             {field('Marca [?]','marca')}
+            {select('Tipo de produto','categoria',[['Produto acabado','Produto acabado'],['MATÉRIA-PRIMA','MATÉRIA-PRIMA'],['PRENSADOS','PRENSADOS'],['INJETADOS','INJETADOS'],['ALMOXARIFADO','ALMOXARIFADO'],['MATERIAL DE ESCRITÓRIO','MATERIAL DE ESCRITÓRIO'],['PRODUTOS DE LIMPEZA','PRODUTOS DE LIMPEZA'],['Componente','Componente'],['Insumo','Insumo']])}
+            <div className="product-status-field" style={{gridColumn:'span 6',alignItems:'center',paddingTop:8}}><span>SITUAÇÃO</span>{check('Fabricado','fabricado')}{check('Comprado','comprado')}{check('Revenda','revenda')}</div>
           </div>
         </section>
 
         <section className="product-form-section" aria-label="Unidades e características físicas">
           <h3 className="product-form-section-title">UNIDADES E CARACTERÍSTICAS FÍSICAS</h3>
           <div className="product-form-grid product-measure-row">
-            <div className="product-unit-row">
-            {select('Und. estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
-            {select('Und. compra','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
-            {select('Und. venda','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
+            <div className="product-unit-row" style={{gridColumn:'span 9'}}>
+              {select('Und. estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
+              {select('Und. compra','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
+              {select('Und. venda','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
             </div>
-            {select('Tipo de produto','categoria',[['Produto acabado','Produto acabado'],['MATÉRIA-PRIMA','MATÉRIA-PRIMA'],['PRENSADOS','PRENSADOS'],['INJETADOS','INJETADOS'],['ALMOXARIFADO','ALMOXARIFADO'],['MATERIAL DE ESCRITÓRIO','MATERIAL DE ESCRITÓRIO'],['PRODUTOS DE LIMPEZA','PRODUTOS DE LIMPEZA'],['Componente','Componente'],['Insumo','Insumo']],3)}
-            <label style={{...label,gridColumn:'span 3'}}>Fornecedor padrão<select value={form.fornecedor_padrao_id||''} disabled={!editing} onChange={e=>update('fornecedor_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{suppliers.map(s=><option value={s.id} key={s.id}>{s.nome_fantasia||s.razao_social}</option>)}</select></label>
-            {field('Peso líquido (kg)','peso_liquido','number')}
-            {field('Peso bruto (kg)','peso_bruto','number')}
-            {field('Comprimento (mm)','comprimento_mm','number')}
-            {field('Largura (mm)','largura_mm','number')}
-            {field('Altura (mm)','altura_mm','number')}
+            <label style={{...label,gridColumn:'span 3'}}>Localização padrão<select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione a localização</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
+          </div>
+          <div className="product-responsive-grid" style={{gridTemplateColumns:'repeat(6,minmax(0,1fr))',marginTop:12}}>
+            <label style={{...label,gridColumn:'span 2'}}>Fornecedor padrão<select value={form.fornecedor_padrao_id||''} disabled={!editing} onChange={e=>update('fornecedor_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{suppliers.map(s=><option value={s.id} key={s.id}>{s.nome_fantasia||s.razao_social}</option>)}</select></label>
+            {field('Peso líquido (kg)','peso_liquido','number',2)}
+            {field('Peso bruto (kg)','peso_bruto','number',2)}
+            {field('Comprimento (mm)','comprimento_mm','number',2)}
+            {field('Largura (mm)','largura_mm','number',2)}
+            {field('Altura (mm)','altura_mm','number',2)}
           </div>
         </section>
 
@@ -527,20 +532,22 @@ export default function ProdutosVendasIndustrial(){
           </div>
         </section>
 
-        <section className="product-form-section" aria-label="Custos e comercialização">
-          <h3 className="product-form-section-title">CUSTOS E COMERCIALIZAÇÃO</h3>
-          <div className="product-form-grid product-commercial-row">
-            <div className="product-cost-stack">
-              {field('Custo médio (calculado)','custo_medio','number',1,true)}
-              {field('Último custo (calculado)','custo_ultimo','number',1,true)}
-              <div style={{fontSize:12,lineHeight:1.4,color:'#526a75',padding:'4px 2px'}}>Automático: entradas de estoque/recebimento de NF-e com custo unitário. Não digitar.</div>
-            </div>
-            <label className="product-observations-field" style={{...label,gridColumn:'span 6'}}><span style={{display:'inline-flex',alignItems:'center'}}>OBSERVAÇÕES <HelpTip text={helpFor('Observações')}/></span><textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} title="Informações complementares do produto; não substitui a ficha de processo." style={{...input,height:88,padding:'10px 12px',resize:'vertical',fontSize:14}}/></label>
+        <section className="product-form-section" aria-label="Custos, comercialização e estoque">
+          <h3 className="product-form-section-title">CUSTOS, COMERCIALIZAÇÃO E ESTOQUE</h3>
+          <div className="product-form-grid">
+            {field('Custo médio (calculado)','custo_medio','number',1,true)}
+            {field('Último custo (calculado)','custo_ultimo','number',1,true)}
             {field('Preço venda','preco_venda','number')}
             {field('Ref. interna','referencia_interna')}
+            <label style={label}><span>ESTOQUE ATUAL CALCULADO</span><input value={fmt(form.estoque_atual)+' '+form.unidade} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
+            {field('Ponto de reposição','ponto_reposicao','number')}
+            {field('Estoque máximo','estoque_maximo','number')}
             {field('Ref. cliente','referencia_cliente')}
-            <div className="product-status-field" style={{gridColumn:'span 6'}}><span>SITUAÇÃO</span>{check('Fabricado','fabricado')}{check('Comprado','comprado')}{check('Revenda','revenda')}</div>
+            {field('Validade lote [dias] [?]','lote_validade_dias','number',2)}
+            <div className="product-status-field" style={{gridColumn:'span 10',minHeight:36,alignItems:'center',gap:18,flexWrap:'wrap'}}>{check('Controla lote','controla_lote')}{check('Controla série','controla_serie')}{check('Permite estoque negativo','permite_estoque_negativo')}</div>
+            <label className="product-observations-field" style={{...label,gridColumn:'span 12'}}><span style={{display:'inline-flex',alignItems:'center'}}>OBSERVAÇÕES <HelpTip text={helpFor('Observações')}/></span><textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} title="Informações complementares do produto; não substitui a ficha de processo." style={{...input,height:80,minHeight:80,padding:'10px 12px',resize:'vertical',fontSize:13}}/></label>
           </div>
+          <p style={{margin:'8px 0 0',fontSize:11,color:'#526a75'}}>Custos médios, último custo e estoque atual são calculados a partir dos movimentos e permanecem somente para leitura.</p>
         </section>
 
       </form>}
@@ -603,7 +610,7 @@ export default function ProdutosVendasIndustrial(){
           {field('PRAZO COMPRA (dias)','prazo_compra_dias','number')}{field('PRAZO PRODUÇÃO (dias)','prazo_producao_dias','number')}{field('Custo fabricação (valor gravado) [?]','custo_fabricacao','number',1,true)}{field('TOLERÂNCIA (%)','tolerancia_percentual','number')}
           <label style={label}>FICHA ATIVA<input value={productionFicha?('REV. '+(productionFicha.revisao||productionFicha.versao)):'Não cadastrada'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
           <label style={label}>RENDIMENTO<input value={productionFicha?fmt(productionFicha.rendimento)+' '+productionFicha.unidade_rendimento:'—'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A'}}/></label>
-          <button type="button" onClick={()=>{navigate('/pageprincipal/pcp/fichas-processo')}} style={{...btn('normal'),width:'max-content',maxWidth:'100%',whiteSpace:'nowrap',height:40,padding:'0 12px',fontSize:12,alignSelf:'end'}}>ABRIR FICHA DE PROCESSO</button>
+          <button type="button" onClick={()=>{navigate('/pageprincipal/pcp/fichas-processo')}} style={{...btn('normal'),width:'max-content',maxWidth:'100%',whiteSpace:'nowrap',height:36,padding:'0 12px',fontSize:12,alignSelf:'end'}}>ABRIR FICHA DE PROCESSO</button>
         </div>
         <div className="product-responsive-grid" style={{gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',marginTop:12}}>
           {select('TIPO DE PROCESSO','tipo_processo',[['NAO_APLICA','Não aplicável'],['PRENSADOS','Prensados'],['INJETADOS','Injetados'],['CORTE_VINCO','Corte e vinco'],['ESTAMPOS','Estampos'],['USINAGEM','Usinagem'],['MONTAGEM','Montagem'],['OUTRO','Outro']])}
@@ -626,10 +633,10 @@ export default function ProdutosVendasIndustrial(){
       </section>}
     </section>
 
-    <section className="product-list-panel" style={{...panel,overflow:'hidden'}}>
+    {tab==='consulta'&&<section className="product-list-panel" style={{...panel,overflow:'hidden'}}>
       <div style={{display:'flex',alignItems:'end',gap:10,padding:12,background:'#f7f9fc',borderBottom:'1px solid #d6dde6',flexWrap:'wrap'}}>
-        <Search size={17} color="#2D8DB8"/><label style={{...label,width:'calc(100% - 24px)'}}>PESQUISAR PRODUTO<input aria-label="Pesquisar produto por código, descrição ou grupo" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código, descrição, grupo ou marca..." style={{...input,height:40}}/></label>
-        <label style={{...label,width:'100%'}}>FILTRAR POR GRUPO<select value={groupFilter} onChange={e=>setGroupFilter(e.target.value)} style={{...input,height:40}}><option value="TODAS">Todos os grupos</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}</select></label>
+        <Search size={17} color="#2D8DB8"/><label style={{...label,width:'calc(100% - 24px)'}}>PESQUISAR PRODUTO<input aria-label="Pesquisar produto por código, descrição ou grupo" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código, descrição, grupo ou marca..." style={{...input,height:36}}/></label>
+        <label style={{...label,width:'100%'}}>FILTRAR POR GRUPO<select value={groupFilter} onChange={e=>setGroupFilter(e.target.value)} style={{...input,height:36}}><option value="TODAS">Todos os grupos</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}</select></label>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,width:'100%'}}><span style={{fontSize:13,color:'#667085'}}><b style={{color:'#123B50'}}>{filtered.length}</b> produto(s) encontrado(s)</span><button type="button" onClick={()=>void load()} disabled={busy} style={{...btn('normal'),height:36}}><RefreshCw size={13}/>Atualizar</button></div>
       </div>
       <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',minWidth:0,tableLayout:'fixed'}}><colgroup><col style={{width:'24%'}}/><col style={{width:'42%'}}/><col style={{width:'18%'}}/><col style={{width:'16%'}}/></colgroup><thead><tr>{['Código','Descrição do produto','Grupo','Status'].map(h=><th key={h} style={{textAlign:'left',padding:'10px 8px',borderBottom:'1px solid #d9e1ea',fontSize:12,fontWeight:800,textTransform:'uppercase',background:'#f7f9fc',color:'#344054'}}>{h}</th>)}</tr></thead><tbody>{visibleProducts.map(p=><tr key={p.id} onClick={()=>selectProduct(p)} onDoubleClick={()=>selectProduct(p)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();selectProduct(p)}}} tabIndex={0} aria-selected={selectedId===p.id} style={{background:selectedId===p.id?'#dff1f8':'#fff',cursor:'pointer',borderLeft:selectedId===p.id?'3px solid #2D8DB8':'3px solid transparent'}}><td title={p.codigo} style={{padding:'10px 8px',fontSize:13,fontWeight:800,color:'#123B50'}}>{p.codigo}</td><td title={p.nome} style={{padding:'10px 8px',fontSize:13}}>{p.nome}</td><td title={p.grupo||'—'} style={{padding:'10px 8px',fontSize:12}}>{p.grupo||'—'}</td><td style={{padding:'10px 8px',fontSize:12,fontWeight:800,color:p.ativo?'#25815f':'#b42318'}}>{p.ativo?'ATIVO':'INATIVO'}</td></tr>)}{!filtered.length&&emptyRow('Nenhum produto encontrado.',4)}</tbody></table></div>
@@ -641,9 +648,9 @@ export default function ProdutosVendasIndustrial(){
           <button type="button" onClick={()=>setProductPage(page=>Math.min(productPageCount,page+1))} disabled={productPage>=productPageCount} style={btn('normal')}>Próxima</button>
         </div>
       </nav>
-    </section>
+    </section>}
     </div>
-    {selectedId ? (
+    {tab==='consulta'&&selectedId ? (
       <section style={{...panel,margin:'0 12px 12px',padding:12}}>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
           <h2 style={{margin:0,fontSize:14,color:'#123B50',fontWeight:900,letterSpacing:'.03em'}}>HISTÓRICO AUTOMÁTICO DO PRODUTO</h2>
