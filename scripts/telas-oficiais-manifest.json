@@ -1389,11 +1389,11 @@
     },
     {
       "path": "src/pages/QualidadeAuditoriasPlanta.tsx",
-      "sha": "2a4d7b4ebf13dc4fa7f494b0f3d46324856ead59",
+      "sha": "4810c05211fbc9c69e39b5a42372225c03f7bd97",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-UI-BOTAO-EDIT-20261124 — ação Abrir/editar padronizada com classes ERP; handler original preservado",
+      "aprovadaEm": "2026-11-24",
+      "statusAprovacao": "AJUSTE VISUAL AUTORIZADO; VALIDAÇÃO FUNCIONAL PENDENTE"
     },
     {
       "path": "src/pages/QualidadeCentralTablet.tsx",
