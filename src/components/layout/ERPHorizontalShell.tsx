@@ -417,6 +417,11 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           { label: 'Contas a pagar', route: '/pageprincipal/financeiro/contas-pagar', icon: Wallet },
           { label: 'Contas a receber', route: '/pageprincipal/financeiro/contas-receber', icon: Wallet },
           { label: 'Produtos · pesquisar', route: '/pageprincipal/cadastros/produtos', icon: Boxes },
+          { label: 'Expedição', route: '/pageprincipal/expedicao/roteirizacao', icon: Route },
+          { label: 'Compras', route: '/pageprincipal/compras', icon: ShoppingCart },
+          { label: 'Estoque', route: '/pageprincipal/estoque/saldos', icon: Package },
+          { label: 'Manutenção', route: '/pageprincipal/manutencao', icon: Wrench },
+          { label: 'Indicadores industriais', route: '/pageprincipal/pcp/dashboard-oee', icon: BarChart3 },
         ].map(item => {
           const Icon = item.icon
           const active = pathname === item.route || pathname.startsWith(item.route + '/')
@@ -505,20 +510,20 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-help-floating-button:hover{transform:translateY(-2px);box-shadow:0 7px 18px rgba(18,59,80,.3)}
         .erp-help-floating-avatar{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:#48b7c7;color:#123b50}
         .erp-help-floating-label{font-size:11px;font-weight:800;letter-spacing:.02em}
-        .erp-help-assistant-panel{width:min(390px,calc(100vw - 28px));max-height:min(72vh,680px);display:flex;flex-direction:column;overflow:hidden;border:1px solid #b9d4df;border-radius:12px;background:#fff;box-shadow:0 12px 36px rgba(18,59,80,.24);color:#173b4a}
+        .erp-help-assistant-panel{width:min(390px,calc(100vw - 28px));max-height:min(72vh,680px);display:flex;flex-direction:column;overflow:hidden;border:1px solid #2d8db8;border-radius:12px;background:#123b50;box-shadow:0 12px 36px rgba(18,59,80,.28);color:#fff}
         .erp-help-assistant-panel>header{display:flex;align-items:center;gap:9px;padding:12px 14px;background:#123b50;color:#fff}
         .erp-help-avatar{width:32px;height:32px;display:grid;place-items:center;border-radius:50%;background:#48b7c7;color:#123b50}
         .erp-help-assistant-panel>header>div:nth-child(2){display:flex;flex:1;flex-direction:column;gap:2px}
         .erp-help-assistant-panel>header strong{font-size:12px}.erp-help-assistant-panel>header small{font-size:10px;color:#d5eaf0}
         .erp-help-assistant-panel>header>button{width:28px;height:28px;display:grid;place-items:center;border:0;border-radius:6px;background:transparent;color:#fff;cursor:pointer}
         .erp-help-assistant-panel>header>button:hover{background:rgba(255,255,255,.14)}
-        .erp-help-assistant-content{overflow:auto;padding:13px 15px;font-size:11px;line-height:1.5}
-        .erp-help-assistant-content h2{margin:0 0 6px;font-size:14px;font-weight:800;color:#123b50}
-        .erp-help-assistant-content p{margin:0 0 11px;color:#475569}
-        .erp-help-assistant-content strong{display:block;margin:10px 0 4px;font-size:11px;color:#123b50}
+        .erp-help-assistant-content{overflow:auto;padding:13px 15px;font-size:11px;line-height:1.5;color:#fff!important}.erp-help-assistant-content h2,.erp-help-assistant-content p,.erp-help-assistant-content strong,.erp-help-assistant-content li,.erp-help-assistant-content .erp-help-status{color:#fff!important}.erp-help-assistant-content ol,.erp-help-assistant-content ul{color:#fff}.erp-help-assistant-content li::marker{color:#9de6ef}
+        .erp-help-assistant-content h2{margin:0 0 6px;font-size:14px;font-weight:800;color:#fff!important}
+        .erp-help-assistant-content p{margin:0 0 11px;color:#fff!important}
+        .erp-help-assistant-content strong{display:block;margin:10px 0 4px;font-size:11px;color:#fff!important}
         .erp-help-assistant-content ol,.erp-help-assistant-content ul{margin:4px 0 9px;padding-left:19px}
-        .erp-help-assistant-content li{margin-bottom:4px;color:#334155}
-        .erp-help-assistant-content .erp-help-status{display:block;margin-top:10px;padding-top:9px;border-top:1px solid #e2e8f0;color:#64748b;font-size:9px}
+        .erp-help-assistant-content li{margin-bottom:4px;color:#fff!important}
+        .erp-help-assistant-content .erp-help-status{display:block;margin-top:10px;padding-top:9px;border-top:1px solid rgba(255,255,255,.24);color:#e5f5f8!important;font-size:9px}
         .erp-help-center-link{margin-top:10px;padding:7px 10px;border:1px solid #2d8db8;border-radius:5px;background:#2d8db8;color:#fff;font-size:10px;font-weight:700;cursor:pointer}
         @media(max-width:650px){.erp-help-assistant{right:12px;bottom:76px}.erp-help-floating-button{height:40px}.erp-help-assistant-panel{max-height:68vh}}
         @media print{.erp-help-assistant{display:none!important}}
