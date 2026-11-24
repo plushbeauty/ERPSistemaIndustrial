@@ -7,7 +7,7 @@
  *   tabelas e campos já utilizados, somente leitura.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, CalendarClock, MapPin, Printer, RefreshCw, Search, ShieldCheck, X } from 'lucide-react'
+import { Printer, RefreshCw, Search, ShieldCheck, X } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { fetchAllPages } from '../../lib/supabasePagination'
 import VendasLayout from '../VendasLayout'
