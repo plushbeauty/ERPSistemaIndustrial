@@ -1,0 +1,79 @@
+/* SYSNQRA ERP — PADRÃO GLOBAL DE BOTÕES (todas as rotas e módulos)
+   Camada única de acabamento visual; não altera handlers, permissões ou ações.
+   Mantém as cores funcionais existentes (primário, perigo, sucesso, navegação e tablet). */
+:root{
+  --erp-button-radius:8px;
+  --erp-button-height:36px;
+  --erp-button-font:11px;
+  --erp-button-weight:750;
+  --erp-button-border:#c9dce4;
+  --erp-button-focus:#48b7c7;
+  --erp-button-shadow:0 1px 2px rgba(18,59,80,.07);
+  --erp-button-shadow-hover:0 4px 12px rgba(18,59,80,.12);
+}
+/* Todas as ações nativas e controles de botão, em qualquer tela. */
+:where(button,[role="button"],input[type="button"],input[type="submit"],input[type="reset"]){
+  box-sizing:border-box;
+  border-radius:var(--erp-button-radius)!important;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:var(--erp-button-font);
+  font-weight:var(--erp-button-weight);
+  line-height:1.25;
+  letter-spacing:.005em;
+  transition:background-color .16s ease,border-color .16s ease,color .16s ease,
+    box-shadow .16s ease,filter .16s ease,transform .16s ease;
+}
+/* Evita botões desalinhados ou excessivamente pequenos em formulários e barras. */
+:where(button,input[type="button"],input[type="submit"],input[type="reset"]){
+  min-height:var(--erp-button-height);
+  padding:7px 12px;
+  vertical-align:middle;
+}
+:where(button,[role="button"],input[type="button"],input[type="submit"],input[type="reset"]):not(:disabled):not([aria-disabled="true"]):hover{
+  box-shadow:var(--erp-button-shadow-hover);
+  filter:brightness(1.015);
+}
+:where(button,[role="button"],input[type="button"],input[type="submit"],input[type="reset"]):not(:disabled):not([aria-disabled="true"]):active{
+  transform:translateY(1px);
+  box-shadow:var(--erp-button-shadow);
+}
+:where(button,[role="button"],input[type="button"],input[type="submit"],input[type="reset"]):focus-visible{
+  outline:3px solid color-mix(in srgb,var(--erp-button-focus) 58%,transparent);
+  outline-offset:2px;
+}
+:where(button,[role="button"],input[type="button"],input[type="submit"],input[type="reset"]):disabled,
+:where(button,[role="button"],input[type="button"],input[type="submit"],input[type="reset"])[aria-disabled="true"]{
+  cursor:not-allowed;
+  opacity:.58;
+  box-shadow:none;
+  transform:none;
+}
+/* Ações de ícone: quadradas, centralizadas e com alvo de toque consistente. */
+:where(button,[role="button"]):has(> svg:only-child),
+:where(button,[role="button"]):has(> span:only-child > svg:only-child){
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
+:where(button,[role="button"]):has(> svg:only-child){
+  width:36px;
+  min-width:36px;
+  padding:6px!important;
+}
+/* Ações pequenas em grids permanecem compactas, mas não voltam ao estilo legado. */
+:where(td,th) :where(button,[role="button"]){
+  min-height:30px;
+  padding:5px 9px;
+  border-radius:7px!important;
+}
+/* Tabs, navegação, seletores segmentados e controles de chão de fábrica:
+   preservar dimensões e estado visual do componente, uniformizar somente acabamento. */
+:where([role="tab"],.v7-nav,.v7-all,.v7-exit,.v7-segment-current,.industrial-tabs button){
+  font-size:inherit;
+  font-weight:inherit;
+}
+/* Preferência de movimento acessível. */
+@media(prefers-reduced-motion:reduce){
+  :where(button,[role="button"],input[type="button"],input[type="submit"],input[type="reset"]){transition:none!important}
+}
