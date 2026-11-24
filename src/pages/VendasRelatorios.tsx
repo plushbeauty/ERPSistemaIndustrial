@@ -92,7 +92,7 @@ export default function VendasRelatorios() {
 
   return (
     <VendasLayout title="Relatórios de Vendas" subtitle="Pedidos, filtros e impressão" onRefresh={()=>void load()}>
-      <style>{`tr[data-page-hidden="true"] { display:none } @media print { .print-hidden { display:none!important } tr[data-page-hidden="true"] { display:table-row!important } body { background:white!important } }`}</style>
+      <style>{`tr[data-page-hidden="true"] { display:none } @media print { @page { size:A4 landscape; margin:9mm } .print-hidden { display:none!important } tr[data-page-hidden="true"] { display:table-row!important } body { background:white!important } .synqra-workspace-title,.synqra-status-grid,.erp-horizontal-shell,.erp-global-header { display:none!important } .overflow-x-auto { overflow:visible!important } table { width:100%!important; min-width:0!important; font-size:8pt!important } th,td { padding:4px!important; white-space:normal!important } }`}</style>
       <section className="mx-auto max-w-[1600px] space-y-4 px-4 py-5 lg:px-6">
         <div className="border border-slate-200 bg-white p-4 shadow-sm print-hidden">
           <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_150px_150px_180px_auto]">
