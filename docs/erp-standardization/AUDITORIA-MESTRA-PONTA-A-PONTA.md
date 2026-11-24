@@ -110,6 +110,10 @@ Para cada tela, preencher:
 |---|---|---|---|
 | 2026-11-24 | Baseline de auditoria | Aberta; backlog e referências lidos; erro de build conhecido | commit Vercel `04273e5`, deployment ERROR |
 | 2026-11-24 | Barra Windows 11 de acesso rápido | Implementada faixa horizontal rolável com atalhos para pedidos, GED/Qualidade, PCP, Fiscal, pagar, receber e produtos; validar rotas e permissões de leitura em navegador | shell `81d61bf`; CSS `bef39ec` |
-| 2026-11-24 | Consolidação dos relatórios | Relatórios parciais UI-002/003/004/005, CMP-003 e inventário comparativo vazio removidos e consolidados nesta auditoria; telas de negócio e histórico de CI preservados | commits `d171070`, `2eb3be2`, `1040155`, `f19d6f3`, `efeaa3d`, `59c7ea3`; backlog `1b10e86` |\n| 2026-11-24 | Comparativo de rotas | Não iniciado | nenhuma rota será marcada como aprovada sem teste |
+| 2026-11-24 | Consolidação dos relatórios | Relatórios parciais UI-002/003/004/005, CMP-003 e inventário comparativo vazio removidos e consolidados nesta auditoria; telas de negócio e histórico de CI preservados | commits `d171070`, `2eb3be2`, `1040155`, `f19d6f3`, `efeaa3d`, `59c7ea3`; backlog `1b10e86` |
+| 2026-11-24 | Comparativo de rotas | Não iniciado | nenhuma rota será marcada como aprovada sem teste |
+| 2026-11-24 | Ajuda global | Painel contextual do shell alterado para fundo azul-petróleo e texto branco em títulos, parágrafos, listas, campos e status; ação de ajuda permanece global em todas as rotas que usam o shell | commit `c22bf5e` |
+| 2026-11-24 | Barra Windows 11 | Adicionados atalhos existentes para Expedição, Compras, Estoque, Manutenção e Indicadores industriais; faixa recebeu fundo azul-acinzentado claro e filete turquesa. Atalho Alertas não criado porque não existe rota dedicada registrada em `AppEntryV2.tsx` | commits `c22bf5e`, `6ddd8cb`; rotas conferidas em `AppEntryV2.tsx` |
+| 2026-11-24 | Validação visual e de build | Pendente: alterações de código registradas; aguardando build Vercel e teste visual/funcional no navegador | deployment será conferido após o commit da auditoria |
 
 **Regra final:** esta auditoria é um documento vivo de execução. Não escrever "tudo corrigido" até cada rota passar pelos critérios acima.
