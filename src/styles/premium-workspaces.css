@@ -751,3 +751,12 @@
 .sales-orders-table--tracking tbody td:nth-child(11),.sales-orders-table--tracking tbody td:nth-child(12),.sales-orders-table--tracking tbody td:nth-child(14),.sales-orders-table--tracking tbody td:nth-child(15){min-width:165px;white-space:normal}
 .sales-orders-table--tracking tbody td>div+div{margin-top:5px;padding-top:4px;border-top:1px dashed #d8e5ea}
 .sales-orders-table--tracking .sales-secondary-line{display:block;margin-top:3px;font-size:9px;line-height:1.3}
+
+/* ERP sales form: contemporary tactile buttons, consistent with SYSNQRA's industrial design system. */
+#frmNovoPedido button:not([type="file"]){min-height:38px;border-radius:8px!important;padding:8px 13px;font-size:11px;font-weight:700;letter-spacing:.01em;line-height:1.25;box-shadow:0 1px 2px #123b5010;transition:background-color .15s,border-color .15s,color .15s,box-shadow .15s,transform .15s}
+#frmNovoPedido button:not(:disabled):hover{box-shadow:0 4px 10px #123b5018;transform:translateY(-1px)}
+#frmNovoPedido button:not(:disabled):active{box-shadow:0 1px 2px #123b5010;transform:translateY(0)}
+#frmNovoPedido button:focus-visible{outline:3px solid #48b7c780;outline-offset:2px}
+#frmNovoPedido button:disabled{cursor:not-allowed;opacity:.58}
+#frmNovoPedido button[aria-label^="Consultar"]{min-width:40px;padding:8px!important}
+#frmNovoPedido .erp-row-action{min-height:32px!important;min-width:32px!important;padding:5px!important;border-radius:7px!important}
