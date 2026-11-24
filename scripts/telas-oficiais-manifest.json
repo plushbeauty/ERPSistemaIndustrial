@@ -1669,11 +1669,11 @@
     },
     {
       "path": "src/pages/VendasCentral.tsx",
-      "sha": "2f257ff8cc8e9f2d73b27d5613739c1625fe1d13",
+      "sha": "f80e25e8ea85dbafac193ad760b8f812517a95b2",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "VENDAS-CENTRAL-HYBRID-20261124 — visual de comando aprovado pelo proprietário; consultas e regras APROV-006 preservadas",
+      "aprovadaEm": "2026-11-24",
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-24; VALIDAÇÃO FUNCIONAL E VISUAL PENDENTE"
     },
     {
       "path": "src/pages/VendasClientes.tsx",
