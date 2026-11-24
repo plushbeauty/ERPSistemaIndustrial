@@ -1,4 +1,4 @@
-# Backlog vivo — padronização de telas do ERP Industrial
+> **Auditoria única vigente:** [AUDITORIA-MESTRA-PONTA-A-PONTA.md](./AUDITORIA-MESTRA-PONTA-A-PONTA.md). Os relatórios parciais UI-002 a UI-005 e CMP-003 foram removidos/consolidados nesta revisão. Evidências históricas de CI e documentos normativos permanecem preservados. Nenhuma tela de negócio foi removida.\n\n# Backlog vivo — padronização de telas do ERP Industrial
 
 - Data: 2026-10-22
 - Revisão: UI-BACKLOG-R2
