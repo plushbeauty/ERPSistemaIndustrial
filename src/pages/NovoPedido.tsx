@@ -81,13 +81,35 @@ export default function NovoPedido(){
  const produtosFiltro=produtos.filter(p=>{const q=busca.toLowerCase();return !q||p.codigo.toLowerCase().includes(q)||p.nome.toLowerCase().includes(q)||(p.referencia_interna??'').toLowerCase().includes(q)||(p.codigo_barras??'').toLowerCase().includes(q)}).slice(0,40)
 
  return <VendasLayout title="Novo Pedido de Venda" subtitle="Entrada comercial • estoque • PCP" showStatusCards={false}>
+  <style>{`
+    @page { size: A4 landscape; margin: 9mm; }
+    @media print {
+      html, body, #root { width:100%!important; min-width:0!important; height:auto!important; overflow:visible!important; background:#fff!important; }
+      body * { visibility:hidden!important; }
+      #frmNovoPedido, #frmNovoPedido * { visibility:visible!important; }
+      #frmNovoPedido { position:absolute!important; inset:0 auto auto 0!important; width:100%!important; max-width:none!important; margin:0!important; padding:0!important; overflow:visible!important; background:#fff!important; color:#111!important; font-size:9pt!important; }
+      #frmNovoPedido .print-hide, #frmNovoPedido button, #frmNovoPedido input[type=file], #frmNovoPedido [role=alert], #frmNovoPedido [role=status] { display:none!important; }
+      #frmNovoPedido section, #frmNovoPedido table, #frmNovoPedido .overflow-x-auto { break-inside:avoid; overflow:visible!important; box-shadow:none!important; }
+      #frmNovoPedido input, #frmNovoPedido select, #frmNovoPedido textarea { color:#111!important; background:#fff!important; border:0!important; box-shadow:none!important; padding:1px 2px!important; height:auto!important; min-height:0!important; }
+      #frmNovoPedido table { width:100%!important; min-width:0!important; border-collapse:collapse!important; font-size:7.5pt!important; }
+      #frmNovoPedido th, #frmNovoPedido td { padding:3px 4px!important; border:1px solid #bbb!important; white-space:normal!important; }
+      #frmNovoPedido h2 { font-size:15pt!important; }
+      #frmNovoPedido h3 { color:#111!important; font-size:9pt!important; }
+      #frmNovoPedido .shadow-sm { box-shadow:none!important; }
+      #frmNovoPedido .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top:8px!important; }
+      #frmNovoPedido .grid { gap:7px!important; }
+      #frmNovoPedido .border-b { border-color:#bbb!important; }
+      #frmNovoPedido .text-slate-500, #frmNovoPedido .text-slate-600, #frmNovoPedido .text-slate-700, #frmNovoPedido .text-slate-800 { color:#222!important; }
+    }
+  `}</style>
+
   <div id="frmNovoPedido" className="erp-compact w-full space-y-4 bg-white text-xs text-slate-700">
    {message&&<div role="status" className="border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-[10px] text-emerald-800">{message}</div>}
    {error&&<div role="alert" className="border border-red-200 bg-red-50 px-2 py-1.5 text-[10px] text-red-700">{error}</div>}
 
    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
     <div><div className="text-[9px] uppercase tracking-wide text-slate-500">Vendas / Pedidos / Novo</div><h2 className="mt-0.5 text-[18px] font-semibold text-slate-800">Entrada de Pedido</h2></div>
-    <div className="flex flex-wrap items-center gap-1">
+    <div className="erp-order-toolbar print-hide flex flex-wrap items-center gap-1">
      <span className="mr-1 text-[10px] text-slate-500">{edPedido ? `Pedido nº ${edPedido}` : 'Novo pedido'}</span>
      <button type="button" disabled={loading} onClick={()=>void save(false)} className="flex min-h-[38px] items-center gap-2 rounded-[8px] border border-blue-700 bg-blue-600 px-3 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50"><Save size={12}/>Salvar rascunho</button>
      <button type="button" onClick={novoPedido} className="flex min-h-[38px] items-center gap-2 rounded-[8px] border border-slate-300 bg-white px-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"><FilePlus2 size={12}/>Novo pedido</button>
