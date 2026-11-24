@@ -115,5 +115,6 @@ Para cada tela, preencher:
 | 2026-11-24 | Ajuda global | Painel contextual do shell alterado para fundo azul-petróleo e texto branco em títulos, parágrafos, listas, campos e status; ação de ajuda permanece global em todas as rotas que usam o shell | commit `c22bf5e` |
 | 2026-11-24 | Barra Windows 11 | Adicionados atalhos existentes para Expedição, Compras, Estoque, Manutenção e Indicadores industriais; faixa recebeu fundo azul-acinzentado claro e filete turquesa. Atalho Alertas não criado porque não existe rota dedicada registrada em `AppEntryV2.tsx` | commits `c22bf5e`, `6ddd8cb`; rotas conferidas em `AppEntryV2.tsx` |
 | 2026-11-24 | Validação visual e de build | Pendente: alterações de código registradas; aguardando build Vercel e teste visual/funcional no navegador | deployment será conferido após o commit da auditoria |
+| 2026-11-24 | Conferência de destinos da barra | Rotas dos 12 atalhos conferidas em `AppEntryV2.tsx`; todos os destinos existem. Nenhuma rota dedicada de Alertas encontrada. Os atalhos apenas navegam: modo estritamente somente leitura ainda depende de validação/controle nas telas de destino | `AppEntryV2.tsx` linhas 312, 360, 362, 398, 417–420, 471, 483, 503, 522–524, 562 |
 
 **Regra final:** esta auditoria é um documento vivo de execução. Não escrever "tudo corrigido" até cada rota passar pelos critérios acima.
