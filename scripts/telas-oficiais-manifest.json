@@ -1717,11 +1717,11 @@
     },
     {
       "path": "src/pages/VendasPedidoStatus.tsx",
-      "sha": "355353e81a40e7ffbd4811b2328b439b4cf9ddea",
+      "sha": "a9b963b4d746a034b67ecd18e5c75aff808289db",
       "autor": "FernandoSch",
-      "revisao": "REV-VENDAS-STATUS-PEDIDO-TENANT-20261111-01 — etapas de OP, expedição e liberação fiscal filtradas por empresa_id; sem alterar a navegação ou os dados exibidos",
-      "aprovadaEm": "2026-11-11",
-      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO NO COMMIT 856eddd5a331d7f0eaac93a3c725d55653bd2e4e; pendente de CI e validação funcional"
+      "revisao": "VENDAS-DETALHE-COMMAND-20261124 — visual industrial atualizado; consultas, campos e transições de edição preservados",
+      "aprovadaEm": "2026-11-24",
+      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO; validação funcional pendente"
     },
     {
       "path": "src/pages/VendasRelatorios.tsx",
