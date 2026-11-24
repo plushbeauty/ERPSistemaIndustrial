@@ -5,7 +5,7 @@
  * @STATUS_APROVACAO: REVISÃO AUTORIZADA PELO PROPRIETÁRIO; validação funcional pendente
  * @REGRA: somente apresentação; consultas multiempresa, itens, valores e etapas permanecem preservados.
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, CalendarClock, CheckCircle2, CircleAlert, FileText, PackageCheck, Pencil, Truck } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -162,7 +162,7 @@ export default function VendasPedidoStatus() {
 function Info({ label, value, emphasize }: { label: string; value: string; emphasize?: boolean }) {
   return <div className="bg-white px-3 py-3"><div className="text-[9px] font-semibold uppercase tracking-wide text-slate-500">{label}</div><div className={'mt-1 text-[12px] ' + (emphasize ? 'font-extrabold text-[#123B50]' : 'font-semibold text-slate-700')}>{value}</div></div>
 }
-function StatusBlock({ title, icon, rows, empty }: { title: string; icon: React.ReactNode; rows: string[]; empty: string }) {
+function StatusBlock({ title, icon, rows, empty }: { title: string; icon: ReactNode; rows: string[]; empty: string }) {
   return <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
     <h3 className="flex items-center gap-2 font-bold text-[#123B50]">{icon}{title}</h3>
     <div className="mt-3 space-y-2">{rows.length ? rows.map((row,index) => <div key={index} className="rounded-md border border-slate-100 bg-slate-50 px-3 py-2 text-[11px]">{row}</div>) : <p className="text-[11px] text-slate-500">{empty}</p>}</div>
