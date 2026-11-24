@@ -48,7 +48,7 @@ form input:not([type=checkbox]):not([type=radio]):not([type=file]),form select,f
 .erp-form-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; }
 .erp-form-row > * { flex: 0 1 220px; max-width: 100%; min-width: 0; }
 .erp-form-grid,
-.erp-form-layout { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.erp-form-layout { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 10px; }
 .erp-form-grid > *,
 .erp-form-layout > *,
 .erp-form-field,
@@ -58,13 +58,15 @@ form input:not([type=checkbox]):not([type=radio]):not([type=file]),form select,f
 .erp-form-field textarea { width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; }
 .erp-form-field .erp-input-full { max-width: 100%; }
 @media (max-width: 1000px) {
-  .erp-form-grid, .erp-form-layout { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .erp-form-grid, .erp-form-layout { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
 @media (max-width: 720px) {
   .erp-form-grid, .erp-form-layout { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .erp-form-layout > [class*="field-"], .erp-w-1, .erp-w-2, .erp-w-3, .erp-w-4, .erp-w-5, .erp-w-6, .erp-w-7, .erp-w-8, .erp-w-9, .erp-w-10, .erp-w-11, .erp-w-12 { grid-column: span 2; }
   .erp-form-row > * { flex-basis: min(100%, 240px); }
 }
 @media (max-width: 480px) {
   .erp-form-grid, .erp-form-layout { grid-template-columns: minmax(0, 1fr); }
+  .erp-form-layout > [class*="field-"], .erp-w-1, .erp-w-2, .erp-w-3, .erp-w-4, .erp-w-5, .erp-w-6, .erp-w-7, .erp-w-8, .erp-w-9, .erp-w-10, .erp-w-11, .erp-w-12 { grid-column: span 1; }
   .erp-form-row > * { flex-basis: 100%; }
 }
