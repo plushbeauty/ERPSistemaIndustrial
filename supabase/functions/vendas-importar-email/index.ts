@@ -8,7 +8,7 @@ const allowedOrigin = (origin: string | null) => {
     const host = url.hostname.toLowerCase()
     const official = host === "erp-sistema-industrial.vercel.app"
     // Vercel preview domains for this exact project; never reflect arbitrary origins.
-    const preview = /^erp-sistema-industrial-[a-z0-9-]+-plushbeauty\\.vercel\\.app$/.test(host)
+    const preview = /^erp-sistema-industrial-[a-z0-9-]+-plushbeauty\.vercel\.app$/.test(host)
     return url.protocol === "https:" && (official || preview) ? origin : null
   } catch {
     return null
