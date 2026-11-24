@@ -251,26 +251,21 @@ export default function VendasCentral() {
               <tbody>
                 {pageOrders.map((order) => (
                   <tr key={order.id} className={isOverdue(order) ? "is-overdue" : ""}>
-                    <td>
-                      <Link className="sales-order-number" to={`/vendas/pedido/${order.id}`}>
-                        PV-{String(order.numero).padStart(6, '0')}
-                      </Link>
-                      {order.pedido_cliente && <small className="sales-secondary-line">Ref. {order.pedido_cliente}</small>}
-                    </td>
-                    <td>
-                      <strong className="sales-client-name">{order.cliente?.nome ?? 'Cliente não identificado'}</strong>
-                      {order.cliente?.codigo && <small className="sales-secondary-line">Cód. {order.cliente.codigo}</small>}
-                    </td>
-                    <td>{order.vendedor_nome || '—'}</td>
+                    <td><Link className="sales-order-number" to={`/vendas/pedido/${order.id}`}>PV-${String(order.numero).padStart(6, '0')}</Link></td>
+                    <td>{order.pedido_cliente || '—'}</td>
+                    <td><strong className="sales-client-name">{order.cliente?.nome ?? 'Cliente não identificado'}</strong>{order.cliente?.codigo && <small className="sales-secondary-line">Cód. {order.cliente.codigo}</small>}</td>
                     <td>{formatDate(order.data_entrada)}</td>
-                    <td>
-                      <span className={isOverdue(order) ? 'sales-delivery sales-delivery--late' : 'sales-delivery'}>
-                        {formatDate(order.data_entrega_prometida)}
-                        {isOverdue(order) && <small>Atrasado</small>}
-                      </span>
-                    </td>
+                    <td>{(linesByOrder[order.id] ?? []).map((line, index) => <div key={index}>{line.codigo_interno || '—'}</div>)}</td>
+                    <td>{(linesByOrder[order.id] ?? []).map((line, index) => <div key={index}>{line.produto_cliente || '—'}</div>)}</td>
+                    <td><span className={isOverdue(order) ? 'sales-delivery sales-delivery--late' : 'sales-delivery'}>{formatDate(order.data_entrega_prometida)}{isOverdue(order) && <small>Atrasado</small>}</span></td>
+                    <td>{(linesByOrder[order.id] ?? []).map((line, index) => <div key={index}>{line.descricao}</div>)}</td>
+                    <td className="sales-number">{(linesByOrder[order.id] ?? []).map((line, index) => <div key={index}>{Number(line.quantidade || 0).toLocaleString('pt-BR')}</div>)}</td>
                     <td><span className={`sales-status ${statusTone(order.status)}`}>{order.status}</span></td>
-                    <td><ProcessStages order={order} production={productionByOrder[order.id] ?? []} inspections={qualityByOrder[order.id] ?? []} expeditions={expeditionByOrder[order.id] ?? []} fiscal={fiscalByOrder[order.id] ?? []} /></td>
+                    <td>{(productionByOrder[order.id] ?? []).map((row) => <div key={row.id}>OP {row.numero_op}: {Number(row.quantidade_produzida || 0)} / {Number(row.quantidade_planejada || row.quantidade || 0)} · {row.status}<small className="sales-secondary-line">Término previsto: {formatDate(row.data_prevista)}</small></div>)}</td>
+                    <td>{(qualityByOrder[order.id] ?? []).map((row, index) => <div key={index}>{row.tipo}: {row.resultado} · reprovado {Number(row.quantidade_reprovada || 0)}</div>)}</td>
+                    <td>—</td>
+                    <td>{(expeditionByOrder[order.id] ?? []).map((row) => <div key={row.numero}>EXP {row.numero}: {row.status}<small className="sales-secondary-line">Saída: {formatDate(row.data_expedicao)}</small></div>)}</td>
+                    <td>{(fiscalByOrder[order.id] ?? []).map((row, index) => <div key={index}>{row.tipo}: {row.status}<small className="sales-secondary-line">Qtd. pendente: {Number(row.quantidade_pendente || 0)}</small></div>)}</td>
                     <td className="sales-number sales-total">{currency.format(Number(order.total ?? 0))}</td>
                   </tr>
                 ))}
@@ -283,7 +278,7 @@ export default function VendasCentral() {
                     </div>
                   </td></tr>
                 )}
-                {loading && <tr><td colSpan={8} className="sales-loading-row" role="status">Carregando pedidos do ERP…</td></tr>}
+                {loading && <tr><td colSpan={16} className="sales-loading-row" role="status">Carregando pedidos do ERP…</td></tr>}
               </tbody>
             </table>
           </div>
