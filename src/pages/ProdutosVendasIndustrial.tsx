@@ -493,19 +493,19 @@ export default function ProdutosVendasIndustrial(){
           <h3 className="product-form-section-title">UNIDADES E CARACTERÍSTICAS FÍSICAS</h3>
           <div className="product-form-grid product-measure-row">
             <div className="product-unit-row" style={{gridColumn:'span 9'}}>
-              {select('Und. estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
-              {select('Und. compra','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
-              {select('Und. venda','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
+              {select('Und. estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']],1/3)}
+              {select('Und. compra','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']],1/3)}
+              {select('Und. venda','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']],1/3)}
             </div>
             <label style={{...label,gridColumn:'span 3'}}>Localização padrão<select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione a localização</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
           </div>
           <div className="product-responsive-grid" style={{gridTemplateColumns:'repeat(6,minmax(0,1fr))',marginTop:12}}>
             <label style={{...label,gridColumn:'span 2'}}>Fornecedor padrão<select value={form.fornecedor_padrao_id||''} disabled={!editing} onChange={e=>update('fornecedor_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{suppliers.map(s=><option value={s.id} key={s.id}>{s.nome_fantasia||s.razao_social}</option>)}</select></label>
-            {field('Peso líquido (kg)','peso_liquido','number',2)}
-            {field('Peso bruto (kg)','peso_bruto','number',2)}
-            {field('Comprimento (mm)','comprimento_mm','number',2)}
-            {field('Largura (mm)','largura_mm','number',2)}
-            {field('Altura (mm)','altura_mm','number',2)}
+            {field('Peso líquido (kg)','peso_liquido','number',2/3)}
+            {field('Peso bruto (kg)','peso_bruto','number',2/3)}
+            {field('Comprimento (mm)','comprimento_mm','number',2/3)}
+            {field('Largura (mm)','largura_mm','number',2/3)}
+            {field('Altura (mm)','altura_mm','number',2/3)}
           </div>
         </section>
 
