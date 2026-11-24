@@ -744,7 +744,7 @@
 .sales-delete-actions .sales-button{min-height:30px;height:30px;font-size:9px!important}
 
 /* Pedidos pendentes: colunas operacionais alinhadas ao espelho de acompanhamento do proprietário. */
-.sales-orders-table--tracking{min-width:1880px!important;table-layout:auto}
+.sales-orders-table--tracking{min-width:2400px!important;table-layout:auto}
 .sales-orders-table--tracking thead th{height:42px;white-space:normal;line-height:1.25}
 .sales-orders-table--tracking tbody td{height:auto;min-height:52px;padding:8px 10px;vertical-align:top;line-height:1.35;white-space:nowrap}
 .sales-orders-table--tracking tbody td:nth-child(8){min-width:220px;max-width:320px;white-space:normal}
