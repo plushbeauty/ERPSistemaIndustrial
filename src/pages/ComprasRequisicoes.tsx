@@ -223,7 +223,8 @@ export default function ComprasRequisicoes() {
     }
   }
 
-  return (
+  <style>{`@media print{@page{size:A4 landscape;margin:9mm}html,body,#root{width:100%!important;overflow:visible!important;background:#fff!important}.synqra-workspace-title,.synqra-status-grid,.erp-horizontal-shell,.erp-global-header,button,a[href],input[type=file]{display:none!important}.overflow-x-auto{overflow:visible!important}table{width:100%!important;min-width:0!important;font-size:8pt!important}th,td{padding:4px!important;white-space:normal!important}main{max-width:none!important;padding:0!important}}`}</style>
+return (
     <VendasLayout title="Requisições de compra" subtitle="PCP • MRP • materiais • cotação" onRefresh={() => void load()}>
       <main className="min-h-screen bg-[#F4F7F9] p-3 text-[#183746] sm:p-4">
         <style>{`.compras-requisicoes input:not([type="checkbox"]),.compras-requisicoes select{box-sizing:border-box;height:40px;min-height:40px;border-radius:8px}.compras-requisicoes input:disabled,.compras-requisicoes input[readonly],.compras-requisicoes select:disabled{background:#F3F4F6!important;color:#64748b!important}.compras-requisicoes table tbody tr,.compras-requisicoes table tbody td{height:48px;vertical-align:middle}.compras-requisicoes button{min-height:40px}`}</style>
