@@ -396,6 +396,14 @@
       "statusAprovacao": "ORDEM EXPLICITA DO PROPRIETARIO EM 2026-11-08 — \"equipamentos de medição fazer a tela colorida para melhor visualizacao colocar legenda nas cores\""
     },
     {
+      "path": "src/pages/CatalogoWireframes.tsx",
+      "sha": "efc9a869b40fa9e4497842e3cd13f530ff6424eb",
+      "autor": "FernandoSch",
+      "revisao": "REV-CATALOGO-WIREFRAMES-MESTRE-20261111-01 — catálogo solicitado pelo proprietário com 13 telas, visual monoespaçado e cópia individual de cada wireframe.",
+      "aprovadaEm": "2026-11-11",
+      "statusAprovacao": "IMPLEMENTAÇÃO EXPRESSAMENTE SOLICITADA PELO PROPRIETÁRIO EM 2026-11-10; adição documental sem alterar telas operacionais, dados, rotas de negócio ou permissões."
+    },
+    {
       "path": "src/pages/CentraisIndustriais.tsx",
       "sha": "bcc423685bada700464d8d2d6b701e0ba885515a",
       "autor": "FernandoSch",
