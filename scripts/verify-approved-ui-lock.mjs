@@ -5,8 +5,9 @@ import { existsSync, readFileSync } from 'node:fs'
  * Retires legacy page-hash locks for modules being rebuilt from zero.
  * Locks the shared workspace, authentication, start-menu navigation, PCP,
  * Paquímetro and Fiscal contracts without weakening security/build checks.
- * Ordem do proprietario (2026-11-02): a barra Windows 11 da base da tela foi
- * deletada e nao pode voltar; o destaque laranja do menu tambem saiu.
+ * Ordem atualizada pelo proprietário em 2026-11-24: barra de tarefas Windows 11 restaurada
+ * no shell global; em 2026-11-24 o proprietário autorizou selo laranja
+ * ATUALIZADO somente nas quatro rotas que receberam revisao efetiva, sem destaque global.
  */
 const read = (path) => readFileSync(path, 'utf8')
 const app = read('src/AppEntryV2.tsx')
@@ -48,8 +49,8 @@ const checks = [
   // Ordem do proprietario (#108): a Qualidade saiu do dropdown do Iniciar e passou a abrir o painel
   // flutuante do SGQ, entao o RPNC e conferido no catalogo do tablet, nao mais no shell.
   ['Start menu exposes RH, PCP Fichas (including Acabamento and Montagem), RPNC and Compras entries', shell.includes("label: 'RH / Departamento Pessoal'") && shell.includes("route: '/pageprincipal/pcp/fichas-processo'") && shell.includes('Acabamento e Montagem') && sgqTablet.includes("route: '/pageprincipal/qualidade/rpnc'") && shell.includes("label: 'Solicitação de Compra'")],
-  ['Barra Windows 11 da base esta morta', !shell.includes('BarraWindows11') && !existsSync('src/components/layout/BarraWindows11.tsx')],
-  ['Sem destaque laranja no menu', !shell.includes('isUpdated') && !shell.includes('is-updated-orange') && !shell.includes('is-new-icon')],
+  ['Barra de tarefas Windows 11 presente no shell global', shell.includes('erp-windows-taskbar') && shell.includes('aria-label="Barra de tarefas Windows 11"')],
+  ['Selo laranja limitado às quatro rotas revisadas', shell.includes('ROTAS_ATUALIZADAS') && shell.includes("'/pageprincipal/cadastros/produtos'") && shell.includes("'/pageprincipal/estoque/validade'") && shell.includes("'/pageprincipal/vendas/novo-pedido'") && shell.includes("'/pageprincipal/pcp/pedidos-pendentes'") && shell.includes('aria-label="Tela atualizada"') && !shell.includes('isUpdated') && !shell.includes('is-updated-orange') && !shell.includes('is-new-icon')],
   ['Legacy URLs redirect into the shared workspace', app.includes('Navigate to="/pageprincipal"') && app.includes('Navigate to="/pageprincipal/pcp"') && app.includes('Navigate to="/pageprincipal/paquimetro"') && app.includes('Navigate to="/pageprincipal/fiscal"') && app.includes('Navigate to="/pageprincipal/compras"') && app.includes('Navigate to="/pageprincipal/administracao-configuracoes"')],
   ['Start menu preserves Principal, PCP, Qualidade, Fiscal, Compras and Configurações', shell.includes("label: 'Principal'") && shell.includes("label: 'Engenharia e PCP'") && shell.includes("label: 'Sistema SGQ'") && shell.includes("label: 'Fiscal'") && shell.includes("label: 'Compras'") && shell.includes("label: 'Configurações'")],
   ['Plan access checks normalize nested PagePrincipal routes', planGate.includes("path.startsWith('/pageprincipal/')") && planGate.includes("path === '/paquimetro'")],

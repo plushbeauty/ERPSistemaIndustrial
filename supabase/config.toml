@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.erp-mes-ingest]
 verify_jwt = false
+
+[functions.vendas-importar-email]
+verify_jwt = false

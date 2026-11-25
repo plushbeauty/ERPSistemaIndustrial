@@ -69,6 +69,7 @@ const menus: MenuItem[] = [
     { label: 'Roteiro de Operações', route: '/pageprincipal/pcp/roteiros', icon: Route },
     { label: 'Carga e Capacidade', route: '/pageprincipal/pcp/capacidade', icon: BarChart3 },
     { label: 'Ordens de produção', route: '/pageprincipal/pcp/ordens', icon: Factory },
+    { label: 'Pedidos Pendentes', route: '/pageprincipal/pcp/pedidos-pendentes', icon: ClipboardList },
     { label: 'Programação Gantt', route: '/pageprincipal/pcp/programacao-gantt', icon: CalendarDays },
     { label: 'Agenda de máquinas', route: '/pageprincipal/pcp/agenda-maquinas', icon: Calendar },
     { label: 'Sequenciamento', route: '/pageprincipal/pcp/sequenciamento', icon: ListOrdered },
@@ -160,6 +161,14 @@ const menus: MenuItem[] = [
 /** Módulos que o perfil OPERADOR_FABRIL enxerga no menu e na barra de acesso rápido.
  *  O SGQ entra porque o paquímetro e a liberação de lote são rotinas de bancada, não de escritório. */
 const MODULOS_DO_OPERADOR = new Set(['Chão de Fábrica', 'Sistema SGQ'])
+
+// Selo laranja limitado às rotas com revisão aplicada neste lote; não é destaque global do menu.
+const ROTAS_ATUALIZADAS = new Set([
+  '/pageprincipal/cadastros/produtos',
+  '/pageprincipal/estoque/validade',
+  '/pageprincipal/vendas/novo-pedido',
+  '/pageprincipal/pcp/pedidos-pendentes',
+])
 
 export default function ERPHorizontalShell({ children, operatorName = 'Usuário ERP' }: { children: ReactNode; operatorName?: string }) {
   const navigate = useNavigate()
@@ -382,7 +391,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
                     {hasChildren && <button type="button" className="erp-windows-menu-expand" aria-label={`Expandir ${menu.label}`} aria-expanded={expanded} onClick={() => { setOpenMenu(value => value === menu.label ? null : menu.label);  }}>{expanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}</button>}
                   </div>
                   {hasChildren && expanded && <div className="erp-windows-menu-children">
-                    {menu.children?.filter(child => !normalizedSearch || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(child => { const ChildIcon = child.icon; const active = pathname === child.route; return <button type="button" key={child.label + child.route} className={`${active ? (child.route === '/pageprincipal/compras/rfq' ? 'is-active is-rfq-active' : 'is-active') : ''}`} onClick={() => { setStartMenuOpen(false); if (child.action) openMenuItem(child); else go(child.route) }}>{ChildIcon && <ChildIcon size={14} />}<span>{child.label}</span></button> })}
+                    {menu.children?.filter(child => !normalizedSearch || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(child => { const ChildIcon = child.icon; const active = pathname === child.route; const updated = ROTAS_ATUALIZADAS.has(child.route); return <button type="button" key={child.label + child.route} className={`${active ? (child.route === '/pageprincipal/compras/rfq' ? 'is-active is-rfq-active' : 'is-active') : ''}`} onClick={() => { setStartMenuOpen(false); if (child.action) openMenuItem(child); else go(child.route) }}>{ChildIcon && <ChildIcon size={14} />}<span>{child.label}</span>{updated && <span aria-label="Tela atualizada" title="Revisão visual aplicada em 24/11/2026" style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', flexShrink: 0, borderRadius: '2px', background: '#F59E0B', color: '#422006', padding: '2px 5px', fontSize: '8px', lineHeight: '12px', fontWeight: 900, letterSpacing: '.04em' }}>ATUALIZADO</span>}</button> })}
                   </div>}
                 </div>
               })}
@@ -416,6 +425,23 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         {pageIntro && <PageIntroCard {...pageIntro} />}
         {children}
       </main>
+      <nav className="erp-windows-taskbar" aria-label="Barra de tarefas Windows 11">
+        <div className="erp-windows-taskbar-pinned">
+          <button type="button" className="erp-taskbar-app erp-taskbar-start" title="Menu principal" aria-label="Abrir menu principal" onClick={() => { setStartMenuOpen(value => !value); setOpenMenu(null) }}>
+            <span className="erp-windows-logo" aria-hidden="true"><i /><i /><i /><i /></span>
+          </button>
+          <button type="button" className={'erp-taskbar-app ' + (pathname === '/pageprincipal' ? 'is-active' : '')} title="Início" aria-label="Início" onClick={() => go('/pageprincipal')}><Home size={18}/></button>
+          <button type="button" className={'erp-taskbar-app ' + (pathname.startsWith('/pageprincipal/cadastros/produtos') ? 'is-active' : '')} title="Cadastro de Produtos" aria-label="Cadastro de Produtos" onClick={() => go('/pageprincipal/cadastros/produtos')}><Boxes size={18}/></button>
+          <button type="button" className={'erp-taskbar-app ' + (pathname.startsWith('/pageprincipal/pcp') ? 'is-active' : '')} title="Engenharia e PCP" aria-label="Engenharia e PCP" onClick={() => go('/pageprincipal/pcp')}><Factory size={18}/></button>
+          <button type="button" className={'erp-taskbar-app ' + (pathname.startsWith('/pageprincipal/pcp/pedidos-pendentes') ? 'is-active' : '')} title="Pedidos Pendentes" aria-label="Pedidos Pendentes" onClick={() => go('/pageprincipal/pcp/pedidos-pendentes')}><ClipboardList size={18}/></button>
+          <button type="button" className={'erp-taskbar-app ' + (pathname.startsWith('/pageprincipal/estoque') ? 'is-active' : '')} title="Estoque" aria-label="Estoque" onClick={() => go('/pageprincipal/estoque')}><Package size={18}/></button>
+          <button type="button" className={'erp-taskbar-app ' + (pathname.startsWith('/pageprincipal/vendas') ? 'is-active' : '')} title="Vendas" aria-label="Vendas" onClick={() => go('/pageprincipal/vendas')}><ShoppingCart size={18}/></button>
+        </div>
+        <div className="erp-windows-taskbar-status">
+          <span className="erp-taskbar-company">{sessionEmpresa || 'SYSNQRA ERP'}</span>
+          <time dateTime={now.toISOString()}>{new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(now)}</time>
+        </div>
+      </nav>
       <div className="erp-help-assistant">
         {helpOpen && <section className="erp-help-assistant-panel" role="dialog" aria-label={`Ajuda contextual: ${contextualHelp.title}`} aria-modal="false">
           <header><div className="erp-help-avatar"><Bot size={17}/></div><div><strong>Assistente SYSNQRA</strong><small>Ajuda desta tela</small></div><button type="button" aria-label="Fechar ajuda" onClick={() => setHelpOpen(false)}><X size={16}/></button></header>
@@ -482,6 +508,20 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-windows-help-panel p{margin:5px 0}.erp-windows-help-panel ol,.erp-windows-help-panel ul{margin:4px 0 8px;padding-left:17px}.erp-windows-help-panel li{margin-bottom:3px}.erp-windows-help-panel small{display:block;border-top:1px solid #e2e8f0;padding-top:7px;color:#647b85}
         .erp-windows-help-panel>button{margin-top:7px;height:28px;padding:0 9px;border:1px solid #2d8db8;background:#2d8db8;color:#fff;border-radius:2px;cursor:pointer}
         .erp-windows-release-alert{margin:0;padding:7px 12px;background:#7f1d1d;color:#fff;font-size:11px;font-weight:700;line-height:1.35}
+
+        .erp-windows-taskbar{position:fixed;left:0;right:0;bottom:0;z-index:1500;height:48px;min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 12px;background:rgba(248,252,254,.96);border-top:1px solid #c6dbe4;box-shadow:0 -4px 16px rgba(18,59,80,.10);backdrop-filter:blur(18px);box-sizing:border-box}
+        .erp-windows-taskbar-pinned{display:flex;align-items:center;justify-content:center;gap:5px;height:100%}
+        .erp-taskbar-app{position:relative;width:40px;height:38px;display:flex;align-items:center;justify-content:center;border:1px solid transparent;border-radius:5px;background:transparent;color:#315466;cursor:pointer;transition:background .12s,border-color .12s}
+        .erp-taskbar-app:hover{background:#e5f2f7;border-color:#c4dce6;color:#123b50}
+        .erp-taskbar-app.is-active{background:#e2f0f5;border-color:#bdd8e2;color:#123b50}
+        .erp-taskbar-app.is-active:after{content:"";position:absolute;left:12px;right:12px;bottom:1px;height:3px;border-radius:3px;background:#2d8db8}
+        .erp-taskbar-start{background:#eaf5f8;border-color:#d5e8ef}
+        .erp-taskbar-start .erp-windows-logo{width:19px;height:19px;gap:2px;flex:0 0 19px}
+        .erp-windows-taskbar-status{display:flex;align-items:center;gap:12px;min-width:0;color:#315466;font-size:10px}
+        .erp-taskbar-company{max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+        .erp-windows-taskbar-status time{white-space:nowrap;font-variant-numeric:tabular-nums;border-left:1px solid #cbdde5;padding-left:10px}
+        @media(max-width:650px){.erp-windows-taskbar{padding:0 6px;gap:4px}.erp-windows-taskbar-pinned{gap:2px}.erp-taskbar-app{width:35px}.erp-taskbar-company{display:none}.erp-windows-taskbar-status{font-size:9px}}
+        @media print{.erp-windows-taskbar{display:none!important}}
         .erp-help-assistant{position:fixed;right:18px;bottom:82px;z-index:2200;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
         .erp-help-floating-button{display:flex;align-items:center;gap:7px;height:42px;padding:0 12px 0 6px;border:1px solid #1d6688;border-radius:24px;background:#123b50;color:#fff;box-shadow:0 4px 14px rgba(18,59,80,.25);cursor:pointer;transition:transform .15s,box-shadow .15s}
         .erp-help-floating-button:hover{transform:translateY(-2px);box-shadow:0 7px 18px rgba(18,59,80,.3)}
@@ -504,7 +544,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-help-center-link{margin-top:10px;padding:7px 10px;border:1px solid #2d8db8;border-radius:5px;background:#2d8db8;color:#fff;font-size:10px;font-weight:700;cursor:pointer}
         @media(max-width:650px){.erp-help-assistant{right:12px;bottom:76px}.erp-help-floating-button{height:40px}.erp-help-assistant-panel{max-height:68vh}}
         @media print{.erp-help-assistant{display:none!important}}
-        .erp-horizontal-workspace{width:100%;max-width:100%;min-width:0;min-height:calc(100vh - 48px);padding:8px;box-sizing:border-box;background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%)}
+        .erp-horizontal-workspace{width:100%;max-width:100%;min-width:0;min-height:calc(100vh - 96px);padding:8px 8px 60px;box-sizing:border-box;background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%)}
         .erp-horizontal-workspace .bg-white{background-color:#f8fcfe!important}.erp-horizontal-workspace .bg-slate-50{background-color:#edf6fa!important}.erp-horizontal-workspace .bg-slate-100{background-color:#e7f1f6!important}
         .erp-horizontal-workspace .border-slate-200{border-color:#c9dde5!important}.erp-horizontal-workspace .border-slate-300{border-color:#b9d0dc!important}.erp-horizontal-workspace .text-slate-900{color:#123b50!important}.erp-horizontal-workspace .text-slate-700{color:#315466!important}
         .erp-horizontal-workspace .rounded-xl,.erp-horizontal-workspace .rounded-2xl{border-radius:4px!important}.erp-horizontal-workspace .rounded-lg{border-radius:3px!important}

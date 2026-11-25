@@ -26,7 +26,7 @@ type FichaOperation = { id: string; ficha_processo_id: string; sequencial_operac
 type ProcessEntry = { id: string; ordem_producao_id: string | null; operador_id: string | null; inicio_em: string; fim_em: string | null; quantidade_boa: number | null; quantidade_refugada: number | null; motivo_parada: string | null; observacoes: string | null }
 type Stoppage = { id: string; maquina_id: string; ordem_producao_id: string | null; motivo: string; inicio: string; fim: string | null; status: string | null }
 type StartedEntry = { id: string; ordem_producao_id: string; operador_id: string; inicio_em: string; fim_em: string | null; quantidade_boa: number | null; quantidade_refugada: number | null }
-type FinishedEntry = { id: string; fim_em: string; duracao_seg: number | null; quantidade_boa: number | null; quantidade_refugada: number | null }
+type FinishedEntry = { id: string; fim_em: string; duracao_seg: number | null; quantidade_boa: number | null; quantidade_refugada: number | null; lote_interno?: string | null; modo_lote?: string | null }
 
 type TabKey = 'DIA' | 'SEMANA' | 'MAQUINAS' | 'FICHA'
 
@@ -380,7 +380,8 @@ export default function ChaoDeFabricaApontamento() {
       setStopReason('')
       setObservations('')
       await loadForWorker(worker.id, empresaId)
-      setNotice('Apontamento gravado com horário do banco e baixado na programação (' + numberLabel(good) + ' boas, ' + numberLabel(scrap) + ' refugadas, ' + numberLabel(minutos) + ' min).')
+      const loteInfo = finished.lote_interno ? ' Lote gerado: ' + finished.lote_interno + ' (' + (finished.modo_lote === 'DIA' ? 'por dia' : 'por OP') + '), aguardando liberação da Qualidade.' : ''
+      setNotice('Apontamento gravado com horário do banco e baixado na programação (' + numberLabel(good) + ' boas, ' + numberLabel(scrap) + ' refugadas, ' + numberLabel(minutos) + ' min).' + loteInfo)
     } catch (cause) {
       setError(falhaDoApontamento(cause, 'Falha ao finalizar o apontamento.'))
     } finally {
