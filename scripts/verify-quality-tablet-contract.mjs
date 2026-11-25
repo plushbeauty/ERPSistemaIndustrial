@@ -12,7 +12,7 @@ const checks = [
   // alterar para Sistema SGQ; quando clicar vai abrir o tablet").
   [shell.includes("label: 'Principal'") && shell.includes("label: 'Engenharia e PCP'") && shell.includes("label: 'Sistema SGQ'") && shell.includes("label: 'Fiscal'") && shell.includes("label: 'Compras'") && shell.includes("label: 'Configurações'"), 'O menu padrão deve preservar os módulos existentes Compras e Configurações junto aos módulos autorizados nesta fase.'],
   [!shell.includes('BarraWindows11'), 'A barra Windows 11 da base foi deletada por ordem do proprietário (2026-11-02) e não pode voltar.'],
-  [!shell.includes('isUpdated') && !shell.includes('is-updated-orange'), 'O destaque laranja do menu foi removido por ordem do proprietário e não pode voltar.'],
+  [shell.includes('ROTAS_ATUALIZADAS') && shell.includes("'/pageprincipal/cadastros/produtos'") && shell.includes("'/pageprincipal/estoque/validade'") && shell.includes("'/pageprincipal/vendas/novo-pedido'") && shell.includes("'/pageprincipal/pcp/pedidos-pendentes'") && shell.includes('aria-label="Tela atualizada"') && !shell.includes('isUpdated') && !shell.includes('is-updated-orange'), 'Selo laranja ATUALIZADO restrito às quatro telas revisadas por ordem do proprietário em 2026-11-24.'],
   [app.includes('path="/erp-industrial"'), 'O dashboard principal deve permanecer acessível.'],
   [app.includes('path="/fiscal"'), 'A Fiscal aprovada deve permanecer acessível como referência.'],
   [!app.includes('path="/qualidade/tablet"') && !app.includes('path="/qualidade/paquimetro-digital"'), 'Rotas operacionais antigas devem ficar fora da navegação durante o reset.'],

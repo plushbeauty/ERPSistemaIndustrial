@@ -9,7 +9,7 @@ const checks = [
   ['Dashboard industrial aprovado preservado', readFileSync('src/AppIndustrialV7.tsx', 'utf8').includes('IndustrialCommandDashboard')],
   ['Fiscal aprovada preservada', existsSync('src/pages/Fiscal.tsx') && app.includes('path="/fiscal"')],
   ['Barra Windows 11 extinta e topbar do menu preservada', !shell.includes('BarraWindows11') && !existsSync('src/components/layout/BarraWindows11.tsx') && shell.includes('erp-windows-topbar')],
-  ['Destaque laranja removido do menu', !shell.includes('isUpdated') && !shell.includes('is-updated-orange')],
+  ['Selo laranja limitado às quatro rotas revisadas', shell.includes('ROTAS_ATUALIZADAS') && shell.includes("'/pageprincipal/cadastros/produtos'") && shell.includes("'/pageprincipal/estoque/validade'") && shell.includes("'/pageprincipal/vendas/novo-pedido'") && shell.includes("'/pageprincipal/pcp/pedidos-pendentes'") && shell.includes('aria-label="Tela atualizada"') && !shell.includes('isUpdated') && !shell.includes('is-updated-orange')],
   ['Rotas antigas abrem a Page Principal padrão', app.includes('path="*"') && app.includes('Navigate to="/pageprincipal"') && app.includes('path="/fiscal"') && app.includes('path="/pcp"') && app.includes('path="/paquimetro"')],
   ['Login nativo Supabase preservado', existsSync('src/IndustrialLoginDirect.tsx') && bootstrap.includes('IndustrialLoginDirect')],
   ['Autenticação e isolamento por empresa preservados', bootstrap.includes('supabase.auth.getSession()') && bootstrap.includes(".from('erp_usuarios')") && bootstrap.includes(".from('erp_empresas')")],

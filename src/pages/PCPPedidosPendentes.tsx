@@ -1,8 +1,8 @@
 /**
  * @AUTOR: FernandoSch
- * @DATA_REVISAO_APROVACAO: 2026-11-05
- * @REVISAO: REV-RELATORIO-A4-20261105-01 — o botão Imprimir Ficha (A4) deixa de capturar a tela e passa a emitir a carteira de pedidos pendentes em A4 pelo motor de relatório, com itens, OPs, saldo e NF-e lidos do banco
- * @STATUS_APROVACAO: ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — "Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório."
+ * @DATA_REVISAO_APROVACAO: 2026-11-24
+ * @REVISAO: REV-CARTEIRA-PEDIDOS-RASTREABILIDADE-20261124-01 — pedido, cliente, entrada, estoque, PCP, acabamento, lote, expedição e NF-e
+ * @STATUS_APROVACAO: REVISÃO SOLICITADA PELO PROPRIETÁRIO EM 2026-11-24; consultas reais e isolamento por empresa preservados
  */
 /**
  * =========================================================================
@@ -57,6 +57,7 @@ export type PieceStatus =
   | 'PRODUZIDO'          // ❇️ Produção concluída / Aprovado SGQ
   | 'PRONTO_EXPEDICAO'   // 🟣 Pronto para faturamento / expedição
   | 'FATURADO'           // ⚪ Faturado / NF-e emitida
+  | 'ENTREGUE'           // Entrega confirmada no pedido ou na expedição
 
 type Product = {
   id: string
@@ -93,6 +94,8 @@ type SalesItem = {
   produto_cliente?: string | null
   valor_unitario?: number | null
   total?: number | null
+  data_fabricacao?: string | null
+  lote_fabricacao?: string | null
 }
 
 type ProductionOrder = {
@@ -123,12 +126,32 @@ type StockReservation = {
   status: string
 }
 
+type FinishingRecord = {
+  id: string
+  ordem_producao_id: string
+  quantidade_acabada: number | null
+  status: string
+  created_at: string
+}
+
+type Expedition = {
+  id: string
+  pedido_venda_id: string
+  numero: number | string
+  status: string
+  data_expedicao: string | null
+  created_at: string
+}
+
 type FiscalDocument = {
   id: string
   numero: number | string
-  serie?: string | null
+  serie?: number | string | null
   status: string
   destinatario_nome?: string | null
+  destinatario_documento?: string | null
+  data_emissao?: string | null
+  data_saida?: string | null
   chave_acesso?: string | null
 }
 
@@ -137,6 +160,19 @@ type OrderPieceRow = {
   pedidoId: string
   pedidoCodigo: string
   pedidoClienteRef: string | null
+  produtoCliente: string | null
+  loteFabricacao: string | null
+  dataFabricacao: string | null
+  estoqueStatus: string
+  acabamentoStatus: string | null
+  acabamentoData: string | null
+  acabamentoQuantidade: number
+  expedicaoNumero: string | null
+  expedicaoStatus: string | null
+  expedicaoEntrada: string | null
+  expedicaoSaida: string | null
+  notaFiscalDataEmissao: string | null
+  notaFiscalDataSaida: string | null
   clienteId: string
   clienteNome: string
   clienteDoc: string | null
@@ -167,9 +203,9 @@ type OrderPieceRow = {
 }
 
 const inputClass =
-  'h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2.5 text-[11px] font-semibold text-slate-800 outline-none transition-all focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20'
+  'h-8 w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2.5 text-[11px] font-semibold text-slate-800 outline-none transition-all focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20'
 const btnClass =
-  'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] px-3 text-[10px] font-bold tracking-wide uppercase transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer'
+  'inline-flex h-8 items-center justify-center gap-1.5 rounded-[2px] px-3 text-[11px] font-bold tracking-wide uppercase transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer'
 
 const fmt = (n: number) => Number(n || 0).toLocaleString('pt-BR', { maximumFractionDigits: 3 })
 const dateBR = (value?: string | null) => {
@@ -265,6 +301,17 @@ const STATUS_CONFIG: Record<
     badgeBorder: 'border-slate-300',
     icon: FileCheck,
     desc: 'Nota fiscal autorizada emitida para o cliente'
+  },
+  ENTREGUE: {
+    label: 'Entregue ao cliente',
+    shortLabel: 'Entregue',
+    rowBg: 'bg-emerald-50/80 hover:bg-emerald-100/80',
+    rowBorder: 'border-l-[6px] border-l-[#3A9D78]',
+    badgeBg: 'bg-emerald-100',
+    badgeText: 'text-emerald-800',
+    badgeBorder: 'border-emerald-300',
+    icon: CheckCircle2,
+    desc: 'Entrega confirmada no pedido ou na expedição'
   }
 }
 
@@ -312,7 +359,9 @@ export default function PCPPedidosPendentes() {
         clients,
         reservations,
         machineList,
-        fiscalDocs
+        fiscalDocs,
+        finishings,
+        expeditions
       ] = await Promise.all([
         fetchAllPages<Product>((from, to) =>
           supabase
@@ -338,7 +387,7 @@ export default function PCPPedidosPendentes() {
           supabase
             .from('erp_pedidos_venda_itens')
             .select(
-              'id,pedido_id,produto_id,quantidade,descricao,produto_cliente,valor_unitario,total',
+              'id,pedido_id,produto_id,quantidade,descricao,produto_cliente,valor_unitario,total,data_fabricacao,lote_fabricacao',
               { count: 'exact' }
             )
             .eq('empresa_id', empresaId)
@@ -383,8 +432,24 @@ export default function PCPPedidosPendentes() {
         fetchAllPages<FiscalDocument>((from, to) =>
           supabase
             .from('erp_documentos_fiscais')
-            .select('id,numero,serie,status,destinatario_nome,chave_acesso', { count: 'exact' })
+            .select('id,numero,serie,status,destinatario_nome,destinatario_documento,data_emissao,data_saida,chave_acesso', { count: 'exact' })
             .eq('empresa_id', empresaId)
+            .range(from, to)
+        ),
+        fetchAllPages<FinishingRecord>((from, to) =>
+          supabase
+            .from('erp_acabamentos')
+            .select('id,ordem_producao_id,quantidade_acabada,status,created_at', { count: 'exact' })
+            .eq('empresa_id', empresaId)
+            .order('created_at', { ascending: false })
+            .range(from, to)
+        ),
+        fetchAllPages<Expedition>((from, to) =>
+          supabase
+            .from('erp_expedicoes')
+            .select('id,pedido_venda_id,numero,status,data_expedicao,created_at', { count: 'exact' })
+            .eq('empresa_id', empresaId)
+            .order('created_at', { ascending: false })
             .range(from, to)
         )
       ])
@@ -395,11 +460,13 @@ export default function PCPPedidosPendentes() {
       const clientMap = new Map(clients.map(c => [c.id, c]))
       const orderMap = new Map(orders.map(o => [o.id, o]))
       const machineMap = new Map(machineList.map(m => [m.id, m]))
-      const fiscalByDest = new Map(
-        fiscalDocs
-          .filter(f => ['autorizada', 'transmitida', 'emitida'].includes((f.status || '').toLowerCase()))
-          .map(f => [f.destinatario_nome?.trim().toLowerCase() || '', f])
-      )
+      const fiscalValidos = fiscalDocs.filter(f => ['autorizada', 'transmitida', 'emitida'].includes((f.status || '').toLowerCase()))
+      const fiscalByDest = new Map(fiscalValidos.map(f => [f.destinatario_nome?.trim().toLowerCase() || '', f]))
+      const fiscalByDocument = new Map(fiscalValidos.map(f => [(f.destinatario_documento || '').replace(/\D/g, ''), f]))
+      const finishingByOp = new Map<string, FinishingRecord>()
+      finishings.forEach(record => { if (!finishingByOp.has(record.ordem_producao_id)) finishingByOp.set(record.ordem_producao_id, record) })
+      const expeditionByOrder = new Map<string, Expedition>()
+      expeditions.forEach(record => { if (!expeditionByOrder.has(record.pedido_venda_id)) expeditionByOrder.set(record.pedido_venda_id, record) })
 
       // Mapeamento de reservas ativas por item
       const reservedByItem = new Map<string, number>()
@@ -461,20 +528,27 @@ export default function PCPPedidosPendentes() {
         // Falta fabricar (necessidade líquida de produção)
         const shortage = Math.max(0, requested - reserved - linkedPlanQty)
 
-        // Verificação de documento fiscal
-        const matchedFiscal = client?.nome ? fiscalByDest.get(client.nome.trim().toLowerCase()) : undefined
+        // Correspondência fiscal prioriza documento do destinatário; nome é fallback legado.
+        const clientDocument = (client?.documento || '').replace(/\D/g, '')
+        const matchedFiscal = (clientDocument ? fiscalByDocument.get(clientDocument) : undefined) ?? (client?.nome ? fiscalByDest.get(client.nome.trim().toLowerCase()) : undefined)
+        const linkedFinishing = linkedOp ? finishingByOp.get(linkedOp.id) : undefined
+        const expedition = expeditionByOrder.get(order.id)
 
         // =========================================================================
         // Classificação Cirúrgica dos 6 Status da Peça (do Pedido à NF-e)
         // =========================================================================
         let statusPeca: PieceStatus = 'AGUARDANDO_PCP'
 
+        const expeditionStatusLower = (expedition?.status || '').trim().toLowerCase()
+        const isDelivered = orderStatusLower.includes('entreg') || expeditionStatusLower.includes('entreg')
         const isOrderBilled = orderStatusLower.includes('faturad') || orderStatusLower.includes('concluid')
         const isOpConcluded = linkedOp && (linkedOp.status.toLowerCase().includes('conclui') || linkedProducedQty >= requested)
 
-        if (isOrderBilled || (matchedFiscal && isOpConcluded)) {
+        if (isDelivered) {
+          statusPeca = 'ENTREGUE'
+        } else if (isOrderBilled || (matchedFiscal && isOpConcluded)) {
           statusPeca = 'FATURADO'
-        } else if (orderStatusLower.includes('exped') || orderStatusLower.includes('pronto') || (reserved >= requested && orderStatusLower.includes('confirmado'))) {
+        } else if (orderStatusLower.includes('exped') || orderStatusLower.includes('pronto') || expeditionStatusLower.includes('exped') || (reserved >= requested && orderStatusLower.includes('confirmado'))) {
           statusPeca = 'PRONTO_EXPEDICAO'
         } else if (isOpConcluded) {
           statusPeca = 'PRODUZIDO'
@@ -493,6 +567,19 @@ export default function PCPPedidosPendentes() {
           pedidoId: order.id,
           pedidoCodigo: String(order.numero),
           pedidoClienteRef: order.pedido_cliente ?? null,
+          produtoCliente: item.produto_cliente ?? null,
+          loteFabricacao: item.lote_fabricacao ?? null,
+          dataFabricacao: item.data_fabricacao ?? null,
+          estoqueStatus: reserved >= requested ? 'RESERVADO' : stock > 0 ? 'SALDO FÍSICO' : 'SEM ESTOQUE',
+          acabamentoStatus: linkedFinishing?.status ?? null,
+          acabamentoData: linkedFinishing?.created_at ?? null,
+          acabamentoQuantidade: Number(linkedFinishing?.quantidade_acabada ?? 0),
+          expedicaoNumero: expedition?.numero ? String(expedition.numero) : null,
+          expedicaoStatus: expedition?.status ?? null,
+          expedicaoEntrada: expedition?.created_at ?? null,
+          expedicaoSaida: expedition?.data_expedicao ?? null,
+          notaFiscalDataEmissao: matchedFiscal?.data_emissao ?? null,
+          notaFiscalDataSaida: matchedFiscal?.data_saida ?? null,
           clienteId: order.cliente_id || '',
           clienteNome: client?.nome || 'Cliente Comercial',
           clienteDoc: client?.documento || null,
@@ -700,6 +787,7 @@ export default function PCPPedidosPendentes() {
       const somaFalta = filtered.reduce((acc, r) => acc + (r.faltaFabricar || 0), 0)
       const itensComOp = filtered.filter(r => r.opNumero).length
       const itensComNf = filtered.filter(r => r.notaFiscalNumero).length
+      const itensEntregues = filtered.filter(r => r.statusPeca === 'ENTREGUE').length
       const emFalta = filtered.filter(r => (r.faltaFabricar || 0) > 0)
       const blocos: Bloco[] = [
         {
@@ -746,6 +834,7 @@ export default function PCPPedidosPendentes() {
             { rotulo: STATUS_CONFIG.PRODUZIDO.shortLabel, valor: kpiProduzido },
             { rotulo: STATUS_CONFIG.PRONTO_EXPEDICAO.shortLabel, valor: kpiProntoExpedicao },
             { rotulo: STATUS_CONFIG.FATURADO.shortLabel, valor: kpiFaturado },
+            { rotulo: STATUS_CONFIG.ENTREGUE.shortLabel, valor: itensEntregues },
             { rotulo: 'Total de itens', valor: kpiTotal },
             { rotulo: 'Itens no filtro atual', valor: filtered.length },
             { rotulo: 'Itens sem cobertura', valor: emFalta.length }
@@ -755,26 +844,32 @@ export default function PCPPedidosPendentes() {
           tipo: 'tabela',
           titulo: 'Itens de pedido na esteira industrial',
           colunas: [
-            { titulo: 'Pedido', larguraMm: 16 },
-            { titulo: 'Cliente', larguraMm: 26 },
-            { titulo: 'Produto', larguraMm: 30 },
-            { titulo: 'Pedida', larguraMm: 13, alinhar: 'direita' },
-            { titulo: 'Falta', larguraMm: 13, alinhar: 'direita' },
-            { titulo: 'OP', larguraMm: 14 },
-            { titulo: 'Máquina', larguraMm: 12 },
+            { titulo: 'Pedido / PV', larguraMm: 18 },
+            { titulo: 'Cliente', larguraMm: 25 },
+            { titulo: 'Produto / cód. cliente', larguraMm: 31 },
+            { titulo: 'Lote', larguraMm: 16 },
+            { titulo: 'Pedida', larguraMm: 12, alinhar: 'direita' },
+            { titulo: 'A produzir', larguraMm: 13, alinhar: 'direita' },
+            { titulo: 'PCP / OP / previsão', larguraMm: 24 },
+            { titulo: 'Acabamento / registro', larguraMm: 23 },
+            { titulo: 'Expedição / registro / saída', larguraMm: 29 },
+            { titulo: 'NF-e / emissão / saída', larguraMm: 25 },
             { titulo: 'Situação' }
           ],
           linhas: filtered.map(r => [
             `PV ${r.pedidoCodigo}${r.pedidoClienteRef ? ` · ref. ${r.pedidoClienteRef}` : ''}`,
             r.clienteNome,
-            `${r.produtoCodigo} — ${r.produtoNome}`,
+            `${r.produtoCodigo}${r.produtoCliente ? ` · cliente ${r.produtoCliente}` : ''} — ${r.produtoNome}`,
+            r.loteFabricacao ?? null,
             fmt(r.quantidadePedida),
             fmt(r.faltaFabricar),
-            r.opNumero ? `OP-${r.opNumero}` : null,
-            r.maquinaCodigo ?? null,
+            r.opNumero ? `OP-${r.opNumero} · ${r.opStatus ?? ''} · prev. ${dateBR(r.opPrevisao)}` : null,
+            r.acabamentoStatus ? `${r.acabamentoStatus} · reg. ${dateBR(r.acabamentoData)} · qtd. ${fmt(r.acabamentoQuantidade)}` : 'Sem registro',
+            r.expedicaoNumero ? `EXP. ${r.expedicaoNumero} · ${r.expedicaoStatus ?? ''} · reg. ${dateBR(r.expedicaoEntrada)} · saída ${dateBR(r.expedicaoSaida)}` : 'Sem expedição',
+            r.notaFiscalNumero ? `NF-e ${r.notaFiscalNumero} · emissão ${dateBR(r.notaFiscalDataEmissao)} · saída ${dateBR(r.notaFiscalDataSaida)}` : 'Sem NF-e',
             STATUS_CONFIG[r.statusPeca].shortLabel
           ]),
-          nota: 'Quantidades pedidas, reservadas, em OP e produzidas vêm dos registros lidos pela própria tela; falta fabricar é o saldo calculado na grade.'
+          nota: 'Dados lidos das tabelas de pedidos, OPs, acabamento, expedição e documentos fiscais, com filtro empresa_id. Em acabamento, a data apresentada é o registro created_at; a tabela não possui coluna data_termino. Em expedição, created_at é a entrada do registro e data_expedicao é a saída.'
         },
         {
           tipo: 'tabela',
@@ -896,10 +991,10 @@ export default function PCPPedidosPendentes() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="rounded bg-[#123B50] px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white">
+                  <span className="rounded bg-[#123B50] px-2 py-0.5 text-[11px] font-black uppercase tracking-wider text-white">
                     SYSNQRA SGQ • PCP-016
                   </span>
-                  <span className="text-[10px] font-bold uppercase tracking-wide text-[#2D8DB8]">
+                  <span className="text-[11px] font-bold uppercase tracking-wide text-[#2D8DB8]">
                     ESTEIRA INDUSTRIAL DA PEÇA • PEDIDO À NOTA FISCAL
                   </span>
                 </div>
@@ -979,14 +1074,14 @@ export default function PCPPedidosPendentes() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-[9px] font-black uppercase tracking-wider text-rose-800">
+                <span className="text-[11px] font-black uppercase tracking-wider text-rose-800">
                   🔴 FALTA FABRICAR
                 </span>
                 <AlertTriangle size={15} className="text-[#D65B61]" />
               </div>
               <div className="mt-1 flex items-baseline justify-between">
                 <strong className="text-xl font-black text-rose-900 tabular-nums">{kpiAguardandoPcp}</strong>
-                <span className="text-[9px] font-bold text-rose-700">Aguardando OP</span>
+                <span className="text-[11px] font-bold text-rose-700">Aguardando OP</span>
               </div>
               <p className="mt-0.5 text-[8.5px] text-rose-600 truncate">Sem máquina e sem estoque</p>
             </article>
@@ -1001,14 +1096,14 @@ export default function PCPPedidosPendentes() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-[9px] font-black uppercase tracking-wider text-[#123B50]">
+                <span className="text-[11px] font-black uppercase tracking-wider text-[#123B50]">
                   🔵 EM PRODUÇÃO
                 </span>
                 <Play size={15} className="text-[#2D8DB8]" />
               </div>
               <div className="mt-1 flex items-baseline justify-between">
                 <strong className="text-xl font-black text-[#123B50] tabular-nums">{kpiEmProducao}</strong>
-                <span className="text-[9px] font-bold text-[#2D8DB8]">No Chão Fabril</span>
+                <span className="text-[11px] font-bold text-[#2D8DB8]">No Chão Fabril</span>
               </div>
               <p className="mt-0.5 text-[8.5px] text-sky-600 truncate">Máquinas alocadas e rodando</p>
             </article>
@@ -1023,14 +1118,14 @@ export default function PCPPedidosPendentes() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-[9px] font-black uppercase tracking-wider text-teal-800">
+                <span className="text-[11px] font-black uppercase tracking-wider text-teal-800">
                   🟢 EM ESTOQUE
                 </span>
                 <PackageCheck size={15} className="text-[#0D9488]" />
               </div>
               <div className="mt-1 flex items-baseline justify-between">
                 <strong className="text-xl font-black text-teal-900 tabular-nums">{kpiEmEstoque}</strong>
-                <span className="text-[9px] font-bold text-teal-700">Saldo Físico</span>
+                <span className="text-[11px] font-bold text-teal-700">Saldo Físico</span>
               </div>
               <p className="mt-0.5 text-[8.5px] text-teal-600 truncate">Pronta no almoxarifado</p>
             </article>
@@ -1045,14 +1140,14 @@ export default function PCPPedidosPendentes() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-[9px] font-black uppercase tracking-wider text-emerald-800">
+                <span className="text-[11px] font-black uppercase tracking-wider text-emerald-800">
                   ❇️ PRODUZIDO
                 </span>
                 <CheckCircle2 size={15} className="text-[#3A9D78]" />
               </div>
               <div className="mt-1 flex items-baseline justify-between">
                 <strong className="text-xl font-black text-emerald-900 tabular-nums">{kpiProduzido}</strong>
-                <span className="text-[9px] font-bold text-emerald-700">Aprovado SGQ</span>
+                <span className="text-[11px] font-bold text-emerald-700">Aprovado SGQ</span>
               </div>
               <p className="mt-0.5 text-[8.5px] text-emerald-600 truncate">OP 100% concluída</p>
             </article>
@@ -1067,14 +1162,14 @@ export default function PCPPedidosPendentes() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-[9px] font-black uppercase tracking-wider text-purple-800">
+                <span className="text-[11px] font-black uppercase tracking-wider text-purple-800">
                   🟣 PRONTO P/ FATURAR
                 </span>
                 <Layers size={15} className="text-[#8B5CF6]" />
               </div>
               <div className="mt-1 flex items-baseline justify-between">
                 <strong className="text-xl font-black text-purple-900 tabular-nums">{kpiProntoExpedicao}</strong>
-                <span className="text-[9px] font-bold text-purple-700">Expedição</span>
+                <span className="text-[11px] font-bold text-purple-700">Expedição</span>
               </div>
               <p className="mt-0.5 text-[8.5px] text-purple-600 truncate">Aguardando emissão NF-e</p>
             </article>
@@ -1089,14 +1184,14 @@ export default function PCPPedidosPendentes() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-[9px] font-black uppercase tracking-wider text-slate-700">
+                <span className="text-[11px] font-black uppercase tracking-wider text-slate-700">
                   ⚪ FATURADO (NF-e)
                 </span>
                 <FileCheck size={15} className="text-slate-500" />
               </div>
               <div className="mt-1 flex items-baseline justify-between">
                 <strong className="text-xl font-black text-slate-800 tabular-nums">{kpiFaturado}</strong>
-                <span className="text-[9px] font-bold text-slate-600">Ciclo Concluído</span>
+                <span className="text-[11px] font-bold text-slate-600">Ciclo Concluído</span>
               </div>
               <p className="mt-0.5 text-[8.5px] text-slate-500 truncate">Nota fiscal emitida</p>
             </article>
@@ -1108,7 +1203,7 @@ export default function PCPPedidosPendentes() {
               <button
                 type="button"
                 onClick={() => setStatusFilter('TODOS')}
-                className={`h-[28px] px-2.5 text-[10px] font-bold uppercase rounded-[2px] transition-all ${
+                className={`h-8 px-2.5 text-[11px] font-bold uppercase rounded-[2px] transition-all ${
                   statusFilter === 'TODOS'
                     ? 'bg-[#123B50] text-white shadow-xs'
                     : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
@@ -1124,7 +1219,7 @@ export default function PCPPedidosPendentes() {
                     key={stKey}
                     type="button"
                     onClick={() => setStatusFilter(stKey)}
-                    className={`h-[28px] px-2 text-[9px] font-bold uppercase rounded-[2px] transition-all ${
+                    className={`h-8 px-2 text-[11px] font-bold uppercase rounded-[2px] transition-all ${
                       statusFilter === stKey
                         ? `${conf.badgeBg} ${conf.badgeText} border ${conf.badgeBorder} shadow-xs font-black`
                         : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
@@ -1144,14 +1239,14 @@ export default function PCPPedidosPendentes() {
                   placeholder="Buscar PV, cliente, peça, OP, máquina..."
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className="h-[28px] w-full rounded-[2px] border border-slate-300 bg-white pl-8 pr-2.5 text-[11px] font-semibold text-slate-800 outline-none focus:border-[#2D8DB8]"
+                  className="h-8 w-full rounded-[2px] border border-slate-300 bg-white pl-8 pr-2.5 text-[11px] font-semibold text-slate-800 outline-none focus:border-[#2D8DB8]"
                 />
               </div>
 
               <select
                 value={machineFilter}
                 onChange={e => setMachineFilter(e.target.value)}
-                className="h-[28px] rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-semibold text-slate-700 outline-none focus:border-[#2D8DB8]"
+                className="h-8 rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] font-semibold text-slate-700 outline-none focus:border-[#2D8DB8]"
               >
                 <option value="">Todas as Máquinas</option>
                 {machines.map(m => (
@@ -1173,38 +1268,43 @@ export default function PCPPedidosPendentes() {
                 <h2 className="font-black uppercase tracking-wider text-[#123B50]">
                   Esteira de Atendimento da Carteira ({filtered.length} itens)
                 </h2>
-                <span className="text-[10px] font-bold text-slate-500">
+                <span className="text-[11px] font-bold text-slate-500">
                   • Total de falta a fabricar: <strong className="text-rose-700 font-mono">{fmt(totalFaltaPecas)} peças</strong>
                 </span>
               </div>
-              <div className="flex items-center gap-3 text-[9px] font-bold text-slate-500">
+              <div className="flex items-center gap-3 text-[11px] font-bold text-slate-500">
                 <span>Clique em qualquer linha para ver a rastreabilidade completa</span>
               </div>
             </div>
 
             {/* Grade de Dados com Linhas Coloridas */}
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[1300px] border-collapse text-[11px]">
+              <table className="w-full min-w-[1900px] border-collapse text-[11px]">
                 <thead className="bg-[#123B50] text-white">
-                  <tr className="h-[32px]">
-                    <th className="px-2 text-left font-bold uppercase text-[9px] tracking-wider w-[100px]">Pedido / PV</th>
-                    <th className="px-2 text-left font-bold uppercase text-[9px] tracking-wider">Cliente</th>
-                    <th className="px-2 text-left font-bold uppercase text-[9px] tracking-wider w-[90px]">Cód. Peça</th>
-                    <th className="px-2 text-left font-bold uppercase text-[9px] tracking-wider">Descrição do Produto</th>
-                    <th className="px-2 text-center font-bold uppercase text-[9px] tracking-wider w-[80px]">Entrega</th>
-                    <th className="px-2 text-right font-bold uppercase text-[9px] tracking-wider w-[80px]">Qtd. Pedida</th>
-                    <th className="px-2 text-right font-bold uppercase text-[9px] tracking-wider w-[80px]">Estoque Físico</th>
-                    <th className="px-2 text-right font-bold uppercase text-[9px] tracking-wider w-[80px]">Reservado</th>
-                    <th className="px-2 text-center font-bold uppercase text-[9px] tracking-wider w-[140px]">OP / Produção</th>
-                    <th className="px-2 text-right font-bold uppercase text-[9px] tracking-wider w-[90px]">Falta Fabricar</th>
-                    <th className="px-2 text-center font-bold uppercase text-[9px] tracking-wider w-[150px]">Status na Fábrica</th>
-                    <th className="px-2 text-center font-bold uppercase text-[9px] tracking-wider w-[120px]">Ações</th>
+                  <tr className="h-8">
+                    <th className="px-2 text-left font-bold uppercase text-[11px] tracking-wider w-[100px]">Pedido / PV</th>
+                    <th className="px-2 text-left font-bold uppercase text-[11px] tracking-wider">Cliente</th>
+                    <th className="px-2 text-center font-bold uppercase text-[11px] tracking-wider w-[78px]">Entrada</th>
+                    <th className="px-2 text-left font-bold uppercase text-[11px] tracking-wider w-[105px]">Cód. Peça / Cliente</th>
+                    <th className="px-2 text-left font-bold uppercase text-[11px] tracking-wider">Descrição</th>
+                    <th className="px-2 text-left font-bold uppercase text-[11px] tracking-wider w-[115px]">Lote / Fabricação</th>
+                    <th className="px-2 text-center font-bold uppercase text-[11px] tracking-wider w-[78px]">Entrega</th>
+                    <th className="px-2 text-right font-bold uppercase text-[11px] tracking-wider w-[78px]">Qtd. Pedida</th>
+                    <th className="px-2 text-right font-bold uppercase text-[11px] tracking-wider w-[105px]">Estoque / Status</th>
+                    <th className="px-2 text-right font-bold uppercase text-[11px] tracking-wider w-[78px]">Reservado</th>
+                    <th className="px-2 text-center font-bold uppercase text-[11px] tracking-wider w-[145px]">PCP / OP / Previsão</th>
+                    <th className="px-2 text-right font-bold uppercase text-[11px] tracking-wider w-[90px]">A Produzir</th>
+                    <th className="px-2 text-center font-bold uppercase text-[11px] tracking-wider w-[125px]">Acabamento / Registro</th>
+                    <th className="px-2 text-center font-bold uppercase text-[11px] tracking-wider w-[145px]">Expedição / Datas</th>
+                    <th className="px-2 text-center font-bold uppercase text-[11px] tracking-wider w-[115px]">NF-e / Saída</th>
+                    <th className="px-2 text-center font-bold uppercase text-[11px] tracking-wider w-[125px]">Status</th>
+                    <th className="px-2 text-center font-bold uppercase text-[11px] tracking-wider w-[120px]">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
                   {filtered.length === 0 ? (
                     <tr>
-                      <td colSpan={12} className="p-8 text-center text-xs font-semibold text-slate-400">
+                      <td colSpan={17} className="p-8 text-center text-xs font-semibold text-slate-400">
                         {loading
                           ? 'Carregando dados da esteira industrial...'
                           : 'Nenhum pedido pendente encontrado com os filtros selecionados.'}
@@ -1236,7 +1336,7 @@ export default function PCPPedidosPendentes() {
                               <span>PV-{row.pedidoCodigo}</span>
                             </div>
                             {row.pedidoClienteRef && (
-                              <div className="text-[9px] text-slate-500 truncate" title={`Ref: ${row.pedidoClienteRef}`}>
+                              <div className="text-[11px] text-slate-500 truncate" title={`Ref: ${row.pedidoClienteRef}`}>
                                 Ref: {row.pedidoClienteRef}
                               </div>
                             )}
@@ -1248,24 +1348,30 @@ export default function PCPPedidosPendentes() {
                               {row.clienteNome}
                             </div>
                             {row.clienteDoc && (
-                              <span className="text-[9px] text-slate-400">{row.clienteDoc}</span>
+                              <span className="text-[11px] text-slate-400">{row.clienteDoc}</span>
                             )}
                           </td>
 
-                          {/* Coluna 3: Código */}
+                          {/* Coluna 3: Data de entrada */}
+                          <td className="px-2 py-2 text-center text-[11px] font-semibold text-slate-700">{dateBR(row.dataEntrada)}</td>
+
+                          {/* Coluna 4: Código interno e referência do cliente */}
                           <td className="px-2 py-2 font-mono font-bold text-[#123B50]">
-                            {row.produtoCodigo}
+                            <span>{row.produtoCodigo}</span>
+                            {row.produtoCliente && <span className="mt-0.5 block font-sans text-[11px] font-semibold text-slate-500">Cliente: {row.produtoCliente}</span>}
                           </td>
 
                           {/* Coluna 4: Descrição */}
                           <td className="px-2 py-2">
-                            <div className="truncate max-w-[240px] text-slate-800" title={row.produtoNome}>
-                              {row.produtoNome}
-                            </div>
+                            <div className="truncate max-w-[240px] text-slate-800" title={row.produtoNome}>{row.produtoNome}</div>
+                          </td>
+                          <td className="px-2 py-2 text-[11px] text-slate-700">
+                            <strong className="block font-mono">{row.loteFabricacao || '—'}</strong>
+                            <span className="text-[11px] text-slate-500">Fab.: {dateBR(row.dataFabricacao)}</span>
                           </td>
 
                           {/* Coluna 5: Prazo de Entrega */}
-                          <td className="px-2 py-2 text-center text-[10px] font-semibold text-slate-700">
+                          <td className="px-2 py-2 text-center text-[11px] font-semibold text-slate-700">
                             {dateBR(row.dataEntrega)}
                           </td>
 
@@ -1275,8 +1381,9 @@ export default function PCPPedidosPendentes() {
                           </td>
 
                           {/* Coluna 7: Estoque Físico */}
-                          <td className="px-2 py-2 text-right font-mono text-slate-700">
-                            {fmt(row.estoqueAtual)}
+                          <td className="px-2 py-2 text-right">
+                            <strong className="block font-mono text-slate-800">{fmt(row.estoqueAtual)}</strong>
+                            <span className="text-[8px] font-bold uppercase text-slate-500">{row.estoqueStatus}</span>
                           </td>
 
                           {/* Coluna 8: Saldo Reservado */}
@@ -1288,7 +1395,7 @@ export default function PCPPedidosPendentes() {
                           <td className="px-2 py-2 text-center">
                             {hasOp ? (
                               <div className="flex flex-col items-center">
-                                <div className="flex items-center gap-1 text-[9px] font-bold text-[#123B50]">
+                                <div className="flex items-center gap-1 text-[11px] font-bold text-[#123B50]">
                                   <span>OP-{row.opNumero}</span>
                                   {row.maquinaCodigo && (
                                     <span className="rounded bg-slate-200 px-1 py-0.2 text-[8px] font-mono">
@@ -1296,6 +1403,8 @@ export default function PCPPedidosPendentes() {
                                     </span>
                                   )}
                                 </div>
+                                {row.opStatus && <span className="text-[8px] font-bold uppercase text-slate-500">{row.opStatus}</span>}
+                                {row.opPrevisao && <span className="text-[8px] text-slate-500">Previsão PCP: {dateBR(row.opPrevisao)}</span>}
                                 <div className="h-1.5 w-24 bg-slate-200 rounded-full overflow-hidden mt-0.5">
                                   <div
                                     className={`h-full ${pctProduced >= 100 ? 'bg-[#3A9D78]' : 'bg-[#2D8DB8]'}`}
@@ -1307,7 +1416,7 @@ export default function PCPPedidosPendentes() {
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-[9px] text-slate-400 italic">Sem OP</span>
+                              <span className="text-[11px] text-slate-400 italic">Sem OP</span>
                             )}
                           </td>
 
@@ -1322,13 +1431,29 @@ export default function PCPPedidosPendentes() {
                             )}
                           </td>
 
-                          {/* Coluna 11: Status na Fábrica (Mudança de Cor da Linha) */}
+                          {/* Coluna 13: Acabamento — data exibida como registro, não como data de término. */}
+                          <td className="px-2 py-2 text-center text-[11px]">
+                            <strong className="block text-slate-700">{row.acabamentoStatus || 'Sem registro'}</strong>
+                            <span className="text-slate-500">{row.acabamentoData ? dateBR(row.acabamentoData) : '—'}</span>
+                            {row.acabamentoQuantidade > 0 && <span className="block font-mono text-emerald-700">Qtd. {fmt(row.acabamentoQuantidade)}</span>}
+                          </td>
+                          {/* Coluna 14: Expedição — created_at é a entrada do registro; data_expedicao é a saída. */}
+                          <td className="px-2 py-2 text-center text-[11px]">
+                            <strong className="block text-slate-700">{row.expedicaoNumero ? 'EXP. ' + row.expedicaoNumero : 'Sem expedição'}</strong>
+                            <span className="block text-slate-500">{row.expedicaoStatus || '—'}</span>
+                            <span className="block text-slate-500">Reg.: {dateBR(row.expedicaoEntrada)}</span>
+                            <span className="block text-slate-500">Saída: {dateBR(row.expedicaoSaida)}</span>
+                          </td>
+                          {/* Coluna 15: Documento fiscal */}
+                          <td className="px-2 py-2 text-center text-[11px]">
+                            <strong className="block font-mono text-slate-800">{row.notaFiscalNumero || 'Sem NF-e'}</strong>
+                            <span className="block text-slate-500">Emissão: {dateBR(row.notaFiscalDataEmissao)}</span>
+                            <span className="block text-slate-500">Saída: {dateBR(row.notaFiscalDataSaida)}</span>
+                          </td>
+                          {/* Coluna 16: Status na fábrica / entrega */}
                           <td className="px-2 py-2 text-center">
-                            <span
-                              className={`inline-flex items-center gap-1 rounded-[2px] border px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${cfg.badgeBg} ${cfg.badgeText} ${cfg.badgeBorder}`}
-                            >
-                              <StatusIcon size={11} />
-                              {cfg.shortLabel}
+                            <span className={`inline-flex items-center gap-1 rounded-[2px] border px-2 py-0.5 text-[11px] font-black uppercase tracking-wider ${cfg.badgeBg} ${cfg.badgeText} ${cfg.badgeBorder}`}>
+                              <StatusIcon size={11} />{cfg.shortLabel}
                             </span>
                           </td>
 
@@ -1345,7 +1470,7 @@ export default function PCPPedidosPendentes() {
                                   row.estoqueAtual <= 0
                                 }
                                 onClick={() => void reserveStock(row)}
-                                className="h-6 px-1.5 text-[9px] font-black uppercase rounded bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-0.5"
+                                className="h-8 px-2 text-[11px] font-black uppercase rounded bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-0.5"
                                 title="Reservar saldo disponível no estoque"
                               >
                                 <PackageCheck size={11} />
@@ -1362,7 +1487,7 @@ export default function PCPPedidosPendentes() {
                                     setOpModalMachineId(row.maquinaId || '')
                                     setShowOpModal(true)
                                   }}
-                                  className="h-6 px-1.5 text-[9px] font-black uppercase rounded bg-[#2D8DB8] text-white hover:bg-[#236F91] flex items-center gap-0.5"
+                                  className="h-8 px-2 text-[11px] font-black uppercase rounded bg-[#2D8DB8] text-white hover:bg-[#236F91] flex items-center gap-0.5"
                                   title="Gerar Ordem de Produção no PCP"
                                 >
                                   <Factory size={11} />
@@ -1375,7 +1500,7 @@ export default function PCPPedidosPendentes() {
                                 <button
                                   type="button"
                                   onClick={() => navigate('/fiscal/carteira-nfe')}
-                                  className="h-6 px-1.5 text-[9px] font-black uppercase rounded bg-purple-600 text-white hover:bg-purple-700 flex items-center gap-0.5"
+                                  className="h-8 px-2 text-[11px] font-black uppercase rounded bg-purple-600 text-white hover:bg-purple-700 flex items-center gap-0.5"
                                   title="Ir para Faturamento / Carteira Fiscal"
                                 >
                                   <FileText size={11} />
@@ -1404,7 +1529,7 @@ export default function PCPPedidosPendentes() {
                   <div className="border-t-2 border-[#123B50] bg-slate-50 p-4">
                     <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                       <div className="flex items-center gap-2">
-                        <span className="rounded bg-[#123B50] px-2 py-0.5 text-[9px] font-black text-white">
+                        <span className="rounded bg-[#123B50] px-2 py-0.5 text-[11px] font-black text-white">
                           RASTREABILIDADE COMPLETA DA PEÇA
                         </span>
                         <h3 className="text-sm font-black text-[#123B50]">
@@ -1425,11 +1550,11 @@ export default function PCPPedidosPendentes() {
                       
                       {/* Fase 1: Comercial */}
                       <div className="rounded border border-slate-200 bg-white p-2.5 shadow-xs">
-                        <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-slate-500">
+                        <div className="flex items-center gap-1.5 text-[11px] font-black uppercase text-slate-500">
                           <ShoppingCart size={13} className="text-[#123B50]" />
                           <span>1. Pedido de Venda</span>
                         </div>
-                        <div className="mt-2 space-y-1 text-[10px]">
+                        <div className="mt-2 space-y-1 text-[11px]">
                           <div><strong>Nº Pedido:</strong> PV-{target.pedidoCodigo}</div>
                           <div><strong>Entrada:</strong> {dateBR(target.dataEntrada)}</div>
                           <div><strong>Prometida:</strong> {dateBR(target.dataEntrega)}</div>
@@ -1439,11 +1564,11 @@ export default function PCPPedidosPendentes() {
 
                       {/* Fase 2: Almoxarifado / Estoque */}
                       <div className="rounded border border-slate-200 bg-white p-2.5 shadow-xs">
-                        <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-slate-500">
+                        <div className="flex items-center gap-1.5 text-[11px] font-black uppercase text-slate-500">
                           <Package size={13} className="text-[#0D9488]" />
                           <span>2. Estoque Físico</span>
                         </div>
-                        <div className="mt-2 space-y-1 text-[10px]">
+                        <div className="mt-2 space-y-1 text-[11px]">
                           <div><strong>Estoque Atual:</strong> {fmt(target.estoqueAtual)} {target.produtoUnidade}</div>
                           <div><strong>Saldo Reservado:</strong> {fmt(target.quantidadeReservada)} {target.produtoUnidade}</div>
                           <div><strong>Status Almox:</strong> {target.quantidadeReservada >= target.quantidadePedida ? 'Coberto' : 'Incompleto'}</div>
@@ -1452,11 +1577,11 @@ export default function PCPPedidosPendentes() {
 
                       {/* Fase 3: PCP & Chão de Fábrica */}
                       <div className="rounded border border-slate-200 bg-white p-2.5 shadow-xs">
-                        <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-slate-500">
+                        <div className="flex items-center gap-1.5 text-[11px] font-black uppercase text-slate-500">
                           <Factory size={13} className="text-[#2D8DB8]" />
                           <span>3. Chão de Fábrica</span>
                         </div>
-                        <div className="mt-2 space-y-1 text-[10px]">
+                        <div className="mt-2 space-y-1 text-[11px]">
                           <div><strong>OP:</strong> {target.opNumero ? `OP-${target.opNumero}` : 'Não emitida'}</div>
                           <div><strong>Máquina:</strong> {target.maquinaCodigo ? `${target.maquinaCodigo} - ${target.maquinaNome}` : 'A definir'}</div>
                           <div><strong>Produzido:</strong> {fmt(target.quantidadeProduzidaOP)} / {fmt(target.quantidadeEmOP)}</div>
@@ -1466,11 +1591,11 @@ export default function PCPPedidosPendentes() {
 
                       {/* Fase 4: Qualidade SGQ */}
                       <div className="rounded border border-slate-200 bg-white p-2.5 shadow-xs">
-                        <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-slate-500">
+                        <div className="flex items-center gap-1.5 text-[11px] font-black uppercase text-slate-500">
                           <CheckCircle2 size={13} className="text-[#3A9D78]" />
                           <span>4. Inspeção SGQ</span>
                         </div>
-                        <div className="mt-2 space-y-1 text-[10px]">
+                        <div className="mt-2 space-y-1 text-[11px]">
                           <div><strong>Primeira Peça:</strong> {target.opNumero ? 'Liberada' : 'Aguardando'}</div>
                           <div><strong>Dimensional:</strong> Conforme desenho</div>
                           <div><strong>Situação:</strong> {target.statusPeca === 'PRODUZIDO' || target.statusPeca === 'PRONTO_EXPEDICAO' || target.statusPeca === 'FATURADO' ? 'Aprovado' : 'Em andamento'}</div>
@@ -1479,11 +1604,11 @@ export default function PCPPedidosPendentes() {
 
                       {/* Fase 5: Faturamento / NF-e */}
                       <div className="rounded border border-slate-200 bg-white p-2.5 shadow-xs">
-                        <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-slate-500">
+                        <div className="flex items-center gap-1.5 text-[11px] font-black uppercase text-slate-500">
                           <FileCheck size={13} className="text-slate-600" />
                           <span>5. Faturamento &amp; Saída</span>
                         </div>
-                        <div className="mt-2 space-y-1 text-[10px]">
+                        <div className="mt-2 space-y-1 text-[11px]">
                           <div><strong>Status Fiscal:</strong> {target.statusPeca === 'FATURADO' ? 'Autorizado' : 'Aguardando'}</div>
                           <div><strong>NF-e:</strong> {target.notaFiscalNumero ? `NF ${target.notaFiscalNumero}` : 'Pendente'}</div>
                           {target.notaFiscalChave && (
@@ -1498,11 +1623,11 @@ export default function PCPPedidosPendentes() {
                     {/* Ações Técnicas no Rodapé do Drawer */}
                     <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 pt-3">
                       <div className="flex items-center gap-2">
-                        <span className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-[10px] font-black uppercase ${targetCfg.badgeBg} ${targetCfg.badgeText} border ${targetCfg.badgeBorder}`}>
+                        <span className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-black uppercase ${targetCfg.badgeBg} ${targetCfg.badgeText} border ${targetCfg.badgeBorder}`}>
                           <TargetIcon size={12} />
                           {targetCfg.label}
                         </span>
-                        <span className="text-[10px] text-slate-500">
+                        <span className="text-[11px] text-slate-500">
                           {targetCfg.desc}
                         </span>
                       </div>
@@ -1566,7 +1691,7 @@ export default function PCPPedidosPendentes() {
               </button>
             </div>
 
-            <div className="mt-3 rounded-[2px] border border-slate-200 bg-slate-50 p-2 text-[10px] space-y-1">
+            <div className="mt-3 rounded-[2px] border border-slate-200 bg-slate-50 p-2 text-[11px] space-y-1">
               <div><strong>Pedido de Venda:</strong> PV-{targetRowForOp.pedidoCodigo} • {targetRowForOp.clienteNome}</div>
               <div><strong>Peça:</strong> {targetRowForOp.produtoCodigo} — {targetRowForOp.produtoNome}</div>
               <div><strong>Falta Fabricar:</strong> <strong className="text-rose-700">{fmt(targetRowForOp.faltaFabricar)} {targetRowForOp.produtoUnidade}</strong></div>
@@ -1581,7 +1706,7 @@ export default function PCPPedidosPendentes() {
             >
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="flex flex-col gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-500">
+                  <label className="flex flex-col gap-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                     Quantidade da OP *
                   </label>
                   <input
@@ -1596,7 +1721,7 @@ export default function PCPPedidosPendentes() {
                 </div>
 
                 <div>
-                  <label className="flex flex-col gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-500">
+                  <label className="flex flex-col gap-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                     Máquina Destino
                   </label>
                   <select
@@ -1616,7 +1741,7 @@ export default function PCPPedidosPendentes() {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="flex flex-col gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-500">
+                  <label className="flex flex-col gap-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                     Velocidade Nominal (un/h)
                   </label>
                   <input
@@ -1631,7 +1756,7 @@ export default function PCPPedidosPendentes() {
                 </div>
 
                 <div>
-                  <label className="flex flex-col gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-500">
+                  <label className="flex flex-col gap-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                     Prioridade
                   </label>
                   <select
@@ -1646,7 +1771,7 @@ export default function PCPPedidosPendentes() {
                 </div>
               </div>
 
-              <label className="flex items-center gap-2 text-[10px] font-bold text-slate-700">
+              <label className="flex items-center gap-2 text-[11px] font-bold text-slate-700">
                 <input
                   type="checkbox"
                   checked={opModalDoubleOp}
