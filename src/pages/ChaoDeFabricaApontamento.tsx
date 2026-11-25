@@ -24,7 +24,7 @@ type Recipe = { id: string; processo_id: string; produto_id: string | null; maqu
 type Ficha = { id: string; produto_id: string; codigo_ficha: string; status: string | null; categoria_processo: string | null; versao_ficha: number | null; revisao: number | null; maquina_id: string | null; ciclo_seg: number | null; peso_peca: number | null; peso_canal: number | null; forca_fechamento: number | null; pressao_trabalho: number | null; temperatura_trabalho: number | null; pressao_injecao: number | null; zonas_temperatura: Record<string, unknown> | null; parametros_tecnicos: Record<string, unknown> | null; observacoes_setup: string | null; observacoes: string | null; imagem_url: string | null; data_homologacao: string | null; assinatura_tecnica: string | null }
 type FichaOperation = { id: string; ficha_processo_id: string; sequencial_operacao: number; descricao_operacao: string; posto_trabalho_id: string | null; tempo_minutos: number }
 type ProcessEntry = { id: string; ordem_producao_id: string | null; operador_id: string | null; inicio_em: string; fim_em: string | null; quantidade_boa: number | null; quantidade_refugada: number | null; motivo_parada: string | null; observacoes: string | null }
-type Stoppage = { id: string; maquina_id: string; ordem_producao_id: string | null; motivo: string; inicio: string; fim: string | null; status: string | null }
+type Stoppage = { id: string; maquina_id: string; ordem_producao_id: string | null; operador_id: string | null; encerrado_por_operador_id: string | null; motivo: string; inicio: string; fim: string | null; status: string | null }
 type StartedEntry = { id: string; ordem_producao_id: string; operador_id: string; inicio_em: string; fim_em: string | null; quantidade_boa: number | null; quantidade_refugada: number | null }
 type FinishedEntry = { id: string; fim_em: string; duracao_seg: number | null; quantidade_boa: number | null; quantidade_refugada: number | null; lote_interno?: string | null; modo_lote?: string | null }
 
@@ -121,7 +121,7 @@ export default function ChaoDeFabricaApontamento() {
       fetchAllPages<Program>((from, to) => supabase.from('erp_pcp_programacoes')
         .select('id,ordem_producao_id,maquina_id,produto_id,inicio_planejado,fim_planejado,quantidade_planejada,quantidade_produzida,quantidade_refugada,status,operador_frente_id,operador_atras_id', { count: 'exact' })
         .eq('empresa_id', tenant)
-        .or('operador_frente_id.eq.' + workerId + ',operador_atras_id.eq.' + workerId)
+        .or('operador_id.eq.' + workerId + ',operador_a_id.eq.' + workerId + ',operador_b_id.eq.' + workerId + ',operador_frente_id.eq.' + workerId + ',operador_atras_id.eq.' + workerId)
         .gte('inicio_planejado', windowStart.toISOString())
         .lte('inicio_planejado', windowEnd.toISOString())
         .order('inicio_planejado', { ascending: true })
@@ -164,7 +164,7 @@ export default function ChaoDeFabricaApontamento() {
         .eq('empresa_id', tenant).eq('ativo', true).in('produto_id', ids).order('codigo_ficha').order('id').range(from, to)))),
       machineIds.length
         ? fetchAllPages<Stoppage>((from, to) => supabase.from('erp_producao_paradas')
-            .select('id,maquina_id,ordem_producao_id,motivo,inicio,fim,status', { count: 'exact' })
+            .select('id,maquina_id,ordem_producao_id,operador_id,encerrado_por_operador_id,motivo,inicio,fim,status', { count: 'exact' })
             .eq('empresa_id', tenant).in('maquina_id', machineIds).gte('inicio', windowStart.toISOString()).order('inicio', { ascending: false }).order('id').range(from, to))
         : Promise.resolve([] as Stoppage[]),
     ])
@@ -390,6 +390,10 @@ export default function ChaoDeFabricaApontamento() {
   }
 
   async function registerStoppage() {
+    if (!worker) {
+      setError('Identifique o operador pelo cartão antes de registrar a parada.')
+      return
+    }
     if (!empresaId) {
       setError('Empresa da sessão não identificada: troque o cartão antes de registrar a parada.')
       return
@@ -412,12 +416,13 @@ export default function ChaoDeFabricaApontamento() {
           empresa_id: empresaId,
           maquina_id: machine.id,
           ordem_producao_id: program.ordem_producao_id ?? null,
+          operador_id: worker.id,
           motivo,
           inicio: new Date().toISOString(),
           observacao: observations.trim() || null,
           status: 'ABERTA',
         })
-        .select('id,maquina_id,ordem_producao_id,motivo,inicio,fim,status')
+        .select('id,maquina_id,ordem_producao_id,operador_id,encerrado_por_operador_id,motivo,inicio,fim,status')
       if (response.error) throw response.error
       const rows = (response.data ?? []) as Stoppage[]
       if (rows.length === 0) throw new Error('A parada não foi gravada: a conta da sessão não tem permissão de apontamento de produção.')
@@ -431,6 +436,10 @@ export default function ChaoDeFabricaApontamento() {
   }
 
   async function closeStoppage() {
+    if (!worker) {
+      setError('Identifique o operador pelo cartão antes de encerrar a parada.')
+      return
+    }
     if (!empresaId) {
       setError('Empresa da sessão não identificada: troque o cartão antes de encerrar a parada.')
       return
@@ -444,10 +453,10 @@ export default function ChaoDeFabricaApontamento() {
     setNotice('')
     try {
       const response = await supabase.from('erp_producao_paradas')
-        .update({ fim: new Date().toISOString(), status: 'FECHADA', observacao: observations.trim() || openStoppage.motivo })
+        .update({ fim: new Date().toISOString(), status: 'FECHADA', observacao: observations.trim() || openStoppage.motivo, encerrado_por_operador_id: worker.id })
         .eq('id', openStoppage.id)
         .eq('empresa_id', empresaId)
-        .select('id,maquina_id,ordem_producao_id,motivo,inicio,fim,status')
+        .select('id,maquina_id,ordem_producao_id,operador_id,encerrado_por_operador_id,motivo,inicio,fim,status')
       if (response.error) throw response.error
       const rows = (response.data ?? []) as Stoppage[]
       if (rows.length === 0) throw new Error('A parada não foi encerrada: a conta da sessão não tem permissão de apontamento de produção.')
