@@ -197,7 +197,7 @@ export default function ChaoDeFabricaApontamento() {
       if (lookup.error) {
         const texto = String(lookup.error.message ?? '')
         if (lookup.error.code === 'PGRST202' || /erp_operador_identificar_cartao|schema cache|Could not find the function/i.test(texto)) {
-          throw new Error('A identificação por cartão + CPF ainda não está aplicada no banco. Execute supabase/migrations/20261108120000_erp_operador_cartao_cpf3_v1.sql no SQL Editor e tente de novo.')
+          throw new Error('A identificação por cartão + CPF ainda não está aplicada no banco. Execute supabase/migrations/20261125005809_operator_session_and_remaining_rbac_hardening.sql no SQL Editor e tente de novo.')
         }
         throw new Error(texto || 'Não foi possível conferir cartão e CPF.')
       }
