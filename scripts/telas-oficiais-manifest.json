@@ -437,9 +437,9 @@
     },
     {
       "path": "src/pages/ChaoDeFabricaApontamento.tsx",
-      "sha": "b9d4f748bd0f0cd4dfdfbbdf2333bc7a10b91118",
+      "sha": "e9bcdd10648845198817b3a08d533886ea8494ae",
       "autor": "FernandoSch",
-      "revisao": "REV-CHAO-DE-FABRICA-OPERADOR-SESSION-20261125 — identificação de operador vinculada à sessão autenticada; layout aprovado preservado",
+      "revisao": "REV-CHAO-DE-FABRICA-OPERADOR-SESSION-20261125 — agenda e paradas restritas à sessão do operador; autoria de abertura/encerramento rastreada",
       "aprovadaEm": "2026-11-08",
       "statusAprovacao": "Apontamento de produção gera lote rastreável e informa código ao operador."
     },
