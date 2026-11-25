@@ -322,6 +322,7 @@ export default function AppEntryV2() {
               <Route path="rh/entrega-epis" element={<EpisScreen />} />
               <Route path="rh/epis/entregas" element={<EpisScreen />} />
               <Route path="pcp/fichas-processo" element={<QualityPlanGate><PCPFichasProcesso /></QualityPlanGate>} />
+              <Route path="ficha-montagem" element={<Navigate to="/pageprincipal/pcp/fichas-processo?tipo=MONTAGEM_EMBALAGEM" replace />} />
               <Route path="pcp/roteiro-producao" element={<Navigate to="/pageprincipal/pcp/fichas-processo" replace />} />
               <Route path="qualidade/rpnc" element={<QualityPlanGate><QualidadeRPNC /></QualityPlanGate>} />
               <Route path="qualidade/rpnc-formulario" element={<Navigate to="/pageprincipal/qualidade/rpnc" replace />} />
@@ -590,6 +591,7 @@ export default function AppEntryV2() {
             <Route path="/compras" element={<Navigate to="/pageprincipal/compras" replace />} />
             <Route path="/rh" element={<Navigate to="/pageprincipal/rh" replace />} />
             <Route path="/pcp/fichas-processo" element={<Navigate to="/pageprincipal/pcp/fichas-processo" replace />} />
+            <Route path="/ficha-montagem" element={<Navigate to="/pageprincipal/ficha-montagem" replace />} />
             <Route path="/compras/solicitacao" element={<Navigate to="/pageprincipal/compras/solicitacao" replace />} />
             <Route path="/compras/requisicoes" element={<Navigate to="/pageprincipal/compras/requisicoes" replace />} />
             <Route path="/qualidade/rpnc" element={<Navigate to="/pageprincipal/qualidade/rpnc" replace />} />
