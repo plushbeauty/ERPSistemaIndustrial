@@ -63,3 +63,14 @@ Uma tarefa só está concluída quando:
 - o relatório final apresenta evidências, não promessas.
 
 **Se não houver acesso, permissão, segredo ou ambiente para concluir uma etapa, não simular. Documentar exatamente o bloqueio, o que foi validado e a ação humana mínima necessária.**
+
+
+## 7. Auditoria global obrigatória para cada novo código, tela ou revisão
+
+O procedimento operacional detalhado e o comando reutilizável estão em [docs/COMANDO-MESTRE-AUDITORIA-GLOBAL-APLICACAO.md](COMANDO-MESTRE-AUDITORIA-GLOBAL-APLICACAO.md). Ele é obrigatório para toda solicitação do proprietário que contenha código, tela, wireframe, pacote, correção ou funcionalidade nova.
+
+Não analisar isoladamente nem encerrar em documentação/branch/PR. Antes de editar, reconciliar todas as revisões relacionadas em todo o ERP: arquivos enviados, implementações equivalentes, rotas, menus, PRs, commits, migrations, RPCs, RLS, manifesto e telas aprovadas. Classificar cada item como aplicado na main, apenas em branch/PR, parcial, ausente, incompatível ou bloqueado. Preservar trabalho válido e resolver divergências sem descartar revisões anteriores.
+
+Aplicar o material ao componente e à rota reais, validar banco e segurança por empresa, auditar consumidores globais, executar gates, corrigir pela causa raiz, validar Preview e integrar na main quando os gates passarem. Produção só é concluída após deployment READY e confirmação do domínio oficial. Branch, PR, wireframe ou arquivo criado não significam entrega aplicada.
+
+O agente deve manter a rastreabilidade do material recebido e informar impedimentos externos concretos. Não pedir reenvio de conteúdo já disponível, não inventar partes ausentes e não afirmar execução que não ocorreu.
