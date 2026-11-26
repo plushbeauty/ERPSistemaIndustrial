@@ -32,6 +32,7 @@ import './styles/industrial-command-center-2026.css'
 import './styles/design-system-2026.css'
 import './styles/form-system-2026.css'
 import './styles/erp-mobile-first-20261104.css'
+import './styles/sysnqra-components.css'
 
 const AppBootstrap = lazyPage(() => import('./AppBootstrap'), 'AppBootstrap')
 
