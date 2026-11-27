@@ -75,28 +75,28 @@ function clean(value: unknown) {
 }
 
 async function actorFor(authUserId: string) {
-  const { data, error } = await admin.from('erp_usuarios').select('id,auth_user_id,empresa_id,nome,email,ativo,role,perfil,role_id,nivel_admin,is_master,deleted_at').eq('auth_user_id', authUserId).eq('ativo', true).is('deleted_at', null).maybeSingle()
+  const { data, error } = await admin.from('erp_usuarios').select('id,auth_user_id,empresa_id,ativo,perfil,role_id,nivel_admin,is_master,deleted_at,login_nome,setor_id').eq('auth_user_id', authUserId).eq('ativo', true).is('deleted_at', null).maybeSingle()
   if (error) throw error
   return data
 }
 
-type Actor = { id:string; auth_user_id:string|null; empresa_id:string|null; nome:string|null; email:string|null; ativo:boolean; role:string|null; perfil:string|null; role_id:string|null; nivel_admin:number|null; is_master:boolean|null; deleted_at:string|null };
+type Actor = { id:string; auth_user_id:string|null; empresa_id:string|null; ativo:boolean; perfil:string|null; role_id:string|null; nivel_admin:number|null; is_master:boolean|null; deleted_at:string|null; login_nome:string|null; setor_id:string|null };
 
 function isMaster(actor: Actor | null | undefined) {
   return actor?.is_master === true
     && Number(actor.nivel_admin) === 100
     && actor.empresa_id === null
-    && String(actor.perfil ?? '').trim().toUpperCase() === 'SUPER_ADMIN'
+    && ['SUPER_ADMIN','MASTER'].includes(String(actor.perfil ?? '').trim().toUpperCase())
 }
 
 async function roleFor(roleId: string | null, fallbackLevel: number, companyId: string) {
   if (roleId) {
-    const { data, error } = await admin.from('erp_roles').select('id,codigo,nome,nivel,empresa_id').eq('id', roleId).eq('ativo', true).or(`empresa_id.is.null,empresa_id.eq.${companyId}`).maybeSingle()
+    const { data, error } = await admin.from('erp_roles').select('id,codigo,nome,nivel,company_id').eq('id', roleId).eq('ativo', true).or(`company_id.is.null,company_id.eq.${companyId}`).maybeSingle()
     if (error) throw error
     if (data) return data
     return null
   }
-  const { data, error } = await admin.from('erp_roles').select('id,codigo,nome,nivel,empresa_id').eq('ativo', true).or(`empresa_id.is.null,empresa_id.eq.${companyId}`).lte('nivel', fallbackLevel).order('nivel', { ascending: false }).limit(1).maybeSingle()
+  const { data, error } = await admin.from('erp_roles').select('id,codigo,nome,nivel,company_id').eq('ativo', true).or(`company_id.is.null,company_id.eq.${companyId}`).lte('nivel', fallbackLevel).order('nivel', { ascending: false }).limit(1).maybeSingle()
   if (error) throw error
   return data
 }
@@ -159,8 +159,8 @@ Deno.serve(async (req) => {
 
       const { error: profileError } = await admin
         .from('erp_usuarios')
-        .update({ nome, email, ativo: true, updated_at: new Date().toISOString() })
-        .eq('id', authData.user.id)
+        .update({ login_nome: nome, ativo: true })
+        .eq('auth_user_id', authData.user.id)
         .eq('empresa_id', invite.empresa_id)
       if (profileError) throw profileError
 
@@ -202,7 +202,7 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'list_users') {
-      let query = admin.from('erp_usuarios').select('id,empresa_id,nome,email,role,perfil,role_id,nivel_admin,ativo,created_at,setor_id,cargo_id').is('deleted_at', null).not('empresa_id', 'is', null).order('nome')
+      let query = admin.from('erp_usuarios').select('id,empresa_id,auth_user_id,nome:login_nome,perfil,role:perfil,role_id,nivel_admin,ativo,deleted_at,setor_id').is('deleted_at', null).not('empresa_id', 'is', null).order('login_nome')
       const requestedCompany = clean(body.empresa_id)
       if (actorIsMaster && requestedCompany) query = query.eq('empresa_id', requestedCompany)
       else if (!actorIsMaster && actor.empresa_id) query = query.eq('empresa_id', actor.empresa_id)
@@ -254,9 +254,9 @@ Deno.serve(async (req) => {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json(req,{ error: 'Informe um e-mail válido.' }, 400)
       if (nivelAdmin >= actorLevel && !actorIsMaster) return json(req,{ error: 'Você só pode criar usuários com nível inferior ao seu.' }, 403)
       if (roleCode === 'MASTER' || nivelAdmin >= 100) return json(req,{ error: 'Perfis Master são exclusivos da plataforma.' }, 403)
-      const { data: existing, error: existingError } = await admin.from('erp_usuarios').select('id').eq('empresa_id', empresaId).ilike('email', email).is('deleted_at', null).maybeSingle()
-      if (existingError) throw existingError
-      if (existing) return json(req,{ error: 'Este e-mail já está cadastrado nesta empresa.' }, 409)
+      const { data: authUsers, error: authUsersError } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
+      if (authUsersError) throw authUsersError
+      if (authUsers.users.some((user) => user.email?.toLowerCase() === email)) return json(req,{ error: 'Este e-mail já está cadastrado na autenticação.' }, 409)
 
       let authUserId = ''
       let temporaryPassword: string | null = null
@@ -281,9 +281,8 @@ Deno.serve(async (req) => {
         authUserId = created.data.user.id
 
         const { error: profileError } = await admin.from('erp_usuarios').insert({
-          id: authUserId, auth_user_id: authUserId, empresa_id: empresaId, nome, email, role: roleCode,
-          nivel_admin: nivelAdmin, ativo: false, role_id: role?.id ?? null, setor_id: body.setor_id || null,
-          cargo_id: body.cargo_id || null, login_nome: clean(body.login_nome) || null,
+          id: authUserId, auth_user_id: authUserId, empresa_id: empresaId, login_nome: clean(body.login_nome) || nome,
+          perfil: roleCode, nivel_admin: nivelAdmin, ativo: false, role_id: role?.id ?? null, setor_id: body.setor_id || null,
         })
         if (profileError) {
           await admin.auth.admin.deleteUser(authUserId)
@@ -323,7 +322,7 @@ Deno.serve(async (req) => {
       authUserId = created.data.user.id
       temporaryPassword = body.password ? null : password
 
-      const inserted = await admin.from('erp_usuarios').insert({ id: authUserId, auth_user_id: authUserId, empresa_id: empresaId, nome, email, role: roleCode, nivel_admin: nivelAdmin, ativo: true, role_id: role?.id ?? null, setor_id: body.setor_id || null, cargo_id: body.cargo_id || null, login_nome: clean(body.login_nome) || null }).select('id,empresa_id,nome,email,role,nivel_admin,ativo,role_id,setor_id,cargo_id,login_nome').single()
+      const inserted = await admin.from('erp_usuarios').insert({ id: authUserId, auth_user_id: authUserId, empresa_id: empresaId, login_nome: clean(body.login_nome) || nome, perfil: roleCode, nivel_admin: nivelAdmin, ativo: true, role_id: role?.id ?? null, setor_id: body.setor_id || null }).select('id,empresa_id,auth_user_id,login_nome,perfil,nivel_admin,ativo,role_id,setor_id').single()
       if (inserted.error) {
         await admin.auth.admin.deleteUser(authUserId)
         return json(req,{ error: inserted.error.message }, 400)
@@ -336,7 +335,7 @@ Deno.serve(async (req) => {
     if (!targetId) return json(req,{ error: 'Identificador de usuário inválido.' }, 400)
     const requestedTargetCompany = clean(body.empresa_id)
     if (actorIsMaster && !requestedTargetCompany) return json(req,{ error: 'Selecione a empresa proprietária do usuário.' }, 400)
-    let targetQuery = admin.from('erp_usuarios').select('id,auth_user_id,empresa_id,nome,email,role,perfil,nivel_admin,ativo,role_id,deleted_at').eq('id', targetId).is('deleted_at', null)
+    let targetQuery = admin.from('erp_usuarios').select('id,auth_user_id,empresa_id,nome:login_nome,perfil,role:perfil,nivel_admin,ativo,role_id,deleted_at,setor_id').eq('id', targetId).is('deleted_at', null)
     targetQuery = actorIsMaster
       ? targetQuery.eq('empresa_id', requestedTargetCompany)
       : targetQuery.eq('empresa_id', actor.empresa_id)
@@ -350,7 +349,7 @@ Deno.serve(async (req) => {
     if (action === 'set_active') {
       if (typeof body.ativo !== 'boolean') return json(req,{ error: 'Informe um status de acesso válido.' }, 400)
       const active = body.ativo
-      const { error } = await admin.from('erp_usuarios').update({ ativo: active, updated_at: new Date().toISOString() }).eq('id', target.id).eq('empresa_id', target.empresa_id)
+      const { error } = await admin.from('erp_usuarios').update({ ativo: active }).eq('id', target.id).eq('empresa_id', target.empresa_id)
       if (error) throw error
       const authUpdate = await admin.auth.admin.updateUserById(target.auth_user_id || target.id, { ban_duration: active ? 'none' : '876000h' })
       if (authUpdate.error) return json(req,{ error: `Perfil atualizado, mas o acesso Auth não foi sincronizado: ${authUpdate.error.message}` }, 409)
@@ -370,16 +369,15 @@ Deno.serve(async (req) => {
         },
       })
       if (changed.error) return json(req,{ error: changed.error.message }, 400)
-      const auditWarning = await writeAudit(actor, 'user.password_reset', target.id, { id: target.id, email: target.email }, { id: target.id, must_change_password: true }, req, target.empresa_id)
+      const auditWarning = await writeAudit(actor, 'user.password_reset', target.id, { id: target.id, auth_user_id: target.auth_user_id }, { id: target.id, must_change_password: true }, req, target.empresa_id)
       return json(req,{ ok: true, message: 'Nova senha temporária gerada.', temporary_password: temporaryPassword, audit_warning: auditWarning })
     }
 
     if (action === 'update_user') {
-      const patch: Record<string, unknown> = { updated_at: new Date().toISOString() }
-      if (body.nome !== undefined) patch.nome = String(body.nome).trim()
+      const patch: Record<string, unknown> = {}
+      if (body.nome !== undefined) patch.login_nome = String(body.nome).trim()
       if (body.login_nome !== undefined) patch.login_nome = clean(body.login_nome) || null
       if (body.setor_id !== undefined) patch.setor_id = body.setor_id || null
-      if (body.cargo_id !== undefined) patch.cargo_id = body.cargo_id || null
       if (body.role_id !== undefined) {
         const role = await roleFor(clean(body.role_id), 1, target.empresa_id)
         if (!role) return json(req,{ error: 'Perfil de acesso inválido.' }, 400)
@@ -395,17 +393,16 @@ Deno.serve(async (req) => {
         if (!actorIsMaster && Number(role.nivel) >= actorLevel) return json(req,{ error: 'O perfil escolhido deve ter nível inferior ao seu.' }, 403)
         if (String(role.codigo).toUpperCase() === 'MASTER' || Number(role.nivel) >= 100) return json(req,{ error: 'Perfis Master são exclusivos da plataforma.' }, 403)
         patch.role_id = role.id
-        patch.role = String(role.codigo).toUpperCase()
         patch.nivel_admin = Number(role.nivel)
       }
-      const { data: updated, error } = await admin.from('erp_usuarios').update(patch).eq('id', target.id).eq('empresa_id', target.empresa_id).select('id,empresa_id,nome,email,role,nivel_admin,ativo,role_id,setor_id,cargo_id,login_nome').single()
+      const { data: updated, error } = await admin.from('erp_usuarios').update(patch).eq('id', target.id).eq('empresa_id', target.empresa_id).select('id,empresa_id,login_nome,perfil,nivel_admin,ativo,role_id,setor_id').single()
       if (error) throw error
       const auditWarning = await writeAudit(actor, 'user.updated', target.id, target, updated, req, target.empresa_id)
       return json(req,{ ok: true, message: 'Usuário atualizado.', user: updated, audit_warning: auditWarning })
     }
 
     if (action === 'delete_user') {
-      const changed = await admin.from('erp_usuarios').update({ ativo: false, deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('id', target.id).eq('empresa_id', target.empresa_id)
+      const changed = await admin.from('erp_usuarios').update({ ativo: false, deleted_at: new Date().toISOString() }).eq('id', target.id).eq('empresa_id', target.empresa_id)
       if (changed.error) throw changed.error
       const authUpdate = await admin.auth.admin.updateUserById(target.auth_user_id || target.id, { ban_duration: '876000h' })
       if (authUpdate.error) return json(req,{ ok: false, partial: true, error: `O perfil foi arquivado, mas o bloqueio Auth falhou: ${authUpdate.error.message}` }, 409)

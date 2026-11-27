@@ -4,21 +4,19 @@
  * @REVISAO: REV-CADASTRO-PRODUTOS-PADRAO-OURO-20261124-01
  * Cadastro mestre unificado; mantém as rotas/abas existentes e o shell global.
  */
-import { Barcode, ClipboardList, Home, PackagePlus, Settings2 } from 'lucide-react'
+import { ClipboardList, Home, PackagePlus, Settings2 } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import IndustrialReferenceShell from '../../layout/IndustrialReferenceShell'
 import { SynqraLayoutProvider } from '../../layout/SynqraLayoutContext'
 import ListagemProdutos from './ListagemProdutos'
 import FormFichaTecnica from './FormFichaTecnica'
-import ImpressaoEtiquetas from './ImpressaoEtiquetas'
 import ParametrosCodigo from './ParametrosCodigo'
 
-type View = 'lista' | 'ficha' | 'barcode' | 'regras'
+type View = 'lista' | 'ficha' | 'regras'
 const nav = [
   { id: 'lista', label: 'Listagem Geral', icon: ClipboardList },
   { id: 'ficha', label: 'Ficha Técnica', icon: PackagePlus },
-  { id: 'barcode', label: 'Código de Barras', icon: Barcode },
   { id: 'regras', label: 'Regras do Código', icon: Settings2 },
 ] as const
 const VIEWS = nav.map(item => item.id) as View[]
@@ -52,10 +50,9 @@ export default function ModuloCadastroProdutos() {
             </button>
           ))}
         </nav>
-        <div className="min-h-[520px] w-full">
+        <div className="min-h-[520px] w-full pb-20">
           {view === 'lista' && <ListagemProdutos onOpenFicha={open} />}
-          {view === 'ficha' && <FormFichaTecnica productId={id} onSaved={() => setView('lista')} />}
-          {view === 'barcode' && <ImpressaoEtiquetas />}
+          {view === 'ficha' && <FormFichaTecnica productId={id} onSaved={() => {}} />}
           {view === 'regras' && <ParametrosCodigo />}
         </div>
         <footer className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[2px] border border-slate-200 bg-white px-4 py-2 shadow-sm">

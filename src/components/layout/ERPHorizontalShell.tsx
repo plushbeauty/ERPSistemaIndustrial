@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import PCPTabletMenuModal from '../PCPTabletMenuModal'
 import ModuleTabletMenuModal, { type ModuleTabletKey } from './ModuleTabletMenuModal'
+import ConfiguracaoEtiquetaModal from '../print/ConfiguracaoEtiquetaModal'
 import PageIntroCard from './PageIntroCard'
 import { fallbackPageIntro, hasNativeIntroCard, resolvePageIntro } from './pageIntroCatalog'
 import { resolveContextualHelp } from '../../help/contextualHelpCatalog'
@@ -177,6 +178,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [startMenuOpen, setStartMenuOpen] = useState(false)
   const [moduleSearch, setModuleSearch] = useState('')
   const [helpOpen, setHelpOpen] = useState(false)
+  const [labelConfigOpen, setLabelConfigOpen] = useState(false)
   const [pcpTabletOpen, setPcpTabletOpen] = useState(false)
   const [sgqTabletKey, setSgqTabletKey] = useState<ModuleTabletKey | null>(null)
   const [now, setNow] = useState(() => new Date())
@@ -416,6 +418,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         </div>
 
       </header>
+      {(pathname.toLowerCase().includes('estoque') || pathname.toLowerCase().includes('almoxarifado')) && <div className="no-print flex justify-end border-b border-[#D3E3EA] bg-white px-3 py-1.5">
+        <button type="button" className="erp-btn-primary" onClick={() => setLabelConfigOpen(true)}><Barcode size={14}/> Configuração de Etiqueta</button>
+      </div>}
       {(buildForaDaLinhagem || __SYNQRA_CARIMBO__.commit === 'desconhecido') && <p className="erp-windows-release-alert" role="alert">
         {buildForaDaLinhagem
           ? `PRODUÇÃO SERVINDO BUILD FORA DA LINHAGEM OFICIAL: este bundle veio da branch "${__SYNQRA_CARIMBO__.branch}" (${carimboBuild}), e a produção oficial é ${__SYNQRA_CARIMBO__.branchOficial}. As telas abaixo são ANTIGAS — não lance pedido, nota ou apontamento aqui.`
@@ -461,6 +466,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       </div>
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
       <ModuleTabletMenuModal moduleKey={sgqTabletKey} sessionNivel={sessionNivel} onClose={() => setSgqTabletKey(null)} onNavigate={(route) => { setSgqTabletKey(null); go(route) }} />
+      {labelConfigOpen && <ConfiguracaoEtiquetaModal onClose={() => setLabelConfigOpen(false)} />}
 
       <style>{`
         .erp-horizontal-shell{min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%);color:#123b50}

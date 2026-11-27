@@ -1,7 +1,7 @@
 {
   "contrato": "SYNQRA-R-20261103-01",
   "geradoPor": "npm run telas:manifest",
-  "totalTelas": 223,
+  "totalTelas": 222,
   "telas": [
     {
       "path": "src/components/layout/ModuleTabletMenuModal.tsx",
@@ -317,11 +317,11 @@
     },
     {
       "path": "src/pages/cadastro-produtos/FormFichaTecnica.tsx",
-      "sha": "95eb9e70fc00ae79e6b86712dcb390532e7cbdbc",
+      "sha": "33ce0c589ecdab07a93cd9fb1dfff3b76affc9f2",
       "autor": "FernandoSch",
-      "revisao": "REV-ENGENHARIA-PROCESSO-RECEITA-20261124-08 — cadastro sincroniza BOM, ficha de processo e receita em rascunho para homologação",
+      "revisao": "REV-FORM-GRID-PROPORCAO-20261127-01 — alinhamento de campos e rastreabilidade; atualização controlada de hash autorizada pelo proprietário",
       "aprovadaEm": "2026-11-24",
-      "statusAprovacao": "Cadastro sincroniza ficha técnica e BOM; receita de processo aguarda homologação."
+      "statusAprovacao": "Alteração de formulário aprovada nesta ordem; código e consultas existentes preservados."
     },
     {
       "path": "src/pages/cadastro-produtos/HelpFichaTecnica.tsx",
@@ -348,14 +348,6 @@
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
     {
-      "path": "src/pages/cadastro-produtos/ImpressaoEtiquetas.tsx",
-      "sha": "e40a83b572fcd4225925faaf74d322bbd99f66ef",
-      "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-OURO-20261124-04 — controles de impressão ZPL na régua de 32px",
-      "aprovadaEm": "2026-11-24",
-      "statusAprovacao": "Padronização visual aplicada; validação de build/homologação pendente."
-    },
-    {
       "path": "src/pages/cadastro-produtos/ListagemProdutos.tsx",
       "sha": "7a005d0b07c0e02b7e621848ca19ce02296534d8",
       "autor": "FernandoSch",
@@ -365,7 +357,7 @@
     },
     {
       "path": "src/pages/cadastro-produtos/ModuloCadastroProdutos.tsx",
-      "sha": "8952c27e04a8cf62650452f387a537a34898ea12",
+      "sha": "acf4b05a9cd99b4c8803c9af0625b81fa01d3351",
       "autor": "FernandoSch",
       "revisao": "REV-PADRAO-OURO-20261124-01 — abas de listagem, ficha, código de barras e regras",
       "aprovadaEm": "2026-11-24",
@@ -741,11 +733,11 @@
     },
     {
       "path": "src/pages/EstoqueAlmoxarifadoCompact.tsx",
-      "sha": "4025b6ca2d7736ce3f6f892bc583e4d6a82c9caf",
+      "sha": "da49f7717c7bf47d985e8ae589211bd4048f8e90",
       "autor": "FernandoSch",
-      "revisao": "REV-ESTOQUE-CONFERENCIA-QUALIDADE-20261110-02 — validação de defeitos detalhados, soma conferida, erros de parsing tratados e integridade transacional no banco; ajuste de inventário restrito a inventário aberto.",
+      "revisao": "REV-FORM-GRID-PROPORCAO-20261127-01 — alinhamento de campos e rastreabilidade; atualização controlada de hash autorizada pelo proprietário",
       "aprovadaEm": "2026-11-10",
-      "statusAprovacao": "CONSULTAS TENANT-SCOPED E RPCs REAIS PRESERVADAS; validação de conferência e ajuste reforçada no banco."
+      "statusAprovacao": "Alteração de formulário aprovada nesta ordem; código e consultas existentes preservados."
     },
     {
       "path": "src/pages/EstoqueCurvaABC.tsx",
