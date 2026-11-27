@@ -237,11 +237,11 @@
     },
     {
       "path": "src/modules/financeiro/pages/FinanceiroWorkspace.tsx",
-      "sha": "9f1f50e8e5ea4327e7fd8d9ac93f75eb8958e0b8",
+      "sha": "0a6f0603fabc44f7e1cdeb41cd26acefa557cb34",
       "autor": "FernandoSch",
-      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — \"A pagar/A receber\" somavam apenas as parcelas cujo título estava dentro do teto de 1000 títulos e 5000 parcelas carregados: carteira maior que isso mostrava valor menor que o real, sem aviso. Títulos, parcelas, fornecedores e clientes passam a ser lidos por paginação completa.",
+      "revisao": "REV-FINANCEIRO-TIMELINE-E-PERIODOS-20261127-01 — timeline dia/semana/mês/ano integrada à Central Financeira com parcelas e baixas reais, paginação integral e filtro por empresa",
       "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "statusAprovacao": "Incremento funcional autorizado pelo proprietário em 2026-11-27; hash atualizado de forma controlada. Contratos de títulos, parcelas, baixas e RLS preservados."
     },
     {
       "path": "src/pages/AccessControlSettings.tsx",
