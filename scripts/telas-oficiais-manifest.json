@@ -1,7 +1,7 @@
 {
   "contrato": "SYNQRA-R-20261103-01",
   "geradoPor": "npm run telas:manifest",
-  "totalTelas": 223,
+  "totalTelas": 222,
   "telas": [
     {
       "path": "src/components/layout/ModuleTabletMenuModal.tsx",
@@ -237,11 +237,11 @@
     },
     {
       "path": "src/modules/financeiro/pages/FinanceiroWorkspace.tsx",
-      "sha": "9f1f50e8e5ea4327e7fd8d9ac93f75eb8958e0b8",
+      "sha": "0a6f0603fabc44f7e1cdeb41cd26acefa557cb34",
       "autor": "FernandoSch",
-      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — \"A pagar/A receber\" somavam apenas as parcelas cujo título estava dentro do teto de 1000 títulos e 5000 parcelas carregados: carteira maior que isso mostrava valor menor que o real, sem aviso. Títulos, parcelas, fornecedores e clientes passam a ser lidos por paginação completa.",
+      "revisao": "REV-FINANCEIRO-TIMELINE-E-PERIODOS-20261127-01 — timeline dia/semana/mês/ano integrada à Central Financeira com parcelas e baixas reais, paginação integral e filtro por empresa",
       "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "statusAprovacao": "Incremento funcional autorizado pelo proprietário em 2026-11-27; hash atualizado de forma controlada. Contratos de títulos, parcelas, baixas e RLS preservados."
     },
     {
       "path": "src/pages/AccessControlSettings.tsx",
@@ -317,11 +317,11 @@
     },
     {
       "path": "src/pages/cadastro-produtos/FormFichaTecnica.tsx",
-      "sha": "1e9647f8c85e27143455d300326322871587f3ee",
+      "sha": "33ce0c589ecdab07a93cd9fb1dfff3b76affc9f2",
       "autor": "FernandoSch",
-      "revisao": "REV-CONTRATO-BANCO-20261103-01 — o SKU passa a ser gerado pela rotina erp_gerar_codigo (a existente no banco) e a prévia respeita digitos_produto",
-      "aprovadaEm": "2026-11-03",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-FORM-GRID-PROPORCAO-20261127-01 — alinhamento de campos e rastreabilidade; atualização controlada de hash autorizada pelo proprietário",
+      "aprovadaEm": "2026-11-24",
+      "statusAprovacao": "Alteração de formulário aprovada nesta ordem; código e consultas existentes preservados."
     },
     {
       "path": "src/pages/cadastro-produtos/HelpFichaTecnica.tsx",
@@ -348,36 +348,28 @@
       "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
     },
     {
-      "path": "src/pages/cadastro-produtos/ImpressaoEtiquetas.tsx",
-      "sha": "f0f99a22332a4ca17b800dd3f8b1b122827461ac",
-      "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
-    },
-    {
       "path": "src/pages/cadastro-produtos/ListagemProdutos.tsx",
-      "sha": "34b5a49ea60b62b926b9ff04ccb7ac2b5805459a",
+      "sha": "7a005d0b07c0e02b7e621848ca19ce02296534d8",
       "autor": "FernandoSch",
-      "revisao": "REV-LIMITE-DE-LISTAGEM-VISIVEL-20261104-03 — o catálogo mestre parava em 2000 SKUs: produto acima disso sumia da listagem, da impressão e das opções de categoria/unidade/cliente. Leitura agora percorre todos os SKUs da empresa por paginação.",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-PADRAO-OURO-20261124-03 — catálogo com filtros, KPIs e paginação; controles na altura de 32px",
+      "aprovadaEm": "2026-11-24",
+      "statusAprovacao": "Código de referência do proprietário aplicado; validação de build/homologação pendente."
     },
     {
       "path": "src/pages/cadastro-produtos/ModuloCadastroProdutos.tsx",
-      "sha": "71dd92112cbbdf9356aebd9dbfe2b965d111d5eb",
+      "sha": "acf4b05a9cd99b4c8803c9af0625b81fa01d3351",
       "autor": "FernandoSch",
-      "revisao": "REV-PRODUTOS-TELA-UNICA-20261104-01 — vira a tela principal de /cadastros/produtos; abre a aba pela URL (?aba=) para absorver as rotas antigas de ficha técnica e de parâmetros",
-      "aprovadaEm": "2026-11-04",
-      "statusAprovacao": "ORDEM DO PROPRIETARIO EM 2026-11-04: \"MANDEI TELA NOVA E NAO FOI APLICADO\" e \"NAO DEIXAR VARIAS TELAS COM MESMA FUNCÇAO OU PARECIDADAS\""
+      "revisao": "REV-PADRAO-OURO-20261124-01 — abas de listagem, ficha, código de barras e regras",
+      "aprovadaEm": "2026-11-24",
+      "statusAprovacao": "Código de referência do proprietário aplicado; validação de build/homologação pendente."
     },
     {
       "path": "src/pages/cadastro-produtos/ParametrosCodigo.tsx",
-      "sha": "95b4f5bd6bf605b14d0f98e7ce29fc64aa24a22b",
+      "sha": "737b3e24db0a26a1f65c9c372bcb5971d89acd1e",
       "autor": "FernandoSch",
-      "revisao": "REV-CONTRATO-BANCO-20261103-01 — nomes citados na tela passaram a ser a rotina real erp_gerar_codigo",
-      "aprovadaEm": "2026-11-03",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-PADRAO-OURO-20261124-05 — regras SKU com controles e ações na régua de 32px",
+      "aprovadaEm": "2026-11-24",
+      "statusAprovacao": "Padronização visual aplicada; validação de build/homologação pendente."
     },
     {
       "path": "src/pages/CadastroEmpresa.tsx",
@@ -437,11 +429,11 @@
     },
     {
       "path": "src/pages/ChaoDeFabricaApontamento.tsx",
-      "sha": "dd84d4508ae0ea52d3e0315fa8369c9b4bc40adf",
+      "sha": "e9bcdd10648845198817b3a08d533886ea8494ae",
       "autor": "FernandoSch",
-      "revisao": "REV-OPERADOR-CARTAO-CPF3-20261108-01 — ordem do proprietário em 2026-11-08: o operador se identifica com o número do cartão + os 3 últimos dígitos do CPF. A conferência saiu do cliente e passou para a RPC security definer erp_operador_identificar_cartao, que valida a empresa da sessão, bloqueia após 8 falhas em 15 minutos e devolve só os dados públicos do crachá (o CPF nunca volta). Agenda, apontamento e ficha de processo inalterados. REV-CARTAO-PRODUCAO-INDICADORES-20261109-01 — atualização autorizada em 2026-11-09: indicadores reais de produzidas, refugos e paradas; ações de iniciar/finalizar ampliadas; autenticação, agenda e RPCs preservadas.",
+      "revisao": "REV-CHAO-DE-FABRICA-OPERADOR-SESSION-20261125 — agenda e paradas restritas à sessão do operador; autoria de abertura/encerramento rastreada",
       "aprovadaEm": "2026-11-08",
-      "statusAprovacao": "REVISÃO AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-09 — commit individual registrado; build e validação em produção pendentes."
+      "statusAprovacao": "Apontamento de produção gera lote rastreável e informa código ao operador."
     },
     {
       "path": "src/pages/ComercialSuprimentos.tsx",
@@ -709,11 +701,11 @@
     },
     {
       "path": "src/pages/estoque/EstoqueRecebimentoLotes.tsx",
-      "sha": "ac1c47ce1f9942da8a1f13163e1b0c48381f5cd9",
+      "sha": "baefb9e2f7d7077759652bb5ee4f89cbcdba5f2c",
       "autor": "FernandoSch",
-      "revisao": "REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: \"todos os edits do módulo estoque estão desalinhados e fora de tamanho\". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).",
+      "revisao": "REV-RECEBIMENTO-COMPRA-MRP-20261124-03 — pedido/item, filtro de cancelados e atualização do saldo após recebimento parcial",
       "aprovadaEm": "2026-11-02",
-      "statusAprovacao": "CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela"
+      "statusAprovacao": "Recebimento associa lote fornecedor ao pedido/item e atualiza saldo pendente do MRP."
     },
     {
       "path": "src/pages/estoque/HelpEstoqueRecebimento.tsx",
@@ -725,11 +717,11 @@
     },
     {
       "path": "src/pages/estoque/InventarioValidade.tsx",
-      "sha": "faf11809d37bff4c647c3d60b1823df8261e95a8",
+      "sha": "051e24fa7ccaf09333b85dddf0e12e99b26c6d52",
       "autor": "FernandoSch",
-      "revisao": "REV-ESTOQUE-REGUA-30PX-20261102-01 — ordem do proprietário: \"todos os edits do módulo estoque estão desalinhados e fora de tamanho\". Campos, botões e tabelas na régua de 30px via [data-synqra-density='30px'] e um único card de abertura (PageIntroCard).",
-      "aprovadaEm": "2026-11-02",
-      "statusAprovacao": "CONSULTAS E RPCs REAIS PRESERVADAS; REV-PADRAO-TELAS-20261030-02 CONTINUA VALIDA — o card de abertura passa a ser o único cabeçalho da tela"
+      "revisao": "ESTOQUE-VALIDADE-PEPS-PADRAO-OURO-20261124 — controles, botões e linhas na régua de 32px, tipografia 11/12px",
+      "aprovadaEm": "2026-11-24",
+      "statusAprovacao": "Revisão visual aplicada e hash-lock atualizado; consultas e isolamento por empresa preservados."
     },
     {
       "path": "src/pages/EstoqueAjustes.tsx",
@@ -741,11 +733,11 @@
     },
     {
       "path": "src/pages/EstoqueAlmoxarifadoCompact.tsx",
-      "sha": "4025b6ca2d7736ce3f6f892bc583e4d6a82c9caf",
+      "sha": "da49f7717c7bf47d985e8ae589211bd4048f8e90",
       "autor": "FernandoSch",
-      "revisao": "REV-ESTOQUE-CONFERENCIA-QUALIDADE-20261110-02 — validação de defeitos detalhados, soma conferida, erros de parsing tratados e integridade transacional no banco; ajuste de inventário restrito a inventário aberto.",
+      "revisao": "REV-FORM-GRID-PROPORCAO-20261127-01 — alinhamento de campos e rastreabilidade; atualização controlada de hash autorizada pelo proprietário",
       "aprovadaEm": "2026-11-10",
-      "statusAprovacao": "CONSULTAS TENANT-SCOPED E RPCs REAIS PRESERVADAS; validação de conferência e ajuste reforçada no banco."
+      "statusAprovacao": "Alteração de formulário aprovada nesta ordem; código e consultas existentes preservados."
     },
     {
       "path": "src/pages/EstoqueCurvaABC.tsx",
@@ -1061,11 +1053,11 @@
     },
     {
       "path": "src/pages/NovoPedido.tsx",
-      "sha": "ae54c4c2c4660fe9660db74efd0c2c4ae85302d3",
+      "sha": "be42c4141077791195de449b13fa4bd4f6b537be",
       "autor": "FernandoSch",
-      "revisao": "REV-PADRAO-TELAS-20261030-02 — card de abertura padrao (PageIntroCard) e identificacao de autoria",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "revisao": "REV-NOVO-PEDIDO-ALINHAMENTO-20261124-01 — controles 32px, tipografia 11/12px, campos Edit alinhados, anexo com rollback e relatório A4 paisagem",
+      "aprovadaEm": "2026-11-24",
+      "statusAprovacao": "Revisão visual e impressão solicitadas pelo proprietário; validação de build e homologação pendentes."
     },
     {
       "path": "src/pages/OperacaoIndustrial.tsx",
@@ -1149,11 +1141,11 @@
     },
     {
       "path": "src/pages/PCPExecucaoIndustrial.tsx",
-      "sha": "1f0dd5fb6cfacec03e3d744faa63466c5cafcd41",
+      "sha": "5e1dc952969d3a6bc24daf270b6d285ccf2ffed5",
       "autor": "FernandoSch",
-      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir deixa de capturar a tela e passa a emitir o relatório A4 de execução da produção (carteira de OPs e apontamentos) montado pelo motor de relatório com dados do banco",
+      "revisao": "REV-PCP-MRP-GENEALOGIA-20261124-04 — MRP ERP, compras em aberto, apontamento transacional e consumo com genealogia de lotes",
       "aprovadaEm": "2026-11-05",
-      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
+      "statusAprovacao": "MRP usa BOM ERP, compras em aberto e consumo real por lote com genealogia."
     },
     {
       "path": "src/pages/PCPFichasProcesso.tsx",
@@ -1189,19 +1181,19 @@
     },
     {
       "path": "src/pages/PCPPedidosPendentes.tsx",
-      "sha": "069163168cef137d54a7a6b151574f91f528d291",
+      "sha": "caf7cb73761557eda5084072501ffbbfdaae7cce",
       "autor": "FernandoSch",
-      "revisao": "REV-RELATORIO-A4-20261105-01 — o botão Imprimir Ficha (A4) deixa de capturar a tela e passa a emitir a carteira de pedidos pendentes em A4 pelo motor de relatório, com itens, OPs, saldo e NF-e lidos do banco",
-      "aprovadaEm": "2026-11-05",
-      "statusAprovacao": "ORDEM GERAL DO PROPRIETÁRIO EM 2026-11-05, item 5 — \"Não basta adicionar CSS @media print para imprimir a tela atual. Quero uma estrutura própria de relatório.\""
+      "revisao": "REV-CARTEIRA-ENVIO-FILA-PCP-20261124-02 — seleção individual e em lote; encaminhamento transacional ao PCP; criação direta de OP removida",
+      "aprovadaEm": "2026-11-24",
+      "statusAprovacao": "Carteira comercial encaminha demanda; não cria OP diretamente."
     },
     {
       "path": "src/pages/PCPPlanejamentoIndustrial.tsx",
-      "sha": "1c2227bffc85cc9af32835ff387f52a172b28266",
+      "sha": "3c61cc8fdb7a0d012d14fea0fd9afd18d60b5a35",
       "autor": "FernandoSch",
-      "revisao": "REV-MRP-SEM-TRUNCAMENTO-20261104-01 — a geração de ordens planejadas lia as necessidades do MRP com .limit(3000) e somava no navegador: run maior que isso gravava ordem com quantidade menor que a real. Agregação e gravação movidas para a RPC erp_pcp_gerar_ordens_planejadas_do_mrp (migration 20261104172000), sobre todas as linhas do último run da empresa.",
+      "revisao": "REV-PCP-FILA-OP-MODAL-20261124-05 — modal técnico com ficha, BOM, molde, capacidade, MRP, estoque, compras em aberto e geração de requisição",
       "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO"
+      "statusAprovacao": "PCP analisa a demanda em modal técnico, visualiza falta líquida e pode gerar requisição de compra; OP somente após programação e homologação."
     },
     {
       "path": "src/pages/PCPProgramacaoGantt.tsx",

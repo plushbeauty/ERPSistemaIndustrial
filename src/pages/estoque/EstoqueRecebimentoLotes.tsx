@@ -17,12 +17,16 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import EntityCodeLookup, { type LookupRecord } from '../../components/industrial/EntityCodeLookup'
 import VendasLayout from '../VendasLayout'
+import { fetchAllPages } from '../../lib/supabasePagination'
 
 type Product = LookupRecord & {
   descricao?: string | null
   unidade?: string | null
 }
 type QualityStatus = 'APROVADO' | 'REPROVADO'
+type PurchaseHeader = {id:string;numero:number|string;produto_id:string|null;quantidade:number|null;quantidade_recebida:number|null;status:string|null;recebido_em:string|null}
+type PurchaseItem = {id:string;pedido_id:string;produto_id:string;quantidade:number;quantidade_recebida:number|null}
+type PurchaseOption = {value:string;purchaseId:string;itemId:string|null;productId:string;remaining:number;label:string}
 
 const numberFormat = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 3 })
 const localDateISO = () => { const now = new Date(); return [now.getFullYear(), String(now.getMonth() + 1).padStart(2, '0'), String(now.getDate()).padStart(2, '0')].join('-') }
@@ -33,6 +37,8 @@ const sectionClass = 'grid grid-cols-1 items-end gap-x-3 gap-y-2.5 rounded-[3px]
 export default function EstoqueRecebimentoLotes(): ReactElement {
   const [empresaId, setEmpresaId] = useState('')
   const [products, setProducts] = useState<Product[]>([])
+  const [purchaseOptions, setPurchaseOptions] = useState<PurchaseOption[]>([])
+  const [purchaseSelection, setPurchaseSelection] = useState('')
   const [produtoId, setProdutoId] = useState('')
   const [produtoDescricao, setProdutoDescricao] = useState('')
   const [notaFiscal, setNotaFiscal] = useState('')
@@ -54,13 +60,40 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
       try {
         const tenant = await supabase.rpc('erp_current_empresa_id')
         if (tenant.error || !tenant.data) throw tenant.error ?? new Error('Não foi possível identificar a empresa da sessão.')
-        const result = await supabase.from('erp_produtos')
-          .select('id,codigo,nome,descricao,unidade,estoque_atual,ativo')
-          .eq('empresa_id', String(tenant.data)).eq('ativo', true).order('codigo').limit(2000)
+        const [result,headers,items] = await Promise.all([
+          supabase.from('erp_produtos').select('id,codigo,nome,descricao,unidade,estoque_atual,ativo')
+            .eq('empresa_id', String(tenant.data)).eq('ativo', true).order('codigo').limit(2000),
+          fetchAllPages<PurchaseHeader>((from,to)=>supabase.from('erp_pedidos_compra')
+            .select('id,numero,produto_id,quantidade,quantidade_recebida,status,recebido_em',{count:'exact'})
+            .eq('empresa_id',String(tenant.data)).is('recebido_em',null).order('data_prevista').range(from,to)),
+          fetchAllPages<PurchaseItem>((from,to)=>supabase.from('erp_pedidos_compra_itens')
+            .select('id,pedido_id,produto_id,quantidade,quantidade_recebida',{count:'exact'})
+            .eq('empresa_id',String(tenant.data)).order('created_at').range(from,to))
+        ])
         if (result.error) throw result.error
+        const productRows=(result.data??[]) as Product[]
+        const productMap=new Map(productRows.map(item=>[item.id,item]))
+        const itemsByOrder=new Map<string,PurchaseItem[]>()
+        items.forEach(item=>itemsByOrder.set(item.pedido_id,[...(itemsByOrder.get(item.pedido_id)??[]),item]))
+        const options:PurchaseOption[]=[]
+        headers.filter(header=>!['cancelado','cancelada','concluido','concluida','finalizado','finalizada'].includes(String(header.status??'').toLowerCase())).forEach(header=>{
+          const lines=itemsByOrder.get(header.id)??[]
+          if(lines.length){
+            lines.forEach(line=>{
+              const remaining=Math.max(0,Number(line.quantidade)-Number(line.quantidade_recebida??0))
+              const product=productMap.get(line.produto_id)
+              if(remaining>0&&product)options.push({value:'item:'+line.id,purchaseId:header.id,itemId:line.id,productId:line.produto_id,remaining,label:'PC-'+header.numero+' · '+product.codigo+' · saldo '+numberFormat.format(remaining)})
+            })
+          }else if(header.produto_id){
+            const remaining=Math.max(0,Number(header.quantidade??0)-Number(header.quantidade_recebida??0))
+            const product=productMap.get(header.produto_id)
+            if(remaining>0&&product)options.push({value:'header:'+header.id,purchaseId:header.id,itemId:null,productId:header.produto_id,remaining,label:'PC-'+header.numero+' · '+product.codigo+' · saldo '+numberFormat.format(remaining)})
+          }
+        })
         if (alive) {
           setEmpresaId(String(tenant.data))
-          setProducts((result.data ?? []) as Product[])
+          setProducts(productRows)
+          setPurchaseOptions(options)
         }
       } catch (cause) {
         if (alive) setError(cause instanceof Error ? cause.message : 'Falha ao carregar os produtos.')
@@ -75,6 +108,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
     setProdutoId(value)
     const selected = products.find(product => product.id === value)
     setProdutoDescricao(selected?.descricao ?? selected?.nome ?? '')
+    setPurchaseSelection('')
   }
 
   const handleCertificateChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -107,6 +141,9 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
     if (!loteFornecedor.trim()) { setError('O lote do fornecedor é obrigatório.'); return }
     if (dataValidade && dataValidade <= localDateISO()) { setError('A validade deve ser posterior à data de recebimento.'); return }
     if (!Number.isFinite(quantity) || quantity <= 0) { setError('A quantidade deve ser maior que zero.'); return }
+    const selectedPurchase=purchaseOptions.find(option=>option.value===purchaseSelection&&option.productId===produtoId)
+    if(purchaseSelection&&!selectedPurchase){setError('O pedido de compra selecionado não corresponde ao produto ou não possui saldo pendente.');return}
+    if(selectedPurchase&&quantity>selectedPurchase.remaining){setError('A quantidade recebida excede o saldo pendente do pedido de compra ('+numberFormat.format(selectedPurchase.remaining)+').');return}
     if (!certificado) { setError('Anexe o certificado químico em PDF antes de integrar o lote.'); return }
     if (laudoStatus !== 'APROVADO') { setError('Lote reprovado bloqueado: não é permitido integrar ao saldo ativo.'); return }
 
@@ -131,11 +168,15 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
         p_quantidade: quantity,
         p_status_qualidade: laudoStatus,
         p_certificado_path: certificatePath,
+        p_pedido_compra_id: selectedPurchase?.purchaseId ?? null,
+        p_pedido_compra_item_id: selectedPurchase?.itemId ?? null,
       })
       if (result.error) throw result.error
 
       const selected = products.find(product => product.id === produtoId)
-      setSuccess(`Lote ${loteFornecedor.trim()} recebido. ${numberFormat.format(quantity)} ${selected?.unidade ?? 'kg'} integrados ao saldo físico.`)
+      setSuccess(`Lote ${loteFornecedor.trim()} recebido. ${numberFormat.format(quantity)} ${selected?.unidade ?? 'kg'} integrados ao saldo físico.` + (selectedPurchase ? ' Recebimento vinculado ao pedido de compra; saldo pendente atualizado para o MRP.' : ' Sem vínculo a pedido de compra.'))
+      if(selectedPurchase)setPurchaseOptions(current=>current.map(option=>option.value===selectedPurchase.value?{...option,remaining:Math.max(0,option.remaining-quantity),label:option.label.replace('saldo '+numberFormat.format(option.remaining),'saldo '+numberFormat.format(Math.max(0,option.remaining-quantity)))}:option).filter(option=>option.remaining>0))
+      setPurchaseSelection('')
       setNotaFiscal('')
       setLoteFornecedor('')
       setDataValidade('')
@@ -187,7 +228,13 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
                 entityType="product" required placeholder="Pesquisar SKU pela lupa..."
                 helper={produtoDescricao || 'Selecione o cadastro mestre de engenharia.'} />
             </div>
-            <label className={`${labelClass} md:col-span-4`}>Número da nota fiscal (NF-e) *
+            <label className={`${labelClass} md:col-span-6`}>Pedido de compra / item (opcional)
+              <select value={purchaseSelection} onChange={event=>setPurchaseSelection(event.target.value)} className={inputClass} disabled={!produtoId}>
+                <option value="">Recebimento sem vínculo a pedido de compra</option>
+                {purchaseOptions.filter(option=>option.productId===produtoId).map(option=><option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+            </label>
+            <label className={`${labelClass} md:col-span-6`}>Número da nota fiscal (NF-e) *
               <input value={notaFiscal} onChange={event => setNotaFiscal(event.target.value)} className={inputClass} placeholder="Ex.: 109232" required />
             </label>
           </section>
