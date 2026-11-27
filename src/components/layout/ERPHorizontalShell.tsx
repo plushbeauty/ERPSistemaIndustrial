@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Bot, ChevronDown, UserRound, UserCog, ChevronRight, Home, FileText, Factory, LogOut, Search, X, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, Warehouse, Percent, Scale, ShieldCheck, BookOpen, Landmark, Calculator, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode, Database, Package, Wrench, Clock, Calendar, CalendarDays, ListOrdered, PauseCircle, ListChecks } from 'lucide-react'
+import { Bot, CircleHelp, ChevronDown, UserRound, UserCog, ChevronRight, Home, FileText, Factory, LogOut, Search, X, ClipboardList, ShoppingCart, Settings, FilePlus2, Users, Wallet, Warehouse, Percent, Scale, ShieldCheck, BookOpen, Landmark, Calculator, RotateCcw, Archive, FileWarning, Route, Monitor, BarChart3, Boxes, Barcode, Database, Package, Wrench, Clock, Calendar, CalendarDays, ListOrdered, PauseCircle, ListChecks } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
