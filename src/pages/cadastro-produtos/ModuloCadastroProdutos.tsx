@@ -1,22 +1,13 @@
-/**
  * @AUTOR: FernandoSch
- * @DATA_REVISAO_APROVACAO: 2026-11-04
- * @REVISAO: REV-PRODUTOS-TELA-UNICA-20261104-01 — vira a tela principal de /cadastros/produtos; abre a aba pela URL (?aba=) para absorver as rotas antigas de ficha técnica e de parâmetros
- * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-04: "MANDEI TELA NOVA E NAO FOI APLICADO" e "NAO DEIXAR VARIAS TELAS COM MESMA FUNCÇAO OU PARECIDADAS"
- * @DATA_REVISAO_ANTERIOR: 2026-10-30
- * @REVISAO_ANTERIOR: REV-PRODUTOS-MIGRACAO-20261030-01 — migracao para a origem unica de codigo; abas proprias e saida da moldura fixa
- * @STATUS_ANTERIOR: MIGRACAO AUTORIZADA PELO PROPRIETARIO EM 2026-10-30 (opcao "migrar para a origem unica")
- */
-/**
- * SYNQRA ERP — CONTROLE MESTRE DE CADASTRO DE PRODUTOS
- * REVISÃO: 1.0 | DATA: 16/10/2026
- * ID: #AUDIT-ERP-PRODUCTS-20261016-01
- * ESCOPO: Reestruturação do layout mestre de produtos para simetria visual e acoplamento rígido de componentes.
- * ALTERAÇÃO: Removidos paddings flutuantes, padronizados os mini-cards inferiores e adicionada auditoria estrita.
+ * @DATA_REVISAO_APROVACAO: 2026-11-27
+ * @REVISAO: REV-PRODUTOS-TELA-UNICA-20261127-02 — aba sincronizada com a URL (?aba=), menu de abas único,
+ *           ficha nova x edição separadas, rota da mesa centralizada
+ * @REVISAO_ANTERIOR: REV-PRODUTOS-TELA-UNICA-20261104-01 — tela principal de /cadastros/produtos
+ * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO: "NAO DEIXAR VARIAS TELAS COM MESMA FUNCÇAO OU PARECIDADAS"
  */
 
-import { Barcode, ClipboardList, Home, PackagePlus, Settings2 } from 'lucide-react'
-import { useState } from 'react'
+import { Barcode, ClipboardList, FileText, Home, PackagePlus, Settings2 } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import IndustrialReferenceShell from '../../layout/IndustrialReferenceShell'
 import { SynqraLayoutProvider } from '../../layout/SynqraLayoutContext'
@@ -25,89 +16,99 @@ import FormFichaTecnica from './FormFichaTecnica'
 import ImpressaoEtiquetas from './ImpressaoEtiquetas'
 import ParametrosCodigo from './ParametrosCodigo'
 
-type View = 'lista' | 'ficha' | 'barcode' | 'regras'
+const ROTA_MESA = '/pageprincipal'
 
 const nav = [
   { id: 'lista', label: 'Listagem Geral', icon: ClipboardList },
-  { id: 'ficha', label: 'Ficha Técnica', icon: ClipboardList },
+  { id: 'ficha', label: 'Ficha Técnica', icon: FileText },
   { id: 'barcode', label: 'Código de Barras', icon: Barcode },
   { id: 'regras', label: 'Regras do Código', icon: Settings2 },
 ] as const
 
-const VIEWS = nav.map(item => item.id) as View[]
+type View = (typeof nav)[number]['id']
+const VIEWS: readonly View[] = nav.map((item) => item.id)
 
-/** Aba pedida na URL (?aba=ficha) — as rotas antigas de ficha técnica e de parâmetros apontam para cá. */
-function abaInicial(param: string | null): View {
-  return param && VIEWS.includes(param as View) ? (param as View) : 'lista'
+function isView(v: string | null): v is View {
+  return v !== null && (VIEWS as readonly string[]).includes(v)
+}
+
+/** Aba vinda da URL (?aba=ficha&id=123). Rotas antigas de ficha técnica e parâmetros apontam para cá. */
+function lerAba(param: string | null): View {
+  return isView(param) ? param : 'lista'
 }
 
 export default function ModuloCadastroProdutos() {
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const [view, setView] = useState<View>(() => abaInicial(searchParams.get('aba')))
-  const [id, setId] = useState<string | undefined>()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [view, setViewState] = useState<View>(() => lerAba(searchParams.get('aba')))
+  const [id, setId] = useState<string | undefined>(() => searchParams.get('id') ?? undefined)
 
-  const open = (productId?: string) => {
-    setId(productId)
-    setView('ficha')
-  }
+  // Mantém a aba em sincronia com voltar/avançar do navegador
+  useEffect(() => {
+    setViewState(lerAba(searchParams.get('aba')))
+    setId(searchParams.get('id') ?? undefined)
+  }, [searchParams])
+
+  const irPara = useCallback(
+    (next: View, productId?: string) => {
+      const params: Record<string, string> = { aba: next }
+      if (next === 'ficha' && productId) params.id = productId
+      setSearchParams(params, { replace: false })
+      setViewState(next)
+      setId(next === 'ficha' ? productId : undefined)
+    },
+    [setSearchParams],
+  )
+
+  const voltarMesa = () => navigate(ROTA_MESA)
 
   return (
     <SynqraLayoutProvider>
-      {/* No modo hospedado o IndustrialReferenceShell deixou de desenhar o proprio cabecalho:
-          titulo, modulo e ajuda pertencem ao PageIntroCard do ERPHorizontalShell (revisao 2026-11-05, item 1). */}
+      {/* O menu de abas é desenhado só pelo IndustrialReferenceShell (nav/activeId/onNav),
+          para não existir dois menus com a mesma função na mesma tela. */}
       <IndustrialReferenceShell
         moduleLabel="Cadastro de Produtos"
         title="Cadastro e Identificação de Produtos"
         nav={nav}
         activeId={view}
-        onNav={(next) => setView(next as View)}
-        onHome={() => { navigate('/pageprincipal') }}
+        onNav={(next) => { if (isView(next)) irPara(next) }}
+        onHome={voltarMesa}
       >
-        <nav className="mb-4 flex flex-wrap gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-sm" aria-label="Abas do cadastro de produtos">
-          {nav.map(({ id: tabId, label, icon: TabIcon }) => (
-            <button
-              key={tabId}
-              type="button"
-              onClick={() => setView(tabId)}
-              aria-current={view === tabId ? 'page' : undefined}
-              className={`inline-flex h-9 items-center gap-2 rounded-md px-3 text-[11px] font-bold uppercase transition-colors ${view === tabId ? 'bg-[#123B50] text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
-            >
-              <TabIcon size={14} />
-              {label}
-            </button>
-          ))}
-        </nav>
-
-        {/* Container de Renderização Dinâmica - Isola o conteúdo das abas para evitar vazamento de layout */}
-        <div className="w-full bg-[#f8fafc] min-h-[500px]">
-          {view === 'lista' && <ListagemProdutos onOpenFicha={open} />}
-          {view === 'ficha' && <FormFichaTecnica productId={id} onSaved={() => setView('lista')} />}
+        <div className="min-h-[500px] w-full bg-[#f8fafc]">
+          {view === 'lista' && <ListagemProdutos onOpenFicha={(pid?: string) => irPara('ficha', pid)} />}
+          {view === 'ficha' && (
+            <FormFichaTecnica
+              key={id ?? 'novo'}
+              productId={id}
+              onSaved={() => irPara('lista')}
+            />
+          )}
           {view === 'barcode' && <ImpressaoEtiquetas />}
           {view === 'regras' && <ParametrosCodigo />}
         </div>
 
-        {/* Barra de Status Inferior Padronizada (Mesa Industrial) */}
-        <div className="mt-4 flex h-14 items-center justify-between gap-4 rounded-[2px] border border-slate-300 bg-white px-4 py-2 shadow-sm">
+        <footer className="mt-4 flex h-14 items-center justify-between gap-4 rounded-[2px] border border-slate-300 bg-white px-4 py-2 shadow-sm">
           <div className="flex items-center gap-3">
             <span className="grid h-9 w-9 place-items-center rounded-[2px] bg-[#123B50] text-white shadow-md">
               <PackagePlus size={18} />
             </span>
             <div className="flex flex-col justify-center">
-              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 leading-none mb-0.5">Módulo ativo</p>
-              <p className="text-xs font-bold text-slate-800 leading-none">Cadastro Mestre de Produtos</p>
+              <p className="mb-0.5 text-[10px] font-black uppercase leading-none tracking-wider text-slate-400">Módulo ativo</p>
+              <p className="text-xs font-bold leading-none text-slate-800">
+                Cadastro Mestre de Produtos · {nav.find((n) => n.id === view)?.label}
+                {view === 'ficha' && (id ? ` · #${id}` : ' · Novo')}
+              </p>
             </div>
           </div>
-
           <button
             type="button"
-            onClick={() => { navigate('/pageprincipal') }}
+            onClick={voltarMesa}
             className="inline-flex h-8 items-center gap-2 rounded-[2px] border border-slate-300 bg-white px-4 text-xs font-bold text-slate-700 shadow-sm transition-all duration-150 hover:bg-slate-50 hover:text-slate-900 active:scale-[0.98]"
           >
             <Home size={15} className="text-slate-500" />
             Voltar à Mesa
           </button>
-        </div>
+        </footer>
       </IndustrialReferenceShell>
     </SynqraLayoutProvider>
   )
