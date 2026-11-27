@@ -1,8 +1,11 @@
 /**
  * @AUTOR: FernandoSch
- * @DATA_REVISAO_APROVACAO: 2026-11-03
- * @REVISAO: REV-CONTRATO-BANCO-20261103-01 — o SKU passa a ser gerado pela rotina erp_gerar_codigo (a existente no banco) e a prévia respeita digitos_produto
- * @STATUS_APROVACAO: PADRAO DE ABERTURA APLICADO A TODAS AS TELAS EM 2026-10-30, AUTORIZADO PELO PROPRIETARIO
+ * @DATA_REVISAO_APROVACAO: 2026-11-27
+ * @REVISAO: REV-FICHA-PENTE-FINO-20261127-01 — trava contra duplo clique, Enter salva, mensagem de sucesso
+ *           não some antes de ser lida, campos numéricos vazios tratados, aviso quando não há regra de código
+ * @STATUS_APROVACAO: ORDEM DO PROPRIETARIO EM 2026-11-27: "FAZER PENTE FINO E ARRUMAR TUDO"
+ * @DATA_REVISAO_ANTERIOR_2: 2026-11-03
+ * @REVISAO_ANTERIOR_2: REV-CONTRATO-BANCO-20261103-01 — SKU gerado pela rotina erp_gerar_codigo; prévia respeita digitos_produto
  */
 /**
  * @DATA_REVISAO_ANTERIOR: 2026-10-21
@@ -10,7 +13,7 @@
  * @STATUS_ANTERIOR: REVISÃO VISUAL AUTORIZADA EM 2026-10-21
  * ESCOPO: Ficha técnica do cadastro mestre; persistência real no Supabase e isolamento por empresa.
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AlertTriangle, Building2, CheckCircle2, Cpu, HelpCircle, Save, Tag } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -23,7 +26,12 @@ const baseInput = 'h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300
 const labelClass = 'grid min-w-0 gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-500'
 const readOnlyInput = 'flex h-[30px] min-w-0 items-center justify-between gap-2 rounded-[2px] border border-slate-200 bg-slate-50 px-2 font-mono text-[11px] font-black text-slate-600 shadow-inner'
 
-export default function FormFichaTecnica({ productId, onSaved }: { productId?: string; onSaved: () => void }) {
+/** Converte o texto do campo numérico; vazio vira NaN para a validação acusar em vez de gravar 0. */
+const num = (v: string) => (v.trim() === '' ? Number.NaN : Number(v))
+const TEMPO_MENSAGEM_MS = 1200
+
+export default function FormFichaTecnica({ productId, onSaved }: { productId?: string; onSaved: (mensagem?: string) => void }) {
+  const salvando = useRef(false)
   const [cfg, setCfg] = useState<C[]>([])
   const [configId, setConfigId] = useState('')
   const [tipo, setTipo] = useState('PA')
@@ -104,15 +112,19 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
   const preview = modo === 'NUM' ? sequencia : base + sep + sequencia
 
   const save = async () => {
+    if (salvando.current) return // trava real contra duplo clique (o estado busy só atualiza no próximo render)
     setError('')
     setOk('')
-    if (busy) return
     if (loading) { setError('Aguarde o carregamento dos dados da empresa.'); return }
-    if (!empresa || !nome.trim()) { setError('Empresa e Nome do Produto são obrigatórios.'); return }
+    if (!empresa) { setError('Empresa não identificada. Entre novamente no sistema.'); return }
+    if (!nome.trim()) { setError('Informe o nome do produto.'); return }
     if (!unidade.trim()) { setError('Informe a unidade de medida.'); return }
     if (!moldeCodigo.trim()) { setError('Informe o código do molde.'); return }
     if (!Number.isInteger(cavidades) || cavidades < 1) { setError('Cavidades deve ser um inteiro maior que zero.'); return }
-    if (!Number.isFinite(tempBico) || tempBico < 0 || !Number.isFinite(tempoCiclo) || tempoCiclo <= 0) { setError('Confira a temperatura do bico e o tempo de ciclo.'); return }
+    if (!Number.isFinite(tempBico) || tempBico < 0) { setError('Informe a temperatura do bico (0 ou mais).'); return }
+    if (!Number.isFinite(tempoCiclo) || tempoCiclo <= 0) { setError('Informe o tempo de ciclo (maior que zero).'); return }
+    if (!p && !configId) { setError('Cadastre uma regra de numeração em Regras do Código primeiro.'); return }
+    salvando.current = true
     setBusy(true)
     try {
       let codigo = p?.codigo || ''
@@ -136,17 +148,20 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
         if (r.error) throw r.error
         setP(r.data as P)
       }
-      setOk('Produto salvo no banco de dados com o SKU ' + codigo + '.')
-      onSaved()
+      const msg = (p ? 'Alterações salvas no produto ' : 'Produto salvo com o SKU ') + codigo + '.'
+      setOk(msg)
+      // dá tempo de o operador ler a confirmação antes de voltar para a listagem
+      window.setTimeout(() => onSaved(msg), TEMPO_MENSAGEM_MS)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Não foi possível salvar o produto.')
     } finally {
+      salvando.current = false
       setBusy(false)
     }
   }
 
   return (
-    <section className="space-y-3" aria-busy={loading || busy}>
+    <form className="space-y-3" aria-busy={loading || busy} noValidate onSubmit={e => { e.preventDefault(); void save() }}>
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-2">
         <div>
           <p className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-sky-700"><Cpu size={12} /> Engenharia de Produto · Dados Mestres</p>
@@ -159,10 +174,17 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
       {error && <div role="alert" className="flex items-start gap-1.5 rounded border border-rose-200 bg-rose-50 p-2 text-[10px] font-bold text-rose-800"><AlertTriangle size={13} className="mt-0.5 shrink-0" /> <span>{error}</span></div>}
       {ok && <div role="status" className="flex items-start gap-1.5 rounded border border-emerald-200 bg-emerald-50 p-2 text-[10px] font-bold text-emerald-800"><CheckCircle2 size={13} className="mt-0.5 shrink-0" /> <span>{ok}</span></div>}
 
+      {!loading && !p && cfg.length === 0 && (
+        <div role="alert" className="flex items-start gap-1.5 rounded border border-amber-200 bg-amber-50 p-2 text-[10px] font-bold text-amber-800">
+          <AlertTriangle size={13} className="mt-0.5 shrink-0" />
+          <span>Nenhuma regra de numeração cadastrada para esta empresa. Cadastre em <b>Regras do Código</b> antes de criar produtos.</span>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 items-end gap-x-3 gap-y-2.5 rounded-[2px] border border-slate-200 bg-white p-3 shadow-sm md:grid-cols-12">
         <div className="grid min-w-0 gap-1 md:col-span-4">
           <label className={labelClass}><span className="flex items-center gap-1"><Tag size={10} /> SKU Gerado · Chave Mestre</span></label>
-          <div className={readOnlyInput} aria-label="SKU somente leitura"><span className="truncate">{p?.codigo || preview}</span><span className="shrink-0 text-[8px] tracking-wide text-slate-400">TRAVADO</span></div>
+          <div className={readOnlyInput} aria-label="SKU somente leitura"><span className="truncate">{p?.codigo || (cfg.length ? preview : '—')}</span><span className="shrink-0 text-[8px] tracking-wide text-slate-400">TRAVADO</span></div>
         </div>
         <label className={labelClass + ' md:col-span-2'}>Tipo Sigla
           <select className={baseInput} disabled={!!p || loading} value={tipo} onChange={e => setTipo(e.target.value)}>
@@ -170,7 +192,7 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
           </select>
         </label>
         <label className={labelClass + ' md:col-span-3'}>Regra de Geração
-          <select className={baseInput} disabled={!!p || loading} value={configId} onChange={e => setConfigId(e.target.value)}>
+          <select className={baseInput} disabled={!!p || loading || cfg.length === 0} value={configId} onChange={e => setConfigId(e.target.value)}>
             {cfg.map(x => <option key={x.id} value={x.id}>{x.prefixo} · {x.digitos_produto} dígitos</option>)}
           </select>
         </label>
@@ -201,7 +223,7 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
             <input className={baseInput} maxLength={50} value={moldeCodigo} onChange={e => setMoldeCodigo(e.target.value)} disabled={loading} placeholder="Ex.: M-2026-089" required />
           </label>
           <label className={labelClass + ' lg:col-span-2'}>Cavidades *
-            <input className={baseInput} type="number" min={1} step={1} value={cavidades} onChange={e => setCavidades(Number(e.target.value))} disabled={loading} required />
+            <input className={baseInput} type="number" min={1} step={1} value={Number.isNaN(cavidades) ? '' : cavidades} onChange={e => setCavidades(num(e.target.value))} disabled={loading} required />
           </label>
           <label className={labelClass + ' lg:col-span-3'}>Tipo de resina
             <input className={baseInput} maxLength={100} value={resinaTipo} onChange={e => setResinaTipo(e.target.value)} disabled={loading} placeholder="Ex.: PP copolímero" />
@@ -210,20 +232,20 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
             <input className={baseInput} maxLength={50} value={corResina} onChange={e => setCorResina(e.target.value)} disabled={loading} placeholder="Ex.: Preto / natural" />
           </label>
           <label className={labelClass + ' lg:col-span-3'}>Temperatura base do bico (°C)
-            <input className={baseInput} type="number" min={0} step={1} value={tempBico} onChange={e => setTempBico(Number(e.target.value))} disabled={loading} required />
+            <input className={baseInput} type="number" min={0} step={1} value={Number.isNaN(tempBico) ? '' : tempBico} onChange={e => setTempBico(num(e.target.value))} disabled={loading} required />
           </label>
           <label className={labelClass + ' lg:col-span-3'}>Tempo de ciclo base (s)
-            <input className={baseInput} type="number" min={0.01} step={0.01} value={tempoCiclo} onChange={e => setTempoCiclo(Number(e.target.value))} disabled={loading} required />
+            <input className={baseInput} type="number" min={0.01} step={0.01} value={Number.isNaN(tempoCiclo) ? '' : tempoCiclo} onChange={e => setTempoCiclo(num(e.target.value))} disabled={loading} required />
           </label>
         </div>
       </section>
 
       <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 pt-3">
         <p className="text-[9px] text-slate-500">{loading ? 'Carregando dados da empresa…' : p ? 'Edição de cadastro existente' : 'Novo cadastro · SKU gerado pela rotina do banco'}</p>
-        <button type="button" onClick={() => void save()} disabled={busy || loading} className="inline-flex h-[30px] items-center gap-1.5 rounded-[2px] bg-[#2D8DB8] px-4 text-[10px] font-black uppercase tracking-wide text-white shadow-sm transition-colors hover:bg-[#246f91] disabled:cursor-not-allowed disabled:opacity-50">
+        <button type="submit" disabled={busy || loading || (!p && cfg.length === 0)} className="inline-flex h-[30px] items-center gap-1.5 rounded-[2px] bg-[#2D8DB8] px-4 text-[10px] font-black uppercase tracking-wide text-white shadow-sm transition-colors hover:bg-[#246f91] disabled:cursor-not-allowed disabled:opacity-50">
           <Save size={12} /> {busy ? 'SALVANDO…' : p ? 'SALVAR ALTERAÇÕES' : 'GERAR SKU E SALVAR'}
         </button>
       </footer>
-    </section>
+    </form>
   )
 }
