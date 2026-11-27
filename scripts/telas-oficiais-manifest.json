@@ -237,11 +237,11 @@
     },
     {
       "path": "src/modules/financeiro/pages/FinanceiroWorkspace.tsx",
-      "sha": "0a6f0603fabc44f7e1cdeb41cd26acefa557cb34",
+      "sha": "aa2a784deab0e3bf3f1bd67d2812726c3264db99",
       "autor": "FernandoSch",
-      "revisao": "REV-FINANCEIRO-TIMELINE-E-PERIODOS-20261127-01 — timeline dia/semana/mês/ano integrada à Central Financeira com parcelas e baixas reais, paginação integral e filtro por empresa",
-      "aprovadaEm": "2026-10-30",
-      "statusAprovacao": "Incremento funcional autorizado pelo proprietário em 2026-11-27; hash atualizado de forma controlada. Contratos de títulos, parcelas, baixas e RLS preservados."
+      "revisao": "REV-FINANCEIRO-CABECALHO-TIMELINE-20261127-01 — cabeçalho de 40px, KPI compacto e timeline real Dia/Semana/Mês/Ano preservada",
+      "aprovadaEm": "2026-11-27",
+      "statusAprovacao": "Revisão visual autorizada pelo proprietário em 2026-11-27; timeline e consultas financeiras reais preservadas."
     },
     {
       "path": "src/pages/AccessControlSettings.tsx",
@@ -1141,11 +1141,11 @@
     },
     {
       "path": "src/pages/PCPExecucaoIndustrial.tsx",
-      "sha": "5e1dc952969d3a6bc24daf270b6d285ccf2ffed5",
+      "sha": "7655e81044b59651b2b4e07d797ba8541ee73db5",
       "autor": "FernandoSch",
-      "revisao": "REV-PCP-MRP-GENEALOGIA-20261124-04 — MRP ERP, compras em aberto, apontamento transacional e consumo com genealogia de lotes",
-      "aprovadaEm": "2026-11-05",
-      "statusAprovacao": "MRP usa BOM ERP, compras em aberto e consumo real por lote com genealogia."
+      "revisao": "REV-PCP-CPP-RETRABALHO-20261127-01",
+      "aprovadaEm": "2026-11-27",
+      "statusAprovacao": "Apontamento transacional com empresa ativa, receita aprovada, operador, peças boas, refugo e retrabalho; lote real notifica SGQ."
     },
     {
       "path": "src/pages/PCPFichasProcesso.tsx",
@@ -1229,11 +1229,11 @@
     },
     {
       "path": "src/pages/PCPWorkspace.tsx",
-      "sha": "c88effc1827b665641938640255b4eb64507104a",
+      "sha": "dfd39e7180d8f71d76581d4aa617de7758556475",
       "autor": "FernandoSch",
-      "revisao": "REV-PCP-WORKSPACE-FICHA-20261106-01 — aba de Ficha de Processo usa a tela técnica completa com isolamento por empresa; estrutura visual do workspace preservada",
-      "aprovadaEm": "2026-11-06",
-      "statusAprovacao": "CORREÇÃO FUNCIONAL AUTORIZADA PELO PROPRIETÁRIO EM 2026-11-06; sem alteração do layout aprovado"
+      "revisao": "REV-PCP-MANUFATURA-ABAS-20261127-02 — Central PCP, capacidade/roteiro, fichas, prensados, injetados, acabamento, CPP, BOM e turno",
+      "aprovadaEm": "2026-11-27",
+      "statusAprovacao": "Abas horizontais unificadas; fila PCP preservada e capacidade/roteiro detalhados em aba própria."
     },
     {
       "path": "src/pages/PlanosIndustrial.tsx",
