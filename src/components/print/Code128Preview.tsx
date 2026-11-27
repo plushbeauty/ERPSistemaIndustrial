@@ -1,13 +1,12 @@
 import { useMemo } from 'react'
-import { BarcodeFormat, EncodeHintType, MultiFormatWriter } from '@zxing/library'
+import { BarcodeFormat, MultiFormatWriter } from '@zxing/library'
 
 export default function Code128Preview({ value, className = '', caption = '' }: { value: string; className?: string; caption?: string }) {
   const matrix = useMemo(() => {
     const text = value.trim()
     if (!text) return null
     try {
-      const hints = new Map<EncodeHintType, any>([[EncodeHintType.MARGIN, 8]])
-      return new MultiFormatWriter().encode(text, BarcodeFormat.CODE_128, 560, 120, hints)
+      return new MultiFormatWriter().encode(text, BarcodeFormat.CODE_128, 560, 120)
     } catch {
       return null
     }

@@ -114,16 +114,20 @@
 body { background-color: var(--color-background); color: var(--color-foreground); }
 
 
-  .erp-card { overflow: hidden; border: 1px solid var(--color-border); border-radius: 2px; background: var(--color-card); color: var(--color-card-foreground); box-shadow: 0 1px 2px rgb(15 23 42 / 0.06); }
+  .erp-card { min-width:0; border:1px solid var(--border); border-radius:10px; background:var(--card); color:var(--card-foreground); box-shadow:0 1px 2px rgb(18 59 80 / .06); }
   .erp-btn { display:inline-flex; height:2rem; align-items:center; justify-content:center; gap:.375rem; border:1px solid var(--color-border); border-radius:2px; background:var(--color-card); padding:0 .75rem; color:var(--color-foreground); font-size:.75rem; font-weight:700; }
   .erp-btn:hover { background:var(--color-muted); }
   .erp-btn:disabled,.erp-btn-primary:disabled { cursor:not-allowed; opacity:.5; }
   .erp-btn-primary { display:inline-flex; height:2rem; align-items:center; justify-content:center; gap:.375rem; border:1px solid var(--color-primary); border-radius:2px; background:var(--color-primary); padding:0 .75rem; color:var(--color-primary-foreground); font-size:.75rem; font-weight:700; }
   .erp-btn-primary:hover { opacity:.9; }
-  .erp-input { width:100%; min-width:0; height:2rem; border:1px solid var(--color-border); border-radius:2px; background:var(--color-card); padding:0 .5rem; color:var(--color-foreground); font-size:.75rem; font-weight:600; outline:none; }
+  .erp-input { display:block; width:100%; min-width:0; height:34px; border:1px solid var(--input); border-radius:6px; background:var(--card); padding:0 .75rem; color:var(--foreground); font-size:12px; font-weight:600; outline:none; transition:border-color 160ms ease,box-shadow 160ms ease,background-color 160ms ease; }
+  .erp-input:focus-visible { border-color:var(--ring); box-shadow:0 0 0 3px color-mix(in srgb,var(--ring) 18%,transparent); }
+  .erp-input:disabled { cursor:not-allowed; opacity:.58; background:var(--muted); }
+  .erp-input::placeholder { color:var(--muted-foreground); font-weight:400; opacity:1; }
+  @media (max-width: 767px) { .erp-input { height:44px; font-size:16px; } }
   .erp-input::placeholder { color:var(--color-muted-foreground); font-weight:400; }
   .erp-input:focus { border-color:var(--color-primary); box-shadow:0 0 0 1px color-mix(in oklch,var(--color-primary) 30%,transparent); }
-  .erp-label { font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--color-muted-foreground); }
+  .erp-label { display:block; margin-bottom:4px; font-size:10px; line-height:1.35; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--muted-foreground); }
   .erp-th { height:2rem; border-bottom:1px solid var(--color-border); background:var(--color-secondary); padding:0 .5rem; text-align:left; font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--color-muted-foreground); }
   .erp-tr { border-bottom:1px solid color-mix(in oklch,var(--color-border) 70%,transparent); background:var(--color-card); }
   .erp-tr:nth-child(even) { background:var(--color-muted); }

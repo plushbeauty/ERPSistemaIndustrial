@@ -19,8 +19,7 @@ export default {
     extend: {
       fontSize: { base: ['1rem', { lineHeight: '1.5rem' }] },
       fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
-      borderRadius: { 'sysnqra': '10px' },
-      borderRadius: { xl: '0.9rem' },
+      borderRadius: { sysnqra: '10px', xl: '0.9rem' },
       colors: {
         industrial: { canvas: '#F4FBFD', ink: '#123B50', blue: '#2D8DB8', cyan: '#48B7C7', green: '#3A9D78', amber: '#E6A34A', red: '#D65B61', line: '#D3E3EA' },
         background: 'var(--background)', foreground: 'var(--foreground)',
